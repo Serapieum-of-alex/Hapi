@@ -1,4 +1,3 @@
-# HBV-Conceptual-Distributed-Model
 HAPI - Hydrological library for Python
 =====================================================================
 **HAPI** is a Python package providing fast and flexible, way to build distributed
