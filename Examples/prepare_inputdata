@@ -49,6 +49,3 @@ def function(args):
 folder_path = evap_out_path
 new_folder_path="data/meteodata/new_evap/"
 GIS.FolderCalculator(folder_path,new_folder_path,function)
-
-
-
