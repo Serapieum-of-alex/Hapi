@@ -1,0 +1,48 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sat Jun 23 23:51:26 2018
+
+@author: Mostafa
+"""
+#%library
+import numpy as np
+# functions
+from Hapi import GISpy as GIS
+from Hapi import Inputs
+
+### 4 km 
+dem_path="Data/GIS/acc4000.tif"
+outputpath="Data/meteodata/4000/"
+# prec
+prec_in_path="Precipitation/CHIRPS/Daily/"
+Inputs.PrepareInputs(dem_path,prec_in_path,outputpath+"prec")
+# evap
+evap_in_path="evap/"
+Inputs.PrepareInputs(dem_path,evap_in_path,outputpath+"evap")
+# temp
+temp_in_path="temp/"
+Inputs.PrepareInputs(dem_path,temp_in_path,outputpath+"temp")
+
+#%%
+evap_out_path="03Weather_Data/new/4km_f/evap/"
+
+def function(args):
+    A = args[0]
+    func=np.abs
+    path = args[1]
+    
+    B=GIS.MapAlgebra(A,func)
+    GIS.SaveRaster(B,path)
+
+#%%
+#files_list=os.listdir(folder_path)
+folder_path = evap_out_path
+new_folder_path="03Weather_Data/new/4km_f/new_evap/"
+
+#B=gdal.Open(folder_path+files_list[0])
+#args=[B,func,new_folder_path+files_list[0]]
+
+GIS.FolderCalculator(folder_path,new_folder_path,function)
+
+
+
