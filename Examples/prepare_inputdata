@@ -49,3 +49,21 @@ def function(args):
 folder_path = evap_out_path
 new_folder_path="data/meteodata/new_evap/"
 GIS.FolderCalculator(folder_path,new_folder_path,function)
+
+"""
+in order to run the model all inputs has to have the same number of rows and columns
+for this purpose MatchRasterAlignment function was made to resample, change the coordinate
+system of the second raster and give it the same alignment like a source raster (DEM raster)
+"""
+dem_path="Data/GIS/acc4000.tif"
+soil_path="Data/GIS/soil_raster.tif"
+DEM=gdal.Open(dem_path)
+soil=gdal.Open(soil_path)
+
+aligned_soil=GIS.MatchRasterAlignment(DEM,soil)
+# to check alignment of DEM raster compared to aligned_soil_A raster
+aligned_soil_A=aligned_soil.ReadAsArray()
+dem_A=DEM.ReadAsArray()
+
+# save the new raster
+GIS.SaveRaster(aligned_soil,"soil_type.tif")
