@@ -1,0 +1,51 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sat Jun 23 23:51:26 2018
+
+@author: Mostafa
+"""
+#%library
+import numpy as np
+# functions
+from Hapi import GISpy as GIS
+from Hapi import Inputs
+
+"""
+this function prepare downloaded raster data to have the same align and
+nodatavalue from a GIS raster (DEM, flow accumulation, flow direction raster)
+and return a folder with the output rasters with a name “New_Rasters”
+"""
+dem_path="Data/GIS/acc4000.tif"
+outputpath="Data/meteodata_prepared/"
+# prec
+prec_in_path="Data/meteodata/prec/"
+Inputs.PrepareInputs(dem_path,prec_in_path,outputpath+"prec")
+# evap
+evap_in_path="Data/meteodata/evap/"
+Inputs.PrepareInputs(dem_path,evap_in_path,outputpath+"evap")
+# temp
+temp_in_path="Data/meteodata/temp/"
+Inputs.PrepareInputs(dem_path,temp_in_path,outputpath+"temp")
+
+"""
+in case you want to manipulate the value in all the rasters of one of the inputs 
+for example evapotranspiration values in rasters downloaded from ECMWF are -ve
+and to change it to +ve in all rasters or if you want to operate any kind of function 
+in all input rasters that are in the same folder FolderCalculator can do this task
+"""
+evap_out_path="Data/meteodata_prepared/evap/"
+
+# define your biggest function
+# this function is going to take the absolute value of the values in the raster
+# through MapAlgebra function then save the new raster to a given path with the same names
+def function(args):
+    A = args[0]
+    func=np.abs
+    path = args[1]
+    # first function 
+    B=GIS.MapAlgebra(A,func)
+    GIS.SaveRaster(B,path)
+
+folder_path = evap_out_path
+new_folder_path="data/meteodata/new_evap/"
+GIS.FolderCalculator(folder_path,new_folder_path,function)
