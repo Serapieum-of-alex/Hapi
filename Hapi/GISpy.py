@@ -19,6 +19,92 @@ from osgeo import gdalconst
 
 
 
+def NearestNeighbour(array, Noval, rows, cols):
+    """
+    ===============================================================
+        NearestNeighbour(array, Noval, rows, cols)
+    ===============================================================
+    this function filles cells of a given indices in rows and cols with
+    the value of the nearest neighbour.
+    as the raster grid is square so the 4 perpendicular direction are of the same 
+    close so the function give priority to the right then left then bottom then top
+    and the same for 45 degree inclined direction right bottom then left bottom
+    then left Top then right Top
+    
+    Inputs:
+    ----------
+        1-array:
+            [numpy.array] Array to fill some of its cells with Nearest value.
+        2-Noval:
+            [float32] value stored in cells that is out of the domain
+        3-rows:
+            [List] list of the row index of the cells you want to fill it with
+            nearest neighbour.
+        4-cols:
+            [List] list of the column index of the cells you want to fill it with
+            nearest neighbour.
+    
+    Output:
+    ----------
+        - array:
+            [numpy array] Cells of given indices will be filled with value of the Nearest neighbour
+    
+    Example:
+    ----------
+        - raster=gdal.opne("dem.tif")
+          rows=[3,12]
+          cols=[9,2]
+          new_array=NearestNeighbour(rasters, rows, cols)
+    """
+    #### input data validation
+    # data type
+    assert type(array)==np.ndarray , "src should be read using gdal (gdal dataset please read it using gdal library) "
+    assert type(rows) == list,"rows input has to be of type list"
+    assert type(cols) == list,"cols input has to be of type list"
+    
+    
+#    array=raster.ReadAsArray()
+#    Noval=np.float32(raster.GetRasterBand(1).GetNoDataValue())
+#    no_rows=raster.RasterYSize
+    no_rows=np.shape(array)[0]
+#    no_cols=raster.RasterXSize
+    no_cols=np.shape(array)[1]
+    
+    for i in range(len(rows)):
+        # give the cell the value of the cell that is at the right
+        if array[rows[i],cols[i]+1] != Noval and cols[i]+1 <= no_cols:
+            array[rows[i],cols[i]] = array[rows[i],cols[i]+1]
+        
+        elif array[rows[i],cols[i]-1] != Noval and cols[i]-1 > 0 :
+            # give the cell the value of the cell that is at the left
+            array[rows[i],cols[i]] = array[rows[i],cols[i]-1]
+
+        elif array[rows[i]-1,cols[i]] != Noval and rows[i]-1 > 0:
+        # give the cell the value of the cell that is at the bottom
+            array[rows[i],cols[i]] = array[rows[i]-1,cols[i]]
+            
+        elif array[rows[i]+1,cols[i]] != Noval and rows[i]+1 <= no_rows:
+        # give the cell the value of the cell that is at the Top
+            array[rows[i],cols[i]] = array[rows[i]+1,cols[i]]
+
+        elif array[rows[i]-1,cols[i]+1] != Noval and rows[i]-1 > 0 and cols[i]+1 <=no_cols :
+        # give the cell the value of the cell that is at the right bottom
+            array[rows[i],cols[i]] = array[rows[i]-1,cols[i]+1]
+                    
+        elif array[rows[i]-1,cols[i]-1] != Noval and rows[i]-1 >0 and cols[i]-1 > 0:
+        # give the cell the value of the cell that is at the left bottom
+            array[rows[i],cols[i]] = array[rows[i]-1,cols[i]-1]
+                        
+        elif array[rows[i]+1,cols[i]-1] != Noval and rows[i]+1 <= no_rows and cols[i]-1 > 0:
+        # give the cell the value of the cell that is at the left Top
+            array[rows[i],cols[i]] = array[rows[i]+1,cols[i]-1]
+                            
+        elif array[rows[i]+1,cols[i]+1] != Noval and rows[i]+1 <= no_rows and cols[i]+1 <= no_cols:
+        # give the cell the value of the cell that is at the right Top
+            array[rows[i],cols[i]] = array[rows[i]+1,cols[i]+1]
+        else:
+            print("the cell is isolated (No surrounding cells exist)")
+    return array
 
 def get_mask(raster):
     """
@@ -147,6 +233,14 @@ def SaveRaster(raster,path):
     ----------
         SaveRaster(raster,output_path)
     """
+    #### input data validation
+    # data type
+    assert type(raster)==gdal.Dataset, "src should be read using gdal (gdal dataset please read it using gdal library) "
+    assert type(path)== str, "Raster_path input should be string type"
+    # input values
+    ext=path[-4:]
+    assert ext == ".tif", "please add the extension at the end of the path input"
+    
     driver = gdal.GetDriverByName ( "GTiff" )
     dst_ds = driver.CreateCopy( path, raster, 0 )
     dst_ds = None # Flush the dataset to disk
@@ -1053,7 +1147,10 @@ def MatchNoDataValue(src,dst):
       MatchNoDataValue(src,dst)
     ==================================================================
     this function matches the location of nodata value from src raster to dst 
-    raster
+    raster, Both rasters have to have the same dimensions (no of rows & columns)
+    so MatchRasterAlignment should be used prior to this function to align both
+    rasters
+    
     
     inputs:
     ----------
@@ -1075,32 +1172,46 @@ def MatchNoDataValue(src,dst):
     assert type(src)==gdal.Dataset, "src should be read using gdal (gdal dataset please read it using gdal library) "
     assert type(dst)==gdal.Dataset, "src should be read using gdal (gdal dataset please read it using gdal library) "
     
-#    A=gdal.Open(dem_path)
     src_gt=src.GetGeoTransform()
     src_proj=src.GetProjection()
     src_row=src.RasterYSize
     src_col=src.RasterXSize
-    noval=np.float32(src.GetRasterBand(1).GetNoDataValue())
+    src_noval=np.float32(src.GetRasterBand(1).GetNoDataValue())
     src_sref=osr.SpatialReference(wkt=src_proj)
     src_epsg=int(src_sref.GetAttrValue('AUTHORITY',1))
     
     src_array=src.ReadAsArray()
     
-#    B=gdal.Open(prec_out_path+files_list[0])
     dst_gt=dst.GetGeoTransform()
     dst_proj=dst.GetProjection()
     dst_row=dst.RasterYSize
     dst_col=dst.RasterXSize
+    
     dst_sref=osr.SpatialReference(wkt=dst_proj)
     dst_epsg=int(dst_sref.GetAttrValue('AUTHORITY',1))
     
-    dst_array=dst.ReadAsArray()
-    dst_array[src_array==noval]=noval
-    
     #check proj 
-    assert src_row==dst_row or src_col==dst_col, "two rasters has different no of columns or rows please resample or match both rasters"
+    assert src_row==dst_row and src_col==dst_col, "two rasters has different no of columns or rows please resample or match both rasters"
     assert dst_gt==src_gt, "location of upper left corner of both rasters are not the same or cell size is different please match both rasters first "
     assert src_epsg == dst_epsg, "Raster A & B are using different coordinate system please reproject one of them to the other raster coordinate system"
+    
+    dst_array = dst.ReadAsArray()
+    dst_array[src_array==src_noval]=src_noval
+    
+    # align function only equate the no of rows and columns only
+    # match nodatavalue inserts nodatavalue in dst raster to all places like src
+    # still places that has nodatavalue in the dst raster but it is not nodatavalue in the src 
+    # and now has to be filled with values
+    # compare no of element that is not nodata value in both rasters to make sure they are matched
+    elem_src = np.size(src_array[:,:])-np.count_nonzero((src_array[src_array==src_noval]))
+    elem_dst = np.size(dst_array[:,:])-np.count_nonzero((dst_array[dst_array==src_noval])) 
+    # if not equal then store indices of those cells that doesn't matchs
+    if elem_src > elem_dst :
+        rows=[i for i in range(src_row) for j in range(src_col) if dst_array[i,j]==src_noval and src_array[i,j] != src_noval]
+        cols=[j for i in range(src_row) for j in range(src_col) if dst_array[i,j]==src_noval and src_array[i,j] != src_noval]
+    if elem_src > elem_dst :
+        dst_array = NearestNeighbour(dst_array, src_noval, rows, cols)
+    
     
     mem_drv=gdal.GetDriverByName("MEM") 
     dst=mem_drv.Create("",src_col,src_row,1,gdalconst.GDT_Float32) #,['COMPRESS=LZW'] LZW is a lossless compression method achieve the highst compression but with lot of computation
