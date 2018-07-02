@@ -20,3 +20,4 @@ Here are just a few of the things that pandas does well:
   - Some function to plot shapefiles using and rasters using bokeh library in a web application.
   - Different performance criteria to measure the godness of fit of the hydrological model
     
+This work has beed done under supervision of Dr/ Gerald Corzo at IHE Delft 2018
