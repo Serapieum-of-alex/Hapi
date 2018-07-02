@@ -21,10 +21,11 @@ import PerformanceCriteria as PC
 import Wrapper
 
 
-def RunCalibration(Paths,p2,Q_obs,UB,LB,objective_function,printError=None,*args):
+def RunCalibration(Paths,p2,Q_obs,UB,LB,lumpedParNo,lumpedParPos,
+                   objective_function,printError=None,*args):
     """
     =======================================================================
-        RunModel(PrecPath, Evap_Path, TempPath, DemPath, FlowAccPath, FlowDPath, ParPath, p2)
+        RunCalibration(Paths, p2, Q_obs, UB, LB, lumpedParNo, lumpedParPos, objective_function, printError=None, *args):
     =======================================================================
     this function runs the conceptual distributed hydrological model
     
@@ -56,13 +57,22 @@ def RunCalibration(Paths,p2,Q_obs,UB,LB,objective_function,printError=None,*args
             [Numeric] upper bound of the values of the parameters
         5-LB:
             [Numeric] Lower bound of the values of the parameters
-        6-objective_function:
+        6-lumpedParNo:
+            [int] nomber of lumped parameters, you have to enter the value of 
+            the lumped parameter at the end of the list, default is 0 (no lumped parameters)
+        7-lumpedParPos:
+            [List] list of order or position of the lumped parameter among all
+            the parameters of the lumped model (order starts from 0 to the length 
+            of the model parameters), default is [] (empty), the following order
+            of parameters is used for the lumped HBV model used
+            [ltt, utt, rfcf, sfcf, ttm, cfmax, cwh, cfr, fc, beta, e_corr, etf, lp,
+            c_flux, k, k1, alpha, perc, pcorr, Kmuskingum, Xmuskingum]
+        8-objective_function:
             [function] objective function to calculate the performance of the model
             and to be used in the calibration
-        7-*args:
+        9-*args:
             other arguments needed on the objective function
             
-    
     Outputs:
     ----------
         1- st:
@@ -141,6 +151,7 @@ def RunCalibration(Paths,p2,Q_obs,UB,LB,objective_function,printError=None,*args
     fd=gdal.Open(FlowDPath)
     print("GIS data are read successfully")
     init_st=[0,5,5,5,0]
+    
     ### optimization
     # generate random parameters for the first run
     par=np.random.uniform(LB, UB)
@@ -153,7 +164,7 @@ def RunCalibration(Paths,p2,Q_obs,UB,LB,objective_function,printError=None,*args
             kub=float(par[-1])
             par=par[:-2]
             # distribute the parameters to a 2d array
-            par2d=Dp.par2d_lumpedK1(par,dem,12,kub,klb)    
+            par2d=Dp.par3d(par,dem,12,lumpedParNo,lumpedParPos,kub,klb)    
             #run the model
             st, q_out, q_uz=Wrapper.Dist_model(dem,acc,fd,prec,evap,temp,par2d,p2,init_st)
             # calculate performance of the model
