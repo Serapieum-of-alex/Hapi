@@ -1,0 +1,7 @@
+Numpy
+gdal
+pandas
+geopandas
+shapely
+rasterio
+pyOpt
