@@ -22,6 +22,8 @@ Here are just a few of the things that pandas does well:
   
 -------------
 This work has beed done as a Part of A Master Thesis in Hydroinformatics about 
+
 "Spatio-temporal simulation of catchment response based on dynamic weighting of hydrological models" 
+
 under supervision of Dr/ Gerald Corzo & Prof/ Dimitri Solomatine at IHE Delft April 2018
 -------------
