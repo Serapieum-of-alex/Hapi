@@ -1,7 +1,7 @@
-Numpy
-gdal
-pandas
-geopandas
-shapely
-rasterio
-pyOpt
+Numpy==1.13.3
+gdal==2.2.2
+pandas==0.20.3
+geopandas==0.3.0
+shapely==1.6.2
+rasterio==0.36.0
+pyOpt==1.2.0
