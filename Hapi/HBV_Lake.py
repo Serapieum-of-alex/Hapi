@@ -7,7 +7,7 @@ from __future__ import division, print_function
 import numpy as np
 #import scipy.optimize as opt
 from scipy.interpolate import InterpolatedUnivariateSpline as interp11
-import sklearn.metrics as error
+#import sklearn.metrics as error
 
 # HBV base model parameters
 # 19 parameter (18+maxbas)
