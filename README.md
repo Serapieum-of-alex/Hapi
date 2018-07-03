@@ -1,4 +1,7 @@
+========
 HAPI - Hydrological library for Python
+========
+
 =====================================================================
 **HAPI** is a Python package providing fast and flexible, way to build distributed
 hydrological model using lumped conceptual model 
