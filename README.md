@@ -4,6 +4,7 @@ HAPI - Hydrological library for Python
 **HAPI** is a Python package providing fast and flexible, way to build distributed
 hydrological model using lumped conceptual model 
 
+'''
 Main Features
 -------------
 Here are just a few of the things that pandas does well:
@@ -25,15 +26,17 @@ Here are just a few of the things that pandas does well:
 This work has beed done as a Part of A Master Thesis in Hydroinformatics under supervision of Dr/ Gerald Corzo & Prof/ Dimitri Solomatine at IHE Delft April 2018
 -------------
 
+'''
 
-
+'''
 Installation
 ============
 Please install Hapi in a Virtual environment so that its requirements don't tamper with your system's python
 **Hapi** works with Python 2.7 64Bit on Windows
+'''
 
 if you are using conda
-
+'''
 # Clone the repository. Or download the ZIP and add `-master` to the name.
 git clone https://github.com/MAfarrag/HAPI
 
@@ -50,6 +53,7 @@ conda activate python2
 # Install the dependencies
 python -m pip install -r requirements.txt
 
+'''
 
 
 
