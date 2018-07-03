@@ -28,7 +28,7 @@ This work has beed done as a Part of A Master Thesis in Hydroinformatics under s
 
 
 Installation
--------------
+============
 Please install Hapi in a Virtual environment so that its requirements don't tamper with your system's python
 **Hapi** works with Python 2.7 64Bit on Windows
 
