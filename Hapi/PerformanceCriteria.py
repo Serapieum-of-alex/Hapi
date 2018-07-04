@@ -1,4 +1,5 @@
 import numpy as np
+import numbers
 
 """
 ====================
@@ -18,19 +19,22 @@ def RMSE(q_obs,q_sim):
     Root Mean Squared Error. Metric for the estimation of performance of the 
     hydrological model.
     
-    Inputs
+    Inputs:
     ----------
-    q_rec : array_like [n]
-        Measured discharge [m3/s]
-    q_sim : array_like [n] 
-        Simulated discharge [m3/s]
-    rmse = np.sqrt(error.mean_squared_error(q_obs,q_sim))    
+        1-q_rec : array_like [n]
+            Measured discharge [m3/s]
+        2-q_sim : array_like [n] 
+            Simulated discharge [m3/s]
     
-    Outputs
+    Outputs:
     -------
-    f : float
-        RMSE value
+        1-error : 
+            [float] RMSE value
     """
+    # convert Qobs & Qsim into arrays
+    Qobs=np.array(Qobs)
+    Qsim=np.array(Qsim)
+    
     rmse = np.sqrt(np.average((np.array(q_obs)-np.array(q_sim))** 2))
 
     return rmse
@@ -44,16 +48,35 @@ def RMSEHF(Qobs,Qsim,WStype,N,alpha):
     
     inputs:
     ----------
-        1- Qobs : observed flow 
-        2- Qsim : simulated flow
-        3- WStype : Weighting scheme (1,2,3,4)
-        4- N: power
-        5- alpha : Upper limit for low flow weight 
+        1- Qobs: 
+            observed flow 
+        2- Qsim: 
+            simulated flow
+        3- WStype:
+            Weighting scheme (1,2,3,4)
+        4- N:
+            power
+        5- alpha:
+            Upper limit for low flow weight 
     Output:
     ----------
         1- error values
-
     """
+    # input data validation
+    # data type
+    assert type(WStype)== int, "Weighting scheme should be an integer number between 1 and 4 and you entered "+str(WStype)
+    assert isinstance(alpha, numbers.Number), "alpha should be a number and between 0 & 1"
+    assert isinstance(N, numbers.Number), "N should be a number and between 0 & 1"
+    # Input values
+    assert WStype < 1 and WStype > 4 , "Weighting scheme should be an integer number between 1 and 4 you have enters "+ str(WStype)
+    assert N <= 0 , "Weighting scheme Power should be positive number you have entered "+ str(N)
+    assert alpha < 0 and alpha >1, "alpha should be float number and between 0 & 1 you have entered "+ str(alpha)
+    
+    # convert Qobs & Qsim into arrays
+    Qobs=np.array(Qobs)
+    Qsim=np.array(Qsim)
+    
+    
     Qmax=max(Qobs)
     h=Qobs/Qmax # rational Discharge 
     
@@ -98,6 +121,21 @@ def RMSELF(Qobs,Qsim,WStype,N,alpha):
     ----------
         1- error values
     """
+    # input data validation
+    # data type
+    assert type(WStype)== int, "Weighting scheme should be an integer number between 1 and 4 and you entered "+str(WStype)
+    assert isinstance(alpha, numbers.Number), "alpha should be a number and between 0 & 1"
+    assert isinstance(N, numbers.Number), "N should be a number and between 0 & 1"
+    # Input values
+    assert WStype < 1 and WStype > 4 , "Weighting scheme should be an integer number between 1 and 4 you have enters "+ str(WStype)
+    assert N <= 0 , "Weighting scheme Power should be positive number you have entered "+ str(N)
+    assert alpha < 0 and alpha >1, "alpha should be float number and between 0 & 1 you have entered "+ str(alpha)
+    
+    # convert Qobs & Qsim into arrays
+    Qobs=np.array(Qobs)
+    Qsim=np.array(Qsim)
+    
+    
     Qmax=max(Qobs)  # rational Discharge power N
     l= (Qmax-Qobs)/Qmax
     
@@ -146,6 +184,10 @@ def KGE(Qobs,Qsim):
     ----------
         1- error values
     """
+    # convert Qobs & Qsim into arrays
+    Qobs=np.array(Qobs)
+    Qsim=np.array(Qsim)
+    
     c= np.corrcoef(Qobs,Qsim)[0][1]
     alpha=np.std(Qsim)/np.std(Qobs)
     beta= np.mean(Qsim)/np.mean(Qobs)
@@ -205,6 +247,9 @@ def NSE(q_obs, q_sim):
         f : float
             NSE value
     """
+    # convert Qobs & Qsim into arrays
+    Qobs=np.array(Qobs)
+    Qsim=np.array(Qsim)
 
     a=sum((q_obs-q_sim)**2)
     b=sum((q_obs-np.average(q_obs))**2)
