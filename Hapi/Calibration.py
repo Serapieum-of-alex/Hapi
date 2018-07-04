@@ -1,8 +1,13 @@
 # -*- coding: utf-8 -*-
 """
-Created on Fri Jun 29 01:53:51 2018
+Calibration 
+
+calibration wrapper to connect the parameter distribution function with the 
+distRMM
 
 @author: Mostafa
+
+
 """
 #%links
 
@@ -16,16 +21,16 @@ from pyOpt import Optimization, ALHSO,Optimizer
 
 # functions
 import GISpy as GIS
-import DistParameters as Dp
-import PerformanceCriteria as PC
+#import DistParameters as Dp
+#import PerformanceCriteria as PC
 import Wrapper
 
 
-def RunCalibration(Paths,p2,Q_obs,UB,LB,lumpedParNo,lumpedParPos,
+def RunCalibration(Paths,p2,Q_obs,UB,LB,SpatialVarFun,SpatialVarArgs,
                    objective_function,printError=None,*args):
     """
     =======================================================================
-        RunCalibration(Paths, p2, Q_obs, UB, LB, lumpedParNo, lumpedParPos, objective_function, printError=None, *args):
+        RunCalibration(Paths, p2, Q_obs, UB, LB, SpatialVarFun, lumpedParNo, lumpedParPos, objective_function, printError=None, *args):
     =======================================================================
     this function runs the conceptual distributed hydrological model
     
@@ -154,7 +159,7 @@ def RunCalibration(Paths,p2,Q_obs,UB,LB,lumpedParNo,lumpedParPos,
     
     ### optimization
     # generate random parameters for the first run
-    par=np.random.uniform(LB, UB)
+#    par=np.random.uniform(LB, UB)
     print('Calibration starts')
     ### calculate the objective function
     def opt_fun(par):
@@ -163,12 +168,25 @@ def RunCalibration(Paths,p2,Q_obs,UB,LB,lumpedParNo,lumpedParPos,
             klb=float(par[-2])
             kub=float(par[-1])
             par=par[:-2]
+            
             # distribute the parameters to a 2d array
-            par2d=Dp.par3d(par,dem,12,lumpedParNo,lumpedParPos,kub,klb)    
+            # SpatialVarArgs=[soil_type,no_parameters,lumpedParNo,lumped_par_pos]
+            raster = SpatialVarArgs[0]
+            no_parameters = SpatialVarArgs[1]
+            lumpedParNo = SpatialVarArgs[2]
+            lumpedParPos = SpatialVarArgs[3]
+            
+            par_dist=SpatialVarFun(par,raster,no_parameters,lumpedParNo,lumpedParPos,kub,klb)    
+            
             #run the model
-            st, q_out, q_uz=Wrapper.Dist_model(dem,acc,fd,prec,evap,temp,par2d,p2,init_st)
+            _, q_out, _=Wrapper.Dist_model(dem,acc,fd,prec,evap,temp,par_dist,p2,init_st)
+            
             # calculate performance of the model
-            error=objective_function(Q_obs,q_out,*args)
+            try:
+                error=objective_function(Q_obs,q_out,*args)
+            except TypeError: # if no of inputs less than what the function needs
+                assert 1==5, "the objective function you have entered needs more inputs please enter then in a list as *args"
+                
             # print error
             if printError != None:
                 print(error)
