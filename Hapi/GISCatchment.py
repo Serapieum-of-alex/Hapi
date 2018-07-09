@@ -245,7 +245,7 @@ def FlowDirectIndex(flow_direct):
     
     
 #    fd=np.float32(flow_direct.ReadAsArray())
-    fd[fd==no_val]=np.nan
+    #fd[fd==no_val]=np.nan
     fd_cell=np.ones((rows,cols,2))*np.nan
 
     for i in range(rows):
