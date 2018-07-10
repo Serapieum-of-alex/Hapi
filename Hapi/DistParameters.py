@@ -11,6 +11,9 @@ import numpy as np
 #import os
 import gdal
 
+import GISCatchment as GC
+
+
 # functions
 def save_obj(obj, saved_name ):
     """
@@ -350,7 +353,7 @@ def HRU(par_g,raster,no_parameters,no_lumped_par=0,lumped_par_pos=[],
                    kub=1,klb=0.5):
     """
     ===========================================================
-      HRU(par_g, raster, no_parameters, no_lumped_par=0, lumped_par_pos=[], kub=1, klb=0.5)
+       HRU(par_g, raster, no_parameters, no_lumped_par=0, lumped_par_pos=[], kub=1, klb=0.5)
     ===========================================================
     this function takes a list of parameters [saved as one column or generated
     as 1D list from optimization algorithm] and distribute them horizontally on
@@ -495,3 +498,98 @@ def HRU(par_g,raster,no_parameters,no_lumped_par=0,lumped_par_pos=[],
         par_2d[raster_A==values[i]]=par_arr[:,i]
         
     return par_2d
+
+def HRU_HAND(DEM,FD,FPL,River):
+    """
+    =============================================================
+        HRU_HAND(DEM,FD,FPL,River)
+    =============================================================
+    this function calculates inputs for the HAND (height above nearest drainage)
+    method for land use classification 
+    
+    Inputs:
+    ----------
+        1- DEM:
+            
+        2-FD:
+            
+        3-FPL:
+            
+        4-River:
+            
+        
+    
+    Outputs:
+    ----------
+        1-HAND:
+            [numpy ndarray] Height above nearest drainage
+            
+        2-DTND:
+            [numpy ndarray] Distance to nearest drainage
+        
+    """
+    
+    # Use DEM raster information to run all loops
+    dem_A=DEM.ReadAsArray()
+    no_val=np.float32(DEM.GetRasterBand(1).GetNoDataValue())
+    rows=DEM.RasterYSize
+    cols=DEM.RasterXSize
+    
+    # get the indices of the flow direction path
+    fd_index=GC.FlowDirectIndex(FD)
+    
+    # read the river location raster
+    river_A=River.ReadAsArray()
+    
+    # read the flow path length raster
+    fpl_A=FPL.ReadAsArray()
+    
+    # trace the flow direction to the nearest river reach and store the location 
+    # of that nearst reach
+    nearest_network=np.ones((rows,cols,2))*np.nan
+    try:
+        for i in range(rows):
+            for j in range(cols):
+                if dem_A[i,j] != no_val:
+                    f=river_A[i,j]
+                    old_row=i
+                    old_cols=j
+                    
+                    while f != 1:
+                        # did not reached to the river yet then go to the next down stream cell
+                        # get the down stream cell (furure position)
+                        new_row=int(fd_index[old_row,old_cols,0])
+                        new_cols=int(fd_index[old_row,old_cols,1])
+                        # print(str(new_row)+","+str(new_cols))
+                        # go to the downstream cell
+                        f=river_A[new_row,new_cols]
+                        # down stream cell becomes the current position (old position)
+                        old_row=new_row
+                        old_cols=new_cols
+                        # at this moment old and new stored position are the same (current position)
+                    # store the position in the array
+                    nearest_network[i,j,0]=new_row
+                    nearest_network[i,j,1]=new_cols
+                    
+    except:
+        assert 1==5, "please check the boundaries of your catchment after cropping the catchment using the a polygon it creates anomalies athe boundary "
+        
+    # calculate the elevation difference between the cell and the nearest drainage cell
+    # or height avove nearst drainage
+    HAND=np.ones((rows,cols))*np.nan
+    
+    for i in range(rows):
+        for j in range(cols):
+            if dem_A[i,j] != no_val:
+                HAND[i,j] = dem_A[i,j] - dem_A[int(nearest_network[i,j,0]),int(nearest_network[i,j,1])]
+    
+    # calculate the distance to the nearest drainage cell using flow path length
+    # or distance to nearest drainage
+    DTND=np.ones((rows,cols))*np.nan
+    
+    for i in range(rows):
+        for j in range(cols):
+            if dem_A[i,j] != no_val:
+                DTND[i,j] = fpl_A[i,j] - fpl_A[int(nearest_network[i,j,0]),int(nearest_network[i,j,1])]
+    
+    return HAND, DTND
