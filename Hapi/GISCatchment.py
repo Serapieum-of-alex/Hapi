@@ -5,8 +5,11 @@ Created on Sat May 26 04:52:15 2018
 @author: Mostafa
 """
 # library
+import os
 import numpy as np
 import gdal
+import GISpy as GIS
+
 #from osgeo import gdalconst
 #import osr
 
@@ -18,9 +21,12 @@ def FD_from_DEM(DEM):
     this function generate flow direction raster from DEM and fill sinks
     
     inputs:
+    ----------
         1-Raster:
             [Gdal object] DEM 
+    
     Outputs:
+    ----------
         1- flow_direction_cell:
             [numpy array] with the same dimensions of the raster and 2 layers
             first layer for row index and second row for column index
@@ -217,14 +223,19 @@ def FlowDirectIndex(flow_direct):
     (1,2,4,8,16,32,64,128) into indices of the Downstream cell
     
     inputs:
+    ----------
         1- flow_direct:
             [gdal.dataset] flow direction raster obtained from catchment delineation
             it only contains values [1,2,4,8,16,32,64,128]
+    
     output:
+    ----------
         1-fd_indices:
             [numpy array] with the same dimensions of the raster and 2 layers
             first layer for row index and second row for column index
+    
     Example:
+    ----------
         fd=gdal.Open("Flowdir.tif")
         fd_indices=FlowDirectِِIndex(fd)
     """
@@ -245,7 +256,7 @@ def FlowDirectIndex(flow_direct):
     
     
 #    fd=np.float32(flow_direct.ReadAsArray())
-    #fd[fd==no_val]=np.nan
+#    fd[fd==no_val]=np.nan
     fd_cell=np.ones((rows,cols,2))*np.nan
 
     for i in range(rows):
@@ -285,15 +296,21 @@ def FlowDirecTable(flow_direct):
     this function takes flow direction indices created by FlowDirectِِIndex function 
     and create a dictionary with the cells indices as a key and  indices of directly 
     upstream cells as values (list of tuples)
+    
     Inputs:
+    ----------
         1- flow_direct:
             [gdal.dataset] flow direction raster obtained from catchment delineation
             it only contains values [1,2,4,8,16,32,64,128]
+    
     Outputs:
+    ----------
         1-flowAccTable:
             [Dict] dictionary with the cells indices as a key and indices of directly 
             upstream cells as values (list of tuples)
+    
     Example:
+    ----------
         
     """
     # input data validation
@@ -331,3 +348,58 @@ def FlowDirecTable(flow_direct):
                         flow_acc_table[name].append((celli[k],cellj[k]))
     
     return flow_acc_table
+
+def DeleteBasins(basins,pathout):
+    """
+    ===========================================================
+         DeleteBasins(basins,pathout)
+    ===========================================================
+    this function deletes all the basins in a basin raster created when delineating
+    a catchment and leave only the first basin which is the biggest basin in the raster
+    
+    Inputs:
+    ----------
+        1- basins:
+            [gdal.dataset] raster you create during delineation of a catchment 
+            values of its cells are the number of the basin it belongs to
+        2- pathout:
+            [String] path you want to save the resulted raster to it should include
+            the extension ".tif"
+    Outputs:
+    ----------
+        1- raster with only one basin (the basin that its name is 1 )
+    
+    Example:
+    ----------
+        basins=gdal.Open("Data/basins.tif")    
+        pathout="mask.tif"
+        DeleteBasins(basins,pathout)
+    """
+    # input data validation
+    # data type
+    assert type(pathout) == str, "A_path input should be string type"
+    assert type(basins)==gdal.Dataset, "basins raster should be read using gdal (gdal dataset please read it using gdal library) "
+    
+    # input values
+    # check wether the user wrote the extension of the raster or not    
+    ext=pathout[-4:]
+    assert ext == ".tif", "please add the extension at the end of the path input"
+    
+    # get number of rows
+    rows=basins.RasterYSize
+    # get number of columns
+    cols=basins.RasterXSize
+    # array
+    basins_A=basins.ReadAsArray()
+    # no data value
+    no_val=np.float32(basins.GetRasterBand(1).GetNoDataValue())
+    # get number of basins and there names
+    basins_val=list(set([int(basins_A[i,j]) for i in range(rows) for j in range(cols) if basins_A[i,j] != no_val]))
+    
+    # keep the first basin and delete the others by filling their cells by nodata value
+    for i in range(rows):
+        for j in range(cols):
+            if basins_A[i,j] != no_val and basins_A[i,j] != basins_val[0]:
+                basins_A[i,j] = no_val
+                
+    GIS.RasterLike(basins,basins_A,pathout)
