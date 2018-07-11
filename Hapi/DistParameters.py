@@ -194,6 +194,100 @@ def par2d_lumpedK1_lake(par_g,raster,no_parameters,no_parameters_lake,kub,klb):
     return par_2d,lake_par
 
 
+def par3dLumped(par_g,raster,no_parameters,kub=1,klb=0.5):
+    """
+    ===========================================================
+      par3dLumped(par_g,raster, no_parameters, kub, klb)
+    ===========================================================
+    this function takes a list of parameters [saved as one column or generated
+    as 1D list from optimization algorithm] and distribute them horizontally on
+    number of cells given by a raster
+    
+    Inputs :
+    ----------
+        1- par_g:
+            [list] list of parameters
+        2- raster:
+            [gdal.dataset] raster to get the spatial information of the catchment
+            (DEM, flow accumulation or flow direction raster)
+        3- no_parameters
+            [int] no of parameters of the cell according to the rainfall runoff model
+        4- kub:
+            [float] upper bound of K value (traveling time in muskingum routing method)
+            default is 1 hour 
+        5- klb:
+            [float] Lower bound of K value (traveling time in muskingum routing method)
+            default is 0.5 hour (30 min)
+    
+    Output:
+    ----------
+        1- par_3d: 3D array of the parameters distributed horizontally on the cells
+        
+    Example:
+    ----------
+        EX1:Lumped parameters
+            raster=gdal.Open("dem.tif")
+            [fc, beta, etf, lp, c_flux, k, k1, alpha, perc, pcorr, Kmuskingum, Xmuskingum]    
+            
+            raster=gdal.Open(path+"soil_classes.tif")
+            no_parameters=12
+            par_g=np.random.random(no_parameters) #no_elem*(no_parameters-no_lumped_par)
+            
+            tot_dist_par=DP.par3dLumped(par_g,raster,no_parameters,lumped_par_pos,kub=1,klb=0.5)
+    """
+    # input data validation
+    # data type
+    assert type(raster)==gdal.Dataset, "raster should be read using gdal (gdal dataset please read it using gdal library) "
+    assert type(par_g)==np.ndarray or type(par_g)==list, "par_g should be of type 1d array or list"
+    assert type(no_parameters)==int, " no_parameters should be integer number"
+    assert isinstance(kub,numbers.Number) , " kub should be a number"
+    assert isinstance(klb,numbers.Number) , " klb should be a number"
+
+    # read the raster    
+    raster_A=raster.ReadAsArray()
+    # get the shape of the raster
+    rows=raster.RasterYSize
+    cols=raster.RasterXSize
+    # get the no_value of in the raster    
+    noval=np.float32(raster.GetRasterBand(1).GetNoDataValue())
+    
+    # count the number of non-empty cells 
+    no_elem = np.size(raster_A[:,:])-np.count_nonzero((raster_A[raster_A==noval])) 
+    
+    # store the indeces of the non-empty cells
+    celli=[]#np.ones((no_elem,2))
+    cellj=[]
+    for i in range(rows): # rows
+        for j in range(cols): # columns
+            if raster_A[i,j]!= noval:
+                celli.append(i)
+                cellj.append(j)
+    
+    # create an empty 3D array [[raster dimension], no_parameters]
+    par_2d=np.zeros([rows, cols, no_parameters])*np.nan
+    
+    # parameters in array
+    # create a 2d array [no_parameters, no_cells]            
+    par_arr=np.ones((no_parameters,no_elem))
+    
+    # take the parameters from the generated parameters or the 1D list and 
+    # assign them to each cell
+    for i in range(no_elem):
+        par_arr[:,i] = par_g #par_g[i*no_parameters:(i*no_parameters)+no_parameters]
+    
+    # assign the parameters from the array (no_parameters, no_cells) to 
+    # the spatially corrected location in par2d
+    for i in range(no_elem):
+        par_2d[celli[i],cellj[i],:]=par_arr[:,i]
+    
+    # calculate the value of k(travelling time in muskingum based on value of 
+    # x and the position and upper, lower bound of k value 
+    for i in range(no_elem):
+        par_2d[celli[i],cellj[i],-2]= calculateK(par_2d[celli[i],cellj[i],-1],par_2d[celli[i],cellj[i],-2],kub,klb)
+    
+    return par_2d
+
+
 def par3d(par_g,raster,no_parameters,no_lumped_par=0,lumped_par_pos=[],
                    kub=1,klb=0.5):
     """
