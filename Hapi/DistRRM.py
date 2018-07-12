@@ -165,8 +165,8 @@ def RunLumpedRRP(Raster, sp_prec, sp_et, sp_temp, sp_pars, p2, init_st=None,
     this function runs the rainfall runoff lumped model (HBV, GR4,...) separately 
     for each cell and return a time series of arrays 
     
-    all 
     Inputs:
+    ----------
         1-Raster:
             [gdal.dataset] raster to get the spatial information (nodata cells)
             raster input could be dem, flow accumulation or flow direction raster of the catchment
@@ -195,6 +195,30 @@ def RunLumpedRRP(Raster, sp_prec, sp_et, sp_temp, sp_pars, p2, init_st=None,
             [numpy array] 3d array of the long term average temperature data
         9-q_0:
             [float] initial discharge m3/s
+    Outputs:
+    ----------
+        1-st:
+            [numpy ndarray] 4D array (rows,cols,time,states) states are [sp,wc,sm,uz,lv]
+        2-q_lz:
+            [numpy ndarray] 3D array of the lower zone discharge  
+        3-q_uz:
+            [numpy ndarray] 3D array of the upper zone discharge
+    Example:
+    ----------
+    ### meteorological data
+    prec=GIS.ReadRastersFolder(PrecPath)
+    evap=GIS.ReadRastersFolder(Evap_Path)
+    temp=GIS.ReadRastersFolder(TempPath)
+    sp_pars=GIS.ReadRastersFolder(parPath)
+    #### GIS data
+    dem= gdal.Open(DemPath) 
+    
+    p2=[1, 227.31]
+    init_st=[0,5,5,5,0]
+    
+    st, q_lz, q_uz = DistRRM.RunLumpedRRP(DEM,sp_prec=sp_prec, sp_et=sp_et, 
+                           sp_temp=sp_temp, sp_pars=sp_par, p2=p2, 
+                           init_st=init_st)
     """
     ### input data validation
     # data type
@@ -225,7 +249,6 @@ def RunLumpedRRP(Raster, sp_prec, sp_et, sp_temp, sp_pars, p2, init_st=None,
     # Get the mask
     no_val = np.float32(Raster.GetRasterBand(1).GetNoDataValue())
     raster = Raster.ReadAsArray()
-#    mask, no_val = _get_mask(Raster)
     
     # calculate area covered by cells
     geo_trans = Raster.GetGeoTransform() # get the coordinates of the top left corner and cell size [x,dx,y,dy]
@@ -286,9 +309,12 @@ def RunLumpedRRP(Raster, sp_prec, sp_et, sp_temp, sp_pars, p2, init_st=None,
     area_coef=p2[1]/px_tot_area
     q_uz=q_uz*px_area*area_coef/(p2[0]*3.6)
     
-    q_lz = np.array([np.nanmean(q_lz[:,:,i]) for i in range(n_steps)]) # average of all cells (not routed mm/timestep)
-    # convert Qlz to m3/sec 
-    q_lz = q_lz* p2[1]/ (p2[0]*3.6) # generation
+#    # convert QLZ to 1D time series 
+#    q_lz = np.array([np.nanmean(q_lz[:,:,i]) for i in range(n_steps)]) # average of all cells (not routed mm/timestep)
+#    # convert Qlz to m3/sec 
+#    q_lz = q_lz* p2[1]/ (p2[0]*3.6) # generation
+    
+    q_lz=q_lz*px_area*area_coef/(p2[0]*3.6)
     
     # convert all to float32 to save storage
     q_lz = np.float32(q_lz)
@@ -302,8 +328,57 @@ def SpatialRouting(q_lz, q_uz,flow_acc,flow_direct,sp_pars,p2):
       SpatialRouting(q_lz,q_uz,flow_acc,flow_direct,sp_pars,p2)
     ====================================================================
     
+    
+    Inputs:
+    ----------
+        1-q_lz:
+            [numpy ndarray] 3D array of the lower zone discharge  
+        2-q_uz:
+            [numpy ndarray] 3D array of the upper zone discharge  
+        3-flow_acc:
+            [gdal.dataset] flow accumulation raster file of the catchment (clipped to the catchment only)
+        4-flow_direct:
+            [gdal.dataset] flow Direction raster file of the catchment (clipped to the catchment only)
+        5-sp_pars:
+            [numpy ndarray] 3D array of the parameters
+        6-p2:
+            [List] list of unoptimized parameters
+            p2[0] = tfac, 1 for hourly, 0.25 for 15 min time step and 24 for daily time step
+            p2[1] = catchment area in km2
+    
+    Outputs:
+    ----------
+        1-q_out:
+            [numpy array] 1D timeseries of discharge at the outlet og the catchment
+            of unit m3/sec
+        2-q_uz_routed:
+            [numpy ndarray] 3D array of the upper zone discharge  accumulated and 
+            routed at each time step
+        3-q_lz:
+            [numpy ndarray] 3D array of the lower zone discharge translated at each time step
+    
+    Example:
+    ----------
+        #### GIS data
+        dem= gdal.Open(DemPath) 
+        flow_acc=gdal.Open(FlowAccPath)
+        flow_direct=gdal.Open(FlowDPath)
+        sp_pars=GIS.ReadRastersFolder(parPath)
+        p2=[1, 227.31]
+        prec=GIS.ReadRastersFolder(PrecPath)
+        evap=GIS.ReadRastersFolder(Evap_Path)
+        temp=GIS.ReadRastersFolder(TempPath)
+    
+        init_st=[0,5,5,5,0]
+        
+        st, q_lz, q_uz = DistRRM.RunLumpedRRP(DEM,sp_prec=sp_prec, sp_et=sp_et, 
+                               sp_temp=sp_temp, sp_pars=sp_par, p2=p2, 
+                               init_st=init_st)
+        q_out, q_uz_routed, q_lz_trans = DistRRM.SpatialRouting(q_lz, q_uz,
+                                                                flow_acc,flow_direct,sp_par,p2)
     """
-    n_steps = len(q_lz)
+    
+    n_steps = np.shape(q_lz)[2] #len(q_lz)
     
     rows=flow_acc.RasterYSize
     cols=flow_acc.RasterXSize
@@ -323,35 +398,52 @@ def SpatialRouting(q_lz, q_uz,flow_acc,flow_direct,sp_pars,p2):
 #    #new
 #    q_uz[lakecell[0],lakecell[1],:]=q_uz[lakecell[0],lakecell[1],:]+q_lake
     
-    #cells at the divider
+    ### cells at the divider
     q_uz_routed=np.zeros_like(q_uz)*np.nan
+    
+    """
+    lower zone discharge is going to be just translated without any attenuation
+    in order to be able to calculate total discharge (uz+lz) at internal points 
+    in the catchment
+    """
+    q_lz_translated=np.zeros_like(q_uz)*np.nan
+    
     # for all cell with 0 flow acc put the q_uz
     for x in range(rows): # no of rows
         for y in range(cols): # no of columns
             if FAA [x, y] != no_val and FAA [x, y]==0: 
-                q_uz_routed[x,y,:]=q_uz[x,y,:]        
-    # remaining cells
+                q_uz_routed[x,y,:]=q_uz[x,y,:]
+                q_lz_translated[x,y,:]=q_lz[x,y,:]
+    
+    ### remaining cells
     for j in range(1,len(no_cells)): #2):#
         for x in range(rows): # no of rows
             for y in range(cols): # no of columns
                     # check from total flow accumulation 
                     if FAA [x, y] != no_val and FAA[x, y]==no_cells[j]:
+                        # for UZ
                         q_r=np.zeros(n_steps)
+                        # for lz
+                        q=np.zeros(n_steps)
+                        # iterate to route uz and translate lz
                         for i in range(len(FDT[str(x)+","+str(y)])): #  no_cells[j]
                             # bring the indexes of the us cell
                             x_ind=FDT[str(x)+","+str(y)][i][0]
                             y_ind=FDT[str(x)+","+str(y)][i][1]
                             # sum the Q of the US cells (already routed for its cell)
-                             # route first with there own k & xthen sum
+                            # route first with there own k & xthen sum
                             q_r=q_r+Routing.muskingum(q_uz_routed[x_ind,y_ind,:],q_uz_routed[x_ind,y_ind,0],sp_pars[x_ind,y_ind,10],sp_pars[x_ind,y_ind,11],p2[0]) 
-                         # add the routed upstream flows to the current Quz in the cell
+                            q=q+q_lz[x_ind,y_ind,:]
+                            
+                        # add the routed upstream flows to the current Quz in the cell
                         q_uz_routed[x,y,:]=q_uz[x,y,:]+q_r
+                        q_lz_translated[x,y,:]=q_lz[x,y,:]+q
 
     # outlet is the cell that has the max flow_acc
     outlet=np.where(FAA==np.nanmax(FAA[FAA != no_val])) 
     outletx=outlet[0][0]
     outlety=outlet[1][0]              
     
-    q_out = q_lz + q_uz_routed[outletx,outlety,:]    
+    q_out = q_lz_translated[outletx,outlety,:] + q_uz_routed[outletx,outlety,:]
 
-    return q_out, q_uz_routed
+    return q_out, q_uz_routed, q_lz_translated
