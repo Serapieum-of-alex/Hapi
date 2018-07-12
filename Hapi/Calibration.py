@@ -179,11 +179,11 @@ def RunCalibration(Paths,p2,Q_obs,UB,LB,SpatialVarFun,SpatialVarArgs,
             par_dist=SpatialVarFun(par,*SpatialVarArgs,kub=kub,klb=klb)    
             
             #run the model
-            _, q_out, _=Wrapper.Dist_model(dem,acc,fd,prec,evap,temp,par_dist,p2,init_st)
+            _, q_out, q_uz_routed, q_lz_trans=Wrapper.Dist_model(dem,acc,fd,prec,evap,temp,par_dist,p2,init_st)
             
             # calculate performance of the model
             try:
-                error=objective_function(Q_obs,q_out,*args)
+                error=objective_function(Q_obs,q_out,q_uz_routed,q_lz_trans,*args)
             except TypeError: # if no of inputs less than what the function needs
                 assert 1==5, "the objective function you have entered needs more inputs please enter then in a list as *args"
                 

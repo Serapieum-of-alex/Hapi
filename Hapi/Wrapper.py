@@ -137,8 +137,8 @@ def Dist_model(DEM,flow_acc,flow_direct,sp_prec,sp_et,sp_temp,sp_par,p2,
                            sp_temp=sp_temp, sp_pars=sp_par, p2=p2, 
                            init_st=init_st)
     # run the GIS part to rout from cell to another
-    q_out, q_uz_routed = DistRRM.SpatialRouting(q_lz, q_uz,flow_acc,flow_direct,sp_par,p2)
+    q_out, q_uz_routed, q_lz_trans = DistRRM.SpatialRouting(q_lz, q_uz,flow_acc,flow_direct,sp_par,p2)
     
     q_out=q_out[:-1]
     
-    return st, q_out, q_uz_routed
+    return st, q_out, q_uz_routed, q_lz_trans
