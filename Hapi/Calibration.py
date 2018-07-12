@@ -171,12 +171,12 @@ def RunCalibration(Paths,p2,Q_obs,UB,LB,SpatialVarFun,SpatialVarArgs,
             
             # distribute the parameters to a 2d array
             # SpatialVarArgs=[soil_type,no_parameters,lumpedParNo,lumped_par_pos]
-            raster = SpatialVarArgs[0]
-            no_parameters = SpatialVarArgs[1]
-            lumpedParNo = SpatialVarArgs[2]
-            lumpedParPos = SpatialVarArgs[3]
+#            raster = SpatialVarArgs[0]
+#            no_parameters = SpatialVarArgs[1]
+#            lumpedParNo = SpatialVarArgs[2]
+#            lumpedParPos = SpatialVarArgs[3]
             
-            par_dist=SpatialVarFun(par,raster,no_parameters,lumpedParNo,lumpedParPos,kub,klb)    
+            par_dist=SpatialVarFun(par,*SpatialVarArgs,kub=kub,klb=klb)    
             
             #run the model
             _, q_out, _=Wrapper.Dist_model(dem,acc,fd,prec,evap,temp,par_dist,p2,init_st)
