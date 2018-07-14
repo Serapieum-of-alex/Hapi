@@ -4,15 +4,10 @@ Created on Wed Jun 27 19:17:15 2018
 
 @author: Mostafa
 """
-#%links
-#import os
-#import sys
-#sys.path.append("")
-
-#%library
+#library
 import numpy as np
 import gdal
-
+from types import ModuleType
 
 # functions
 import GISpy
@@ -155,7 +150,7 @@ def Dist_HBV2(lakecell,q_lake,DEM,flow_acc,flow_acc_plan, sp_prec, sp_et, sp_tem
     return q_out, st, q_uz_routed, q_lz, q_uz
 
 
-def RunLumpedRRP(Raster, sp_prec, sp_et, sp_temp, sp_pars, p2, init_st=None, 
+def RunLumpedRRP(ConceptualModel,Raster, sp_prec, sp_et, sp_temp, sp_pars, p2, snow, init_st=None, 
                 ll_temp=None, q_0=None):
     """
     ========================================================================
@@ -167,33 +162,35 @@ def RunLumpedRRP(Raster, sp_prec, sp_et, sp_temp, sp_pars, p2, init_st=None,
     
     Inputs:
     ----------
-        1-Raster:
+        1-ConceptualModel:
+            [function] conceptual model function 
+        2-Raster:
             [gdal.dataset] raster to get the spatial information (nodata cells)
             raster input could be dem, flow accumulation or flow direction raster of the catchment
             but the nodata value stored in the raster should be far from the
             range of values that could result from the calculation
-        2-sp_prec:
+        3-sp_prec:
             [numpy array] 3d array of the precipitation data, sp_prec should
             have the same 2d dimension of raster input
-        3-sp_et:
+        4-sp_et:
             [numpy array] 3d array of the evapotranspiration data, sp_et should
             have the same 2d dimension of raster input
-        4-sp_temp:
+        5-sp_temp:
             [numpy array] 3d array of the temperature data, sp_temp should
             have the same 2d dimension of raster input
-        5-sp_pars:
+        6-sp_pars:
             [numpy array] number of 2d arrays of the catchment properties spatially 
             distributed in 2d and the third dimension is the number of parameters,
             sp_pars should have the same 2d dimension of raster input
-        6-p2:
+        7-p2:
             [List] list of unoptimized parameters
             p2[0] = tfac, 1 for hourly, 0.25 for 15 min time step and 24 for daily time step
             p2[1] = catchment area in km2
-        7-init_st:
+        8-init_st:
             [list] initial state variables values [sp, sm, uz, lz, wc]. default=None
-        8-ll_temp:
+        9-ll_temp:
             [numpy array] 3d array of the long term average temperature data
-        9-q_0:
+        10-q_0:
             [float] initial discharge m3/s
     Outputs:
     ----------
@@ -205,29 +202,32 @@ def RunLumpedRRP(Raster, sp_prec, sp_et, sp_temp, sp_pars, p2, init_st=None,
             [numpy ndarray] 3D array of the upper zone discharge
     Example:
     ----------
-    ### meteorological data
-    prec=GIS.ReadRastersFolder(PrecPath)
-    evap=GIS.ReadRastersFolder(Evap_Path)
-    temp=GIS.ReadRastersFolder(TempPath)
-    sp_pars=GIS.ReadRastersFolder(parPath)
-    #### GIS data
-    dem= gdal.Open(DemPath) 
+        ### meteorological data
+        prec=GIS.ReadRastersFolder(PrecPath)
+        evap=GIS.ReadRastersFolder(Evap_Path)
+        temp=GIS.ReadRastersFolder(TempPath)
+        sp_pars=GIS.ReadRastersFolder(parPath)
     
-    p2=[1, 227.31]
-    init_st=[0,5,5,5,0]
-    
-    st, q_lz, q_uz = DistRRM.RunLumpedRRP(DEM,sp_prec=sp_prec, sp_et=sp_et, 
-                           sp_temp=sp_temp, sp_pars=sp_par, p2=p2, 
-                           init_st=init_st)
+        #### GIS data
+        dem= gdal.Open(DemPath) 
+        
+        p2=[1, 227.31]
+        init_st=[0,5,5,5,0]
+        
+        st, q_lz, q_uz = DistRRM.RunLumpedRRP(DEM,sp_prec=sp_prec, sp_et=sp_et, 
+                               sp_temp=sp_temp, sp_pars=sp_par, p2=p2, 
+                               init_st=init_st)
     """
     ### input data validation
     # data type
+    assert isinstance(ConceptualModel,ModuleType) , "ConceptualModel should be a module or a python file contains functions "
     assert type(Raster)==gdal.Dataset, "Raster should be read using gdal (gdal dataset please read it using gdal library) "
     assert type(sp_prec)==np.ndarray, "array should be of type numpy array"
     assert type(sp_et)==np.ndarray, "array should be of type numpy array"
     assert type(sp_temp)==np.ndarray, "array should be of type numpy array"
     assert type(sp_pars)==np.ndarray, "array should be of type numpy array"
     assert type(p2)==list, "p2 should be of type list"
+    
     if init_st != None:
         assert type(init_st)==list, "init_st should be of type list"
     if ll_temp != None:
@@ -241,10 +241,12 @@ def RunLumpedRRP(Raster, sp_prec, sp_et, sp_temp, sp_pars, p2, init_st=None,
     assert np.shape(sp_prec)[1] == cols and np.shape(sp_et)[1] == cols and np.shape(sp_temp)[1] == cols and np.shape(sp_pars)[1] == cols, "all input data should have the same number of columns"
     assert np.shape(sp_prec)[2] == np.shape(sp_et)[2] and np.shape(sp_temp)[2] == np.shape(sp_prec)[2], "all meteorological input data should have the same length"
         
+    
     n_steps = sp_prec.shape[2] + 1 # no of time steps =length of time series +1
     # intiialise vector of nans to fill states
     dummy_states = np.empty([n_steps, 5]) # [sp,sm,uz,lz,wc]
     dummy_states[:] = np.nan
+    dummy_states=np.float32(dummy_states)
     
     # Get the mask
     no_val = np.float32(Raster.GetRasterBand(1).GetNoDataValue())
@@ -263,43 +265,54 @@ def RunLumpedRRP(Raster, sp_prec, sp_et, sp_temp, sp_pars, p2, init_st=None,
     q_uz = []
     
     for x in range(rows): # no of rows
-        st_i = []
-        q_lzi = []
-        q_uzi = []
+        st_row = []
+        q_lz_row = []
+        q_uz_row = []
         
         for y in range(cols): # no of columns
             if raster [x, y] != no_val:  # only for cells in the domain
                 # Calculate the states per cell
-                # TODO optimise for multiprocessing these loops   
-                _, _st, _uzg, _lzg = HBV.simulate_new_model(avg_prec = sp_prec[x, y,:], 
-                                              temp = sp_temp[x, y,:], 
-                                              et = sp_et[x, y,:], 
-                                              par = sp_pars[x, y, :], 
-                                              p2 = p2, 
-                                              init_st = init_st, 
-                                              ll_temp = None, 
-                                              q_0 = q_0,
-                                              extra_out = True)
-    #               # append column after column in the same row
-                st_i.append(np.array(_st))
-                #calculate upper zone Q = K1*(LZ_int_1)
-                q_lz_temp=np.array(sp_pars[x, y, 6])*_lzg
-                q_lzi.append(q_lz_temp)
-                # calculate lower zone Q = k*(UZ_int_3)**(1+alpha)
-                q_uz_temp = np.array(sp_pars[x, y, 5])*(np.power(_uzg, (1.0 + sp_pars[x, y, 7])))
-                q_uzi.append(q_uz_temp)
+                # TODO optimise for multiprocessing these loops
+                try:
+                    
+#                    _st, _uzg, _lzg = ConceptualModel.Simulate(prec = sp_prec[x, y,:], 
+                    uzg, lzg,  stvar  = ConceptualModel.Simulate(prec = sp_prec[x, y,:], 
+                                                                 temp = sp_temp[x, y,:], 
+                                                                 et = sp_et[x, y,:], 
+                                                                 par = sp_pars[x, y, :], 
+                                                                 p2 = p2, 
+                                                                 init_st = init_st, 
+                                                                 ll_temp = None, 
+                                                                 q_0 = q_0, 
+                                                                 snow=0) #extra_out = True
+                except:
+                    print("conceptual model argument are not correct")
+                
+                # append column after column in the same row
+#                st_i.append(np.array(_st))
+                st_row.append(stvar)
+                
+                # calculate upper zone Q = k*(UZ_int_3)**(1+alpha)
+#                q_uz_temp = np.array(sp_pars[x, y, 5])*(np.power(_uzg, (1.0 + sp_pars[x, y, 7])))
+#                q_uzi.append(q_uz_temp)
+                q_uz_row.append(uzg)
+                
+                #calculate lower zone Q = K1*(LZ_int_1)
+#                q_lz_temp=np.array(sp_pars[x, y, 6])*_lzg
+#                q_lzi.append(q_lz_temp)
+                q_lz_row.append(lzg)
                 
     #                print("total = "+str(fff)+"/"+str(tot_elem)+" cell, row= "+str(x+1)+" column= "+str(y+1) )
             else: # if the cell is novalue-------------------------------------
                 # Fill the empty cells with a nan vector
-                st_i.append(dummy_states) # fill all states(5 states) for all time steps = nan
-                q_lzi.append(dummy_states[:,0]) # q lower zone =nan  for all time steps = nan
-                q_uzi.append(dummy_states[:,0]) # q upper zone =nan  for all time steps = nan
+                st_row.append(dummy_states) # fill all states(5 states) for all time steps = nan
+                q_lz_row.append(dummy_states[:,0]) # q lower zone =nan  for all time steps = nan
+                q_uz_row.append(dummy_states[:,0]) # q upper zone =nan  for all time steps = nan
     # store row by row-------- ---------------------------------------------------- 
     #        st.append(st_i) # state variables 
-        st.append(st_i) # state variables 
-        q_lz.append(np.array(q_lzi)) # lower zone discharge mm/timestep
-        q_uz.append(np.array(q_uzi)) # upper zone routed discharge mm/timestep
+        st.append(st_row) # state variables 
+        q_lz.append(q_lz_row) # lower zone discharge mm/timestep
+        q_uz.append(q_uz_row) # upper zone routed discharge mm/timestep
     #------------------------------------------------------------------------------            
     # convert to arrays 
     st = np.array(st)
@@ -433,7 +446,7 @@ def SpatialRouting(q_lz, q_uz,flow_acc,flow_direct,sp_pars,p2):
                             # sum the Q of the US cells (already routed for its cell)
                             # route first with there own k & xthen sum
                             q_r=q_r+Routing.muskingum(q_uz_routed[x_ind,y_ind,:],q_uz_routed[x_ind,y_ind,0],sp_pars[x_ind,y_ind,10],sp_pars[x_ind,y_ind,11],p2[0]) 
-                            q=q+q_lz[x_ind,y_ind,:]
+                            q=q+q_lz_translated[x_ind,y_ind,:]
                             
                         # add the routed upstream flows to the current Quz in the cell
                         q_uz_routed[x,y,:]=q_uz[x,y,:]+q_r
