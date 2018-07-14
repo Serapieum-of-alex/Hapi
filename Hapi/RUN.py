@@ -8,18 +8,17 @@ Created on Sun Jun 24 21:02:34 2018
 
 #%library
 import os
-import numpy as np
+#import numpy as np
 import gdal
 #import matplotlib.pyplot as plt
 
 # functions
 import Wrapper
 import GISpy as GIS
-import DistParameters as Dp
+#import DistParameters as Dp
 #import GISCatchment as GC
 
-def RunModel(PrecPath,Evap_Path,TempPath,DemPath,FlowAccPath,FlowDPath,
-             ParPath,p2):
+def RunModel(ConceptualModel, Paths, ParPath, p2, init_st, snow):
     """
     =======================================================================
         RunModel(PrecPath, Evap_Path, TempPath, DemPath, FlowAccPath, FlowDPath, ParPath, p2)
@@ -27,21 +26,19 @@ def RunModel(PrecPath,Evap_Path,TempPath,DemPath,FlowAccPath,FlowDPath,
     this function runs the conceptual distributed hydrological model
     
     Inputs:
-        1-PrecPath:
-            [String] path to the Folder contains precipitation rasters
-        2-Evap_Path:
-            [String] path to the Folder contains Evapotranspiration rasters
-        3-TempPath:
-            [String] path to the Folder contains Temperature rasters
-        4-DemPath:
-            [String] path to the DEM raster of the catchment (it should
-            include the raster name and extension)
-        5-FlowAccPath:
-            [String] path to the Flow Accumulation raster of the catchment (it should
-            include the raster name and extension)
-        6-FlowDPath:
-            [String] path to the Flow Direction raster of the catchment (it should
-            include the raster name and extension)
+        1-Paths:
+            1-PrecPath:
+                [String] path to the Folder contains precipitation rasters
+            2-Evap_Path:
+                [String] path to the Folder contains Evapotranspiration rasters
+            3-TempPath:
+                [String] path to the Folder contains Temperature rasters
+            4-FlowAccPath:
+                [String] path to the Flow Accumulation raster of the catchment (it should
+                include the raster name and extension)
+            5-FlowDPath:
+                [String] path to the Flow Direction raster of the catchment (it should
+                include the raster name and extension)
         7-ParPath:
             [String] path to the Folder contains parameters rasters of the catchment 
         8-p2:
@@ -68,17 +65,28 @@ def RunModel(PrecPath,Evap_Path,TempPath,DemPath,FlowAccPath,FlowDPath,
                                           FlowAccPath,FlowDPath,ParPath,p2)
     """
     # input data validation
+    assert len(Paths) == 5, "Paths should include 5 folder pathes " +str(len(Paths))+" paths are only provided"
+    
+    PrecPath=Paths[0]
+    Evap_Path=Paths[1]
+    TempPath=Paths[2]
+#    DemPath=Paths[3]
+    FlowAccPath=Paths[3]
+    FlowDPath=Paths[4]
+    
     # data type
     assert type(PrecPath)== str, "PrecPath input should be string type"
     assert type(Evap_Path)== str, "Evap_Path input should be string type"
     assert type(TempPath)== str, "TempPath input should be string type"
-    assert type(DemPath)== str, "DemPath input should be string type"
+#    assert type(DemPath)== str, "DemPath input should be string type"
     assert type(FlowAccPath)== str, "FlowAccPath input should be string type"
     assert type(FlowDPath)== str, "FlowDPath input should be string type"
     assert type(ParPath)== str, "ParPath input should be string type"
+    
+    
     # input values
-    dem_ext=DemPath[-4:]
-    assert dem_ext == ".tif", "please add the extension at the end of the DEM raster path input"
+#    dem_ext=DemPath[-4:]
+#    assert dem_ext == ".tif", "please add the extension at the end of the DEM raster path input"
     acc_ext=FlowAccPath[-4:]
     assert acc_ext == ".tif", "please add the extension at the end of the Flow accumulation raster path input"
     fd_ext=FlowDPath[-4:]
@@ -87,7 +95,7 @@ def RunModel(PrecPath,Evap_Path,TempPath,DemPath,FlowAccPath,FlowDPath,
     assert os.path.exists(PrecPath), PrecPath + " you have provided does not exist"
     assert os.path.exists(Evap_Path), Evap_Path+" path you have provided does not exist"
     assert os.path.exists(TempPath), TempPath+" path you have provided does not exist"
-    assert os.path.exists(DemPath), DemPath+ " you have provided does not exist"
+#    assert os.path.exists(DemPath), DemPath+ " you have provided does not exist"
     assert os.path.exists(FlowAccPath), FlowAccPath + " you have provided does not exist"
     assert os.path.exists(FlowDPath), FlowDPath+ " you have provided does not exist"
     # check wether the folder has the rasters or not 
@@ -101,8 +109,9 @@ def RunModel(PrecPath,Evap_Path,TempPath,DemPath,FlowAccPath,FlowDPath,
     evap=GIS.ReadRastersFolder(Evap_Path)
     temp=GIS.ReadRastersFolder(TempPath)
     print("meteorological data are read successfully")
+    
     #### GIS data
-    dem= gdal.Open(DemPath) 
+#    dem= gdal.Open(DemPath) 
     acc=gdal.Open(FlowAccPath)
     fd=gdal.Open(FlowDPath)
     print("GIS data are read successfully")
@@ -111,8 +120,8 @@ def RunModel(PrecPath,Evap_Path,TempPath,DemPath,FlowAccPath,FlowDPath,
     parameters=GIS.ReadRastersFolder(ParPath)
     print("Parameters are read successfully")
     
-    init_st=[0,5,5,5,0]
     #run the model
-    st, q_out, q_uz=Wrapper.Dist_model(dem,acc,fd,prec,evap,temp,parameters,p2,init_st)
+    st, q_out, q_uz, q_lz = Wrapper.Dist_model(ConceptualModel, acc, fd, prec, evap,
+                                               temp, parameters, p2, snow, init_st)
     
-    return st, q_out, q_uz
+    return st, q_out, q_uz, q_lz
