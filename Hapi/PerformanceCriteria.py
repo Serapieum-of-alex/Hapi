@@ -10,7 +10,7 @@ Functions
         1- rmseHF
         2- rmseLF
 """
-def RMSE(q_obs,q_sim):
+def RMSE(Qobs,Qsim):
     """
     ===========================================================
         RMSE
@@ -21,10 +21,10 @@ def RMSE(q_obs,q_sim):
     
     Inputs:
     ----------
-        1-q_rec : array_like [n]
-            Measured discharge [m3/s]
-        2-q_sim : array_like [n] 
-            Simulated discharge [m3/s]
+        1-Qobs :
+            [numpy ndarray] Measured discharge [m3/s]
+        2-Qsim :
+            [numpy ndarray] Simulated discharge [m3/s]
     
     Outputs:
     -------
@@ -35,7 +35,7 @@ def RMSE(q_obs,q_sim):
     Qobs=np.array(Qobs)
     Qsim=np.array(Qsim)
     
-    rmse = np.sqrt(np.average((np.array(q_obs)-np.array(q_sim))** 2))
+    rmse = np.sqrt(np.average((np.array(Qobs)-np.array(Qsim))** 2))
 
     return rmse
 
@@ -68,9 +68,9 @@ def RMSEHF(Qobs,Qsim,WStype,N,alpha):
     assert isinstance(alpha, numbers.Number), "alpha should be a number and between 0 & 1"
     assert isinstance(N, numbers.Number), "N should be a number and between 0 & 1"
     # Input values
-    assert WStype < 1 and WStype > 4 , "Weighting scheme should be an integer number between 1 and 4 you have enters "+ str(WStype)
-    assert N <= 0 , "Weighting scheme Power should be positive number you have entered "+ str(N)
-    assert alpha < 0 and alpha >1, "alpha should be float number and between 0 & 1 you have entered "+ str(alpha)
+    assert WStype >= 1 and WStype <= 4 , "Weighting scheme should be an integer number between 1 and 4 you have enters "+ str(WStype)
+    assert N >= 0 , "Weighting scheme Power should be positive number you have entered "+ str(N)
+    assert alpha > 0 and alpha <1, "alpha should be float number and between 0 & 1 you have entered "+ str(alpha)
     
     # convert Qobs & Qsim into arrays
     Qobs=np.array(Qobs)
@@ -127,9 +127,9 @@ def RMSELF(Qobs,Qsim,WStype,N,alpha):
     assert isinstance(alpha, numbers.Number), "alpha should be a number and between 0 & 1"
     assert isinstance(N, numbers.Number), "N should be a number and between 0 & 1"
     # Input values
-    assert WStype < 1 and WStype > 4 , "Weighting scheme should be an integer number between 1 and 4 you have enters "+ str(WStype)
-    assert N <= 0 , "Weighting scheme Power should be positive number you have entered "+ str(N)
-    assert alpha < 0 and alpha >1, "alpha should be float number and between 0 & 1 you have entered "+ str(alpha)
+    assert WStype >= 1 and WStype <= 4 , "Weighting scheme should be an integer number between 1 and 4 you have enters "+ str(WStype)
+    assert N >= 0 , "Weighting scheme Power should be positive number you have entered "+ str(N)
+    assert alpha > 0 and alpha <1, "alpha should be float number and between 0 & 1 you have entered "+ str(alpha)
     
     # convert Qobs & Qsim into arrays
     Qobs=np.array(Qobs)
@@ -225,34 +225,39 @@ def WB(Qobs,Qsim):
     return wb
 
 
-def NSE(q_obs, q_sim):
+def NSE(Qobs, Qsim):
     """
-    ===
-    NSE
-    ===
+    =================================================
+        NSE(Qobs, Qsim)
+    =================================================
     
     Nash-Sutcliffe efficiency. Metric for the estimation of performance of the 
     hydrological model
     
-    Inputs
+    Inputs:
     ----------
-    q_rec : array_like [n]
-        Measured discharge [m3/s]
-    q_sim : array_like [n] 
-        Simulated discharge [m3/s]
-    e=error.explained_variance_score(q_obs,q_sim)    
-    
+        1-Qobs :
+            [numpy ndarray] Measured discharge [m3/s]
+        2-Qsim : 
+            [numpy ndarray] Simulated discharge [m3/s]
+        
     Outputs
     -------
-        f : float
-            NSE value
+        1-f :
+            [float] NSE value
+    
+    Examples:
+    -------    
+        Qobs=np.loadtxt("Qobs.txt")
+        Qout=Model(prec,evap,temp)
+        error=NSE(Qobs,Qout)
     """
     # convert Qobs & Qsim into arrays
     Qobs=np.array(Qobs)
     Qsim=np.array(Qsim)
 
-    a=sum((q_obs-q_sim)**2)
-    b=sum((q_obs-np.average(q_obs))**2)
+    a=sum((Qobs-Qsim)**2)
+    b=sum((Qobs-np.average(Qobs))**2)
     e=1-(a/b)
 
     return e
