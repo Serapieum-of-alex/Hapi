@@ -12,7 +12,7 @@ import numpy as np
 import gdal
 
 # functions
-import DHBV_functions
+import DistParameters
 import HBV_Lake
 import DistRRM
 import Routing
@@ -28,7 +28,7 @@ def Dist_model_lake(data,p2,curve,lakecell,DEM,flow_acc,flow_acc_plan,sp_prec,sp
 #    Qobs=data[:,4]
     
     # distribute the parameters to a 2d array
-    jiboa_par,lake_par=DHBV_functions.par2d_lumpedK1_lake(sp_pars,DEM,12,13,kub,klb)
+    jiboa_par,lake_par=DistParameters.par2d_lumpedK1_lake(sp_pars,DEM,12,13,kub,klb)
     
     
     # lake simulation
