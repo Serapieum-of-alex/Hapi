@@ -29,6 +29,7 @@ import DistParameters
 import DistRRM
 import GISCatchment
 import GISpy
+import GISVisual
 import HBV
 import HBV_Lake
 import Inputs
