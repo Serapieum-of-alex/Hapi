@@ -11,6 +11,7 @@ import os
 import datetime as dt
 import numpy as np
 import shutil
+import pandas as pd
 # functions
 import GISpy as GIS
 
@@ -152,3 +153,47 @@ def mycolor(x,min_old,max_old,min_new, max_new):
     y=int(np.round(rescale(x_log,min_old_log,max_old_log,min_new,max_new)))
     
     return y
+
+def ReadExcelData(path,years,months):
+    """
+    ===========================================================
+        ReadExcelData(path,years,months)
+    ===========================================================
+    this function reads data listed in excel sheet with years and months are
+    listed as columns and days are listed in the first row
+    year month 1 2 3 4 5 6 7 8 9 .....................31
+    2012  1    5 6 2 6 8 6 9 7 4 3 ...................31
+    2012  2    9 8 7 6 3 2 1 5 5 9 ...................31
+    
+    inputs:
+    ----------
+        1- path:
+            [string] path of the excel file 
+        2-years:
+            [list] list of the years you want to read
+        3-months:
+            [list] list of the months you you want to read
+    Outputs:
+    ----------
+        1- List of the values in the excel file
+    Examples:
+    ----------    
+        years=[2009,2010,2011]#,2012,2013]
+        months=[1,2,3,4,5,6,7,8,9,10,11,12]
+        Q=ReadExcelData(path+"Discharge/Qout.xlsx",years,months)
+    """
+    
+    Qout=pd.read_excel(path)
+    Q=[]
+#    years=[2009,2010,2011]#,2012,2013]
+#    months=[1,2,3,4,5,6,7,8,9,10,11,12]
+    for year in years:
+        for month in months:
+            row=Qout[Qout['year'] == year][Qout['month'] == month]
+            row=row.drop(['year','month'], axis=1)
+            row=row.values.tolist()[0]
+            Q=Q+row
+            
+    Q=[Q[i] for i in range(len(Q)) if not np.isnan(Q[i])]
+    
+    return Q
