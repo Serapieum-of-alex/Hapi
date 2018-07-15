@@ -47,13 +47,20 @@ git clone https://github.com/MAfarrag/HAPI
 cd Hapi
 
 # Create a virtualenv
-conda create -n python2 python=2.7 anaconda 
+open anaconda prompt and type
+conda create -n Hapi_env python=2.7 anaconda 
 that will create an environment named python2 that contain s Python2.7 version of Anaconda 
 
 # Activate the env
-conda activate python2
+conda activate Hapi_env
 
 # Install the dependencies
 python -m pip install -r requirements.txt
+
+in linux if you get an error because of gdal you can install or pyopt
+install it individually 
+conda install gdal
+conda install --channel https://conda.anaconda.org/mutirri pyopt
+
 
 ```
