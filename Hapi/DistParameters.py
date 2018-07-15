@@ -8,9 +8,10 @@ Created on Sat Apr 28 21:21:41 2018
 import pickle
 import numbers
 import numpy as np
-#import os
+import os
 import gdal
 
+import GISpy as GIS
 import GISCatchment as GC
 
 
@@ -185,9 +186,8 @@ def par2d_lumpedK1_lake(par_g,raster,no_parameters,no_parameters_lake,kub,klb):
     # x and the position and upper, lower bound of k value 
     for i in range(no_elem):
         par_2d[celli[i],cellj[i],-2]= calculateK(par_2d[celli[i],cellj[i],-1],par_2d[celli[i],cellj[i],-2],kub,klb)
-
     
-    # lake parameters        
+    # lake parameters
     lake_par=par_g[len(par_g)-no_parameters_lake:]
     lake_par[-2]=calculateK(lake_par[-1],lake_par[-2],kub,klb)
     
@@ -687,3 +687,80 @@ def HRU_HAND(DEM,FD,FPL,River):
                 DTND[i,j] = fpl_A[i,j] - fpl_A[int(nearest_network[i,j,0]),int(nearest_network[i,j,1])]
     
     return HAND, DTND
+
+
+def SaveParameters(DistParFn, Raster, Par, No_parameters, snow, kub, klb, 
+                   Path=None):
+    """
+    ============================================================
+        SaveParameters(DistParFn, Raster, Par, No_parameters, snow, kub, klb, Path=None)
+    ============================================================
+    this function takes generated parameters by the calibration algorithm, 
+    distributed them with a given function and save them asrasters
+    
+    Inputs:
+    ----------
+        1-DistParFn:
+            [function] function to distribute the parameters (all functions are
+            in Hapi.DistParameters )
+        2-Raster:
+            [gdal.dataset] raster to get the spatial information
+        3-Par
+            [list or numpy ndarray] parameters as 1D array or list
+        4-no_parameters:
+            [int] number of the parameters in the conceptual model
+        5-snow:
+            [integer] number to define whether to take parameters of 
+            the conceptual model with snow subroutine or without
+        5-kub:
+            [numeric] upper bound for k parameter in muskingum function
+        6-klb:
+            [numeric] lower bound for k parameter in muskingum function
+         7-Path:
+             [string] path to the folder you want to save the parameters in
+             default value is None (parameters are going to be saved in the
+             current directory)
+     
+    Outputs:
+    ----------
+         Rasters for parameters of the distributed model
+     
+   Examples:     
+   ----------
+        DemPath = path+"GIS/4000/dem4000.tif"
+        Raster=gdal.Open(DemPath)
+        ParPath = "par15_7_2018.txt"
+        par=np.loadtxt(ParPath)
+        klb=0.5
+        kub=1
+        no_parameters=12
+        DistParFn=DP.par3dLumped
+        Path="parameters/"
+        snow=0
+        
+        SaveParameters(DistParFn, Raster, par, no_parameters,snow ,kub, klb,Path)
+    """
+    assert callable(DistParFn), " please check the function to distribute your parameters"
+    assert type(Raster)==gdal.Dataset, "raster should be read using gdal (gdal dataset please read it using gdal library) "
+    assert type(Par)==np.ndarray or type(Par)==list, "par_g should be of type 1d array or list"
+    assert type(No_parameters) == int, "No of parameters should be integer"
+    assert isinstance(kub,numbers.Number) , " kub should be a number"
+    assert isinstance(klb,numbers.Number) , " klb should be a number"
+    assert type(Path) == str, "path should be of type string"
+    assert os.path.exists(Path), Path + " you have provided does not exist"
+    
+    par2d=DistParFn(Par,Raster,No_parameters,kub,klb)
+    # save 
+    if snow == 0: # now snow subroutine
+        pnme=["01rfcf.tif","02FC.tif", "03BETA.tif", "04ETF.tif", "05LP.tif", "06CFLUX.tif", "07K.tif",
+              "08K1.tif","09ALPHA.tif", "10PERC.tif", "11Kmuskingum.tif", "12Xmuskingum.tif"]
+    else: # there is snow subtoutine 
+        pnme=["01ltt.tif", "02utt.tif", "03rfcf.tif", "04sfcf.tif", "05ttm.tif", "06cfmax.tif", "07cwh.tif",
+              "08cfr.tif", "09fc.tif", "10fc.tif", "11beta.tif","12etf.tif","13lp.tif","14cflux.tif",
+              "15k.tif","16k1.tif","17alpha.tif","18perc.tif"]
+        
+    if Path != None:
+        pnme=[Path+i for i in pnme]
+
+    for i in range(np.shape(par2d)[2]):
+        GIS.RasterLike(Raster,par2d[:,:,i],pnme[i])
