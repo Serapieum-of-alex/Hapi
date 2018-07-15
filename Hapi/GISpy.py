@@ -935,6 +935,7 @@ def RasterLike(src,array,path):
     assert type(array)==np.ndarray, "array should be of type numpy array"
     assert type(path)== str, "Raster_path input should be string type"
     # input values
+#    assert os.path.exists(path), path+ " you have provided does not exist"
     ext=path[-4:]
     assert ext == ".tif", "please add the extension at the end of the path input"
 #    assert os.path.exists(path), "source raster you have provided does not exist"
@@ -1209,6 +1210,7 @@ def MatchNoDataValue(src,dst):
     if elem_src > elem_dst :
         rows=[i for i in range(src_row) for j in range(src_col) if dst_array[i,j]==src_noval and src_array[i,j] != src_noval]
         cols=[j for i in range(src_row) for j in range(src_col) if dst_array[i,j]==src_noval and src_array[i,j] != src_noval]
+    # interpolate those missing cells by nearest neighbour
     if elem_src > elem_dst :
         dst_array = NearestNeighbour(dst_array, src_noval, rows, cols)
     
