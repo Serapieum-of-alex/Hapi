@@ -26,8 +26,8 @@ import GISpy as GIS
 import Wrapper
 
 
-def RunCalibration(Paths,p2,Q_obs,UB,LB,SpatialVarFun,SpatialVarArgs,
-                   objective_function,printError=None,*args):
+def RunCalibration(ConceptualModel, Paths, Basic_inputs, SpatialVarFun, SpatialVarArgs,
+                   OF, OF_args, Q_obs, OptimizationArgs, printError=None):
     """
     =======================================================================
         RunCalibration(Paths, p2, Q_obs, UB, LB, SpatialVarFun, lumpedParNo, lumpedParPos, objective_function, printError=None, *args):
@@ -43,25 +43,27 @@ def RunCalibration(Paths,p2,Q_obs,UB,LB,SpatialVarFun,SpatialVarArgs,
                 [String] path to the Folder contains Evapotranspiration rasters
             3-TempPath:
                 [String] path to the Folder contains Temperature rasters
-            4-DemPath:
-                [String] path to the DEM raster of the catchment (it should
-                include the raster name and extension)
-            5-FlowAccPath:
+            4-FlowAccPath:
                 [String] path to the Flow Accumulation raster of the catchment (it should
                 include the raster name and extension)
-            6-FlowDPath:
+            5-FlowDPath:
                 [String] path to the Flow Direction raster of the catchment (it should
                 include the raster name and extension)
-        2-p2:
-            [List] list of unoptimized parameters
-            p2[0] = tfac, 1 for hourly, 0.25 for 15 min time step and 24 for daily time step
-            p2[1] = catchment area in km2
+        
+        2-Basic_inputs:
+            1-p2:
+                [List] list of unoptimized parameters
+                p2[0] = tfac, 1 for hourly, 0.25 for 15 min time step and 24 for daily time step
+                p2[1] = catchment area in km2
+            2-init_st:
+                [list] initial values for the state variables [sp,sm,uz,lz,wc] in mm
+            3-UB:
+                [Numeric] upper bound of the values of the parameters
+            4-LB:
+                [Numeric] Lower bound of the values of the parameters
         3-Q_obs:
             [Numeric] Observed values of discharge 
-        4-UB:
-            [Numeric] upper bound of the values of the parameters
-        5-LB:
-            [Numeric] Lower bound of the values of the parameters
+        
         6-lumpedParNo:
             [int] nomber of lumped parameters, you have to enter the value of 
             the lumped parameter at the end of the list, default is 0 (no lumped parameters)
@@ -92,7 +94,6 @@ def RunCalibration(Paths,p2,Q_obs,UB,LB,SpatialVarFun,SpatialVarArgs,
         PrecPath = prec_path="meteodata/4000/calib/prec"
         Evap_Path = evap_path="meteodata/4000/calib/evap"
         TempPath = temp_path="meteodata/4000/calib/temp"
-        DemPath = "GIS/4000/dem4000.tif"
         FlowAccPath = "GIS/4000/acc4000.tif"
         FlowDPath = "GIS/4000/fd4000.tif"
         ParPath = "meteodata/4000/"+"parameters.txt"
@@ -100,25 +101,28 @@ def RunCalibration(Paths,p2,Q_obs,UB,LB,SpatialVarFun,SpatialVarArgs,
         st, q_out, q_uz_routed = RunModel(PrecPath,Evap_Path,TempPath,DemPath,
                                           FlowAccPath,FlowDPath,ParPath,p2)
     """
-    PrecPath=Paths[0]
-    Evap_Path=Paths[0]
-    TempPath=Paths[0]
-    DemPath=Paths[0]
-    FlowAccPath=Paths[0]
-    FlowDPath=Paths[0]
     ### inputs validation
-    
     # data type
+    
+    assert len(Paths) == 5, "Paths should include 5 folder pathes " +str(len(Paths))+" paths are only provided"
+    
+    PrecPath=Paths[0]
+    Evap_Path=Paths[1]
+    TempPath=Paths[2]
+#    DemPath=Paths[3]
+    FlowAccPath=Paths[3]
+    FlowDPath=Paths[4]
+    
     assert type(PrecPath)== str, "PrecPath input should be string type"
     assert type(Evap_Path)== str, "Evap_Path input should be string type"
     assert type(TempPath)== str, "TempPath input should be string type"
-    assert type(DemPath)== str, "DemPath input should be string type"
+#    assert type(DemPath)== str, "DemPath input should be string type"
     assert type(FlowAccPath)== str, "FlowAccPath input should be string type"
     assert type(FlowDPath)== str, "FlowDPath input should be string type"
     
     # input values
-    dem_ext=DemPath[-4:]
-    assert dem_ext == ".tif", "please add the extension at the end of the DEM raster path input"
+#    dem_ext=DemPath[-4:]
+#    assert dem_ext == ".tif", "please add the extension at the end of the DEM raster path input"
     acc_ext=FlowAccPath[-4:]
     assert acc_ext == ".tif", "please add the extension at the end of the Flow accumulation raster path input"
     fd_ext=FlowDPath[-4:]
@@ -128,7 +132,7 @@ def RunCalibration(Paths,p2,Q_obs,UB,LB,SpatialVarFun,SpatialVarArgs,
     assert os.path.exists(PrecPath), PrecPath + " you have provided does not exist"
     assert os.path.exists(Evap_Path), Evap_Path+" path you have provided does not exist"
     assert os.path.exists(TempPath), TempPath+" path you have provided does not exist"
-    assert os.path.exists(DemPath), DemPath+ " you have provided does not exist"
+#    assert os.path.exists(DemPath), DemPath+ " you have provided does not exist"
     assert os.path.exists(FlowAccPath), FlowAccPath + " you have provided does not exist"
     assert os.path.exists(FlowDPath), FlowDPath+ " you have provided does not exist"
     
@@ -137,11 +141,23 @@ def RunCalibration(Paths,p2,Q_obs,UB,LB,SpatialVarFun,SpatialVarArgs,
     assert len(os.listdir(Evap_Path)) > 0, Evap_Path+" folder you have provided is empty"
     assert len(os.listdir(TempPath)) > 0, TempPath+" folder you have provided is empty"
     
-    # check objective_function
-    assert callable(objective_function) , "second argument should be a function"
+    # basic inputs
+    # check if all inputs are included
+    assert all(["p2","init_st","UB","LB","snow "][i] in Basic_inputs.keys() for i in range(4)), "Basic_inputs should contain ['p2','init_st','UB','LB'] "
     
-    if args== None :
-        args=[]
+    p2 = Basic_inputs['p2']
+    init_st = Basic_inputs["init_st"]
+    UB = Basic_inputs['UB']
+    LB = Basic_inputs['LB']
+    snow = Basic_inputs['snow']
+    
+    assert len(UB)==len(LB), "length of UB should be the same like LB"
+    
+    # check objective_function
+    assert callable(OF) , "second argument should be a function"
+    
+    if OF_args== None :
+        OF_args=[]
     
     
     # read data
@@ -151,11 +167,11 @@ def RunCalibration(Paths,p2,Q_obs,UB,LB,SpatialVarFun,SpatialVarArgs,
     temp=GIS.ReadRastersFolder(TempPath)
     print("meteorological data are read successfully")
     #### GIS data
-    dem= gdal.Open(DemPath) 
+#    dem= gdal.Open(DemPath) 
     acc=gdal.Open(FlowAccPath)
     fd=gdal.Open(FlowDPath)
     print("GIS data are read successfully")
-    init_st=[0,5,5,5,0]
+    
     
     ### optimization
     # generate random parameters for the first run
@@ -168,27 +184,23 @@ def RunCalibration(Paths,p2,Q_obs,UB,LB,SpatialVarFun,SpatialVarArgs,
             klb=float(par[-2])
             kub=float(par[-1])
             par=par[:-2]
-            
-            # distribute the parameters to a 2d array
-            # SpatialVarArgs=[soil_type,no_parameters,lumpedParNo,lumped_par_pos]
-#            raster = SpatialVarArgs[0]
-#            no_parameters = SpatialVarArgs[1]
-#            lumpedParNo = SpatialVarArgs[2]
-#            lumpedParPos = SpatialVarArgs[3]
-            
+                        
             par_dist=SpatialVarFun(par,*SpatialVarArgs,kub=kub,klb=klb)    
             
             #run the model
-            _, q_out, q_uz_routed, q_lz_trans=Wrapper.Dist_model(dem,acc,fd,prec,evap,temp,par_dist,p2,init_st)
+            _, q_out, q_uz_routed, q_lz_trans=Wrapper.Dist_model(ConceptualModel,
+                                                                 acc, fd, prec, evap,
+                                                                 temp, par_dist, p2,
+                                                                 snow , init_st)
             
             # calculate performance of the model
             try:
-                error=objective_function(Q_obs,q_out,q_uz_routed,q_lz_trans,*args)
+                error=OF(Q_obs,q_out,q_uz_routed,q_lz_trans,*OF_args)
             except TypeError: # if no of inputs less than what the function needs
                 assert 1==5, "the objective function you have entered needs more inputs please enter then in a list as *args"
                 
             # print error
-            if printError != None:
+            if printError != 0:
                 print(error)
                 print(par)
             

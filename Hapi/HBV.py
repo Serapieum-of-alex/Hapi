@@ -240,7 +240,7 @@ def Soil(fc, beta, etf, temp, tm, e_corr, lp, tfac, c_flux, inf,
     '''
 
     qdr = max(sm_old + inf - fc, 0)  # direct run off as soil moisture exceeded the field capacity
-
+#    qdr=0
     inf = inf - qdr
     r = ((sm_old/fc)** beta) * inf   # recharge to the upper zone
     

@@ -12,7 +12,7 @@ import numpy as np
 import gdal
 
 # functions
-import DHBV_functions
+import DistParameters
 import HBV_Lake
 import DistRRM
 import Routing
@@ -28,7 +28,7 @@ def Dist_model_lake(data,p2,curve,lakecell,DEM,flow_acc,flow_acc_plan,sp_prec,sp
 #    Qobs=data[:,4]
     
     # distribute the parameters to a 2d array
-    jiboa_par,lake_par=DHBV_functions.par2d_lumpedK1_lake(sp_pars,DEM,12,13,kub,klb)
+    jiboa_par,lake_par=DistParameters.par2d_lumpedK1_lake(sp_pars,DEM,12,13,kub,klb)
     
     
     # lake simulation
@@ -49,7 +49,7 @@ def Dist_model_lake(data,p2,curve,lakecell,DEM,flow_acc,flow_acc_plan,sp_prec,sp
     return q_tot,q_lake,q_uz_routed, q_lz
 
 
-def Dist_model(DEM,flow_acc,flow_direct,sp_prec,sp_et,sp_temp,sp_par,p2,
+def Dist_model(ConceptualModel,flow_acc,flow_direct,sp_prec,sp_et,sp_temp,sp_par,p2, snow,
                     init_st,ll_temp=None, q_0=None):
     """
     =======================================================================
@@ -105,15 +105,17 @@ def Dist_model(DEM,flow_acc,flow_direct,sp_prec,sp_et,sp_temp,sp_par,p2,
     """
     ### input data validation
     # data type
-    assert type(DEM)==gdal.Dataset, "DEM should be read using gdal (gdal dataset please read it using gdal library) "
+#    assert type(DEM)==gdal.Dataset, "DEM should be read using gdal (gdal dataset please read it using gdal library) "
     assert type(flow_acc)==gdal.Dataset, "flow_acc should be read using gdal (gdal dataset please read it using gdal library) "
     assert type(flow_direct)==gdal.Dataset, "flow_direct should be read using gdal (gdal dataset please read it using gdal library) "
     
     # input dimensions
-    [rows,cols]=DEM.ReadAsArray().shape
-    [acc_rows,acc_cols]=flow_acc.ReadAsArray().shape
+#    [rows,cols]=DEM.ReadAsArray().shape
+#    [acc_rows,acc_cols]=flow_acc.ReadAsArray().shape
+    [rows,cols]=flow_acc.ReadAsArray().shape
     [fd_rows,fd_cols]=flow_direct.ReadAsArray().shape
-    assert acc_rows == rows and fd_rows == rows and acc_cols == cols and fd_cols == cols, "all input data should have the same number of rows"
+#    assert acc_rows == rows and fd_rows == rows and acc_cols == cols and fd_cols == cols, "all input data should have the same number of rows"
+    assert fd_rows == rows and fd_cols == cols, "all input data should have the same number of rows"
     
     # input values
     # check flow accumulation input raster
@@ -124,6 +126,7 @@ def Dist_model(DEM,flow_acc,flow_direct,sp_prec,sp_et,sp_temp,sp_par,p2,
     acc_val=list(set(acc_val))
     acc_val_mx=max(acc_val)
     assert acc_val_mx == no_elem or acc_val_mx == no_elem -1, "flow accumulation raster values are not correct max value should equal number of cells or number of cells -1"
+    
     # check flow direction input raster
     fd_noval=np.float32(flow_direct.GetRasterBand(1).GetNoDataValue())
     fd=flow_direct.ReadAsArray()
@@ -133,9 +136,9 @@ def Dist_model(DEM,flow_acc,flow_direct,sp_prec,sp_et,sp_temp,sp_par,p2,
     assert all(fd_val[i] in fd_should for i in range(len(fd_val))), "flow direction raster should contain values 1,2,4,8,16,32,64,128 only "
     
     # run the rainfall runoff model separately 
-    st, q_lz, q_uz = DistRRM.RunLumpedRRP(DEM,sp_prec=sp_prec, sp_et=sp_et, 
-                           sp_temp=sp_temp, sp_pars=sp_par, p2=p2, 
-                           init_st=init_st)
+    st, q_lz, q_uz = DistRRM.RunLumpedRRP(ConceptualModel,flow_acc, sp_prec=sp_prec, sp_et=sp_et, #DEM
+                                          sp_temp=sp_temp, sp_pars=sp_par, p2=p2, snow=snow,
+                                          init_st=init_st)
     # run the GIS part to rout from cell to another
     q_out, q_uz_routed, q_lz_trans = DistRRM.SpatialRouting(q_lz, q_uz,flow_acc,flow_direct,sp_par,p2)
     
