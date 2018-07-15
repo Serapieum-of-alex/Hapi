@@ -61,8 +61,9 @@ conda install --channel https://conda.anaconda.org/mutirri pyopt
 
 and gdal
 conda install gdal
-and the rest of the dependencies you can install them by typing
-python -m pip install -r requirements.txt
 
+and the rest of the dependencies you can install them by typing
+
+python -m pip install -r requirements.txt
 
 ```
