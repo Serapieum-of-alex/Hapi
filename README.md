@@ -44,6 +44,7 @@ if you are using conda
 git clone https://github.com/MAfarrag/HAPI
 
 # Enter the repository
+open comand prompt and type cd then the path to the repository
 cd Hapi
 
 # Create a virtualenv
@@ -55,12 +56,13 @@ that will create an environment named python2 that contain s Python2.7 version o
 conda activate Hapi_env
 
 # Install the dependencies
-python -m pip install -r requirements.txt
-
-in linux if you get an error because of gdal you can install or pyopt
-install it individually 
-conda install gdal
+there is some library that you have to install it from some conda channels and 
 conda install --channel https://conda.anaconda.org/mutirri pyopt
+
+and gdal
+conda install gdal
+and the rest of the dependencies you can install them by typing
+python -m pip install -r requirements.txt
 
 
 ```
