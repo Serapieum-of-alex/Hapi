@@ -59,11 +59,11 @@ conda activate Hapi_env
 # there is some library that you have to install it from some conda channels
 conda install Numpy
 conda install pandas
+conda install scipy
 conda install geopandas
 conda install shapely
 conda install --channel https://conda.anaconda.org/mutirri pyopt
 conda install gdal
 conda install fiona
-python -m pip install -r requirements.txt
 
 ```
