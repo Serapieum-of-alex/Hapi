@@ -4,8 +4,8 @@
 """
 from setuptools import setup, find_packages
 
-with open('requirement.txt') as f:
-    Dependencies = f.readlines()
+#with open('requirement.txt') as f:
+#    Dependencies = f.readlines()
 
 setup(
       name='Hapi',
@@ -15,7 +15,7 @@ setup(
       author_email='moah.farag@gmail.come',
       url='https://github.com/MAfarrag/HAPI',
       License="MIT" ,
-      install_requires=Dependencies,
+      #install_requires=Dependencies,
       packages=['Hapi'],
       zip_safe=False
      )
