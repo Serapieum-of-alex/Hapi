@@ -59,7 +59,8 @@ conda activate Hapi_env
 # there is some library that you have to install it from some conda channels and 
 conda install --channel https://conda.anaconda.org/mutirri pyopt
 conda install gdal
-
-#and the rest of the dependencies you can install them by typing
+conda install fiona
 python -m pip install -r requirements.txt
+
+
 ```
