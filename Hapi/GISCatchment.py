@@ -445,8 +445,8 @@ def NearestCell(Raster,StCoord):
     StCoord['cell_row']=np.nan
     StCoord['cell_col']=np.nan
     
-    rows=Raster.RasterXSize
-    cols=Raster.RasterYSize
+    rows=Raster.RasterYSize
+    cols=Raster.RasterXSize
     geo_trans = Raster.GetGeoTransform() # get the coordinates of the top left corner and cell size [x,dx,y,dy]
     # X_coordinate= upperleft corner x+ index* cell size+celsize/2
     coox=np.ones((rows,cols))
