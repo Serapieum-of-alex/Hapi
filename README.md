@@ -56,11 +56,14 @@ that will create an environment named python2 that contain s Python2.7 version o
 conda activate Hapi_env
 
 # Install the dependencies
-# there is some library that you have to install it from some conda channels and 
+# there is some library that you have to install it from some conda channels
+conda install Numpy
+conda install pandas
+conda install geopandas
+conda install shapely
 conda install --channel https://conda.anaconda.org/mutirri pyopt
 conda install gdal
 conda install fiona
 python -m pip install -r requirements.txt
-
 
 ```
