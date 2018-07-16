@@ -66,4 +66,9 @@ conda install --channel https://conda.anaconda.org/mutirri pyopt
 conda install gdal
 conda install fiona
 
+# after installing all dependencies to install Hapi 
+python setup.py install
+# iF you have more than one environment installed in you operating system 
+pathto_your_env\pyrhon setup.py install
+
 ```
