@@ -8,13 +8,13 @@ Created on Sat May 05 19:47:52 2018
 #%library
 import os
 import numpy as np
-import geopandas as gpd
+#import geopandas as gpd
 #from shapely.geometry.polygon import Polygon
 #from shapely.geometry.multipolygon import MultiPolygon
 import ogr
 import gdal
 import osr
-import rasterio
+#import rasterio
 from osgeo import gdalconst
 
 
@@ -689,128 +689,128 @@ def write_shapefile(poly, out_shp):
     ds = layer = feat = geom = None
 
 
-def ClipRasterWithPolygon(Raster_path,shapefile_path,save=False,output_path=None):
-    """
-    =========================================================================
-      ClipRasterWithPolygon(Raster_path, shapefile_path, output_path)
-    =========================================================================
-    this function clip a raster using polygon shapefile
-    
-    inputs:
-    ----------
-        1- Raster_path:
-            [String] path to the input raster including the raster extension (.tif)
-        2- shapefile_path:
-            [String] path to the input shapefile including the shapefile extension (.shp)
-        3-save:
-            [Boolen] True or False to decide whether to save the clipped raster or not
-            default is False
-        3- output_path:
-            [String] path to the place in your drive you want to save the clipped raster 
-            including the raster name & extension (.tif), default is None 
-    
-    Outputs:
-    ----------
-        1- projected_raster:
-            [gdal object] clipped raster 
-        2- if save is True function is going to save the clipped raster to the output_path
-    
-    EX:
-    ----------
-        import plotting_function as plf
-        Raster_path = r"data/Evaporation_ERA-Interim_2009.01.01.tif"
-        shapefile_path ="data/"+"Outline.shp"
-        clipped_raster=plf.ClipRasterWithPolygon(Raster_path,shapefile_path)
-        or 
-        output_path = r"data/cropped.tif"
-        clipped_raster=ClipRasterWithPolygon(Raster_path,shapefile_path,True,output_path)
-    """
-    # input data validation
-    # type of inputs
-    assert type(Raster_path)== str, "Raster_path input should be string type"
-    assert type(shapefile_path)== str, "shapefile_path input should be string type"
-    assert type(save)== bool , "save input should be bool type (True or False)"
-    if save == True:
-        assert type(output_path)== str," pleaase enter a path to save the clipped raster"
-    # inputs value
-    if save == True:
-        ext=output_path[-4:]
-        assert ext == ".tif", "please add the extention at the end of the output_path input"
-    
-    raster=gdal.Open(Raster_path)
-    proj=raster.GetProjection()
-    src_epsg=osr.SpatialReference(wkt=proj)
-    gt=raster.GetGeoTransform()
-    
-    # first check if the crs is GCS if yes check whether the long is greater than 180
-    # geopandas read -ve longitude values if location is west of the prime meridian 
-    # while rasterio and gdal not 
-    if src_epsg.GetAttrValue('AUTHORITY',1) == "4326" and gt[0] > 180:
-        # reproject the raster to web mercator crs 
-        raster=reproject_dataset(raster)
-        out_transformed = os.environ['Temp']+"/transformed.tif"    
-        # save the raster with the new crs
-        SaveRaster(raster,out_transformed)
-        raster = rasterio.open(out_transformed)
-    else:
-        # crs of the raster was not GCS or longitudes are less than 180
-        raster = rasterio.open(Raster_path)
-    
-    ### Cropping the raster with the shapefile
-    # read the shapefile
-    shpfile=gpd.read_file(shapefile_path)
-    # Re-project into the same coordinate system as the raster data
-    shpfile= shpfile.to_crs(crs=raster.crs.data)
-    
-    def getFeatures(gdf):
-        """Function to parse features from GeoDataFrame in such a manner that rasterio wants them"""
-        import json
-        return [json.loads(gdf.to_json())['features'][0]['geometry']]
-    
-    # Get the geometry coordinates by using the function.
-    coords=getFeatures(shpfile)
-    
-    out_img, out_transform = rasterio.mask.mask(raster=raster, shapes=coords, crop=True)
-    
-    # copy the metadata from the original data file.
-    out_meta = raster.meta.copy()
-    
-    # Next we need to parse the EPSG value from the CRS so that we can create
-    #a Proj4 string using PyCRS library (to ensure that the projection information is saved correctly).
-    #epsg_code=int(raster.crs.data['init'][5:])
-    
-    # Now we need to update the metadata with new dimensions, transform (affine) and CRS (as Proj4 text)
-    out_meta.update({"driver": "GTiff",
-                         "height": out_img.shape[1],
-                         "width": out_img.shape[2],
-                         "transform": out_transform,
-    #                     "crs": pycrs.parser.from_epsg_code(epsg_code).to_proj4()
-                    }
-                   )
-
-    # save the clipped raster.
-    temp_path = os.environ['Temp'] + "/cropped.tif"
-    with rasterio.open(temp_path,"w", **out_meta) as dest:
-        dest.write(out_img)
-
-    # close the transformed raster
-    raster.close()
-    # delete the transformed raster
-    os.remove(out_transformed)
-    # read the clipped raster
-    raster=gdal.Open(temp_path)
-    # reproject the clipped raster back to its original crs
-    projected_raster=project_raster(raster,int(src_epsg.GetAttrValue('AUTHORITY',1)))
-    # close the clipped raster
-    raster=None
-    
-    # delete the clipped raster
-    os.remove(temp_path)
-    # write the raster to the file
-    if save:
-        SaveRaster(projected_raster,output_path)
-    
-    return projected_raster
+#def ClipRasterWithPolygon(Raster_path,shapefile_path,save=False,output_path=None):
+#    """
+#    =========================================================================
+#      ClipRasterWithPolygon(Raster_path, shapefile_path, output_path)
+#    =========================================================================
+#    this function clip a raster using polygon shapefile
+#    
+#    inputs:
+#    ----------
+#        1- Raster_path:
+#            [String] path to the input raster including the raster extension (.tif)
+#        2- shapefile_path:
+#            [String] path to the input shapefile including the shapefile extension (.shp)
+#        3-save:
+#            [Boolen] True or False to decide whether to save the clipped raster or not
+#            default is False
+#        3- output_path:
+#            [String] path to the place in your drive you want to save the clipped raster 
+#            including the raster name & extension (.tif), default is None 
+#    
+#    Outputs:
+#    ----------
+#        1- projected_raster:
+#            [gdal object] clipped raster 
+#        2- if save is True function is going to save the clipped raster to the output_path
+#    
+#    EX:
+#    ----------
+#        import plotting_function as plf
+#        Raster_path = r"data/Evaporation_ERA-Interim_2009.01.01.tif"
+#        shapefile_path ="data/"+"Outline.shp"
+#        clipped_raster=plf.ClipRasterWithPolygon(Raster_path,shapefile_path)
+#        or 
+#        output_path = r"data/cropped.tif"
+#        clipped_raster=ClipRasterWithPolygon(Raster_path,shapefile_path,True,output_path)
+#    """
+#    # input data validation
+#    # type of inputs
+#    assert type(Raster_path)== str, "Raster_path input should be string type"
+#    assert type(shapefile_path)== str, "shapefile_path input should be string type"
+#    assert type(save)== bool , "save input should be bool type (True or False)"
+#    if save == True:
+#        assert type(output_path)== str," pleaase enter a path to save the clipped raster"
+#    # inputs value
+#    if save == True:
+#        ext=output_path[-4:]
+#        assert ext == ".tif", "please add the extention at the end of the output_path input"
+#    
+#    raster=gdal.Open(Raster_path)
+#    proj=raster.GetProjection()
+#    src_epsg=osr.SpatialReference(wkt=proj)
+#    gt=raster.GetGeoTransform()
+#    
+#    # first check if the crs is GCS if yes check whether the long is greater than 180
+#    # geopandas read -ve longitude values if location is west of the prime meridian 
+#    # while rasterio and gdal not 
+#    if src_epsg.GetAttrValue('AUTHORITY',1) == "4326" and gt[0] > 180:
+#        # reproject the raster to web mercator crs 
+#        raster=reproject_dataset(raster)
+#        out_transformed = os.environ['Temp']+"/transformed.tif"    
+#        # save the raster with the new crs
+#        SaveRaster(raster,out_transformed)
+#        raster = rasterio.open(out_transformed)
+#    else:
+#        # crs of the raster was not GCS or longitudes are less than 180
+#        raster = rasterio.open(Raster_path)
+#    
+#    ### Cropping the raster with the shapefile
+#    # read the shapefile
+#    shpfile=gpd.read_file(shapefile_path)
+#    # Re-project into the same coordinate system as the raster data
+#    shpfile= shpfile.to_crs(crs=raster.crs.data)
+#    
+#    def getFeatures(gdf):
+#        """Function to parse features from GeoDataFrame in such a manner that rasterio wants them"""
+#        import json
+#        return [json.loads(gdf.to_json())['features'][0]['geometry']]
+#    
+#    # Get the geometry coordinates by using the function.
+#    coords=getFeatures(shpfile)
+#    
+#    out_img, out_transform = rasterio.mask.mask(raster=raster, shapes=coords, crop=True)
+#    
+#    # copy the metadata from the original data file.
+#    out_meta = raster.meta.copy()
+#    
+#    # Next we need to parse the EPSG value from the CRS so that we can create
+#    #a Proj4 string using PyCRS library (to ensure that the projection information is saved correctly).
+#    #epsg_code=int(raster.crs.data['init'][5:])
+#    
+#    # Now we need to update the metadata with new dimensions, transform (affine) and CRS (as Proj4 text)
+#    out_meta.update({"driver": "GTiff",
+#                         "height": out_img.shape[1],
+#                         "width": out_img.shape[2],
+#                         "transform": out_transform,
+#    #                     "crs": pycrs.parser.from_epsg_code(epsg_code).to_proj4()
+#                    }
+#                   )
+#
+#    # save the clipped raster.
+#    temp_path = os.environ['Temp'] + "/cropped.tif"
+#    with rasterio.open(temp_path,"w", **out_meta) as dest:
+#        dest.write(out_img)
+#
+#    # close the transformed raster
+#    raster.close()
+#    # delete the transformed raster
+#    os.remove(out_transformed)
+#    # read the clipped raster
+#    raster=gdal.Open(temp_path)
+#    # reproject the clipped raster back to its original crs
+#    projected_raster=project_raster(raster,int(src_epsg.GetAttrValue('AUTHORITY',1)))
+#    # close the clipped raster
+#    raster=None
+#    
+#    # delete the clipped raster
+#    os.remove(temp_path)
+#    # write the raster to the file
+#    if save:
+#        SaveRaster(projected_raster,output_path)
+#    
+#    return projected_raster
 
 def resample_raster(src,cell_size,resample_technique="Nearest"):
     """
