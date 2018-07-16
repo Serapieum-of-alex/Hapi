@@ -1,6 +1,4 @@
 Numpy==1.13.3
-fiona==1.7.11
-gdal==2.2.2
 pandas==0.20.3
 geopandas==0.3.0
 shapely==1.6.2
