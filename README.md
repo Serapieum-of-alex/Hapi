@@ -56,14 +56,10 @@ that will create an environment named python2 that contain s Python2.7 version o
 conda activate Hapi_env
 
 # Install the dependencies
-there is some library that you have to install it from some conda channels and 
+# there is some library that you have to install it from some conda channels and 
 conda install --channel https://conda.anaconda.org/mutirri pyopt
-
-and gdal
 conda install gdal
 
-and the rest of the dependencies you can install them by typing
-
+#and the rest of the dependencies you can install them by typing
 python -m pip install -r requirements.txt
-
 ```
