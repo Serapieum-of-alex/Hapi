@@ -174,8 +174,15 @@ def RunCalibration(ConceptualModel, Paths, Basic_inputs, SpatialVarFun, SpatialV
     
     
     ### optimization
-    # generate random parameters for the first run
-#    par=np.random.uniform(LB, UB)
+    
+    # get arguments
+    store_history=OptimizationArgs[0]
+    history_fname=OptimizationArgs[1]
+    # check optimization arguement 
+    assert store_history !=0 or store_history != 1,"store_history should be 0 or 1"
+    assert type(history_fname) == str, "history_fname should be of type string "
+    assert history_fname[-4:] == ".txt", "history_fname should be txt file please change extension or add .txt ad the end of the history_fname"
+    
     print('Calibration starts')
     ### calculate the objective function
     def opt_fun(par):
@@ -219,7 +226,7 @@ def RunCalibration(ConceptualModel, Paths, Basic_inputs, SpatialVarFun, SpatialV
     print(opt_prob)
     
     opt_engine = ALHSO(etol=0.0001,atol=0.0001,rtol=0.0001, stopiters=10,
-                       hmcr=0.5,par=0.5,filename='mostafa.out')
+                       hmcr=0.5,par=0.5) #,filename='mostafa.out'
     
     Optimizer.__init__(opt_engine,def_options={
                     'hms':[int,9],					# Memory Size [1,50]
@@ -238,7 +245,7 @@ def RunCalibration(ConceptualModel, Paths, Basic_inputs, SpatialVarFun, SpatialV
                 		'prtinniter':[int,0],			# Number of Iterations Before Print Inner Loop Information
                 		'xinit':[int,0],				# Initial Position Flag (0 - no position, 1 - position given)
                 		'rinit':[float,1.0],			# Initial Penalty Factor
-                		'fileout':[int,1],				# Flag to Turn On Output to filename
+                		'fileout':[int,store_history],				# Flag to Turn On Output to filename
                 		'filename':[str,'parameters.txt'],	# We could probably remove fileout flag if filename or fileinstance is given
                 		'seed':[float,0.5],				# Random Number Seed (0 - Auto-Seed based on time clock)
                 		'scaling':[int,1],				# Design Variables Scaling Flag (0 - no scaling, 1 - scaling between [-1,1]) 
