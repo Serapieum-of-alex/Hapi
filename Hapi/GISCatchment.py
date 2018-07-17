@@ -410,7 +410,7 @@ def NearestCell(Raster,StCoord):
     ======================================================
        NearestCell(Raster,StCoord)
     ======================================================
-    this function calculatesthe the indices (row, col) of nearest cell in a given 
+    this function calculates the the indices (row, col) of nearest cell in a given 
     raster to a station 
     coordinate system of the raster has to be projected to be able to calculate
     the distance
