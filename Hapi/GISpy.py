@@ -918,15 +918,15 @@ def RasterLike(src,array,path,pixel_type=1):
         3- path:
             [String] path to save the new raster including new raster name and extension (.tif)
         4-pixel_type:
-            [integer] type of the data to be stored in the pixels, pixel type of 
-            flow direction raster is unsigned integer
+            [integer] type of the data to be stored in the pixels,default is 1 (float32)
+            for example pixel type of flow direction raster is unsigned integer
             1 for float32
             2 for float64
             3 for Unsigned integer 16
             4 for Unsigned integer 32
             5 for integer 16
             6 for integer 32
-    
+            
     outputs:
     ----------
         1- save the new raster to the given path
