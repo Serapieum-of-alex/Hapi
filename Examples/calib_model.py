@@ -21,13 +21,13 @@ import gdal
 #from pyOpt import Optimization, ALHSO,Optimizer
 
 # functions
-from Calibration import RunCalibration
-import HBV
+from Hapi.Calibration import RunCalibration
+import Hapi.HBV as HBV
 #import Wrapper
-import GISpy as GIS
-import GISCatchment as GC
-import DistParameters as DP
-import PerformanceCriteria as PC
+#import Hapi.GISpy as GIS
+import Hapi.GISCatchment as GC
+import Hapi.DistParameters as DP
+import Hapi.PerformanceCriteria as PC
 #import Inputs
 #%%
 
@@ -61,6 +61,9 @@ totaly distributed or totally distributed with some parameters are lumped
 for the whole catchment or HRUs or HRUs with some lumped parameters 
 for muskingum parameters k & x include the upper and lower bound in both 
 UB & LB with the order of Klb then kub 
+function inside the calibration algorithm is written as following
+par_dist=SpatialVarFun(par,*SpatialVarArgs,kub=kub,klb=klb)    
+
 """
 SpatialVarFun=DP.par3dLumped
 raster=gdal.Open(FlowAccPath)
@@ -81,14 +84,14 @@ Qobs =Qobs.loc[Sdate:Edate]
 Qobs[6] =np.loadtxt(path+"Discharge/Qout_c.txt")
 Qobs=Qobs.as_matrix()
 
-stations=pd.read_excel(path+"Discharge/Q.xlsx",sheetname="coordinates",convert_float=True)
-coordinates=stations[['id','x','y']][:]
+stations=pd.read_excel(path+"Discharge/stations/4000/Q.xlsx",sheetname="coordinates",convert_float=True)
+coordinates=stations[['id','x','y','weight']][:]
 
 # calculate the nearest cell to each station
 coordinates.loc[:,["cell_row","cell_col"]]=GC.NearestCell(raster,coordinates)
 
-#acc=gdal.Open(FlowAccPath ) 
-#acc_A=acc.ReadAsArray()
+acc=gdal.Open(FlowAccPath ) 
+acc_A=acc.ReadAsArray()
 # define the objective function and its arguments
 OF_args=[coordinates]
 
@@ -99,14 +102,17 @@ def OF(Qobs,Qout,q_uz_routed,q_lz_trans,coordinates):
         Quz=np.reshape(q_uz_routed[int(coordinates.loc[coordinates.index[i],"cell_row"]),int(coordinates.loc[coordinates.index[i],"cell_col"]),:-1],len(Qobs))
         Qlz=np.reshape(q_lz_trans[int(coordinates.loc[coordinates.index[i],"cell_row"]),int(coordinates.loc[coordinates.index[i],"cell_col"]),:-1],len(Qobs))
         Q=Quz+Qlz
-        all_errors.append(PC.RMSE(Qobs[:,i],Q))
+        all_errors.append((PC.RMSE(Qobs[:,i],Q))*coordinates.loc[coordinates.index[i],'weight'])
     #outlet observed discharge is at the end of the array
-    all_errors.append(PC.NSE(Qobs[:,-1],Qout))
+    all_errors.append((PC.RMSE(Qobs[:,-1],Qout))*coordinates.loc[coordinates.index[-1],'weight'])
+    print(all_errors)
     error=sum(all_errors)
     return error
 
 ### Optimization
-OptimizationArgs=[]
+store_history=1
+history_fname="par_history.txt"
+OptimizationArgs=[store_history,history_fname]
 #%%
 # run calibration                
 cal_parameters=RunCalibration(HBV, Paths, Basic_inputs,
@@ -121,4 +127,4 @@ klb=0.5
 kub=1
 Path="parameters/"
 
-DP.SaveParameters(SpatialVarFun, raster, par, no_parameters,snow ,kub, klb,Path)
+#DP.SaveParameters(SpatialVarFun, raster, par, no_parameters,snow ,kub, klb,Path)

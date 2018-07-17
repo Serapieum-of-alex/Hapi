@@ -69,7 +69,7 @@ par_dist=SpatialVarFun(par,*SpatialVarArgs,kub=kub,klb=klb)
 # [rfcf, fc, beta, etf, lp, c_flux, k, k1, alpha, perc] + [k,x]
 SpatialVarFun=DP.HRU
 raster=gdal.Open(path+"GIS/4000/subcatch_classes.tif")
-
+#raster_A=raster.ReadAsArray()
 no_parameters=12
 no_lumped_par=1
 lumped_par_pos=[7]
@@ -83,7 +83,10 @@ no_optimized_par=DP.ParametersNO(raster,no_parameters,no_lumped_par,1)
 
 SpatialVarArgs=[raster,no_parameters,no_lumped_par,lumped_par_pos]
 
+
+
 ### Objective function
+
 # stations discharge
 Sdate='2009-01-01'
 Edate='2011-12-31'
@@ -98,7 +101,7 @@ Qobs[6] =np.loadtxt(path+"Discharge/Qout_c.txt")
 Qobs=Qobs.as_matrix()
 
 stations=pd.read_excel(path+"Discharge/stations/4000/Q.xlsx",sheetname="coordinates",convert_float=True)
-coordinates=stations[['id','x','y']][:]
+coordinates=stations[['id','x','y','weight']][:]
 
 # calculate the nearest cell to each station
 coordinates.loc[:,["cell_row","cell_col"]]=GC.NearestCell(raster,coordinates)
@@ -115,15 +118,17 @@ def OF(Qobs,Qout,q_uz_routed,q_lz_trans,coordinates):
         Quz=np.reshape(q_uz_routed[int(coordinates.loc[coordinates.index[i],"cell_row"]),int(coordinates.loc[coordinates.index[i],"cell_col"]),:-1],len(Qobs))
         Qlz=np.reshape(q_lz_trans[int(coordinates.loc[coordinates.index[i],"cell_row"]),int(coordinates.loc[coordinates.index[i],"cell_col"]),:-1],len(Qobs))
         Q=Quz+Qlz
-        all_errors.append(PC.RMSE(Qobs[:,i],Q))
+        all_errors.append(PC.RMSE(Qobs[:,i],Q)*coordinates.loc[coordinates.index[i],'weight'])
     #outlet observed discharge is at the end of the array
-    all_errors.append(PC.RMSE(Qobs[:,-1],Qout))
+    all_errors.append((PC.RMSE(Qobs[:,-1],Qout))*coordinates.loc[coordinates.index[-1],'weight'])
     print(all_errors)
     error=sum(all_errors)
     return error
 
 ### Optimization
-OptimizationArgs=[]
+store_history=1
+history_fname="par_history.txt"
+OptimizationArgs=[store_history,history_fname]
 #%%
 # run calibration                
 cal_parameters=RunCalibration(HBV, Paths, Basic_inputs,
