@@ -3,6 +3,26 @@
 Lumped Conceptual HBV model
 ======
 
+HBV is lumped conceptual model consists of precipitation, snow melt,
+soil moisture and response subroutine to convert precipitation into o runoff,
+where state variables are updated each time step to represent a specific
+hydrologic behaviour the catchment
+
+This version was edited based on a Master Thesis on "Spatio-temporal simulation
+of catchment response based on dynamic weighting of hydrological models" on april 2018
+
+- Model inputs are Precipitation, evapotranspiration and temperature, initial
+    state variables, and initial discharge.
+- Model output is Qalculated dicharge at time t+1
+- Model equations are solved using explicit scheme 
+- model structure uses 18 parameters if the catchment has snow
+    [ltt, utt, rfcf, sfcf, ttm, cfmax, cwh, cfr, fc, beta, e_corr, etf, lp,
+    c_flux, k, k1, alpha, perc]
+    
+    otherwise it uses 10 parameters
+    [rfcf, fc, beta, etf, lp, c_flux, k, k1, alpha, perc]
+    
+    with the same rder
 """
 # libraries
 import numpy as np
@@ -240,7 +260,7 @@ def Soil(fc, beta, etf, temp, tm, e_corr, lp, tfac, c_flux, inf,
     '''
 
     qdr = max(sm_old + inf - fc, 0)  # direct run off as soil moisture exceeded the field capacity
-#    qdr=0
+
     inf = inf - qdr
     r = ((sm_old/fc)** beta) * inf   # recharge to the upper zone
     
