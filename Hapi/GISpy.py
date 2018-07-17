@@ -899,7 +899,7 @@ def resample_raster(src,cell_size,resample_technique="Nearest"):
 
     return dst
 
-def RasterLike(src,array,path):
+def RasterLike(src,array,path,pixel_type=1):
     """
     ====================================================================
       RasterLike(src,array,path)
@@ -917,6 +917,15 @@ def RasterLike(src,array,path):
             [numpy array]to store in the new raster
         3- path:
             [String] path to save the new raster including new raster name and extension (.tif)
+        4-pixel_type:
+            [integer] type of the data to be stored in the pixels, pixel type of 
+            flow direction raster is unsigned integer
+            1 for float32
+            2 for float64
+            3 for Unsigned integer 16
+            4 for Unsigned integer 32
+            5 for integer 16
+            6 for integer 32
     
     outputs:
     ----------
@@ -934,6 +943,7 @@ def RasterLike(src,array,path):
     assert type(src)==gdal.Dataset, "src should be read using gdal (gdal dataset please read it using gdal library) "
     assert type(array)==np.ndarray, "array should be of type numpy array"
     assert type(path)== str, "Raster_path input should be string type"
+    assert type(pixel_type)== int, "pixel type input should be integer type please check documentations"
     # input values
 #    assert os.path.exists(path), path+ " you have provided does not exist"
     ext=path[-4:]
@@ -945,7 +955,19 @@ def RasterLike(src,array,path):
     rows=src.RasterYSize
     gt=src.GetGeoTransform()
     noval=src.GetRasterBand(1).GetNoDataValue()
-    outputraster=gdal.GetDriverByName('GTiff').Create(path,cols,rows,1,gdal.GDT_Float32)
+    if pixel_type==1:
+        outputraster=gdal.GetDriverByName('GTiff').Create(path,cols,rows,1,gdal.GDT_Float32)
+    elif pixel_type==2: 
+        outputraster=gdal.GetDriverByName('GTiff').Create(path,cols,rows,1,gdal.GDT_Float64)
+    elif pixel_type==3: 
+        outputraster=gdal.GetDriverByName('GTiff').Create(path,cols,rows,1,gdal.GDT_UInt16)
+    elif pixel_type==4: 
+        outputraster=gdal.GetDriverByName('GTiff').Create(path,cols,rows,1,gdal.GDT_UInt32)
+    elif pixel_type==5: 
+        outputraster=gdal.GetDriverByName('GTiff').Create(path,cols,rows,1,gdal.GDT_Int16)
+    elif pixel_type==6: 
+        outputraster=gdal.GetDriverByName('GTiff').Create(path,cols,rows,1,gdal.GDT_Int32)
+        
     outputraster.SetGeoTransform(gt)
     outputraster.SetProjection(prj)
     outputraster.GetRasterBand(1).SetNoDataValue(noval)
