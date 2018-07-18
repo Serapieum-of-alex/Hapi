@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sat May 05 19:47:52 2018
+GISpy contains python functions to handle raster data align them together 
+based on a source raster, perform any algebric operation on cell's values
 
 @author: Mostafa
 """
@@ -17,6 +18,28 @@ import osr
 #import rasterio
 from osgeo import gdalconst
 
+
+
+def GetRasterData(Raster):
+    """
+    =====================================================
+        GetRasterData(Raster)
+    =====================================================
+    to create a mask by knowing the stored value inside novalue cells 
+    
+    Inputs:
+    ----------
+        1- flow path lenth raster
+    
+    Outputs:
+    ----------
+        1- mask:array with all the values in the flow path length raster
+        2- no_val: value stored in novalue cells
+    """
+    
+    no_val = np.float32(Raster.GetRasterBand(1).GetNoDataValue()) # get the value stores in novalue cells
+    mask = Raster.ReadAsArray() # read all values
+    return mask, no_val
 
 
 def NearestNeighbour(array, Noval, rows, cols):
@@ -926,7 +949,7 @@ def RasterLike(src,array,path,pixel_type=1):
             4 for Unsigned integer 32
             5 for integer 16
             6 for integer 32
-            
+    
     outputs:
     ----------
         1- save the new raster to the given path
