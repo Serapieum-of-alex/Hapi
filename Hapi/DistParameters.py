@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sat Apr 28 21:21:41 2018
+DistParameters contains functions that is responible for distributing parameters
+spatially (totally distributed, totally distriby-uted with some parameters lumped,
+all parameters are lumped, hydrologic response units) and also save generated parameters 
+into rasters 
 
 @author: Mostafa
 """
+
 # library
-import pickle
 import numbers
 import numpy as np
 import os
@@ -16,82 +19,27 @@ import GISCatchment as GC
 
 
 # functions
-def save_obj(obj, saved_name ):
-    """
-    ===============================================================
-        save_obj(obj, saved_name )
-    ===============================================================
-    this function is used to save any python object to your hard desk
-    
-    Inputs:
-    ----------
-        1-obj:
-            
-        2-saved_name:
-            ['String'] name of the object 
-    Outputs:    
-    ----------
-        the object will be saved to the given path/current working directory
-        with the given name
-    Example:
-        data={"key1":[1,2,3,5],"key2":[6,2,9,7]}
-        save_obj(data,path+'/flow_acc_table')
-    """
-    with open( saved_name + '.pkl', 'wb') as f:
-        pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
-
-
-def load_obj(saved_name):
-    """
-    ===============================================================
-        load_obj(saved_name)
-    ===============================================================
-    this function is used to save any python object to your hard desk
-    
-    Inputs:
-    ----------
-        1-saved_name:
-            ['String'] name of the object
-    Outputs:    
-    ----------
-        the object will be loaded
-    Example:
-        load_obj(path+'/flow_acc_table')
-    """
-    with open( saved_name + '.pkl', 'rb') as f:
-        return pickle.load(f)
-
-
-def get_raster_data(dem):
-    """
-    _get_mask(dem)
-    to create a mask by knowing the stored value inside novalue cells 
-    Inputs:
-        1- flow path lenth raster
-    Outputs:
-        1- mask:array with all the values in the flow path length raster
-        2- no_val: value stored in novalue cells
-    """
-    no_val = np.float32(dem.GetRasterBand(1).GetNoDataValue()) # get the value stores in novalue cells
-    mask = dem.ReadAsArray() # read all values
-    return mask, no_val
-
 def calculateK(x,position,UB,LB):
-    '''
-    calculateK(x,position,UB,LB):
-        this function takes value of x parameter and generate 100 random value of k parameters between
-        upper & lower constraint then the output will be the value coresponding to the giving position
+    """
+    ===================================================
+        calculateK(x,position,UB,LB):
+    ===================================================
         
-        Inputs:
-            1- x weighting coefficient to determine the linearity of the water surface
-                (one of the parameters of muskingum routing method)
-            2- position 
-                random position between upper and lower bounds of the k parameter
-            3-UB 
-                upper bound for k parameter
-            3-LB 
-                Lower bound for k parameter
-    '''
+    this function takes value of x parameter and generate 100 random value of k parameters between
+    upper & lower constraint then the output will be the value coresponding to the giving position
+    
+    Inputs:
+    ----------
+        1- x weighting coefficient to determine the linearity of the water surface
+            (one of the parameters of muskingum routing method)
+        2- position 
+            random position between upper and lower bounds of the k parameter
+        3-UB 
+            upper bound for k parameter
+        3-LB 
+            Lower bound for k parameter
+    """
+    
     constraint1=0.5*1/(1-x) # k has to be smaller than this constraint
     constraint2=0.5*1/x   # k has to be greater than this constraint
     
@@ -115,6 +63,7 @@ def par2d_lumpedK1_lake(par_g,raster,no_parameters,no_parameters_lake,kub,klb):
     given by a raster 
     
     Inputs :
+    ----------
         1- par_g
             list of parameters
         2- raster
@@ -127,10 +76,14 @@ def par2d_lumpedK1_lake(par_g,raster,no_parameters,no_parameters_lake,kub,klb):
             upper bound of K value (traveling time in muskingum routing method)
         6- klb
             Lower bound of K value (traveling time in muskingum routing method)
+    
     Output:
+    ----------
         1- par_2d: 3D array of the parameters distributed horizontally on the cells
         2- lake_par: list of the lake parameters.
+        
     Example:
+    ----------
         a list of 155 value,all parameters are distributed except lower zone coefficient
         (is written at the end of the list) each cell(14 cells) has 11 parameter plus lower zone
         (12 parameters) function will take each 11 parameter and assing them to a specific cell
