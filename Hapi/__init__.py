@@ -39,7 +39,7 @@ import Routing
 import RUN
 import StatisticalTools
 import Wrapper
-import Weird_Fn
+import WeirdFn
 
 
 # module level doc-string
