@@ -649,7 +649,7 @@ def SaveParameters(DistParFn, Raster, Par, No_parameters, snow, kub, klb,
         SaveParameters(DistParFn, Raster, Par, No_parameters, snow, kub, klb, Path=None)
     ============================================================
     this function takes generated parameters by the calibration algorithm, 
-    distributed them with a given function and save them asrasters
+    distributed them with a given function and save them as a rasters
     
     Inputs:
     ----------
