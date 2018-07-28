@@ -32,6 +32,7 @@ import GISpy
 import GISVisual
 import HBV
 import HBV_Lake
+import HBVLumped
 import Inputs
 import java_functions
 import PerformanceCriteria
@@ -39,7 +40,7 @@ import Routing
 import RUN
 import StatisticalTools
 import Wrapper
-import WeirdFn
+import Weird_Fn
 
 
 # module level doc-string
