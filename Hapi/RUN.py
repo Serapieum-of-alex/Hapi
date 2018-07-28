@@ -111,7 +111,7 @@ def RunModel(ConceptualModel, Paths, ParPath, p2, init_st, snow):
     assert os.path.exists(FlowAccPath), FlowAccPath + " you have provided does not exist"
     assert os.path.exists(FlowDPath), FlowDPath+ " you have provided does not exist"
     # check wether the folder has the rasters or not 
-q    assert len(os.listdir(PrecPath)) > 0, PrecPath+" folder you have provided is empty"
+    assert len(os.listdir(PrecPath)) > 0, PrecPath+" folder you have provided is empty"
     assert len(os.listdir(Evap_Path)) > 0, Evap_Path+" folder you have provided is empty"
     assert len(os.listdir(TempPath)) > 0, TempPath+" folder you have provided is empty"
     
