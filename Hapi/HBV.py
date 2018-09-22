@@ -21,8 +21,6 @@ of catchment response based on dynamic weighting of hydrological models" on apri
     
     otherwise it uses 10 parameters
     [rfcf, fc, beta, etf, lp, c_flux, k, k1, alpha, perc]
-    
-    with the same rder
 """
 # libraries
 import numpy as np
@@ -77,7 +75,7 @@ DEF_q0 = 0
 
 
 def Precipitation(temp, ltt, utt, prec, rfcf, sfcf, tfac):
-    '''
+    """
     ==============
     Precipitation
     ==============
@@ -110,7 +108,7 @@ def Precipitation(temp, ltt, utt, prec, rfcf, sfcf, tfac):
         Rainfall [mm]
     _sf : float
         Snowfall [mm]
-    '''
+    """
 
     if temp <= ltt:  # if temp <= lower temp threshold 
         rf = 0.0         #no rainfall all the precipitation will convert into snowfall
@@ -129,7 +127,7 @@ def Precipitation(temp, ltt, utt, prec, rfcf, sfcf, tfac):
 
 
 def Snow(cfmax, tfac, temp, ttm, cfr, cwh, rf, sf, wc_old, sp_old):
-    '''
+    """
     ====
     Snow
     ====
@@ -175,7 +173,7 @@ def Snow(cfmax, tfac, temp, ttm, cfr, cwh, rf, sf, wc_old, sp_old):
         Water content in posterior state [mm]
     _sp_new : float 
         Snowpack in posterior state [mm]
-    '''
+    """
 
     if temp > ttm:# if temp > melting threshold
         # then either some snow will melt or the entire snow will melt 
@@ -210,10 +208,10 @@ def Snow(cfmax, tfac, temp, ttm, cfr, cwh, rf, sf, wc_old, sp_old):
 
 def Soil(fc, beta, etf, temp, tm, e_corr, lp, tfac, c_flux, inf,
           ep, sm_old, uz_old):
-    '''
-    ====
-    Soil
-    ====
+    """
+    ============================================================
+        Soil(fc, beta, etf, temp, tm, e_corr, lp, tfac, c_flux, inf, ep, sm_old, uz_old)
+    ============================================================
     
     Soil routine of the HBV-96 model.
     
@@ -257,7 +255,7 @@ def Soil(fc, beta, etf, temp, tm, e_corr, lp, tfac, c_flux, inf,
         New value of soil moisture
     uz_int_1 : float 
         New value of direct runoff into upper zone
-    '''
+    """
 
     qdr = max(sm_old + inf - fc, 0)  # direct run off as soil moisture exceeded the field capacity
 
@@ -287,10 +285,10 @@ def Soil(fc, beta, etf, temp, tm, e_corr, lp, tfac, c_flux, inf,
 
 
 def Response(tfac, perc, alpha, k, k1, area, lz_old, uz_int_1):
-    '''
-    ========
-    Response
-    ========
+    """
+    ============================================================
+        Response(tfac, perc, alpha, k, k1, area, lz_old, uz_int_1)
+    ============================================================
     The response routine of the HBV-96 model.
     
     The response routine is in charge of transforming the current values of 
@@ -319,7 +317,7 @@ def Response(tfac, perc, alpha, k, k1, area, lz_old, uz_int_1):
     qdr : float
         Direct runoff [mm]
     
-    '''    
+    """
     # upper zone 
     # if perc > Quz then perc = Quz and Quz = 0 if not perc = value and Quz= Quz-perc so take the min 
     uz_int_2 = np.max([uz_int_1 - perc, 0.0])
@@ -386,11 +384,11 @@ def Routing(q, maxbas=1):
     return q_r
 
 
-def StepRun(p, p2, v, St, snow=0, extra_out=False):
-    '''
-    ========
-    Step run
-    ========
+def StepRun(p, p2, v, St, snow=0):
+    """
+    ============================================================
+        StepRun(p, p2, v, St, snow=0)
+    ============================================================
     
     Makes the calculation of next step of discharge and states
     
@@ -416,7 +414,7 @@ def StepRun(p, p2, v, St, snow=0, extra_out=False):
         Discharge [m3/s]
     St : array_like [5]
         Posterior model states
-    '''
+    """
     ## Parse of parameters from input vector to model
     #picipitation function
     if snow==1:
@@ -500,94 +498,12 @@ def StepRun(p, p2, v, St, snow=0, extra_out=False):
     return q_uz, q_lz, [sp_new, sm_new, uz_new, lz_new, wc_new]
 
 
-#def simulate(avg_prec, temp, et, par, p2, init_st=None, ll_temp=None, 
-#             q_0=DEF_q0, extra_out=False):
-#    """
-#    ===================================================
-#       Simulate
-#    ===================================================
-#    
-#
-#    Run the HBV model for the number of steps (n) in precipitation. The
-#    resluts are (n+1) simulation of discharge as the model calculates step n+1
-#
-#    
-#    Parameters
-#    ----------
-#    avg_prec : array_like [n]
-#        Average precipitation [mm/h]
-#    temp : array_like [n]
-#        Average temperature [C]
-#    et : array_like [n]
-#        Potential Evapotranspiration [mm/h]
-#    par : array_like [18]
-#        Parameter vector, set up as:
-#        [ltt, utt, ttm, cfmax, fc, ecorr, etf, lp, k, k1, 
-#        alpha, beta, cwh, cfr, c_flux, perc, rfcf, sfcf]
-#    p2 : array_like [2]
-#        Problem parameter vector setup as:
-#        [tfac, area]
-#    init_st : array_like [5], optional
-#        Initial model states, [sp, sm, uz, lz, wc]. If unspecified, 
-#        [0.0, 30.0, 30.0, 30.0, 0.0] mm
-#    ll_temp : array_like [n], optional
-#        Long term average temptearature. If unspecified, calculated from temp.
-#    q_0 : float, optional
-#        Initial discharge value. If unspecified set to 10.0
-#    
-#
-#    Returns
-#    -------
-#    q_sim : array_like [n]
-#        Discharge for the n time steps of the precipitation vector [m3/s]
-#    st : array_like [n, 5]
-#        Model states for the complete time series [mm]
-#    """
-#
-#    if init_st is None:
-#        st = [DEF_ST, ]
-#    else:
-#        st = [init_st,]
-#
-#    if ll_temp is None:
-#        ll_temp = [np.mean(temp), ] * len(avg_prec)
-#
-##    q_sim = [q_0, ]
-#    q_sim = [ ]
-#    
-#    #print(st)                0  1  2  3  4  5
-#    uz_int_2 = [st[0][2], ] #[sp,sm,uz,lz,wc,LA]
-#    lz_int_1 = [st[0][3], ]
-#    
-#    
-#    for i in range(len(avg_prec)):
-##    for i in xrange(4):
-#        v = [avg_prec[i], temp[i], et[i], ll_temp[i]]
-#        q_out, st_out, uz_int_2_out, lz_int_1_out = StepRun(par, p2, v, st[i])
-#        q_sim.append(q_out)
-#        st.append(st_out)
-#        uz_int_2.append(uz_int_2_out) # upper zone - perc
-#        lz_int_1.append(lz_int_1_out) # lower zone + perc
-#    
-##    maxbas = par[-1]
-#    
-##    q_tr = _routing(np.array(q_sim), maxbas)
-#    q_tr =0
-#    
-#    if extra_out:
-#        return q_tr, st, uz_int_2, lz_int_1
-#    
-#    else:
-#        return q_tr, st
-
-
 def Simulate(prec, temp, et, par, p2, init_st=None, ll_temp=None, 
-             q_0=DEF_q0, snow=0): #, extra_out=False
-    """
-    ========
-    Simulate
-    ========
-
+             q_0=None, snow=0):
+    """    
+    ================================================================
+        Simulate(prec, temp, et, par, p2, init_st=None, ll_temp=None, q_0=None, snow=0):
+    ================================================================
     Run the HBV model for the number of steps (n) in precipitation. The
     resluts are (n+1) simulation of discharge as the model calculates step n+1
 
@@ -638,7 +554,6 @@ def Simulate(prec, temp, et, par, p2, init_st=None, ll_temp=None,
     if ll_temp is None:
         ll_temp = [np.mean(temp), ] * len(prec)
 
-#    q_sim = [q_0, ]
     if q_0 == None:
         if snow == 0:
             q_uz=[par[6]*((st[0][2])**(1.0 + par[8])), ]
