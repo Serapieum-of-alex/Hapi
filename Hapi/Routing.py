@@ -13,7 +13,7 @@ Created on Sun Apr 29 17:42:04 2018
 import numpy as np
 
 
-# functions
+
 
 
 def muskingum(inflow,Qinitial,k,x,dt):
@@ -68,9 +68,9 @@ def muskingum(inflow,Qinitial,k,x,dt):
 
 def Tf(maxbas):
     """
-    =================================================
+    =======================================
          Tf(maxbas)
-    =================================================
+    =======================================
     Transfer function weight generator in a shape of a triangle
     
     Inputs:
@@ -130,6 +130,7 @@ def TriangularRouting(q, maxbas=1):
     ----------
         q_sim=TriangularRouting(np.array(q_sim), parameters[-1])
     """
+    # input data validation
     assert maxbas >= 1, 'Maxbas value has to be larger than 1'
     
     # Get integer part of maxbas
@@ -240,21 +241,25 @@ def CalculateMaxBas(MAXBAS):
 
 def RoutingMAXBAS(Q,MAXBAS):
     """
+    ====================================================
+         RoutingMAXBAS(Q,MAXBAS)
+    ====================================================
     This function calculate the routing from a input hydrograph using 
     the MAXBAS parameter from the HBV model.
-    EXAMPLE: 
     
-    [Qout,maxbasW]=RoutingMAXBAS(Q,5);
-    where:
-    Qout = output hydrograph
-    maxbasW = MAXBAS weight
-    Q = input hydrograph
-    5 = MAXBAS parameter value.
+    EXAMPLE: 
+    ----------
+        [Qout,maxbasW]=RoutingMAXBAS(Q,5);
+        where:
+        Qout = output hydrograph
+        maxbasW = MAXBAS weight
+        Q = input hydrograph
+        5 = MAXBAS parameter value.
     """
     
     # CALCULATE MAXBAS WEIGHTS
-    
     maxbasW = CalculateMaxBas(MAXBAS);
+    
     Qw=np.ones((len(Q),len(maxbasW)))
     # Calculate the matrix discharge
     for i in range(len(Q)): # 0 to 10 

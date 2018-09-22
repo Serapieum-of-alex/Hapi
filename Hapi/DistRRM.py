@@ -151,10 +151,10 @@ def Dist_HBV2(lakecell,q_lake,DEM,flow_acc,flow_acc_plan, sp_prec, sp_et, sp_tem
 
 
 def RunLumpedRRP(ConceptualModel,Raster, sp_prec, sp_et, sp_temp, sp_pars, p2, snow, init_st=None, 
-                ll_temp=None, q_0=None):
+                ll_temp=None, q_init=None):
     """
     ========================================================================
-      RunLumpedRRP(Raster,sp_prec,sp_et,sp_temp,sp_pars,p2,init_st,ll_temp,q_0)
+      RunLumpedRRP(Raster,sp_prec,sp_et,sp_temp,sp_pars,p2,init_st,ll_temp,q_init)
     ========================================================================
     
     this function runs the rainfall runoff lumped model (HBV, GR4,...) separately 
@@ -190,7 +190,7 @@ def RunLumpedRRP(ConceptualModel,Raster, sp_prec, sp_et, sp_temp, sp_pars, p2, s
             [list] initial state variables values [sp, sm, uz, lz, wc]. default=None
         9-ll_temp:
             [numpy array] 3d array of the long term average temperature data
-        10-q_0:
+        10-q_init:
             [float] initial discharge m3/s
     Outputs:
     ----------
@@ -232,8 +232,8 @@ def RunLumpedRRP(ConceptualModel,Raster, sp_prec, sp_et, sp_temp, sp_pars, p2, s
         assert type(init_st)==list, "init_st should be of type list"
     if ll_temp != None:
         assert type(ll_temp)==np.ndarray, "init_st should be of type list"
-    if q_0 != None:
-        assert type(q_0)==float, "init_st should be of type list"
+    if q_init != None:
+        assert type(q_init)==float, "init_st should be of type list"
     
     # input dimensions
     [rows,cols]=Raster.ReadAsArray().shape
@@ -283,7 +283,7 @@ def RunLumpedRRP(ConceptualModel,Raster, sp_prec, sp_et, sp_temp, sp_pars, p2, s
                                                                  p2 = p2, 
                                                                  init_st = init_st, 
                                                                  ll_temp = None, 
-                                                                 q_0 = q_0, 
+                                                                 q_init = q_init, 
                                                                  snow=0) #extra_out = True
                 except:
                     print("conceptual model argument are not correct")
