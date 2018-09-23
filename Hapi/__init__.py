@@ -42,7 +42,6 @@ import HBV
 import HBV_Lake
 import HBVLumped
 import HBVBergestrom92
-import HBVBergestrom92_lumped
 
 
 # module level doc-string
