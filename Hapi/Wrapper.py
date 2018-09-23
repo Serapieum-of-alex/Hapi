@@ -206,11 +206,17 @@ def Lumped(ConceptualModel,data,parameters,p2,init_st,snow,Routing=0, RoutingFn=
     t=data[:,2]
     tm=data[:,3]
     
-    q_sim, st = ConceptualModel.Simulate(p, t, et, parameters, p2, 
+    # from the conceptual model calculate the upper and lower response mm/time step
+    
+    q_uz, q_lz, st = ConceptualModel.Simulate(p, t, et, parameters, p2, 
                                                  init_st = init_st, 
                                                  ll_temp = tm,
-                                                 q_0=None,
-                                                 snow=0)
+                                                 q_init = None,
+                                                 snow = 0)
+    q_uz = q_uz*p2[1]/(p2[0]*3.6) # q mm , area sq km  (1000**2)/1000/f/60/60 = 1/(3.6*f)
+    q_lz = q_lz*p2[1]/(p2[0]*3.6) # if daily tfac=24 if hourly tfac=1 if 15 min tfac=0.25
+    
+    q_sim = q_uz + q_lz
     
     if Routing != 0 :
         q_sim=RoutingFn(np.array(q_sim[:-1]), parameters[-1])

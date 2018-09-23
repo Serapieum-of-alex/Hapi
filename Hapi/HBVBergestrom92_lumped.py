@@ -369,7 +369,9 @@ def Response(tfac, lz_old, uz_int_1, perc, k, k1, k2, uzl):
     lz_new = lz_int_1 - (q_2)
     
     q_uz=q_0+q_1
-#    q_new = area*(q_0 + q_1)/(3.6*tfac)  # q mm , area sq km  (1000**2)/1000/f/60/60 = 1/(3.6*f)
+    
+    # convert the discharge to m3/sec
+#    q_m3sec = area*(q_0 + q_1 + q_2)/(3.6*tfac)  # q mm , area sq km  (1000**2)/1000/f/60/60 = 1/(3.6*f)
                                                     # if daily tfac=24 if hourly tfac=1 if 15 min tfac=0.25
 
 #    return q_new, uz_new, lz_new, uz_int_2, lz_int_1
@@ -378,19 +380,35 @@ def Response(tfac, lz_old, uz_int_1, perc, k, k1, k2, uzl):
 
 def Tf(maxbas):
     """
-     ====================================================
+    =======================================
          Tf(maxbas)
-     ====================================================
-    Transfer function weight generator 
+    =======================================
+    Transfer function weight generator in a shape of a triangle
     
+    Inputs:
+    ----------
+        1-maxbas:
+            [integer] number of time steps that the triangular routing function
+            is going to divide the discharge into, based on the weights
+            generated from this function, min value is 1 and default value is 1
+        
+    Outputs:
+    ----------
+        1-wi:
+            [numpy array] array of normalised weights 
+    
+    Example:
+    ----------
+        ws=Tf(5)
     """
+    
     wi = []
-    for x in range(1, maxbas+1):
-        if x <= (maxbas)/2.0:
-            # Growing transfer
+    for x in range(1, maxbas+1): # if maxbas=3 so x=[1,2,3]
+        if x <= (maxbas)/2.0:   # x <= 1.5  # half of values will form the rising limb and half falling limb
+            # Growing transfer    # rising limb
             wi.append((x)/(maxbas+2.0))
         else:
-            # Receding transfer
+            # Receding transfer    # falling limb
             wi.append(1.0 - (x+1)/(maxbas+2.0))
     
     #Normalise weights
@@ -398,17 +416,36 @@ def Tf(maxbas):
     return wi
 
 
-def Routing(q, maxbas=1):
+def TriangularRouting(q, maxbas=1):
     """
-    ==================================================
-        Routing(q, maxbas=1)
-    ==================================================
+    ==========================================================
+         TriangularRouting(q, maxbas=1)
+    ==========================================================
     This function implements the transfer function using a triangular 
     function
+    
+    Inputs:
+    ----------
+        1-q:
+            [numpy array] time series of discharge hydrographs
+        2-maxbas:
+            [integer] number of time steps that the triangular routing function
+            is going to divide the discharge into, based on the weights
+            generated from this function, min value is 1 and default value is 1
+    
+    Outputs:
+    ----------
+        1-q_r:
+            [numpy array] time series of routed hydrograph
+    
+    Examples:
+    ----------
+        q_sim=TriangularRouting(np.array(q_sim), parameters[-1])
     """
+    # input data validation
     assert maxbas >= 1, 'Maxbas value has to be larger than 1'
+    
     # Get integer part of maxbas
-#    maxbas = int(maxbas)
     maxbas = int(round(maxbas,0))
     
     # get the weights
