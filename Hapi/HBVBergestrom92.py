@@ -22,7 +22,7 @@ of catchment response based on dynamic weighting of hydrological models" on apri
     otherwise it uses 10 parameters
     [rfcf, fc, beta, etf, lp, c_flux, k, k1, alpha, perc]
 
-this HBV is based on Bergström, 1992 two reservoirs with three linear responses
+this HBV is based on Bergstrom, 1992 two reservoirs with three linear responses
 surface runoff, interflow and baseflow
 """
 # libraries
@@ -85,7 +85,7 @@ def Precipitation(prec, temp, tt, rfcf, sfcf):
 
     Precipitaiton routine of the HBV96 model.
 
-    If temperature is lower than TT [°C], all the precipitation is considered as
+    If temperature is lower than TT [degree C], all the precipitation is considered as
     snow. If the temperature is higher than tt, all the precipitation is
     considered as rainfall.
 
@@ -480,7 +480,7 @@ def StepRun(p, p2, v, St, snow=0):
         perc = p[15]
         
     elif snow == 0:
-        assert len(p) == 11, "current version of HBV (without snow) takes 11 parameter you have entered "+str(len(p))
+        assert len(p) >= 11, "current version of HBV (without snow) takes 11 parameter you have entered "+str(len(p))
         tt = 2.0     # very low but it does not matter as temp is 25 so it is greater than 2
         rfcf =p[0]    # 1.0 #p[16] # all precipitation becomes rainfall
         sfcf = 0.00001  # there is no snow
@@ -594,16 +594,16 @@ def Simulate(prec, temp, et, par, p2, init_st=None, ll_temp=None,
     if q_init == None:
         if snow == 1:
             # upper zone
-            q_0=[par[11]*((st[0][2]) - par[14]), ]
+            q_0=[par[11]*np.max((st[0][2]) - par[14]), ]
             q_1=[par[12]*((st[0][2])), ]
-            q_uz = [q_0+q_1,]
+            q_uz = [q_0[0]+q_1[0],]
             # lower zone 
             q_lz=[par[13]*st[0][3], ]
         else:
             # upper zone
-            q_0=[par[6]*((st[0][2]) - par[9]), ]
+            q_0=[par[6]*np.max((st[0][2]) - par[9]), ]
             q_1=[par[7]*((st[0][2])), ]
-            q_uz = [q_0+q_1,]
+            q_uz = [q_0[0]+q_1[0],]
             # lower zone 
             q_lz=[par[8]*st[0][3], ]
     else: # if initial runoff value is given distribute it evenlt between upper and lower responses 
