@@ -37,7 +37,7 @@ import Routing
 import RUN
 import StatisticalTools
 import Wrapper
-import Weird_Fn
+import WeirdFn
 import HBV
 import HBV_Lake
 import HBVLumped
