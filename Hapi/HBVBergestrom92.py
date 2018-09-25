@@ -28,47 +28,6 @@ surface runoff, interflow and baseflow
 # libraries
 import numpy as np
 
-# HBV base model parameters
-P_LB = [-1.5, #ltt
-        0.001, #utt
-        0.001, #ttm
-        0.04, #cfmax [mm c^-1 h^-1]
-        50.0, #fc
-        0.6, #ecorr
-        0.001, #etf
-        0.2, #lp
-        0.00042, #k [h^-1] upper zone
-        0.0000042, #k1 lower zone
-        0.001, #alpha
-        1.0, #beta
-        0.001, #cwh
-        0.01, #cfr
-        0.0, #c_flux
-        0.001, #perc mm/h
-        0.6, #rfcf
-        0.4,  #sfcf
-        1] # Maxbas
-
-P_UB = [2.5, #ttm
-        3.0, #utt
-        2.0, #ttm
-        0.4, #cfmax [mm c^-1 h^-1]
-        500.0, #fc
-        1.4, #ecorr
-        5.0, #etf
-        0.5, #lp
-        0.0167, #k upper zone
-        0.00062, #k1 lower zone
-        1.0, #alpha
-        6.0, #beta
-        0.1, #cwh
-        1.0, #cfr
-        0.08, #c_flux - 2mm/day
-        0.125, #perc mm/hr
-        1.4, #rfcf
-        1.4, #sfcf
-        10] # maxbas
-
 DEF_ST = [0.0, 10.0, 10.0, 10.0, 0.0]
 DEF_q0 = 0
 
@@ -594,14 +553,14 @@ def Simulate(prec, temp, et, par, p2, init_st=None, ll_temp=None,
     if q_init == None:
         if snow == 1:
             # upper zone
-            q_0=[par[11]*np.max((st[0][2]) - par[14]), ]
+            q_0=[par[11]*np.max([st[0][2] - par[14],0]), ]
             q_1=[par[12]*((st[0][2])), ]
             q_uz = [q_0[0]+q_1[0],]
             # lower zone 
             q_lz=[par[13]*st[0][3], ]
         else:
             # upper zone
-            q_0=[par[6]*np.max((st[0][2]) - par[9]), ]
+            q_0=[par[6]*np.max([st[0][2] - par[9],0]), ]
             q_1=[par[7]*((st[0][2])), ]
             q_uz = [q_0[0]+q_1[0],]
             # lower zone 
