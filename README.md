@@ -9,7 +9,7 @@ their own model, it contains two routing functions muskingum cunge, and MAXBAS t
 
 Main Features
 -------------
-Here are just a few of the things that pandas does well:
+Here are just a few of the things that Hapi does well:
   - Easy handling of rasters data downloaded from global data and easy way to
     manipulate the data to arrange it to run the model
   - Easy calibration of the model using Harmony search method and Genetic Algorithms
