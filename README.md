@@ -6,8 +6,7 @@ The package is very flexible to an extent that it allows developers to change th
 their own model, it contains two routing functions muskingum cunge, and MAXBAS triangular function.
 (all function has been tested and validated during a Master thesis at IHE-Delft April 2018 and the library is still under development)
 
-https://zenodo.org/badge/DOI/10.5281/zenodo.2572035.svg
-
+image:: https://zenodo.org/badge/DOI/10.5281/zenodo.2572035.svg
 
 Main Features
 -------------
