@@ -1,3 +1,4 @@
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2572035.svg)](https://doi.org/10.5281/zenodo.2572035)
 
 HAPI - Hydrological library for Python 
 =====================================================================
