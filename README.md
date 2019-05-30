@@ -62,15 +62,15 @@ conda activate Hapi_env
 conda install Numpy
 conda install pandas
 conda install scipy
-conda install geopandas
-conda install shapely
-conda install --channel https://conda.anaconda.org/mutirri pyopt
 conda install gdal
+conda install shapely
+conda install geopandas
 conda install fiona
+conda install --channel https://conda.anaconda.org/mutirri pyopt
 
 # after installing all dependencies to install Hapi 
 python setup.py install
 # iF you have more than one environment installed in you operating system 
-pathto_your_env\pyrhon setup.py install
+pathto_your_env\python setup.py install
 
 ```
