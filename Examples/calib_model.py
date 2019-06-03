@@ -34,12 +34,12 @@ import Hapi.PerformanceCriteria as PC
 
 ### Meteorological & GIS Data 
 # resolution of input data is 4km*4km
-PrecPath = prec_path="data/meteodata/calib/prec"
-Evap_Path = evap_path="data/meteodata/calib/evap"
-TempPath = temp_path="data/meteodata/calib/temp"
+PrecPath = prec_path="data/meteodata/4000/calib/prec"
+Evap_Path = evap_path="data/meteodata/4000/calib/evap"
+TempPath = temp_path="data/meteodata/4000/calib/temp"
 #DemPath = path+"GIS/4000/dem4000.tif"
-FlowAccPath = "data/GIS/acc4000.tif"
-FlowDPath = "data/GIS/fd4000.tif"
+FlowAccPath = "data/GIS/4000/acc4000.tif"
+FlowDPath = "data/GIS/4000/fd4000.tif"
 Paths=[PrecPath, Evap_Path, TempPath, FlowAccPath, FlowDPath, ]
 
 #ParPathCalib = path+"meteodata/4000/"+"parameters.txt"
@@ -99,7 +99,10 @@ OF_args=[coordinates]
 
 """
 OF is the objective function used for the calibration 
-
+OF function locates each station and extract the UZ and LZ discharge for each
+station and sum both then calculate the error based on RMSE and gives a weight
+for each station (weights are given in the excel sheet read in 
+the variable stations)
 
 """
 def OF(Qobs,Qout,q_uz_routed,q_lz_trans,coordinates):
