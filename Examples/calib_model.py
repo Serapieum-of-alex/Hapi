@@ -5,14 +5,15 @@ Created on Sun Jun 24 21:02:34 2018
 @author: Mostafa
 """
 #%links
-#from IPython import get_ipython   # to reset the variable explorer each time
-#get_ipython().magic('reset -f')
-import os
-os.chdir("C:/Users/Mostafa/Desktop/My Files/thesis/My Thesis/Data_and_Models/Model/Code/colombia")
-import sys
-sys.path.append("C:/Users/Mostafa/Desktop/My Files/thesis/My Thesis/Data_and_Models/Interface/Distributed_Hydrological_model/HBV_distributed/function")
+from IPython import get_ipython   # to reset the variable explorer each time
+get_ipython().magic('reset -f')
+#import os
+#os.chdir("C:/Users/Mostafa/Desktop/My Files/thesis/My Thesis/Data_and_Models/Model/Code/colombia")
+#import sys
+#sys.path.append("C:/Users/Mostafa/Desktop/My Files/thesis/My Thesis/Data_and_Models/Interface/Distributed_Hydrological_model/HBV_distributed/function")
 #path="C:/Users/Mostafa/Desktop/My Files/thesis/My Thesis/Data_and_Models/Data/05new_model/00inputs/"
-path="C:/Users/Mostafa/Desktop/My Files/thesis/My Thesis/Data_and_Models/Data/colombia/00inputs/" #GIS/4000/
+#path="C:/Users/Mostafa/Desktop/My Files/thesis/My Thesis/Data_and_Models/Data/colombia/00inputs/" #GIS/4000/
+
 #%library
 import numpy as np
 import pandas as pd
@@ -32,12 +33,13 @@ import Hapi.PerformanceCriteria as PC
 #%%
 
 ### Meteorological & GIS Data 
-PrecPath = prec_path=path+"meteodata/4000/calib/prec"
-Evap_Path = evap_path=path+"meteodata/4000/calib/evap"
-TempPath = temp_path=path+"meteodata/4000/calib/temp"
+# resolution of input data is 4km*4km
+PrecPath = prec_path="data/meteodata/calib/prec"
+Evap_Path = evap_path="data/meteodata/calib/evap"
+TempPath = temp_path="data/meteodata/calib/temp"
 #DemPath = path+"GIS/4000/dem4000.tif"
-FlowAccPath = path+"GIS/4000/acc4000.tif"
-FlowDPath = path+"GIS/4000/fd4000.tif"
+FlowAccPath = "data/GIS/acc4000.tif"
+FlowDPath = "data/GIS/fd4000.tif"
 Paths=[PrecPath, Evap_Path, TempPath, FlowAccPath, FlowDPath, ]
 
 #ParPathCalib = path+"meteodata/4000/"+"parameters.txt"
@@ -48,8 +50,8 @@ p2=[24, 1530]
 #[sp,sm,uz,lz,wc]
 init_st=[0,5,5,5,0]
 snow=0
-UB=np.loadtxt("UB.txt", usecols=0)
-LB=np.loadtxt("LB.txt", usecols=0)
+UB=np.loadtxt("data/UB.txt", usecols=0)
+LB=np.loadtxt("data/LB.txt", usecols=0)
 
 Basic_inputs=dict(p2=p2, init_st=init_st, UB=UB, LB=LB, snow=snow)
 
@@ -74,17 +76,17 @@ SpatialVarArgs=[raster,no_parameters]
 # stations discharge
 Sdate='2009-01-01'
 Edate='2011-12-31'
-Qobs = pd.read_csv(path+"Discharge/Headflow.txt",header=0 ,delimiter="\t", skiprows=11, 
+Qobs = pd.read_csv("data/Discharge/Headflow.txt",header=0 ,delimiter="\t", skiprows=11, 
                    engine='python',index_col=0)
 ind=[datetime(int(i.split("/")[0]),int(i.split("/")[1]),int(i.split("/")[2]))  for i in Qobs.index.tolist()]
 Qobs.index=ind
 Qobs =Qobs.loc[Sdate:Edate]
 
 # outlet discharge    
-Qobs[6] =np.loadtxt(path+"Discharge/Qout_c.txt")
+Qobs[6] =np.loadtxt("data/Discharge/Qout_c.txt")
 Qobs=Qobs.as_matrix()
 
-stations=pd.read_excel(path+"Discharge/stations/4000/Q.xlsx",sheetname="coordinates",convert_float=True)
+stations=pd.read_excel("data/Discharge/stations/4000/Q.xlsx",sheetname="coordinates",convert_float=True)
 coordinates=stations[['id','x','y','weight']][:]
 
 # calculate the nearest cell to each station
@@ -95,6 +97,11 @@ acc_A=acc.ReadAsArray()
 # define the objective function and its arguments
 OF_args=[coordinates]
 
+"""
+OF is the objective function used for the calibration 
+
+
+"""
 def OF(Qobs,Qout,q_uz_routed,q_lz_trans,coordinates):
     all_errors=[]
     # error for all internal stations
