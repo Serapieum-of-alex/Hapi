@@ -1,0 +1,17 @@
+-1.5	tt  (C)
+0.5     rfcf
+0.5		sfcf
+1		cfmax (mm /C/day)
+0		cwh
+0		cfr
+50      FC (mm)
+1	 	BETA
+0       CET
+0.3 	LP (%)
+1      	CFLUX (mm/day)
+0.01   	K (1/day)
+0.01  	K1 (1/day)
+0.001  	K2 (1/day)
+30  	uzl (mm)
+0   	PERC (mm/day)
+1       maxbas

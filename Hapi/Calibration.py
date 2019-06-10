@@ -420,8 +420,8 @@ def LumpedCalibration(ConceptualModel, data, Basic_inputs,
                 		'prtinniter':[int,0],			# Number of Iterations Before Print Inner Loop Information
                 		'xinit':[int,0],				# Initial Position Flag (0 - no position, 1 - position given)
                 		'rinit':[float,1.0],			# Initial Penalty Factor
-                		'fileout':[int, store_history],				# Flag to Turn On Output to filename
-                		'filename':[str, history_fname],	# We could probably remove fileout flag if filename or fileinstance is given
+                		'fileout':[int,store_history],				# Flag to Turn On Output to filename
+                		'filename':[str,history_fname],	# We could probably remove fileout flag if filename or fileinstance is given
                 		'seed':[float,0.5],				# Random Number Seed (0 - Auto-Seed based on time clock)
                 		'scaling':[int,1],				# Design Variables Scaling Flag (0 - no scaling, 1 - scaling between [-1,1]) 
                 		})

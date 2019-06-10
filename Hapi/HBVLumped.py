@@ -11,16 +11,92 @@ hydrologic behaviour the catchment
 This version was edited based on a Master Thesis on "Spatio-temporal simulation
 of catchment response based on dynamic weighting of hydrological models" on april 2018
 
-- Model inputs are Precipitation, evapotranspiration and temperature, initial
-    state variables, and initial discharge.
+- Main Model inputs are Precipitation, evapotranspiration and temperature, 
+  conversion vector P2 = [time_conversion, catchment_area], parameters.
+- Optional model inputs are: initial state variables, initial discharge
+  Long term average temptearature .
+
 - Model output is Qalculated dicharge at time t+1
 - Model equations are solved using explicit scheme 
+
+
+    Inputs
+    ----------
+    precipitation : array_like [n]
+        Average precipitation [mm/h]
+    evapotranspitration : array_like [n]
+        Potential Evapotranspiration [mm/h]
+    temperature : array_like [n]
+        Average temperature [C]
+    init_st : array_like [5], optional
+        Initial model states, [sp, sm, uz, lz, wc]. If unspecified, 
+        [0.0, 30.0, 30.0, 30.0, 0.0] mm
+    q_init : float, optional
+        Initial discharge value. If unspecified set to 10.0
+    ll_temp : array_like [n], optional
+        Long term average temptearature. If unspecified, calculated from temp.
+    p2 : array_like [2]
+        Problem parameter vector setup as:
+        [tfac, area]
+    par : array_like [10]
+        Parameter vector, set up as:
+        [fc, beta, e_corr, etf, lp, c_flux, k, k1, alpha, perc]    
+    Returns
+    -------
+    q_sim : array_like [n]
+        Discharge for the n time steps of the precipitation vector [m3/s]
+    st : array_like [n, 5]
+        Model states for the complete time series [mm]
+        
 - model structure uses 18 parameters if the catchment has snow
     [ltt, utt, rfcf, sfcf, ttm, cfmax, cwh, cfr, fc, beta, e_corr, etf, lp,
     c_flux, k, k1, alpha, perc]
     
     otherwise it uses 10 parameters
     [rfcf, fc, beta, etf, lp, c_flux, k, k1, alpha, perc]
+    
+        
+    Parameters
+    ----------
+    ltt : float
+        Lower temperature treshold [C]
+    utt : float
+        Upper temperature treshold [C]    
+    rfcf : float
+        Rainfall corrector factor
+    sfcf : float
+        Snowfall corrector factor        
+    ttm : float 
+        Temperature treshold for Melting [C]
+    cfmax : float 
+        Day degree factor
+    cwh : float 
+        Capacity for water holding in snow pack        
+    cfr : float 
+        Refreezing factor
+    fc : float 
+        Filed capacity
+    beta : float 
+        Shape coefficient for effective precipitation separation
+    e_corr : float 
+        Evapotranspiration corrector factor
+    etf : float 
+        Total potential evapotranspiration
+    lp : float _soil 
+        wilting point
+    c_flux : float 
+        Capilar flux in the root zone
+    k : float
+        Upper zone recession coefficient
+        Upper zone response coefficient
+    k1 : float 
+        Lower zone recession coefficient
+        Lowe zone response coefficient
+    alpha : float
+        Response box parameter
+        upper zone runoff coefficient    
+    perc: float
+        percolation
 """
 # HBV base model parameters
 P_LB = [-1.5, #ltt
@@ -506,7 +582,7 @@ def Step_run(p, p2, v, St,curve,lake_sim,snow=0):
 
 
 def Simulate(prec, temp, et, par, p2, init_st=None, ll_temp=None,
-             q_0=None, snow=0, lake_sim=False, curve=None):
+             q_init=None, snow=0, lake_sim=False, curve=None):
     """
     ================================================================
         Simulate(prec, temp, et, par, p2, init_st=None, ll_temp=None, q_0=None, snow=0, lake_sim=False, curve=None)
@@ -559,10 +635,10 @@ def Simulate(prec, temp, et, par, p2, init_st=None, ll_temp=None,
     if ll_temp is None: #If Long term average temptearature unspecified, calculated from temp
         ll_temp = [np.mean(temp), ] * len(prec)
     
-    if q_0 == None :
+    if q_init == None :
         q_sim = [DEF_q0 , ]
     else:
-        q_sim = [q_0, ]
+        q_sim = [q_init, ]
 
     # run the step by step function
     for i in range(len(prec)):

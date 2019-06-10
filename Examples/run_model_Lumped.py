@@ -1,41 +1,29 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sun Jun 24 21:02:34 2018
+This code is used to run the lumpedmodel 
 
-@author: Mostafa
+-   you have to make the root directory to the examples folder to enable the code 
+    from reading input files
+- Example catchment needs to be calibrated
+
 """
-#%links
-#from IPython import get_ipython   # to reset the variable explorer each time
-#get_ipython().magic('reset -f')
-import os
-os.chdir("C:/Users/Mostafa/Desktop/My Files/Research/Data_and_Models/Model/colombia")
-import sys
-sys.path.append("C:/Users/Mostafa/Desktop/My Files/Research/Hapi")
-# data
-path="C:/Users/Mostafa/Desktop/My Files/Research/Data_and_Models/Data/colombia/00inputs/"
-
 #%library
-import numpy as np
-#import gdal
-#import datetime as dt
+#import numpy as np
 import pandas as pd
-#import matplotlib.pyplot as plt
 
-# functions
-import HBVLumped
-#import Wrapper
-import RUN
-from Routing import RoutingMAXBAS
+# Hapi modules
+import Hapi.HBVLumped as HBVLumped
+import Hapi.RUN as RUN
+from Hapi.Routing import RoutingMAXBAS
 #import Hapi.GISpy as GIS
 #import GISCatchment as GC
 #from Hapi.RUN import RunModel
 #import Hapi.HBV as HBV
 #%%
 ### meteorological data
-path="C:/Users/Mostafa/Desktop/My Files/Research/Data_and_Models/Data/colombia/00inputs/Lumped/"
-data=pd.read_csv(path+"meteo_data.txt",header=0 ,delimiter=',',#"\t", #skiprows=11, 
+data=pd.read_csv("data/lumped/meteo_data.txt",header=0 ,delimiter=',',#"\t", #skiprows=11, 
                    engine='python',index_col=0)
-data=data.as_matrix()
+data_matrix=data.as_matrix()
 
 ### Basic_inputs
 ConceptualModel=HBVLumped
@@ -44,12 +32,16 @@ init_st=[0,5,5,5,0]
 snow = 0
 
 ### parameters
+"""
+First model needs to be calibrated to have the model parameters
+
+"""
 parameters= []#np.loadtxt("")
 
 ### Routing
 Routing=1
 RoutingFn=RoutingMAXBAS
 ### run the model
-st, q_sim=RUN.runLumped(ConceptualModel,data,parameters,p2,init_st,snow,Routing, RoutingFn)
+st, q_sim=RUN.RunLumped(ConceptualModel,data_matrix,parameters,p2,init_st,snow,Routing, RoutingFn)
 #%% store the result into rasters
 # create list of names 

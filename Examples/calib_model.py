@@ -1,8 +1,9 @@
-# -*- coding: utf-8 -*-
 """
-Created on Sun Jun 24 21:02:34 2018
+This code is used to calibrate the model 
 
-@author: Mostafa
+-   you have to make the root directory to the examples folder to enable the code 
+    from reading input files
+    
 """
 #%links
 from IPython import get_ipython   # to reset the variable explorer each time

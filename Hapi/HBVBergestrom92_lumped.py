@@ -11,19 +11,103 @@ hydrologic behaviour the catchment
 This version was edited based on a Master Thesis on "Spatio-temporal simulation
 of catchment response based on dynamic weighting of hydrological models" on april 2018
 
-- Model inputs are Precipitation, evapotranspiration and temperature, initial
-    state variables, and initial discharge.
+- Main Model inputs are Precipitation, evapotranspiration and temperature, 
+  conversion vector P2 = [time_conversion, catchment_area], parameters.
+- Optional model inputs are: initial state variables, initial discharge
+  Long term average temptearature .
+
 - Model output is Qalculated dicharge at time t+1
 - Model equations are solved using explicit scheme 
-- model structure uses 18 parameters if the catchment has snow
-    [tt, rfcf, sfcf, cfmax, cwh, cfr, fc, beta, e_corr, lp, c_flux, k, k1,
-    alpha, perc]
+
+- this HBV is based on Bergström, 1992 two reservoirs with three linear responses
+  surface runoff, interflow and baseflow
+
+  
+    Inputs
+    ----------
+    1-precipitation : array_like [n]
+        Average precipitation [mm/h]
+
+    2-temperature : array_like [n]
+        Average temperature [C]
+        
+    3-evapotranspitration : array_like [n]
+        Potential Evapotranspiration [mm/h]
+    
+    4-par : array_like [10]
+        Parameter vector, set up as:
+        [fc, beta, e_corr, etf, lp, c_flux, k, k1, alpha, perc]    
+
+    5-p2 : array_like [2]
+        Problem parameter vector setup as:
+        [tfac, area]
+        
+    6-init_st : array_like [5], optional
+        Initial model states, [sp, sm, uz, lz, wc]. If unspecified, 
+        [0.0, 30.0, 30.0, 30.0, 0.0] mm
+
+    7-ll_temp : array_like [n], optional
+        Long term average temptearature. If unspecified, calculated from temp.
+        
+    8-q_init : float, optional
+        Initial discharge value. If unspecified set to 10.0
+        
+    9-snow: integer, optional
+        This inputs takes one of two possible values [0 or 1], 0 to tell 
+        the algorithm that catchment responses does not include smow melting, 
+        1 tells the algorithm the opposite.
+        
+    Returns
+    -------
+    q_sim : array_like [n]
+        Discharge for the n time steps of the precipitation vector [m3/s]
+    st : array_like [n, 5]
+        Model states for the complete time series [mm]
+        
+- model structure uses 16 parameters if the catchment has snow    
+    [tt, rfcf, sfcf, cfmax, cwh, cfr, fc, beta, e_corr, lp, c_flux, k, k1, 
+     k2, uzl, perc]
     
     otherwise it uses 10 parameters
-    [rfcf, fc, beta, etf, lp, c_flux, k, k1, alpha, perc]
-
-this HBV is based on Bergström, 1992 two reservoirs with three linear responses
-surface runoff, interflow and baseflow
+    [rfcf, fc, beta, e_corr, lp, c_flux, k, k1, k2, uzl, perc]        
+        
+    Parameters
+    ----------
+    tt : float
+        temperature treshold for melting[C]
+    rfcf : float
+        Rainfall corrector factor
+    sfcf : float
+        Snowfall corrector factor        
+    cfmax : float 
+        Day degree factor
+    cwh : float 
+        Capacity for water holding in snow pack        
+    cfr : float 
+        Refreezing factor
+    fc : float 
+        Filed capacity
+    beta : float 
+        Shape coefficient for effective precipitation separation
+    e_corr : float 
+        Evapotranspiration corrector factor
+    etf : float 
+        Total potential evapotranspiration
+    lp : float _soil 
+        wilting point
+    c_flux : float 
+        Capilar flux in the root zone
+    k : float
+        Upper zone recession coefficient
+        Upper zone response coefficient
+    k1 : float 
+        Lower zone recession coefficient
+        Lowe zone response coefficient
+    alpha : float
+        Response box parameter
+        upper zone runoff coefficient    
+    perc: float
+        percolation  
 """
 # libraries
 import numpy as np

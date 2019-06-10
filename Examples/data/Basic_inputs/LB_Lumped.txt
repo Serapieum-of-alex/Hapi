@@ -1,0 +1,11 @@
+0.93    rfcf
+250     FC (mm)
+1		BETA
+0.6     ETF
+0.01 	LP (%)
+1      	CFLUX (mm/hr)
+0.04   	K (1/hr)
+0.02  	K1 (1/hr)
+0  		ALPHA
+2.4 	PERC (mm/hr)
+1       maxbas

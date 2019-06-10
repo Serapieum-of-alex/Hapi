@@ -499,7 +499,7 @@ def StepRun(p, p2, v, St, snow=0):
 
 
 def Simulate(prec, temp, et, par, p2, init_st=None, ll_temp=None, 
-             q_0=None, snow=0):
+             q_init=None, snow=0):
     """    
     ================================================================
         Simulate(prec, temp, et, par, p2, init_st=None, ll_temp=None, q_0=None, snow=0):
@@ -510,7 +510,7 @@ def Simulate(prec, temp, et, par, p2, init_st=None, ll_temp=None,
     
     Parameters
     ----------
-    avg_prec : array_like [n]
+    prec : array_like [n]
         Average precipitation [mm/h]
     temp : array_like [n]
         Average temperature [C]
@@ -554,7 +554,7 @@ def Simulate(prec, temp, et, par, p2, init_st=None, ll_temp=None,
     if ll_temp is None:
         ll_temp = [np.mean(temp), ] * len(prec)
 
-    if q_0 == None:
+    if q_init == None:
         if snow == 0:
             q_uz=[par[6]*((st[0][2])**(1.0 + par[8])), ]
             q_lz=[par[7]*st[0][3], ]

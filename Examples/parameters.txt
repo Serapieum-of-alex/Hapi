@@ -1,0 +1,419 @@
+
+================================================================================
+
+NUMBER OF ITERATIONS: 1
+
+NUMBER OF OBJECTIVE FUNCTION EVALUATIONS: 10
+
+OBJECTIVE FUNCTION VALUE:
+	F = 1e+21
+
+LAGRANGIAN MULTIPLIERS VALUES:
+
+DESIGN VARIABLES VALUES:
+	P(0) = 1.033e+00		P(1) = 3.762e+02		P(2) = 3.191e+00	
+	P(3) = 7.036e-01		P(4) = 4.870e-01		P(5) = 1.816e+01	
+	P(6) = 5.746e-02		P(7) = 3.567e-02		P(8) = 2.305e-02	
+	P(9) = 1.692e+01		P(10) = 1.911e+01		P(11) = 2.478e-01	
+	P(12) =       nan		P(13) =       nan	
+================================================================================
+
+================================================================================
+
+NUMBER OF ITERATIONS: 2
+
+NUMBER OF OBJECTIVE FUNCTION EVALUATIONS: 11
+
+OBJECTIVE FUNCTION VALUE:
+	F = 1e+21
+
+LAGRANGIAN MULTIPLIERS VALUES:
+
+DESIGN VARIABLES VALUES:
+	P(0) = 9.977e-01		P(1) = 3.780e+02		P(2) = 3.341e+00	
+	P(3) = 7.037e-01		P(4) = 1.179e-01		P(5) = 1.815e+01	
+	P(6) = 3.368e-02		P(7) = 2.498e-02		P(8) = 3.348e-02	
+	P(9) = 1.691e+01		P(10) = 1.001e+01		P(11) = 3.313e-01	
+	P(12) =       nan		P(13) =       nan	
+================================================================================
+
+================================================================================
+
+NUMBER OF ITERATIONS: 3
+
+NUMBER OF OBJECTIVE FUNCTION EVALUATIONS: 12
+
+OBJECTIVE FUNCTION VALUE:
+	F = 1e+21
+
+LAGRANGIAN MULTIPLIERS VALUES:
+
+DESIGN VARIABLES VALUES:
+	P(0) = 1.096e+00		P(1) = 3.780e+02		P(2) = 4.036e+00	
+	P(3) = 9.541e-01		P(4) = 2.656e-02		P(5) = 6.200e+00	
+	P(6) = 8.582e-02		P(7) = 1.414e-01		P(8) = 3.266e-02	
+	P(9) = 1.614e+01		P(10) = 9.838e+00		P(11) = 4.268e-01	
+	P(12) =       nan		P(13) =       nan	
+================================================================================
+
+================================================================================
+
+NUMBER OF ITERATIONS: 4
+
+NUMBER OF OBJECTIVE FUNCTION EVALUATIONS: 13
+
+OBJECTIVE FUNCTION VALUE:
+	F = 1e+21
+
+LAGRANGIAN MULTIPLIERS VALUES:
+
+DESIGN VARIABLES VALUES:
+	P(0) = 1.065e+00		P(1) = 3.762e+02		P(2) = 3.612e+00	
+	P(3) = 1.127e+00		P(4) = 3.167e-01		P(5) = 6.187e+00	
+	P(6) = 1.434e-01		P(7) = 7.064e-02		P(8) = 2.307e-02	
+	P(9) = 1.691e+01		P(10) = 2.862e+01		P(11) = 7.064e-02	
+	P(12) =       nan		P(13) =       nan	
+================================================================================
+
+================================================================================
+
+NUMBER OF ITERATIONS: 5
+
+NUMBER OF OBJECTIVE FUNCTION EVALUATIONS: 14
+
+OBJECTIVE FUNCTION VALUE:
+	F = 1e+21
+
+LAGRANGIAN MULTIPLIERS VALUES:
+
+DESIGN VARIABLES VALUES:
+	P(0) = 1.008e+00		P(1) = 3.764e+02		P(2) = 3.729e+00	
+	P(3) = 1.109e+00		P(4) = 4.905e-01		P(5) = 1.013e+00	
+	P(6) = 3.365e-02		P(7) = 1.225e-01		P(8) = 2.304e-02	
+	P(9) = 1.190e+01		P(10) = 4.605e+00		P(11) = 3.313e-01	
+	P(12) =       nan		P(13) =       nan	
+================================================================================
+
+================================================================================
+
+NUMBER OF ITERATIONS: 6
+
+NUMBER OF OBJECTIVE FUNCTION EVALUATIONS: 15
+
+OBJECTIVE FUNCTION VALUE:
+	F = 1e+21
+
+LAGRANGIAN MULTIPLIERS VALUES:
+
+DESIGN VARIABLES VALUES:
+	P(0) = 1.016e+00		P(1) = 3.251e+02		P(2) = 4.113e+00	
+	P(3) = 1.109e+00		P(4) = 1.183e-01		P(5) = 6.196e+00	
+	P(6) = 3.277e-02		P(7) = 2.496e-02		P(8) = 6.503e-03	
+	P(9) = 1.615e+01		P(10) = 1.005e+01		P(11) = 4.265e-01	
+	P(12) =       nan		P(13) =       nan	
+================================================================================
+
+================================================================================
+
+NUMBER OF ITERATIONS: 7
+
+NUMBER OF OBJECTIVE FUNCTION EVALUATIONS: 16
+
+OBJECTIVE FUNCTION VALUE:
+	F = 1e+21
+
+LAGRANGIAN MULTIPLIERS VALUES:
+
+DESIGN VARIABLES VALUES:
+	P(0) = 9.846e-01		P(1) = 4.328e+02		P(2) = 3.231e+00	
+	P(3) = 7.016e-01		P(4) = 5.587e-01		P(5) = 1.951e+00	
+	P(6) = 1.074e-01		P(7) = 6.211e-02		P(8) = 3.263e-02	
+	P(9) = 1.614e+01		P(10) = 3.259e+00		P(11) = 4.265e-01	
+	P(12) =       nan		P(13) =       nan	
+================================================================================
+
+================================================================================
+
+NUMBER OF ITERATIONS: 8
+
+NUMBER OF OBJECTIVE FUNCTION EVALUATIONS: 17
+
+OBJECTIVE FUNCTION VALUE:
+	F = 1e+21
+
+LAGRANGIAN MULTIPLIERS VALUES:
+
+DESIGN VARIABLES VALUES:
+	P(0) = 1.224e+00		P(1) = 3.763e+02		P(2) = 3.612e+00	
+	P(3) = 7.039e-01		P(4) = 3.460e-01		P(5) = 6.201e+00	
+	P(6) = 1.319e-01		P(7) = 4.838e-02		P(8) = 6.503e-03	
+	P(9) = 6.059e+00		P(10) = 3.261e+00		P(11) = 3.316e-01	
+	P(12) =       nan		P(13) =       nan	
+================================================================================
+
+================================================================================
+
+NUMBER OF ITERATIONS: 9
+
+NUMBER OF OBJECTIVE FUNCTION EVALUATIONS: 18
+
+OBJECTIVE FUNCTION VALUE:
+	F = 1e+21
+
+LAGRANGIAN MULTIPLIERS VALUES:
+
+DESIGN VARIABLES VALUES:
+	P(0) = 1.008e+00		P(1) = 3.780e+02		P(2) = 3.192e+00	
+	P(3) = 4.784e-01		P(4) = 3.456e-01		P(5) = 6.200e+00	
+	P(6) = 8.843e-02		P(7) = 8.038e-02		P(8) = 2.761e-03	
+	P(9) = 1.613e+01		P(10) = 1.005e+01		P(11) = 2.481e-01	
+	P(12) =       nan		P(13) =       nan	
+================================================================================
+
+================================================================================
+
+NUMBER OF ITERATIONS: 10
+
+NUMBER OF OBJECTIVE FUNCTION EVALUATIONS: 19
+
+OBJECTIVE FUNCTION VALUE:
+	F = 1e+21
+
+LAGRANGIAN MULTIPLIERS VALUES:
+
+DESIGN VARIABLES VALUES:
+	P(0) = 1.228e+00		P(1) = 4.428e+02		P(2) = 3.341e+00	
+	P(3) = 1.127e+00		P(4) = 4.909e-01		P(5) = 1.814e+01	
+	P(6) = 3.362e-02		P(7) = 2.491e-02		P(8) = 8.928e-03	
+	P(9) = 1.615e+01		P(10) = 2.861e+01		P(11) = 1.695e-01	
+	P(12) =       nan		P(13) =       nan	
+================================================================================
+
+================================================================================
+
+NUMBER OF ITERATIONS: 11
+
+NUMBER OF OBJECTIVE FUNCTION EVALUATIONS: 20
+
+OBJECTIVE FUNCTION VALUE:
+	F = 1e+21
+
+LAGRANGIAN MULTIPLIERS VALUES:
+
+DESIGN VARIABLES VALUES:
+	P(0) = 1.065e+00		P(1) = 4.328e+02		P(2) = 4.617e+00	
+	P(3) = 7.013e-01		P(4) = 3.461e-01		P(5) = 1.466e+01	
+	P(6) = 1.319e-01		P(7) = 4.849e-02		P(8) = 2.757e-03	
+	P(9) = 1.613e+01		P(10) = 5.829e+01		P(11) = 3.313e-01	
+	P(12) =       nan		P(13) =       nan	
+================================================================================
+
+================================================================================
+
+NUMBER OF ITERATIONS: 12
+
+NUMBER OF OBJECTIVE FUNCTION EVALUATIONS: 21
+
+OBJECTIVE FUNCTION VALUE:
+	F = 1e+21
+
+LAGRANGIAN MULTIPLIERS VALUES:
+
+DESIGN VARIABLES VALUES:
+	P(0) = 1.016e+00		P(1) = 3.165e+02		P(2) = 3.233e+00	
+	P(3) = 4.780e-01		P(4) = 4.903e-01		P(5) = 8.535e+00	
+	P(6) = 5.750e-02		P(7) = 1.261e-01		P(8) = 2.763e-03	
+	P(9) = 1.613e+01		P(10) = 9.854e+00		P(11) = 7.060e-02	
+	P(12) =       nan		P(13) =       nan	
+================================================================================
+
+================================================================================
+
+NUMBER OF ITERATIONS: 13
+
+NUMBER OF OBJECTIVE FUNCTION EVALUATIONS: 22
+
+OBJECTIVE FUNCTION VALUE:
+	F = 1e+21
+
+LAGRANGIAN MULTIPLIERS VALUES:
+
+DESIGN VARIABLES VALUES:
+	P(0) = 1.065e+00		P(1) = 3.762e+02		P(2) = 4.779e+00	
+	P(3) = 4.780e-01		P(4) = 4.873e-01		P(5) = 1.815e+01	
+	P(6) = 3.363e-02		P(7) = 1.413e-01		P(8) = 2.305e-02	
+	P(9) = 3.262e+00		P(10) = 4.615e+00		P(11) = 4.402e-01	
+	P(12) =       nan		P(13) =       nan	
+================================================================================
+
+================================================================================
+
+NUMBER OF ITERATIONS: 14
+
+NUMBER OF OBJECTIVE FUNCTION EVALUATIONS: 23
+
+OBJECTIVE FUNCTION VALUE:
+	F = 1e+21
+
+LAGRANGIAN MULTIPLIERS VALUES:
+
+DESIGN VARIABLES VALUES:
+	P(0) = 9.846e-01		P(1) = 3.780e+02		P(2) = 4.037e+00	
+	P(3) = 1.096e+00		P(4) = 3.167e-01		P(5) = 4.971e+00	
+	P(6) = 8.836e-02		P(7) = 2.496e-02		P(8) = 3.992e-03	
+	P(9) = 1.615e+01		P(10) = 1.010e+01		P(11) = 9.532e-02	
+	P(12) =       nan		P(13) =       nan	
+================================================================================
+
+================================================================================
+
+NUMBER OF ITERATIONS: 15
+
+NUMBER OF OBJECTIVE FUNCTION EVALUATIONS: 24
+
+OBJECTIVE FUNCTION VALUE:
+	F = 1e+21
+
+LAGRANGIAN MULTIPLIERS VALUES:
+
+DESIGN VARIABLES VALUES:
+	P(0) = 1.224e+00		P(1) = 3.165e+02		P(2) = 3.193e+00	
+	P(3) = 8.126e-01		P(4) = 2.644e-02		P(5) = 1.015e+01	
+	P(6) = 1.074e-01		P(7) = 2.494e-02		P(8) = 1.413e-02	
+	P(9) = 1.615e+01		P(10) = 2.915e+00		P(11) = 4.004e-01	
+	P(12) =       nan		P(13) =       nan	
+================================================================================
+
+================================================================================
+
+NUMBER OF ITERATIONS: 16
+
+NUMBER OF OBJECTIVE FUNCTION EVALUATIONS: 25
+
+OBJECTIVE FUNCTION VALUE:
+	F = 1e+21
+
+LAGRANGIAN MULTIPLIERS VALUES:
+
+DESIGN VARIABLES VALUES:
+	P(0) = 1.224e+00		P(1) = 3.762e+02		P(2) = 3.613e+00	
+	P(3) = 1.000e+00		P(4) = 4.873e-01		P(5) = 4.966e+00	
+	P(6) = 5.744e-02		P(7) = 1.224e-01		P(8) = 1.259e-02	
+	P(9) = 1.615e+01		P(10) = 2.858e+01		P(11) = 2.440e-01	
+	P(12) =       nan		P(13) =       nan	
+================================================================================
+
+================================================================================
+
+NUMBER OF ITERATIONS: 17
+
+NUMBER OF OBJECTIVE FUNCTION EVALUATIONS: 26
+
+OBJECTIVE FUNCTION VALUE:
+	F = 1e+21
+
+LAGRANGIAN MULTIPLIERS VALUES:
+
+DESIGN VARIABLES VALUES:
+	P(0) = 1.033e+00		P(1) = 3.989e+02		P(2) = 3.612e+00	
+	P(3) = 9.553e-01		P(4) = 4.869e-01		P(5) = 1.854e+01	
+	P(6) = 8.839e-02		P(7) = 8.026e-02		P(8) = 8.911e-03	
+	P(9) = 1.190e+01		P(10) = 1.006e+01		P(11) = 1.030e-01	
+	P(12) =       nan		P(13) =       nan	
+================================================================================
+
+================================================================================
+
+NUMBER OF ITERATIONS: 18
+
+NUMBER OF OBJECTIVE FUNCTION EVALUATIONS: 27
+
+OBJECTIVE FUNCTION VALUE:
+	F = 1e+21
+
+LAGRANGIAN MULTIPLIERS VALUES:
+
+DESIGN VARIABLES VALUES:
+	P(0) = 1.008e+00		P(1) = 4.329e+02		P(2) = 3.342e+00	
+	P(3) = 4.783e-01		P(4) = 1.182e-01		P(5) = 6.192e+00	
+	P(6) = 1.433e-01		P(7) = 4.840e-02		P(8) = 1.414e-02	
+	P(9) = 4.575e+00		P(10) = 2.883e+00		P(11) = 2.480e-01	
+	P(12) =       nan		P(13) =       nan	
+================================================================================
+
+================================================================================
+
+NUMBER OF ITERATIONS: 19
+
+NUMBER OF OBJECTIVE FUNCTION EVALUATIONS: 28
+
+OBJECTIVE FUNCTION VALUE:
+	F = 1e+21
+
+LAGRANGIAN MULTIPLIERS VALUES:
+
+DESIGN VARIABLES VALUES:
+	P(0) = 1.009e+00		P(1) = 4.266e+02		P(2) = 3.191e+00	
+	P(3) = 9.537e-01		P(4) = 5.590e-01		P(5) = 1.816e+01	
+	P(6) = 3.112e-02		P(7) = 1.224e-01		P(8) = 1.817e-02	
+	P(9) = 6.061e+00		P(10) = 9.921e+00		P(11) = 1.030e-01	
+	P(12) =       nan		P(13) =       nan	
+================================================================================
+
+================================================================================
+
+NUMBER OF ITERATIONS: 20
+
+NUMBER OF OBJECTIVE FUNCTION EVALUATIONS: 29
+
+OBJECTIVE FUNCTION VALUE:
+	F = 1e+21
+
+LAGRANGIAN MULTIPLIERS VALUES:
+
+DESIGN VARIABLES VALUES:
+	P(0) = 9.354e-01		P(1) = 3.780e+02		P(2) = 3.232e+00	
+	P(3) = 8.449e-01		P(4) = 3.460e-01		P(5) = 1.853e+01	
+	P(6) = 6.937e-02		P(7) = 2.492e-02		P(8) = 1.413e-02	
+	P(9) = 4.570e+00		P(10) = 4.561e+00		P(11) = 4.399e-01	
+	P(12) =       nan		P(13) =       nan	
+================================================================================
+
+================================================================================
+
+NUMBER OF ITERATIONS: 21
+
+NUMBER OF OBJECTIVE FUNCTION EVALUATIONS: 30
+
+OBJECTIVE FUNCTION VALUE:
+	F = 1e+21
+
+LAGRANGIAN MULTIPLIERS VALUES:
+
+DESIGN VARIABLES VALUES:
+	P(0) = 1.016e+00		P(1) = 3.251e+02		P(2) = 3.232e+00	
+	P(3) = 7.035e-01		P(4) = 4.908e-01		P(5) = 1.954e+00	
+	P(6) = 1.074e-01		P(7) = 8.026e-02		P(8) = 1.414e-02	
+	P(9) = 1.497e+01		P(10) = 2.856e+01		P(11) = 2.478e-01	
+	P(12) = 5.000e-01		P(13) =       nan	
+================================================================================
+
+================================================================================
+RANDOM SEED VALUE: 0.50000000
+
+NUMBER OF ITERATIONS: 21
+
+NUMBER OF OBJECTIVE FUNCTION EVALUATIONS: 30
+
+OBJECTIVE FUNCTION VALUE:
+	F = 1e+21
+
+LAGRANGIAN MULTIPLIERS VALUES:
+
+DESIGN VARIABLES VALUES:
+	P(0) = 1.016e+00		P(1) = 3.251e+02		P(2) = 3.232e+00	
+	P(3) = 7.035e-01		P(4) = 4.908e-01		P(5) = 1.954e+00	
+	P(6) = 1.074e-01		P(7) = 8.026e-02		P(8) = 1.414e-02	
+	P(9) = 1.497e+01		P(10) = 2.856e+01		P(11) = 2.478e-01	
+	P(12) = 5.000e-01		P(13) =       nan	
+================================================================================
