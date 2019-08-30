@@ -261,3 +261,47 @@ def NSE(Qobs, Qsim):
     e=1-(a/b)
 
     return e
+
+
+def NSEHF(Qobs, Qsim):
+    """
+    =================================================
+        NSEHF(Qobs, Qsim)
+    =================================================
+    
+    Modified Nash-Sutcliffe efficiency. Metric for the estimation of performance of the 
+    hydrological model
+    
+    reference:    
+    Hundecha Y. & Bárdossy A. Modeling of the effect of land use
+    changes on the runoff generation of a river basin through
+    parameter regionalization of a watershed model. J Hydrol
+    2004, 292, (1–4), 281–295
+
+    Inputs:
+    ----------
+        1-Qobs :
+            [numpy ndarray] Measured discharge [m3/s]
+        2-Qsim : 
+            [numpy ndarray] Simulated discharge [m3/s]
+        
+    Outputs
+    -------
+        1-f :
+            [float] NSE value
+    
+    Examples:
+    -------    
+        Qobs=np.loadtxt("Qobs.txt")
+        Qout=Model(prec,evap,temp)
+        error=NSE(Qobs,Qout)
+    """
+    # convert Qobs & Qsim into arrays
+    Qobs=np.array(Qobs)
+    Qsim=np.array(Qsim)
+
+    a=sum(Qobs*(Qobs-Qsim)**2)
+    b=sum(Qobs*(Qobs-np.average(Qobs))**2)
+    e=1-(a/b)
+
+    return e
