@@ -10,6 +10,8 @@ import numpy as np
 from Hapi import GISpy as GIS
 from Hapi import Inputs
 
+import gdal
+
 """
 this function prepare downloaded raster data to have the same align and
 nodatavalue from a GIS raster (DEM, flow accumulation, flow direction raster)
@@ -18,14 +20,15 @@ and return a folder with the output rasters with a name “New_Rasters”
 dem_path="Data/GIS/4000/acc4000.tif"
 outputpath="Data/meteodata_prepared/"
 # prec
-prec_in_path="Data/meteodata/prec/"
-Inputs.PrepareInputs(dem_path,prec_in_path,outputpath+"prec")
+prec_in_path="Data/meteodata/4000/complete_dataset/prec/"
+#Inputs.PrepareInputs(dem_path,prec_in_path,outputpath+"prec")
+
 # evap
-evap_in_path="Data/meteodata/evap/"
-Inputs.PrepareInputs(dem_path,evap_in_path,outputpath+"evap")
+evap_in_path="Data/meteodata/4000/complete_dataset/evap/"
+#Inputs.PrepareInputs(dem_path,evap_in_path,outputpath+"evap")
 # temp
-temp_in_path="Data/meteodata/temp/"
-Inputs.PrepareInputs(dem_path,temp_in_path,outputpath+"temp")
+temp_in_path="Data/meteodata/4000/complete_dataset/temp/"
+#Inputs.PrepareInputs(dem_path,temp_in_path,outputpath+"temp")
 
 """
 in case you want to manipulate the value in all the rasters of one of the inputs 
@@ -47,16 +50,16 @@ def function(args):
     GIS.SaveRaster(B,path)
 
 folder_path = evap_out_path
-new_folder_path="data/meteodata/new_evap/"
-GIS.FolderCalculator(folder_path,new_folder_path,function)
+new_folder_path="data/meteodata_prepared/new_evap/"
+#GIS.FolderCalculator(folder_path,new_folder_path,function)
 
 """
-in order to run the model all inputs has to have the same number of rows and columns
+in order to run the model all inputs have to have the same number of rows and columns
 for this purpose MatchRasterAlignment function was made to resample, change the coordinate
 system of the second raster and give it the same alignment like a source raster (DEM raster)
 """
-dem_path="Data/GIS/acc4000.tif"
-soil_path="Data/GIS/soil_raster.tif"
+dem_path="Data/GIS/4000/acc4000.tif"
+soil_path="Data/GIS/soil/4000/soil_raster.tif"
 DEM=gdal.Open(dem_path)
 dem_A=DEM.ReadAsArray()
 soil=gdal.Open(soil_path)
@@ -75,9 +78,6 @@ dst_Aligned_M=GIS.MatchNoDataValue(DEM,aligned_soil)
 dst_Aligned_M_A=dst_Aligned_M.ReadAsArray()
 
 # save the new raster
-GIS.SaveRaster(dst_Aligned_M,"soil_type.tif")
+GIS.SaveRaster(dst_Aligned_M,"Data/GIS/soil/4000/soil_type.tif")
 
-
-
-
-GIS.SaveRaster(dst_Aligned_M,"00inputs/GIS/4000/soil_typeِِA.tif")
+#GIS.SaveRaster(dst_Aligned_M,"00inputs/GIS/4000/soil_typeِِA.tif")
