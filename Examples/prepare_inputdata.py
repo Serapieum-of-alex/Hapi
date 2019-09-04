@@ -15,7 +15,7 @@ this function prepare downloaded raster data to have the same align and
 nodatavalue from a GIS raster (DEM, flow accumulation, flow direction raster)
 and return a folder with the output rasters with a name “New_Rasters”
 """
-dem_path="Data/GIS/acc4000.tif"
+dem_path="Data/GIS/4000/acc4000.tif"
 outputpath="Data/meteodata_prepared/"
 # prec
 prec_in_path="Data/meteodata/prec/"
