@@ -4,3 +4,4 @@ Hapi.egg-info/
 Examples/data/Hapi.sublime-project
 Examples/data/Hapi.sublime-workspace
 *.pyc
+*.tif
