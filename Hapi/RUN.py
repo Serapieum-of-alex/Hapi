@@ -15,14 +15,15 @@ Created on Sun Jun 24 21:02:34 2018
 
 #%library
 import os
+#import numpy as np
 import gdal
+#import matplotlib.pyplot as plt
 
 # functions
-import Wrapper as Wrapper
+import Wrapper
 import GISpy as GIS
 #import DistParameters as Dp
 #import GISCatchment as GC
-
 
 def RunModel(ConceptualModel, Paths, ParPath, p2, init_st, snow):
     """
@@ -136,10 +137,6 @@ def RunModel(ConceptualModel, Paths, ParPath, p2, init_st, snow):
                                                temp, parameters, p2, snow, init_st)
     
     return st, q_out, q_uz, q_lz
-
-
-
-
 
 
 def RunLumped(ConceptualModel, data, parameters, p2, init_st, snow, Routing=0, RoutingFn=[]):
