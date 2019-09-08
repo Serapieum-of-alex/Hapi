@@ -2,12 +2,20 @@
 ======
 HBV-96
 ======
+Lumped hydrological model.
+This is the HBV-96 implementation by Juan Chacon at IHE-Delft, NL. This code
+implements the HBV-96 version, as described in Lindstrom et al (1997)
+https://doi.org/10.1016/S0022-1694(97)00041-3
+@author: Juan Carlos Chacon-Hurtado (jc.chaconh@gmail.com)                                  
+Version
+-------
+03-05-2017 - V_0.0 - First implementation
 """
 from __future__ import division, print_function
 import numpy as np
 #import scipy.optimize as opt
 from scipy.interpolate import InterpolatedUnivariateSpline as interp11
-#import sklearn.metrics as error
+import sklearn.metrics as error
 
 # HBV base model parameters
 # 19 parameter (18+maxbas)
