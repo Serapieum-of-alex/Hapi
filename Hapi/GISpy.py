@@ -1181,6 +1181,7 @@ def MatchDataAlignment(A_path,B_input_path,new_B_path):
     
     A=gdal.Open(A_path)
     files_list=os.listdir(B_input_path)
+    if "desktop.ini" in files_list:  files_list.remove("desktop.ini")
     
     for i in range(len(files_list)):
         B=gdal.Open(B_input_path+files_list[i])
@@ -1216,7 +1217,7 @@ def MatchNoDataValue(src,dst):
     # input data validation
     # data type
     assert type(src)==gdal.Dataset, "src should be read using gdal (gdal dataset please read it using gdal library) "
-    assert type(dst)==gdal.Dataset, "src should be read using gdal (gdal dataset please read it using gdal library) "
+    assert type(dst)==gdal.Dataset, "dst should be read using gdal (gdal dataset please read it using gdal library) "
     
     src_gt=src.GetGeoTransform()
     src_proj=src.GetProjection()
