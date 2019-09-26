@@ -9,6 +9,7 @@ Created on Wed Jul 18 23:55:20 2018
 #%library
 import pickle
 import datetime
+
 #import numpy as np
 
 # functions
@@ -58,24 +59,22 @@ def load_obj(saved_name):
         return pickle.load(f)
 
 
-def DateFormatedSQL(x):
+def dateformated(x):
     """
     ===========================================================
-        DateFormatedSQL(x)
+        dateformated(x)
     ===========================================================
     this function converts the the date read from a list to a datetime format
     
     input:
-    ----------
-        [List] list of tuples of string date read from database
+        x is a list of tuples of string date read from database
     
     output:
-    ----------
-        [List] list of dates as a datetime format  YYYY-MM-DD HH:MM:SS
+        list od dates as a datetime format  YYYY-MM-DD HH:MM:SS
     
     """
     x=[i[0] for i in x]
-    
+    #
     x1=[]
     for i in x:
         if len(i)==19:
@@ -87,29 +86,3 @@ def DateFormatedSQL(x):
 #    del i,x
     return x1
 
-def DateFormated(x):
-    """
-    ===========================================================
-        dateformated(x)
-    ===========================================================
-    this function converts the the date read from a list to a datetime format
-    
-    input:
-    ----------
-        [List] list of dates as string
-    
-    output:
-    ----------
-        [List] list of dates as a datetime format YYYY-MM-DD HH:MM:SS
-    """
-    
-    x1=[]
-    for i in x:
-        if len(i)==19:
-            x1.append(datetime.datetime(int(i[:4]),int(i[5:7]),int(i[8:10]),int(i[11:13]),int(i[14:16]),int(i[17:18]) ))
-#        elif len(i)==13:
-#            x1.append(datetime.datetime(int(i[:4]),int(i[5:7]),int(i[8:10]),int(i[11:13]),int(0),int(0) ))
-#        else:
-#            x1.append(datetime.datetime(int(i[:4]),int(i[5:7]),int(i[8:10]),int(0),int(0),int(0) ))
-#    del i,x
-    return x1
