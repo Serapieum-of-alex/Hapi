@@ -19,6 +19,211 @@ import osr
 from osgeo import gdalconst
 
 
+def ReadASCII(ASCIIFile,pixel_type):
+    """  
+    =========================================================================
+        ReadASCII(ASCIIFile,pixel_type)
+    =========================================================================
+     
+    This function reads an ASCII file the spatial information
+    
+    Inputs:
+        1-ASCIIFileName:
+            [String] name of the ASCII file you want to convert and the name 
+            should include the extension ".asc"
+            
+        2-pixel_type:
+            [Integer] type of the data to be stored in the pixels,default is 1 (float32)
+            for example pixel type of flow direction raster is unsigned integer
+            1 for float32
+            2 for float64
+            3 for Unsigned integer 16
+            4 for Unsigned integer 32
+            5 for integer 16
+            6 for integer 32
+    Outputs:
+        1-ASCIIValues:
+            [numpy array] 2D arrays containing the values stored in the ASCII
+            file
+            
+        2-ASCIIDetails:
+            [List] list of the six spatial information of the ASCII file 
+            [ASCIIRows, ASCIIColumns, XLowLeftCorner, YLowLeftCorner, 
+            CellSize, NoValue]
+    Example:
+        Elevation_values,DEMSpatialDetails = ReadASCII("dem.asc",1)
+    """
+    # input data validation
+    # data type
+    assert type(ASCIIFile) == str, "ASCIIFile input should be string type"
+    assert type(pixel_type)== int, "pixel type input should be integer type please check documentations"
+    
+    # input values
+    ASCIIExt=ASCIIFile[-4:]
+    assert ASCIIExt == ".asc", "please add the extension at the end of the path input"
+    assert os.path.exists(ASCIIFile), "ASCII file path you have provided does not exist"
+    
+    ### read the ASCII file 
+    
+    File  = open (ASCIIFile)
+    Wholefile = File.readlines()
+    File.close()
+    
+    ASCIIColumns = int(Wholefile[0].split()[1])
+    ASCIIRows = int(Wholefile[1].split()[1])
+    
+    XLeftSide = int(Wholefile[2].split()[1])
+    YLowerSide = int(Wholefile[3].split()[1])
+    CellSize = int(Wholefile[4].split()[1])
+    NoValue = int(Wholefile[5].split()[1])
+    
+    ASCIIValues = np.ones((ASCIIRows,ASCIIColumns), dtype = np.float32)
+    
+    for i in range(ASCIIRows):
+        x = Wholefile[6+i].split()
+        ASCIIValues[i,:] = map(float, x )
+    
+    ASCIIDetails = [ASCIIRows, ASCIIColumns, XLeftSide , YLowerSide, 
+                    CellSize, NoValue]
+    
+    return ASCIIValues, ASCIIDetails
+
+
+def ASCIItoRaster(ASCIIFile,savePath,pixel_type,RasterFile = None,epsg = None):
+    """  
+    =========================================================================
+        ASCIItoRaster(ASCIIFile,RasterFile,savePath,pixel_type)
+    =========================================================================
+     
+    This function convert an ASCII file into a raster format and in takes  all
+    the spatial information (projection, coordinates of the corner point), and
+    number of rows and columns from the raster file
+    
+    Inputs:
+        1-ASCIIFileName:
+            [String] name of the ASCII file you want to convert and the name 
+            should include the extension ".asc"
+        2-srcFile:
+            [String] source raster to get the spatial information, both ASCII
+            file and source raster should have the same number of rows, and 
+            same number of columns.
+            
+        3-savePath:
+            [String] path to save the new raster including new raster name and extension (.tif)
+            
+        4-pixel_type:
+            [Integer] type of the data to be stored in the pixels,default is 1 (float32)
+            for example pixel type of flow direction raster is unsigned integer
+            1 for float32
+            2 for float64
+            3 for Unsigned integer 16
+            4 for Unsigned integer 32
+            5 for integer 16
+            6 for integer 32
+        
+    Outputs:
+        1- a New Raster will be saved in the savePath containing the values 
+        of the ASCII file
+    
+    Example:
+        1- ASCII to raster given a raster file:
+            ASCIIFile = "soiltype.asc"
+            RasterFile = "DEM.tif"
+            savePath = "Soil_raster.tif"
+            pixel_type = 1
+            ASCIItoRaster(ASCIIFile,  savePath, pixel_type, RasterFile)
+        2- ASCII to Raster given an EPSG number
+            ASCIIFile = "soiltype.asc"
+            savePath = "Soil_raster.tif"
+            pixel_type = 1
+            epsg = 4647
+        ASCIItoRaster(ASCIIFile, savePath,pixel_type, epsg = epsg)
+    """
+    # input data validation
+    # data type
+    assert type(ASCIIFile) == str, "ASCIIFile input should be string type"
+    assert type(savePath) == str, "savePath input should be string type"
+    assert type(pixel_type)== int, "pixel type input should be integer type please check documentations"
+    
+    # input values
+    ASCIIExt=ASCIIFile[-4:]
+    assert ASCIIExt == ".asc", "please add the extension at the end of the path input"
+    
+    # assert os.path.exists(path), "source raster you have provided does not exist"
+    
+    # check what does the user enter
+#    try: RasterFile
+#    except NameError : RasterFile = None
+    
+#    try: epsg
+#    except NameError : epsg = None
+    
+    message = """ you have to enter one of the following inputs 
+    - RasterFile : if you have a raster with the same spatial information 
+        (projection, coordinate system), and have the same number of rows, 
+        and columns
+    - epsg : if you have the EPSG number (https://epsg.io/) refering to 
+        the spatial information of the ASCII file 
+    """
+    assert RasterFile != None or epsg != None, message
+    
+    ### read the ASCII file 
+    ASCIIValues, ASCIIDetails = ReadASCII(ASCIIFile,pixel_type)
+    ASCIIRows = ASCIIDetails[0]
+    ASCIIColumns = ASCIIDetails[1]
+    
+    # check the optional inputs 
+    if RasterFile != None :
+        assert type(RasterFile) == str, "RasterFile input should be string type"    
+        
+        RasterExt=RasterFile[-4:]
+        assert RasterExt == ".tif", "please add the extension at the end of the path input"
+        # read the raster file 
+        src = gdal.Open(RasterFile)
+        RasterColumns = src.RasterXSize
+        RasterRows = src.RasterYSize
+        
+        assert ASCIIRows == RasterRows and ASCIIColumns == RasterColumns, " Data in both ASCII file and Raster file should have the same number of row and columns"
+        
+        RasterLike(src,ASCIIValues, savePath, pixel_type)
+    elif epsg != None :
+        assert type(epsg)== int, "epsg input should be integer type please check documentations"
+        # coordinates of the lower left corner
+        XLeftSide  = ASCIIDetails[2]
+#        YLowSide = ASCIIDetails[3]
+        
+        CellSize = ASCIIDetails[4]
+        NoValue = ASCIIDetails[5]        
+        # calculate Geotransform coordinates for the raster
+        YUpperSide = ASCIIDetails[3] + ASCIIRows * CellSize
+        
+        dst_gt = (XLeftSide, CellSize, 0.0, YUpperSide, 0.0, -1*CellSize)
+        dst_epsg=osr.SpatialReference()
+        dst_epsg.ImportFromEPSG(epsg)
+        
+        if pixel_type==1:
+            dst=gdal.GetDriverByName('GTiff').Create(savePath,ASCIIColumns,ASCIIRows,1,gdal.GDT_Float32)
+        elif pixel_type==2: 
+            dst=gdal.GetDriverByName('GTiff').Create(savePath,ASCIIColumns,ASCIIRows,1,gdal.GDT_Float64)
+        elif pixel_type==3: 
+            dst=gdal.GetDriverByName('GTiff').Create(savePath,ASCIIColumns,ASCIIRows,1,gdal.GDT_UInt16)
+        elif pixel_type==4: 
+            dst=gdal.GetDriverByName('GTiff').Create(savePath,ASCIIColumns,ASCIIRows,1,gdal.GDT_UInt32)
+        elif pixel_type==5: 
+            dst=gdal.GetDriverByName('GTiff').Create(savePath,ASCIIColumns,ASCIIRows,1,gdal.GDT_Int16)
+        elif pixel_type==6: 
+            dst=gdal.GetDriverByName('GTiff').Create(savePath,ASCIIColumns,ASCIIRows,1,gdal.GDT_Int32)
+            
+        dst.SetGeoTransform(dst_gt)
+        dst.SetProjection(dst_epsg.ExportToWkt())
+        dst.GetRasterBand(1).SetNoDataValue(NoValue)
+        dst.GetRasterBand(1).Fill(NoValue)
+        dst.GetRasterBand(1).WriteArray(ASCIIValues)
+        dst.FlushCache()
+        dst = None
+
+
+
 
 def GetRasterData(Raster):
     """
@@ -1181,7 +1386,7 @@ def MatchDataAlignment(A_path,B_input_path,new_B_path):
     
     A=gdal.Open(A_path)
     files_list=os.listdir(B_input_path)
-    if "desktop.ini" in files_list:  files_list.remove("desktop.ini")
+    if "desktop.ini" in files_list: files_list.remove("desktop.ini")
     
     for i in range(len(files_list)):
         B=gdal.Open(B_input_path+files_list[i])
@@ -1330,6 +1535,7 @@ def MatchDataNoValuecells(A_path,B_input_path,new_B_path):
     
     A=gdal.Open(A_path)
     files_list=os.listdir(B_input_path)
+    if "desktop.ini" in files_list:  files_list.remove("desktop.ini")
     
     for i in range(len(files_list)):
         B=gdal.Open(B_input_path+files_list[i])
@@ -1444,6 +1650,8 @@ def FolderCalculator(folder_path,new_folder_path,function):
     
     # get names of rasters
     files_list=os.listdir(folder_path)
+    if "desktop.ini" in files_list: files_list.remove("desktop.ini")
+    
     # execute the function on each raster
     for i in range(len(files_list)):
         B=gdal.Open(folder_path+files_list[i])
@@ -1487,6 +1695,7 @@ def ReadRastersFolder(path):
     assert os.listdir(path)!= "","the path you have provided is empty"
     # get list of all files 
     files=os.listdir(path)
+    if "desktop.ini" in files: files.remove("desktop.ini")
     # check that folder only contains rasters
     assert all(f.endswith(".tif") for f in files), "all files in the given folder should have .tif extension"
     # create a 3d array with the 2d dimension of the first raster and the len 
