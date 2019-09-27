@@ -19,7 +19,7 @@ import osr
 from osgeo import gdalconst
 
 
-def ReadASCII(ASCIIFile,pixel_type):
+def ReadASCII(ASCIIFile,pixel_type=1):
     """  
     =========================================================================
         ReadASCII(ASCIIFile,pixel_type)
@@ -72,8 +72,8 @@ def ReadASCII(ASCIIFile,pixel_type):
     ASCIIColumns = int(Wholefile[0].split()[1])
     ASCIIRows = int(Wholefile[1].split()[1])
     
-    XLeftSide = int(Wholefile[2].split()[1])
-    YLowerSide = int(Wholefile[3].split()[1])
+    XLeftSide = int(float(Wholefile[2].split()[1]))
+    YLowerSide = int(float(Wholefile[3].split()[1]))
     CellSize = int(Wholefile[4].split()[1])
     NoValue = int(Wholefile[5].split()[1])
     
@@ -88,30 +88,89 @@ def ReadASCII(ASCIIFile,pixel_type):
     
     return ASCIIValues, ASCIIDetails
 
+def ReadASCIIsFolder(path, pixel_type):
+    """
+    ===========================================================
+       ReadRastersFolder(path)
+    ===========================================================
+    this function reads rasters from a folder and creates a 3d arraywith the same
+    2d dimensions of the first raster in the folder and len as the number of files
+    inside the folder.
+    - all rasters should have the same dimensions
+    - folder should only contain raster files
+    
+    Inputs:
+    ----------
+        1- path:
+            [String] path of the folder that contains all the rasters.
+    
+    Outputs:
+    ----------
+        1- arr_3d:
+            [numpy.ndarray] 3d array contains arrays read from all rasters in the folder.
+            
+        2-ASCIIDetails:
+            [List] list of the six spatial information of the ASCII file 
+            [ASCIIRows, ASCIIColumns, XLowLeftCorner, YLowLeftCorner, 
+            CellSize, NoValue]
+        3- files:
+            [list] list of names of all files inside the folder
+    
+    Example:
+    ----------
+        path = "ASCII folder/"
+        pixel_type = 1
+        ASCIIArray, ASCIIDetails, NameList = ReadASCIIsFolder(path, pixel_type)
+        
+    """
+    # input data validation
+    # data type
+    assert type(path)== str, "A_path input should be string type"
+    # input values
+    # check wether the path exist or not 
+    assert os.path.exists(path), "the path you have provided does not exist"
+    # check whether there are files or not inside the folder
+    assert os.listdir(path)!= "","the path you have provided is empty"
+    # get list of all files 
+    files=os.listdir(path)
+    if "desktop.ini" in files: files.remove("desktop.ini")
+    # check that folder only contains rasters
+    assert all(f.endswith(".asc") for f in files), "all files in the given folder should have .tif extension"
+    # create a 3d array with the 2d dimension of the first raster and the len 
+    # of the number of rasters in the folder
+    ASCIIValues, ASCIIDetails = ReadASCII(path+"/"+files[0], pixel_type)
+    noval = ASCIIDetails[5]
+    # fill the array with noval data
+    arr_3d=np.ones((ASCIIDetails[0],ASCIIDetails[1],len(files)))*noval
+    
+    for i in range(len(files)):
+        # read the tif file
+        f,_ = ReadASCII(path+"/"+files[0], pixel_type)
+        arr_3d[:,:,i]=f
+    
+    return arr_3d, ASCIIDetails, files
 
-def ASCIItoRaster(ASCIIFile,savePath,pixel_type,RasterFile = None,epsg = None):
+
+def ASCIItoRaster(ASCIIFile,savePath,pixel_type=1,RasterFile = None,epsg = None):
     """  
     =========================================================================
-        ASCIItoRaster(ASCIIFile,RasterFile,savePath,pixel_type)
+        ASCIItoRaster(ASCIIFile,savePath,pixel_type=1,RasterFile = None,epsg = None)
     =========================================================================
      
     This function convert an ASCII file into a raster format and in takes  all
     the spatial information (projection, coordinates of the corner point), and
-    number of rows and columns from the raster file
+    number of rows and columns from raster file or you have to define the epsg corresponding 
+    to the you coordinate system and projection
     
     Inputs:
         1-ASCIIFileName:
             [String] name of the ASCII file you want to convert and the name 
             should include the extension ".asc"
-        2-srcFile:
-            [String] source raster to get the spatial information, both ASCII
-            file and source raster should have the same number of rows, and 
-            same number of columns.
             
-        3-savePath:
+        2-savePath:
             [String] path to save the new raster including new raster name and extension (.tif)
             
-        4-pixel_type:
+        3-pixel_type:
             [Integer] type of the data to be stored in the pixels,default is 1 (float32)
             for example pixel type of flow direction raster is unsigned integer
             1 for float32
@@ -120,7 +179,18 @@ def ASCIItoRaster(ASCIIFile,savePath,pixel_type,RasterFile = None,epsg = None):
             4 for Unsigned integer 32
             5 for integer 16
             6 for integer 32
-        
+            
+        4-RasterFile:
+            [String] source raster to get the spatial information, both ASCII
+            file and source raster should have the same number of rows, and 
+            same number of columns default value is [None].
+         
+        5-epsg: 
+            EPSG stands for European Petroleum Survey Group and is an organization 
+            that maintains a geodetic parameter database with standard codes,
+            the EPSG codes, for coordinate systems, datums, spheroids, units 
+            and such alike (https://epsg.io/) default value is [None].
+            
     Outputs:
         1- a New Raster will be saved in the savePath containing the values 
         of the ASCII file
@@ -223,6 +293,91 @@ def ASCIItoRaster(ASCIIFile,savePath,pixel_type,RasterFile = None,epsg = None):
         dst = None
 
 
+
+def ASCIIFoldertoRaster(path,savePath,pixel_type=1,RasterFile = None,epsg = None):
+    """  
+    =========================================================================
+    ASCIItoRaster(path,savePath,pixel_type)
+    =========================================================================
+     
+    This function takes the path of a folder contains ASCII files and convert 
+    them into a raster format and in takes  all the spatial information 
+    (projection, coordinates of the corner point), and number of rows 
+    and columns from raster file or you have to define the epsg corresponding 
+    to the you coordinate system and projection
+    
+    Inputs:
+    =========
+    
+        1-path:
+            [String] path to the folder containing the ASCII files
+    
+        2-savePath:
+            [String] path to save the new raster including new raster name and extension (.tif)
+            
+        3-pixel_type:
+            [Integer] type of the data to be stored in the pixels,default is 1 (float32)
+            for example pixel type of flow direction raster is unsigned integer
+            1 for float32
+            2 for float64
+            3 for Unsigned integer 16
+            4 for Unsigned integer 32
+            5 for integer 16
+            6 for integer 32
+    
+        4-RasterFile:
+            [String] source raster to get the spatial information, both ASCII
+            file and source raster should have the same number of rows, and 
+            same number of columns default value is [None].
+         
+        5-epsg: 
+            EPSG stands for European Petroleum Survey Group and is an organization 
+            that maintains a geodetic parameter database with standard codes,
+            the EPSG codes, for coordinate systems, datums, spheroids, units 
+            and such alike (https://epsg.io/) default value is [None].
+                
+    Outputs:
+    =========
+        1- a New Raster will be saved in the savePath containing the values 
+        of the ASCII file
+        
+    Example:
+    =========
+        1- ASCII to raster given a raster file:
+            ASCIIFile = "soiltype.asc"
+            RasterFile = "DEM.tif"
+            savePath = "Soil_raster.tif"
+            pixel_type = 1
+            ASCIItoRaster(ASCIIFile,  savePath, pixel_type, RasterFile)
+        2- ASCII to Raster given an EPSG number
+            ASCIIFile = "soiltype.asc"
+            savePath = "Soil_raster.tif"
+            pixel_type = 1
+            epsg = 4647
+        ASCIIFoldertoRaster(path,savePath,pixel_type=5,epsg = epsg)
+    """
+    
+    # input data validation
+    # data type
+    assert type(path)== str, "A_path input should be string type"
+    # input values
+    # check wether the path exist or not 
+    assert os.path.exists(path), "the path you have provided does not exist"
+    # check whether there are files or not inside the folder
+    assert os.listdir(path)!= "","the path you have provided is empty"
+    # get list of all files 
+    files=os.listdir(path)
+    if "desktop.ini" in files: files.remove("desktop.ini")
+    # check that folder only contains rasters
+    assert all(f.endswith(".asc") for f in files), "all files in the given folder should have .tif extension"
+    # create a 3d array with the 2d dimension of the first raster and the len 
+    # of the number of rasters in the folder
+    
+    for i in range(len(files)):
+            ASCIIFile = path + "/" + files[i]
+            name = savePath + "/" + files[i].split(".")[0] + ".tif"
+            ASCIItoRaster(ASCIIFile,name,pixel_type,RasterFile = None,epsg = epsg)
+            
 
 
 def GetRasterData(Raster):
