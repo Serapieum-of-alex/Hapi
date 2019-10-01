@@ -2,15 +2,15 @@
 main page
 """
 import os
-os.chdir("C:/Users/Mostafa/Desktop/My Files/thesis/My Thesis/Data_and_Models/Interface/Distributed_Hydrological_model")
+os.chdir("F:/01Algorithms/HAPI/Web_application")
 
 import sys
 sys.path.append("HBV_distributed/function")
 import gdal
 # to add the gdal data environment variable
-gdal.SetConfigOption("GDAL_DATA","C:\Users\Mostafa\AppData\Local\conda\conda\envs\Python_27\Library\share\gdal")
+gdal.SetConfigOption("GDAL_DATA","E:/Anaconda2/envs/Env_64_2.7/Library/share/gdal")
 # to add the proj data environment variable
-gdal.SetConfigOption("PROJ_data","C:\Users\Mostafa\AppData\Local\conda\conda\envs\Python_27\Library\share\epsg_csv")
+gdal.SetConfigOption("PROJ_data","E:/Anaconda2/envs/Env_64_2.7/Library/share/epsg_csv")
 #%% Library
 import numpy as np
 import pandas as pd
@@ -29,7 +29,7 @@ from collections import OrderedDict
 #import time
 
 # bokeh
-from bokeh.layouts import layout, widgetbox, row, column, Widget , gridplot
+from bokeh.layouts import layout, widgetbox, row, column,  gridplot #,Widget
 from bokeh.models.widgets import (Panel, Button, TextInput, Div, Tabs ,Slider,Select ,
                                   RadioButtonGroup, #DataTable, DateFormatter, TableColumn, 
 #                                 DateRangeSlider, DateFormatter, DataTable, TableColumn #,DatePicker, NumberFormatter 
@@ -894,8 +894,8 @@ inputs_graph.add_tools(PanTool(), WheelZoomTool(),ResetTool(), CrosshairTool())
 """generated data plot  """
 ## TODO change the tag of the slider to day, hour, month and year 
 gen_message=Div(text=" Generate your distributed data", width=200)
-#gendata_slider= Slider(title="index ", start=0, end=(len(date_tab2_ds.data['date'])-1), value=0, step=1, )#title="Frame"
-gendata_slider= Slider(title="index ", start=0, end=0, value=0, step=1, width=400)#title="Frame"
+gendata_slider= Slider(title="index ", start=0, end=(len(date_tab2_ds.data['date'])-1), value=0, step=1, )#title="Frame"
+#gendata_slider= Slider(title="index ", start=0, end=0, value=0, step=1, width=400)#title="Frame"
 #gendata_date = TextInput(value = str(date_tab2_ds.data['date'][0]), title = 'date:',width=60) #, css_classes=['customTextInput']
 gendata_date = TextInput(value = " ", title = 'date:',width=60) #, css_classes=['customTextInput']
 
