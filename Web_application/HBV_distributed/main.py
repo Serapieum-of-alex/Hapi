@@ -53,14 +53,17 @@ from bokeh.models.glyphs import Patches #, Line, Circle
 #from bokeh.plotting import save
 
 # functions
-import DHBV_functions
+#import DHBV_functions
+import GISpy as GIS
+import WeirdFn
+import DistParameters 
 import Wrapper
-import Performance_criteria
+import PerformanceCriteria
 import plotting_functions as plf
 import java_functions
-import preparation_functions as pf
-import statistical_tools as st
-from inputs import Inputs
+import Inputs as pf
+import StatisticalTools as st
+#from inputs import Inputs
 #%% Run the model
 # Read the input data 
 data_file= 'HBV_distributed/static/input_data/' # Name of the output file
@@ -95,11 +98,11 @@ sp_temp_c=np.load(data_file +'sp_temp_c.npy')
 
 sp_quz_4km=np.load(data_file + "q_uz_c_4km.npy")
 
-flow_acc_table=DHBV_functions.load_obj(data_file +"flow_acc_table")
+flow_acc_table=WeirdFn.load_obj(data_file +"flow_acc_table")
 flow_acc=np.load(data_file +'flow_acc.npy')
 
 DEM = gdal.Open(data_file+"/DEM/"+"dem_4km.tif")
-elev, no_val=DHBV_functions.get_raster_data(DEM)
+elev, no_val=GIS.GetRasterData(DEM)
 
 elev[elev==no_val]=np.nan
 no_cells=np.size(elev[:,:])-np.count_nonzero(np.isnan(elev[:,:]))
@@ -114,7 +117,7 @@ klb=pars [-2]
 kub=pars [-1]
 pars =pars [:-2]
 
-jiboa_par,lake_par=DHBV_functions.par2d_lumpedK1(pars,DEM,12,13,kub,klb)
+jiboa_par,lake_par=DistParameters.par2d_lumpedK1_lake(pars,DEM,12,13,kub,klb)
 
 #pars = [0.5, 0.2, 0.01, 0.1, 10.0, 20.0, 1, 1]
 extra_pars = [1, 227.31,133.98,70.64] # [time factor,catchment area, lakecatchment area, lake area]
@@ -578,7 +581,7 @@ def run_Distributed_model():
     performance_Q={}
 #    calc_Q=pd.DataFrame(index=index)
 #    q_tot, st , q_uz_routed, q_lz,_
-    result_ds.data['Qout'][0],_,result_ds.data['Quz_dist'][0],_=Wrapper.Dist_model(lake_data_A,
+    result_ds.data['Qout'][0],_,result_ds.data['Quz_dist'][0],_=Wrapper.Dist_model_lake(lake_data_A,
                                  extra_pars,curve,lakecell,DEM,flow_acc_table,flow_acc,sp_prec_c,sp_et_c,
                                  sp_temp_c, pars,kub,klb,jiboa_initial=jiboa_initial,
                                  lake_initial=lake_initial,ll_temp=None, q_0=None)
@@ -590,13 +593,13 @@ def run_Distributed_model():
     WS['type']=1 #------------------------------------------------------------------------
     WS['N']=3 #------------------------------------------------------------------------
     
-    performance_Q['c_error_hf']=Performance_criteria.rmseHF(lake_data['Q'],result_ds.data['Qout'][0],WS['type'],WS['N'],0.75)#------------------------------------------------------------------------
-    performance_Q['c_error_lf']=Performance_criteria.rmseLF(lake_data['Q'],result_ds.data['Qout'][0],WS['type'],WS['N'],0.75)#------------------------------------------------------------------------
-    performance_Q['c_nsehf']=Performance_criteria.nse(lake_data_A[:,-1],result_ds.data['Qout'][0])#------------------------------------------------------------------------
-    performance_Q['c_rmse']=Performance_criteria.rmse(lake_data_A[:,-1],result_ds.data['Qout'][0])#------------------------------------------------------------------------
-    performance_Q['c_nself']=Performance_criteria.nse(np.log(lake_data_A[:,-1]),np.log(result_ds.data['Qout'][0]))#------------------------------------------------------------------------
-    performance_Q['c_KGE']=Performance_criteria.KGE(lake_data_A[:,-1],result_ds.data['Qout'][0])#------------------------------------------------------------------------
-    performance_Q['c_wb']=Performance_criteria.WB(lake_data_A[:,-1],result_ds.data['Qout'][0])#------------------------------------------------------------------------
+    performance_Q['c_error_hf'] = PerformanceCriteria.rmseHF(lake_data['Q'],result_ds.data['Qout'][0],WS['type'],WS['N'],0.75)#------------------------------------------------------------------------
+    performance_Q['c_error_lf']=PerformanceCriteria.rmseLF(lake_data['Q'],result_ds.data['Qout'][0],WS['type'],WS['N'],0.75)#------------------------------------------------------------------------
+    performance_Q['c_nsehf']=PerformanceCriteria.nse(lake_data_A[:,-1],result_ds.data['Qout'][0])#------------------------------------------------------------------------
+    performance_Q['c_rmse']=PerformanceCriteria.rmse(lake_data_A[:,-1],result_ds.data['Qout'][0])#------------------------------------------------------------------------
+    performance_Q['c_nself']=PerformanceCriteria.nse(np.log(lake_data_A[:,-1]),np.log(result_ds.data['Qout'][0]))#------------------------------------------------------------------------
+    performance_Q['c_KGE']=PerformanceCriteria.KGE(lake_data_A[:,-1],result_ds.data['Qout'][0])#------------------------------------------------------------------------
+    performance_Q['c_wb']=PerformanceCriteria.WB(lake_data_A[:,-1],result_ds.data['Qout'][0])#------------------------------------------------------------------------
     
     # update data source
     ds_sim.data = (dict(q_sim = result_ds.data['Qout'][0].tolist(), ds_time = index))
@@ -1124,8 +1127,8 @@ create_input="HBV_distributed/static/input_data/create_inputs/"
 #source
 src = gdal.Open(create_input+"dem_4km.tif")
     
-gis=Inputs(src)
-FD,elev=gis.FD_from_DEM()
+#gis=Inputs(src)
+#FD,elev=gis.FD_from_DEM()
 
 layout_inputdata2 = layout(children=[
                                     [des_div_in2],

@@ -1,269 +1,199 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sat May 26 04:52:15 2018
+Created on Wed May 16 03:50:00 2018
 
 @author: Mostafa
 """
-# library
+#%links
+
+#%library
+import os
+import datetime as dt
 import numpy as np
-#import gdal
-#from osgeo import gdalconst
-#import osr
+import shutil
+import pandas as pd
+# functions
+import GISpy as GIS
 
-class Inputs:
-    
-    def __init__(self,raster):
-        self.raster=raster
-    
 
-    def FD_from_DEM(self):
-        """
-        # =====================================================================
-        #   FD_from_DEM(Raster)
-        # =====================================================================
-        this function generate flow direction raster from DEM and fill sinks
+def PrepareInputs(Raster,InputFolder,FolderName):
+    """
+    ================================================================
+        PrepareInputs(Raster,InputFolder,FolderName)
+    ================================================================
+    this function prepare downloaded raster data to have the same align and 
+    nodatavalue from a GIS raster (DEM, flow accumulation, flow direction raster)
+    and return a folder with the output rasters with a name "New_Rasters"
+    
+    Inputs:
+        1-Raster:
+            [String] path to the spatial information source raster to get the spatial information 
+            (coordinate system, no of rows & columns) A_path should include the name of the raster 
+            and the extension like "data/dem.tif"
+        2-InputFolder:
+            [String] path of the folder of the rasters you want to adjust their 
+            no of rows, columns and resolution (alignment) like raster A 
+            the folder should not have any other files except the rasters
+        3-FolderName:
+            [String] name to create a folder to store resulted rasters
+    Example:
+        Ex1:
+            dem_path="01GIS/inputs/4000/acc4000.tif"
+            prec_in_path="02Precipitation/CHIRPS/Daily/"
+            Inputs.PrepareInputs(dem_path,prec_in_path,"prec")
+        Ex2:
+            dem_path="01GIS/inputs/4000/acc4000.tif"
+            outputpath="00inputs/meteodata/4000/"
+            evap_in_path="03Weather_Data/evap/"
+            Inputs.PrepareInputs(dem_path,evap_in_path,outputpath+"evap")
+    """
+    # input data validation
+    # data type
+    assert type(FolderName)== str, "FolderName input should be string type"
+    # create a new folder for new created alligned rasters in temp
+    # check if you can create the folder 
+    try:
+        os.makedirs(os.path.join(os.environ['TEMP'],"AllignedRasters"))
+    except WindowsError : 
+        # if not able to create the folder delete the folder with the same name and create one empty
+        shutil.rmtree(os.path.join(os.environ['TEMP']+"/AllignedRasters"))
+        os.makedirs(os.path.join(os.environ['TEMP'],"AllignedRasters"))
         
-        inputs:
-            1-Raster:
-                [Gdal object] DEM 
-        Outputs:
-            1- flow_direction_cell:
-                [numpy array] with the same dimensions of the raster and 2 layers
-                first layer for row index and second row for column index
-            2-elev_sinkless:
-                [numpy array] DEM after filling sinks
-        """
-        DEM=self.raster
+    temp=os.environ['TEMP']+"/AllignedRasters/"
+    
+    # match alignment 
+    GIS.MatchDataAlignment(Raster,InputFolder,temp)
+    # create new folder in the current directory for alligned and nodatavalue matched cells
+    try:
+        os.makedirs(os.path.join(os.getcwd(),FolderName))
+    except WindowsError:
+        print("please function is trying to create a folder with a name New_Rasters to complete the process if there is a folder with the same name please rename it to other name")    
+    # match nodata value 
+    GIS.MatchDataNoValuecells(Raster,temp,FolderName+"/")
+    # delete the processing folder from temp
+    shutil.rmtree(temp)
+
+def changetext2time(string):
+    """
+    # =============================================================================
+    #     changetext2time(string)
+    # =============================================================================
+    this functions changes the date from a string to a date time format
+    """
+    time=dt.datetime(int(string[:4]),int(string[5:7]),int(string[8:10]),
+                  int(string[11:13]),int(string[14:16]),int(string[17:]))
+    return time
+
+def rescale(OldValue,OldMin,OldMax,NewMin,NewMax):
+    """
+    # =============================================================================
+    #  rescale(OldValue,OldMin,OldMax,NewMin,NewMax)
+    # =============================================================================
+    this function rescale a value between two boundaries to a new value bewteen two 
+    other boundaries
+    inputs:
+        1-OldValue:
+            [float] value need to transformed
+        2-OldMin:
+            [float] min old value
+        3-OldMax:
+            [float] max old value
+        4-NewMin:
+            [float] min new value
+        5-NewMax:
+            [float] max new value
+    output:
+        1-NewValue:
+            [float] transformed new value
         
-        gt=DEM.GetGeoTransform()
-        cellsize=gt[1]
-        dist2=cellsize*np.sqrt(2)
-        no_columns=DEM.RasterXSize
-        no_rows=DEM.RasterYSize
+    """
+    OldRange = (OldMax - OldMin)  
+    NewRange = (NewMax - NewMin)  
+    NewValue = (((OldValue - OldMin) * NewRange) / OldRange) + NewMin
+    
+    return NewValue
+
+
+def mycolor(x,min_old,max_old,min_new, max_new):
+    """
+    # =============================================================================
+    #  mycolor(x,min_old,max_old,min_new, max_new)
+    # =============================================================================
+    this function transform the value between two normal values to a logarithmic scale
+    between logarithmic value of both boundaries 
+    inputs:
+        1-x:
+            [float] new value needed to be transformed to a logarithmic scale
+        2-min_old:
+            [float] min old value in normal scale
+        3-max_old:
+            [float] max old value in normal scale
+        4-min_new:
+            [float] min new value in normal scale
+        5-max_new:
+            [float] max_new max new value
+    output:
+        1-Y:
+            [int] integer number between new max_new and min_new boundaries
+    """
+    
+    # get the boundaries of the logarithmic scale
+    if min_old== 0.0:
+        min_old_log=-7
+    else:
+        min_old_log=np.log(min_old)
         
-        
-        elev=DEM.ReadAsArray()
-        # get the value stores in novalue cells
-        dem_no_val = np.float32(DEM.GetRasterBand(1).GetNoDataValue())
-        elev[elev==dem_no_val]=np.nan
-        
-        slopes=np.ones((no_rows,no_columns,9))*np.nan
-        distances=[cellsize,dist2,cellsize,dist2,cellsize,dist2,cellsize,dist2]
-        
-        # filling sinks 
-        elev_sinkless=elev
-        for i in range(1,no_rows-1):
-            for j in range(1,no_columns-1):
-                # get elevation of surrounding cells
-                f=[elev[i-1,j],elev[i-1,j-1],elev[i,j-1],elev[i+1,j-1],elev[i+1,j],elev[i+1,j+1],elev[i,j+1],elev[i-1,j+1]]
-                if elev[i,j]< min(f):
-                    elev_sinkless[i,j]=min(f)+0.1
-                
-        
-        flow_direction=np.ones((no_rows,no_columns))*np.nan
-        
-        for i in range(1,no_rows-1):
-            for j in range(1,no_columns-1):
-                # calculate only if cell in elev is not nan
-                if not np.isnan(elev[i,j]) :
-                    # calculate slope
-                    slopes[i,j,0]=(elev_sinkless[i,j]-elev_sinkless[i,j+1])/distances[0] # slope with cell to the right
-                    slopes[i,j,1]=(elev_sinkless[i,j]-elev_sinkless[i-1,j+1])/distances[1]# slope with cell to the top right
-                    slopes[i,j,2]=(elev_sinkless[i,j]-elev_sinkless[i-1,j])/distances[2] # slope with cell to the top
-                    slopes[i,j,3]=(elev_sinkless[i,j]-elev_sinkless[i-1,j-1])/distances[3] # slope with cell to the top left
-                    slopes[i,j,4]=(elev_sinkless[i,j]-elev_sinkless[i,j-1])/distances[4] # slope with cell to the left
-                    slopes[i,j,5]=(elev_sinkless[i,j]-elev_sinkless[i+1,j-1])/distances[5] # slope with cell to the bottom left
-                    slopes[i,j,6]=(elev_sinkless[i,j]-elev_sinkless[i+1,j])/distances[6] # slope with cell to the bottom
-                    slopes[i,j,7]=(elev_sinkless[i,j]-elev_sinkless[i+1,j+1])/distances[7] # slope with cell to the bottom right 
-                    # get the flow direction index
-                    flow_direction[i,j]=np.where(slopes[i,j,:]==np.nanmax(slopes[i,j,:]))[0][0]
-                    slopes[i,j,8]=np.nanmax(slopes[i,j,:])
-        
-        # first row without corners
-        for i in [0]: 
-            for j in range(1,no_columns-1): # all columns
-                if not np.isnan(elev[i,j]) :
-                    slopes[i,j,0]=(elev_sinkless[i,j]-elev_sinkless[i,j+1])/distances[0] # slope with cell to the right
-                    slopes[i,j,4]=(elev_sinkless[i,j]-elev_sinkless[i,j-1])/distances[4] # slope with cell to the left
-                    slopes[i,j,5]=(elev_sinkless[i,j]-elev_sinkless[i+1,j-1])/distances[5] # slope with cell to the bottom left
-                    slopes[i,j,6]=(elev_sinkless[i,j]-elev_sinkless[i+1,j])/distances[6] # slope with cell to the bottom
-                    slopes[i,j,7]=(elev_sinkless[i,j]-elev_sinkless[i+1,j+1])/distances[7] # slope with cell to the bottom right
-                    
-                    flow_direction[i,j]=np.where(slopes[i,j,:]==np.nanmax(slopes[i,j,:]))[0][0]
-                    slopes[i,j,8]=np.nanmax(slopes[i,j,:])
-        
-        # last row without corners
-        for i in [no_rows-1]:
-            for j in range(1,no_columns-1): # all columns
-                if not np.isnan(elev[i,j]) :
-                    slopes[i,j,0]=(elev_sinkless[i,j]-elev_sinkless[i,j+1])/distances[0] # slope with cell to the right
-                    slopes[i,j,1]=(elev_sinkless[i,j]-elev_sinkless[i-1,j+1])/distances[1]# slope with cell to the top right
-                    slopes[i,j,2]=(elev_sinkless[i,j]-elev_sinkless[i-1,j])/distances[2] # slope with cell to the top
-                    slopes[i,j,3]=(elev_sinkless[i,j]-elev_sinkless[i-1,j-1])/distances[3] # slope with cell to the top left
-                    slopes[i,j,4]=(elev_sinkless[i,j]-elev_sinkless[i,j-1])/distances[4] # slope with cell to the left
-                    
-                    flow_direction[i,j]=np.where(slopes[i,j,:]==np.nanmax(slopes[i,j,:]))[0][0]
-                    slopes[i,j,8]=np.nanmax(slopes[i,j,:])
-        
-        # top left corner
-        i=0
-        j=0
-        if not np.isnan(elev[i,j]) :
-            slopes[i,j,0]=(elev_sinkless[i,j]-elev_sinkless[i,j+1])/distances[0] # slope with cell to the left 
-            slopes[i,j,6]=(elev_sinkless[i,j]-elev_sinkless[i+1,j])/distances[6] # slope with cell to the bottom
-            slopes[i,j,7]=(elev_sinkless[i,j]-elev_sinkless[i+1,j+1])/distances[7] # slope with cell to the bottom right
+    max_old_log=np.log(max_old)    
+    
+    if x==0:
+        x_log=-7
+    else:
+        x_log=np.log(x)
+    
+    y=int(np.round(rescale(x_log,min_old_log,max_old_log,min_new,max_new)))
+    
+    return y
+
+def ReadExcelData(path,years,months):
+    """
+    ===========================================================
+        ReadExcelData(path,years,months)
+    ===========================================================
+    this function reads data listed in excel sheet with years and months are
+    listed as columns and days are listed in the first row
+    year month 1 2 3 4 5 6 7 8 9 .....................31
+    2012  1    5 6 2 6 8 6 9 7 4 3 ...................31
+    2012  2    9 8 7 6 3 2 1 5 5 9 ...................31
+    
+    inputs:
+    ----------
+        1- path:
+            [string] path of the excel file 
+        2-years:
+            [list] list of the years you want to read
+        3-months:
+            [list] list of the months you you want to read
+    Outputs:
+    ----------
+        1- List of the values in the excel file
+    Examples:
+    ----------    
+        years=[2009,2010,2011]#,2012,2013]
+        months=[1,2,3,4,5,6,7,8,9,10,11,12]
+        Q=ReadExcelData(path+"Discharge/Qout.xlsx",years,months)
+    """
+    
+    Qout=pd.read_excel(path)
+    Q=[]
+#    years=[2009,2010,2011]#,2012,2013]
+#    months=[1,2,3,4,5,6,7,8,9,10,11,12]
+    for year in years:
+        for month in months:
+            row=Qout[Qout['year'] == year][Qout['month'] == month]
+            row=row.drop(['year','month'], axis=1)
+            row=row.values.tolist()[0]
+            Q=Q+row
             
-            flow_direction[i,j]=np.where(slopes[i,j,:]==np.nanmax(slopes[i,j,:]))[0][0]
-            slopes[i,j,8]=np.nanmax(slopes[i,j,:])
-        
-        # top right corner
-        i=0
-        j=no_columns-1
-        if not np.isnan(elev[i,j]) :
-            slopes[i,j,4]=(elev_sinkless[i,j]-elev_sinkless[i,j-1])/distances[4] # slope with cell to the left
-            slopes[i,j,5]=(elev_sinkless[i,j]-elev_sinkless[i+1,j-1])/distances[5] # slope with cell to the bottom left
-            slopes[i,j,6]=(elev_sinkless[i,j]-elev_sinkless[i+1,j])/distances[6] # slope with cell to the bott
-            
-            flow_direction[i,j]=np.where(slopes[i,j,:]==np.nanmax(slopes[i,j,:]))[0][0]
-            slopes[i,j,8]=np.nanmax(slopes[i,j,:])
-        
-        # bottom left corner 
-        i=no_rows-1
-        j=0
-        if not np.isnan(elev[i,j]) :
-            slopes[i,j,0]=(elev_sinkless[i,j]-elev_sinkless[i,j+1])/distances[0] # slope with cell to the right
-            slopes[i,j,1]=(elev_sinkless[i,j]-elev_sinkless[i-1,j+1])/distances[1]# slope with cell to the top right
-            slopes[i,j,2]=(elev_sinkless[i,j]-elev_sinkless[i-1,j])/distances[2] # slope with cell to the top
-            
-            flow_direction[i,j]=np.where(slopes[i,j,:]==np.nanmax(slopes[i,j,:]))[0][0]
-            slopes[i,j,8]=np.nanmax(slopes[i,j,:])
-        
-        # bottom right
-        i=no_rows-1
-        j=no_columns-1
-        if not np.isnan(elev[i,j]) :
-            slopes[i,j,2]=(elev_sinkless[i,j]-elev_sinkless[i-1,j])/distances[2] # slope with cell to the top
-            slopes[i,j,3]=(elev_sinkless[i,j]-elev_sinkless[i-1,j-1])/distances[3] # slope with cell to the top left
-            slopes[i,j,4]=(elev_sinkless[i,j]-elev_sinkless[i,j-1])/distances[4] # slope with cell to the left
-            
-            flow_direction[i,j]=np.where(slopes[i,j,:]==np.nanmax(slopes[i,j,:]))[0][0]
-            slopes[i,j,8]=np.nanmax(slopes[i,j,:])
-        
-        # first column
-        for i in range(1,no_rows-1):
-            for j in [0]:
-                if not np.isnan(elev[i,j]) :
-                    slopes[i,j,0]=(elev_sinkless[i,j]-elev_sinkless[i,j+1])/distances[0] # slope with cell to the right
-                    slopes[i,j,1]=(elev_sinkless[i,j]-elev_sinkless[i-1,j+1])/distances[1]# slope with cell to the top right
-                    slopes[i,j,2]=(elev_sinkless[i,j]-elev_sinkless[i-1,j])/distances[2] # slope with cell to the top
-                    slopes[i,j,6]=(elev_sinkless[i,j]-elev_sinkless[i+1,j])/distances[6] # slope with cell to the bottom
-                    slopes[i,j,7]=(elev_sinkless[i,j]-elev_sinkless[i+1,j+1])/distances[7] # slope with cell to the bottom right 
-                    # get the flow direction index
-                    
-                    flow_direction[i,j]=np.where(slopes[i,j,:]==np.nanmax(slopes[i,j,:]))[0][0]
-                    slopes[i,j,8]=np.nanmax(slopes[i,j,:])
-        
-        # last column
-        for i in range(1,no_rows-1):
-            for j in [no_columns-1]:
-                if not np.isnan(elev[i,j]) :
-                    slopes[i,j,2]=(elev_sinkless[i,j]-elev_sinkless[i-1,j])/distances[2] # slope with cell to the top
-                    slopes[i,j,3]=(elev_sinkless[i,j]-elev_sinkless[i-1,j-1])/distances[3] # slope with cell to the top left
-                    slopes[i,j,4]=(elev_sinkless[i,j]-elev_sinkless[i,j-1])/distances[4] # slope with cell to the left
-                    slopes[i,j,5]=(elev_sinkless[i,j]-elev_sinkless[i+1,j-1])/distances[5] # slope with cell to the bottom left
-                    slopes[i,j,6]=(elev_sinkless[i,j]-elev_sinkless[i+1,j])/distances[6] # slope with cell to the bottom
-                    # get the flow direction index
-                    
-                    flow_direction[i,j]=np.where(slopes[i,j,:]==np.nanmax(slopes[i,j,:]))[0][0]
-                    slopes[i,j,8]=np.nanmax(slopes[i,j,:])        
-        #        print(str(i)+","+str(j))
-        
-        flow_direction_cell=np.ones((no_rows,no_columns,2))*np.nan
-        #for i in range(1,no_rows-1):
-        #    for j in range(1,no_columns-1):
-        for i in range(no_rows):
-            for j in range(no_columns):
-                if flow_direction[i,j]==0:
-                    flow_direction_cell[i,j,0]=i  # index of the row 
-                    flow_direction_cell[i,j,1]=j+1 # index of the column
-                elif flow_direction[i,j]==1:
-                    flow_direction_cell[i,j,0]=i-1
-                    flow_direction_cell[i,j,1]=j+1
-                elif flow_direction[i,j]==2:
-                    flow_direction_cell[i,j,0]=i-1
-                    flow_direction_cell[i,j,1]=j   
-                elif flow_direction[i,j]==3:
-                    flow_direction_cell[i,j,0]=i-1
-                    flow_direction_cell[i,j,1]=j-1
-                elif flow_direction[i,j]==4:
-                    flow_direction_cell[i,j,0]=i
-                    flow_direction_cell[i,j,1]=j-1
-                elif flow_direction[i,j]==5:
-                    flow_direction_cell[i,j,0]=i+1
-                    flow_direction_cell[i,j,1]=j-1
-                elif flow_direction[i,j]==6:
-                    flow_direction_cell[i,j,0]=i+1
-                    flow_direction_cell[i,j,1]=j
-                elif flow_direction[i,j]==7:
-                    flow_direction_cell[i,j,0]=i+1
-                    flow_direction_cell[i,j,1]=j+1
-        
-        return flow_direction_cell,elev_sinkless
+    Q=[Q[i] for i in range(len(Q)) if not np.isnan(Q[i])]
     
-    
-    
-    
-    def FD_array(self):
-        """
-        # =============================================================================
-        #   FD_array(FD)
-        # =============================================================================
-        this function takes flow firection codes for the 8 directions (1,2,4,8,16,32,64,128)
-        and return the indeces of the upstream cells
-        
-        inputs:
-            1- FD:
-                flow direction raster
-        output:
-            1-flow_direction_cell:
-                [numpy array] with the same dimensions of the raster and 2 layers
-                first layer for row index and second row for column index
-        """
-        FD=self.raster
-        no_val = FD.GetRasterBand(1).GetNoDataValue()
-        no_columns=FD.RasterXSize
-        no_rows=FD.RasterYSize
-    
-        flow_direction=np.float32(FD.ReadAsArray())
-        flow_direction[flow_direction==no_val]=np.nan
-    
-        flow_direction_cell=np.ones((no_rows,no_columns,2))*np.nan
-    
-        for i in range(no_rows):
-            for j in range(no_columns):
-                if flow_direction[i,j]==1:
-                    flow_direction_cell[i,j,0]=i  # index of the row 
-                    flow_direction_cell[i,j,1]=j+1 # index of the column
-                elif flow_direction[i,j]==128:
-                    flow_direction_cell[i,j,0]=i-1
-                    flow_direction_cell[i,j,1]=j+1
-                elif flow_direction[i,j]==64:
-                    flow_direction_cell[i,j,0]=i-1
-                    flow_direction_cell[i,j,1]=j   
-                elif flow_direction[i,j]==32:
-                    flow_direction_cell[i,j,0]=i-1
-                    flow_direction_cell[i,j,1]=j-1
-                elif flow_direction[i,j]==16:
-                    flow_direction_cell[i,j,0]=i
-                    flow_direction_cell[i,j,1]=j-1
-                elif flow_direction[i,j]==8:
-                    flow_direction_cell[i,j,0]=i+1
-                    flow_direction_cell[i,j,1]=j-1
-                elif flow_direction[i,j]==4:
-                    flow_direction_cell[i,j,0]=i+1
-                    flow_direction_cell[i,j,1]=j
-                elif flow_direction[i,j]==2:
-                    flow_direction_cell[i,j,0]=i+1
-                    flow_direction_cell[i,j,1]=j+1
-        
-        return flow_direction_cell
+    return Q

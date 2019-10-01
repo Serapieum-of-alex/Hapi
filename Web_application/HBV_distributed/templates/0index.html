@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <style>
+            body { background: #d1d8da; }
+            h55{
+/*                margin: auto;*/
+                font-size: 50px;
+/*                font-weight: 8;*/
+/*                width: 5px;*/
+                max-width:800px;
+/*                height: 50px;*/
+                color:#283028;
+/*                background: #d3d6d6;*/
+/*                border: 3px solid #73AD21;*/
+                }
+        </style>
+<!--        <link rel="stylesheet" type="text/css" href="HBV_distributed/templates/styles.css"></link>-->
+        <meta charset="utf-8">
+        {{ bokeh_css }}
+        {{ bokeh_js }}
+    </head>
+    <body>
+        {{ plot_div|indent(8) }}
+        {{ plot_script|indent(8) }}
+    </body>
+</html>

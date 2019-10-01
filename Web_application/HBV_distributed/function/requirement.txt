@@ -1,0 +1,4 @@
+Numpy
+gdal
+pandas
+geopandas
