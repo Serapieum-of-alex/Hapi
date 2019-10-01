@@ -11,11 +11,11 @@ from types import ModuleType
 
 # functions
 import GISpy
-import HBV
+#import HBV
 import Routing
 import GISCatchment as GC
 
-def Dist_HBV2(lakecell,q_lake,DEM,flow_acc,flow_acc_plan, sp_prec, sp_et, sp_temp, sp_pars, p2, init_st=None, 
+def Dist_HBV2(ConceptualModel,lakecell,q_lake,DEM,flow_acc,flow_acc_plan, sp_prec, sp_et, sp_temp, sp_pars, p2, init_st=None, 
                 ll_temp=None, q_0=None):
     '''
     Make spatially distributed HBV in the SM and UZ
@@ -54,13 +54,14 @@ def Dist_HBV2(lakecell,q_lake,DEM,flow_acc,flow_acc_plan, sp_prec, sp_et, sp_tem
         st_i = []
         q_lzi = []
         q_uzi = []
-    #        q_out_i = []
-    # run all cells in one row ----------------------------------------------------
+        #        q_out_i = []
+        # run all cells in one row ----------------------------------------------------
         for y in range(y_ext): # no of columns
             if mask [x, y] != no_val:  # only for cells in the domain
                 # Calculate the states per cell
                 # TODO optimise for multiprocessing these loops   
-                _, _st, _uzg, _lzg = HBV.simulate_new_model(avg_prec = sp_prec[x, y,:], 
+#                _, _st, _uzg, _lzg = ConceptualModel.simulate_new_model(avg_prec = sp_prec[x, y,:],
+                _, _st, _uzg, _lzg = ConceptualModel.Simulate(prec = sp_prec[x, y,:], 
                                               temp = sp_temp[x, y,:], 
                                               et = sp_et[x, y,:], 
                                               par = sp_pars[x, y, :], 
@@ -68,8 +69,8 @@ def Dist_HBV2(lakecell,q_lake,DEM,flow_acc,flow_acc_plan, sp_prec, sp_et, sp_tem
                                               init_st = init_st, 
                                               ll_temp = None, 
                                               q_0 = q_0,
-                                              extra_out = True)
-    #               # append column after column in the same row -----------------
+                                              snow=0) #extra_out = True
+                # append column after column in the same row -----------------
                 st_i.append(np.array(_st))
                 #calculate upper zone Q = K1*(LZ_int_1)
                 q_lz_temp=np.array(sp_pars[x, y, 6])*_lzg
@@ -78,19 +79,20 @@ def Dist_HBV2(lakecell,q_lake,DEM,flow_acc,flow_acc_plan, sp_prec, sp_et, sp_tem
                 q_uz_temp = np.array(sp_pars[x, y, 5])*(np.power(_uzg, (1.0 + sp_pars[x, y, 7])))
                 q_uzi.append(q_uz_temp)
                 
-    #                print("total = "+str(fff)+"/"+str(tot_elem)+" cell, row= "+str(x+1)+" column= "+str(y+1) )
+                #print("total = "+str(fff)+"/"+str(tot_elem)+" cell, row= "+str(x+1)+" column= "+str(y+1) )
             else: # if the cell is novalue-------------------------------------
                 # Fill the empty cells with a nan vector
                 st_i.append(dummy_states) # fill all states(5 states) for all time steps = nan
                 q_lzi.append(dummy_states[:,0]) # q lower zone =nan  for all time steps = nan
                 q_uzi.append(dummy_states[:,0]) # q upper zone =nan  for all time steps = nan
-    # store row by row-------- ---------------------------------------------------- 
-    #        st.append(st_i) # state variables 
+                
+        # store row by row-------- ---------------------------------------------------- 
+        #st.append(st_i) # state variables 
         st.append(st_i) # state variables 
         q_lz.append(np.array(q_lzi)) # lower zone discharge mm/timestep
         q_uz.append(np.array(q_uzi)) # upper zone routed discharge mm/timestep
-    #------------------------------------------------------------------------------            
-    # convert to arrays 
+        #------------------------------------------------------------------------------            
+        # convert to arrays 
     st = np.array(st)
     q_lz = np.array(q_lz)
     q_uz = np.array(q_uz)
@@ -272,10 +274,8 @@ def RunLumpedRRP(ConceptualModel,Raster, sp_prec, sp_et, sp_temp, sp_pars, p2, s
         for y in range(cols): # no of columns
             if raster [x, y] != no_val:  # only for cells in the domain
                 # Calculate the states per cell
-                # TODO optimise for multiprocessing these loops
-                try:
+                try:                    
                     
-#                    _st, _uzg, _lzg = ConceptualModel.Simulate(prec = sp_prec[x, y,:], 
                     uzg, lzg,  stvar  = ConceptualModel.Simulate(prec = sp_prec[x, y,:], 
                                                                  temp = sp_temp[x, y,:], 
                                                                  et = sp_et[x, y,:], 
@@ -284,7 +284,7 @@ def RunLumpedRRP(ConceptualModel,Raster, sp_prec, sp_et, sp_temp, sp_pars, p2, s
                                                                  init_st = init_st, 
                                                                  ll_temp = None, 
                                                                  q_init = q_init, 
-                                                                 snow=0) #extra_out = True
+                                                                 snow=0)
                 except:
                     print("conceptual model argument are not correct")
                 
@@ -446,7 +446,7 @@ def SpatialRouting(q_lz, q_uz,flow_acc,flow_direct,sp_pars,p2):
                             # sum the Q of the US cells (already routed for its cell)
                             # route first with there own k & xthen sum
                             q_r=q_r+Routing.muskingum(q_uz_routed[x_ind,y_ind,:],q_uz_routed[x_ind,y_ind,0],sp_pars[x_ind,y_ind,10],sp_pars[x_ind,y_ind,11],p2[0]) 
-                            q=q+q_lz_translated[x_ind,y_ind,:]
+                            q= q + q_lz_translated[x_ind,y_ind,:]
                             
                         # add the routed upstream flows to the current Quz in the cell
                         q_uz_routed[x,y,:]=q_uz[x,y,:]+q_r
