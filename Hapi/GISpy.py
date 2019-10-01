@@ -1851,6 +1851,12 @@ def ReadRastersFolder(path):
     # get list of all files 
     files=os.listdir(path)
     if "desktop.ini" in files: files.remove("desktop.ini")
+    
+    # to sort the files in the same order as the first number in the name
+    filesNo = [int(files[i].split("_")[0]) for i in range(len(files))]
+    filetuple = sorted(zip(filesNo, files))
+    files = [x for _,x in filetuple]
+    
     # check that folder only contains rasters
     assert all(f.endswith(".tif") for f in files), "all files in the given folder should have .tif extension"
     # create a 3d array with the 2d dimension of the first raster and the len 
