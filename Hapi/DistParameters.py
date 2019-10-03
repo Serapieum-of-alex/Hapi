@@ -642,8 +642,8 @@ def HRU_HAND(DEM,FD,FPL,River):
     return HAND, DTND
 
 
-def SaveParameters(DistParFn, Raster, Par, No_parameters, snow, kub, klb, 
-                   Path=None):
+def SaveParameters(DistParFn, Raster, Par, No_parameters, no_lumped_par, 
+                   lumped_par_pos, snow, kub, klb, Path=None):
     """
     ============================================================
         SaveParameters(DistParFn, Raster, Par, No_parameters, snow, kub, klb, Path=None)
@@ -702,15 +702,16 @@ def SaveParameters(DistParFn, Raster, Par, No_parameters, snow, kub, klb,
     assert type(Path) == str, "path should be of type string"
     assert os.path.exists(Path), Path + " you have provided does not exist"
     
-    par2d=DistParFn(Par,Raster,No_parameters,kub,klb)
+    par2d=DistParFn(Par,Raster,No_parameters,no_lumped_par,lumped_par_pos,kub,klb)
+    
     # save 
     if snow == 0: # now snow subroutine
-        pnme=["01rfcf.tif","02FC.tif", "03BETA.tif", "04ETF.tif", "05LP.tif", "06CFLUX.tif", "07K.tif",
-              "08K1.tif","09ALPHA.tif", "10PERC.tif", "11Kmuskingum.tif", "12Xmuskingum.tif"]
+        pnme=["01_rfcf.tif","02_FC.tif", "03_BETA.tif", "04_ETF.tif", "05_LP.tif", "06_CFLUX.tif", "07_K.tif",
+              "08_K1.tif","09_ALPHA.tif", "10_PERC.tif", "11_Kmuskingum.tif", "12_Xmuskingum.tif"]
     else: # there is snow subtoutine 
-        pnme=["01ltt.tif", "02utt.tif", "03rfcf.tif", "04sfcf.tif", "05ttm.tif", "06cfmax.tif", "07cwh.tif",
-              "08cfr.tif", "09fc.tif", "10fc.tif", "11beta.tif","12etf.tif","13lp.tif","14cflux.tif",
-              "15k.tif","16k1.tif","17alpha.tif","18perc.tif"]
+        pnme=["01_ltt.tif", "02_utt.tif", "03_rfcf.tif", "04_sfcf.tif", "05_ttm.tif", "06_cfmax.tif", "07_cwh.tif",
+              "08_cfr.tif", "09_fc.tif", "10_fc.tif", "11_beta.tif","12_etf.tif","13_lp.tif","14_cflux.tif",
+              "15_k.tif","16_k1.tif","17_alpha.tif","18_perc.tif"]
         
     if Path != None:
         pnme=[Path+i for i in pnme]
