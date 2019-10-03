@@ -274,8 +274,7 @@ def RunLumpedRRP(ConceptualModel,Raster, sp_prec, sp_et, sp_temp, sp_pars, p2, s
         for y in range(cols): # no of columns
             if raster [x, y] != no_val:  # only for cells in the domain
                 # Calculate the states per cell
-                try:                    
-                    
+                try:                                        
                     uzg, lzg,  stvar  = ConceptualModel.Simulate(prec = sp_prec[x, y,:], 
                                                                  temp = sp_temp[x, y,:], 
                                                                  et = sp_et[x, y,:], 
