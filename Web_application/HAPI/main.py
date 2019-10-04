@@ -1304,10 +1304,10 @@ boundary['colors']= ["#fee5d9", "#fcbba1", "#fc9272", "#fb6a4a",]# "#ef3b2c", "#
 
 """creating the map object """
 # google map
-catchmentmap_intro_page = GMapPlot(api_key=GoogleAPI, #"AIzaSyC2ThwIKXr03ENAOg1Etbfo0FoQUAs6_tI"
-             plot_width=1000, plot_height=800, x_range = Range1d(), y_range = Range1d(), 
-             map_options=GMapOptions(lat=13.6, lng=-88.957844, zoom=11,map_type="satellite"),
-             toolbar_location="right",) #border_fill = '#130f30')
+catchmentmap_intro_page = GMapPlot(api_key=GoogleAPI, plot_width=1000, 
+            plot_height=800, x_range = Range1d(), y_range = Range1d(), 
+            map_options=GMapOptions(lat=13.6, lng=-88.957844, zoom=11,
+            map_type="satellite"), toolbar_location="right",) #border_fill = '#130f30')
 # normal plot
 #catchmentmap_intro_page =figure(title="Case Study", #tools=TOOLS,
 #         plot_width=650, plot_height=500, active_scroll = "wheel_zoom")
