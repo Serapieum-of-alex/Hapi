@@ -10,3 +10,17 @@ Examples/data/Hapi.sublime-workspace
 *.ini
 *.drawio
 Web_application/HBV_distributed/static/images/cover00.jpg
+Web_application/HAPI/static/input_data/Google API.txt
+*.dbf
+*.prj
+*.xml
+*.cpg
+*.sbx
+*.shx
+*.tfw
+*.ovr
+*.jpg
+*.shp
+*.txt
+*.npy
+*.pkl

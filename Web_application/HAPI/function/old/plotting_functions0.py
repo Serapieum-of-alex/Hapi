@@ -1,0 +1,212 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sat May 05 19:47:52 2018
+
+@author: Mostafa
+"""
+
+#%library
+import numpy as np
+import geopandas as gpd
+from shapely.geometry.polygon import Polygon
+from shapely.geometry.multipolygon import MultiPolygon
+# functions
+
+def getXYCoords(geometry, coord_type):
+    """
+    # =============================================================================
+    #     getXYCoords(geometry, coord_type)
+    # =============================================================================
+    Returns either x or y coordinates from  geometry coordinate sequence.
+     Used with LineString and Polygon geometries.
+     inputs:
+         1- geometry (type LineString)
+          the geometry of a shpefile
+         2- coord_type
+         "string" either "x" or "y"
+     outpus:
+         1-array: 
+             contains x coordinates or y coordinates of all edges of the shapefile
+    """
+    if coord_type=="x":
+        return geometry.coords.xy[0]
+    elif coord_type=="y":
+        return geometry.coords.xy[1]
+
+def getPointCoords(geometry,coord_type):
+    """
+    # =============================================================================
+    #     getPointCoords(geometry,coord_type)
+    # =============================================================================
+    Returns Coordinates of Point object.
+    inputs:
+        1- geometry (type point)
+         the geometry of a shpefile
+        2- coord_type
+         "string" either "x" or "y"
+    outpus:
+        1-array: 
+         contains x coordinates or y coordinates of all edges of the shapefile
+    """
+    if coord_type=="x":
+        return geometry.x
+    if coord_type=="y":
+        return geometry.y
+
+def getLineCoords(geometry,coord_type):
+    """
+    # =============================================================================
+    #     getLineCoords(geometry)
+    # =============================================================================
+    Returns Coordinates of Linestring object.
+    inputs:
+        1- geometry (type Linestring )
+         the geometry of a shpefile
+        2- coord_type
+         "string" either "x" or "y"
+    outpus:
+        1-array: 
+         contains x coordinates or y coordinates of all edges of the shapefile
+    """
+    return getXYCoords(geometry,coord_type)
+
+def getPolyCoords(geometry,coord_type):
+    """
+    # =============================================================================
+    #  getPolyCoords(geometry,coord_type)
+    # =============================================================================
+    Returns Coordinates of Polygon using the Exterior of the Polygon.
+    inputs:
+        1- geometry (type polygon)
+         the geometry of a shpefile
+        2- coord_type
+         "string" either "x" or "y"
+    outpus:
+        1-array: 
+         contains x coordinates or y coordinates of all edges of the shapefile
+    """
+    # convert the polygon into lines
+    ext=geometry.exterior # type = LinearRing
+
+    return getXYCoords(ext,coord_type)
+
+
+def multiGeomHandler(multi_geometry, coord_type, geom_type):
+    """
+    # =============================================================================
+    #     multiGeomHandler(multi_geometry, coord_type, geom_type)
+    # =============================================================================
+    Function for handling multi-geometries. Can be MultiPoint, MultiLineString or MultiPolygon.
+    Returns a list of coordinates where all parts of Multi-geometries are merged into a single list.
+    Individual geometries are separated with np.nan which is how Bokeh wants them.
+    # Bokeh documentation regarding the Multi-geometry issues can be found here (it is an open issue)
+    # https://github.com/bokeh/bokeh/issues/2321
+    
+    inputs:
+        1- multi_geometry (geometry)
+         the geometry of a shpefile
+        2- coord_type (string)
+         "string" either "x" or "y"
+        3- geom_type (string)
+            "MultiPoint" or "MultiLineString" or "MultiPolygon"
+    outpus:
+        1-array: 
+         contains x coordinates or y coordinates of all edges of the shapefile    
+    """
+    if geom_type=="MultiPoint" or geom_type== "MultiLineString":
+        for i,part in enumerate(multi_geometry):
+            # On the first part of the Multi-geometry initialize the coord_array (np.array)
+            if i ==0:
+                if geom_type=="MultiPoint":
+                    coord_arrays= getPointCoords(part, coord_type)#,np.nan)
+                elif geom_type=="MultiLineString":
+    #                coord_arrays= np.append(getLineCoords(part,coord_type))#,np.nan)
+                    coord_arrays= getLineCoords(part,coord_type)
+            else:
+                if geom_type=="MultiPoint":
+                    coord_arrays= np.concatenate([coord_arrays,getPointCoords(part, coord_type)]) #,np.nan
+                elif geom_type=="MultiLineString":
+                    coord_arrays= np.concatenate([coord_arrays,getLineCoords(part,coord_type)]) #,np.nan
+            
+    elif geom_type=="MultiPolygon":
+        if i ==0:
+#            coord_arrays= getPolyCoords(part,coord_type)#,np.nan)
+            multi_2_single=explode(multi_geometry)
+            for j in range(len(multi_2_single)):
+                if j ==0:
+                    coord_arrays= getPolyCoords(multi_2_single[j],coord_type)#,np.nan)
+                else: 
+                    coord_arrays= np.concatenate([coord_arrays,getPolyCoords(multi_2_single[j],coord_type)]) #,np.nan
+        else:
+            # explode the multipolygon into polygons 
+            multi_2_single=explode(part)
+            for j in range(len(multi_2_single)):
+                coord_arrays= np.concatenate([coord_arrays,getPolyCoords(multi_2_single[j],coord_type)]) #,np.nan
+        # return the coordinates 
+        return coord_arrays
+
+def explode(dataframe_row):
+    """
+    # =============================================================================
+    #     explode(indata)
+    # =============================================================================
+    explode function converts the multipolygon into a polygons
+    Inputs:
+        1- dataframe_row: (data frame series)
+            the dataframe row that its geometry type is Multipolygon
+    outputs:
+        1- outdf
+            the dataframe of the created polygons 
+    """
+    row=dataframe_row
+    outdf = gpd.GeoDataFrame() #columns=dataframe_row.columns
+#    for idx, row in enumerate(dataframe_row):#dataframe_row.iterrows():
+#            if type(row.geometry) == Polygon:
+#                outdf = outdf.append(row,ignore_index=True)
+#            if type(row.geometry) == MultiPolygon:
+    multdf = gpd.GeoDataFrame() #columns=dataframe_row.columns
+#    recs = len(row.geometry)
+    recs = len(row)
+    multdf = multdf.append([row]*recs,ignore_index=True)
+    for geom in range(recs):
+        multdf.loc[geom,'geometry'] = row.geometry[geom]
+    outdf = outdf.append(multdf,ignore_index=True)
+
+    
+
+def getCoords(row, geom_col, coord_type):
+    """
+    # =============================================================================
+    #     getCoords(row, geom_col, coord_type)
+    # =============================================================================
+    Returns coordinates ('x' or 'y') of a geometry (Point, LineString or Polygon)
+    as a list (if geometry is LineString or Polygon). Can handle also MultiGeometries.
+    
+    inputs:
+        1- row (dataframe)
+         a whole rwo of the dataframe
+        2- geom_col (string)
+         name of the column where the geometry is stored in the dataframe
+        3- coord_type (string)
+            "MultiPoint" or "MultiLineString" or "MultiPolygon"
+    outpus:
+        1-array: 
+         contains x coordinates or y coordinates of all edges of the shapefile    
+    """
+    # get geometry
+    geom=row[geom_col]  # series
+    # check the geometry type
+    gtype=geom.geom_type
+#    gtype=row['geometry'].geom_type[0]
+#    gtype=row.geom_type[0]
+    # "Normal" geometries 
+    if gtype=="Point":
+        return getPointCoords(geom,coord_type)  
+    elif gtype=="LineString":
+        return list(getLineCoords(geom,coord_type))
+    elif gtype=="Polygon":
+        return list(getPolyCoords(geom,coord_type))
+    
+    # Multi geometries
+    else:
+        return list(multiGeomHandler(geom,coord_type,gtype))
