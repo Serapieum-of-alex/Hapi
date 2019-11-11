@@ -18,7 +18,7 @@ import os
 import numpy as np
 import gdal
 
-from pyOpt import Optimization, ALHSO,Optimizer
+#from pyOpt import Optimization, ALHSO,Optimizer
 
 
 # functions
