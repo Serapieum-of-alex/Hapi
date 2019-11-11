@@ -141,7 +141,7 @@ def TriangularRouting(q, maxbas=1):
     
     # rout the discharge signal
     q_r = np.zeros_like(q, dtype='float64')
-    q_temp = q
+    q_temp = np.float32(q)
     for w_i in w:
         q_r += q_temp*w_i
         q_temp = np.insert(q_temp, 0, 0.0)[:-1]

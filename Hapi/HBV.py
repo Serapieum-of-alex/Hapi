@@ -577,9 +577,4 @@ def Simulate(prec, temp, et, par, p2, init_st=None, ll_temp=None,
 #        uz_int_2.append(uz_int_2_out) # upper zone - perc
 #        lz_int_1.append(lz_int_1_out) # lower zone + perc
     
-#    if extra_out:
-#    return q_sim, st, uz_int_2, lz_int_1
     return np.float32(q_uz), np.float32(q_lz), np.float32(st)
-    
-#    else:
-#        return q_sim, st

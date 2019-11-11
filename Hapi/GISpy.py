@@ -42,6 +42,7 @@ def GetMask(raster):
     mask = raster.ReadAsArray() # read all values
     return mask, no_val
 
+
 def AddMask(var, dem=None, mask=None, no_val=None):
     """
     ===================================================================
@@ -1205,6 +1206,7 @@ def GCSDistance(coords_1,coords_2):
     
     return dist
 
+
 def ReprojectPoints(lat,lng,from_epsg=4326,to_epsg=3857):
     """
     =====================================================================
@@ -1758,7 +1760,7 @@ def WriteShapefile(poly, out_shp):
 def ReadASCIIsFolder(path, pixel_type):
     """
     ===========================================================
-       ReadRastersFolder(path)
+       ReadASCIIsFolder(path, pixel_type)
     ===========================================================
     this function reads rasters from a folder and creates a 3d arraywith the same
     2d dimensions of the first raster in the folder and len as the number of files

@@ -147,7 +147,7 @@ def par2d_lumpedK1_lake(par_g,raster,no_parameters,no_parameters_lake,kub,klb):
     return par_2d,lake_par
 
 
-def par3dLumped(par_g,raster,no_parameters,kub=1,klb=0.5):
+def par3dLumped(par_g,raster,no_parameters,kub=1,klb=0.5,Maskingum = True):
     """
     ===========================================================
       par3dLumped(par_g,raster, no_parameters, kub, klb)
@@ -226,7 +226,7 @@ def par3dLumped(par_g,raster,no_parameters,kub=1,klb=0.5):
     # take the parameters from the generated parameters or the 1D list and 
     # assign them to each cell
     for i in range(no_elem):
-        par_arr[:,i] = par_g #par_g[i*no_parameters:(i*no_parameters)+no_parameters]
+        par_arr[:,i] = par_g 
     
     # assign the parameters from the array (no_parameters, no_cells) to 
     # the spatially corrected location in par2d
@@ -235,14 +235,15 @@ def par3dLumped(par_g,raster,no_parameters,kub=1,klb=0.5):
     
     # calculate the value of k(travelling time in muskingum based on value of 
     # x and the position and upper, lower bound of k value 
-    for i in range(no_elem):
-        par_2d[celli[i],cellj[i],-2]= calculateK(par_2d[celli[i],cellj[i],-1],par_2d[celli[i],cellj[i],-2],kub,klb)
-    
+    if Maskingum == True:
+        for i in range(no_elem):
+            par_2d[celli[i],cellj[i],-2]= calculateK(par_2d[celli[i],cellj[i],-1],par_2d[celli[i],cellj[i],-2],kub,klb)
+        
     return par_2d
 
 
 def par3d(par_g,raster,no_parameters,no_lumped_par=0,lumped_par_pos=[],
-                   kub=1,klb=0.5):
+                   kub=1,klb=0.5,Maskingum = True):
     """
     ===========================================================
       par3d(par_g,raster, no_parameters, no_lumped_par, lumped_par_pos, kub, klb)
@@ -389,10 +390,11 @@ def par3d(par_g,raster,no_parameters,no_lumped_par=0,lumped_par_pos=[],
         par_2d[celli[i],cellj[i],:]=par_arr[:,i]
     
     # calculate the value of k(travelling time in muskingum based on value of 
-    # x and the position and upper, lower bound of k value 
-    for i in range(no_elem):
-        par_2d[celli[i],cellj[i],-2]= calculateK(par_2d[celli[i],cellj[i],-1],par_2d[celli[i],cellj[i],-2],kub,klb)
-    
+    # x and the position and upper, lower bound of k value
+    if Maskingum == True:
+        for i in range(no_elem):
+            par_2d[celli[i],cellj[i],-2]= calculateK(par_2d[celli[i],cellj[i],-1],par_2d[celli[i],cellj[i],-2],kub,klb)
+        
     return par_2d
 
 
@@ -702,7 +704,7 @@ def SaveParameters(DistParFn, Raster, Par, No_parameters, no_lumped_par,
     assert type(Path) == str, "path should be of type string"
     assert os.path.exists(Path), Path + " you have provided does not exist"
     
-    par2d=DistParFn(Par,Raster,No_parameters,no_lumped_par,lumped_par_pos,kub,klb)
+    par2d = DistParFn(Par,Raster,No_parameters,no_lumped_par,lumped_par_pos,kub,klb)
     
     # save 
     if snow == 0: # now snow subroutine
