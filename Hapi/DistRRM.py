@@ -10,10 +10,10 @@ import gdal
 from types import ModuleType
 
 # functions
-import GISpy
+import Hapi.GISpy
 #import HBV
-import Routing
-import GISCatchment as GC
+import Hapi.Routing
+import Hapi.GISCatchment as GC
 
 def RunLumpedRRP(ConceptualModel,Raster, sp_prec, sp_et, sp_temp, sp_pars, p2, snow, init_st=None, 
                 ll_temp=None, q_init=None):

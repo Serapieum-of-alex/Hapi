@@ -18,8 +18,8 @@ import os
 import gdal
 import numpy as np
 # functions
-import Wrapper as Wrapper
-import GISpy as GIS
+import Hapi.Wrapper as Wrapper
+import Hapi.GISpy as GIS
 #import DistParameters as Dp
 #import GISCatchment as GC
 

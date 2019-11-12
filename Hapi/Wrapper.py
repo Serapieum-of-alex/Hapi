@@ -14,9 +14,9 @@ from types import ModuleType
 
 # functions
 #import DistParameters
-import HBV_Lake
-import DistRRM
-import Routing
+import Hapi.HBV_Lake
+import Hapi.DistRRM
+import Hapi.Routing
 
 
 

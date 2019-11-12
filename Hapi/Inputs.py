@@ -13,7 +13,7 @@ import numpy as np
 import shutil
 import pandas as pd
 # functions
-import GISpy as GIS
+import Hapi.GISpy as GIS
 
 
 def PrepareInputs(Raster,InputFolder,FolderName):

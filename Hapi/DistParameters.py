@@ -14,8 +14,8 @@ import numpy as np
 import os
 import gdal
 
-import GISpy as GIS
-import GISCatchment as GC
+import Hapi.GISpy as GIS
+import Hapi.GISCatchment as GC
 
 
 # functions

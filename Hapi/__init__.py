@@ -25,23 +25,23 @@ del hard_dependencies, dependency, missing_dependencies
 
 
 #import Calibration
-import DistParameters
-import DistRRM
-import GISCatchment
-import GISpy
-import GISVisual
-import Inputs
-import java_functions
-import PerformanceCriteria
-import Routing
-import RUN
-import StatisticalTools
-import Wrapper
-import WeirdFn
-import HBV
-import HBV_Lake
-import HBVLumped
-import HBVBergestrom92
+import Hapi.DistParameters
+import Hapi.DistRRM
+import Hapi.GISCatchment
+import Hapi.GISpy
+import Hapi.GISVisual
+import Hapi.Inputs
+import Hapi.java_functions
+import Hapi.PerformanceCriteria
+import Hapi.Routing
+import Hapi.RUN
+import Hapi.StatisticalTools
+import Hapi.Wrapper
+import Hapi.WeirdFn
+import Hapi.HBV
+import Hapi.HBV_Lake
+import Hapi.HBVLumped
+import Hapi.HBVBergestrom92
 
 
 # module level doc-string

@@ -9,7 +9,7 @@ import os
 import numpy as np
 import pandas as pd
 import gdal
-import GISpy as GIS
+import Hapi.GISpy as GIS
 
 #from osgeo import gdalconst
 #import osr
