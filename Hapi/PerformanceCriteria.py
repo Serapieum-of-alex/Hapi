@@ -35,7 +35,7 @@ def RMSE(Qobs,Qsim):
     Qobs=np.array(Qobs)
     Qsim=np.array(Qsim)
     
-    rmse = np.sqrt(np.average((np.array(Qobs)-np.array(Qsim))** 2))
+    rmse = np.sqrt(np.average((np.array(Qobs)-np.array(Qsim))** 2), dtype = np.float64)
 
     return rmse
 
