@@ -1025,84 +1025,85 @@ def ReadASCII(ASCIIFile,pixel_type=1):
     NoValue = int(Wholefile[5].split()[1])
     
     ASCIIValues = np.ones((ASCIIRows,ASCIIColumns), dtype = np.float32)
-    
-    for i in range(ASCIIRows):
-        x = Wholefile[6+i].split()
-        ASCIIValues[i,:] = map(float, x )
-    
+    try:
+        for i in range(ASCIIRows):
+            x = Wholefile[6+i].split()
+            ASCIIValues[i,:] = list(map(float, x ))
+    except:
+        try:
+            for j in range(len(x)):
+                float(x[j])
+        except:
+            print("Error reading the ARCII file please check row " + str(i+6+1) +", column " + str(j))
+            print("A value of " + x[j] + " , is stored in the ASCII file ")
+        
     ASCIIDetails = [ASCIIRows, ASCIIColumns, XLeftSide , YLowerSide, 
                     CellSize, NoValue]
     
     return ASCIIValues, ASCIIDetails
 
-def WriteASCIINotYet(ASCIIFile,pixel_type=1):
+def WriteASCII(ASCIIFile, ASCIIDetails, ASCIIValues):
     """  
     =========================================================================
-        WriteASCII(ASCIIFile,pixel_type)
+        WriteASCII(ASCIIFile, ASCIIDetails, ASCIIValues, pixel_type=1)
     =========================================================================
      
     This function reads an ASCII file the spatial information
     
     Inputs:
-        1-ASCIIFileName:
+        1-ASCIIFile:
             [String] name of the ASCII file you want to convert and the name 
             should include the extension ".asc"
-            
-        2-pixel_type:
-            [Integer] type of the data to be stored in the pixels,default is 1 (float32)
-            for example pixel type of flow direction raster is unsigned integer
-            1 for float32
-            2 for float64
-            3 for Unsigned integer 16
-            4 for Unsigned integer 32
-            5 for integer 16
-            6 for integer 32
-    Outputs:
-        1-ASCIIValues:
-            [numpy array] 2D arrays containing the values stored in the ASCII
-            file
-            
+
         2-ASCIIDetails:
             [List] list of the six spatial information of the ASCII file 
             [ASCIIRows, ASCIIColumns, XLowLeftCorner, YLowLeftCorner, 
             CellSize, NoValue]
+        
+        3-ASCIIValues:
+            [numpy array] 2D arrays containing the values stored in the ASCII
+            file
+            
+    Outputs:
+            
     Example:
         Elevation_values,DEMSpatialDetails = ReadASCII("dem.asc",1)
     """
     # input data validation
     # data type
     assert type(ASCIIFile) == str, "ASCIIFile input should be string type"
-    assert type(pixel_type)== int, "pixel type input should be integer type please check documentations"
     
     # input values
     ASCIIExt=ASCIIFile[-4:]
     assert ASCIIExt == ".asc", "please add the extension at the end of the path input"
-    assert os.path.exists(ASCIIFile), "ASCII file path you have provided does not exist"
+#    assert os.path.exists(ASCIIFile), "ASCII file path you have provided does not exist"
     
+    ## used function 
+    
+    def StringSpace(Inp):
+        return str(Inp) + "  " 
+
     ### read the ASCII file 
+    try:
+        File  = open (ASCIIFile,'w')
+    except:
+        print("path you have provided does not exist")
+        print("please check" + ASCIIFile)
+        
+    # write the the ASCII file details
+    File.write('ncols         ' + str(ASCIIDetails[1])+ "\n")
+    File.write('nrows         ' + str(ASCIIDetails[0])+ "\n") 
+    File.write('xllcorner     ' + str(ASCIIDetails[2])+ "\n")
+    File.write('yllcorner     ' + str(ASCIIDetails[3])+ "\n")
+    File.write('cellsize      ' + str(ASCIIDetails[4])+ "\n")
+    File.write('NODATA_value  ' + str(ASCIIDetails[5])+ "\n")
     
-    File  = open (ASCIIFile)
-    Wholefile = File.readlines()
+    # write the array
+    for i in range(np.shape(ASCIIValues)[0]):
+        File.writelines(list(map(StringSpace,ASCIIValues[i,:])))
+        File.write("\n")
+    
     File.close()
-    
-    ASCIIColumns = int(Wholefile[0].split()[1])
-    ASCIIRows = int(Wholefile[1].split()[1])
-    
-    XLeftSide = int(float(Wholefile[2].split()[1]))
-    YLowerSide = int(float(Wholefile[3].split()[1]))
-    CellSize = int(Wholefile[4].split()[1])
-    NoValue = int(Wholefile[5].split()[1])
-    
-    ASCIIValues = np.ones((ASCIIRows,ASCIIColumns), dtype = np.float32)
-    
-    for i in range(ASCIIRows):
-        x = Wholefile[6+i].split()
-        ASCIIValues[i,:] = map(float, x )
-    
-    ASCIIDetails = [ASCIIRows, ASCIIColumns, XLeftSide , YLowerSide, 
-                    CellSize, NoValue]
-    
-    return ASCIIValues, ASCIIDetails
 
 
 def ASCIItoRaster(ASCIIFile,savePath,pixel_type=1,RasterFile = None,epsg = None):
