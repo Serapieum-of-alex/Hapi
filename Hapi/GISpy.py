@@ -1042,6 +1042,9 @@ def ReadASCII(ASCIIFile,pixel_type=1):
     
     return ASCIIValues, ASCIIDetails
 
+def StringSpace(Inp):
+    return str(Inp) + "  " 
+    
 def WriteASCII(ASCIIFile, ASCIIDetails, ASCIIValues):
     """  
     =========================================================================
@@ -1077,11 +1080,6 @@ def WriteASCII(ASCIIFile, ASCIIDetails, ASCIIValues):
     ASCIIExt=ASCIIFile[-4:]
     assert ASCIIExt == ".asc", "please add the extension at the end of the path input"
 #    assert os.path.exists(ASCIIFile), "ASCII file path you have provided does not exist"
-    
-    ## used function 
-    
-    def StringSpace(Inp):
-        return str(Inp) + "  " 
 
     ### read the ASCII file 
     try:
