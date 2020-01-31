@@ -20,6 +20,8 @@ import osr
 import pandas as pd
 #import rasterio
 from osgeo import gdalconst
+import zipfile
+
 
 def GetMask(raster):
     """
@@ -2549,3 +2551,195 @@ def XY(input_dataframe):
     input_dataframe=input_dataframe.drop(to_delete)
     
     return input_dataframe
+
+
+
+
+def ExtractValues(Path, ExcludeValue, Compressed = True):
+    """
+    =================================================================
+        ExtractValues(Path, ExcludeValue, Compressed = True)
+    =================================================================
+    this function is written to extract and return a list of all the values 
+    in an ASCII file
+    
+    Inputs:
+        1-Path
+            [String] a path includng the name of the ASCII and extention like 
+            path="data/cropped.asc"
+        2-ExcludedValue:
+            [Numeric] values you want to exclude from exteacted values
+        3-Compressed:
+            [Bool] if the map you provided is compressed
+    """
+    # input data validation
+    # data type
+    assert type(Path)== str, "Path input should be string type"
+    assert type(Compressed) == bool, "Compressed input should be Boolen type"
+    # input values
+    # check wether the path exist or not 
+    assert os.path.exists(Path), "the path you have provided does not exist"
+    # check wether the path has the extention or not 
+    if Compressed == True:
+        assert Path.endswith(".zip") , "file" + Path +" should have .asc extension"
+    else:
+        assert Path.endswith(".asc") , "file" + Path +" should have .asc extension"
+        
+    
+    ExtractedValues = list()
+    
+        
+    try:
+        # open the zip file
+        if Compressed :
+            Compressedfile = zipfile.ZipFile(Path)
+            # get the file name
+            fname = Compressedfile.infolist()[0]        
+            ASCIIF = Compressedfile.open(fname)
+            SpatialRef = ASCIIF.readlines()[:6]
+            ASCIIF = Compressedfile.open(fname)
+            ASCIIRaw = ASCIIF.readlines()[6:]
+            rows = len(ASCIIRaw)
+            cols = len(ASCIIRaw[0].split())
+            MapValues = np.ones((rows,cols), dtype = np.float32)*0
+            # read the ascii file
+            for i in range(rows):
+                x = ASCIIRaw[i].split()
+                MapValues[i,:] = list(map(float, x ))
+                
+        else:
+            MapValues, SpatialRef= ReadASCII(Path)
+        
+        # get the position of cells that is not zeros    
+        rows = np.where(MapValues[:,:] != ExcludeValue)[0]
+        cols = np.where(MapValues[:,:] != ExcludeValue)[1]
+            
+    except:
+        print("Error Opening the compressed file")
+        return 0
+            
+
+    # get the values of the filtered cells
+    for i in range(len(rows)):
+        ExtractedValues.append(MapValues[rows[i],cols[i]])
+
+    return ExtractedValues
+
+
+
+def OverlayMaps(Path, BaseMapF, FilePrefix, ExcludeValue, Compressed = False):
+    """
+    =================================================================
+        ExtractValues(Path, ExcludeValue, Compressed = True)
+    =================================================================
+    this function is written to extract and return a list of all the values 
+    in an ASCII file
+    
+    Inputs:
+        1-Path
+            [String] a path to the folder includng the maps.
+        2-BaseMapF:
+            [String] a path includng the name of the ASCII and extention like 
+            path="data/cropped.asc"
+        3-FilePrefix:
+            [String] a string that make the files you want to filter in the folder
+            uniq 
+        2-ExcludedValue:
+            [Numeric] values you want to exclude from exteacted values
+        3-Compressed:
+            [Bool] if the map you provided is compressed
+    Outputs:
+        1- ExtractedValues:
+            [Dict] dictonary with a list of values in the basemap as keys
+                and for each key a list of all the intersected values in the 
+                maps from the path
+        2- NonZeroCells:
+            [List] list of number of cells in each map
+    """
+    # input data validation
+    # data type
+    assert type(Path)== str, "Path input should be string type"
+    assert type(FilePrefix)== str, "Path input should be string type"
+    assert type(Compressed) == bool, "Compressed input should be Boolen type"
+    assert type(BaseMapF) == str, "Compressed input should be Boolen type"
+    # input values
+    # check wether the path exist or not 
+    assert os.path.exists(Path), "the path you have provided does not exist"
+    # check whether there are files or not inside the folder
+    assert os.listdir(Path)!= "","the path you have provided is empty"
+    # get list of all files 
+    Files=os.listdir(Path)
+    
+    FilteredList = list()
+    
+    # filter file list with the File prefix input
+    for i in range(len(Files)):
+        if Files[i].startswith(FilePrefix):
+            FilteredList.append(Files[i])    
+    
+    NonZeroCells = pd.DataFrame()
+    NonZeroCells['files'] = FilteredList
+    NonZeroCells['cells'] = 0
+    # read the base map
+    if BaseMapF.endswith('.asc'):
+        BaseMapV, _ = ReadASCII(BaseMapF)
+    else:
+        BaseMap = gdal.Open(BaseMapF)
+        BaseMapV = BaseMap.ReadAsArray()
+    
+#    NonZeroCells = list()
+    ExtractedValues = dict()
+    FilesNotOpened = list()
+        
+    for i in range(len(FilteredList)):
+        
+        try:
+            # open the zip file
+            if Compressed :
+                Compressedfile = zipfile.ZipFile(Path + "/" + FilteredList[i])
+                # get the file name
+                fname = Compressedfile.infolist()[0]        
+                ASCIIF = Compressedfile.open(fname)
+#                SpatialRef = ASCIIF.readlines()[:6]
+                ASCIIF = Compressedfile.open(fname)
+                ASCIIRaw = ASCIIF.readlines()[6:]
+                rows = len(ASCIIRaw)
+                cols = len(ASCIIRaw[0].split())
+                MapValues = np.ones((rows,cols), dtype = np.float32)*0
+                # read the ascii file
+                for row in range(rows):
+                    x = ASCIIRaw[row].split()
+                    MapValues[row,:] = list(map(float, x ))
+                    
+            else:
+                MapValues, SpatialRef= ReadASCII(Path + "/" + FilteredList[i])
+            
+            # get the position of cells that is not zeros    
+            rows = np.where(MapValues[:,:] != ExcludeValue)[0]
+            cols = np.where(MapValues[:,:] != ExcludeValue)[1]
+            
+            NonZeroCells.loc[i,'cells'] = np.count_nonzero(MapValues)
+        except:
+            print("Error Opening the compressed file")
+            NonZeroCells.loc[i,'cells'] = -1
+            FilesNotOpened.append(FilteredList[i])
+            continue
+        
+        print("File " + FilteredList[i])
+        
+        
+        
+        for i in range(len(rows)):
+            # first check if the sub-basin has a list in the dict if not create a list
+            if BaseMapV[rows[i],cols[i]] not in list(ExtractedValues.keys()):
+                ExtractedValues[BaseMapV[rows[i],cols[i]]] = list()
+                
+#            if not np.isnan(MapValues[rows[i],cols[i]]):
+            ExtractedValues[BaseMapV[rows[i],cols[i]]].append(MapValues[rows[i],cols[i]])
+#            else:
+                # if the value is nan
+#                NanList.append(FilteredList[i])
+            
+    
+
+    return ExtractedValues, NonZeroCells
