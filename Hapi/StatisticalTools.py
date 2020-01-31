@@ -164,3 +164,43 @@ def ISDW(raster,coordinates,data,No_data_cells=False):
     sp_dist=sp_dist.astype(np.float32)
     
     return sp_dist
+
+
+def Normalizer(x):
+    """
+    ================================================
+       Normalizer(x, maxx, minn)
+    ================================================
+    to normalize values between 0 and 1 
+    
+    Inputs :
+        1-x:
+            [List] list of values
+    Outputs:
+        1-
+        [List] list of normalized values
+    """
+    DataMax = max(x)
+    DataMin = min(x)
+    
+    return [i - DataMin/(DataMax-DataMin) for i in x]
+
+def Standardize(x):
+    """
+    ================================================
+       Standardize(x)
+    ================================================
+    to standardize (make the average equals 1 and the standard deviation 
+    equals1)
+    
+    Inputs :
+        1-x:
+            [List] list of values
+    Outputs:
+        1-
+        [List] list of normalized values
+    """
+    mean = np.mean(x)
+    std = np.std(x)
+    
+    return [i - mean/(std) for i in x]
