@@ -2627,7 +2627,8 @@ def ExtractValues(Path, ExcludeValue, Compressed = True):
 
 
 
-def OverlayMaps(Path, BaseMapF, FilePrefix, ExcludeValue, Compressed = False):
+def OverlayMaps(Path, BaseMapF, FilePrefix, ExcludeValue, Compressed = False, 
+                OccupiedCellsOnly=True):
     """
     =================================================================
         ExtractValues(Path, ExcludeValue, Compressed = True)
@@ -2644,10 +2645,12 @@ def OverlayMaps(Path, BaseMapF, FilePrefix, ExcludeValue, Compressed = False):
         3-FilePrefix:
             [String] a string that make the files you want to filter in the folder
             uniq 
-        2-ExcludedValue:
+        3-ExcludedValue:
             [Numeric] values you want to exclude from exteacted values
-        3-Compressed:
+        4-Compressed:
             [Bool] if the map you provided is compressed
+        5-OccupiedCellsOnly:
+            [Bool] if you want to count only cells that is not zero
     Outputs:
         1- ExtractedValues:
             [Dict] dictonary with a list of values in the basemap as keys
@@ -2661,7 +2664,7 @@ def OverlayMaps(Path, BaseMapF, FilePrefix, ExcludeValue, Compressed = False):
     assert type(Path)== str, "Path input should be string type"
     assert type(FilePrefix)== str, "Path input should be string type"
     assert type(Compressed) == bool, "Compressed input should be Boolen type"
-    assert type(BaseMapF) == str, "Compressed input should be Boolen type"
+    assert type(BaseMapF) == str, "BaseMapF input should be string type"
     # input values
     # check wether the path exist or not 
     assert os.path.exists(Path), "the path you have provided does not exist"
@@ -2687,7 +2690,6 @@ def OverlayMaps(Path, BaseMapF, FilePrefix, ExcludeValue, Compressed = False):
         BaseMap = gdal.Open(BaseMapF)
         BaseMapV = BaseMap.ReadAsArray()
     
-#    NonZeroCells = list()
     ExtractedValues = dict()
     FilesNotOpened = list()
         
@@ -2714,18 +2716,25 @@ def OverlayMaps(Path, BaseMapF, FilePrefix, ExcludeValue, Compressed = False):
             else:
                 MapValues, SpatialRef= ReadASCII(Path + "/" + FilteredList[i])
             
+            print("File " + FilteredList[i])
+            
+            if OccupiedCellsOnly == True:
+                NonZeroCells.loc[i,'cells'] = np.count_nonzero(MapValues)
+                ExtractedValues = 0
+                continue
+            
             # get the position of cells that is not zeros    
             rows = np.where(MapValues[:,:] != ExcludeValue)[0]
             cols = np.where(MapValues[:,:] != ExcludeValue)[1]
             
-            NonZeroCells.loc[i,'cells'] = np.count_nonzero(MapValues)
+            
         except:
             print("Error Opening the compressed file")
             NonZeroCells.loc[i,'cells'] = -1
             FilesNotOpened.append(FilteredList[i])
             continue
         
-        print("File " + FilteredList[i])
+        
         
         
         
