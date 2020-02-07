@@ -43,7 +43,7 @@ import Hapi.HBV
 import Hapi.HBV_Lake
 import Hapi.HBVLumped
 import Hapi.HBVBergestrom92
-
+import Hapi.FloodModel
 
 # module level doc-string
 __doc__ = """
