@@ -2657,7 +2657,8 @@ def OverlayMaps(Path, BaseMapF, FilePrefix, ExcludeValue, Compressed = False,
                 and for each key a list of all the intersected values in the 
                 maps from the path
         2- NonZeroCells:
-            [List] list of number of cells in each map
+            [dataframe] dataframe with the first column as the "file" name
+            and the second column is the number of cells in each map
     """
     # input data validation
     # data type
