@@ -4,15 +4,11 @@ Created on Tue Feb  4 14:57:30 2020
 
 @author: mofarrag
 """
+import os
 import datetime as dt
 import pandas as pd 
 import Hapi.GISpy as GIS
 import numpy as np
-
-
-
-
-
 
 
 
@@ -42,8 +38,8 @@ class Event():
         # convert the index into date
         dateFn = lambda x: self.Reference_index.loc[x,'date']
         # get the date of each index
-        date = self.EvendIndex.applymap(dateFn)
-        self.EvendIndex['date'] = date
+        date = self.EventIndex.applymap(dateFn)
+        self.EventIndex['date'] = date
         
         
     
@@ -68,30 +64,30 @@ class Event():
         # read the index file (containing the ID of the days where flood happens (2D 
         # algorithm works))
         EventDays = pd.read_csv(IndexPath,header = None)            
-        EvendIndex = EventDays.rename(columns={0:'ID'})
+        EventIndex = EventDays.rename(columns={0:'ID'})
         # convert the index into date
-        self.EvendIndex = EvendIndex.loc[:,:]
+        self.EventIndex = EventIndex.loc[:,:]
         self.IndexToDate()
         
-        self.EvendIndex.loc[:,'continue'] = 0
+        self.EventIndex.loc[:,'continue'] = 0
         # index difference maybe different than the duration as there might be 
         # a gap in the middle of the event
-        self.EvendIndex.loc[:,'IndDiff'] = 0
-        self.EvendIndex.loc[:,'Duration'] = 0
+        self.EventIndex.loc[:,'IndDiff'] = 0
+        self.EventIndex.loc[:,'Duration'] = 0
         
         # the first day in the index file is an event beginning
-        self.EventBeginning = self.EvendIndex.loc[0,'date']
-        for i in range(1,len(self.EvendIndex)):
+        self.EventBeginning = self.EventIndex.loc[0,'date']
+        for i in range(1,len(self.EventIndex)):
             # if the day is previous day+1
-            if self.EvendIndex.loc[i,'ID'] == self.EvendIndex.loc[i-1,'ID']+1:
+            if self.EventIndex.loc[i,'ID'] == self.EventIndex.loc[i-1,'ID']+1:
                 # then the event continues 
-                self.EvendIndex.loc[i,'continue'] = 1
+                self.EventIndex.loc[i,'continue'] = 1
                 # increase the duration
-                self.EvendIndex.loc[i,'IndDiff'] = self.EvendIndex.loc[i-1,'IndDiff'] +1
+                self.EventIndex.loc[i,'IndDiff'] = self.EventIndex.loc[i-1,'IndDiff'] +1
                 
-                self.EvendIndex.loc[i,'Duration'] = (self.EvendIndex.loc[i,'date'] - self.EventBeginning).days + 1
+                self.EventIndex.loc[i,'Duration'] = (self.EventIndex.loc[i,'date'] - self.EventBeginning).days + 1
             else: # if not then the day is the start of another event
-                self.EventBeginning = self.EvendIndex.loc[i,'date'] 
+                self.EventBeginning = self.EventIndex.loc[i,'date'] 
     
     
     
@@ -116,46 +112,46 @@ class Event():
         """
         OverTopTotal = pd.read_csv(OvertoppingPath, delimiter = r"\s+", header = None)
         
-        if not hasattr(self,"EvendIndex"):
+        if not hasattr(self,"EventIndex"):
             # create the dataframe if the user did not use the CreateEventIndex method to 
             # create the EventIndex dataframe
-            self.EvendIndex = pd.DataFrame()
-            self.EvendIndex['ID'] = OverTopTotal[0]
+            self.EventIndex = pd.DataFrame()
+            self.EventIndex['ID'] = OverTopTotal[0]
             self.IndexToDate()
             
-            self.EvendIndex.loc[:,'continue'] = 0
+            self.EventIndex.loc[:,'continue'] = 0
             # index difference maybe different than the duration as there might be 
             # a gap in the middle of the event
-            self.EvendIndex.loc[:,'IndDiff'] = 0
-            self.EvendIndex.loc[:,'Duration'] = 0
+            self.EventIndex.loc[:,'IndDiff'] = 0
+            self.EventIndex.loc[:,'Duration'] = 0
             
             # the first day in the index file is an event beginning
-            self.EventBeginning = self.EvendIndex.loc[0,'date']
-            for i in range(1,len(self.EvendIndex)):
+            self.EventBeginning = self.EventIndex.loc[0,'date']
+            for i in range(1,len(self.EventIndex)):
                 # if the day is previous day+1
-                if self.EvendIndex.loc[i,'ID'] == self.EvendIndex.loc[i-1,'ID']+1:
+                if self.EventIndex.loc[i,'ID'] == self.EventIndex.loc[i-1,'ID']+1:
                     # then the event continues 
-                    self.EvendIndex.loc[i,'continue'] = 1
+                    self.EventIndex.loc[i,'continue'] = 1
                     # increase the duration
-                    self.EvendIndex.loc[i,'IndDiff'] = self.EvendIndex.loc[i-1,'IndDiff'] +1
+                    self.EventIndex.loc[i,'IndDiff'] = self.EventIndex.loc[i-1,'IndDiff'] +1
                     
-                    self.EvendIndex.loc[i,'Duration'] = (self.EvendIndex.loc[i,'date'] - self.EventBeginning).days + 1
+                    self.EventIndex.loc[i,'Duration'] = (self.EventIndex.loc[i,'date'] - self.EventBeginning).days + 1
                 else: # if not then the day is the start of another event
-                    self.EventBeginning = self.EvendIndex.loc[i,'date'] 
+                    self.EventBeginning = self.EventIndex.loc[i,'date'] 
                     
             
         # store the overtoppiung data in the EventIndex dataframe
-        self.EvendIndex['Overtopping'] = OverTopTotal[1]
+        self.EventIndex['Overtopping'] = OverTopTotal[1]
         
-        self.EvendIndex.loc[0,'OvertoppingCum'] = self.EvendIndex.loc[0,'Overtopping']
-        for i in range(1,len(self.EvendIndex)):
-            if self.EvendIndex.loc[i,'continue'] == 0:
-                self.EvendIndex.loc[i,'OvertoppingCum'] = self.EvendIndex.loc[i,'Overtopping']
+        self.EventIndex.loc[0,'OvertoppingCum'] = self.EventIndex.loc[0,'Overtopping']
+        for i in range(1,len(self.EventIndex)):
+            if self.EventIndex.loc[i,'continue'] == 0:
+                self.EventIndex.loc[i,'OvertoppingCum'] = self.EventIndex.loc[i,'Overtopping']
             else:
-                self.EvendIndex.loc[i,'OvertoppingCum'] = self.EvendIndex.loc[i,'Overtopping'] + self.EvendIndex.loc[i-1,'OvertoppingCum']
+                self.EventIndex.loc[i,'OvertoppingCum'] = self.EventIndex.loc[i,'Overtopping'] + self.EventIndex.loc[i-1,'OvertoppingCum']
         # the volume of water is m3/s for hourly stored and acumulated values 
         # volume = overtopping * 60 *60 = m3
-        self.EvendIndex.loc[:,'Volume'] = self.EvendIndex.loc[:,'OvertoppingCum'] * 60*60
+        self.EventIndex.loc[:,'Volume'] = self.EventIndex.loc[:,'OvertoppingCum'] * 60*60
         
     
     
@@ -207,12 +203,12 @@ class Event():
         
         NonZeroCells['days'] = [int(i[len(self.DepthPrefix):-4]) for i in NonZeroCells['files'].tolist()]
         # get the numbe of inundated cells in the Event index data frame
-        self.EvendIndex['cells'] = 0
+        self.EventIndex['cells'] = 0
         for i in range(len(NonZeroCells)):
             # get the location in the EventIndex dataframe
-            loc = np.where(NonZeroCells.loc[i,'days'] == self.EvendIndex.loc[:,"ID"] )[0][0]
+            loc = np.where(NonZeroCells.loc[i,'days'] == self.EventIndex.loc[:,"ID"] )[0][0]
             # store number of cells
-            self.EvendIndex.loc[loc,'cells'] = NonZeroCells.loc[i,'cells']
+            self.EventIndex.loc[loc,'cells'] = NonZeroCells.loc[i,'cells']
     
         # save depths of each sub-basin
         inundatedSubs = list(self.DepthValues.keys())
@@ -225,15 +221,16 @@ class Event():
     def VolumeError(self, Path):
         
         VolError = pd.read_csv(Path, delimiter = r'\s+')
-        self.EvendIndex['DEMError'] = 0
-        self.EvendIndex['StepError'] = 0
-        self.EvendIndex['TooMuchWater'] = 0
+        self.EventIndex['DEMError'] = 0
+        self.EventIndex['StepError'] = 0
+        self.EventIndex['TooMuchWater'] = 0
         for i in range(len(VolError)):
-            loc = np.where(VolError.loc[i,'step'] == self.EvendIndex.loc[:,'ID'])[0][0]
-            self.EvendIndex.loc[loc,['DEMError','StepError','TooMuchWater']] = VolError.loc[i,['DEM_Error', 'PreviousDepthError', 'TOOMuchWaterError']].tolist()
+            loc = np.where(VolError.loc[i,'step'] == self.EventIndex.loc[:,'ID'])[0][0]
+            self.EventIndex.loc[loc,['DEMError','StepError','TooMuchWater']] = VolError.loc[i,['DEM_Error', 'PreviousDepthError', 'TOOMuchWaterError']].tolist()
         
         self.EventIndex['VolError']  = self.EventIndex['StepError'] + self.EventIndex['DEMError'] + self.EventIndex['TooMuchWater'] 
-
+        self.EventIndex['VolError2'] = self.EventIndex['VolError'] / 20
+        self.EventIndex['VolError2'] = self.EventIndex['VolError'] / 20
     
     def ReadEventIndex(self,Path):
         EventIndex = pd.read_csv(Path)
@@ -264,68 +261,47 @@ class Event():
         
         dataframe = dataframe.loc[:,columns]
         self.EventIndex = dataframe
-    
+        
     
     def Save(self):
-        self.EvendIndex.to_csv("EventIndex.txt",header=True,index_label = "Index")    
-    
-
-    
-    def AddAttribute(self, AddDict):
+        self.EventIndex.to_csv("EventIndex.txt",header=True,index_label = "Index")    
         
         
-        for i in list(AddDict.items()):
-            exec("self." + i[0] + "= 0") 
-            exec("self." + i[0] + "=i[1]")
+    def GetEventBeginning(self, loc):
+        """
+        EventBeginning method returns the index of the beginning of the event
+        in the EventIndex dataframe
         
-#        dataframe = self.EventIndex.loc[:,:]
-#        columns = list(dataframe.columns)
+        Inputs:
+            2-ind:
+                [Integer] index of the day you want to trace back to get the begining
+        Output:
+            1- ind:
+                [Integer] index of the beginning day of the event
+        Example:
+            1- if you want to get the beginning of the event that has the highest 
+            overtopping 
+            HighOvertoppingInd = EventIndex['Overtopping'].idxmax()
+            ind = EventBeginning(HighOvertoppingInd)
         
-#        [columns.remove(i) for i in DropList]
+        """
+        # loc = np.where(self.EventIndex['ID'] == day)[0][0]
+        # get all the days in the same event before that day as the inundation in the maps may 
+        # happen due to any of the days before not in this day
+        return self.EventIndex.index[loc - self.EventIndex.loc[loc,'IndDiff']]
         
-#        dataframe = dataframe.loc[:,columns]
-#        self.EventIndex = dataframe
-        
-        
-        
-#    def EventBeginning(EventIndex, ind):
-#        """
-#        ==================================================
-#          EventBeginning(EventIndex, ind)
-#        ==================================================
-#        
-#        EventBeginning is a function to return the index of the beginning of the event
-#        in the EventIndex dataframe
-#        
-#        Inputs:
-#            1-EventIndex:
-#               [dataframe]  a dataframe that has to contains two columns 'indDiff'
-#                   and 'ID', this dataframe was created using the PrepareEventIndex.py
-#                   code
-#            2-ind:
-#                [Integer] index of the day you want to trace back to get the begining
-#        Output:
-#            1- ind:
-#                [Integer] index of the beginning day of the event
-#        Example:
-#            1- if you want to get the beginning of the event that has the highest 
-#            overtopping 
-#            HighOvertoppingInd = EventIndex['Overtopping'].idxmax()        
-#            ind = FM.EventBeginning(EventIndex, HighOvertoppingInd)
-#        
-#        """
-#        # filter the dataframe and get only the 'indDiff' and 'ID' columns
-#        FilteredEvent = EventIndex.loc[:,['IndDiff','ID']]
-#        FilteredEvent['diff'] = FilteredEvent.index - ind
-#        # get only days before the day you inputed
-#        FilteredEvent = FilteredEvent[FilteredEvent['diff'] <=0 ]
-#        # start to search from down to up till you get the first 0 in the IndDiff
-#        for i in range(EventIndex['Duration'].max()):
-#            
-#            if FilteredEvent.loc[len(FilteredEvent)-1-i,'IndDiff'] == 0:
-#                break
-#            
-#        return FilteredEvent.index[len(FilteredEvent)-1-i]
+        # # filter the dataframe and get only the 'indDiff' and 'ID' columns
+        # FilteredEvent = self.EventIndex.loc[:,['IndDiff','ID']]
+        # FilteredEvent['diff'] = FilteredEvent.index - ind
+        # # get only days before the day you inputed
+        # FilteredEvent = FilteredEvent[FilteredEvent['diff'] <=0 ]
+        # # start to search from down to up till you get the first 0 in the IndDiff
+        # for i in range(self.EventIndex['Duration'].max()):
+            
+        #     if FilteredEvent.loc[len(FilteredEvent)-1-i,'IndDiff'] == 0:
+        #         break
+            
+        # return FilteredEvent.index[len(FilteredEvent)-1-i]
 
     def ListAttributes(self):
             """
@@ -341,29 +317,7 @@ class Event():
                     print(str(key) + ' : ' + repr(self.__dict__[key]))
     
             print('\n')
-        
-#    def DetailedOverTopping():
-        
-class River():
-    # class attributes
-#    CrossSections = pd.DataFrame()
-#    RiverNetwork = pd.DataFrame()
-
-    ### constructor
-    def __init__(self, name):
-        self.name = name
-        
-    def ReadXS(self,Path):
-        self.CrossSections = pd.read_csv(Path, delimiter = ',', skiprows =1  )
-        
-    
-    def ReturnPeriod(self,Path):
-        self.RP = pd.read_csv(Path, delimiter = ",",header = None)
-        self.RP.columns = ['node','HQ2','HQ10','HQ100']
-    
-    def Trace(self, Path):
-        self.RiverNetwork = pd.read_csv(Path, delimiter = r'\s+',header = None)
-        self.RiverNetwork.columns = ['subID','US','DS']
+                
         
         
 if __name__ == '__main__':
