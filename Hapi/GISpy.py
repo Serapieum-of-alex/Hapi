@@ -54,20 +54,20 @@ def AddMask(var, dem=None, mask=None, no_val=None):
     
     Inputs
     ----------
-    var : nd_array
-        Matrix with values to be masked
-    cut_dem : gdal_dataset
-        Instance of the gdal raster of the catchment to be cutted with. DEM 
-        overrides the mask_vals and no_val
-    mask_vals : nd_array
-        Mask with the no_val data
-    no_val : float
-        value to be defined as no_val. Will mask anything is not this value
+        1- var : nd_array
+            Matrix with values to be masked
+        2-cut_dem : gdal_dataset
+            Instance of the gdal raster of the catchment to be cutted with. DEM 
+            overrides the mask_vals and no_val
+        3-mask_vals : nd_array
+            Mask with the no_val data
+        4-no_val : float
+            value to be defined as no_val. Will mask anything is not this value
     
     Outputs
     -------
-    var : nd_array
-        Array with masked values 
+        1-var : nd_array
+            Array with masked values 
     """
     
     if dem is not None:
@@ -1438,14 +1438,17 @@ def CreatePoint(coords):
     a list of Shapely point object
     
     Inputs:
+    ----------
         1-coords:
         [List] list of tuples [(x1,y1),(x2,y2)] or [(long1,lat1),(long2,lat1)]
         
     Outputs:
+    ----------
         1-points:
         [List] list of Shaply point objects [Point,Point]
         
     Examples:
+    ----------
         coordinates = [(24.950899, 60.169158), (24.953492, 60.169158), (24.953510, 60.170104), (24.950958, 60.169990)]
         PointList = GIS.CreatePoint(coordinates)
         # to assign these objects to a geopandas dataframe 
@@ -1471,6 +1474,7 @@ def CombineGeometrics(Path1,Path2, Save=False, SavePath= None):
     shapefile
     
     Inputs:
+    ----------
         1-Path1:
             [String] a path includng the name of the shapefile and extention like 
             path="data/subbasins.shp"
@@ -1486,6 +1490,7 @@ def CombineGeometrics(Path1,Path2, Save=False, SavePath= None):
             path="data/subbasins.shp"
             
     Output:
+    ----------
         1-SaveIng the shapefile or NewGeoDataFrame :
             If you choose True in the "Save" input the function will save the 
             shapefile in the given "SavePath" 
@@ -1495,6 +1500,7 @@ def CombineGeometrics(Path1,Path2, Save=False, SavePath= None):
             NewDataFrame.to_file("Anyname.shp")
         
     Example:
+    ----------
         1- Return a geodata frame
             RIMSubPath = "Inputs/RIM_sub.shp"
             AddSubsPath = "Inputs/addSubs.shp"
