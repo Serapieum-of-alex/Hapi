@@ -7,7 +7,7 @@ Created on Tue Feb  4 14:57:30 2020
 import os
 import datetime as dt
 import pandas as pd 
-import Hapi.GISpy as GIS
+import Hapi.Raster as Raster
 import numpy as np
 
 
@@ -195,7 +195,7 @@ class Event():
                 and the second column is the number of cells in each map
         """
                 
-        self.DepthValues, NonZeroCells = GIS.OverlayMaps(Path, BaseMapF, FilePrefix,
+        self.DepthValues, NonZeroCells = Raster.OverlayMaps(Path, BaseMapF, FilePrefix,
                                                     ExcludedValue, Compressed,OccupiedCellsOnly)
         
         # NonZeroCells dataframe with the first column as the "file" name and the second column 

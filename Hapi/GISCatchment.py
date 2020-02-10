@@ -9,7 +9,7 @@ import os
 import numpy as np
 import pandas as pd
 import gdal
-import Hapi.GISpy as GIS
+import Hapi.Raster as Raster
 
 #from osgeo import gdalconst
 #import osr
@@ -403,7 +403,7 @@ def DeleteBasins(basins,pathout):
             if basins_A[i,j] != no_val and basins_A[i,j] != basins_val[0]:
                 basins_A[i,j] = no_val
                 
-    GIS.RasterLike(basins,basins_A,pathout)
+    Raster.RasterLike(basins,basins_A,pathout)
 
 def NearestCell(Raster,StCoord):
     """

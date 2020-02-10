@@ -14,7 +14,7 @@ import numpy as np
 import os
 import gdal
 
-import Hapi.GISpy as GIS
+import Hapi.Raster as Raster
 import Hapi.GISCatchment as GC
 
 
@@ -719,7 +719,7 @@ def SaveParameters(DistParFn, Raster, Par, No_parameters, no_lumped_par,
         pnme=[Path+i for i in pnme]
 
     for i in range(np.shape(par2d)[2]):
-        GIS.RasterLike(Raster,par2d[:,:,i],pnme[i])
+        Raster.RasterLike(Raster,par2d[:,:,i],pnme[i])
 
 
 def ParametersNO(raster, no_parameters, no_lumped_par,

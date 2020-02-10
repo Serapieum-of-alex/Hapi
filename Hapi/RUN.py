@@ -19,7 +19,7 @@ import gdal
 import numpy as np
 # functions
 import Hapi.Wrapper as Wrapper
-import Hapi.GISpy as GIS
+import Hapi.Raster as Raster
 #import DistParameters as Dp
 #import GISCatchment as GC
 
@@ -116,9 +116,9 @@ def RunHAPI(ConceptualModel, Paths, ParPath, p2, init_st, snow):
     
     # read data
     ### meteorological data
-    prec = GIS.ReadRastersFolder(PrecPath)
-    evap = GIS.ReadRastersFolder(Evap_Path)
-    temp = GIS.ReadRastersFolder(TempPath)
+    prec = Raster.ReadRastersFolder(PrecPath)
+    evap = Raster.ReadRastersFolder(Evap_Path)
+    temp = Raster.ReadRastersFolder(TempPath)
     print("meteorological data are read successfully")
     
     #### GIS data
@@ -128,7 +128,7 @@ def RunHAPI(ConceptualModel, Paths, ParPath, p2, init_st, snow):
     print("GIS data are read successfully")
     
     # parameters
-    parameters = GIS.ReadRastersFolder(ParPath)
+    parameters = Raster.ReadRastersFolder(ParPath)
     print("Parameters are read successfully")
     
     #run the model
@@ -232,9 +232,9 @@ def RunHAPIwithLake(ConceptualModel, Paths, ParPath, p2, init_st, snow,
     
     # read data
     ### meteorological data
-    prec = GIS.ReadRastersFolder(PrecPath)
-    evap = GIS.ReadRastersFolder(Evap_Path)
-    temp = GIS.ReadRastersFolder(TempPath)
+    prec = Raster.ReadRastersFolder(PrecPath)
+    evap = Raster.ReadRastersFolder(Evap_Path)
+    temp = Raster.ReadRastersFolder(TempPath)
     print("meteorological data are read successfully")
     
     #### GIS data
@@ -244,7 +244,7 @@ def RunHAPIwithLake(ConceptualModel, Paths, ParPath, p2, init_st, snow,
     print("GIS data are read successfully")
     
     # parameters
-    parameters = GIS.ReadRastersFolder(ParPath)
+    parameters = Raster.ReadRastersFolder(ParPath)
     print("Parameters are read successfully")
     
     
@@ -342,9 +342,9 @@ def RunFW1withLake(ConceptualModel, Paths, ParPath, p2, init_st, snow,
     
     # read data
     ### meteorological data
-    prec = GIS.ReadRastersFolder(PrecPath)
-    evap = GIS.ReadRastersFolder(Evap_Path)
-    temp = GIS.ReadRastersFolder(TempPath)
+    prec = Raster.ReadRastersFolder(PrecPath)
+    evap = Raster.ReadRastersFolder(Evap_Path)
+    temp = Raster.ReadRastersFolder(TempPath)
     print("meteorological data are read successfully")
     
     #### GIS data
@@ -356,7 +356,7 @@ def RunFW1withLake(ConceptualModel, Paths, ParPath, p2, init_st, snow,
 #    if LumpedPar == True:
 #        parameters = np.loadtxt(ParPath)#.tolist()
 #    else:        
-    parameters = GIS.ReadRastersFolder(ParPath)
+    parameters = Raster.ReadRastersFolder(ParPath)
     
     print("Parameters are read successfully")
     

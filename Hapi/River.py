@@ -7,7 +7,7 @@ Created on Sat Feb  8 18:04:32 2020
 import os 
 import pandas as pd
 import numpy as np
-import Hapi.GISpy as GIS
+# import Hapi.GISpy as GIS
 
 class River():
     # class attributes
@@ -266,6 +266,8 @@ class River():
                 self.crosssections.loc[i,['y1','y2','y3','y4','y5','y6']] = outputs[1]
                 
                 self.crosssections.loc[i,['z1','z2','z3','z4','z5','z6']] = outputs[2]
+        
+    # def CreatePolygons(self):
         
     @staticmethod
     def PolygonGeometry(Coords):

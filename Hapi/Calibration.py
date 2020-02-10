@@ -22,7 +22,7 @@ import gdal
 
 
 # functions
-import GISpy as GIS
+import Raster
 #import DistParameters as Dp
 #import PerformanceCriteria as PC
 import Wrapper
@@ -167,9 +167,9 @@ def RunCalibration(ConceptualModel, Paths, Basic_inputs, SpatialVarFun, SpatialV
     
     # read data
     ### meteorological data
-    prec=GIS.ReadRastersFolder(PrecPath)
-    evap=GIS.ReadRastersFolder(Evap_Path)
-    temp=GIS.ReadRastersFolder(TempPath)
+    prec=Raster.ReadRastersFolder(PrecPath)
+    evap=Raster.ReadRastersFolder(Evap_Path)
+    temp=Raster.ReadRastersFolder(TempPath)
     print("meteorological data are read successfully")
     #### GIS data
 #    dem= gdal.Open(DemPath) 

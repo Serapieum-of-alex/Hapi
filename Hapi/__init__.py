@@ -29,8 +29,8 @@ import Hapi.DistParameters
 ###
 import Hapi.DistRRM
 import Hapi.GISCatchment
-import Hapi.GISpy
-import Hapi.GISVisual
+import Hapi.Raster
+import Hapi.Vector
 import Hapi.Inputs
 import Hapi.java_functions
 import Hapi.PerformanceCriteria
@@ -45,7 +45,6 @@ import Hapi.HBVLumped
 import Hapi.HBVBergestrom92
 import Hapi.FloodModel
 import Hapi.River
-
 # module level doc-string
 __doc__ = """
 HAPI - Hydrological library for Python
