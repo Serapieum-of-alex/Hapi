@@ -37,7 +37,7 @@ Installation
 ============
 ```
 Please install Hapi in a Virtual environment so that its requirements don't tamper with your system's python
-**Hapi** works with Python 2.7 64Bit on Windows
+**Hapi** works with Python 2.7 and 3.7 64Bit on Windows
 ```
 
 if you are using conda
@@ -66,7 +66,6 @@ conda install gdal
 conda install shapely
 conda install geopandas
 conda install fiona
-conda install --channel https://conda.anaconda.org/mutirri pyopt
 
 # after installing all dependencies to install Hapi 
 python setup.py install
