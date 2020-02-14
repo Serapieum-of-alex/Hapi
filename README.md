@@ -7,7 +7,6 @@ The package is very flexible to an extent that it allows developers to change th
 their own model, it contains two routing functions muskingum cunge, and MAXBAS triangular function.
 (all function has been tested and validated during a Master thesis at IHE-Delft April 2018 and the library is still under development)
 
-image:: https://zenodo.org/badge/DOI/10.5281/zenodo.2572035.svg
 
 Main Features
 -------------
@@ -27,7 +26,7 @@ Here are just a few of the things that Hapi does well:
   - Different performance criteria to measure the godness of fit of the hydrological model
   
 -------------
-This work has been done as a Part of A Master Thesis in Hydroinformatics under supervision of Dr/ Gerald Corzo & Prof/ Dimitri Solomatine at IHE Delft April 2018
+This work has been done under supervision of Dr/ Gerald Corzo at IHE Delft April 2018
 -------------
 
 
