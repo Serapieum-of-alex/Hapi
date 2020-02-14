@@ -17,12 +17,11 @@ class Event():
     
 
     ### constructor
-    def __init__(self, name):
+    def __init__(self, name, start = "1950-1-1", days = 36890):
         # instance attribute
-        self.name = name        
-        start = dt.datetime(1950,1,1)
-        self.start =  start
-        self.end = self.start + dt.timedelta(days = 36890)
+        self.name = name
+        self.start = dt.datetime.strptime(start,"%Y-%m-%d")
+        self.end = self.start + dt.timedelta(days = days)
         
         
         Ref_ind = pd.date_range(self.start,self.end, freq='D')
@@ -30,15 +29,15 @@ class Event():
         # the last day is not in the results day Ref_ind[-1]
         # write the number of days + 1 as python does not include the last number in the range
         # 19723 days so write 19724
-        self.Reference_index = pd.DataFrame(index = list(range(1,36890+1)))
-        self.Reference_index['date'] = Ref_ind[:-1]
+        self.ReferenceIndex = pd.DataFrame(index = list(range(1,days+1)))
+        self.ReferenceIndex['date'] = Ref_ind[:-1]
     
     # method
     def IndexToDate(self):
         # convert the index into date
-        dateFn = lambda x: self.Reference_index.loc[x,'date']
-        # get the date of each index
-        date = self.EventIndex.applymap(dateFn)
+        dateFn = lambda x: self.ReferenceIndex.loc[x,'date']
+        # get the date the column 'ID' 
+        date = self.EventIndex.loc[:,'ID'].to_frame().applymap(dateFn)
         self.EventIndex['date'] = date
         
         
@@ -230,11 +229,11 @@ class Event():
         
         self.EventIndex['VolError']  = self.EventIndex['StepError'] + self.EventIndex['DEMError'] + self.EventIndex['TooMuchWater'] 
         self.EventIndex['VolError2'] = self.EventIndex['VolError'] / 20
-        self.EventIndex['VolError2'] = self.EventIndex['VolError'] / 20
     
     def ReadEventIndex(self,Path):
         EventIndex = pd.read_csv(Path)
         self.EventIndex = EventIndex
+        self.IndexToDate()
         
         
     def Drop(self, DropList):
@@ -263,8 +262,8 @@ class Event():
         self.EventIndex = dataframe
         
     
-    def Save(self):
-        self.EventIndex.to_csv("EventIndex.txt",header=True,index_label = "Index")    
+    def Save(self,Path):
+        self.EventIndex.to_csv(Path,header=True,index_label = "Index")    
         
         
     def GetEventBeginning(self, loc):
@@ -302,6 +301,39 @@ class Event():
         #         break
             
         # return FilteredEvent.index[len(FilteredEvent)-1-i]
+    
+    def GetEventEnd(self, loc):
+        """
+        GetEventEnd method returns the index of the beginning of the event
+        in the EventIndex dataframe
+        
+        Inputs:
+            2-ind:
+                [Integer] index of the day you want to trace back to get the begining
+        Output:
+            1- ind:
+                [Integer] index of the beginning day of the event
+        Example:
+            1- if you want to get the beginning of the event that has the highest 
+            overtopping 
+            HighOvertoppingInd = EventIndex['Overtopping'].idxmax()
+            ind = EventBeginning(HighOvertoppingInd)
+        
+        """
+        # loc = np.where(self.EventIndex['ID'] == day)[0][0]
+        # get all the days in the same event before that day as the inundation in the maps may 
+        # happen due to any of the days before not in this day
+        
+        # filter the dataframe and get only the 'indDiff' and 'ID' columns
+        FilteredEvent = self.EventIndex.loc[:,['continue','ID']]
+        # get only days before the day you inputed
+        for i in range(loc+1, len(FilteredEvent)):
+            # start search from the following day
+            if FilteredEvent.loc[i,'continue'] != 1:
+                break
+                            
+        return i-1
+    
 
     def ListAttributes(self):
             """
