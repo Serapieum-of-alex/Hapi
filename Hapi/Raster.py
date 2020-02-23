@@ -1812,14 +1812,14 @@ def ReadRastersFolder(path):
     return arr_3d
 
 
-def ExtractValues(Path, ExcludeValue, Compressed = True):
+def ExtractValues(Path, ExcludeValue, Compressed = True, OccupiedCellsOnly=True):
     """
     =================================================================
         ExtractValues(Path, ExcludeValue, Compressed = True)
     =================================================================
     this function is written to extract and return a list of all the values 
-    in an ASCII file
-    
+    in a map
+    #TODO (an ASCII for now to be extended later to read also raster)
     Inputs:
         1-Path
             [String] a path includng the name of the ASCII and extention like 
@@ -1851,9 +1851,9 @@ def ExtractValues(Path, ExcludeValue, Compressed = True):
         if Compressed :
             Compressedfile = zipfile.ZipFile(Path)
             # get the file name
-            fname = Compressedfile.infolist()[0]        
-            ASCIIF = Compressedfile.open(fname)
-            SpatialRef = ASCIIF.readlines()[:6]
+            fname = Compressedfile.infolist()[0]
+            # ASCIIF = Compressedfile.open(fname)
+            # SpatialRef = ASCIIF.readlines()[:6]
             ASCIIF = Compressedfile.open(fname)
             ASCIIRaw = ASCIIF.readlines()[6:]
             rows = len(ASCIIRaw)
@@ -1867,28 +1867,145 @@ def ExtractValues(Path, ExcludeValue, Compressed = True):
         else:
             MapValues, SpatialRef= ReadASCII(Path)
         
+        # count nonzero cells
+        NonZeroCells = np.count_nonzero(MapValues)
+            
+        if OccupiedCellsOnly == True:
+            ExtractedValues = 0
+            return ExtractedValues, NonZeroCells
+            
         # get the position of cells that is not zeros    
         rows = np.where(MapValues[:,:] != ExcludeValue)[0]
         cols = np.where(MapValues[:,:] != ExcludeValue)[1]
             
     except:
         print("Error Opening the compressed file")
-        return 0
+        NonZeroCells = -1
+        ExtractedValues = -1
+        return ExtractedValues, NonZeroCells
             
 
     # get the values of the filtered cells
     for i in range(len(rows)):
         ExtractedValues.append(MapValues[rows[i],cols[i]])
 
-    return ExtractedValues
+    return ExtractedValues, NonZeroCells
 
+
+def OverlayMap(Path, BaseMap, ExcludeValue, Compressed = False, OccupiedCellsOnly=True):
+    """
+    =================================================================
+        OverlayMaps(Path, ExcludeValue, Compressed = True)
+    =================================================================
+    this function is written to extract and return a list of all the values 
+    in an ASCII file
+    
+    Inputs:
+        1-Path
+            [String] a path to the folder includng the maps.
+        2-BaseMap:
+            [String/array] a path includng the name of the ASCII and extention like 
+            path="data/cropped.asc" / or the array it self
+        3-FilePrefix:
+            [String] a string that make the files you want to filter in the folder
+            uniq 
+        3-ExcludedValue:
+            [Numeric] values you want to exclude from exteacted values
+        4-Compressed:
+            [Bool] if the map you provided is compressed
+        5-OccupiedCellsOnly:
+            [Bool] if you want to count only cells that is not zero
+    Outputs:
+        1- ExtractedValues:
+            [Dict] dictonary with a list of values in the basemap as keys
+                and for each key a list of all the intersected values in the 
+                maps from the path
+        2- NonZeroCells:
+            [dataframe] dataframe with the first column as the "file" name
+            and the second column is the number of cells in each map
+    """
+    # input data validation
+    # data type
+    assert type(Path)== str, "Path input should be string type"
+    assert type(Compressed) == bool, "Compressed input should be Boolen type"
+    # assert type(BaseMapF) == str, "BaseMapF input should be string type"
+    # input values
+    # check wether the path exist or not 
+    assert os.path.exists(Path), "the path you have provided does not exist"
+    
+    
+    
+
+    # read the base map
+    if type(BaseMap) == str:
+        if BaseMap.endswith('.asc'):
+            BaseMapV, _ = ReadASCII(BaseMap)
+        else:
+            BaseMap = gdal.Open(BaseMap)
+            BaseMapV = BaseMap.ReadAsArray()
+    else:
+        BaseMapV = BaseMap
+        
+    ExtractedValues = dict()        
+        
+    try:
+        # open the zip file
+        if Compressed :
+            Compressedfile = zipfile.ZipFile(Path)
+            # get the file name
+            fname = Compressedfile.infolist()[0]        
+            ASCIIF = Compressedfile.open(fname)
+#                SpatialRef = ASCIIF.readlines()[:6]
+            ASCIIF = Compressedfile.open(fname)
+            ASCIIRaw = ASCIIF.readlines()[6:]
+            rows = len(ASCIIRaw)
+            cols = len(ASCIIRaw[0].split())
+            MapValues = np.ones((rows,cols), dtype = np.float32)*0
+            # read the ascii file
+            for row in range(rows):
+                x = ASCIIRaw[row].split()
+                MapValues[row,:] = list(map(float, x ))
+                
+        else:
+            MapValues, SpatialRef= ReadASCII(Path)
+        # count number of nonzero cells
+        NonZeroCells = np.count_nonzero(MapValues)
+        
+        if OccupiedCellsOnly == True:
+            ExtractedValues = 0
+            return ExtractedValues, NonZeroCells
+        
+        # get the position of cells that is not zeros    
+        rows = np.where(MapValues[:,:] != ExcludeValue)[0]
+        cols = np.where(MapValues[:,:] != ExcludeValue)[1]
+        
+        
+    except:
+        print("Error Opening the compressed file")
+        NonZeroCells = -1
+        ExtractedValues = -1
+        return ExtractedValues, NonZeroCells
+        
+    # extract values
+    for i in range(len(rows)):
+        # first check if the sub-basin has a list in the dict if not create a list
+        if BaseMapV[rows[i],cols[i]] not in list(ExtractedValues.keys()):
+            ExtractedValues[BaseMapV[rows[i],cols[i]]] = list()
+            
+#            if not np.isnan(MapValues[rows[i],cols[i]]):
+        ExtractedValues[BaseMapV[rows[i],cols[i]]].append(MapValues[rows[i],cols[i]])
+#            else:
+            # if the value is nan
+#                NanList.append(FilteredList[i])
+
+    return ExtractedValues, NonZeroCells
 
 
 def OverlayMaps(Path, BaseMapF, FilePrefix, ExcludeValue, Compressed = False, 
                 OccupiedCellsOnly=True):
     """
     =================================================================
-        ExtractValues(Path, ExcludeValue, Compressed = True)
+        OverlayMaps(Path, ExcludeValue, Compressed = True)
     =================================================================
     this function is written to extract and return a list of all the values 
     in an ASCII file
@@ -1952,59 +2069,28 @@ def OverlayMaps(Path, BaseMapF, FilePrefix, ExcludeValue, Compressed = False,
     FilesNotOpened = list()
         
     for i in range(len(FilteredList)):
-        
-        try:
-            # open the zip file
-            if Compressed :
-                Compressedfile = zipfile.ZipFile(Path + "/" + FilteredList[i])
-                # get the file name
-                fname = Compressedfile.infolist()[0]        
-                ASCIIF = Compressedfile.open(fname)
-#                SpatialRef = ASCIIF.readlines()[:6]
-                ASCIIF = Compressedfile.open(fname)
-                ASCIIRaw = ASCIIF.readlines()[6:]
-                rows = len(ASCIIRaw)
-                cols = len(ASCIIRaw[0].split())
-                MapValues = np.ones((rows,cols), dtype = np.float32)*0
-                # read the ascii file
-                for row in range(rows):
-                    x = ASCIIRaw[row].split()
-                    MapValues[row,:] = list(map(float, x ))
-                    
-            else:
-                MapValues, SpatialRef= ReadASCII(Path + "/" + FilteredList[i])
+        print("File " + FilteredList[i])
+        if OccupiedCellsOnly == True :
+            ExtractedValuesi , NonZeroCells.loc[i,'cells'] = OverlayMap(Path + "/" + FilteredList[i], 
+                                                                  BaseMapV, ExcludeValue, Compressed, 
+                                                                  OccupiedCellsOnly)
+        else:
+            ExtractedValuesi, NonZeroCells.loc[i,'cells'] = OverlayMap(Path + "/" + FilteredList[i], 
+                                                                  BaseMapV, ExcludeValue, Compressed, 
+                                                                  OccupiedCellsOnly)
             
-            print("File " + FilteredList[i])
+            # these are the destinct values from the BaseMap which are keys in the 
+            # ExtractedValuesi dict with each one having a list of values
+            BaseMapValues = list(ExtractedValuesi.keys())
             
-            if OccupiedCellsOnly == True:
-                NonZeroCells.loc[i,'cells'] = np.count_nonzero(MapValues)
-                ExtractedValues = 0
-                continue
+            for j in range(len(BaseMapValues)):
+                if BaseMapValues[j] not in list(ExtractedValues.keys()):
+                    ExtractedValues[BaseMapValues[j]] = list()
+                
+                ExtractedValues[BaseMapValues[j]] = ExtractedValues[BaseMapValues[j]] + ExtractedValuesi[BaseMapValues[j]]
             
-            # get the position of cells that is not zeros    
-            rows = np.where(MapValues[:,:] != ExcludeValue)[0]
-            cols = np.where(MapValues[:,:] != ExcludeValue)[1]
-            
-            
-        except:
-            print("Error Opening the compressed file")
-            NonZeroCells.loc[i,'cells'] = -1
+        if ExtractedValuesi == -1 or NonZeroCells.loc[i,'cells'] == -1:
             FilesNotOpened.append(FilteredList[i])
             continue
-        
-        
-        
-        
-        
-        for i in range(len(rows)):
-            # first check if the sub-basin has a list in the dict if not create a list
-            if BaseMapV[rows[i],cols[i]] not in list(ExtractedValues.keys()):
-                ExtractedValues[BaseMapV[rows[i],cols[i]]] = list()
-                
-#            if not np.isnan(MapValues[rows[i],cols[i]]):
-            ExtractedValues[BaseMapV[rows[i],cols[i]]].append(MapValues[rows[i],cols[i]])
-#            else:
-                # if the value is nan
-#                NanList.append(FilteredList[i])
 
     return ExtractedValues, NonZeroCells
