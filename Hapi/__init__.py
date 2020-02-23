@@ -8,7 +8,7 @@ Created on Tue May 22 09:01:55 2018
 __docformat__ = 'restructuredtext'
 
 # Let users know if they're missing any of our hard dependencies
-hard_dependencies = ("numpy", "pandas", "gdal")
+hard_dependencies = () #("numpy", "pandas", "gdal")
 missing_dependencies = []
 
 for dependency in hard_dependencies:
@@ -21,12 +21,11 @@ if missing_dependencies:
     raise ImportError(
         "Missing required dependencies {0}".format(missing_dependencies))
 
-del hard_dependencies, dependency, missing_dependencies
+# del hard_dependencies, dependency, missing_dependencies
 
 
 #import Calibration
 import Hapi.DistParameters
-###
 import Hapi.DistRRM
 import Hapi.GISCatchment
 import Hapi.Raster
@@ -43,9 +42,9 @@ import Hapi.HBV
 import Hapi.HBV_Lake
 import Hapi.HBVLumped
 import Hapi.HBVBergestrom92
-import Hapi.FloodModel
+import Hapi.RIMInputs
+import Hapi.Event
 import Hapi.River
-
 # module level doc-string
 __doc__ = """
 HAPI - Hydrological library for Python
