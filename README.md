@@ -70,5 +70,8 @@ conda install fiona
 python setup.py install
 # iF you have more than one environment installed in you operating system 
 pathto_your_env\python setup.py install
+# or in your python environment you can try to clone and install it directly from pip
+pip install git+https://github.com/MAfarrag/HAP
+
 
 ```
