@@ -265,12 +265,15 @@ class Event():
         self.EventIndex = EventIndex
         self.IndexToDate()
     
-    def Histogram(self, Day, ExcludeValue, OccupiedCellsOnly, Map = 1):
+    def Histogram(self, Day, ExcludeValue, OccupiedCellsOnly, Map = 1, filter1 = 0.2,
+                  filter2 = 15):
         """
         ==================================================================
            Histogram(Day, ExcludeValue, OccupiedCellsOnly, Map = 1)
         ==================================================================
-
+        Histogram method extract values fro the event MaxDepth map and plot the histogram
+        th emethod check first if you already extracted the values before then 
+        plot the histogram
         Parameters
         ----------
             1-Day : [Integer]
@@ -287,24 +290,44 @@ class Event():
         None.
 
         """
-        # depth map
-        if Map == 1:
-            Path = self.TwoDResultPath + self.DepthPrefix + str(Day) + ".zip"
-        elif Map == 2:
-            Path = self.TwoDResultPath + self.DurationPrefix + str(Day) + ".zip"
-        else:
-            Path = self.TwoDResultPath + self.ReturnPeriodPrefix + str(Day) + ".zip"
-            
-        ExtractedValues, NonZeroCells = Raster.ExtractValues(Path, ExcludeValue, 
-                                                             self.Compressed, 
-                                                             OccupiedCellsOnly)
-        self.ExtractedValues[Day] = ExtractedValues
+        # check if the object has the attribute ExtractedValues
+        if hasattr(self,'ExtractedValues'):
+            # get the list of event that then object has their Extractedvalues
+            if Day not in list(self.ExtractedValues.keys()):
+                # depth map
+                if Map == 1:
+                    Path = self.TwoDResultPath + self.DepthPrefix + str(Day) + ".zip"
+                elif Map == 2:
+                    Path = self.TwoDResultPath + self.DurationPrefix + str(Day) + ".zip"
+                else:
+                    Path = self.TwoDResultPath + self.ReturnPeriodPrefix + str(Day) + ".zip"
+                    
+                ExtractedValues, NonZeroCells = Raster.ExtractValues(Path, ExcludeValue, 
+                                                                     self.Compressed, 
+                                                                     OccupiedCellsOnly)
+                self.ExtractedValues[Day] = ExtractedValues
+        
+        ExtractedValues = self.ExtractedValues[Day]
         # filter values 
-        ExtractedValues = [j for j in ExtractedValues if j > 0.2]
-        ExtractedValues = [j for j in ExtractedValues if j < 15]
+        ExtractedValues = [j for j in ExtractedValues if j > filter1]
+        ExtractedValues = [j for j in ExtractedValues if j < filter2]
         #plot
-        fig, ax1 = plt.subplots(figsize=(10,8))
-        ax1.hist(ExtractedValues, bins=15, alpha = 0.4) #width = 0.2,
+        # fig, ax1 = plt.subplots(figsize=(10,8))
+        # ax1.hist(ExtractedValues, bins=15, alpha = 0.4) #width = 0.2,
+        
+        n, bins , patches = plt.hist(x= ExtractedValues, bins=15, color="#0504aa" , alpha=0.7,
+        							 rwidth=0.85)
+        plt.grid(axis='y', alpha=0.75)
+        plt.xlabel('Value',fontsize=15)
+        plt.ylabel('Frequency',fontsize=15)
+        plt.xticks(fontsize=15)
+        plt.yticks(fontsize=15)
+        
+        plt.ylabel('Frequency',fontsize=15)
+        plt.tight_layout()
+        # plt.title('Normal Distribution Histogram matplotlib',fontsize=15)
+        plt.show()
+        return n, bins , patches 
         
     def Drop(self, DropList):
         """

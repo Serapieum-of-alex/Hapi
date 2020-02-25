@@ -1238,7 +1238,7 @@ class River():
                 os.remove(Saveto + "/"  + fname)
 
     @staticmethod
-    def Histogram(v1, v2):
+    def Histogram(v1, v2, NoAxis=2, filter1=0.2, Save = False, pdf=True, **kwargs):
         """
         ===========================================
               Histogram(v1, v2)
@@ -1258,45 +1258,80 @@ class River():
 
         """
         
-        v1 = [j for j in v1 if j > 0.2]
-        v2 = [j for j in v2 if j > 0.2]
+        v1 = np.array([j for j in v1 if j > filter1])
+        v2 = np.array([j for j in v2 if j > filter1])
         
+        if pdf :
+            param_dist1 = gumbel_r.fit(np.array(v1))
+            param_dist2 = gumbel_r.fit(np.array(v2))
+    
+            d1 = np.linspace(v1.min(), v1.max(), v1.size)
+            d2 = np.linspace(v2.min(), v2.max(), v2.size)
+            pdf_fitted1 = gumbel_r.pdf(d1, loc=param_dist1[0], scale=param_dist1[1])
+            pdf_fitted2 = gumbel_r.pdf(d2, loc=param_dist2[0], scale=param_dist2[1])
         #
-        color1 = "#27408B"
-        color2= "#DC143C"
-        
-        fig, ax1 = plt.subplots(figsize=(10,8))
-        ax2 = ax1.twinx()
-        n1= ax1.hist([v1,0], bins=15, alpha = 0.4, color=[color1,color2]) #width = 0.2,
-        
-        ax1.set_ylabel("Frequency RIM1.0", fontsize = 15)
-        ax1.yaxis.label.set_color(color1)
-        ax1.set_xlabel("Depth Ranges (m)", fontsize = 15)
-        #ax1.cla
-        
-        ax1.tick_params(axis='y', color = color1)
-        #ax1.spines['right'].set_color(color1)
-        
-        n2 = ax2.hist(v2,  bins=n1[1], alpha = 0.4, color=color2)#width=0.2,
-        ax2.set_ylabel("Frequency RIM2.0", fontsize = 15)
-        ax2.yaxis.label.set_color(color2)
-        
-        ax2.tick_params(axis='y', color = color2)
-        # plt.title("Sub-Basin = " + str(SubID), fontsize = 15)
-        
-        minall = min(min(n1[1]), min(n2[1]))
-        if minall < 0:
-            minall =0
+        color1 = '#3D59AB'
+        color2 = "#DC143C"
+                    
+        if NoAxis == 1: 
+            # if bins in kwargs.keys():
+                
+            plt.figure(60,figsize=(10,8))
+            n, bins, patches  = plt.hist([v1,v2], color=['#3D59AB','#DC143C' ])
+            # plt.xlabel("Depth Values (m)")
+            # plt.ylabel("Frequency")
             
-        maxall = max(max(n1[1]), max(n2[1]))
-        ax1.set_xlim(minall, maxall)
-        #    ax1.set_yticklabels(ax1.get_yticklabels(), color = color1)
-        #    ax2.set_yticklabels(ax2.get_yticklabels(), color = color2)
-        
-        plt.tight_layout()
-        # plt.savefig("hist" + str(SubID)+".tif", transparent=True)
-        #plt.savefig(str(SubID)+"-2"+".tif", transparent=True)
-        # plt.close()
+            for key in kwargs.keys():
+                if key == 'legend':
+                    plt.legend(kwargs['legend'])
+                if key == 'legend size':
+                    plt.legend(kwargs['legend'],fontsize = int(kwargs['legend_size']))
+                if key == 'xlabel':
+                    plt.xlabel(kwargs['xlabel'])
+                if key == 'ylabel':
+                    plt.ylabel(kwargs['ylabel'])
+            #     # if key == 'xlabel':
+            #         # xlabel = kwargs['xlabel']
+            #     # if key == 'xlabel':
+            #         # xlabel = kwargs['xlabel']
+
+        elif NoAxis == 2: 
+            fig, ax1 = plt.subplots(figsize=(10,8))
+            ax2 = ax1.twinx()
+            n1= ax1.hist([v1,v2], bins=15, alpha = 0.7, color=[color1,color2],
+                         label=['RIM1.0','RIM2.0']) #width = 0.2,
+            
+            ax1.set_ylabel("Frequency", fontsize = 15)
+            # ax1.yaxis.label.set_color(color1)
+            ax1.set_xlabel("Inundation Depth Ranges (m)", fontsize = 15)
+            
+            # ax1.tick_params(axis='y', color = color1)
+            #ax1.spines['right'].set_color(color1)
+            if pdf:
+                ax2.plot(d1, pdf_fitted1, '-.', color = color1, linewidth = 3, label ="RIM1.0 pdf")
+                ax2.plot(d2, pdf_fitted2, '-.', color = color2, linewidth = 3, label ="RIM2.0 pdf")
+                ax2.set_ylabel("Probability density function (pdf)", fontsize = 15)
+            # n2 = ax2.hist(v2,  bins=n1[1], alpha = 0.4, color=color2)#width=0.2,
+            # ax2.set_ylabel("Frequency", fontsize = 15)
+            # ax2.yaxis.label.set_color(color2)
+            
+            # ax2.tick_params(axis='y', color = color2)
+            # plt.title("Sub-Basin = " + str(SubID), fontsize = 15)
+            
+            # minall = min(min(n1[1]), min(n2[1]))
+            # if minall < 0:
+            #     minall =0
+                
+            # maxall = max(max(n1[1]), max(n2[1]))
+            # ax1.set_xlim(minall, maxall)
+            #    ax1.set_yticklabels(ax1.get_yticklabels(), color = color1)
+            #    ax2.set_yticklabels(ax2.get_yticklabels(), color = color2)
+            fig.legend(loc="upper right", bbox_to_anchor=(1,1), bbox_transform=ax1.transAxes,fontsize = 15)
+            plt.tight_layout()
+        if Save == True:
+            # plt.savefig("hist" + str(SubID)+".tif", transparent=True)
+            plt.savefig(kwargs['name'] +"-hist.tif", transparent=True)
+            # plt.close()
 
 
 class Sub(River):
@@ -1522,24 +1557,28 @@ class Sub(River):
         # River.Read1DResult(self,self.ID, FromDay, ToDay, FillMissing)
     
     
-    def Histogram(self, Day, BaseMapF, ExcludeValue, OccupiedCellsOnly, Map = 1):
-        # depth map
-        if Map == 1:
-            Path = self.TwoDResultPath + self.DepthPrefix + str(Day) + ".zip"
-        elif Map == 2:
-            Path = self.TwoDResultPath + self.DurationPrefix + str(Day) + ".zip"
-        else:
-            Path = self.TwoDResultPath + self.ReturnPeriodPrefix + str(Day) + ".zip"
+    def Histogram(self, Day, BaseMapF, ExcludeValue, OccupiedCellsOnly, Map = 1, 
+                  filter1 = 0.2, filter2 = 15):
         
-        
-        ExtractedValues, NonZeroCells = Raster.OverlayMap(Path, BaseMapF, 
-                                            ExcludeValue, self.Compressed, 
-                                            OccupiedCellsOnly)
-        
-        self.ExtractedValues = ExtractedValues[self.ID]
+        # check if the object has the attribute ExtractedValues
+        if hasattr(self,'ExtractedValues'):
+            # depth map
+            if Map == 1:
+                Path = self.TwoDResultPath + self.DepthPrefix + str(Day) + ".zip"
+            elif Map == 2:
+                Path = self.TwoDResultPath + self.DurationPrefix + str(Day) + ".zip"
+            else:
+                Path = self.TwoDResultPath + self.ReturnPeriodPrefix + str(Day) + ".zip"
+            
+            
+            ExtractedValues, NonZeroCells = Raster.OverlayMap(Path, BaseMapF, 
+                                                ExcludeValue, self.Compressed, 
+                                                OccupiedCellsOnly)
+            
+            self.ExtractedValues = ExtractedValues[self.ID]
         # filter values 
-        ExtractedValues = [j for j in ExtractedValues if j > 0.2]
-        ExtractedValues = [j for j in ExtractedValues if j < 15]
+        ExtractedValues = [j for j in ExtractedValues if j > filter1]
+        ExtractedValues = [j for j in ExtractedValues if j < filter2]
         #plot
         fig, ax1 = plt.subplots(figsize=(10,8))
         ax1.hist(self.ExtractedValues, bins=15, alpha = 0.4) #width = 0.2,
