@@ -45,6 +45,7 @@ import Hapi.HBVBergestrom92
 import Hapi.RIMInputs
 import Hapi.Event
 import Hapi.River
+# module level doc-string
 __doc__ = """
 HAPI - Hydrological library for Python
 =====================================================================
