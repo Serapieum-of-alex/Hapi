@@ -75,9 +75,10 @@ class River():
     def ReturnPeriod(self,Path):
         """
         ==========================================
-             ReturnPeriod(self,Path)
+             ReturnPeriod(Path)
         ==========================================
-
+        ReturnPeriod method reads the HQ file which contains all the computational nodes
+        with HQ2, HQ10, HQ100
         Parameters
         ----------
             1-Path : [String]
@@ -152,12 +153,14 @@ class River():
 
         return  SWIMUS, SWIMDS
 
-    def StatisticalProperties(self,Path):
+    def StatisticalProperties(self, Path, Filter = True):
         """
         ====================================================
            StatisticalProperties(Path)
         ====================================================
-        StatisticalProperties method reads the parameters of the distribution
+        StatisticalProperties method reads the parameters of the distribution and
+        calculates the the 2, 5, 10, 15, 20, 50, 100 return period discharge for each
+        sub-basin
 
         Parameters
         ----------
@@ -174,6 +177,31 @@ class River():
 
         """
         self.SP = pd.read_csv(Path, delimiter = ",") #,header = None,skiprows = 0
+
+        if Filter:
+            NewSP = pd.DataFrame(columns = ['ID','loc','scale'])
+            NewSP['ID'] = self.slope['SubID']
+            for i in range(len(self.slope)):
+                # get the location of the USnode in the rivernetwork attribute
+                loc = np.where(self.rivernetwork['SubID'] == self.slope.loc[i,'SubID'])[0][0]
+                #  get the location of USnode in the SP attribute
+                try:
+                    loc = np.where(self.SP['ID'] == self.rivernetwork.loc[loc,'US'])[0][0]
+                    NewSP.loc[i,['loc','scale']] = self.SP.loc[loc,['loc','scale']]
+                except:
+                    NewSP.loc[i,['loc','scale']] = [-1,-1]
+                    continue
+
+            self.SP = NewSP
+        # calculate the 2, 5, 10, 15, 20 return period doscharge
+        T = np.array([2, 5, 10, 15, 20, 50, 100])
+        self.SP = self.SP.assign(RP2 = 0, RP5 = 0, RP10 = 0, RP15 = 0, RP20 = 0, RP50 = 0,
+                                 RP100 = 0)
+        F = 1 - (1/T)
+        for i in range(len(self.SP)):
+            if self.SP.loc[i,'loc'] != -1:
+                self.SP.loc[i,self.SP.keys()[3:].tolist()] = gumbel_r.ppf(F,loc=self.SP.loc[i,'loc'],
+                                                                          scale=self.SP.loc[i,'scale']).tolist()
 
 
     def Overtopping(self):
@@ -1507,6 +1535,28 @@ class Sub(River):
 
 
     def DetailedOvertopping(self, eventdays):
+        """
+        =========================================================
+                DetailedOvertopping(eventdays)
+        =========================================================
+
+        Parameters
+        ----------
+        eventdays : TYPE
+            DESCRIPTION.
+
+        Returns
+        -------
+            1- DetailedOvertoppingLeft:[data frame attribute]
+                containing the computational node and rainfall-runoff results
+                (hydrograph)with columns ['ID', NodeID ]
+            2-DetailedOvertoppingRight:[data frame attribute]
+                containing the computational node and rainfall-runoff results
+                (hydrograph)with columns ['ID', NodeID ]
+            3-AllOvertoppingVSXS:
+            4-AllOvertoppingVSTime:
+
+        """
         # River.DetailedOvertopping(self, [self.ID], eventdays)
         XSs = self.crosssections.loc[:,'xsid'].tolist()
         columns = [self.ID] + XSs + ['sum']
