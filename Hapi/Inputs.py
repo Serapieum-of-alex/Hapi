@@ -13,7 +13,7 @@ import numpy as np
 import shutil
 import pandas as pd
 # functions
-import Hapi.GISpy as GIS
+import Hapi.Raster as Raster
 
 
 def PrepareInputs(Raster,InputFolder,FolderName):
@@ -62,14 +62,14 @@ def PrepareInputs(Raster,InputFolder,FolderName):
     temp=os.environ['TEMP']+"/AllignedRasters/"
     
     # match alignment 
-    GIS.MatchDataAlignment(Raster,InputFolder,temp)
+    Raster.MatchDataAlignment(Raster,InputFolder,temp)
     # create new folder in the current directory for alligned and nodatavalue matched cells
     try:
         os.makedirs(os.path.join(os.getcwd(),FolderName))
     except WindowsError:
         print("please function is trying to create a folder with a name New_Rasters to complete the process if there is a folder with the same name please rename it to other name")    
     # match nodata value 
-    GIS.MatchDataNoValuecells(Raster,temp,FolderName+"/")
+    Raster.MatchDataNoValuecells(Raster,temp,FolderName+"/")
     # delete the processing folder from temp
     shutil.rmtree(temp)
 

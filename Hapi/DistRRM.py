@@ -9,7 +9,7 @@ import gdal
 from types import ModuleType
 
 # functions
-import Hapi.GISpy as GIS
+import Hapi.Raster as Raster
 #import HBV
 import Hapi.Routing as Routing
 import Hapi.GISCatchment as GC
@@ -362,7 +362,7 @@ def Dist_HBV2(ConceptualModel,lakecell,q_lake,DEM,flow_acc,flow_acc_plan, sp_pre
     dummy_states[:] = np.nan
 
     # Get the mask
-    mask, no_val = GIS.get_mask(DEM)
+    mask, no_val = Raster.get_mask(DEM)
     x_ext, y_ext = mask.shape # shape of the fpl raster (rows, columns)-------------- rows are x and columns are y
     #    y_ext, x_ext = mask.shape # shape of the fpl raster (rows, columns)------------ should change rows are y and columns are x
 
