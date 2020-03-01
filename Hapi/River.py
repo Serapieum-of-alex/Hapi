@@ -172,7 +172,8 @@ class River():
         -------
             1-SP:[data frame attribute]
                 containing the river computational nodes US of the Sub basins
-                and estimated gumbel distribution parameters that fit the time series
+                and estimated gumbel distribution parameters that fit the time
+                series
                 ['node','HQ2','HQ10','HQ100']
 
         """
@@ -202,6 +203,80 @@ class River():
             if self.SP.loc[i,'loc'] != -1:
                 self.SP.loc[i,self.SP.keys()[3:].tolist()] = gumbel_r.ppf(F,loc=self.SP.loc[i,'loc'],
                                                                           scale=self.SP.loc[i,'scale']).tolist()
+    def GetReturnPeriod(self,SubID, Q):
+        try:
+            loc = np.where(self.SP['ID'] == SubID)[0][0]
+            F = gumbel_r.cdf(Q, loc = self.SP.loc[loc,'loc'],
+                         scale = self.SP.loc[loc,'scale'])
+            return 1/(1-F)
+        except:
+            return -1
+
+    def USBoundaryCondition(self):
+        self.USBC = pd.DataFrame(columns = ['SubID','Qbf'])
+        for i in range(len(self.slope)):
+            self.USBC.loc[i,'SubID'] = self.slope.loc[i,'SubID']
+            s = abs(self.slope.loc[i,'slope'])
+            loc = np.where(self.crosssections['swimid'] == self.slope.loc[i,'SubID'])[0][0]
+            b = self.crosssections.loc[loc,'b']
+            dbf = self.crosssections.loc[loc,'dbf']
+            n = self.crosssections.loc[loc,'m']
+
+            self.USBC.loc[i,'Qbf'] = (1/n) * b * (dbf**(5/3)) * ((s/500)**0.5)
+
+
+    def GetBankfullDepth(self,function,ColumnName):
+        """
+        =========================================================
+            GetBankfullDepth(function,ColumnName)
+        =========================================================
+        GetBankfullDepth method takes a function that calculates the bankful depth
+        as a function of bankful width and calculate the depth
+
+        Parameters
+        ----------
+            1-function : [function]
+                function that takes one input and calculates the depth.
+            2-ColumnName : [String]
+                A name for the column to store the calculated depth at the
+                cross section dataframe.
+
+        Returns
+        -------
+            dataframe column in the cross section attribute with the calculated
+            depth.
+
+        """
+        self.crosssections[ColumnName] = self.crosssections['b'].to_frame().applymap(function)
+
+    def GetCapacity(self,ColumnName):
+        """
+        ======================================================
+              GetCapacity(ColumnName)
+        ======================================================
+        GetCapacity method calculates the discharge that enough to fill the
+        bankfull area
+
+        Parameters
+        ----------
+            1-ColumnName : [String]
+                A name for the column to store the calculated depth at the
+                cross section dataframe.
+
+        Returns
+        -------
+            None.
+
+        """
+        for i in range(len(self.crosssections)-1):
+
+            if self.crosssections.loc[i,'swimid'] == self.crosssections.loc[i+1,'swimid']:
+                slope = (self.crosssections.loc[i,'gl'] - self.crosssections.loc[i+1,'gl'])/500
+            else:
+                slope = abs(self.crosssections.loc[i,'gl'] - self.crosssections.loc[i-1,'gl'])/500
+
+            self.crosssections.loc[i,'Qbf'] = (1/self.crosssections.loc[i,'m']) * self.crosssections.loc[i,'b'] * (self.crosssections.loc[i,'dbf']) ** (5/3)
+            self.crosssections.loc[i,'Qbf']  = self.crosssections.loc[i,'Qbf'] * (slope)**(1/2)
 
 
     def Overtopping(self):
