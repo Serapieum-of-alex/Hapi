@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Created on Sat Feb  8 18:04:32 2020
 
@@ -180,6 +179,10 @@ class River():
         self.SP = pd.read_csv(Path, delimiter = ",") #,header = None,skiprows = 0
 
         if Filter:
+            assert hasattr(self, "slope"), "please read the Guide file with the Slope Method as this method uses the the SubID in the guide file as ID"
+            assert hasattr(self, "rivernetwork"), "please read the rivernetwork Trace file with the RiverNetwork method data "
+            # filter all the computational nodes in the file to those only
+            # exist in the slope attribute (the nodes in the guide file)
             NewSP = pd.DataFrame(columns = ['ID','loc','scale'])
             NewSP['ID'] = self.slope['SubID']
             for i in range(len(self.slope)):
@@ -203,6 +206,7 @@ class River():
             if self.SP.loc[i,'loc'] != -1:
                 self.SP.loc[i,self.SP.keys()[3:].tolist()] = gumbel_r.ppf(F,loc=self.SP.loc[i,'loc'],
                                                                           scale=self.SP.loc[i,'scale']).tolist()
+
     def GetReturnPeriod(self,SubID, Q):
         try:
             loc = np.where(self.SP['ID'] == SubID)[0][0]
@@ -295,6 +299,7 @@ class River():
         for the right overtopping file
 
         Inputs:
+        -------
             1-OvertoppingResultF:
                 [String] a path to the folder includng 2D results.
 
@@ -1018,21 +1023,24 @@ class River():
 
         Parameters
         ----------
-        SubID : [integer]
-            DESCRIPTION.
-        FromDay : [integer], optional
-            DESCRIPTION. The default is [].
-        ToDay : [integer], optional
-            DESCRIPTION. The default is [].
-        Path : [String], optional
-            DESCRIPTION. The default is ''.
-        FillMissing : [Bool], optional
-            DESCRIPTION. The default is False.
+            1-SubID : [integer]
+                ID of the sub-basin you want to read its data.
+            2-FromDay : [integer], optional
+                the index of the day you want the data to start from. The default is empty.
+                means read everything
+            3-ToDay : [integer], optional
+                the index of the day you want the data to end to. The default is empty.
+                means read everything
+            4-Path : [String], optional
+                Path to read the results from. The default is ''.
+            5-FillMissing : [Bool], optional
+                Fill the missing days. The default is False.
 
         Returns
         -------
-        None.
-
+            6-Result1D : [attribute]
+                the results read will be stored (as it is without any filter)
+                in the attribute "Result1D"
         """
 
         # if the path is not given try to read from the object predefined OneDresultPath
@@ -1060,7 +1068,6 @@ class River():
         data.index = list(range(0,len(data)))
 
         # Cross section data
-        # Nxs = np.shape(data[data['day'] == data['day'][1]][data['hour'] == 1])[0]
         XSname = data['xs'][data['day'] == data['day'][1]][data['hour'] == 1].tolist()
 
         if FillMissing == True:
@@ -1493,51 +1500,136 @@ class Sub(River):
         if hasattr(River, 'RP'):
             self.RP = River.RP.loc[River.RP['node'] == self.USnode,['HQ2','HQ10','HQ100']]
         if hasattr(River,"SP"):
-            self.SP = River.SP.loc[River.SP['ID'] == self.USnode,:]
+            self.SP = River.SP.loc[River.SP['ID'] == self.ID,:]
             self.SP.index = list(range(len(self.SP)))
         self.RRMPath = River.RRMPath
         # create dictionary to store any extracted values from maps
         self.ExtractedValues = dict()
 
-    def Read1DResult(self,FromDay = [], ToDay = [], FillMissing = False, addHQ2 = True):
+    def Read1DResult(self, FromDay = '', ToDay = '', FillMissing = False,
+                     addHQ2 = True, Path = '', XSID = ''):
         """
         ===================================================================
-           Read1DResult(FromDay = [], ToDay = [], FillMissing = False)
+           Read1DResult(FromDay = '', ToDay = '', FillMissing = False)
         ===================================================================
         Read1DResult method reads the 1D (1D-2D coupled) result of the sub-basin the object is
         created for and return the hydrograph of the first and last cross section
 
         Parameters
         ----------
-            1-FromDay : [Integer], optional
-                DESCRIPTION. The default is [].
-            2-ToDay : TYPE, optional
-                DESCRIPTION. The default is [].
-            3-FillMissing : TYPE, optional
-                DESCRIPTION. The default is False.
-
+            1-FromDay : [integer], optional
+                the index of the day you want the data to start from. The default is empty.
+                means read everything
+            2-ToDay : [integer], optional
+                the index of the day you want the data to end to. The default is empty.
+                means read everything
+            3-FillMissing : [Bool], optional
+                Fill the missing days. The default is False.
+            4-addHQ2 : [Bool], optional
+                to add the value of HQ2. The default is False.
+            5-Path : [String], optional
+                Path to read the results from. The default is ''.
+            6-XSID : [Integer], optional
+                ID of a specific cross section you want to get the results on it. The default is ''.
         Returns
         -------
-        None.
+            1-Result1D : [attribute]
+                the results read will be stored (as it is without any filter)
+                in the attribute "Result1D"
+            2-XSHydrographs : [dataframe attribute]
+                dataframe containing hydrographs at the position of the first and last cross section
+            3-XSWaterLevel : [dataframe attribute]
+                dataframe containing waterlevels at the position of the first and last cross section
 
         """
         River.Read1DResult(self,self.ID, FromDay, ToDay, FillMissing = FillMissing)
 
         self.XSHydrographs = pd.DataFrame()
-        if FromDay == []:
+        self.XSWaterLevel = pd.DataFrame()
+        if FromDay == '':
             FromDay = self.Result1D.loc[0,'day']
-        if ToDay ==  []:
+        if ToDay ==  '':
             ToDay = self.Result1D.loc[len(self.Result1D)-1,'day']
-        start = self.ReferenceIndex.loc[FromDay,'date']#.tolist()[0]
-        end = self.ReferenceIndex.loc[ToDay+1,'date']#.tolist()[0]
+
+        start = self.ReferenceIndex.loc[FromDay,'date']
+        end = self.ReferenceIndex.loc[ToDay+1,'date']
         self.XSHydrographs['ID'] = pd.date_range(start,end,freq = 'H')[:-1]
+        self.XSWaterLevel['ID'] = pd.date_range(start,end,freq = 'H')[:-1]
+
         # get the simulated hydrograph and add the cutted HQ2
         if addHQ2:
             self.XSHydrographs[self.LastXS] = self.Result1D['q'][self.Result1D['xs'] == self.LastXS ].values + self.RP['HQ2'].tolist()[0]
             self.XSHydrographs[self.FirstXS] = self.Result1D['q'][self.Result1D['xs'] == self.FirstXS ].values + self.RP['HQ2'].tolist()[0]
+
+            if XSID != '':
+                self.XSHydrographs[XSID] = self.Result1D['q'][self.Result1D['xs'] == self.XSID ].values + self.RP['HQ2'].tolist()[0]
         else:
             self.XSHydrographs[self.LastXS] = self.Result1D['q'][self.Result1D['xs'] == self.LastXS ].values
             self.XSHydrographs[self.FirstXS] = self.Result1D['q'][self.Result1D['xs'] == self.FirstXS ].values
+            if XSID != '':
+                self.XSHydrographs[XSID] = self.Result1D['q'][self.Result1D['xs'] == self.XSID ].values
+
+        self.XSWaterLevel[self.LastXS]  = self.Result1D['wl'][self.Result1D['xs'] == self.LastXS ].values
+        self.XSWaterLevel[self.FirstXS] = self.Result1D['wl'][self.Result1D['xs'] == self.FirstXS ].values
+
+        if XSID != '':
+            self.XSWaterLevel[self.XSID]  = self.Result1D['wl'][self.Result1D['xs'] == self.XSID ].values
+
+    def ExtractXS(self, XSID, addHQ2=False):
+        """
+        ========================================================
+            ExtractXS(XSID, addHQ2).
+        ========================================================
+
+        ExtractXS method extracts the hydrodraph and water levels of a specific
+        XSID from the already been read 1D results
+
+        Parameters
+        ----------
+            1-XSID : [Integer], optional
+                ID of a specific cross section you want to get the results on it.
+            2-addHQ2 : [Bool], optional
+                to add the value of HQ2. The default is False.
+
+        Returns
+        -------
+        None.
+        """
+        assert hasattr(self,"Result1D"), "please use the Read1DResult method to read the results first"
+        # assert hasattr(self,"RP"), "please use the Read1DResult method to read the results first"
+        if addHQ2:
+            self.XSHydrographs[XSID] = self.Result1D['q'][self.Result1D['xs'] == self.XSID ].values + self.RP['HQ2'].tolist()[0]
+        else:
+            self.XSHydrographs[XSID] = self.Result1D['q'][self.Result1D['xs'] == self.XSID ].values
+
+        self.XSWaterLevel[self.XSID]  = self.Result1D['wl'][self.Result1D['xs'] == self.XSID ].values
+
+
+    def CheckNegativeQ(self):
+        """
+        ==================================================
+            CheckNegativeQ
+        ==================================================
+        CheckNegativeQ check whether there are any negative discharge values
+        in the 'q' column in the 1D results or not, you need to read the result first
+
+
+        Returns
+        -------
+            1-Negative.[attribute]
+                dictionary with ['NegQ', 'NegXS', 'NegQind'] as keys
+        """
+
+        assert hasattr(self, "Result1D") , "please use the Result1D method to read the result of this sub-basin first"
+
+        if self.Result1D['q'].min() < 0:
+            print("NegativeDischarge")
+            # extract -ve discharge data if exist
+            self.Negative = dict()
+            self.Negative['NegQ'] =  self.Result1D[self.Result1D['q'] < 0]
+            self.Negative['NegXS'] = list(set(self.Negative['NegQ']['xs']))
+            self.Negative['NegQind'] = self.Negative['NegQ'].index.tolist()
+
 
     @staticmethod
     def ReadRRMResults(Path, NodeID, FromDay, ToDay):
@@ -1600,6 +1692,24 @@ class Sub(River):
         # get the simulated hydrograph and add the cutted HQ2
 
     def DetailedStatisticalCalculation(self, T):
+        """
+        ===============================================================
+             DetailedStatisticalCalculation(T)
+        ===============================================================
+        DetailedStatisticalCalculation method calculates the discharge related
+        to a specific given return period
+
+        Parameters
+        ----------
+        T : TYPE
+            DESCRIPTION.
+
+        Returns
+        -------
+        None.
+
+        """
+        assert hasattr(self,"SP"), "you "
         F = 1-(1/T)
         self.Qrp = pd.DataFrame()
         self.Qrp['RP'] = T
