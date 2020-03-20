@@ -19,8 +19,69 @@ class Inputs():
     def __init__(self,name):
         self.name = name
 
+    def ExtractHydrologicalInputs(self, WeatherGenerator, FilePrefix, realization,
+                                   path, SWIMNodes, SavePath):
+        """
+
+
+        Parameters
+        ----------
+            WeatherGenerator : TYPE
+                DESCRIPTION.
+            FilePrefix : TYPE
+                DESCRIPTION.
+            realization : [Integer]
+                type the number of the realization (the order of the 100 year
+                run by swim).
+            path : [String]
+                 SWIMResultFile is the naming format you used in naming the result
+                 files of the discharge values stored with the name of the file as
+                 out+realization number + .dat (ex out15.dat).
+            SWIMNodes : [String]
+                text file containing the list of sub-basins IDs or computational nodes ID you
+                have used to run SWIM and store the results.
+            SavePath : [String]
+                path to the folder where you want to save the separate file for
+                each sub-basin.
+
+        Returns
+        -------
+        None.
+
+        """
+
+        if WeatherGenerator:
+            """ WeatherGenerator """
+            SWIMResultFile = FilePrefix + str(realization) + ".dat"
+            # 4-5
+            # check whether the the name of the realization the same as the name of 3
+            # the saving file or not to prevent any confusion in saving the files
+            if realization <= 9:
+                assert int(SWIMResultFile[-5:-4]) == int(SavePath[-1]), " Wrong files sync "
+            else:
+                assert int(SWIMResultFile[-6:-4]) == int(SavePath[-2:]), " Wrong files sync "
+        else:
+            """ Observed data """
+
+            SWIMResultFile = FilePrefix + str(realization) + ".dat"
+
+        """
+        SWIM writes the year as the first colmun then day as a second column and the
+        discharge values starts from the thirst column so you have to write number of
+        columns to be ignored at the begining
+        """
+        ignoreColumns = 2
+
+        # read SWIM result file
+        SWIMData = pd.read_csv(path + "/" + SWIMResultFile, delimiter = r'\s+', header = None)
+        Nodes = pd.read_csv(path + "/" + SWIMNodes, header = None)
+
+        for i in range(len(Nodes)):
+            SWIMData.loc[:,i + (ignoreColumns)].to_csv(SavePath + "/" + str(Nodes.loc[i,0]) + ".txt",
+                        header = None, index = None)
+
     def StatisticalProperties(self, PathNodes, PathTS, StartDate, WarmUpPeriod, SavePlots, SavePath,
-                              SeparateFiles = False, Filter = False):
+                              SeparateFiles = False, Filter = False, RIMResults = False):
         """
         =============================================================================
           StatisticalProperties(PathNodes, PathTS, StartDate, WarmUpPeriod, SavePlots, saveto)
@@ -50,6 +111,14 @@ class Inputs():
                 DESCRIPTION.
             6-SavePath : [String]
                 the path where you want to  save the statistical properties.
+            7-SeparateFiles: [Bool]
+                if the discharge data are stored in separate files not all in one file
+                SeparateFiles should be True, default [False].
+            8-Filter: [Bool]
+                for observed or RIMresult data it has gaps of times where the
+                model did not run or gaps in the observed data if these gap days
+                are filled with a specific value and you want to ignore it here
+                give Filter = Value you want
 
         Returns
         -------
@@ -63,10 +132,14 @@ class Inputs():
         # hydrographs
         if SeparateFiles:
             ObservedTS = pd.DataFrame()
-
-            for i in range(len(ComputationalNodes)):
-                ObservedTS.loc[:,int(ComputationalNodes[i])] = np.loadtxt(PathTS + "/" +
-                          str(int(ComputationalNodes[i])) + '.txt') #,skiprows = 0
+            if RIMResults:
+                for i in range(len(ComputationalNodes)):
+                    ObservedTS.loc[:,int(ComputationalNodes[i])] =  self.ReadRIMResult(PathTS + "/" +
+                                  str(int(ComputationalNodes[i])) + '.txt')
+            else:
+                for i in range(len(ComputationalNodes)):
+                    ObservedTS.loc[:,int(ComputationalNodes[i])] = np.loadtxt(PathTS + "/" +
+                              str(int(ComputationalNodes[i])) + '.txt') #,skiprows = 0
 
             StartDate = dt.datetime.strptime(StartDate,"%Y-%m-%d")
             EndDate = StartDate + dt.timedelta(days = ObservedTS.shape[0]-1)
@@ -87,7 +160,7 @@ class Inputs():
         # List of the table output, including some general data and the return periods.
         col_csv = ['mean', 'std', 'min', '5%', '25%', 'median',
                    '75%', '95%', 'max', 't_beg', 't_end', 'nyr']
-        rp_name = ['q1.5', 'q2', 'q5', 'q10', 'q25', 'q50', 'q100', 'q200', 'q500']
+        rp_name = ['q1.5', 'q2', 'q5', 'q10', 'q25', 'q50', 'q100', 'q200', 'q500', 'q1000']
         col_csv = col_csv + rp_name
 
         # In a table where duplicates are removed (np.unique), find the number of
@@ -102,7 +175,7 @@ class Inputs():
                                  columns=['loc','scale'])
         DistributionPr.index.name = 'ID'
         # required return periods
-        T = [1.5, 2, 5, 10, 25, 50, 50, 100, 200, 500]
+        T = [1.5, 2, 5, 10, 25, 50, 50, 100, 200, 500, 1000]
         T = np.array(T)
         # these values are the Non Exceedance probability (F) of the chosen
         # return periods F = 1 - (1/T)
@@ -134,7 +207,7 @@ class Inputs():
             pdf_fitted = gumbel_r.pdf(Qx, loc=param_dist[0], scale=param_dist[1])
             if SavePlots :
                 plt.plot(Qx, pdf_fitted, 'r-')
-                plt.hist(amax, normed=True)
+                plt.hist(amax, density=True)
                 plt.savefig(SavePath + "/" + "Figures/" + str(i) + '.png', format='png')
                 plt.close()
 
@@ -162,6 +235,23 @@ class Inputs():
         self.StatisticalPr = StatisticalPr
         DistributionPr.to_csv(SavePath + "/" + "DistributionProperties.csv")
         self.DistributionPr = DistributionPr
+
+
+    def WriteHQFile(self, NoNodes, StatisticalPropertiesFile, SaveTo):
+        # Create a table of all nodes and sub-basins
+        HQ = pd.DataFrame(index = list(range(NoNodes)), columns =['ID','2yrs','10yrs','100yrs'])
+        HQ.loc[:,['2yrs','10yrs','100yrs']] = -1
+        HQ.loc[:,'ID'] = range(1,NoNodes+1)
+        StatisticalPr= pd.read_csv(StatisticalPropertiesFile)
+        for i in range(len(StatisticalPr)):
+        #i=0
+            HQ.loc[StatisticalPr.loc[i,'ID']-1,'2yrs'] =  StatisticalPr.loc[i,'q2']
+            HQ.loc[StatisticalPr.loc[i,'ID']-1,'10yrs'] = StatisticalPr.loc[i,'q10']
+            HQ.loc[StatisticalPr.loc[i,'ID']-1,'100yrs'] = StatisticalPr.loc[i,'q100']
+
+        # save the HQ file
+        HQ.to_csv(SaveTo,float_format="%%.2f".format,index=False, header=None)
+
 
     @staticmethod
     def StringSpace(Inp):
@@ -354,20 +444,107 @@ class Inputs():
             np.savetxt(wpath + "CheckWaterDepth.txt",check,fmt='%6d')
 
 
+    @staticmethod
+    def ReadRIMResult(Path):
+        """
+        =======================================
+           ReadRIMResult(Path)
+        =======================================
+
+        Parameters
+        ----------
+            Path : [String]
+                path to the RIM output file you want to read, the file should
+                contain two columns the first is the index of the day and the
+                second is the discharge value, the method fills missed days
+                with zeros
+
+        Returns
+        -------
+            f2 : TYPE
+                DESCRIPTION.
+
+        """
+
+        f = np.loadtxt(Path, delimiter = ",")
+
+        f1 = list(range(int(f[0,0]),int(f[-1,0])+1))
+        f2 = list()
+        for j in range(len(f1)):
+            # if the index exist in the original list
+            if f1[j] in f[:,0]:
+                # put the coresponding value in f2
+                f2.append(f[np.where(f[:,0] == f1[j])[0][0],1])
+            else:
+                # if it does not exist put zero
+                f2.append(0)
+        return f2
+
+
+
 class CrossSections():
     def __init__(self,name):
         self.name = name
 
 
-    def reg_plot(self,x , y, minmax_XS_area, xlab, ylab, xlgd, ylgd, title, filename, log, logandlin,
-             seelim, Save = False, *args, **kwargs):
+    def reg_plot(self,x , y, xlab, ylab, xlgd, ylgd, title, filename,
+                 log, logandlinear, seelim, Save = False, *args, **kwargs):
         """
+        =============================================================================
+        reg_plot(x , y, minmax_XS_area, xlab, ylab, xlgd, ylgd, title, filename,
+                 log, logandlinear, seelim, Save = False, *args, **kwargs)
+        =============================================================================
+
+        Parameters
+        ----------
+        x : TYPE
+            DESCRIPTION.
+        y : TYPE
+            DESCRIPTION.
+        minmax_XS_area : TYPE
+            DESCRIPTION.
+        xlab : TYPE
+            DESCRIPTION.
+        ylab : TYPE
+            DESCRIPTION.
+        xlgd : TYPE
+            DESCRIPTION.
+        ylgd : TYPE
+            DESCRIPTION.
+        title : TYPE
+            DESCRIPTION.
+        filename : TYPE
+            DESCRIPTION.
+        log : [Bool]
+            # Plot for log-log regression.
+        logandlin : TYPE
+            DESCRIPTION.
+        seelim : [Bool]
+            to draw vertical lines on the min and max drainage area on the graph.
+        Save : TYPE, optional
+            DESCRIPTION. The default is False.
+        *args : TYPE
+            DESCRIPTION.
+        **kwargs : TYPE
+            DESCRIPTION.
+
+        Returns
+        -------
+        None.
+
+
         Use the ordinary least squares to make a regression and plot the
         output.
 
         This function was developed first. The two following functions
         have been adapted from this one to meet some particular requirements.
+
         """
+        for key in kwargs.keys():
+            if key == "XLim":
+                xmin = kwargs['XLim'][0]
+                xmax = kwargs['XLim'][1]
+
     #    if log is True:
     #        # Linear regression with the ordinaty least squares method (Y, X).
     #        # sm.add_constant is required to get the intercept.
@@ -376,29 +553,15 @@ class CrossSections():
     #                         missing='drop').fit()
     #    elif log is False:
     #        results = sm.OLS(y, sm.add_constant(x), missing='drop').fit()
-
+        # fit the relation between log(x) and log(y)
         results_log = sm.OLS(np.log10(y), sm.add_constant(np.log10(x)),
                              missing='drop').fit()
+        # fit the relation between x and y
         results_lin = sm.OLS(y, sm.add_constant(x), missing='drop').fit()
         # Print the results in the console
     #    print(results.summary())
         print(results_log.summary())
         print(results_lin.summary())
-        # Save them to a datafram using an external function
-    #    results_df = results_summary_to_dataframe(results)
-    #    results_df.index = ['intercept_' + filename, 'slope_' + filename]
-    #    results_df.to_csv(filename + '.csv', sep=',')
-
-        if logandlin is False:
-            results_log_df = self.results_summary_to_dataframe(results_log)
-            results_log_df.index = ['intercept_' + filename, 'slope_' + filename]
-            if Save:
-                results_log_df.to_csv(filename + '_powerlaw.csv', sep=',')
-
-            results_lin_df = self.results_summary_to_dataframe(results_lin)
-            results_lin_df.index = ['intercept_' + filename, 'slope_' + filename]
-            if Save:
-                results_lin_df.to_csv(filename + '_lin.csv', sep=',')
 
         # Retrieve the intercept and the slope
         intercept = results_lin.params[0]
@@ -416,11 +579,29 @@ class CrossSections():
     #        exp = slope
 
         # Retrieve r2
-    #    rsq = results.rsquared
         rsq_log = results_log.rsquared
         rsq_lin = results_lin.rsquared
 
-        if logandlin is False:
+
+        # Save them to a datafram using an external function
+    #    results_df = results_summary_to_dataframe(results)
+    #    results_df.index = ['intercept_' + filename, 'slope_' + filename]
+    #    results_df.to_csv(filename + '.csv', sep=',')
+
+        if logandlinear is False:
+            # logarithmic data
+            results_log_df = self.results_summary_to_dataframe(results_log)
+            results_log_df.index = ['intercept_' + filename, 'slope_' + filename]
+            if Save:
+                results_log_df.to_csv(filename + '_powerlaw.csv', sep=',')
+            # linear data
+            results_lin_df = self.results_summary_to_dataframe(results_lin)
+            results_lin_df.index = ['intercept_' + filename, 'slope_' + filename]
+            if Save:
+                results_lin_df.to_csv(filename + '_lin.csv', sep=',')
+
+
+        if logandlinear is False:
             # Plot the points and the regression line
             plt.scatter(x, y)
             x_plot = np.linspace(x.min(), x.max(), 1000)
@@ -448,12 +629,14 @@ class CrossSections():
 
             plt.xlabel(xlab)
             plt.ylabel(ylab)
+            # vertical lines for min and max cross section area
             if seelim is True:
-                plt.axvline(x=min(minmax_XS_area['Min_UpXSArea']), color='red',
+                plt.axvline(x=xmin, color='red',
                             ymin=0.25, ymax=0.75)
-                plt.axvline(x=max(minmax_XS_area['Max_UpXSArea']), color='red',
+                plt.axvline(x=xmax, color='red',
                             ymin=0.25, ymax=0.75)
             plt.title(title)
+
             if Save:
                 plt.savefig(filename + '.png', dpi=400)
                 plt.close()
@@ -469,7 +652,7 @@ class CrossSections():
 
         # Plot the power law and linear regressions on a log-log scale
         # and on a linear scale to compare the fits
-        elif logandlin is True:
+        elif logandlinear is True:
             # Plot on a log-log scale
             plt.scatter(x, y, c='grey', marker="x")
             x_plot = np.linspace(x.min(), x.max(), 1000)
@@ -487,15 +670,16 @@ class CrossSections():
             plt.ylim(0.5*y.min(), 1.5*y.max())
             plt.xlabel(xlab)
             plt.ylabel(ylab)
+
             if seelim is True:
-                plt.axvline(x=min(minmax_XS_area['Min_UpXSArea']), color='red',
+                plt.axvline(x=xmin, color='red',
                             ymin=0.25, ymax=0.75)
-                plt.axvline(x=max(minmax_XS_area['Max_UpXSArea']), color='red',
+                plt.axvline(x=xmax, color='red',
                             ymin=0.25, ymax=0.75)
             plt.title(title)
             if Save:
                 plt.savefig(filename + '_logscale.png', dpi=400)
-            plt.close()
+                plt.close()
             # Plot on a linear scale
             plt.scatter(x, y, c='grey', marker="x")
             x_plot = np.linspace(x.min(), x.max(), 1000)
@@ -514,14 +698,14 @@ class CrossSections():
             plt.xlabel(xlab)
             plt.ylabel(ylab)
             if seelim is True:
-                plt.axvline(x=min(minmax_XS_area['Min_UpXSArea']), color='red',
+                plt.axvline(x=xmin, color='red',
                             ymin=0.25, ymax=0.75)
-                plt.axvline(x=max(minmax_XS_area['Max_UpXSArea']), color='red',
+                plt.axvline(x=xmax, color='red',
                             ymin=0.25, ymax=0.75)
             plt.title(title)
             if Save:
                 plt.savefig(filename + '_linscale.png', dpi=400)
-            plt.close()
+                plt.close()
 
 
     def reg_plot_river(self, river_lst, data, minmax_XS_area, filename, log,
