@@ -50,8 +50,8 @@ cd Hapi
 
 # Create a virtualenv
 open anaconda prompt and type
-conda create -n Hapi_env python=2.7 anaconda 
-that will create an environment named python2 that contain s Python2.7 version of Anaconda 
+conda create -n Hapi_env python=3.7 anaconda 
+that will create an environment named python3 that contain s Python3.7 version of Anaconda 
 
 # Activate the env
 conda activate Hapi_env
