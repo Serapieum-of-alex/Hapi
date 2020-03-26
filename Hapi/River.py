@@ -1,5 +1,5 @@
 """
-Created on Sat Feb  8 18:04:32 2020
+Created on Sat Feb  8 18:04:32 2020.
 
 @author: mofarrag
 """
@@ -11,17 +11,27 @@ from scipy.stats import gumbel_r
 import Hapi.Raster as Raster
 import matplotlib.pyplot as plt
 import zipfile
-import Hapi.Raster as Raster
 
+FigureDefaultOptions = dict( ylabel = '', xlabel = '',
+                      legend = '', legend_size = 10, figsize = (10,8),
+                      labelsize = 10, fontsize = 10, name = 'hist.tif',
+                      color1 = '#3D59AB', color2 = "#DC143C", linewidth = 3,
+                      Axisfontsize = 15
+                        )
 class River():
+    """
+
+
+    """
     # class attributes
 
 
-    def __init__(self, name, days = 36890, start = "1950-1-1",
+    def __init__(self, name, Version = 2, days = 36890, start = "1950-1-1",
                  leftOvertopping_Suffix = "_left.txt",
                  RightOvertopping_Suffix = "_right.txt", DepthPrefix = "DepthMax",
                  DurationPrefix = "Duration", ReturnPeriodPrefix = "ReturnPeriod" ):
         self.name = name
+        self.Version = Version
         self.start = dt.datetime.strptime(start,"%Y-%m-%d")
         self.end = self.start + dt.timedelta(days = days)
 
@@ -39,6 +49,7 @@ class River():
         # 19723 days so write 19724
         self.ReferenceIndex = pd.DataFrame(index = list(range(1,days+1)))
         self.ReferenceIndex['date'] = Ref_ind[:-1]
+        self.FigureOptions = FigureDefaultOptions
 
 
     def CrossSections(self,Path):
@@ -1370,8 +1381,8 @@ class River():
                 # delete the file
                 os.remove(Saveto + "/"  + fname)
 
-    @staticmethod
-    def Histogram(v1, v2, NoAxis=2, filter1=0.2, Save = False, pdf=True, **kwargs):
+    # @staticmethod
+    def Histogram(self, v1, v2, NoAxis=2, filter1=0.2, Save = False, pdf=True, **kwargs):
         """
         ===========================================
               Histogram(v1, v2)
@@ -1390,6 +1401,13 @@ class River():
             - histogram plot.
 
         """
+        # update the default options
+        Fkeys = list(kwargs.keys())
+        for key in Fkeys:
+            if key in self.FigureOptions.keys():
+                self.FigureOptions[key] = kwargs[key]
+
+
 
         v1 = np.array([j for j in v1 if j > filter1])
         v2 = np.array([j for j in v2 if j > filter1])
@@ -1403,8 +1421,8 @@ class River():
             pdf_fitted1 = gumbel_r.pdf(d1, loc=param_dist1[0], scale=param_dist1[1])
             pdf_fitted2 = gumbel_r.pdf(d2, loc=param_dist2[0], scale=param_dist2[1])
         #
-        color1 = '#3D59AB'
-        color2 = "#DC143C"
+        # color1 = '#3D59AB'
+        # color2 = "#DC143C"
 
         if NoAxis == 1:
             # if bins in kwargs.keys():
@@ -1414,37 +1432,40 @@ class River():
             # plt.xlabel("Depth Values (m)")
             # plt.ylabel("Frequency")
 
-            for key in kwargs.keys():
-                if key == 'legend':
-                    plt.legend(kwargs['legend'])
-                if key == 'legend size':
-                    plt.legend(kwargs['legend'],fontsize = int(kwargs['legend_size']))
-                if key == 'xlabel':
-                    plt.xlabel(kwargs['xlabel'])
-                if key == 'ylabel':
-                    plt.ylabel(kwargs['ylabel'])
-            #     # if key == 'xlabel':
-            #         # xlabel = kwargs['xlabel']
-            #     # if key == 'xlabel':
-            #         # xlabel = kwargs['xlabel']
+            # for key in kwargs.keys():
+            #     if key == 'legend':
+            #         plt.legend(kwargs['legend'])
+            #     if key == 'legend size':
+            #         plt.legend(kwargs['legend'],fontsize = int(kwargs['legend_size']))
+            #     if key == 'xlabel':
+            #         plt.xlabel(kwargs['xlabel'])
+            #     if key == 'ylabel':
+            #         plt.ylabel(kwargs['ylabel'])
+            # #     # if key == 'xlabel':
+            # #         # xlabel = kwargs['xlabel']
+            # #     # if key == 'xlabel':
+            # #         # xlabel = kwargs['xlabel']
 
         elif NoAxis == 2:
-            fig, ax1 = plt.subplots(figsize=(10,8))
+            fig, ax1 = plt.subplots(figsize = self.FigureOptions['figsize'])
+            # n1= ax1.hist([v1,v2], bins=15, alpha = 0.7, color=[color1,color2])
+            n1= ax1.hist([v1,v2], bins=15, alpha = 0.7, color = [self.FigureOptions['color1'],
+                                                                 self.FigureOptions['color2']])
+                         # label=['RIM1.0','RIM2.0']) #width = 0.2,
 
-            n1= ax1.hist([v1,v2], bins=15, alpha = 0.7, color=[color1,color2],
-                         label=['RIM1.0','RIM2.0']) #width = 0.2,
-
-            ax1.set_ylabel("Frequency", fontsize = 15)
+            ax1.set_ylabel("Frequency", fontsize = self.FigureOptions['fontsize'])
             # ax1.yaxis.label.set_color(color1)
-            ax1.set_xlabel("Inundation Depth Ranges (m)", fontsize = 15)
+            ax1.set_xlabel("Inundation Depth Ranges (m)", fontsize = self.FigureOptions['fontsize'])
 
             # ax1.tick_params(axis='y', color = color1)
             # ax1.spines['right'].set_color(color1)
             if pdf:
                 ax2 = ax1.twinx()
-                ax2.plot(d1, pdf_fitted1, '-.', color = color1, linewidth = 3, label ="RIM1.0 pdf")
-                ax2.plot(d2, pdf_fitted2, '-.', color = color2, linewidth = 3, label ="RIM2.0 pdf")
-                ax2.set_ylabel("Probability density function (pdf)", fontsize = 15)
+                ax2.plot(d1, pdf_fitted1, '-.', color = self.FigureOptions['color1'],
+                         linewidth = self.FigureOptions['linewidth'], label ="RIM1.0 pdf")
+                ax2.plot(d2, pdf_fitted2, '-.', color = self.FigureOptions['color2'],
+                         linewidth = self.FigureOptions['linewidth'], label ="RIM2.0 pdf")
+                ax2.set_ylabel("Probability density function (pdf)", fontsize = self.FigureOptions['labelsize'])
             # else:
             #     ax2.yaxis.set_ticklabels([])
             #     # ax2.yaxis.set_major_formatter(plt.NullFormatter())
@@ -1452,6 +1473,10 @@ class River():
             #     ax2.set_xticks([])
             #     ax2.tick_params(axis='y', color = color2)
 
+            #     # if key == 'xlabel':
+            #         # xlabel = kwargs['xlabel']
+            #     # if key == 'xlabel':
+            #         # xlabel = kwargs['xlabel']
 
             # n2 = ax2.hist(v2,  bins=n1[1], alpha = 0.4, color=color2)#width=0.2,
             # ax2.set_ylabel("Frequency", fontsize = 15)
@@ -1468,11 +1493,29 @@ class River():
             # ax1.set_xlim(minall, maxall)
             #    ax1.set_yticklabels(ax1.get_yticklabels(), color = color1)
             #    ax2.set_yticklabels(ax2.get_yticklabels(), color = color2)
-            fig.legend(loc="upper right", bbox_to_anchor=(1,1), bbox_transform=ax1.transAxes,fontsize = 15)
+
+            # # options
+            # for key in kwargs.keys():
+                # if key == 'legend':
+                    # ax1.legend(self.FigureOptions['legend'])
+                # if key == 'legend_size':
+            ax1.legend(kwargs['legend'],fontsize = int(self.FigureOptions['legend_size']))
+                # if key == 'xlabel':
+                    # ax1.set_xlabel(self.FigureOptions['xlabel'])
+                # if key == 'ylabel':
+                    # ax1.set_ylabel(self.FigureOptions['ylabel'])
+                # if key == 'labelsize':
+            ax1.set_xlabel(self.FigureOptions['xlabel'], fontsize = self.FigureOptions['labelsize'])
+            ax1.set_ylabel(self.FigureOptions['ylabel'], fontsize = self.FigureOptions['labelsize'])
+                # if key == 'fontsize':
+            plt.rcParams.update({'font.size': int(self.FigureOptions['Axisfontsize'])})
+
+            # fig.legend(loc="upper right", bbox_to_anchor=(1,1), bbox_transform=ax1.transAxes,fontsize = 15)
+
             plt.tight_layout()
+
         if Save == True:
-            # plt.savefig("hist" + str(SubID)+".tif", transparent=True)
-            plt.savefig(kwargs['name'] +"-hist.tif", transparent=True)
+            plt.savefig(self.FigureOptions['name'] +"-hist.tif", transparent=True)
             # plt.close()
 
 
@@ -1481,6 +1524,7 @@ class Sub(River):
     def __init__(self,ID, River):
         self.ID = ID
         self.RIM = River.name
+        self.Version = River.Version
         self.RightOvertopping_Suffix = River.RightOvertopping_Suffix
         self.leftOvertopping_Suffix = River.leftOvertopping_Suffix
         self.DepthPrefix = River.DepthPrefix
@@ -1488,15 +1532,25 @@ class Sub(River):
         self.ReturnPeriodPrefix = River.ReturnPeriodPrefix
         self.Compressed = River.Compressed
         self.TwoDResultPath = River.TwoDResultPath
+        if hasattr(River,'USbndPath'):
+            self.USbndPath = River.USbndPath
+        if hasattr(River,"OneMinResultPath"):
+            self.OneMinResultPath = River.OneMinResultPath
+
+        if hasattr(River, "USbndPath"):
+            self.USbndPath = River.USbndPath
 
         self.crosssections = River.crosssections[River.crosssections['swimid'] == ID]
         self.crosssections.index = list(range(len(self.crosssections)))
         self.LastXS = self.crosssections.loc[len(self.crosssections)-1,'xsid']
         self.FirstXS = self.crosssections.loc[0,'xsid']
+        self.XSname = self.crosssections['xsid'].tolist()
+
         self.ReferenceIndex = River.ReferenceIndex
         self.OneDResultPath = River.OneDResultPath
         self.slope = River.slope[River.slope['SubID']==ID]['slope'].tolist()[0]
         self.USnode, self.DSnode = River.Trace(ID)
+
         if hasattr(River, 'RP'):
             self.RP = River.RP.loc[River.RP['node'] == self.USnode,['HQ2','HQ10','HQ100']]
         if hasattr(River,"SP"):
@@ -1505,6 +1559,8 @@ class Sub(River):
         self.RRMPath = River.RRMPath
         # create dictionary to store any extracted values from maps
         self.ExtractedValues = dict()
+
+        self.FigureOptions = River.FigureOptions
 
     def Read1DResult(self, FromDay = '', ToDay = '', FillMissing = False,
                      addHQ2 = True, Path = '', XSID = ''):
@@ -1544,8 +1600,6 @@ class Sub(River):
         """
         River.Read1DResult(self,self.ID, FromDay, ToDay, FillMissing = FillMissing)
 
-        self.XSHydrographs = pd.DataFrame()
-        self.XSWaterLevel = pd.DataFrame()
         if FromDay == '':
             FromDay = self.Result1D.loc[0,'day']
         if ToDay ==  '':
@@ -1553,8 +1607,12 @@ class Sub(River):
 
         start = self.ReferenceIndex.loc[FromDay,'date']
         end = self.ReferenceIndex.loc[ToDay+1,'date']
-        self.XSHydrographs['ID'] = pd.date_range(start,end,freq = 'H')[:-1]
-        self.XSWaterLevel['ID'] = pd.date_range(start,end,freq = 'H')[:-1]
+
+        self.XSHydrographs = pd.DataFrame(index = pd.date_range(start,end,freq = 'H')[:-1])
+        self.XSWaterLevel = pd.DataFrame(index = pd.date_range(start,end,freq = 'H')[:-1])
+
+        # self.XSHydrographs['ID'] = pd.date_range(start, end, freq = 'H')[:-1]
+        # self.XSWaterLevel['ID'] = pd.date_range(start, end, freq = 'H')[:-1]
 
         # get the simulated hydrograph and add the cutted HQ2
         if addHQ2:
@@ -1575,7 +1633,33 @@ class Sub(River):
         if XSID != '':
             self.XSWaterLevel[self.XSID]  = self.Result1D['wl'][self.Result1D['xs'] == self.XSID ].values
 
-    def ExtractXS(self, XSID, addHQ2=False):
+
+        # check the first day in the results and get the date of the first day and last day
+        ## create time series
+        self.from_beginning  = self.Result1D['day'][0]
+
+        # if from_beginning == 1:
+            # self.FirstDay = self.ReferenceIndex.loc[1,'date']
+            # self.FirstDayResults = self.ReferenceIndex.loc[self.Result1D['day'][0],'date']
+        #    list1 = range((FirstDayResults-s).days+1,(EndDays-s).days+1)
+
+        # else:
+        self.FirstDay =  self.ReferenceIndex.loc[self.from_beginning,'date']
+        # if there are empty days at the beginning the filling missing days is not going to detect it
+        # so ignore it here by starting from the first day in the data (data['day'][0]) dataframe
+        # empty days at the beginning
+        self.FirstDayResults = self.ReferenceIndex.loc[self.Result1D['day'][0],'date']
+
+        # last days+1 as range does not include the last element
+        self.Daylist = list(range(self.Result1D['day'][0],self.Result1D['day'][self.Result1D.index[-1]]+1))
+        # last day +1 to include the last day
+        # EndDays = River.ReferenceIndex.loc[Sub.Result1D['day'][Sub.Result1D.index[-1]]+1,'date']
+        self.EndDays = self.ReferenceIndex.loc[self.Result1D['day'][self.Result1D.index[-1]],'date']
+
+        self.ReferenceIndex_T = pd.date_range(self.FirstDayResults, self.EndDays,freq = "D")
+
+
+    def ExtractXS(self, XSID, addHQ2=False, WaterLevel=True):
         """
         ========================================================
             ExtractXS(XSID, addHQ2).
@@ -1598,14 +1682,15 @@ class Sub(River):
         assert hasattr(self,"Result1D"), "please use the Read1DResult method to read the results first"
         # assert hasattr(self,"RP"), "please use the Read1DResult method to read the results first"
         if addHQ2:
-            self.XSHydrographs[XSID] = self.Result1D['q'][self.Result1D['xs'] == self.XSID ].values + self.RP['HQ2'].tolist()[0]
+            self.XSHydrographs[XSID] = self.Result1D['q'][self.Result1D['xs'] == XSID ].values + self.RP['HQ2'].tolist()[0]
         else:
-            self.XSHydrographs[XSID] = self.Result1D['q'][self.Result1D['xs'] == self.XSID ].values
+            self.XSHydrographs[XSID] = self.Result1D['q'][self.Result1D['xs'] == XSID ].values
 
-        self.XSWaterLevel[self.XSID]  = self.Result1D['wl'][self.Result1D['xs'] == self.XSID ].values
+        if WaterLevel:
+            self.XSWaterLevel[XSID]  = self.Result1D['wl'][self.Result1D['xs'] == XSID ].values
 
 
-    def CheckNegativeQ(self):
+    def CheckNegativeQ(self, plot = False, TS = 'hourly'):
         """
         ==================================================
             CheckNegativeQ
@@ -1619,16 +1704,97 @@ class Sub(River):
             1-Negative.[attribute]
                 dictionary with ['NegQ', 'NegXS', 'NegQind'] as keys
         """
+        if TS == 'hourly':
+            assert hasattr(self, "Result1D") , "please use the Result1D method to read the result of this sub-basin first"
 
-        assert hasattr(self, "Result1D") , "please use the Result1D method to read the result of this sub-basin first"
+            if self.Result1D['q'].min() < 0:
+                print("NegativeDischarge")
+                # extract -ve discharge data if exist
+                self.Negative = dict()
+                self.Negative['NegQ'] =  self.Result1D[self.Result1D['q'] < 0]
+                self.Negative['NegXS'] = list(set(self.Negative['NegQ']['xs']))
+                self.Negative['NegQind'] = self.Negative['NegQ'].index.tolist()
 
-        if self.Result1D['q'].min() < 0:
-            print("NegativeDischarge")
-            # extract -ve discharge data if exist
-            self.Negative = dict()
-            self.Negative['NegQ'] =  self.Result1D[self.Result1D['q'] < 0]
-            self.Negative['NegXS'] = list(set(self.Negative['NegQ']['xs']))
-            self.Negative['NegQind'] = self.Negative['NegQ'].index.tolist()
+                for i in range(len(self.Negative['NegXS'])):
+                    self.Negative['QN'][self.Negative['NegXS'][i]] = self.Result1D['q'][self.Result1D['xs'] == self.Negative['NegXS'][i] ]
+
+                self.Negative['QN'].index = self.XSHydrographs.index
+
+                if plot :
+                    plt.figure(30, figsize = (15,8))
+                    for i in range(len(self.Negative['NegXS'])):
+                        plt.plot(self.Negative['QN'][self.Negative['NegXS'][i]])
+
+                    plt.title("Discharge ", fontsize = 25)
+                    plt.legend(NegXS,fontsize = 15) #+['SWIMM']
+                    plt.xlabel("Time", fontsize = 15)
+                    plt.ylabel("Discharge m3/s", fontsize = 15)
+
+            else:
+                print("There is no -ve Discharge")
+
+        elif TS == "1min":
+            assert hasattr(self, "Qmin") , "please use the Result1D method to read the result of this sub-basin first"
+            NegQmin = self.Qmin[:]
+            # NegQmin = pd.DataFrame()
+            NegQmin.loc[:,'date'] = self.Qmin.index
+            NegQmin.index=range(len(NegQmin.index))
+            f = NegQmin[NegQmin[self.XSname[0]] < 0]
+
+            for i in range(len(self.XSname[1:])):
+                f = f.append( NegQmin[NegQmin[self.XSname[i+1]] < 0])
+
+            self.NegQmin = f
+
+    def ReadBoundaryConditions(self, FromDay = '', ToDay = '', Path = ''):
+        """
+        =============================================================================
+            ReadBoundaryConditions(FromDay = '', ToDay = '', Path = '')
+        =============================================================================
+
+        ReadBoundaryConditions method reads the BC files and since these files are separated each day is
+        written in a file so the code is reading a lot of files, therefor you can specify
+        a specific day to to start read the BC H & Q from that day till the end of
+        the simulated period
+
+        Parameters
+        ----------
+        1-FromDay : [integer], optional
+                the day you want to read the result from, the first day is 1 not zero.The default is ''.
+        2-ToDay : [integer], optional
+                the day you want to read the result to.
+        4-Path : [String], optional
+            Path to read the results from. The default is ''.
+
+        Returns
+        -------
+            1-QBC: [dataframe attribute]
+                dataframe contains the Discharge boundary conditions for each
+                day as a row and for each column are the hours
+            1-HBC: [dataframe attribute]
+                dataframe contains the water depth boundary conditions for each
+                day as a row and for each column are the hours
+
+        """
+        if FromDay == '':
+            FromDay = 1
+        if ToDay ==  '':
+            ToDay = len(self.ReferenceIndex_T) - 1
+
+        if Path != '':
+            self.USbndPath = path
+
+        QBC = pd.DataFrame(index = self.ReferenceIndex_T[FromDay-1:ToDay] ,columns = list(range(24)))
+        HBC = pd.DataFrame(index = self.ReferenceIndex_T[FromDay-1:ToDay] ,columns = list(range(24)))
+
+        for i in self.Daylist[FromDay-1:ToDay]:
+            bc_q = np.loadtxt(self.USbndPath +str(self.ID) + "-" + str(i) +'.txt',dtype = np.float16)
+            QBC.loc[self.ReferenceIndex.loc[i,'date'],:]= bc_q[:,0].tolist()[0:bc_q.shape[0]:60]
+            HBC.loc[self.ReferenceIndex.loc[i,'date'],:]= bc_q[:,1].tolist()[0:bc_q.shape[0]:60]
+
+        self.QBC = QBC
+        self.HBC = HBC
+
 
 
     @staticmethod
@@ -1640,9 +1806,9 @@ class Sub(River):
         Q.index = list(range(1,len(Q)+1))
 
 
-        if FromDay == []:
+        if FromDay == '':
             FromDay = 1
-        if ToDay == []:
+        if ToDay == '':
             ToDay = len(Q)
 
         Q = Q.loc[Q.index >= FromDay,:]
@@ -1650,7 +1816,45 @@ class Sub(River):
 
         return Q
 
-    def ReadHydrographs(self, NodeID, FromDay = '', ToDay = ''):
+
+    def Read1DResults1Min(self, Smin, Emin):
+
+        indmin = pd.date_range(Smin,Emin,freq = "min")[:-1]
+        XSname = [int(i) for i in self.XSname]
+        Hmin = pd.DataFrame(index = indmin,columns = XSname)
+        Qmin = pd.DataFrame(index = indmin,columns = XSname)
+
+        # US boundary condition
+        index_daily = pd.date_range(Smin,Emin,freq = "D")[:-1]
+        BC_q = pd.DataFrame(index = index_daily ,columns = list(range(1,1441)))
+        BC_h = pd.DataFrame(index = index_daily ,columns = list(range(1,1441)))
+
+        ii = self.ReferenceIndex.index[np.where(self.ReferenceIndex == Smin)[0][0]]  # old (Smin-s).days+1
+        ii2 = self.ReferenceIndex.index[np.where(self.ReferenceIndex == Emin)[0][0]]  # old (Emin-s).days+1
+
+        list2 = list(range(ii,ii2))
+
+
+        for i in list2:
+            h = np.transpose(np.loadtxt(self.OneMinResultPath + "h/" +str(self.ID)+"-h-"+str(i) +'.txt',dtype = np.float16))
+            q = np.transpose(np.loadtxt(self.OneMinResultPath + "q/" +str(self.ID)+"-q-"+str(i) +'.txt'))
+            h = h +self.crosssections['gl'].tolist()
+            # old is i-(Smin-s).days-1 new is i-list2[0]
+            Hmin.loc[Hmin.index[(i-list2[0])*1440]:Hmin.index[(i-list2[0])*1440+1439]]= h
+            Qmin.loc[Hmin.index[(i-list2[0])*1440]:Hmin.index[(i-list2[0])*1440+1439]]= q
+            # BC
+            bc_q = np.loadtxt(self.USbndPath +str(self.ID)+"-"+str(i) +'.txt',dtype = np.float16)
+            BC_q.loc[BC_q.index[i-list2[0]]]= bc_q[:,0]
+            BC_h.loc[BC_h.index[i-list2[0]]]= bc_q[:,1]
+
+        self.Hmin = Hmin
+        self.Qmin = Qmin
+        self.QBCmin = BC_q
+        self.HBCmin = BC_h
+
+
+
+    def ReadHydrographs(self, NodeID, FromDay = '', ToDay = '',Path = ''):
         """
         =================================================================
             ReadHydrographs(NodeID, FromDay = [], ToDay = [])
@@ -1676,19 +1880,25 @@ class Sub(River):
                 (hydrograph)with columns ['ID', NodeID ]
 
         """
+        if not hasattr(self,"RRM"):
+            self.RRM = pd.DataFrame()
 
-        self.RRM = pd.DataFrame()
-        self.RRM[NodeID] = self.ReadRRMResults(self.RRMPath, NodeID, FromDay, ToDay)[NodeID]
+        if Path == '':
+            self.RRM[NodeID] = self.ReadRRMResults(self.RRMPath, NodeID, FromDay, ToDay)[NodeID].tolist()
+        else :
+            self.RRM[NodeID] = self.ReadRRMResults(Path, NodeID, FromDay, ToDay)[NodeID]
         # self.RRM[self.USnode] = self.ReadRRMResults(Path, self.USnode, FromDay, ToDay)[self.USnode]
         if FromDay == '':
             FromDay = 1
         if ToDay == '':
-            ToDay = len(self.RRM[self.USnode])-1
+            # ToDay = len(self.RRM[self.USnode])-1
+            ToDay = len(self.RRM[self.USnode])
 
         start = self.ReferenceIndex.loc[FromDay,'date']
         end = self.ReferenceIndex.loc[ToDay,'date']
 
-        self.RRM['ID'] = pd.date_range(start,end,freq = 'D')
+        # self.RRM['ID'] = pd.date_range(start, end, freq = 'D')
+        self.RRM.index = pd.date_range(start, end, freq = 'D')
         # get the simulated hydrograph and add the cutted HQ2
 
     def DetailedStatisticalCalculation(self, T):
@@ -1714,8 +1924,6 @@ class Sub(River):
         self.Qrp = pd.DataFrame()
         self.Qrp['RP'] = T
         self.Qrp['Q'] = gumbel_r.ppf(F,loc=self.SP.loc[0,"loc"], scale=self.SP.loc[0,"scale"])
-
-
 
 
 
