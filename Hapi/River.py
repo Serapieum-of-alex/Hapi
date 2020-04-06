@@ -18,6 +18,8 @@ FigureDefaultOptions = dict( ylabel = '', xlabel = '',
                       color1 = '#3D59AB', color2 = "#DC143C", linewidth = 3,
                       Axisfontsize = 15
                         )
+datafn = lambda x: dt.datetime.strptime(x,"%Y-%m-%d")
+
 class River():
     """
 
@@ -209,16 +211,40 @@ class River():
 
             self.SP = NewSP
         # calculate the 2, 5, 10, 15, 20 return period doscharge
-        T = np.array([2, 5, 10, 15, 20, 50, 100])
+        T = np.array([2, 5, 10, 15, 20, 50, 100, 200, 500, 1000, 5000])
         self.SP = self.SP.assign(RP2 = 0, RP5 = 0, RP10 = 0, RP15 = 0, RP20 = 0, RP50 = 0,
-                                 RP100 = 0)
+                                 RP100 = 0, RP200 = 0, RP500 = 0, RP1000 = 0,
+                                 RP5000 = 0)
         F = 1 - (1/T)
         for i in range(len(self.SP)):
             if self.SP.loc[i,'loc'] != -1:
                 self.SP.loc[i,self.SP.keys()[3:].tolist()] = gumbel_r.ppf(F,loc=self.SP.loc[i,'loc'],
                                                                           scale=self.SP.loc[i,'scale']).tolist()
 
-    def GetReturnPeriod(self,SubID, Q):
+    def GetReturnPeriod(self, SubID, Q):
+        """
+        =================================================================
+             GetReturnPeriod(self, SubID, Q)
+        =================================================================
+        GetReturnPeriod method takes given discharge and using the distribution 
+        properties of a particular sub basin it it calculates the return period 
+        
+        Parameters
+        ----------
+            1-SubID : [Integer]
+                Sub-basin id.
+            2-Q : [Float]
+                Discharge value.
+
+        Returns
+        -------
+            1-return Period :[Float]
+                return periodcal culated for the given discharge using the parameters
+            of the distribution for the catchment.
+
+        """
+        assert hasattr(self, "SP"), "Please read the statistical properties file for the catchment first"
+        
         try:
             loc = np.where(self.SP['ID'] == SubID)[0][0]
             F = gumbel_r.cdf(Q, loc = self.SP.loc[loc,'loc'],
@@ -227,17 +253,28 @@ class River():
         except:
             return -1
 
-    def USBoundaryCondition(self):
-        self.USBC = pd.DataFrame(columns = ['SubID','Qbf'])
-        for i in range(len(self.slope)):
-            self.USBC.loc[i,'SubID'] = self.slope.loc[i,'SubID']
-            s = abs(self.slope.loc[i,'slope'])
-            loc = np.where(self.crosssections['swimid'] == self.slope.loc[i,'SubID'])[0][0]
-            b = self.crosssections.loc[loc,'b']
-            dbf = self.crosssections.loc[loc,'dbf']
-            n = self.crosssections.loc[loc,'m']
+    # def GetBankfullQ(self):
+    #     """
+    #     =================================================
+    #         GetBankfullQ
+    #     =================================================
+    #     GetBankfullQ method calculates the discharge that fills 
 
-            self.USBC.loc[i,'Qbf'] = (1/n) * b * (dbf**(5/3)) * ((s/500)**0.5)
+    #     Returns
+    #     -------
+    #     None.
+
+    #     """
+    #     self.USBC = pd.DataFrame(columns = ['SubID','Qbf'])
+    #     for i in range(len(self.slope)):
+    #         self.USBC.loc[i,'SubID'] = self.slope.loc[i,'SubID']
+    #         s = abs(self.slope.loc[i,'slope'])
+    #         loc = np.where(self.crosssections['swimid'] == self.slope.loc[i,'SubID'])[0][0]
+    #         b = self.crosssections.loc[loc,'b']
+    #         dbf = self.crosssections.loc[loc,'dbf']
+    #         n = self.crosssections.loc[loc,'m']
+
+    #         self.USBC.loc[i,'Qbf'] = (1/n) * b * (dbf**(5/3)) * ((s/500)**0.5)
 
 
     def GetBankfullDepth(self,function,ColumnName):
@@ -264,24 +301,29 @@ class River():
         """
         self.crosssections[ColumnName] = self.crosssections['b'].to_frame().applymap(function)
 
-    def GetCapacity(self,ColumnName):
+    def GetCapacity(self,ColumnName, Option = 1):
         """
         ======================================================
               GetCapacity(ColumnName)
         ======================================================
-        GetCapacity method calculates the discharge that enough to fill the
-        bankfull area
+        GetCapacity method calculates the discharge that enough to fill the 
+        cross section using kinematic approximation (using bed slope with manning)
 
         Parameters
         ----------
             1-ColumnName : [String]
                 A name for the column to store the calculated depth at the
                 cross section dataframe.
+            2-Option : [Integer]
+                1 if you want to calculate the capacity of the bankfull area, 
+                2 if you want to calculate the capacity of the whole cross section 
+                to the lelvel of the lowest dike 
 
         Returns
         -------
-            None.
-
+            1- Discharge: [dataframe column]
+                the calculated discharge will be stored in the crosssections
+                attribute in the River object in a columns with the given ColumnName
         """
         for i in range(len(self.crosssections)-1):
 
@@ -289,10 +331,88 @@ class River():
                 slope = (self.crosssections.loc[i,'gl'] - self.crosssections.loc[i+1,'gl'])/500
             else:
                 slope = abs(self.crosssections.loc[i,'gl'] - self.crosssections.loc[i-1,'gl'])/500
+            self.crosssections.loc[i,'Slope'] = slope
+            
+            if Option == 1:
+                self.crosssections.loc[i,ColumnName] = (1/self.crosssections.loc[i,'m']) * self.crosssections.loc[i,'b'] * (self.crosssections.loc[i,'dbf']) ** (5/3)
+                self.crosssections.loc[i,ColumnName]  = self.crosssections.loc[i,ColumnName] * (slope)**(1/2)
+                
+            else:
+                # get the vortices of the cross sections
+                H = self.crosssections.loc[i,['zl','zr']].min()
+                Hl, Hr, Bl, Br, B, Dbf = self.crosssections.loc[i,['hl','hr','bl','br','b','dbf']].tolist()
+                BedLevel = self.crosssections.loc[i,'gl']
+                Coords = self.GetVortices(H - BedLevel, Hl, Hr, Bl, Br, B, Dbf)
+                # get the area and perimeters 
+                Area, Perimeter = self.PolygonGeometry(Coords)
+                # self.crosssections.loc[i,'Area'] = Area
+                # self.crosssections.loc[i,'Perimeter'] = Perimeter
+                self.crosssections.loc[i,ColumnName] = (1/self.crosssections.loc[i,'m']) * Area * ((Area/Perimeter) ** (2/3))
+                self.crosssections.loc[i,ColumnName]  = self.crosssections.loc[i,ColumnName] * (slope)**(1/2)
+                
+            if hasattr(self, "SP"):
+                # print(self.GetReturnPeriod(self.crosssections.loc[i,'swimid'],self.crosssections.loc[i,ColumnName]))
+                RP = self.GetReturnPeriod(self.crosssections.loc[i,'swimid'],self.crosssections.loc[i,ColumnName])
+                if np.isnan(RP):
+                    RP = -1
+                self.crosssections.loc[i,ColumnName + "RP"] = round(RP,2)
+            
+    def CalibrateDike(self, ObjectiveRP, CurrentRP):
+        
+        assert hasattr(self, 'SP'), "Please read the statistical properties file first"
+        
+        # self.crosssections['zlnew'] = -1
+        # self.crosssections['zrnew'] = -1
+        self.crosssections.loc[:,'zlnew'] = self.crosssections.loc[:,'zl']
+        self.crosssections.loc[:,'zrnew'] = self.crosssections.loc[:,'zr']
+        
+        for i in range(len(self.crosssections)-2):
 
-            self.crosssections.loc[i,'Qbf'] = (1/self.crosssections.loc[i,'m']) * self.crosssections.loc[i,'b'] * (self.crosssections.loc[i,'dbf']) ** (5/3)
-            self.crosssections.loc[i,'Qbf']  = self.crosssections.loc[i,'Qbf'] * (slope)**(1/2)
-
+            if self.crosssections.loc[i,'swimid'] == self.crosssections.loc[i+1,'swimid']:
+                slope = (self.crosssections.loc[i,'gl'] - self.crosssections.loc[i+1,'gl'])/500
+            else:
+                slope = abs(self.crosssections.loc[i,'gl'] - self.crosssections.loc[i-1,'gl'])/500
+            # self.crosssections.loc[i,'Slope'] = slope
+            Hl, Hr, Bl, Br, B, Dbf = self.crosssections.loc[i,['hl','hr','bl','br','b','dbf']].tolist()
+            BedLevel = self.crosssections.loc[i,'gl']
+            
+            
+            
+            if self.crosssections.loc[i,CurrentRP] < self.crosssections.loc[i,ObjectiveRP] and self.crosssections.loc[i, CurrentRP] != -1:
+                print("XS-"+str(self.crosssections.loc[i,'xsid']))
+                print('Old RP = ' + str(self.crosssections.loc[i, CurrentRP]))
+                print('Old H = ' + str(self.crosssections.loc[i,['zl','zr']].min()))
+                
+                self.crosssections.loc[i,"New RP"] = self.crosssections.loc[i, CurrentRP]
+                # self.crosssections.loc[i,'zlnew'] = self.crosssections.loc[i,'zl']
+                # self.crosssections.loc[i,'zrnew'] = self.crosssections.loc[i,'zr']
+                
+                while self.crosssections.loc[i,"New RP"] < self.crosssections.loc[i, ObjectiveRP]:
+                    # get the vortices of the cross sections
+                    if self.crosssections.loc[i,'zlnew'] < self.crosssections.loc[i,'zrnew'] :
+                        self.crosssections.loc[i,'zlnew'] = self.crosssections.loc[i,'zlnew'] + 0.1
+                    else:
+                        self.crosssections.loc[i,'zrnew'] = self.crosssections.loc[i,'zrnew'] + 0.1
+                        
+                    H = self.crosssections.loc[i,['zlnew','zrnew']].min()
+                    # print("H=" + str(H))
+                    
+                    Coords = self.GetVortices(H - BedLevel, Hl, Hr, Bl, Br, B, Dbf)
+                    # get the area and perimeters 
+                    Area, Perimeter = self.PolygonGeometry(Coords)
+                    # self.crosssections.loc[i,'Area'] = Area
+                    # self.crosssections.loc[i,'Perimeter'] = Perimeter
+                    self.crosssections.loc[i,"New Capacity"] = (1/self.crosssections.loc[i,'m']) * Area * ((Area/Perimeter) ** (2/3))
+                    self.crosssections.loc[i,"New Capacity"]  = self.crosssections.loc[i, "New Capacity"] * (slope)**(1/2)
+                    # print("New QC " + str(self.crosssections.loc[i,ColumnName+"calib"]))
+                    # print(self.GetReturnPeriod(self.crosssections.loc[i,'swimid'],self.crosssections.loc[i,ColumnName]))
+                    RP = self.GetReturnPeriod(self.crosssections.loc[i,'swimid'],self.crosssections.loc[i,"New Capacity"])
+                    
+                    self.crosssections.loc[i,"New RP"] = round(RP,2)
+                    # print("New RP = "+str(RP))
+                print("New RP = "+str(round(RP,2)))
+                print("New H = " + str(round(H,2)))
+                print("---------------------------")
 
     def Overtopping(self):
 
@@ -798,9 +918,9 @@ class River():
             3- BankRightLevel : [Float]
                 DESCRIPTION.
             4- InterPLHeight : [Float]
-                DESCRIPTION.
+                Intermediate point left.
             5- InterPRHeight : [Float]
-                DESCRIPTION.
+                Intermediate point right.
             6- Bl : [Float]
                 DESCRIPTION.
             7- Br : [Float]
@@ -898,6 +1018,180 @@ class River():
         Zcoords.append(BankRightLevel)
 
         return Xcoords, Ycoords, Zcoords
+
+    @staticmethod
+    def GetVortices(H, Hl, Hr, Bl, Br, B, Dbf):
+        """
+        GetCoordinates calculates the coordinates of all the points (vortices)
+        of the cross section
+
+        Parameters
+        ----------
+            1- H:[Float]
+                water depth
+            4- InterPLHeight : [Float]
+                Intermediate point right height above the bankfull level.
+            5- InterPRHeight : [Float]
+                Intermediate point right height above the bankfull level.
+            6- Bl : [Float]
+                DESCRIPTION.
+            7- Br : [Float]
+                DESCRIPTION.
+            12- B : [Float]
+                DESCRIPTION.
+            13- Dbf : [Float/Bool]
+                DESCRIPTION.
+
+        Returns
+        -------
+        Xcoords : [List]
+            DESCRIPTION.
+        Xcoords : [List]
+            DESCRIPTION.
+        Zcoords : [List]
+            DESCRIPTION.
+
+        """
+        # left side slope  Horizontal: Vertical = 1:sl
+        Sl = Hl/Bl
+        # right side slope Horizontal: Vertical = 1:sr
+        Sr = Hr/Br
+        # put vertexes to the local coordination system
+        Xcoords = list()
+        Ycoords = list()
+
+        if H <= Dbf:
+            # Point 1
+            Xcoords.append(0)
+            Ycoords.append(H)
+            # Point 2
+            Xcoords.append(0)
+            Ycoords.append(0)
+            # Point 3
+            Xcoords.append(B)
+            Ycoords.append(0)
+            # Point 4
+            Xcoords.append(B)
+            Ycoords.append(H)
+            # PropXS8P = PolygonGeometry(mp)
+        elif H - Dbf < min(Hl, Hr):
+            Hnew = H - Dbf
+            # Trapizoidal cross section with 4 points
+            # case 1
+            # Point 1
+            Xcoords.append(0)
+            Ycoords.append(H)
+            # Point 2
+            Xcoords.append(Hnew/Sl)
+            Ycoords.append(Dbf)
+            # Point 3
+            Xcoords.append(Hnew/Sl)
+            Ycoords.append(0)
+            # Point 4
+            Xcoords.append((Hnew/Sl) + B)
+            Ycoords.append(0)
+            # Point 5
+            Xcoords.append((Hnew/Sl) + B)
+            Ycoords.append(Dbf)
+            # Point 6
+            Xcoords.append(Hnew/Sl + B + Hnew/Sr)
+            Ycoords.append(H)
+        elif H - Dbf < max(Hl, Hr) and Hl < Hr:
+            Hnew = H - Dbf
+            # the height of one of the slopes is higher than the water depth.
+            # so the shape of the cross section is 5 points
+            # case 2
+            # Point 1
+            Xcoords.append(0)
+            Ycoords.append(H)
+            # Point 2
+            Xcoords.append(0)
+            Ycoords.append(Hl + Dbf)
+            # Point 3
+            Xcoords.append(Bl)
+            Ycoords.append(Dbf)
+            # Point 4
+            Xcoords.append(Bl)
+            Ycoords.append(0)
+            # Point 5
+            Xcoords.append(Bl + B)
+            Ycoords.append(0)
+            # Point 6
+            Xcoords.append(Bl + B)
+            Ycoords.append(Dbf)
+            # Point 7
+            Xcoords.append(Bl + B + Hnew/Sr)
+            Ycoords.append(H)
+        elif H - Dbf < max(Hl, Hr) and Hl > Hr:
+            Hnew = H - Dbf
+            # case 3
+            # Point 1
+            Xcoords.append(0)
+            Ycoords.append(H)
+            # Point 2
+            Xcoords.append(Hnew/Sl)
+            Ycoords.append(Dbf)
+            # Point 3
+            Xcoords.append(Hnew/Sl)
+            Ycoords.append(0)
+            # Point 4
+            Xcoords.append(Hnew/Sl + B)
+            Ycoords.append(0)
+            # Point 5
+            Xcoords.append(Hnew/Sl + B)
+            Ycoords.append(Dbf)
+            # Point 6
+            Xcoords.append(Hnew/Sl + B + Br)
+            Ycoords.append(Hr + Dbf)
+            # Point 7
+            Xcoords.append(Hnew/Sl + B + Br)
+            Ycoords.append(H)
+        else:
+#       elif H - Dbf  > max(Hl,Hr):
+            # Hnew = H - Dbf
+            # the whole 6 points cross section
+            # case 4
+            # Point 1
+            Xcoords.append(0)
+            Ycoords.append(H)
+            # Point 2
+            Xcoords.append(0)
+            Ycoords.append(Hl + Dbf)
+            # Point 3
+            Xcoords.append(Bl)
+            Ycoords.append(Dbf)
+            # Point 4
+            Xcoords.append(Bl)
+            Ycoords.append(0)
+            # Point 5
+            Xcoords.append(Bl + B)
+            Ycoords.append(0)
+            # Point 6
+            Xcoords.append(Bl + B)
+            Ycoords.append(Dbf)
+            # Point 7
+            Xcoords.append(Bl + B + Br)
+            Ycoords.append(Hr + Dbf)
+            # Point 8
+            Xcoords.append(Bl + B + Br)
+            Ycoords.append(H)
+            # calculate the area & perimeter of the bankful area
+            # area
+            # PropXS8P(1) = PropXS8P(1) + (Dbf * mw)
+            # perimeter
+            # PropXS8P(2) = PropXS8P(2) + (2*Dbf)
+        Coords = np.array([Xcoords, Ycoords]).transpose()
+    
+        return Coords
+    # @staticmethod
+    # def GetGeometry(H, Hl, Hr, Bl, Br, B, Dbf):
+        
+    #     Coords = GetVortices(H, Hl, Hr, Bl, Br, B, Dbf)
+    #     area, Perimiter = PolygonGeometry(Coords)
+        
+    #     return Area, Perimeter
+        
+
 
     def GetDays(self,FromDay,ToDay,SubID):
         """
@@ -1381,6 +1675,67 @@ class River():
                 # delete the file
                 os.remove(Saveto + "/"  + fname)
 
+
+    def ReadObservedWL(self, GaugesTable, Path, StartDate, EndDate, NoValue):
+        """
+        ============================================================================
+            ReadObservedWL( WLGauges, Path, StartDate, EndDate, NoValue)
+        ============================================================================
+
+        Parameters
+        ----------
+            1-GaugesTable : [dataframe]
+                Dataframe contains columns [swimid,xsid,datum(m)].
+            2-Path : [String]
+                    path to the folder containing the text files of the water level gauges
+            3-StartDate : [datetime object]
+                the starting date of the water level time series.
+            4-EndDate : [datetime object]
+                the end date of the water level time series.
+            5-NoValue : [integer]
+                value used to fill the missing values.
+
+        Returns
+        -------
+            1-WL: [dataframe attribute].
+
+
+        """
+
+        ind = pd.date_range(StartDate, EndDate)
+
+        WLGauges = pd.DataFrame(index = ind, columns = GaugesTable['swimid'].tolist())
+        WLGauges.loc[:,:] = NoValue
+
+        for i in range(len(WLGauges.columns)):
+            f = pd.read_csv(Path + str(int(WLGauges.columns[i])) + ".txt",
+                           delimiter = ",", header = None)
+            f[0] = f[0].map(datafn)
+            # sort by date as some values are missed up
+            f.sort_values(by = [0], ascending = True, inplace = True)
+            # filter to the range we want
+            f = f.loc[f[0] > ind[0],:]
+            f = f.loc[f[0] < ind[-1],:]
+            # reindex
+            f.index = list(range(len(f)))
+            # add datum and convert to meter
+            f.loc[f[1]!= NoValue,1] = (f.loc[f[1]!= NoValue,1] / 100) + GaugesTable.loc[i,'datum(m)']
+
+            # assign the values in the dateframe
+            WLGauges.loc[:,WLGauges.columns[i]].loc[f[0][0]:f[0][len(f)-1]] = f[1].tolist()
+
+        self.WLGauges = WLGauges
+
+    def ReadObservedQ(self, CalibratedSubs, Path, StartDate, EndDate):
+
+        ind = pd.date_range(StartDate, EndDate)
+        GRDC = pd.DataFrame(index = ind)
+
+        for i in range(len(CalibratedSubs[0])):
+            GRDC.loc[:,int(CalibratedSubs[0][i])] = np.loadtxt(Path +
+                      str(int(CalibratedSubs[0][i])) + '.txt') #,skiprows = 0
+        self.QGauges = GRDC
+
     # @staticmethod
     def Histogram(self, v1, v2, NoAxis=2, filter1=0.2, Save = False, pdf=True, **kwargs):
         """
@@ -1598,7 +1953,7 @@ class Sub(River):
                 dataframe containing waterlevels at the position of the first and last cross section
 
         """
-        River.Read1DResult(self,self.ID, FromDay, ToDay, FillMissing = FillMissing)
+        River.Read1DResult(self,self.ID, FromDay, ToDay, Path = Path, FillMissing = FillMissing)
 
         if FromDay == '':
             FromDay = self.Result1D.loc[0,'day']
@@ -1636,6 +1991,8 @@ class Sub(River):
 
         # check the first day in the results and get the date of the first day and last day
         ## create time series
+
+        # self.from_beginning  = self.Result1D['day'][0] + 1
         self.from_beginning  = self.Result1D['day'][0]
 
         # if from_beginning == 1:
@@ -1648,15 +2005,17 @@ class Sub(River):
         # if there are empty days at the beginning the filling missing days is not going to detect it
         # so ignore it here by starting from the first day in the data (data['day'][0]) dataframe
         # empty days at the beginning
+
         self.FirstDayResults = self.ReferenceIndex.loc[self.Result1D['day'][0],'date']
 
-        # last days+1 as range does not include the last element
-        self.Daylist = list(range(self.Result1D['day'][0],self.Result1D['day'][self.Result1D.index[-1]]+1))
-        # last day +1 to include the last day
         # EndDays = River.ReferenceIndex.loc[Sub.Result1D['day'][Sub.Result1D.index[-1]]+1,'date']
         self.EndDays = self.ReferenceIndex.loc[self.Result1D['day'][self.Result1D.index[-1]],'date']
 
-        self.ReferenceIndex_T = pd.date_range(self.FirstDayResults, self.EndDays,freq = "D")
+        # last days+1 as range does not include the last element
+        # self.Daylist = list(range(self.Result1D['day'][0]+1, self.Result1D['day'][self.Result1D.index[-1]]+1))
+        self.Daylist = list(range(self.Result1D['day'][0], self.Result1D['day'][self.Result1D.index[-1]]+1))
+
+        self.ReferenceIndex_Results = pd.date_range(self.FirstDayResults, self.EndDays,freq = "D")
 
 
     def ExtractXS(self, XSID, addHQ2=False, WaterLevel=True):
@@ -1715,6 +2074,7 @@ class Sub(River):
                 self.Negative['NegXS'] = list(set(self.Negative['NegQ']['xs']))
                 self.Negative['NegQind'] = self.Negative['NegQ'].index.tolist()
 
+                self.Negative['QN'] = pd.DataFrame()
                 for i in range(len(self.Negative['NegXS'])):
                     self.Negative['QN'][self.Negative['NegXS'][i]] = self.Result1D['q'][self.Result1D['xs'] == self.Negative['NegXS'][i] ]
 
@@ -1779,13 +2139,12 @@ class Sub(River):
         if FromDay == '':
             FromDay = 1
         if ToDay ==  '':
-            ToDay = len(self.ReferenceIndex_T) - 1
+            ToDay = len(self.ReferenceIndex_Results) - 1
 
         if Path != '':
             self.USbndPath = path
-
-        QBC = pd.DataFrame(index = self.ReferenceIndex_T[FromDay-1:ToDay] ,columns = list(range(24)))
-        HBC = pd.DataFrame(index = self.ReferenceIndex_T[FromDay-1:ToDay] ,columns = list(range(24)))
+        QBC = pd.DataFrame(index = self.ReferenceIndex_Results[FromDay-1:ToDay] ,columns = list(range(24)))
+        HBC = pd.DataFrame(index = self.ReferenceIndex_Results[FromDay-1:ToDay] ,columns = list(range(24)))
 
         for i in self.Daylist[FromDay-1:ToDay]:
             bc_q = np.loadtxt(self.USbndPath +str(self.ID) + "-" + str(i) +'.txt',dtype = np.float16)
@@ -1886,13 +2245,13 @@ class Sub(River):
         if Path == '':
             self.RRM[NodeID] = self.ReadRRMResults(self.RRMPath, NodeID, FromDay, ToDay)[NodeID].tolist()
         else :
-            self.RRM[NodeID] = self.ReadRRMResults(Path, NodeID, FromDay, ToDay)[NodeID]
+            self.RRM[NodeID] = self.ReadRRMResults(Path, NodeID, FromDay, ToDay)[NodeID].tolist()
         # self.RRM[self.USnode] = self.ReadRRMResults(Path, self.USnode, FromDay, ToDay)[self.USnode]
         if FromDay == '':
             FromDay = 1
         if ToDay == '':
             # ToDay = len(self.RRM[self.USnode])-1
-            ToDay = len(self.RRM[self.USnode])
+            ToDay = len(self.RRM[NodeID])
 
         start = self.ReferenceIndex.loc[FromDay,'date']
         end = self.ReferenceIndex.loc[ToDay,'date']
