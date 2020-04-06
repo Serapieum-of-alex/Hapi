@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Created on Tue Feb  4 14:57:30 2020
 
@@ -100,7 +99,26 @@ class Event():
             else: # if not then the day is the start of another event
                 self.EventBeginning = self.EventIndex.loc[i,'date']
 
+    def GetAllEvents(self):
+        """
+        =============================================================================
+            GetAllEvents()
+        =============================================================================
+        GetAllEvents methods returns the end day of all events
 
+
+        Returns
+        -------
+            None.
+
+        """
+        assert hasattr(self, "EventIndex"), "please read/Create the EventIndex"
+        IDs = list()
+        for i in range(len(self.EventIndex)):
+            if self.EventIndex.loc[i,'continue'] == 0 and i != 0 :
+                IDs.append(self.EventIndex.loc[i-1,'ID'])
+
+        self.EndDays = IDs
 
     def Overtopping(self,OvertoppingPath):
         """
