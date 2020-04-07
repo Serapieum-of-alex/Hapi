@@ -31,9 +31,13 @@ class Visualize():
             axGS.set_xlim(Sub.XSname[0]-1,Sub.XSname[-1]+1)
             axGS.set_xticks(Sub.XSname)
         else :
-            axGS.set_xlim(Sub.FirstXS,Sub.LastXS)
-            axGS.set_xticks(list(range(Sub.FirstXS,Sub.LastXS)))
-            axGS.set_ylim(Sub.crosssections['gl'][Sub.LastXS],Sub.crosssections['zr'][Sub.FirstXS]+5)
+             # not the whole sub-basin
+            FigureFirstXS = Sub.XSname[XS] - XSbefore
+            FigureLastXS = Sub.XSname[XS] + XSafter
+            axGS.set_xlim(FigureFirstXS,FigureLastXS)
+
+            axGS.set_xticks(list(range(FigureFirstXS, FigureLastXS)))
+            axGS.set_xticklabels(list(range(FigureFirstXS, FigureLastXS)))
 
         #ax4 = fig.add_subplot(gs[0:2,0:6])
 
@@ -41,6 +45,7 @@ class Visualize():
         axGS.tick_params(labelsize= 8)
         axGS.plot(Sub.XSname, Sub.crosssections['zl'],'k--', dashes = (5,1), linewidth = 2, label = 'Left Dike')
         axGS.plot(Sub.XSname, Sub.crosssections['zr'],'k.-', linewidth = 2, label = 'Right Dike')
+
         if Sub.Version == 1:
             axGS.plot(Sub.XSname, Sub.crosssections['gl'],'k-', linewidth = 5, label = 'Bankful level')
         else:
@@ -53,10 +58,10 @@ class Visualize():
         axGS.set_ylabel("Elevation m", fontsize = 15)
         axGS.grid()
 
-        if XS == 0 :
-            day_text = axGS.annotate('',xy=(Sub.XSname[0],Sub.crosssections['gl'].min()),fontsize= 20)
-        else:
-            day_text = axGS.annotate('',xy=(Sub.FirstXS+1,Sub.crosssections['gl'][Sub.LastXS]+1),fontsize= 20)
+        # if XS == 0 :
+            # day_text = axGS.annotate('',xy=(Sub.XSname[0],Sub.crosssections['gl'].min()),fontsize= 20)
+        # else:
+            # day_text = axGS.annotate('',xy=(FigureFirstXS+1,Sub.crosssections['gl'][FigureLastXS]+1),fontsize= 20)
 
         GroundSurfacefig.tight_layout()
 
@@ -98,8 +103,8 @@ class Visualize():
         if Sub.from_beginning == 1:
             Period = Sub.Daylist[np.where(Sub.ReferenceIndex == PlotStart)[0][0]:np.where(Sub.ReferenceIndex == PlotEnd)[0][0]+1]
         else:
-            ii = Sub.ReferenceIndex.index[np.where(Sub.ReferenceIndex == plot_start)[0][0]]
-            ii2 = Sub.ReferenceIndex.index[np.where(Sub.ReferenceIndex == plot_end)[0][0]]
+            ii = Sub.ReferenceIndex.index[np.where(Sub.ReferenceIndex == PlotStart)[0][0]]
+            ii2 = Sub.ReferenceIndex.index[np.where(Sub.ReferenceIndex == PlotEnd)[0][0]]
             Period = list(range(ii,ii2+1))
 
         counter = [(i,j) for i in Period for j in hours]
