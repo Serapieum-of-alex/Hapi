@@ -1,0 +1,120 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "name": "Untitled0.ipynb",
+      "provenance": [],
+      "toc_visible": true,
+      "authorship_tag": "ABX9TyNLtGaags7zTkeBwXv0DzA/",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/MAfarrag/HAPI/blob/master/Examples/jiboa\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "hf89k4NG-qhv",
+        "colab_type": "code",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 765
+        },
+        "outputId": "f98b18c3-5917-45dd-ba5c-34017a223e3c"
+      },
+      "source": [
+        "# install libraries\n",
+        "!pip install Numpy\n",
+        "!pip install pandas\n",
+        "!pip install pandas\n",
+        "!pip install gdal\n",
+        "!pip install fiona\n",
+        "!pip install shapely\n",
+        "!pip install geopandas\n",
+        "!pip install shapely\n",
+        "!pip install git+https://github.com/MAfarrag/HAPI.git"
+      ],
+      "execution_count": 14,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "Requirement already satisfied: Numpy in /usr/local/lib/python3.6/dist-packages (1.18.2)\n",
+            "Requirement already satisfied: pandas in /usr/local/lib/python3.6/dist-packages (1.0.3)\n",
+            "Requirement already satisfied: numpy>=1.13.3 in /usr/local/lib/python3.6/dist-packages (from pandas) (1.18.2)\n",
+            "Requirement already satisfied: python-dateutil>=2.6.1 in /usr/local/lib/python3.6/dist-packages (from pandas) (2.8.1)\n",
+            "Requirement already satisfied: pytz>=2017.2 in /usr/local/lib/python3.6/dist-packages (from pandas) (2018.9)\n",
+            "Requirement already satisfied: six>=1.5 in /usr/local/lib/python3.6/dist-packages (from python-dateutil>=2.6.1->pandas) (1.12.0)\n",
+            "Requirement already satisfied: pandas in /usr/local/lib/python3.6/dist-packages (1.0.3)\n",
+            "Requirement already satisfied: numpy>=1.13.3 in /usr/local/lib/python3.6/dist-packages (from pandas) (1.18.2)\n",
+            "Requirement already satisfied: pytz>=2017.2 in /usr/local/lib/python3.6/dist-packages (from pandas) (2018.9)\n",
+            "Requirement already satisfied: python-dateutil>=2.6.1 in /usr/local/lib/python3.6/dist-packages (from pandas) (2.8.1)\n",
+            "Requirement already satisfied: six>=1.5 in /usr/local/lib/python3.6/dist-packages (from python-dateutil>=2.6.1->pandas) (1.12.0)\n",
+            "Requirement already satisfied: gdal in /usr/lib/python3/dist-packages (2.2.2)\n",
+            "Requirement already satisfied: fiona in /usr/local/lib/python3.6/dist-packages (1.8.13.post1)\n",
+            "Requirement already satisfied: munch in /usr/local/lib/python3.6/dist-packages (from fiona) (2.5.0)\n",
+            "Requirement already satisfied: attrs>=17 in /usr/local/lib/python3.6/dist-packages (from fiona) (19.3.0)\n",
+            "Requirement already satisfied: six>=1.7 in /usr/local/lib/python3.6/dist-packages (from fiona) (1.12.0)\n",
+            "Requirement already satisfied: click-plugins>=1.0 in /usr/local/lib/python3.6/dist-packages (from fiona) (1.1.1)\n",
+            "Requirement already satisfied: click<8,>=4.0 in /usr/local/lib/python3.6/dist-packages (from fiona) (7.1.1)\n",
+            "Requirement already satisfied: cligj>=0.5 in /usr/local/lib/python3.6/dist-packages (from fiona) (0.5.0)\n",
+            "Requirement already satisfied: shapely in /usr/local/lib/python3.6/dist-packages (1.7.0)\n",
+            "Requirement already satisfied: geopandas in /usr/local/lib/python3.6/dist-packages (0.7.0)\n",
+            "Requirement already satisfied: shapely in /usr/local/lib/python3.6/dist-packages (from geopandas) (1.7.0)\n",
+            "Requirement already satisfied: pyproj>=2.2.0 in /usr/local/lib/python3.6/dist-packages (from geopandas) (2.6.0)\n",
+            "Requirement already satisfied: pandas>=0.23.0 in /usr/local/lib/python3.6/dist-packages (from geopandas) (1.0.3)\n",
+            "Requirement already satisfied: fiona in /usr/local/lib/python3.6/dist-packages (from geopandas) (1.8.13.post1)\n",
+            "Requirement already satisfied: pytz>=2017.2 in /usr/local/lib/python3.6/dist-packages (from pandas>=0.23.0->geopandas) (2018.9)\n",
+            "Requirement already satisfied: numpy>=1.13.3 in /usr/local/lib/python3.6/dist-packages (from pandas>=0.23.0->geopandas) (1.18.2)\n",
+            "Requirement already satisfied: python-dateutil>=2.6.1 in /usr/local/lib/python3.6/dist-packages (from pandas>=0.23.0->geopandas) (2.8.1)\n",
+            "Requirement already satisfied: munch in /usr/local/lib/python3.6/dist-packages (from fiona->geopandas) (2.5.0)\n",
+            "Requirement already satisfied: attrs>=17 in /usr/local/lib/python3.6/dist-packages (from fiona->geopandas) (19.3.0)\n",
+            "Requirement already satisfied: click<8,>=4.0 in /usr/local/lib/python3.6/dist-packages (from fiona->geopandas) (7.1.1)\n",
+            "Requirement already satisfied: click-plugins>=1.0 in /usr/local/lib/python3.6/dist-packages (from fiona->geopandas) (1.1.1)\n",
+            "Requirement already satisfied: six>=1.7 in /usr/local/lib/python3.6/dist-packages (from fiona->geopandas) (1.12.0)\n",
+            "Requirement already satisfied: cligj>=0.5 in /usr/local/lib/python3.6/dist-packages (from fiona->geopandas) (0.5.0)\n",
+            "Requirement already satisfied: shapely in /usr/local/lib/python3.6/dist-packages (1.7.0)\n",
+            "Collecting git+https://github.com/MAfarrag/HAPI.git\n",
+            "  Cloning https://github.com/MAfarrag/HAPI.git to /tmp/pip-req-build-8m65y507\n",
+            "  Running command git clone -q https://github.com/MAfarrag/HAPI.git /tmp/pip-req-build-8m65y507\n",
+            "Requirement already satisfied (use --upgrade to upgrade): Hapi==0.1.0 from git+https://github.com/MAfarrag/HAPI.git in /usr/local/lib/python3.6/dist-packages\n",
+            "Building wheels for collected packages: Hapi\n",
+            "  Building wheel for Hapi (setup.py) ... \u001b[?25l\u001b[?25hdone\n",
+            "  Created wheel for Hapi: filename=Hapi-0.1.0-cp36-none-any.whl size=138133 sha256=e5aadf1f971c8cb5f6e814dd02c487006c0bfb67cf1185725abb62654a0574c9\n",
+            "  Stored in directory: /tmp/pip-ephem-wheel-cache-gikvl4z9/wheels/01/64/ed/1b6002951ba52502516f59c8ec8081033e6c0ec59dff2c4424\n",
+            "Successfully built Hapi\n"
+          ],
+          "name": "stdout"
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "NDpq-Ikn_rEp",
+        "colab_type": "code",
+        "colab": {}
+      },
+      "source": [
+        "import os\n",
+        "import Hapi.River as R"
+      ],
+      "execution_count": 0,
+      "outputs": []
+    }
+  ]
+}
