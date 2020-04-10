@@ -18,7 +18,7 @@ FigureDefaultOptions = dict( ylabel = '', xlabel = '',
                       color1 = '#3D59AB', color2 = "#DC143C", linewidth = 3,
                       Axisfontsize = 15
                         )
-datafn = lambda x: dt.datetime.strptime(x,"%Y-%m-%d")
+# 
 
 class River():
     """
@@ -1676,65 +1676,8 @@ class River():
                 os.remove(Saveto + "/"  + fname)
 
 
-    def ReadObservedWL(self, GaugesTable, Path, StartDate, EndDate, NoValue):
-        """
-        ============================================================================
-            ReadObservedWL( WLGauges, Path, StartDate, EndDate, NoValue)
-        ============================================================================
-
-        Parameters
-        ----------
-            1-GaugesTable : [dataframe]
-                Dataframe contains columns [swimid,xsid,datum(m)].
-            2-Path : [String]
-                    path to the folder containing the text files of the water level gauges
-            3-StartDate : [datetime object]
-                the starting date of the water level time series.
-            4-EndDate : [datetime object]
-                the end date of the water level time series.
-            5-NoValue : [integer]
-                value used to fill the missing values.
-
-        Returns
-        -------
-            1-WL: [dataframe attribute].
 
 
-        """
-
-        ind = pd.date_range(StartDate, EndDate)
-
-        WLGauges = pd.DataFrame(index = ind, columns = GaugesTable['swimid'].tolist())
-        WLGauges.loc[:,:] = NoValue
-
-        for i in range(len(WLGauges.columns)):
-            f = pd.read_csv(Path + str(int(WLGauges.columns[i])) + ".txt",
-                           delimiter = ",", header = None)
-            f[0] = f[0].map(datafn)
-            # sort by date as some values are missed up
-            f.sort_values(by = [0], ascending = True, inplace = True)
-            # filter to the range we want
-            f = f.loc[f[0] > ind[0],:]
-            f = f.loc[f[0] < ind[-1],:]
-            # reindex
-            f.index = list(range(len(f)))
-            # add datum and convert to meter
-            f.loc[f[1]!= NoValue,1] = (f.loc[f[1]!= NoValue,1] / 100) + GaugesTable.loc[i,'datum(m)']
-
-            # assign the values in the dateframe
-            WLGauges.loc[:,WLGauges.columns[i]].loc[f[0][0]:f[0][len(f)-1]] = f[1].tolist()
-
-        self.WLGauges = WLGauges
-
-    def ReadObservedQ(self, CalibratedSubs, Path, StartDate, EndDate):
-
-        ind = pd.date_range(StartDate, EndDate)
-        GRDC = pd.DataFrame(index = ind)
-
-        for i in range(len(CalibratedSubs[0])):
-            GRDC.loc[:,int(CalibratedSubs[0][i])] = np.loadtxt(Path +
-                      str(int(CalibratedSubs[0][i])) + '.txt') #,skiprows = 0
-        self.QGauges = GRDC
 
     # @staticmethod
     def Histogram(self, v1, v2, NoAxis=2, filter1=0.2, Save = False, pdf=True, **kwargs):
@@ -1872,7 +1815,10 @@ class River():
         if Save == True:
             plt.savefig(self.FigureOptions['name'] +"-hist.tif", transparent=True)
             # plt.close()
-
+            
+    # @staticmethod
+    # def datafn(date):
+        # return  dt.datetime.strptime(date,"%Y-%m-%d")
 
 class Sub(River):
 
@@ -2259,7 +2205,37 @@ class Sub(River):
         # self.RRM['ID'] = pd.date_range(start, end, freq = 'D')
         self.RRM.index = pd.date_range(start, end, freq = 'D')
         # get the simulated hydrograph and add the cutted HQ2
-
+        
+    def Resample(self, XSID, ColumnName, FromDay='', ToDay = ''):
+        assert hasattr(self,"Result1D") , "please read the 1D results"
+        
+        if FromDay == '':
+            FromDay = self.Result1D.loc[0,'day']
+        if ToDay ==  '':
+            ToDay = self.Result1D.loc[len(self.Result1D)-1,'day']
+            
+        start = self.ReferenceIndex.loc[FromDay,'date']
+        end = self.ReferenceIndex.loc[ToDay,'date']
+        ind = pd.date_range(start, end, freq = 'D')
+        
+        if ColumnName == 'q' and not hasattr(self,"ResampledQ"):            
+            self.ResampledQ = pd.DataFrame(index=ind)            
+        elif ColumnName == 'wl' and not hasattr(self,"ResampledWL"):
+            self.ResampledWL = pd.DataFrame(index=ind)
+        elif ColumnName == 'h' and not hasattr(self,"ResampledH"):
+            self.ResampledH = pd.DataFrame(index=ind)
+            
+        Q = self.Result1D[self.Result1D['xs'] == XSID][self.Result1D['hour'] == 24]
+        Q = Q[ColumnName][self.Result1D['day'] >= FromDay][self.Result1D['day'] <= ToDay]
+        # self.Q = Q
+        if ColumnName == 'q':
+            print("sss")
+            self.ResampledQ.loc[:,XSID] = Q.tolist()
+        elif ColumnName == "wl":
+            self.ResampledWL.loc[:,XSID] = Q.tolist()
+        elif ColumnName == "h":
+            self.ResampledH.loc[:,XSID] = Q.tolist()
+                                                      
     def DetailedStatisticalCalculation(self, T):
         """
         ===============================================================
