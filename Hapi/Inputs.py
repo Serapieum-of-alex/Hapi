@@ -16,7 +16,7 @@ import pandas as pd
 import Hapi.Raster as Raster
 
 
-def PrepareInputs(Raster,InputFolder,FolderName):
+def PrepareInputs(Rasteri,InputFolder,FolderName):
     """
     ================================================================
         PrepareInputs(Raster,InputFolder,FolderName)
@@ -61,15 +61,17 @@ def PrepareInputs(Raster,InputFolder,FolderName):
         
     temp=os.environ['TEMP']+"/AllignedRasters/"
     
-    # match alignment 
-    Raster.MatchDataAlignment(Raster,InputFolder,temp)
+    # match alignment
+    print("First alligned files will be created in a folder 'AllignedRasters' in the Temp folder in you environment variable")
+    Raster.MatchDataAlignment(Rasteri,InputFolder,temp)
     # create new folder in the current directory for alligned and nodatavalue matched cells
     try:
         os.makedirs(os.path.join(os.getcwd(),FolderName))
     except WindowsError:
         print("please function is trying to create a folder with a name New_Rasters to complete the process if there is a folder with the same name please rename it to other name")    
-    # match nodata value 
-    Raster.MatchDataNoValuecells(Raster,temp,FolderName+"/")
+    # match nodata value
+    print("second matching NoDataValue from the DEM raster too all raster will be created in the outputpath")
+    Raster.MatchDataNoValuecells(Rasteri,temp,FolderName+"/")
     # delete the processing folder from temp
     shutil.rmtree(temp)
 
