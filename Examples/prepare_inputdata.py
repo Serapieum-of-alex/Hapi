@@ -7,7 +7,7 @@ Created on Sat Jun 23 23:51:26 2018
 #%library
 import numpy as np
 # functions
-from Hapi import GISpy as GIS
+from Hapi import Raster
 from Hapi import Inputs
 
 import gdal
@@ -66,7 +66,7 @@ soil=gdal.Open(soil_path)
 soil_A=soil.ReadAsArray()
 
 # align
-aligned_soil=GIS.MatchRasterAlignment(DEM,soil)
+aligned_soil=Raster.MatchRasterAlignment(DEM,soil)
 
 # to check alignment of DEM raster compared to aligned_soil_A raster
 aligned_soil_A=aligned_soil.ReadAsArray()
