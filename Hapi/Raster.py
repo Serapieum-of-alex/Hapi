@@ -433,7 +433,7 @@ def ProjectRaster(src, to_epsg,resample_technique="Nearest"):
     
     if src_epsg.GetAttrValue('AUTHORITY',1) != str(to_epsg):
         # transform the two points coordinates to the new crs to calculate the new cell size
-        new_xs, new_ys= ReprojectPoints(ys,xs,from_epsg=int(src_epsg.GetAttrValue('AUTHORITY',1)),
+        new_xs, new_ys= Vector.ReprojectPoints(ys,xs,from_epsg=int(src_epsg.GetAttrValue('AUTHORITY',1)),
                                          to_epsg=int(dst_epsg.GetAttrValue('AUTHORITY',1)))
     else:
         new_xs = xs
