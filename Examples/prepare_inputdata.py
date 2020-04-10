@@ -49,9 +49,12 @@ evap_out_path="Data/meteodata_prepared/evap/"
 # this function is going to take the absolute value of the values in the raster
 # through MapAlgebra function then save the new raster to a given path with the same names
 def function(args):
+    # argument a list of two components
+    # first argument is the raster object [gdal object]
     A = args[0]
-    func=np.abs
+    # second argument is the path to save the resulted raster
     path = args[1]
+    func=np.abs
     # first function 
     B=Raster.MapAlgebra(A,func)
     Raster.SaveRaster(B,path)
