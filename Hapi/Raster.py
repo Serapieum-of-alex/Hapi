@@ -1629,7 +1629,9 @@ def MatchDataAlignment(A_path,B_input_path,new_B_path):
     files_list=os.listdir(B_input_path)
     if "desktop.ini" in files_list: files_list.remove("desktop.ini")
     
+    print("New Path- " + new_B_path) 
     for i in range(len(files_list)):
+        print(str(i+1) + '/' + str(len(files_list)) + " - " + B_input_path+files_list[i])
         B=gdal.Open(B_input_path+files_list[i])
         new_B=MatchRasterAlignment(A,B)
         SaveRaster(new_B,new_B_path+files_list[i])
@@ -1691,7 +1693,9 @@ def MatchDataNoValuecells(A_path,B_input_path,new_B_path):
     files_list=os.listdir(B_input_path)
     if "desktop.ini" in files_list:  files_list.remove("desktop.ini")
     
+    print("New Path- " + new_B_path) 
     for i in range(len(files_list)):
+        print(str(i+1) + '/' + str(len(files_list)) + " - " + B_input_path+files_list[i])
         B=gdal.Open(B_input_path+files_list[i])
         new_B=MatchNoDataValue(A,B) 
         SaveRaster(new_B,new_B_path+files_list[i])
@@ -1740,12 +1744,26 @@ def FolderCalculator(folder_path,new_folder_path,function):
     assert type(new_folder_path)== str, "B_input_path input should be string type"
     assert callable(function) , "second argument should be a function"
     
+    assert os.path.exists(folder_path), folder_path + "the path you have provided does not exist"
+    assert os.path.exists(new_folder_path), new_folder_path + "the path you have provided does not exist"
+    # check whether there are files or not inside the folder
+    assert os.listdir(folder_path) != "", folder_path + "the path you have provided is empty"
+    
+    # check if you can create the folder 
+    # try:
+    #     os.makedirs(os.path.join(os.environ['TEMP'],"AllignedRasters"))
+    # except WindowsError : 
+    #     # if not able to create the folder delete the folder with the same name and create one empty
+    #     shutil.rmtree(os.path.join(os.environ['TEMP']+"/AllignedRasters"))
+    #     os.makedirs(os.path.join(os.environ['TEMP'],"AllignedRasters"))
+        
     # get names of rasters
     files_list=os.listdir(folder_path)
     if "desktop.ini" in files_list: files_list.remove("desktop.ini")
     
     # execute the function on each raster
     for i in range(len(files_list)):
+        print(str(i+1) + '/' + str(len(files_list)) + " - " + files_list[i])
         B=gdal.Open(folder_path+files_list[i])
         args=[B,new_folder_path+files_list[i]]
         function(args)
