@@ -1631,7 +1631,7 @@ def MatchDataAlignment(A_path,B_input_path,new_B_path):
     
     print("New Path- " + new_B_path) 
     for i in range(len(files_list)):
-        print(str(i+1) + '/' + str(len(files_list)) + " - " + B_input_path+files_list[i])
+        print(str(i+1) + '/' + str(len(files_list)) + " - " + new_B_path+files_list[i])
         B=gdal.Open(B_input_path+files_list[i])
         new_B=MatchRasterAlignment(A,B)
         SaveRaster(new_B,new_B_path+files_list[i])
@@ -1695,7 +1695,7 @@ def MatchDataNoValuecells(A_path,B_input_path,new_B_path):
     
     print("New Path- " + new_B_path) 
     for i in range(len(files_list)):
-        print(str(i+1) + '/' + str(len(files_list)) + " - " + B_input_path+files_list[i])
+        print(str(i+1) + '/' + str(len(files_list)) + " - " + new_B_path+files_list[i])
         B=gdal.Open(B_input_path+files_list[i])
         new_B=MatchNoDataValue(A,B) 
         SaveRaster(new_B,new_B_path+files_list[i])
