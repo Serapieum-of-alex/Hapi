@@ -68,7 +68,7 @@ def PrepareInputs(Rasteri,InputFolder,FolderName):
     try:
         os.makedirs(os.path.join(os.getcwd(),FolderName))
     except WindowsError:
-        print("please function is trying to create a folder with a name New_Rasters to complete the process if there is a folder with the same name please rename it to other name")    
+        print("please function is trying to create a folder with a name"+ str(FolderName) +"New_Rasters to complete the process if there is a folder with the same name please rename it to other name")    
     # match nodata value
     print("second matching NoDataValue from the DEM raster too all raster will be created in the outputpath")
     Raster.MatchDataNoValuecells(Rasteri,temp,FolderName+"/")
