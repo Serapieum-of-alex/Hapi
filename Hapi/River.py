@@ -52,7 +52,18 @@ class River():
         self.ReferenceIndex = pd.DataFrame(index = list(range(1,days+1)))
         self.ReferenceIndex['date'] = Ref_ind[:-1]
         self.FigureOptions = FigureDefaultOptions
-
+        
+    
+    def IndexToDate(self,Index):
+        # convert the index into date
+        return self.ReferenceIndex.loc[Index,'date']
+    
+    def DateToIndex(self,Date):
+        # convert the index into date+
+        # Date = dt.datetime(1950,1,1)
+        if type(Date) == str:
+            Date = dt.datetime.strptime(filter1,"%Y-%m-%d")
+        return np.where(self.ReferenceIndex['date'] == Date)[0][0]+1
 
     def CrossSections(self,Path):
         """
@@ -1441,20 +1452,20 @@ class River():
 
         self.Result1D = data
 
-    def IndexToDate(self,):
-        """
+    # def IndexToDate(self,):
+    #     """
 
 
-        Returns
-        -------
-        None.
+    #     Returns
+    #     -------
+    #     None.
 
-        """
-        # convert the index into date
-        dateFn = lambda x: self.ReferenceIndex.loc[x,'date']
-        # get the date the column 'ID'
-        date = self.EventIndex.loc[:,'ID'].to_frame().applymap(dateFn)
-        self.EventIndex['date'] = date
+    #     """
+    #     # convert the index into date
+    #     dateFn = lambda x: self.ReferenceIndex.loc[x,'date']
+    #     # get the date the column 'ID'
+    #     date = self.EventIndex.loc[:,'ID'].to_frame().applymap(dateFn)
+    #     self.EventIndex['date'] = date
 
 
     @staticmethod
@@ -1897,6 +1908,10 @@ class Sub(River):
                 dataframe containing hydrographs at the position of the first and last cross section
             3-XSWaterLevel : [dataframe attribute]
                 dataframe containing waterlevels at the position of the first and last cross section
+            4-FirstDayResults:[attribute]
+                the first day in the 1D result
+            5-EndDays:[attribute]
+                the last day in the 1D result
 
         """
         River.Read1DResult(self,self.ID, FromDay, ToDay, Path = Path, FillMissing = FillMissing)
@@ -2206,7 +2221,7 @@ class Sub(River):
         self.RRM.index = pd.date_range(start, end, freq = 'D')
         # get the simulated hydrograph and add the cutted HQ2
         
-    def Resample(self, XSID, ColumnName, FromDay='', ToDay = ''):
+    def Resample(self, XSID, ColumnName, FromDay='', ToDay = '', Delete=False):
         assert hasattr(self,"Result1D") , "please read the 1D results"
         
         if FromDay == '':
@@ -2217,19 +2232,28 @@ class Sub(River):
         start = self.ReferenceIndex.loc[FromDay,'date']
         end = self.ReferenceIndex.loc[ToDay,'date']
         ind = pd.date_range(start, end, freq = 'D')
-        
-        if ColumnName == 'q' and not hasattr(self,"ResampledQ"):            
+                        
+        if ColumnName == 'q' and not hasattr(self,"ResampledQ"):
             self.ResampledQ = pd.DataFrame(index=ind)            
-        elif ColumnName == 'wl' and not hasattr(self,"ResampledWL"):
+        else:
+            if Delete==True:
+                del self.ResampledQ
+                
+        if ColumnName == 'wl' and not hasattr(self,"ResampledWL"):
             self.ResampledWL = pd.DataFrame(index=ind)
-        elif ColumnName == 'h' and not hasattr(self,"ResampledH"):
+        else:
+            if Delete==True:
+                del self.ResampledWL
+        if ColumnName == 'h' and not hasattr(self,"ResampledH"):
             self.ResampledH = pd.DataFrame(index=ind)
-            
+        else:
+            if Delete==True:
+                del self.ResampledH
+                    
         Q = self.Result1D[self.Result1D['xs'] == XSID][self.Result1D['hour'] == 24]
         Q = Q[ColumnName][self.Result1D['day'] >= FromDay][self.Result1D['day'] <= ToDay]
         # self.Q = Q
         if ColumnName == 'q':
-            print("sss")
             self.ResampledQ.loc[:,XSID] = Q.tolist()
         elif ColumnName == "wl":
             self.ResampledWL.loc[:,XSID] = Q.tolist()
