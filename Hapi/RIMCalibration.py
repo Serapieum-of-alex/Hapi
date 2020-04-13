@@ -74,8 +74,20 @@ class RIMCalibration():
         WLGauges.index = ind
         del WLGauges[0]
         self.WLGauges = WLGauges
-
-    def ReadObservedQ(self, CalibratedSubs, Path, StartDate, EndDate):
+        
+        GaugesTable.index = GaugesTable['swimid'].tolist()
+        GaugesTable['start'] = 0
+        GaugesTable['end'] = 0
+        for i in range(len(columns)):
+            st1 = WLGauges[columns[i]][WLGauges[columns[i]] != NoValue].index[0]
+            end1 = WLGauges[columns[i]][WLGauges[columns[i]] != NoValue].index[-1]
+            GaugesTable.loc[GaugesTable.loc[:,'swimid'] == columns[i],'start'] = st1
+            GaugesTable.loc[GaugesTable.loc[:,'swimid'] == columns[i],'end'] = end1
+            
+        self.WLGaugesTable = GaugesTable
+        
+        
+    def ReadObservedQ(self, CalibratedSubs, Path, StartDate, EndDate, NoValue):
 
         ind = pd.date_range(StartDate, EndDate)
         GRDC = pd.DataFrame(index = ind)
@@ -84,6 +96,21 @@ class RIMCalibration():
             GRDC.loc[:,int(CalibratedSubs[0][i])] = np.loadtxt(Path +
                       str(int(CalibratedSubs[0][i])) + '.txt') #,skiprows = 0
         self.QGauges = GRDC
+        
+        GaugesTable = pd.DataFrame(index = CalibratedSubs[0])
+        # GaugesTable['SubID'] = CalibratedSubs[0]
+        GaugesTable['start'] = 0
+        GaugesTable['end'] = 0
+        
+        for i in range(len(CalibratedSubs[0])):
+            st1 = GRDC[CalibratedSubs[0][i]][GRDC[CalibratedSubs[0][i]] != NoValue].index[0]
+            end1 = GRDC[CalibratedSubs[0][i]][GRDC[CalibratedSubs[0][i]] != NoValue].index[-1]
+            # GaugesTable.loc[GaugesTable.loc[:,'SubID'] == CalibratedSubs[0][i],'start'] = st1
+            # GaugesTable.loc[GaugesTable.loc[:,'SubID'] == CalibratedSubs[0][i],'end'] = end1
+            GaugesTable.loc[CalibratedSubs[0][i],'start'] = st1
+            GaugesTable.loc[CalibratedSubs[0][i],'end'] = end1
+            
+        self.QGaugesTable = GaugesTable
         
     def ReadRRM(self, Qgauges, Path, StartDate, EndDate):
         
