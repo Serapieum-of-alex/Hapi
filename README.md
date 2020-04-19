@@ -57,8 +57,10 @@ that will create an environment named python3 that contain s Python3.7 version o
 # Activate the env
 conda activate Hapi_env
 
+```
 # Install the dependencies
-# there is some library that you have to install it from some conda channels
+you can check [libraries.io](https://libraries.io/github/MAfarrag/HAPI) to check versions of the libraries
+```
 conda install Numpy
 conda install pandas
 conda install scipy
