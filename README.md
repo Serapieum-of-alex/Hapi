@@ -67,12 +67,19 @@ conda install shapely
 conda install geopandas
 conda install fiona
 
-# after installing all dependencies to install Hapi 
+## pip
+to install the last release you can easly use pip 
+pip install HAPI-Nile
+
+# to install the last development to time you can install the library from github
+pip install git+https://github.com/MAfarrag/HAPI
+
+# or you can compile the repository after you clone it 
+# iF python is already added to your system environment variable 
 python setup.py install
-# iF you have more than one environment installed in you operating system 
+# or 
 pathto_your_env\python setup.py install
-# or in your python environment you can try to clone and install it directly from pip
-pip install git+https://github.com/MAfarrag/HAP
+
 
 
 ```
