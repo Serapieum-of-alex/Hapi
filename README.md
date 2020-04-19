@@ -68,13 +68,13 @@ conda install geopandas
 conda install fiona
 ```
 ## Install from Github
-####### to install the last development to time you can install the library from github
+###### to install the last development to time you can install the library from github
 ```
 pip install git+https://github.com/MAfarrag/HAPI
 ```
 ## Compile 
-###### or you can compile the repository after you clone it 
-###### iF python is already added to your system environment variable
+You can compile the repository after you clone it 
+iF python is already added to your system environment variable
 ```
 python setup.py install
 ```
@@ -83,7 +83,7 @@ python setup.py install
 pathto_your_env\python setup.py install
 ```
 ## pip
-> to install the last release you can easly use pip
+to install the last release you can easly use pip
 ```
     pip install HAPI-Nile
 ```
