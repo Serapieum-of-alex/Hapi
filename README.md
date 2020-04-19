@@ -77,5 +77,5 @@ python setup.py install
 pathto_your_env\python setup.py install
 ```
 ## pip
-to install the last release you can easly use pip 
-pip install HAPI-Nile
+# to install the last release you can easly use pip
+`<pip install HAPI-Nile>`
