@@ -1,5 +1,0 @@
-Numpy==1.13.3
-pandas==0.20.3
-geopandas==0.3.0
-shapely==1.6.2
-
