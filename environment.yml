@@ -4,6 +4,7 @@ channels:
   - https://conda.anaconda.org/mutirri
   - defaults
 dependencies:
+  - pip=20.0.2=py_2  
   - gdal=3.0.4=py37hd44be9e_8
   - geopandas=0.7.0=py_1
   - pip:
