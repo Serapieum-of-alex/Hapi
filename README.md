@@ -1,6 +1,7 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2572035.svg)](https://doi.org/10.5281/zenodo.2572035)
 [![PyPI version](https://badge.fury.io/py/HAPI-Nile.svg)](https://badge.fury.io/py/HAPI-Nile)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/MAfarrag/HAPI/master)
+
 HAPI - Hydrological library for Python 
 =====================================================================
 **HAPI** is a Python package providing fast and flexible, way to build Hydrological models with different spatial representations (lumped, semidistributed and conceptual distributed) using HBV96.
