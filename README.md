@@ -65,7 +65,7 @@ you can check [libraries.io](https://libraries.io/github/MAfarrag/HAPI) to check
 conda install Numpy
 conda install pandas
 conda install scipy
-conda install gdal
+conda install -c conda-forge gda
 conda install shapely
 conda install geopandas
 conda install fiona
