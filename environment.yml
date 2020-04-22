@@ -1,5 +1,6 @@
 channels:
   - conda-forge
+channel_priority: strict  
 dependencies:
   - gdal=3.0.4=py37hd44be9e_8
 
