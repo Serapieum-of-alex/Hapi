@@ -23,3 +23,4 @@ Web_application/HAPI/static/input_data/Google API.txt
 *.txt
 *.npy
 *.pkl
+*.ipynb
