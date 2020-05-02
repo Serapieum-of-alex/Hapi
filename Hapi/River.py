@@ -18,7 +18,7 @@ FigureDefaultOptions = dict( ylabel = '', xlabel = '',
                       color1 = '#3D59AB', color2 = "#DC143C", linewidth = 3,
                       Axisfontsize = 15
                         )
-# 
+#
 
 class River():
     """
@@ -52,12 +52,12 @@ class River():
         self.ReferenceIndex = pd.DataFrame(index = list(range(1,days+1)))
         self.ReferenceIndex['date'] = Ref_ind[:-1]
         self.FigureOptions = FigureDefaultOptions
-        
-    
+
+
     def IndexToDate(self,Index):
         # convert the index into date
         return self.ReferenceIndex.loc[Index,'date']
-    
+
     def DateToIndex(self,Date):
         # convert the index into date+
         # Date = dt.datetime(1950,1,1)
@@ -126,19 +126,19 @@ class River():
         RiverNetwork method rad the table of each computational node followed by
         upstream npde then downstream node (TraceAll file)
 
-        Parameters
-        ----------
-            1-Path : [String]
-                path to the Trace.txt file including the file name and extention
-                "path/Trace.txt".
+        ==============   ====================================================
+        Keyword          Description
+        ==============   ====================================================
+        1-Path :         [String] path to the Trace.txt file including the file name and extention
+                            "path/Trace.txt".
 
         Returns
         -------
             1-rivernetwork:[data frame attribute]
                 containing the river network with columns ['SubID','US','DS']
         """
-        self.rivernetwork = pd.read_csv(Path, delimiter = ',',header = None)
-        self.rivernetwork.columns = ['SubID','US','DS']
+        self.rivernetwork = pd.read_csv(Path, delimiter = ',') #,header = None
+        # self.rivernetwork.columns = ['SubID','US','DS']
 
 
     def Trace(self,SubID):
@@ -183,14 +183,16 @@ class River():
         ====================================================
         StatisticalProperties method reads the parameters of the distribution and
         calculates the the 2, 5, 10, 15, 20, 50, 100 return period discharge for each
-        sub-basin
+        sub-basin to create the parameters file use the code StatisticalProperties
+        in the 07ReturnPeriod folder
 
         Parameters
         ----------
             1-Path : [String]
                 path to the "Statistical Properties.txt" file including the
                 file name and extention "path/Statistical Properties.txt".
-
+            2-Filter:[Boolen]
+                true to filter the nodes to the nodes used in RIM (upstream nodes only)
         Returns
         -------
             1-SP:[data frame attribute]
@@ -204,7 +206,7 @@ class River():
 
         if Filter:
             assert hasattr(self, "slope"), "please read the Guide file with the Slope Method as this method uses the the SubID in the guide file as ID"
-            assert hasattr(self, "rivernetwork"), "please read the rivernetwork Trace file with the RiverNetwork method data "
+            assert hasattr(self, "rivernetwork"), "Please read the Tracefile.txt with the RiverNetwork method data "
             # filter all the computational nodes in the file to those only
             # exist in the slope attribute (the nodes in the guide file)
             NewSP = pd.DataFrame(columns = ['ID','loc','scale'])
@@ -237,9 +239,9 @@ class River():
         =================================================================
              GetReturnPeriod(self, SubID, Q)
         =================================================================
-        GetReturnPeriod method takes given discharge and using the distribution 
-        properties of a particular sub basin it it calculates the return period 
-        
+        GetReturnPeriod method takes given discharge and using the distribution
+        properties of a particular sub basin it it calculates the return period
+
         Parameters
         ----------
             1-SubID : [Integer]
@@ -255,7 +257,7 @@ class River():
 
         """
         assert hasattr(self, "SP"), "Please read the statistical properties file for the catchment first"
-        
+
         try:
             loc = np.where(self.SP['ID'] == SubID)[0][0]
             F = gumbel_r.cdf(Q, loc = self.SP.loc[loc,'loc'],
@@ -269,7 +271,7 @@ class River():
     #     =================================================
     #         GetBankfullQ
     #     =================================================
-    #     GetBankfullQ method calculates the discharge that fills 
+    #     GetBankfullQ method calculates the discharge that fills
 
     #     Returns
     #     -------
@@ -312,13 +314,14 @@ class River():
         """
         self.crosssections[ColumnName] = self.crosssections['b'].to_frame().applymap(function)
 
+
     def GetCapacity(self,ColumnName, Option = 1):
         """
         ======================================================
               GetCapacity(ColumnName)
         ======================================================
-        GetCapacity method calculates the discharge that enough to fill the 
-        cross section using kinematic approximation (using bed slope with manning)
+        GetCapacity method calculates the discharge that is enough to fill the
+        cross section using kinematic wave approximation (using bed slope with manning)
 
         Parameters
         ----------
@@ -326,57 +329,92 @@ class River():
                 A name for the column to store the calculated depth at the
                 cross section dataframe.
             2-Option : [Integer]
-                1 if you want to calculate the capacity of the bankfull area, 
-                2 if you want to calculate the capacity of the whole cross section 
-                to the lelvel of the lowest dike 
+                1 if you want to calculate the capacity of the bankfull area,
+                2 if you want to calculate the capacity of the whole cross section
+                to the lelvel of the lowest dike
 
         Returns
         -------
             1- Discharge: [dataframe column]
                 the calculated discharge will be stored in the crosssections
                 attribute in the River object in a columns with the given ColumnName
+            2- ColumnName+"RP":[dataframe column]
+                if you already rad the statistical properties another column containing
+                the coresponding return period to the discharge,
+                the calculated return period will be stored in a column with a name
+                the given ColumnName+"RP", if the ColumnName was QC then the discharge
+                will be in a Qc columns and the return period will be in QcRP column
         """
         for i in range(len(self.crosssections)-1):
-
+            # get the slope
             if self.crosssections.loc[i,'swimid'] == self.crosssections.loc[i+1,'swimid']:
                 slope = (self.crosssections.loc[i,'gl'] - self.crosssections.loc[i+1,'gl'])/500
             else:
                 slope = abs(self.crosssections.loc[i,'gl'] - self.crosssections.loc[i-1,'gl'])/500
             self.crosssections.loc[i,'Slope'] = slope
-            
+
             if Option == 1:
+                # bankfull area
                 self.crosssections.loc[i,ColumnName] = (1/self.crosssections.loc[i,'m']) * self.crosssections.loc[i,'b'] * (self.crosssections.loc[i,'dbf']) ** (5/3)
                 self.crosssections.loc[i,ColumnName]  = self.crosssections.loc[i,ColumnName] * (slope)**(1/2)
-                
+
             else:
+                # lowest dike
                 # get the vortices of the cross sections
                 H = self.crosssections.loc[i,['zl','zr']].min()
                 Hl, Hr, Bl, Br, B, Dbf = self.crosssections.loc[i,['hl','hr','bl','br','b','dbf']].tolist()
                 BedLevel = self.crosssections.loc[i,'gl']
                 Coords = self.GetVortices(H - BedLevel, Hl, Hr, Bl, Br, B, Dbf)
-                # get the area and perimeters 
+                # get the area and perimeters
                 Area, Perimeter = self.PolygonGeometry(Coords)
                 # self.crosssections.loc[i,'Area'] = Area
                 # self.crosssections.loc[i,'Perimeter'] = Perimeter
                 self.crosssections.loc[i,ColumnName] = (1/self.crosssections.loc[i,'m']) * Area * ((Area/Perimeter) ** (2/3))
                 self.crosssections.loc[i,ColumnName]  = self.crosssections.loc[i,ColumnName] * (slope)**(1/2)
-                
+
             if hasattr(self, "SP"):
                 # print(self.GetReturnPeriod(self.crosssections.loc[i,'swimid'],self.crosssections.loc[i,ColumnName]))
                 RP = self.GetReturnPeriod(self.crosssections.loc[i,'swimid'],self.crosssections.loc[i,ColumnName])
                 if np.isnan(RP):
                     RP = -1
                 self.crosssections.loc[i,ColumnName + "RP"] = round(RP,2)
-            
+
+
     def CalibrateDike(self, ObjectiveRP, CurrentRP):
-        
-        assert hasattr(self, 'SP'), "Please read the statistical properties file first"
-        
+        """
+        ========================================================
+            CalibrateDike(ObjectiveRP, CurrentRP)
+        ========================================================
+        CalibrateDike method takes cross section and based on a
+
+        Parameters
+        ----------
+        ObjectiveRP : [string]
+            Column name in the cross section dataframe you have to enter it.
+        CurrentRP : [string]
+            Column name in the cross section dataframe created by the GetCapacity
+            method.
+
+        Returns
+        -------
+        New RP: [data frame column]
+            column in the cross section dataframe containing the new return period.
+        New Capacity: [data frame column]
+            column in the cross section dataframe containing the the discharge enough
+            to fill the cross section after raising the dikes to the objective
+            return period.
+        """
+
+        assert hasattr(self, 'SP'), "Please read the statistical properties file first using StatisticalProperties method"
+        assert hasattr(self, 'crosssections'), "please read the cross section data first with the method CrossSections"
+        assert CurrentRP in self.crosssections.columns, CurrentRP + " in not in the cross section data please use GetCapacity method to calculate the current return perion "
+        assert ObjectiveRP in self.crosssections.columns, ObjectiveRP + " in not in the cross section data please create a column in the cross section data containing the objective return period"
+
         # self.crosssections['zlnew'] = -1
         # self.crosssections['zrnew'] = -1
         self.crosssections.loc[:,'zlnew'] = self.crosssections.loc[:,'zl']
         self.crosssections.loc[:,'zrnew'] = self.crosssections.loc[:,'zr']
-        
+
         for i in range(len(self.crosssections)-2):
 
             if self.crosssections.loc[i,'swimid'] == self.crosssections.loc[i+1,'swimid']:
@@ -386,30 +424,30 @@ class River():
             # self.crosssections.loc[i,'Slope'] = slope
             Hl, Hr, Bl, Br, B, Dbf = self.crosssections.loc[i,['hl','hr','bl','br','b','dbf']].tolist()
             BedLevel = self.crosssections.loc[i,'gl']
-            
-            
-            
+
+
+
             if self.crosssections.loc[i,CurrentRP] < self.crosssections.loc[i,ObjectiveRP] and self.crosssections.loc[i, CurrentRP] != -1:
                 print("XS-"+str(self.crosssections.loc[i,'xsid']))
                 print('Old RP = ' + str(self.crosssections.loc[i, CurrentRP]))
                 print('Old H = ' + str(self.crosssections.loc[i,['zl','zr']].min()))
-                
+
                 self.crosssections.loc[i,"New RP"] = self.crosssections.loc[i, CurrentRP]
                 # self.crosssections.loc[i,'zlnew'] = self.crosssections.loc[i,'zl']
                 # self.crosssections.loc[i,'zrnew'] = self.crosssections.loc[i,'zr']
-                
+
                 while self.crosssections.loc[i,"New RP"] < self.crosssections.loc[i, ObjectiveRP]:
                     # get the vortices of the cross sections
                     if self.crosssections.loc[i,'zlnew'] < self.crosssections.loc[i,'zrnew'] :
                         self.crosssections.loc[i,'zlnew'] = self.crosssections.loc[i,'zlnew'] + 0.1
                     else:
                         self.crosssections.loc[i,'zrnew'] = self.crosssections.loc[i,'zrnew'] + 0.1
-                        
+
                     H = self.crosssections.loc[i,['zlnew','zrnew']].min()
                     # print("H=" + str(H))
-                    
+
                     Coords = self.GetVortices(H - BedLevel, Hl, Hr, Bl, Br, B, Dbf)
-                    # get the area and perimeters 
+                    # get the area and perimeters
                     Area, Perimeter = self.PolygonGeometry(Coords)
                     # self.crosssections.loc[i,'Area'] = Area
                     # self.crosssections.loc[i,'Perimeter'] = Perimeter
@@ -418,12 +456,13 @@ class River():
                     # print("New QC " + str(self.crosssections.loc[i,ColumnName+"calib"]))
                     # print(self.GetReturnPeriod(self.crosssections.loc[i,'swimid'],self.crosssections.loc[i,ColumnName]))
                     RP = self.GetReturnPeriod(self.crosssections.loc[i,'swimid'],self.crosssections.loc[i,"New Capacity"])
-                    
+
                     self.crosssections.loc[i,"New RP"] = round(RP,2)
                     # print("New RP = "+str(RP))
                 print("New RP = "+str(round(RP,2)))
                 print("New H = " + str(round(H,2)))
                 print("---------------------------")
+
 
     def Overtopping(self):
 
@@ -526,7 +565,6 @@ class River():
 
         Parameters
         ----------
-
             1-day : [Integer]
                 the day you want to get the overtopped cross section for.
             2-allEventdays : [Bool], optional
@@ -1192,16 +1230,16 @@ class River():
             # perimeter
             # PropXS8P(2) = PropXS8P(2) + (2*Dbf)
         Coords = np.array([Xcoords, Ycoords]).transpose()
-    
+
         return Coords
     # @staticmethod
     # def GetGeometry(H, Hl, Hr, Bl, Br, B, Dbf):
-        
+
     #     Coords = GetVortices(H, Hl, Hr, Bl, Br, B, Dbf)
     #     area, Perimiter = PolygonGeometry(Coords)
-        
+
     #     return Area, Perimeter
-        
+
 
 
     def GetDays(self,FromDay,ToDay,SubID):
@@ -1503,9 +1541,9 @@ class River():
                 reading all the files you can specify here the order of the file
                 the code will end to combine. The default is ''.
             9-FilterbyName : [Bool], optional
-                if you the result include a wanm up period at the beginning
+                if the results include a wanm up period at the beginning
                 or has results for some days at the end you want to filter out
-                you wave to include the period you want to be combined only
+                you want to include the period you want to be combined only
                 in the name of the folder between () and separated with -
                 ex 1d(5000-80000). The default is False.
 
@@ -1686,6 +1724,7 @@ class River():
                 # delete the file
                 os.remove(Saveto + "/"  + fname)
 
+        return Errors
 
 
 
@@ -1826,7 +1865,7 @@ class River():
         if Save == True:
             plt.savefig(self.FigureOptions['name'] +"-hist.tif", transparent=True)
             # plt.close()
-            
+
     # @staticmethod
     # def datafn(date):
         # return  dt.datetime.strptime(date,"%Y-%m-%d")
@@ -2220,25 +2259,25 @@ class Sub(River):
         # self.RRM['ID'] = pd.date_range(start, end, freq = 'D')
         self.RRM.index = pd.date_range(start, end, freq = 'D')
         # get the simulated hydrograph and add the cutted HQ2
-        
+
     def Resample(self, XSID, ColumnName, FromDay='', ToDay = '', Delete=False):
         assert hasattr(self,"Result1D") , "please read the 1D results"
-        
+
         if FromDay == '':
             FromDay = self.Result1D.loc[0,'day']
         if ToDay ==  '':
             ToDay = self.Result1D.loc[len(self.Result1D)-1,'day']
-            
+
         start = self.ReferenceIndex.loc[FromDay,'date']
         end = self.ReferenceIndex.loc[ToDay,'date']
         ind = pd.date_range(start, end, freq = 'D')
-                        
+
         if ColumnName == 'q' and not hasattr(self,"ResampledQ"):
-            self.ResampledQ = pd.DataFrame(index=ind)            
+            self.ResampledQ = pd.DataFrame(index=ind)
         else:
             if Delete==True:
                 del self.ResampledQ
-                
+
         if ColumnName == 'wl' and not hasattr(self,"ResampledWL"):
             self.ResampledWL = pd.DataFrame(index=ind)
         else:
@@ -2249,7 +2288,7 @@ class Sub(River):
         else:
             if Delete==True:
                 del self.ResampledH
-                    
+
         Q = self.Result1D[self.Result1D['xs'] == XSID][self.Result1D['hour'] == 24]
         Q = Q[ColumnName][self.Result1D['day'] >= FromDay][self.Result1D['day'] <= ToDay]
         # self.Q = Q
@@ -2259,7 +2298,7 @@ class Sub(River):
             self.ResampledWL.loc[:,XSID] = Q.tolist()
         elif ColumnName == "h":
             self.ResampledH.loc[:,XSID] = Q.tolist()
-                                                      
+
     def DetailedStatisticalCalculation(self, T):
         """
         ===============================================================
