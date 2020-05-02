@@ -16,9 +16,11 @@ from statsmodels import api as sm
 
 class Inputs():
 
-    def __init__(self,name):
-        self.name = name
-
+    def __init__(self, Name, Version=2 ):
+        self.Name = Name
+        self.Version = Version
+        
+        
     def ExtractHydrologicalInputs(self, WeatherGenerator, FilePrefix, realization,
                                    path, SWIMNodes, SavePath):
         """
@@ -56,7 +58,7 @@ class Inputs():
             # 4-5
             # check whether the the name of the realization the same as the name of 3
             # the saving file or not to prevent any confusion in saving the files
-            if realization <= 9:
+            if int(realization) <= 9:
                 assert int(SWIMResultFile[-5:-4]) == int(SavePath[-1]), " Wrong files sync "
             else:
                 assert int(SWIMResultFile[-6:-4]) == int(SavePath[-2:]), " Wrong files sync "
@@ -479,9 +481,76 @@ class Inputs():
                 # if it does not exist put zero
                 f2.append(0)
         return f2
-
-
-
+    
+    
+    def CreateTraceALL(self, ConfigFilePath, RIMSubsFilePath, TraceFile, USonly=1,
+                       HydrologicalInputsFile=''):
+        
+        # reading the file
+        Config = pd.read_csv(ConfigFilePath, header = None)
+        # process the Configuration file 
+        # get the Route rows from the file 
+        Route = pd.DataFrame(columns = ['No','DSnode','SubID','USnode','No2'])
+        
+        j=0
+        for i in range(len(Config)):
+            if Config[0][i].split()[0] == 'route':
+                Route.loc[j,:] = list(map(int,Config[0][i].split()[1:]))
+                j = j + 1
+        
+        # get RIM Sub-basins
+        Subs = pd.read_csv(RIMSubsFilePath, header = None)
+        Subs = Subs.rename(columns = {0:"SubID"})
+        
+        if self.Version == 1:
+            Subs['US'] = -1
+            Subs['DS'] = -1
+        else:        
+            Subs['US'] = None
+            Subs['DS'] = None
+        
+        for i in range(len(Subs)):
+            try:
+                # if the sub-basin is in the route array so it is routed by SWIM
+                loc = np.where(Route['SubID'] == Subs.loc[i,'SubID'])[0][0]
+                Subs.loc[i,'US'] = int(Route.loc[loc,'USnode'])
+                Subs.loc[i,'DS'] = int(Route.loc[loc,'DSnode'])
+            except IndexError:
+                # if the sub-basin is not in the route array so it is not routed by SWIM
+                # but still can be routed using RIM
+                if self.Version == 1:
+                    Subs.loc[i,'US'] = -1
+                    Subs.loc[i,'DS'] = -1
+                else:
+                    # Subs.loc[i,'US'] = None
+                    # Subs.loc[i,'DS'] = None
+                    Subs.loc[i,'US'] = -1
+                    Subs.loc[i,'DS'] = -1
+                
+        # Save the file with the same format required for the hg R code
+        if self.Version == 1:
+        #    ToSave = Subs.loc[:,['US','SubID']]
+        #    ToSave['Extra column 1'] = -1
+        #    ToSave['Extra column 2'] = -1
+            Subs.to_csv(TraceFile,header = True, index = None)
+            
+            onlyRouted = Subs[Subs['US'] != -1][Subs['DS'] != -1]
+            
+            if USonly == 1:
+                All = onlyRouted['US'].tolist()
+            else:
+                All = onlyRouted['US'].tolist() + onlyRouted['DS'].tolist()
+            np.savetxt(HydrologicalInputsFile , All, fmt = '%d')
+            
+        else:
+            Subs.to_csv(TraceFile, index = None, header = True)
+        #    ToSave = Subs.loc[:,['SubID','US']]
+        #    ToSave['Extra column 1'] = -1
+        #    ToSave['Extra column 2'] = -1
+        #    ToSave.to_csv(SavePath + TraceFile,header = None, index = None)
+            
+        
+        
 class CrossSections():
     def __init__(self,name):
         self.name = name
