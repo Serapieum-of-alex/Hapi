@@ -4,21 +4,23 @@ channels:
   - https://conda.anaconda.org/mutirri
   - defaults
 dependencies:
-  - pip=20.0.2
-  - numpy
-  - fiona
-  - gdal
-  - geopandas
-  - geos=3.8.1
-  - matplotlib
-  - pandas
-  - proj
-  - pyproj
+  - pip
+  - affine=2.3.*
+  - fiona=1.8.*
+  - proj=6.3.*
+  - pyproj=2.6.*  
+  - gdal=3.0.*
+  - pandas=1.0.*
+  - geopandas=0.7.*
+  - geos=3.8.*
+  - matplotlib=3.2.*
+  - matplotlib-base=3.2.*
   - python
-  - scipy
+  - scipy=1.3.*
   - setuptools
-  - shapely
-  - statsmodels
+  - shapely=1.7.*
+  - statsmodels=0.11.*
+  - rasterio=1.1.*
   - pip:
-    - hapi-nile==0.1.0
-
+    - numpy==1.18.*
+    - git+https://github.com/MAfarrag/HAPI.git

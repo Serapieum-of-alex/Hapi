@@ -3,10 +3,8 @@ from setuptools import setup , find_packages
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-
 setup(
     name='HAPI-Nile',
-    #packages=['Hapi'],
     version='0.1.0',
     description='Distributed Hydrological model',
     author='Mostafa Farrag',
@@ -24,7 +22,6 @@ setup(
     'Intended Audience :: Developers',
     'Natural Language :: English',
     'Programming Language :: Python ',
-    	#'Programming Language :: Python :: Implementation :: CPython',
     'Topic :: Software Development',
     ]
 	 )
