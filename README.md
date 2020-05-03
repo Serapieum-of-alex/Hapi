@@ -65,10 +65,11 @@ you can check [libraries.io](https://libraries.io/github/MAfarrag/HAPI) to check
 conda install Numpy
 conda install pandas
 conda install scipy
-conda install -c conda-forge gda
+conda install fiona
+conda install -c conda-forge gdal
+conda install -c conda-forge rasterio
 conda install shapely
 conda install geopandas
-conda install fiona
 ```
 ## Install from Github
 to install the last development to time you can install the library from github
@@ -89,4 +90,10 @@ pathto_your_env\python setup.py install
 to install the last release you can easly use pip
 ```
 pip install HAPI-Nile
+```
+## YML file
+using the environment.yml file included with hapi you can create a new environment with all the dependencies installed with the latest Hapi version
+in the master branch
+```
+conda env create --name Hapi_env -f environment.yml
 ```
