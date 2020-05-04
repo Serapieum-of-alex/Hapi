@@ -92,6 +92,10 @@ to install the last release you can easly use pip
 ```
 pip install HAPI-Nile
 ```
+## conda
+```
+conda install -c mafarrag hapi
+```
 ## YML file
 using the environment.yml file included with hapi you can create a new environment with all the dependencies installed with the latest Hapi version
 in the master branch
