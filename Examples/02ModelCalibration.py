@@ -18,12 +18,12 @@ import gdal
 
 
 # functions
-from Calibration import RunCalibration
+from Hapi.calibration import RunCalibration
 #import Wrapper
 #import GISpy as GIS
 #import GISCatchment as GC
-import DistParameters as DP
-import PerformanceCriteria as PC
+import Hapi.distparameters as DP
+import Hapi.performancecriteria as PC
 
 #%%
 PrecPath = prec_path=path+"meteodata/4000/calib/prec"
@@ -59,5 +59,5 @@ f=objective_function(np.array([1,2,3]),np.array([5,6,8]),*args)
 
 OptimizationArgs=[]
 
-# run calibration                
+# run calibration
 cal_parameters=RunCalibration(Paths,p2,Q_obs,UB,LB,SpatialVarFun,SpatialVarArgs,objective_function,printError=None,*args)

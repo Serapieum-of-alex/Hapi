@@ -21,16 +21,16 @@ import gdal
 #from pyOpt import Optimization, ALHSO,Optimizer
 
 # functions
-from Hapi.Calibration import RunCalibration
-import Hapi.HBV as HBV
+from Hapi.calibration import RunCalibration
+import Hapi.hbv as HBV
 #import Wrapper
 #import Hapi.GISpy as GIS
-import Hapi.GISCatchment as GC
-import Hapi.DistParameters as DP
-import Hapi.PerformanceCriteria as PC
+import Hapi.giscatchment as GC
+import Hapi.distparameters as DP
+import Hapi.performancecriteria as PC
 #import Inputs
 #%%
-### Meteorological & GIS Data 
+### Meteorological & GIS Data
 PrecPath = prec_path=path+"meteodata/4000/calib/prec"
 Evap_Path = evap_path=path+"meteodata/4000/calib/evap"
 TempPath = temp_path=path+"meteodata/4000/calib/temp"
@@ -54,15 +54,15 @@ Basic_inputs=dict(p2=p2, init_st=init_st, UB=UB, LB=LB, snow=snow)
 
 
 ### spatial variability function
-""" 
+"""
 define how generated parameters are going to be distributed spatially
 totaly distributed or totally distributed with some parameters are lumped
-for the whole catchment or HRUs or HRUs with some lumped parameters 
-for muskingum parameters k & x include the upper and lower bound in both 
-UB & LB with the order of Klb then kub 
+for the whole catchment or HRUs or HRUs with some lumped parameters
+for muskingum parameters k & x include the upper and lower bound in both
+UB & LB with the order of Klb then kub
 
 function inside the calibration algorithm is written as following
-par_dist=SpatialVarFun(par,*SpatialVarArgs,kub=kub,klb=klb)    
+par_dist=SpatialVarFun(par,*SpatialVarArgs,kub=kub,klb=klb)
 
 """
 # check which parameter you want to make it lumped and its position
@@ -76,8 +76,8 @@ lumped_par_pos=[7]
 # calculate no of parameters that optimization algorithm is going to generate
 no_optimized_par=DP.ParametersNO(raster,no_parameters,no_lumped_par,1)
 # based on this number LB & UB text file should have this number of values
-# plus klb & kub, so you have to move the lumped parameter to the end of the file 
-# (before klb & kub) then copy all the values and paste them as many as no of 
+# plus klb & kub, so you have to move the lumped parameter to the end of the file
+# (before klb & kub) then copy all the values and paste them as many as no of
 # cells or no of HRU as you want
 # this nomber is just an indication to prepare the UB & LB file don't input it to the model
 
@@ -90,13 +90,13 @@ SpatialVarArgs=[raster,no_parameters,no_lumped_par,lumped_par_pos]
 # stations discharge
 Sdate='2009-01-01'
 Edate='2011-12-31'
-Qobs = pd.read_csv(path+"Discharge/Headflow.txt",header=0 ,delimiter="\t", skiprows=11, 
+Qobs = pd.read_csv(path+"Discharge/Headflow.txt",header=0 ,delimiter="\t", skiprows=11,
                    engine='python',index_col=0)
 ind=[datetime(int(i.split("/")[0]),int(i.split("/")[1]),int(i.split("/")[2]))  for i in Qobs.index.tolist()]
 Qobs.index=ind
 Qobs =Qobs.loc[Sdate:Edate]
 
-# outlet discharge    
+# outlet discharge
 Qobs[6] =np.loadtxt(path+"Discharge/Qout_c.txt")
 Qobs=Qobs.as_matrix()
 
@@ -106,7 +106,7 @@ coordinates=stations[['id','x','y','weight']][:]
 # calculate the nearest cell to each station
 coordinates.loc[:,["cell_row","cell_col"]]=GC.NearestCell(raster,coordinates)
 
-acc=gdal.Open(FlowAccPath ) 
+acc=gdal.Open(FlowAccPath )
 acc_A=acc.ReadAsArray()
 # define the objective function and its arguments
 OF_args=[coordinates]
@@ -130,10 +130,10 @@ store_history=1
 history_fname="par_history.txt"
 OptimizationArgs=[store_history,history_fname]
 #%%
-# run calibration                
+# run calibration
 cal_parameters=RunCalibration(HBV, Paths, Basic_inputs,
-                              SpatialVarFun, SpatialVarArgs, 
-                              OF,OF_args,Qobs, 
+                              SpatialVarFun, SpatialVarArgs,
+                              OF,OF_args,Qobs,
                               OptimizationArgs,
                               printError=1)
 #%% convert parameters to rasters

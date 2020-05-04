@@ -10,7 +10,7 @@ algorithm into a defined HRUs by a classified raster
 #%library
 import numpy as np
 import gdal
-from Hapi import DistParameters as Dp
+from Hapi import distparameters as Dp
 
 # data path
 path="data/"
@@ -22,8 +22,8 @@ no_parameters=12
 soil_type=gdal.Open(path+"soil_classes.tif")
 soil_A=soil_type.ReadAsArray()
 
-no_lumped_par=2 
-lumped_par_pos=[6,8] 
+no_lumped_par=2
+lumped_par_pos=[6,8]
 
 rows=soil_type.RasterYSize
 cols=soil_type.RasterXSize

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-This code is developed to calibrate the HBV model in a lumped spatial representation 
-using 
+This code is developed to calibrate the HBV model in a lumped spatial representation
+using
 
 
 """
@@ -10,14 +10,14 @@ import numpy as np
 import pandas as pd
 
 # Hapi modules
-import Hapi.HBVLumped as HBVLumped
-from Hapi.Calibration import LumpedCalibration
-from Hapi.Routing import TriangularRouting 
-import Hapi.PerformanceCriteria as PC
+import Hapi.hbvlumped as HBVLumped
+from Hapi.calibration import LumpedCalibration
+from Hapi.routing import TriangularRouting
+import Hapi.performancecriteria as PC
 #%%
 ### meteorological data
 
-data=pd.read_csv("data/lumped/meteo_data.txt",header=0 ,delimiter=',',#"\t", #skiprows=11, 
+data=pd.read_csv("data/lumped/meteo_data.txt",header=0 ,delimiter=',',#"\t", #skiprows=11,
                    engine='python',index_col=0)
 data=data.as_matrix()
 
@@ -35,7 +35,7 @@ LB=np.loadtxt("data/Basic_inputs/LB_Lumped.txt", usecols=0)
 Routing=1
 RoutingFn=TriangularRouting
 
-Basic_inputs=dict(p2=p2, init_st=init_st, UB=UB, LB=LB, snow=snow, 
+Basic_inputs=dict(p2=p2, init_st=init_st, UB=UB, LB=LB, snow=snow,
                   Routing=Routing, RoutingFn=RoutingFn)
 
 ### Objective function
@@ -53,7 +53,7 @@ store_history=1
 history_fname="par_history.txt"
 OptimizationArgs=[store_history,history_fname]
 #%%
-# run calibration                
+# run calibration
 cal_parameters=LumpedCalibration(ConceptualModel, data, Basic_inputs,
                    OF, OF_args, Qobs, OptimizationArgs, printError=None)
 #%% convert parameters to rasters

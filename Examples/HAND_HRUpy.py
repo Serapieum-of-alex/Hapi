@@ -20,15 +20,15 @@ from scipy.stats import norm
 #import matplotlib.pyplot as plt
 
 # functions
-import DistParameters as DP
-import GISCatchment as GC
+import Hapi.distparameters as DP
+import Hapi.giscatchment as GC
 
 #%% to modify the basins raster
 #path="C:/Users/Mostafa/Desktop/delineation/Clipped/proj/basins.tif"
 #pathout="mask.tif"
 #basins=gdal.Open(path)
 #GC.DeleteBasins(basins,pathout)
-#%% 
+#%%
 path="C:/Users/Mostafa/Desktop/delineation/HRU/HAND/"
 DEM=gdal.Open(path+"DEM.tif")
 #dem_A=DEM.ReadAsArray()
@@ -48,7 +48,7 @@ Slope_A=Slope.ReadAsArray()
 no_val_slope=np.float32(Slope.GetRasterBand(1).GetNoDataValue())
 #%% calculate HAND and DTND
 HAND,DTND=DP.HRU_HAND(DEM,FD,FPL,River)
-#%% calculate the cdf for 
+#%% calculate the cdf for
 mean_slope=np.mean(Slope_A[Slope_A != no_val_slope])
 stv_slope=np.std(Slope_A[Slope_A != no_val_slope])
 

@@ -1,9 +1,9 @@
 """
-This code is used to calibrate the model 
+This code is used to calibrate the model
 
--   you have to make the root directory to the examples folder to enable the code 
+-   you have to make the root directory to the examples folder to enable the code
     from reading input files
-    
+
 """
 #%library
 import gdal
@@ -12,9 +12,9 @@ import pandas as pd
 #import matplotlib.pyplot as plt
 
 # HAPI modules
-from Hapi.RUN import RunModel
-import Hapi.HBV as HBV
-import Hapi.GISpy as GIS
+from Hapi.run import RunModel
+import Hapi.hbv as HBV
+import Hapi.raster as GIS
 #%%
 """
 paths to meteorological data
@@ -37,7 +37,7 @@ snow = 0
 st, q_out, q_uz_routed, q_lz_trans = RunModel(HBV,Paths,ParPathRun,p2,init_st,snow)
 
 #%% store the result into rasters
-# create list of names 
+# create list of names
 src=gdal.Open(FlowAccPath)
 s=dt.datetime(2009,01,1,00,00,00)
 e=dt.datetime(2011,12,31,00,00,00)

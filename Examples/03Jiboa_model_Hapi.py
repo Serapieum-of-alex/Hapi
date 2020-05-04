@@ -18,10 +18,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # HAPI modules
-from Hapi.RUN import RunHAPIwithLake
-import Hapi.HBV as HBV
-import Hapi.PerformanceCriteria as Pf
-import Hapi.Raster as Raster
+from Hapi.run import RunHAPIwithLake
+import Hapi.hbv as HBV
+import Hapi.performancecriteria as Pf
+import Hapi.raster as Raster
 #%%
 """
 paths to meteorological data
