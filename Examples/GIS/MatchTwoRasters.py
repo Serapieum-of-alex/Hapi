@@ -18,7 +18,7 @@ import numpy as np
 import gdal
 import datetime as dt
 #import pandas as pd
-import Hapi.GISpy as GIS
+import Hapi.raster as GIS
 #import matplotlib.pyplot as plt
 #%% inputs
 RasterAPath = "Inputs/NewDEM.tif"
@@ -31,11 +31,11 @@ RasterBpath = "Inputs/SWIM_sub_4647.tif"
 Read the Input rasters
 
 """
-# the source raster is of the ASCII format 
+# the source raster is of the ASCII format
 src = gdal.Open(RasterAPath)
 #src_Array = src.ReadAsArray()
 
-# read destination array 
+# read destination array
 dst = gdal.Open(RasterBpath)
 #Dst_Array = dst.ReadAsArray()
 NewRasterB = GIS.MatchRasterAlignment(src,dst)
