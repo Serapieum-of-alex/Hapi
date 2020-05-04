@@ -5,26 +5,25 @@ channels:
   - defaults
 dependencies:
   - pip
-  - affine=2.3.0
+  - numpy
+  - affine
   #- snuggs=1.4.7
   #- click-plugins=1.1.1
   #- conda=4.8.*
   #- fiona=1.8.*
-  - proj=6.3.*
-  - pyproj=2.6.*  
-  - gdal=2.3.3
-  - pandas=1.0.*
-  - geopandas=0.7.*
-  - geos=3.8.*
-  - matplotlib=3.2.*
-  - matplotlib-base=3.2.*
-  - python=3.7.*
-  - scipy=1.3.*
+  - proj
+  - pyproj
+  - gdal
+  - pandas
+  - geopandas
+  - geos
+  - matplotlib
+  - python
+  - scipy
   - setuptools
-  - shapely=1.6.4
-  - statsmodels=0.11.*
-  - rasterio=1.1.*
+  - shapely
+  - statsmodels
+  - rasterio
   - pip:
-    - numpy==1.18.*
     #- hapi-nile==0.1.0
     - git+https://github.com/MAfarrag/HAPI.git
