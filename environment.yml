@@ -1,26 +1,18 @@
 channels:
   - conda-forge
-  - udst
-  - https://conda.anaconda.org/mutirri
-  - defaults
 dependencies:
   - pip
   - numpy
   - affine
-  #- snuggs=1.4.7
-  #- click-plugins=1.1.1
-  #- conda=4.8.*
-  #- fiona=1.8.*
+  - fiona
   - proj
   - pyproj
   - gdal
   - pandas
   - geopandas
-  - geos
   - matplotlib
   - python
   - scipy
-  - setuptools
   - shapely
   - statsmodels
   - rasterio
