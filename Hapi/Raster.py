@@ -13,14 +13,13 @@ import numpy as np
 import gdal
 import osr
 import pandas as pd
-#import rasterio
 from osgeo import gdalconst
 import zipfile
 import pyproj
 import rasterio
 import json
 
-import Hapi.Vector as Vector
+import Hapi.vector as vector
 
 def GetMask(raster):
     """
@@ -436,7 +435,7 @@ def ProjectRaster(src, to_epsg,resample_technique="Nearest"):
 
     if src_epsg.GetAttrValue('AUTHORITY',1) != str(to_epsg):
         # transform the two points coordinates to the new crs to calculate the new cell size
-        new_xs, new_ys= Vector.ReprojectPoints(ys,xs,from_epsg=int(src_epsg.GetAttrValue('AUTHORITY',1)),
+        new_xs, new_ys= vector.ReprojectPoints(ys,xs,from_epsg=int(src_epsg.GetAttrValue('AUTHORITY',1)),
                                          to_epsg=int(dst_epsg.GetAttrValue('AUTHORITY',1)))
     else:
         new_xs = xs
@@ -555,7 +554,7 @@ def ReprojectDataset(src, to_epsg=3857, cell_size=[], resample_technique="Neares
             coords_1 = (src_gt[3], src_gt[0])
             coords_2 = (src_gt[3], src_gt[0]+src_gt[1])
 #            pixel_spacing=geopy.distance.vincenty(coords_1, coords_2).m
-            pixel_spacing = Vector.GCSDistance(coords_1, coords_2)
+            pixel_spacing = vector.GCSDistance(coords_1, coords_2)
         else:
             pixel_spacing=src_gt[1]
     else:

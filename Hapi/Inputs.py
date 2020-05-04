@@ -13,7 +13,7 @@ import numpy as np
 import shutil
 import pandas as pd
 # functions
-import Hapi.Raster as Raster
+import Hapi.raster as raster
 
 
 def PrepareInputs(Rasteri,InputFolder,FolderName):
@@ -21,18 +21,18 @@ def PrepareInputs(Rasteri,InputFolder,FolderName):
     ================================================================
         PrepareInputs(Raster,InputFolder,FolderName)
     ================================================================
-    this function prepare downloaded raster data to have the same align and 
+    this function prepare downloaded raster data to have the same align and
     nodatavalue from a GIS raster (DEM, flow accumulation, flow direction raster)
     and return a folder with the output rasters with a name "New_Rasters"
-    
+
     Inputs:
         1-Raster:
-            [String] path to the spatial information source raster to get the spatial information 
-            (coordinate system, no of rows & columns) A_path should include the name of the raster 
+            [String] path to the spatial information source raster to get the spatial information
+            (coordinate system, no of rows & columns) A_path should include the name of the raster
             and the extension like "data/dem.tif"
         2-InputFolder:
-            [String] path of the folder of the rasters you want to adjust their 
-            no of rows, columns and resolution (alignment) like raster A 
+            [String] path of the folder of the rasters you want to adjust their
+            no of rows, columns and resolution (alignment) like raster A
             the folder should not have any other files except the rasters
         3-FolderName:
             [String] name to create a folder to store resulted rasters
@@ -51,27 +51,27 @@ def PrepareInputs(Rasteri,InputFolder,FolderName):
     # data type
     assert type(FolderName)== str, "FolderName input should be string type"
     # create a new folder for new created alligned rasters in temp
-    # check if you can create the folder 
+    # check if you can create the folder
     try:
         os.makedirs(os.path.join(os.environ['TEMP'],"AllignedRasters"))
-    except WindowsError : 
+    except WindowsError :
         # if not able to create the folder delete the folder with the same name and create one empty
         shutil.rmtree(os.path.join(os.environ['TEMP']+"/AllignedRasters"))
         os.makedirs(os.path.join(os.environ['TEMP'],"AllignedRasters"))
-        
+
     temp=os.environ['TEMP']+"/AllignedRasters/"
-    
+
     # match alignment
     print("First alligned files will be created in a folder 'AllignedRasters' in the Temp folder in you environment variable")
-    Raster.MatchDataAlignment(Rasteri,InputFolder,temp)
+    raster.MatchDataAlignment(Rasteri,InputFolder,temp)
     # create new folder in the current directory for alligned and nodatavalue matched cells
     try:
         os.makedirs(os.path.join(os.getcwd(),FolderName))
     except WindowsError:
-        print("please function is trying to create a folder with a name"+ str(FolderName) +"New_Rasters to complete the process if there is a folder with the same name please rename it to other name")    
+        print("please function is trying to create a folder with a name"+ str(FolderName) +"New_Rasters to complete the process if there is a folder with the same name please rename it to other name")
     # match nodata value
     print("second matching NoDataValue from the DEM raster too all raster will be created in the outputpath")
-    Raster.MatchDataNoValuecells(Rasteri,temp,FolderName+"/")
+    raster.MatchDataNoValuecells(Rasteri,temp,FolderName+"/")
     # delete the processing folder from temp
     shutil.rmtree(temp)
 
@@ -91,7 +91,7 @@ def rescale(OldValue,OldMin,OldMax,NewMin,NewMax):
     # =============================================================================
     #  rescale(OldValue,OldMin,OldMax,NewMin,NewMax)
     # =============================================================================
-    this function rescale a value between two boundaries to a new value bewteen two 
+    this function rescale a value between two boundaries to a new value bewteen two
     other boundaries
     inputs:
         1-OldValue:
@@ -107,12 +107,12 @@ def rescale(OldValue,OldMin,OldMax,NewMin,NewMax):
     output:
         1-NewValue:
             [float] transformed new value
-        
+
     """
-    OldRange = (OldMax - OldMin)  
-    NewRange = (NewMax - NewMin)  
+    OldRange = (OldMax - OldMin)
+    NewRange = (NewMax - NewMin)
     NewValue = (((OldValue - OldMin) * NewRange) / OldRange) + NewMin
-    
+
     return NewValue
 
 
@@ -122,7 +122,7 @@ def mycolor(x,min_old,max_old,min_new, max_new):
     #  mycolor(x,min_old,max_old,min_new, max_new)
     # =============================================================================
     this function transform the value between two normal values to a logarithmic scale
-    between logarithmic value of both boundaries 
+    between logarithmic value of both boundaries
     inputs:
         1-x:
             [float] new value needed to be transformed to a logarithmic scale
@@ -138,22 +138,22 @@ def mycolor(x,min_old,max_old,min_new, max_new):
         1-Y:
             [int] integer number between new max_new and min_new boundaries
     """
-    
+
     # get the boundaries of the logarithmic scale
     if min_old== 0.0:
         min_old_log=-7
     else:
         min_old_log=np.log(min_old)
-        
-    max_old_log=np.log(max_old)    
-    
+
+    max_old_log=np.log(max_old)
+
     if x==0:
         x_log=-7
     else:
         x_log=np.log(x)
-    
+
     y=int(np.round(rescale(x_log,min_old_log,max_old_log,min_new,max_new)))
-    
+
     return y
 
 def ReadExcelData(path,years,months):
@@ -166,11 +166,11 @@ def ReadExcelData(path,years,months):
     year month 1 2 3 4 5 6 7 8 9 .....................31
     2012  1    5 6 2 6 8 6 9 7 4 3 ...................31
     2012  2    9 8 7 6 3 2 1 5 5 9 ...................31
-    
+
     inputs:
     ----------
         1- path:
-            [string] path of the excel file 
+            [string] path of the excel file
         2-years:
             [list] list of the years you want to read
         3-months:
@@ -179,12 +179,12 @@ def ReadExcelData(path,years,months):
     ----------
         1- List of the values in the excel file
     Examples:
-    ----------    
+    ----------
         years=[2009,2010,2011]#,2012,2013]
         months=[1,2,3,4,5,6,7,8,9,10,11,12]
         Q=ReadExcelData(path+"Discharge/Qout.xlsx",years,months)
     """
-    
+
     Qout=pd.read_excel(path)
     Q=[]
 #    years=[2009,2010,2011]#,2012,2013]
@@ -195,7 +195,7 @@ def ReadExcelData(path,years,months):
             row=row.drop(['year','month'], axis=1)
             row=row.values.tolist()[0]
             Q=Q+row
-            
+
     Q=[Q[i] for i in range(len(Q)) if not np.isnan(Q[i])]
-    
+
     return Q

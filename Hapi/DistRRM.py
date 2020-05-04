@@ -9,10 +9,10 @@ import gdal
 from types import ModuleType
 
 # functions
-import Hapi.Raster as Raster
+import Hapi.raster as raster
 #import HBV
-import Hapi.Routing as Routing
-import Hapi.GISCatchment as GC
+import Hapi.routing as routing
+import Hapi.giscatchment as GC
 
 def RunLumpedRRP(ConceptualModel,Raster, sp_prec, sp_et, sp_temp, sp_pars, p2, snow, init_st=None,
                 ll_temp=None, q_init=None):
@@ -309,7 +309,7 @@ def SpatialRouting(q_lz, q_uz,flow_acc,flow_direct,sp_pars,p2):
                             y_ind=FDT[str(x)+","+str(y)][i][1]
                             # sum the Q of the US cells (already routed for its cell)
                             # route first with there own k & xthen sum
-                            q_r = q_r + Routing.muskingum(q_uz_routed[x_ind,y_ind,:],q_uz_routed[x_ind,y_ind,0],sp_pars[x_ind,y_ind,10],sp_pars[x_ind,y_ind,11],p2[0])
+                            q_r = q_r + routing.muskingum(q_uz_routed[x_ind,y_ind,:],q_uz_routed[x_ind,y_ind,0],sp_pars[x_ind,y_ind,10],sp_pars[x_ind,y_ind,11],p2[0])
                             q= q + q_lz_translated[x_ind,y_ind,:]
 
                         # add the routed upstream flows to the current Quz in the cell
@@ -345,7 +345,7 @@ def DistMAXBAS(FPL,SPMAXBAS, q_uz):
     for x in range(rows):
         for y in range(cols):
             if not np.isnan(FPLArray[x,y]):# FPLArray[x,y] != np.nan: #NoDataValue:
-                q_uz[x,y,:] = Routing.TriangularRouting(q_uz[x,y,:], NormalizedFPL[x,y])
+                q_uz[x,y,:] = routing.TriangularRouting(q_uz[x,y,:], NormalizedFPL[x,y])
 
     return q_uz
 
@@ -362,7 +362,7 @@ def Dist_HBV2(ConceptualModel,lakecell,q_lake,DEM,flow_acc,flow_acc_plan, sp_pre
     dummy_states[:] = np.nan
 
     # Get the mask
-    mask, no_val = Raster.get_mask(DEM)
+    mask, no_val = raster.get_mask(DEM)
     x_ext, y_ext = mask.shape # shape of the fpl raster (rows, columns)-------------- rows are x and columns are y
     #    y_ext, x_ext = mask.shape # shape of the fpl raster (rows, columns)------------ should change rows are y and columns are x
 
@@ -439,7 +439,7 @@ def Dist_HBV2(ConceptualModel,lakecell,q_lake,DEM,flow_acc,flow_acc_plan, sp_pre
     no_cells.sort()
 
     #%% routing lake discharge with DS cell k & x and adding to cell Q
-    q_lake = Routing.muskingum(q_lake,q_lake[0],sp_pars[lakecell[0],lakecell[1],10],sp_pars[lakecell[0],lakecell[1],11],p2[0])
+    q_lake = routing.muskingum(q_lake,q_lake[0],sp_pars[lakecell[0],lakecell[1],10],sp_pars[lakecell[0],lakecell[1],11],p2[0])
     q_lake=np.append(q_lake,q_lake[-1])
     # both lake & Quz are in m3/s
     #new
@@ -465,7 +465,7 @@ def Dist_HBV2(ConceptualModel,lakecell,q_lake,DEM,flow_acc,flow_acc_plan, sp_pre
                             y_ind=flow_acc[str(x)+","+str(y)][i][1]
                             # sum the Q of the US cells (already routed for its cell)
                              # route first with there own k & xthen sum
-                            q_r = q_r + Routing.muskingum(q_uz_routed[x_ind,y_ind,:],q_uz_routed[x_ind,y_ind,0],sp_pars[x_ind,y_ind,10],sp_pars[x_ind,y_ind,11],p2[0])
+                            q_r = q_r + routing.muskingum(q_uz_routed[x_ind,y_ind,:],q_uz_routed[x_ind,y_ind,0],sp_pars[x_ind,y_ind,10],sp_pars[x_ind,y_ind,11],p2[0])
 #                        q=q_r
                          # add the routed upstream flows to the current Quz in the cell
                         q_uz_routed[x,y,:]=q_uz[x,y,:]+q_r

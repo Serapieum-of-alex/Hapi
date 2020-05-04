@@ -25,35 +25,35 @@ if missing_dependencies:
 
 
 #import Calibration
-import Hapi.DistParameters
-import Hapi.DistRRM
-import Hapi.GISCatchment
-import Hapi.Raster
-import Hapi.Vector
-import Hapi.Inputs
+import Hapi.distparameters
+import Hapi.distrrm
+import Hapi.giscatchment
+import Hapi.raster
+import Hapi.vector
+import Hapi.inputs
 import Hapi.java_functions
-import Hapi.PerformanceCriteria
-import Hapi.Routing
-import Hapi.RUN
-import Hapi.StatisticalTools
-import Hapi.Wrapper
-import Hapi.WeirdFn
-import Hapi.HBV
-import Hapi.HBV_Lake
-import Hapi.HBVLumped
-import Hapi.HBVBergestrom92
-import Hapi.RIMInputs
-import Hapi.Event
-import Hapi.River
-import Hapi.Visualizer
-import Hapi.CrossSection
-import Hapi.RIMCalibration
+import Hapi.performancecriteria
+import Hapi.routing
+import Hapi.run
+import Hapi.statisticaltools
+import Hapi.wrapper
+import Hapi.weirdFn
+import Hapi.hbv
+import Hapi.hbv_lake
+import Hapi.hbvlumped
+import Hapi.hbv_bergestrom92
+import Hapi.riminputs
+import Hapi.event
+import Hapi.river
+import Hapi.visualizer
+import Hapi.crosssection
+import Hapi.rimcalibration
 # module level doc-string
 __doc__ = """
-HAPI - Hydrological library for Python
+Hapi - Hydrological library for Python
 =====================================================================
 
-**HAPI** is a Python package providing fast and flexible, way to build distributed
+**Hapi** is a Python package providing fast and flexible, way to build distributed
 hydrological model using lumped conceptual model
 
 Main Features

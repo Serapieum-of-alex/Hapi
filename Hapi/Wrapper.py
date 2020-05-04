@@ -14,13 +14,13 @@ from types import ModuleType
 
 # functions
 #import DistParameters
-import Hapi.HBV_Lake as HBV_Lake
-import Hapi.DistRRM as DistRRM
-import Hapi.Routing as Routing
+import Hapi.hbv_lake as hbv_lake
+import Hapi.distrrm as distrrm
+import Hapi.routing as routing
 
 
 
-def HAPIWithlake(ConceptualModel,flow_acc,flow_direct,sp_prec,sp_et,sp_temp,
+def HapiWithlake(ConceptualModel,flow_acc,flow_direct,sp_prec,sp_et,sp_temp,
                  parameters,p2,snow,init_st,lakeCalibArray,StageDischargeCurve,
                  LakeParameters,lakecell,lake_initial,ll_temp=None, q_0=None):
 
@@ -30,35 +30,35 @@ def HAPIWithlake(ConceptualModel,flow_acc,flow_direct,sp_prec,sp_et,sp_temp,
     tm = lakeCalibArray[:,3]
 
     # lake simulation
-    q_lake, _ = HBV_Lake.simulate(plake, t, et, LakeParameters, p2,StageDischargeCurve,
+    q_lake, _ = hbv_lake.simulate(plake, t, et, LakeParameters, p2,StageDischargeCurve,
                                   0,init_st=lake_initial,ll_temp=tm,lake_sim=True)
     # qlake is in m3/sec
     # lake routing
-    qlake_r = Routing.muskingum(q_lake,q_lake[0],LakeParameters[11],
+    qlake_r = routing.muskingum(q_lake,q_lake[0],LakeParameters[11],
                               LakeParameters[12],p2[0])
 
     # subcatchment
     AdditionalParameters = p2[0:2]
-    st, q_lz, q_uz = DistRRM.RunLumpedRRP(ConceptualModel,flow_acc, sp_prec=sp_prec,
+    st, q_lz, q_uz = distrrm.RunLumpedRRP(ConceptualModel,flow_acc, sp_prec=sp_prec,
                                           sp_et=sp_et, sp_temp=sp_temp, sp_pars=parameters,
                                           p2=AdditionalParameters, snow=snow,
                                           init_st=init_st)
 
     # routing lake discharge with DS cell k & x and adding to cell Q
-    q_lake = Routing.muskingum(qlake_r,qlake_r[0],parameters[lakecell[0],lakecell[1],10],parameters[lakecell[0],lakecell[1],11],p2[0])
+    q_lake = routing.muskingum(qlake_r,qlake_r[0],parameters[lakecell[0],lakecell[1],10],parameters[lakecell[0],lakecell[1],11],p2[0])
     q_lake = np.append(q_lake,q_lake[-1])
     # both lake & Quz are in m3/s
     q_uz[lakecell[0],lakecell[1],:] = q_uz[lakecell[0],lakecell[1],:] + q_lake
 
     # run the GIS part to rout from cell to another
-    q_out, q_uz_routed, q_lz_trans = DistRRM.SpatialRouting(q_lz, q_uz,flow_acc,flow_direct,parameters,p2)
+    q_out, q_uz_routed, q_lz_trans = distrrm.SpatialRouting(q_lz, q_uz,flow_acc,flow_direct,parameters,p2)
 
     q_out=q_out[:-1]
 
     return st, q_out, q_uz_routed, q_lz_trans
 
 
-def HAPIModel(ConceptualModel,flow_acc,flow_direct,sp_prec,sp_et,sp_temp,sp_par,p2, snow,
+def HapiModel(ConceptualModel,flow_acc,flow_direct,sp_prec,sp_et,sp_temp,sp_par,p2, snow,
                     init_st,ll_temp=None, q_0=None):
     """
     =======================================================================
@@ -148,11 +148,11 @@ def HAPIModel(ConceptualModel,flow_acc,flow_direct,sp_prec,sp_et,sp_temp,sp_par,
     assert all(fd_val[i] in fd_should for i in range(len(fd_val))), "flow direction raster should contain values 1,2,4,8,16,32,64,128 only "
 
     # run the rainfall runoff model separately
-    st, q_lz, q_uz = DistRRM.RunLumpedRRP(ConceptualModel,flow_acc, sp_prec=sp_prec, sp_et=sp_et, #DEM
+    st, q_lz, q_uz = distrrm.RunLumpedRRP(ConceptualModel,flow_acc, sp_prec=sp_prec, sp_et=sp_et, #DEM
                                           sp_temp=sp_temp, sp_pars=sp_par, p2=p2, snow=snow,
                                           init_st=init_st)
     # run the GIS part to rout from cell to another
-    q_out, q_uz_routed, q_lz_trans = DistRRM.SpatialRouting(q_lz, q_uz,flow_acc,flow_direct,sp_par,p2)
+    q_out, q_uz_routed, q_lz_trans = distrrm.SpatialRouting(q_lz, q_uz,flow_acc,flow_direct,sp_par,p2)
 
     q_out=q_out[:-1]
 
@@ -170,21 +170,21 @@ def FW1Withlake(ConceptualModel,FPL,sp_prec,sp_et,sp_temp,
     tm = lakeCalibArray[:,3]
 
     # lake simulation
-    q_lake, _ = HBV_Lake.simulate(plake, t, et, LakeParameters[:-1], p2,StageDischargeCurve,
+    q_lake, _ = hbv_lake.simulate(plake, t, et, LakeParameters[:-1], p2,StageDischargeCurve,
                                   0,init_st=lake_initial,ll_temp=tm,lake_sim=True)
     # qlake is in m3/sec
     # lake routing
-    qlake_r = Routing.TriangularRouting(q_lake,LakeParameters[-1])
+    qlake_r = routing.TriangularRouting(q_lake,LakeParameters[-1])
 
     # subcatchment
     AdditionalParameters = p2[0:2]
-    st, q_lz, q_uz = DistRRM.RunLumpedRRP(ConceptualModel, FPL, sp_prec=sp_prec,
+    st, q_lz, q_uz = distrrm.RunLumpedRRP(ConceptualModel, FPL, sp_prec=sp_prec,
                                           sp_et=sp_et, sp_temp=sp_temp, sp_pars=parameters,
                                           p2=AdditionalParameters, snow=snow,
                                           init_st=init_st)
 
     SPMAXBAS = parameters[:,:,-1]
-    q_uz = DistRRM.DistMAXBAS(FPL, SPMAXBAS, q_uz)
+    q_uz = distrrm.DistMAXBAS(FPL, SPMAXBAS, q_uz)
     #
     q_lz1 = np.array([np.nansum(q_lz[:,:,i]) for i in range(sp_prec.shape[2]+1)]) # average of all cells (not routed mm/timestep)
     q_uz1 = np.array([np.nansum(q_uz[:,:,i]) for i in range(sp_prec.shape[2]+1)]) # average of all cells (routed mm/timestep)

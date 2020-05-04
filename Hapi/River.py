@@ -8,9 +8,10 @@ import pandas as pd
 import numpy as np
 import datetime as dt
 from scipy.stats import gumbel_r
-import Hapi.Raster as Raster
 import matplotlib.pyplot as plt
 import zipfile
+
+import Hapi.raster as raster
 
 FigureDefaultOptions = dict( ylabel = '', xlabel = '',
                       legend = '', legend_size = 10, figsize = (10,8),
@@ -1643,7 +1644,7 @@ class River():
     def CorrectMaps(DEMPath,Filelist, Resultpath, DepthPrefix, Saveto):
 
 
-        DEM, SpatialRef = Raster.ReadASCII(DEMPath)
+        DEM, SpatialRef = raster.ReadASCII(DEMPath)
         NoDataValue = SpatialRef[-1]
 
 
@@ -1715,7 +1716,7 @@ class River():
 
 
                     for i in range(rows):
-                        File.writelines(list(map(Raster.StringSpace,MaxDepth[i,:])))
+                        File.writelines(list(map(raster.StringSpace,MaxDepth[i,:])))
                         File.write("\n")
 
                 #zip the file
@@ -2444,7 +2445,7 @@ class Sub(River):
                 Path = self.TwoDResultPath + self.ReturnPeriodPrefix + str(Day) + ".zip"
 
 
-            ExtractedValues, NonZeroCells = Raster.OverlayMap(Path, BaseMapF,
+            ExtractedValues, NonZeroCells = raster.OverlayMap(Path, BaseMapF,
                                                 ExcludeValue, self.Compressed,
                                                 OccupiedCellsOnly)
 

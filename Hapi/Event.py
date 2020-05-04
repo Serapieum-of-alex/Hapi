@@ -6,7 +6,7 @@ Created on Tue Feb  4 14:57:30 2020
 import os
 import datetime as dt
 import pandas as pd
-import Hapi.Raster as Raster
+import Hapi.raster as raster
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -255,7 +255,7 @@ class Event():
                 and the second column is the number of cells in each map
         """
 
-        self.DepthValues, NonZeroCells = Raster.OverlayMaps(Path, BaseMapF, self.DepthPrefix,
+        self.DepthValues, NonZeroCells = raster.OverlayMaps(Path, BaseMapF, self.DepthPrefix,
                                                     ExcludedValue, self.Compressed,OccupiedCellsOnly)
 
         # NonZeroCells dataframe with the first column as the "file" name and the second column
@@ -320,7 +320,7 @@ class Event():
                 else:
                     Path = self.TwoDResultPath + self.ReturnPeriodPrefix + str(Day) + ".zip"
 
-                ExtractedValues, NonZeroCells = Raster.ExtractValues(Path, ExcludeValue,
+                ExtractedValues, NonZeroCells = raster.ExtractValues(Path, ExcludeValue,
                                                                      self.Compressed,
                                                                      OccupiedCellsOnly)
                 self.ExtractedValues[Day] = ExtractedValues

@@ -14,7 +14,11 @@ from shapely.geometry.multipolygon import MultiPolygon
 import ogr
 #from shapely.geometry.polygon import Polygon
 from shapely.geometry import Point, Polygon
-from fiona.crs import from_epsg
+from pyproj import Proj, transform
+from osgeo import ogr
+from osgeo import osr
+
+# from fiona.crs import from_epsg
 import pandas as pd
 
 # functions
@@ -498,7 +502,6 @@ def ReprojectPoints(lat,lng,from_epsg=4326,to_epsg=3857):
         from_epsg = 3857, to_epsg = 4326
         longs, lats=reproject_points(y,x,from_epsg="3857", to_epsg="4326")
     """
-    from pyproj import Proj, transform
     from_epsg="epsg:"+str(from_epsg)
     inproj = Proj(init=from_epsg) # GCS geographic coordinate system
     to_epsg="epsg:"+str(to_epsg)
@@ -545,9 +548,6 @@ def ReprojectPoints_2(lat,lng,from_epsg=4326,to_epsg=3857):
         from_epsg = 3857, to_epsg = 4326
         longs, lats=reproject_points(y,x,from_epsg="3857", to_epsg="4326")
     """
-    from osgeo import ogr
-    from osgeo import osr
-
     source = osr.SpatialReference()
     source.ImportFromEPSG(from_epsg)
 
