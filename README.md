@@ -1,6 +1,7 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2572035.svg)](https://doi.org/10.5281/zenodo.2572035)
 [![PyPI version](https://badge.fury.io/py/HAPI-Nile.svg)](https://badge.fury.io/py/HAPI-Nile)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/MAfarrag/HAPI/master)
+[![conda](https://anaconda.org/mafarrag/hapi/badges/version.svg)](https://anaconda.org/MAfarrag/hapi)
 
 HAPI - Hydrological library for Python 
 =====================================================================
@@ -90,6 +91,10 @@ pathto_your_env\python setup.py install
 to install the last release you can easly use pip
 ```
 pip install HAPI-Nile
+```
+## conda
+```
+conda install -c mafarrag hapi
 ```
 ## YML file
 using the environment.yml file included with hapi you can create a new environment with all the dependencies installed with the latest Hapi version
