@@ -125,7 +125,7 @@ class River():
               RiverNetwork(Path)
         =====================================================
         RiverNetwork method rad the table of each computational node followed by
-        upstream npde then downstream node (TraceAll file)
+        upstream and then downstream node (TraceAll file)
 
         ==============   ====================================================
         Keyword          Description
