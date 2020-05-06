@@ -139,7 +139,7 @@ class Event():
                 dataframe with columns ['ID','continue', 'IndDiff', 'Duration',
                 'Overtopping', 'OvertoppingCum', 'Volume']
         """
-        OverTopTotal = pd.read_csv(OvertoppingPath, delimiter = r"\s+", header = None)
+        OverTopTotal = pd.read_csv(OvertoppingPath, delimiter = r"\s+") #, header = None
 
         if not hasattr(self,"EventIndex"):
             # create the dataframe if the user did not use the CreateEventIndex method to
