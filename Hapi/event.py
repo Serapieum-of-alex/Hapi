@@ -145,7 +145,7 @@ class Event():
             # create the dataframe if the user did not use the CreateEventIndex method to
             # create the EventIndex dataframe
             self.EventIndex = pd.DataFrame()
-            self.EventIndex['ID'] = OverTopTotal[0]
+            self.EventIndex['ID'] = OverTopTotal['Step']
             self.IndexToDate()
 
             self.EventIndex.loc[:,'continue'] = 0
@@ -170,7 +170,7 @@ class Event():
 
 
         # store the overtoppiung data in the EventIndex dataframe
-        self.EventIndex['Overtopping'] = OverTopTotal[1]
+        self.EventIndex['Overtopping'] = OverTopTotal['overtopping(m3/s)']
 
         self.EventIndex.loc[0,'OvertoppingCum'] = self.EventIndex.loc[0,'Overtopping']
         for i in range(1,len(self.EventIndex)):
