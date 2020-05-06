@@ -11,11 +11,11 @@ import numpy as np
 datafn = lambda x: dt.datetime.strptime(x,"%Y-%m-%d")
 
 class RIMCalibration():
-    
+
     def __init__(self, name, Version):
         self.name = name
         self.Version = Version
-        
+
     def ReadObservedWL(self, GaugesTable, Path, StartDate, EndDate, NoValue):
         """
         ============================================================================
@@ -44,11 +44,11 @@ class RIMCalibration():
 
         ind = pd.date_range(StartDate, EndDate)
         columns = GaugesTable['swimid'].tolist()
-        
+
         WLGauges = pd.DataFrame(index = ind)
         # WLGaugesf.loc[:,:] = NoValue
         WLGauges.loc[:,0] = ind
-        
+
         for i in range(len(columns)):
             f = pd.read_csv(Path + str(int(columns[i])) + ".txt",
                            delimiter = ",", header = None)
@@ -63,18 +63,18 @@ class RIMCalibration():
             # add datum and convert to meter
             f.loc[f[1]!= NoValue,1] = (f.loc[f[1]!= NoValue,1] / 100) + GaugesTable.loc[i,'datum(m)']
             f = f.rename(columns={1:columns[i]})
-            
-            
+
+
             # assign the values in the dateframe
             # WLGauges.loc[:,WLGauges.columns[i]].loc[f[0][0]:f[0][len(f)-1]] = f[1].tolist()
             # use merge as there are some gaps in the middle
             WLGauges = WLGauges.merge(f, on=0, how='left', sort=False)
-            
+
         WLGauges.replace(to_replace = np.nan, value = NoValue, inplace=True)
         WLGauges.index = ind
         del WLGauges[0]
         self.WLGauges = WLGauges
-        
+
         GaugesTable.index = GaugesTable['swimid'].tolist()
         GaugesTable['start'] = 0
         GaugesTable['end'] = 0
@@ -83,11 +83,39 @@ class RIMCalibration():
             end1 = WLGauges[columns[i]][WLGauges[columns[i]] != NoValue].index[-1]
             GaugesTable.loc[GaugesTable.loc[:,'swimid'] == columns[i],'start'] = st1
             GaugesTable.loc[GaugesTable.loc[:,'swimid'] == columns[i],'end'] = end1
-            
+
         self.WLGaugesTable = GaugesTable
-        
-        
+
+
     def ReadObservedQ(self, CalibratedSubs, Path, StartDate, EndDate, NoValue):
+        """
+        ========================================================================
+            ReadObservedQ(CalibratedSubs, Path, StartDate, EndDate, NoValue)
+        ========================================================================
+        ReadObservedQ method reads discharge data and store it in a dataframe
+        attribute "QGauges"
+
+        Parameters
+        ----------
+        CalibratedSubs : [DATAFRAME]
+            Dataframe containing sub-id of the gauges under a column with a name 0.
+        Path : [String]
+            path to the folder where files for the gauges exist.
+        StartDate : [datetime object]
+            starting date of the time series.
+        EndDate : [datetime object]
+            ending date of the time series.
+        NoValue : [numeric]
+            value stored in gaps.
+
+        Returns
+        -------
+        QGauges:[dataframe attribute]
+            dataframe containing the hydrograph of each gauge under a column by
+            the name of  gauge.
+        QGaugesTable:[dataframe attribute]
+            dataframe containing gauge dataframe entered toi the method.
+        """
 
         ind = pd.date_range(StartDate, EndDate)
         GRDC = pd.DataFrame(index = ind)
@@ -96,12 +124,12 @@ class RIMCalibration():
             GRDC.loc[:,int(CalibratedSubs[0][i])] = np.loadtxt(Path +
                       str(int(CalibratedSubs[0][i])) + '.txt') #,skiprows = 0
         self.QGauges = GRDC
-        
+
         GaugesTable = pd.DataFrame(index = CalibratedSubs[0])
         # GaugesTable['SubID'] = CalibratedSubs[0]
         GaugesTable['start'] = 0
         GaugesTable['end'] = 0
-        
+
         for i in range(len(CalibratedSubs[0])):
             st1 = GRDC[CalibratedSubs[0][i]][GRDC[CalibratedSubs[0][i]] != NoValue].index[0]
             end1 = GRDC[CalibratedSubs[0][i]][GRDC[CalibratedSubs[0][i]] != NoValue].index[-1]
@@ -109,25 +137,71 @@ class RIMCalibration():
             # GaugesTable.loc[GaugesTable.loc[:,'SubID'] == CalibratedSubs[0][i],'end'] = end1
             GaugesTable.loc[CalibratedSubs[0][i],'start'] = st1
             GaugesTable.loc[CalibratedSubs[0][i],'end'] = end1
-            
+
         self.QGaugesTable = GaugesTable
-        
+
     def ReadRRM(self, Qgauges, Path, StartDate, EndDate):
-        
+        """
+        ==============================================================
+            ReadRRM(Qgauges, Path, StartDate, EndDate)
+        ==============================================================
+        ReadRRM method reads the discharge results of the rainfall runoff model
+        and store it in a dataframe attribute "QRRM"
+
+        Parameters
+        ----------
+        Qgauges : [DATAFRAME]
+            Dataframe containing sub-id of the gauges under a column with a name 0.
+        Path : [String]
+            path to the folder where files for the gauges exist.
+        StartDate : [datetime object]
+            starting date of the time series.
+        EndDate : [datetime object]
+            ending date of the time series.
+
+        Returns
+        -------
+        None.
+
+        """
+
         ind = pd.date_range(StartDate,EndDate)
         QSWIM = pd.DataFrame(index = ind)
-        
-        
+
+
         for i in range(len(Qgauges[0])):
             # read SWIM data
             # only at the begining to get the length of the time series
             QSWIM.loc[:,int(Qgauges[0][i])] = np.loadtxt(Path +
                   str(int(Qgauges[0][i])) + '.txt')#,skiprows = 0
         self.QRRM = QSWIM
-        
-        
+
+
     def ReadRIMQ(self, Qgauges, Path, StartDate, days, NoValue):
-        
+        """
+
+
+        Parameters
+        ----------
+        Qgauges : [DATAFRAME]
+            Dataframe containing sub-id of the gauges under a column with a name 0.
+        Path : [String]
+            path to the folder where files for the gauges exist.
+        StartDate : [datetime object]
+            starting date of the time series.
+        days : TYPE
+            DESCRIPTION.
+        NoValue : TYPE
+            DESCRIPTION.
+
+        Returns
+        -------
+        None.
+
+        """
+        if self.Version == 1:
+            assert hasattr(self,"rivernetwork"), "please read the traceall file using the RiverNetwork method"
+            assert hasattr(self, "RP"), "please read the HQ file first using ReturnPeriod method"
         EndDate = StartDate + dt.timedelta(days = days-1)
         ind = pd.date_range(StartDate,EndDate)
         QRIM = pd.DataFrame(index = ind, columns = Qgauges[0].tolist())
@@ -137,13 +211,19 @@ class RIMCalibration():
             QRIM.loc[:,:] = 0
         else:
             QRIM.loc[:,:] = NoValue
-        
+
         # fill non modelled time steps with zeros
         for i in range(len(Qgauges)):
             f = np.loadtxt( Path + str(int(QRIM.columns[i])) + ".txt",
                        delimiter = ",")
             f1 = list(range(int(f[0,0]),int(f[-1,0])+1))
             f2 = list()
+
+            if self.Version == 1:
+                USnode = self.rivernetwork.loc[np.where(self.rivernetwork['SubID'] == Qgauges.loc[i,0])[0][0],'US']
+                CutValue = self.RP.loc[np.where(self.RP['node'] == USnode)[0][0],'HQ2']
+
+
             for j in range(len(f1)):
                 # if the index exist in the original list
                 if f1[j] in f[:,0]:
@@ -151,24 +231,29 @@ class RIMCalibration():
                     f2.append(f[np.where(f[:,0] == f1[j])[0][0],1])
                 else:
                     # if it does not exist put zero
-                    f2.append(0)
-        
+                    if self.Version == 1:
+                        f2.append(CutValue)
+                    else:
+                        f2.append(0)
+
+
+
             QRIM.loc[:,QRIM.columns[i]].loc[ind[f1[0]-1]:ind[f1[-1]-1]] = f2
-            
+
         self.QRIM = QRIM
-        
+
     def ReadRIMWL(self, WLGaugesTable, Path, StartDate, days, NoValue):
-        
+
         EndDate = StartDate + dt.timedelta(days = days-1)
         ind = pd.date_range(StartDate,EndDate)
-        
+
         WLRIM = pd.DataFrame(index = ind, columns = WLGaugesTable['swimid'].tolist())
         WLRIM.loc[:,:] = NoValue
-        
+
         for i in range(len(WLRIM.columns)):
             f = np.loadtxt(Path + str(int(WLRIM.columns[i])) + ".txt",
                        delimiter = ",")
-        
+
             f1 = list(range(int(f[0,0]),int(f[-1,0])+1))
             f2 = list()
             for j in range(len(f1)):
@@ -179,7 +264,51 @@ class RIMCalibration():
                 else:
                     # if it does not exist put zero
                     f2.append(0)
-        
+
             WLRIM.loc[:,WLRIM.columns[i]].loc[ind[f1[0]-1]:ind[f1[-1]-1]] = f2
-            
+
         self.WLRIM = WLRIM
+
+    def ReturnPeriod(self,Path):
+        """
+        ==========================================
+             ReturnPeriod(Path)
+        ==========================================
+        ReturnPeriod method reads the HQ file which contains all the computational nodes
+        with HQ2, HQ10, HQ100
+        Parameters
+        ----------
+            1-Path : [String]
+                path to the HQ.csv file including the file name and extention
+                "RIM1Files + "/HQRhine.csv".
+
+        Returns
+        -------
+            1-RP:[data frame attribute]
+                containing the river computational node and calculated return period
+                for with columns ['node','HQ2','HQ10','HQ100']
+        """
+        self.RP = pd.read_csv(Path, delimiter = ",",header = None)
+        self.RP.columns = ['node','HQ2','HQ10','HQ100']
+
+    def RiverNetwork(self, Path):
+        """
+        =====================================================
+              RiverNetwork(Path)
+        =====================================================
+        RiverNetwork method rad the table of each computational node followed by
+        upstream and then downstream node (TraceAll file)
+
+        ==============   ====================================================
+        Keyword          Description
+        ==============   ====================================================
+        1-Path :         [String] path to the Trace.txt file including the file name and extention
+                            "path/Trace.txt".
+
+        Returns
+        -------
+            1-rivernetwork:[data frame attribute]
+                containing the river network with columns ['SubID','US','DS']
+        """
+        self.rivernetwork = pd.read_csv(Path, delimiter = ',') #,header = None
+        # self.rivernetwork.columns = ['SubID','US','DS']
