@@ -177,9 +177,12 @@ class RIMCalibration():
         self.QRRM = QSWIM
 
 
-    def ReadRIMQ(self, Qgauges, Path, StartDate, days, NoValue):
+    def ReadRIMQ(self, Qgauges, Path, StartDate, days, NoValue, AddHQ2=False,
+                 Shift=False, ShiftSteps=0):
         """
-
+        ===============================================================
+             ReadRIMQ(Qgauges, Path, StartDate, days, NoValue)
+        ===============================================================
 
         Parameters
         ----------
@@ -189,17 +192,19 @@ class RIMCalibration():
             path to the folder where files for the gauges exist.
         StartDate : [datetime object]
             starting date of the time series.
-        days : TYPE
-            DESCRIPTION.
-        NoValue : TYPE
-            DESCRIPTION.
+        days : [integer]
+            length of the simulation (how many days after the start date) .
+        NoValue : [numeric value]
+            the value used to fill the gaps in the time series or to fill the days
+            that is not simulated (discharge is less than threshold).
 
         Returns
         -------
-        None.
+        QRIM : [dataframe attribute]
+            dataframe containing the hydrograph of sub-basins in the Qgauge entered dataframe.
 
         """
-        if self.Version == 1:
+        if AddHQ2 and self.Version == 1:
             assert hasattr(self,"rivernetwork"), "please read the traceall file using the RiverNetwork method"
             assert hasattr(self, "RP"), "please read the HQ file first using ReturnPeriod method"
         EndDate = StartDate + dt.timedelta(days = days-1)
@@ -219,7 +224,7 @@ class RIMCalibration():
             f1 = list(range(int(f[0,0]),int(f[-1,0])+1))
             f2 = list()
 
-            if self.Version == 1:
+            if AddHQ2 and self.Version == 1:
                 USnode = self.rivernetwork.loc[np.where(self.rivernetwork['SubID'] == Qgauges.loc[i,0])[0][0],'US']
                 CutValue = self.RP.loc[np.where(self.RP['node'] == USnode)[0][0],'HQ2']
 
@@ -231,18 +236,45 @@ class RIMCalibration():
                     f2.append(f[np.where(f[:,0] == f1[j])[0][0],1])
                 else:
                     # if it does not exist put zero
-                    if self.Version == 1:
+                    if AddHQ2 and self.Version == 1:
                         f2.append(CutValue)
                     else:
                         f2.append(0)
 
-
+            if Shift:
+                f2[ShiftSteps:-1] = f2[0:-(ShiftSteps+1)]
 
             QRIM.loc[:,QRIM.columns[i]].loc[ind[f1[0]-1]:ind[f1[-1]-1]] = f2
 
-        self.QRIM = QRIM
+        self.QRIM = QRIM[:]
 
-    def ReadRIMWL(self, WLGaugesTable, Path, StartDate, days, NoValue):
+
+    def ReadRIMWL(self, WLGaugesTable, Path, StartDate, days, NoValue, Shift=False, ShiftSteps=0):
+        """
+        =============================================================================
+            ReadRIMWL(WLGaugesTable, Path, StartDate, days, NoValue, Shift=False)
+        =============================================================================
+
+        Parameters
+        ----------
+        WLGaugesTable : TYPE
+            DESCRIPTION.
+        Path : TYPE
+            DESCRIPTION.
+        StartDate : TYPE
+            DESCRIPTION.
+        days : TYPE
+            DESCRIPTION.
+        NoValue : TYPE
+            DESCRIPTION.
+        Shift : TYPE, optional
+            DESCRIPTION. The default is False.
+
+        Returns
+        -------
+        None.
+
+        """
 
         EndDate = StartDate + dt.timedelta(days = days-1)
         ind = pd.date_range(StartDate,EndDate)
@@ -265,9 +297,14 @@ class RIMCalibration():
                     # if it does not exist put zero
                     f2.append(0)
 
+            if Shift:
+                f2[ShiftSteps:-1] = f2[0:-(ShiftSteps+1)]
+                # f2[1:-1] = f2[0:-2]
+
             WLRIM.loc[:,WLRIM.columns[i]].loc[ind[f1[0]-1]:ind[f1[-1]-1]] = f2
 
-        self.WLRIM = WLRIM
+        self.WLRIM = WLRIM[:]
+
 
     def ReturnPeriod(self,Path):
         """
