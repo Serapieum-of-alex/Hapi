@@ -5,7 +5,7 @@
 
 Hapi - Hydrological library for Python 
 =====================================================================
-**Hapi** is a Python package providing fast and flexible, way to build Hydrological models with different spatial representations (lumped, semidistributed and conceptual distributed) using HBV96.
+**Hapi** is a Python package providing fast and flexible way to build Hydrological models with different spatial representations (lumped, semidistributed and conceptual distributed) using HBV96.
 The package is very flexible to an extent that it allows developers to change the structure of the defined conceptual model or to enter
 their own model, it contains two routing functions muskingum cunge, and MAXBAS triangular function.
 (all function has been tested and validated during a Master thesis at IHE-Delft April 2018 and the library is still under development)
@@ -19,9 +19,9 @@ Here are just a few of the things that Hapi does well:
   - Easy calibration of the model using Harmony search method and Genetic Algorithms
   - flexible GIS function to process rasters interpolate values and georeference 
     calculated discharge values to the correct place.
-  - Different ways for considering variability of catchment properties, lumped properties,
+  - Different ways for considering the variability of catchment properties, lumped properties,
     distributed properties and hydrologic response units
-  - Two different Ways of generating input data, from satellite data and from simple statistics
+  - Two different Ways of generating input data, from satellite data and from simple statistical
     methods like IDW(inverse distance weighting method) and ISDW(inverse dsquared istance weighting method)
   - Wide range of GIS function to process Rasters (execute some functions on a folder of rasters) like 
     project raster, resampling, Clipping, creating a raster fom arrays, Map algebra.
