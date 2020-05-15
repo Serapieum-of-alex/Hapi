@@ -17,6 +17,7 @@ from osgeo import gdalconst
 import zipfile
 import pyproj
 import rasterio
+import rasterio.merge
 import json
 
 import Hapi.vector as vector
@@ -2052,7 +2053,7 @@ def OverlayMap(Path, BaseMap, ExcludeValue, Compressed = False, OccupiedCellsOnl
             [String] a string that make the files you want to filter in the folder
             uniq
         3-ExcludedValue:
-            [Numeric] values you want to exclude from exteacted values
+            [Numeric] values you want to exclude from extracted values
         4-Compressed:
             [Bool] if the map you provided is compressed
         5-OccupiedCellsOnly:
