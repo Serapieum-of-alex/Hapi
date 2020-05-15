@@ -13,11 +13,13 @@ import numpy as np
 import gdal
 import osr
 import pandas as pd
+import geopandas as gpd
 from osgeo import gdalconst
 import zipfile
 import pyproj
 import rasterio
 import rasterio.merge
+import rasterio.mask
 import json
 
 import Hapi.vector as vector
@@ -1331,7 +1333,7 @@ def Clip(Raster_path,shapefile_path,save=False,output_path=None):
     # Get the geometry coordinates by using the function.
     coords=getFeatures(shpfile)
 
-    out_img, out_transform = rasterio.mask.mask(raster=raster, shapes=coords, crop=True)
+    out_img, out_transform = rasterio.mask.mask(dataset=raster, shapes=coords, crop=True)
 
     # copy the metadata from the original data file.
     out_meta = raster.meta.copy()
