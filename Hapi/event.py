@@ -264,9 +264,14 @@ class Event():
         NonZeroCells['days'] = [int(i[len(self.DepthPrefix):-4]) for i in NonZeroCells['files'].tolist()]
         # get the numbe of inundated cells in the Event index data frame
         self.EventIndex['cells'] = 0
+        
         for i in range(len(NonZeroCells)):
             # get the location in the EventIndex dataframe
-            loc = np.where(NonZeroCells.loc[i,'days'] == self.EventIndex.loc[:,"ID"] )[0][0]
+            try:
+                loc = np.where(NonZeroCells.loc[i,'days'] == self.EventIndex.loc[:,"ID"] )[0][0]
+            except IndexError:
+                # if it does not find the event in the eventindex table ignore
+                continue
             # store number of cells
             self.EventIndex.loc[loc,'cells'] = NonZeroCells.loc[i,'cells']
 
