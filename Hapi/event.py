@@ -264,7 +264,7 @@ class Event():
         NonZeroCells['days'] = [int(i[len(self.DepthPrefix):-4]) for i in NonZeroCells['files'].tolist()]
         # get the numbe of inundated cells in the Event index data frame
         self.EventIndex['cells'] = 0
-        
+
         for i in range(len(NonZeroCells)):
             # get the location in the EventIndex dataframe
             try:
@@ -403,7 +403,9 @@ class Event():
         # loc = np.where(self.EventIndex['ID'] == day)[0][0]
         # get all the days in the same event before that day as the inundation in the maps may
         # happen due to any of the days before not in this day
-        return self.EventIndex.index[loc - self.EventIndex.loc[loc,'IndDiff']]
+        ind = self.EventIndex.index[loc - self.EventIndex.loc[loc,'IndDiff']]
+        day = self.EventIndex.loc[ind, 'ID']
+        return ind, day
 
         # # filter the dataframe and get only the 'indDiff' and 'ID' columns
         # FilteredEvent = self.EventIndex.loc[:,['IndDiff','ID']]
@@ -448,7 +450,10 @@ class Event():
             if FilteredEvent.loc[i,'continue'] != 1:
                 break
 
-        return i-1
+        ind = i-1
+        day = self.EventIndex.loc[ind, 'ID']
+
+        return ind, day
 
     def PrepareForPlotting(self,ColumnName):
         """
