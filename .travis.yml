@@ -35,4 +35,4 @@ install:
   - cd ..
 # command to run tests
 script:
-  - py.test Examples/test.py
+  - pytest Examples/test.py
