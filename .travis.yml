@@ -17,14 +17,14 @@ jobs:
       language: shell       # 'language: python' is an error on Travis CI macOS
     - name: "Python 3.8.0 on Windows"
       os: windows           # Windows 10.0.17134 N/A Build 17134
-      language: python       # 'language: python'
+      language: shell       # 'language: python' is an error on Travis CI Windows
       before_install:
         - choco install python --version 3.8.0
         - python -m pip install --upgrade pip
         # Install the latest version of Miniconda
         - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
         - chmod +x miniconda.sh
-        - ./miniconda.sh -b
+        #- ./miniconda.sh -b
         - export PATH=/home/travis/miniconda/bin:$PATH
         - conda update --yes conda  # Update CONDA without command line prompt
       env: PATH=/c/Python38:/c/Python38/Scripts:$PATH
