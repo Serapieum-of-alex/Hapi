@@ -55,8 +55,7 @@ about:
   license: MIT
   summary: 'Distributed Hydrological model'
   description: |
-    This module analyzes jpeg/jpeg2000/png/gif image header and
-    return image size.
+    This module builds Distributed Hydrological model.
   dev_url: https://github.com/MAfarrag/HAPI
   doc_url: https://github.com/MAfarrag/HAPI
   doc_source_url: https://github.com/MAfarrag/HAPI/master/README.md
