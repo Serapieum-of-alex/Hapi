@@ -7,6 +7,9 @@ Created on Sun Jan 19 16:34:44 2020
 try:
     import Hapi
 except ImportError:
-    import sys
-    sys.path.append(".")
-    import Hapi
+	try
+		import HAPI
+	except ImportError:
+	    import sys
+	    sys.path.append(".")
+	    import Hapi
