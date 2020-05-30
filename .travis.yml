@@ -21,21 +21,32 @@ jobs:
       before_install:
         - choco install python --version 3.8.0
         - python -m pip install --upgrade pip
-        - bash miniconda.sh -b -p $HOME/miniconda
-        - source "$HOME/miniconda/etc/profile.d/conda.sh"
-        - hash -r
-        - conda config --set always_yes yes --set changeps1 no
-        - conda update -q conda
-        # Useful for debugging any issues with conda
-        - conda info -a
-          # Replace dep1 dep2 ... with your dependencies
-        - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION gdal pandas geopandas
-        - conda activate test-environment
-        - python setup.py install
+        # Install the latest version of Miniconda
+        - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
+        - chmod +x miniconda.sh
+        - ./miniconda.sh -b
+        - export PATH=/home/travis/miniconda/bin:$PATH
+        - conda update --yes conda  # Update CONDA without command line prompt
       env: PATH=/c/Python38:/c/Python38/Scripts:$PATH
 # command to install dependencies
 install:
   #- pip install -r requirements.txt
+
+  - conda install conda-build
+  # You can add any CONDA channels you may need here. CONDA supports
+  # both the commands add and append. The only difference is that 
+  # the add command places the channel at the front of the priority 
+  # list, while append does the opposite.
+  - conda config --add channels conda-forge
+
+  # Create a new environment
+  - conda create --yes -n test python=$TRAVIS_PYTHON_VERSION
+  # Activate it
+  - source activate test
+
+  # Install various dependencies
+  - conda install --yes numpy=1.8 pytest pip
+
   - python setup.py install
 # command to run tests
 script:
