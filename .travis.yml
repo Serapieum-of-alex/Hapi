@@ -25,6 +25,21 @@ jobs:
 # command to install dependencies
 install:
   #- pip install -r requirements.txt
+  - pip
+  - numpy
+  - affine
+  - fiona
+  - proj
+  - pyproj
+  - gdal
+  - pandas
+  - geopandas
+  - matplotlib
+  - python
+  - scipy
+  - shapely
+  - statsmodels
+  - rasterio
   - python setup.py install
 # command to run tests
 script:
