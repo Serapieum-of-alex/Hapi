@@ -35,5 +35,5 @@ install:
   - cd ..
 # command to run tests
 script:
-  - cd ./Examples
+  - cd ./Hapi/Examples
   - pytest test.py
