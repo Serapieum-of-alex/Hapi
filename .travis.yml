@@ -21,24 +21,21 @@ jobs:
       before_install:
         - choco install python --version 3.8.0
         - python -m pip install --upgrade pip
+        - bash miniconda.sh -b -p $HOME/miniconda
+        - source "$HOME/miniconda/etc/profile.d/conda.sh"
+        - hash -r
+        - conda config --set always_yes yes --set changeps1 no
+        - conda update -q conda
+        # Useful for debugging any issues with conda
+        - conda info -a
+          # Replace dep1 dep2 ... with your dependencies
+        - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION gdal pandas geopandas
+        - conda activate test-environment
+        - python setup.py install
       env: PATH=/c/Python38:/c/Python38/Scripts:$PATH
 # command to install dependencies
 install:
   #- pip install -r requirements.txt
-  - conda install -c conda-forge numpy
-  - conda install -c conda-forge affine
-  - conda install -c conda-forge fiona
-  - conda install -c conda-forge proj
-  - conda install -c conda-forge pyproj
-  - conda install -c conda-forge gdal
-  - conda install -c conda-forge pandas
-  - conda install -c conda-forge geopandas
-  - conda install -c conda-forge matplotlib
-  - conda install -c conda-forge python
-  - conda install -c conda-forge scipy
-  - conda install -c conda-forge shapely
-  - conda install -c conda-forge statsmodels
-  - conda install -c conda-forge rasterio
   - python setup.py install
 # command to run tests
 script:
