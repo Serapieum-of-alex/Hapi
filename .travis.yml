@@ -25,21 +25,20 @@ jobs:
 # command to install dependencies
 install:
   #- pip install -r requirements.txt
-  - pip
-  - numpy
-  - affine
-  - fiona
-  - proj
-  - pyproj
-  - gdal
-  - pandas
-  - geopandas
-  - matplotlib
-  - python
-  - scipy
-  - shapely
-  - statsmodels
-  - rasterio
+  - conda install -c conda-forge numpy
+  - conda install -c conda-forge affine
+  - conda install -c conda-forge fiona
+  - conda install -c conda-forge proj
+  - conda install -c conda-forge pyproj
+  - conda install -c conda-forge gdal
+  - conda install -c conda-forge pandas
+  - conda install -c conda-forge geopandas
+  - conda install -c conda-forge matplotlib
+  - conda install -c conda-forge python
+  - conda install -c conda-forge scipy
+  - conda install -c conda-forge shapely
+  - conda install -c conda-forge statsmodels
+  - conda install -c conda-forge rasterio
   - python setup.py install
 # command to run tests
 script:
