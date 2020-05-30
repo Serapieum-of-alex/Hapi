@@ -28,4 +28,4 @@ install:
   - python setup.py install
 # command to run tests
 script:
-  - python tests.py
+  - python Examples/test.py
