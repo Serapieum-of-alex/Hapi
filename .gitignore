@@ -34,3 +34,4 @@ Web_application/HAPI/static/input_data/Google API.txt
 
 build_artifacts
 # conda smithy ci-skeleton end
+.azure-pipelines0/azure-pipelines-linux.yml
