@@ -35,3 +35,16 @@ Web_application/HAPI/static/input_data/Google API.txt
 build_artifacts
 # conda smithy ci-skeleton end
 .azure-pipelines0/azure-pipelines-linux.yml
+.ci_support/README
+.ci_support0/linux_.yaml
+.circleci/config.yml
+.ci_support0/README
+.scripts0/run_docker_build.sh
+.scripts0/build_steps.sh
+.scripts/run_docker_build.sh
+.scripts/build_steps.sh
+.github0/workflows/webservices.yml
+.github0/workflows/automerge.yml
+.github/workflows/webservices.yml
+.github/workflows/automerge.yml
+.circleci0/config.yml
