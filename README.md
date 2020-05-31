@@ -3,7 +3,7 @@
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/MAfarrag/HAPI/master)
 [![conda](https://anaconda.org/mafarrag/hapi/badges/version.svg)](https://anaconda.org/MAfarrag/hapi)
 [![Build Status](https://travis-ci.org/MAfarrag/Hapi.svg?branch=master)](https://travis-ci.org/MAfarrag/Hapi)
-[![Python Versions][pypi-pyv-image]][pypi-pyv-link]
+[![Pyversions](https://img.shields.io/pypi/pyversions/ibm-analytics-engine-python.svg?style=flat-square)](https://pypi.python.org/pypi/ibm-analytics-engine-python)
 
 Hapi - Hydrological library for Python 
 =====================================================================
