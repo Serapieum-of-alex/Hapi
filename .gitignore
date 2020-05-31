@@ -1,6 +1,11 @@
 build/
 dist/
 Hapi.egg-info/
+.azure-pipelines/
+.ci_support/
+.circleci/
+.github/
+.scripts/
 Examples/data/Hapi.sublime-project
 Examples/data/Hapi.sublime-workspace
 *.pyc
