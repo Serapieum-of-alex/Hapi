@@ -17,6 +17,7 @@ before_install:
   - conda info -a
 # command to install dependencies
 install:
+  conda config --append channels conda-forge
   # Create a new environment
   - conda create -q -n Hapi-env python=${TRAVIS_PYTHON_VERSION} --yes
   - source activate Hapi-env
@@ -27,7 +28,7 @@ install:
   # both the commands add and append. The only difference is that 
   # the add command places the channel at the front of the priority 
   # list, while append does the opposite.
-  - conda config --add channels conda-forge
+  #- conda config --add channels conda-forge
 
   - python -V
   - python setup.py build_ext --inplace
