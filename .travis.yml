@@ -1,4 +1,5 @@
 language: python
+os: windows           # Windows 10.0.17134 N/A Build 17134
 python:
   - "2.7"
   - "3.4"
