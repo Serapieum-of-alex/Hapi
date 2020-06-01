@@ -12,6 +12,7 @@ import datetime as dt
 import numpy as np
 import shutil
 import pandas as pd
+from datetime import datetime
 # functions
 import Hapi.raster as raster
 
@@ -74,6 +75,49 @@ def PrepareInputs(Rasteri,InputFolder,FolderName):
     raster.MatchDataNoValuecells(Rasteri,temp,FolderName+"/")
     # delete the processing folder from temp
     shutil.rmtree(temp)
+
+def RenameFiles(Path, fmt = '%Y.%m.%d'):
+    """
+    ========================================================
+        RenameFiles(Path, fmt = '%Y.%m.%d')
+    ========================================================
+    RenameFiles method takes the path to a folder where you want to put a number
+    at the begining of the raster names indicating the order of the raster based on
+    its date
+
+    Parameters
+    ----------
+    Path : [String]
+        path where the rasters are stored.
+    fmt : [String], optional
+        the format of the date. The default is '%Y.%m.%d'.
+
+    Returns
+    -------
+    files in the Path are going to have a new name including the order at
+    the begining of the name.
+
+    """
+
+    files = os.listdir(Path)
+    if "desktop.ini" in files: files.remove("desktop.ini")
+
+    # get the date
+    dates_str = [files[i].split("_")[-1][:-4] for i in range(len(files))]
+    dates = [datetime.strptime(dates_str[i], fmt) for i in range(len(files))]
+
+    df = pd.DataFrame()
+    df['files'] = files
+    df['DateStr'] = dates_str
+    df['dates'] = dates
+    df.sort_values('dates', inplace=True)
+
+    df['order'] = [i for i in range(len(files))]
+
+    df['new_names'] = [str(df.loc[i,'order']) + "_"+ df.loc[i,'files'] for i in range(len(files))]
+    # rename the files
+    for i in range(len(files)):
+        os.rename(Path + "/" + df.loc[i,'files'], Path + "/" + df.loc[i,'new_names'])
 
 def changetext2time(string):
     """
