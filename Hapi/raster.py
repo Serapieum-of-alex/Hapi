@@ -439,7 +439,9 @@ def ProjectRaster(src, to_epsg,resample_technique="Nearest"):
     if src_epsg.GetAttrValue('AUTHORITY',1) != str(to_epsg):
         # transform the two points coordinates to the new crs to calculate the new cell size
         new_xs, new_ys= vector.ReprojectPoints(ys,xs,from_epsg=int(src_epsg.GetAttrValue('AUTHORITY',1)),
-                                         to_epsg=int(dst_epsg.GetAttrValue('AUTHORITY',1)))
+                                          to_epsg=int(dst_epsg.GetAttrValue('AUTHORITY',1)))
+        # new_xs, new_ys= vector.ReprojectPoints_2(ys,xs,from_epsg=int(src_epsg.GetAttrValue('AUTHORITY',1)),
+        #                                  to_epsg=int(dst_epsg.GetAttrValue('AUTHORITY',1)))
     else:
         new_xs = xs
         new_ys = ys
@@ -448,7 +450,7 @@ def ProjectRaster(src, to_epsg,resample_technique="Nearest"):
 
     # create a new raster
     mem_drv=gdal.GetDriverByName("MEM")
-    dst=mem_drv.Create("",int(np.round((lrx-ulx)/pixel_spacing)),int(np.round((uly-lry)/pixel_spacing)),
+    dst=mem_drv.Create("",int(np.round((lrx-ulx)/pixel_spacing)),int(np.round(abs(uly-lry)/pixel_spacing)),
                        1,gdalconst.GDT_Float32) #['COMPRESS=LZW'] LZW is a lossless compression method achieve the highst compression but with lot of computation
 
     # new geotransform
@@ -1935,7 +1937,11 @@ def ReadRastersFolder(path):
     if "desktop.ini" in files: files.remove("desktop.ini")
 
     # to sort the files in the same order as the first number in the name
-    filesNo = [int(files[i].split("_")[0]) for i in range(len(files))]
+    try:
+        filesNo = [int(files[i].split("_")[0]) for i in range(len(files))]
+    except:
+        print("please include a number at the beginning of the rasters name to indicate the order of the raster please use the Inputs.RenameFiles method to solve this issue")
+
     filetuple = sorted(zip(filesNo, files))
     files = [x for _,x in filetuple]
 
