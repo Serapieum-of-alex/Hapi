@@ -13,7 +13,11 @@ import numpy as np
 import shutil
 import pandas as pd
 from datetime import datetime
-# functions
+import geopandas as gpd
+from rasterstats import zonal_stats
+import rasterio
+from rasterio.plot import show
+import Hapi
 import Hapi.raster as raster
 
 
@@ -75,6 +79,63 @@ def PrepareInputs(Rasteri,InputFolder,FolderName):
     raster.MatchDataNoValuecells(Rasteri,temp,FolderName+"/")
     # delete the processing folder from temp
     shutil.rmtree(temp)
+
+
+def ParametersBoundaries(Basin):
+    """
+    =====================================================
+        ParametersBoundaries(Basin)
+    =====================================================
+
+    Parameters
+    ----------
+    Basin : [Geodataframe]
+        gepdataframe of catchment polygon, make sure that the geodataframe contains
+        one row only, if not merge all the polygons in the shapefile first.
+
+    Returns
+    -------
+    UB : [list]
+        list of the upper bound of the parameters.
+    LB : [list]
+        list of the lower bound of the parameters.
+
+    the parameters are
+        ["tt", "sfcf","cfmax","cwh","cfr","fc","beta",
+         "lp","k0","k1","k2","uzl","perc", "maxbas"]
+    """
+    ParametersPath = os.path.dirname(Hapi.__file__)
+    ParametersPath = ParametersPath + "/Parameters"
+    ParamList = ["tt", "sfcf","cfmax","cwh","cfr","fc","beta", #"rfcf","e_corr",
+             "lp","k0","k1","k2","uzl","perc", "maxbas"] #,"c_flux"
+
+    raster = rasterio.open(ParametersPath + "/max/" + ParamList[0] + "-Max.tif")
+    Basin = Basin.to_crs(crs=raster.crs)
+    # max values
+    UB = list()
+    for i in range(len(ParamList)):
+        raster = rasterio.open(ParametersPath + "/max/" + ParamList[i] + "-Max.tif")
+        array = raster.read(1)
+        affine = raster.transform
+        UB.append(zonal_stats(Basin, array, affine=affine, stats=['max'])[0]['max']) #stats=['min', 'max', 'mean', 'median', 'majority']
+
+    # min values
+    LB = list()
+    for i in range(len(ParamList)):
+        raster = rasterio.open(ParametersPath + "/min/" + ParamList[i] + "-Min.tif")
+        array = raster.read(1)
+        affine = raster.transform
+        LB.append(zonal_stats(Basin, array, affine=affine, stats=['min'])[0]['min'])
+
+    # plot the given basin with the parameters raster
+
+    # Plot DEM
+    ax = show((raster, 1), with_bounds=True)
+    Basin.plot(facecolor='None', edgecolor='blue', linewidth=2, ax=ax)
+    # ax.set_xbound([Basin.bounds.loc[0,'minx']-10,Basin.bounds.loc[0,'maxx']+10])
+    # ax.set_ybound([Basin.bounds.loc[0,'miny']-1, Basin.bounds.loc[0,'maxy']+1])
+
+    return UB, LB
 
 def RenameFiles(Path, fmt = '%Y.%m.%d'):
     """
