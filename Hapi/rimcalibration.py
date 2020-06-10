@@ -349,3 +349,56 @@ class RIMCalibration():
         """
         self.rivernetwork = pd.read_csv(Path, delimiter = ',') #,header = None
         # self.rivernetwork.columns = ['SubID','US','DS']
+
+    def GetAnnualMax(self, option=1):
+        """
+        ========================================================
+              GetAnnualMax(option=1)
+        ========================================================
+        GetAnnualMax method get the max annual time series out of time series of any
+        temporal resolution, the code assumes that the hydrological year is
+        1-Nov/31-Oct (Petrow and Merz, 2009, JoH).
+
+        Parameters
+        ----------
+        option : [integer], optional
+            1 for the historical observed data, 2 for the rainfall-runoff data
+            3 for the rim result. The default is 1.
+
+        Returns
+        -------
+        None.
+
+        """
+        if option == 1:
+            assert hasattr(self, "QGauges"), "please read the observed data first with the ReadObservedQ method"
+            columns = self.QGauges.columns.tolist()
+        elif option == 2:
+            assert hasattr(self, "QRRM"), "please read the observed data first with the ReadRRM method"
+            columns = self.QRRM.columns.tolist()
+        else :#option == 3:
+            assert hasattr(self, "QRIM"), "please read the observed data first with the ReadRIMQ method"
+            columns = self.QRIM.columns.tolist()
+
+        AnnualMax = pd.DataFrame(columns = columns)
+        # RIM2 results
+        for i in range(len(columns)):
+            Sub = columns[i]
+            if option ==1:
+                QTS = self.QGauges.loc[:, Sub]
+            elif option ==2:
+                QTS = self.QRRM.loc[:, Sub]
+            else:
+                QTS = self.QRIM.loc[:, Sub]
+
+            AnnualMax.loc[:, Sub] = QTS.resample('A-OCT').max().values
+
+        AnnualMax.index = QTS.resample('A-OCT').indices.keys()
+
+        if option ==1:
+            self.AnnualMaxObs = AnnualMax
+        elif option ==2:
+            self.AnnualMaxRRM = AnnualMax
+        else:
+            self.AnnualMaxRIM = AnnualMax
+
