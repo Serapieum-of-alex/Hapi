@@ -266,7 +266,17 @@ class River():
             return 1/(1-F)
         except:
             return -1
+    def GetQForReturnPeriod(self, SubID, T):
 
+        assert hasattr(self, "SP"), "Please read the statistical properties file for the catchment first"
+        F = 1 - (1/T)
+        try:
+            loc = np.where(self.SP['ID'] == SubID)[0][0]
+            Q = gumbel_r.ppf(F, loc=self.SP.loc[loc,"loc"],
+                             scale=self.SP.loc[loc,"scale"])
+            return Q
+        except:
+            return -1
     # def GetBankfullQ(self):
     #     """
     #     =================================================
