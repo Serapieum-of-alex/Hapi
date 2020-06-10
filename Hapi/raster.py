@@ -8,6 +8,7 @@ based on a source raster, perform any algebric operation on cell's values
 
 #%library
 import os
+
 import numpy as np
 
 import gdal
@@ -160,7 +161,7 @@ def SaveRaster(raster,path):
     ext=path[-4:]
     assert ext == ".tif", "please add the extension at the end of the path input"
 
-    driver = gdal.GetDriverByName ( "GTiff" )
+    driver = gdal.GetDriverByName( "GTiff" )
     dst_ds = driver.CreateCopy( path, raster, 0 )
     dst_ds = None # Flush the dataset to disk
 
@@ -659,8 +660,17 @@ def RasterLike(src,array,path,pixel_type=1):
 
     outputraster.SetGeoTransform(gt)
     outputraster.SetProjection(prj)
-    outputraster.GetRasterBand(1).SetNoDataValue(noval)
-    outputraster.GetRasterBand(1).Fill(noval)
+    # setting the NoDataValue does not accept double precision numbers
+    try:
+        outputraster.GetRasterBand(1).SetNoDataValue(noval)
+        outputraster.GetRasterBand(1).Fill(noval)
+    except:
+        noval = -999999
+        outputraster.GetRasterBand(1).SetNoDataValue(noval)
+        outputraster.GetRasterBand(1).Fill(noval)
+        # assert False, "please change the NoDataValue in the source raster as it is not accepted by Gdal"
+        print("please change the NoDataValue in the source raster as it is not accepted by Gdal")
+
     outputraster.GetRasterBand(1).WriteArray(array)
     outputraster.FlushCache()
     outputraster = None
@@ -1897,7 +1907,7 @@ def FolderCalculator(folder_path,new_folder_path,function):
         args=[B,new_folder_path+files_list[i]]
         function(args)
 
-def ReadRastersFolder(path):
+def ReadRastersFolder(path,WithOrder=True):
     """
     ===========================================================
        ReadRastersFolder(path)
@@ -1937,13 +1947,15 @@ def ReadRastersFolder(path):
     if "desktop.ini" in files: files.remove("desktop.ini")
 
     # to sort the files in the same order as the first number in the name
-    try:
-        filesNo = [int(files[i].split("_")[0]) for i in range(len(files))]
-    except:
-        print("please include a number at the beginning of the rasters name to indicate the order of the raster please use the Inputs.RenameFiles method to solve this issue")
+    if WithOrder == True:
+        try:
+            filesNo = [int(files[i].split("_")[0]) for i in range(len(files))]
+        except:
+            assert False, "please include a number at the beginning of the rasters name to indicate the order of the raster please use the Inputs.RenameFiles method to solve this issue"
 
-    filetuple = sorted(zip(filesNo, files))
-    files = [x for _,x in filetuple]
+        filetuple = sorted(zip(filesNo, files))
+        files = [x for _,x in filetuple]
+
 
     # check that folder only contains rasters
     assert all(f.endswith(".tif") for f in files), "all files in the given folder should have .tif extension"
@@ -1953,7 +1965,9 @@ def ReadRastersFolder(path):
     dim=sample.ReadAsArray().shape
     naval=sample.GetRasterBand(1).GetNoDataValue()
     # fill the array with noval data
-    arr_3d=np.ones((dim[0],dim[1],len(files)))*naval
+    # arr_3d=np.ones((dim[0],dim[1],len(files)))*naval
+    arr_3d=np.ones((dim[0],dim[1],len(files)))
+    arr_3d [:,:,:] = naval
 
     for i in range(len(files)):
         # read the tif file
@@ -2052,28 +2066,28 @@ def OverlayMap(Path, BaseMap, ExcludeValue, Compressed = False, OccupiedCellsOnl
     in an ASCII file
 
     Inputs:
-        1-Path
+        1-Path:
             [String] a path to the folder includng the maps.
         2-BaseMap:
             [String/array] a path includng the name of the ASCII and extention like
-            path="data/cropped.asc" / or the array it self
+            path="data/cropped.asc" / or the array it self.
         3-FilePrefix:
             [String] a string that make the files you want to filter in the folder
-            uniq
+            uniq.
         3-ExcludedValue:
-            [Numeric] values you want to exclude from extracted values
+            [Numeric] values you want to exclude from extracted values.
         4-Compressed:
-            [Bool] if the map you provided is compressed
+            [Bool] if the map you provided is compressed.
         5-OccupiedCellsOnly:
-            [Bool] if you want to count only cells that is not zero
+            [Bool] if you want to count only cells that is not zero.
     Outputs:
         1- ExtractedValues:
             [Dict] dictonary with a list of values in the basemap as keys
                 and for each key a list of all the intersected values in the
-                maps from the path
+                maps from the path.
         2- NonZeroCells:
             [dataframe] dataframe with the first column as the "file" name
-            and the second column is the number of cells in each map
+            and the second column is the number of cells in each map.
     """
     # input data validation
     # data type
