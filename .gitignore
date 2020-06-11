@@ -41,3 +41,5 @@ build_artifacts
 .scripts/build_steps.sh
 .github/workflows/webservices.yml
 .github/workflows/automerge.yml
+docs/source/HapiDocs.sublime-project
+docs/source/HapiDocs.sublime-workspace
