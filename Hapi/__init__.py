@@ -5,6 +5,9 @@ Created on Tue May 22 09:01:55 2018
 @author: Mostafa
 """
 # documentation format
+__author__ = 'Mostafa Farrag'
+__version__ = '0.2.0'
+
 __docformat__ = 'restructuredtext'
 
 # Let users know if they're missing any of our hard dependencies
