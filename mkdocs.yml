@@ -9,8 +9,8 @@ edit_url: ""
 theme:
     name: readthedocs
 
-#nav:
-#    - Home: index.md
+nav:
+    - Home: index.md
 #    - Tutorial:
 #        - Introduction: Introduction.md
 #        - Getting Started: getting_started.md
