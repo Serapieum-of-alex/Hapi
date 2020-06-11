@@ -1,4 +1,4 @@
-site_name: Hapi Documentation
+site_name: Hapi
 #site_url: 
 site_description: The documentation of Hapi Hydrological Model
 site_author: Mostafa Farrag
@@ -11,11 +11,11 @@ theme:
 
 nav:
     - Home: index.md
-#    - Tutorial:
-#        - Introduction: Introduction.md
+    - Tutorial:
+        - Introduction: README.md
 #        - Getting Started: getting_started.md
 #        - Hydrological_model: Hydrological_model.md
-#    - License: license.md
+    - License: license.md
 
 
 
