@@ -1,0 +1,21 @@
+site_name: Hapi Documentation
+#site_url: 
+site_description: The documentation of Hapi Hydrological Model
+site_author: Mostafa Farrag
+
+repo_url: https://github.com/MAfarrag/Hapi
+edit_url: ""
+
+theme:
+    name: readthedocs
+
+#nav:
+#    - Home: index.md
+#    - Tutorial:
+#        - Introduction: Introduction.md
+#        - Getting Started: getting_started.md
+#        - Hydrological_model: Hydrological_model.md
+#    - License: license.md
+
+
+
