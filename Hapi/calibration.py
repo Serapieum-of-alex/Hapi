@@ -17,8 +17,9 @@ runoff at known locations based on given performance function
 import os
 import numpy as np
 import gdal
-
-#from pyOpt import Optimization, ALHSO,Optimizer
+from Oasis.optimization import Optimization
+from Oasis.hsapi import HSapi
+from Oasis.optimizer import Optimizer
 
 
 # functions
@@ -230,30 +231,17 @@ def RunCalibration(ConceptualModel, Paths, Basic_inputs, SpatialVarFun, SpatialV
 
     print(opt_prob)
 
-    opt_engine = ALHSO(etol=0.0001,atol=0.0001,rtol=0.0001, stopiters=10,
+    opt_engine = HSapi(etol=0.0001,atol=0.0001,rtol=0.0001, stopiters=10,
                        hmcr=0.5,par=0.5) #,filename='mostafa.out'
 
-    Optimizer.__init__(opt_engine,def_options={
-                    'hms':[int,9],					# Memory Size [1,50]
-                		'hmcr':[float,0.95],			# Probability rate of choosing from memory [0.7,0.99]
-                		'par':[float,0.99],				# Pitch adjustment rate [0.1,0.99]
-                		'dbw':[int,2000],				# Variable Bandwidth Quantization
-                		'maxoutiter':[int,2e3],			# Maximum Number of Outer Loop Iterations (Major Iterations)
-                		'maxinniter':[int,2e2],			# Maximum Number of Inner Loop Iterations (Minor Iterations)
-                		'stopcriteria':[int,1],			# Stopping Criteria Flag
-                		'stopiters':[int,20],			# Consecutively Number of Outer Iterations for which the Stopping Criteria must be Satisfied
-                		'etol':[float,0.0001],			# Absolute Tolerance for Equality constraints
-                		'itol':[float,0.0001],			# Absolute Tolerance for Inequality constraints
-                		'atol':[float,0.0001],			# Absolute Tolerance for Objective Function 1e-6
-                		'rtol':[float,0.0001],			# Relative Tolerance for Objective Function
-                		'prtoutiter':[int,0],			# Number of Iterations Before Print Outer Loop Information
-                		'prtinniter':[int,0],			# Number of Iterations Before Print Inner Loop Information
-                		'xinit':[int,0],				# Initial Position Flag (0 - no position, 1 - position given)
-                		'rinit':[float,1.0],			# Initial Penalty Factor
-                		'fileout':[int,store_history],				# Flag to Turn On Output to filename
-                		'filename':[str,'parameters.txt'],	# We could probably remove fileout flag if filename or fileinstance is given
-                		'seed':[float,0.5],				# Random Number Seed (0 - Auto-Seed based on time clock)
-                		'scaling':[int,1],				# Design Variables Scaling Flag (0 - no scaling, 1 - scaling between [-1,1])
+    Optimizer.__init__(opt_engine, def_options={
+                    'hms':[int,9], 'hmcr':[float,0.95], 'par':[float,0.99], 'dbw':[int,2000],
+                	'maxoutiter':[int,2e3],'maxinniter':[int,2e2], 'stopcriteria':[int,1],
+                	'stopiters':[int,20], 'etol':[float,0.0001], 'itol':[float,0.0001],
+                	'atol':[float,0.0001], 'rtol':[float,0.0001], 'prtoutiter':[int,0],
+                	'prtinniter':[int,0], 'xinit':[int,0], 'rinit':[float,1.0],
+                	'fileout':[int,store_history], 'filename':[str,'parameters.txt'],
+                	'seed':[float,0.5], 'scaling':[int,1],
                 		})
 
     res = opt_engine(opt_prob)
@@ -261,8 +249,8 @@ def RunCalibration(ConceptualModel, Paths, Basic_inputs, SpatialVarFun, SpatialV
 
     return res
 
-def LumpedCalibration(ConceptualModel, data, Basic_inputs,
-                   OF, OF_args, Q_obs, OptimizationArgs, printError=None):
+def LumpedCalibration(ConceptualModel, data, Basic_inputs, OF, OF_args, Q_obs,
+                      OptimizationArgs, printError=None):
     """
     =======================================================================
         RunCalibration(ConceptualModel, data,parameters, p2, init_st, snow, Routing=0, RoutingFn=[], objective_function, printError=None, *args):
@@ -358,12 +346,14 @@ def LumpedCalibration(ConceptualModel, data, Basic_inputs,
     ### optimization
 
     # get arguments
-    store_history=OptimizationArgs[0]
-    history_fname=OptimizationArgs[1]
+    ApiObjArgs = OptimizationArgs[0]
+    pll_type = OptimizationArgs[1]
+    ApiSolveArgs = OptimizationArgs[2]
     # check optimization arguement
-    assert store_history !=0 or store_history != 1,"store_history should be 0 or 1"
-    assert type(history_fname) == str, "history_fname should be of type string "
-    assert history_fname[-4:] == ".txt", "history_fname should be txt file please change extension or add .txt ad the end of the history_fname"
+    assert type(ApiObjArgs) == dict, "store_history should be 0 or 1"
+    assert type(ApiSolveArgs) == dict, "history_fname should be of type string "
+
+    # assert history_fname[-4:] == ".txt", "history_fname should be txt file please change extension or add .txt ad the end of the history_fname"
 
     print('Calibration starts')
     ### calculate the objective function
@@ -384,7 +374,7 @@ def LumpedCalibration(ConceptualModel, data, Basic_inputs,
             # print error
             if printError != 0:
                 print(error)
-                print(par)
+                # print(par)
 
             fail = 0
         except:
@@ -395,38 +385,30 @@ def LumpedCalibration(ConceptualModel, data, Basic_inputs,
 
     ### define the optimization components
     opt_prob = Optimization('HBV Calibration', opt_fun)
+
     for i in range(len(LB)):
         opt_prob.addVar('x{0}'.format(i), type='c', lower=LB[i], upper=UB[i])
 
     print(opt_prob)
 
-    opt_engine = ALHSO(etol=0.0001,atol=0.0001,rtol=0.0001, stopiters=10,
-                       hmcr=0.5,par=0.5) #,filename='mostafa.out'
 
-    Optimizer.__init__(opt_engine,def_options={
-                    'hms':[int,9],					# Memory Size [1,50]
-                		'hmcr':[float,0.95],			# Probability rate of choosing from memory [0.7,0.99]
-                		'par':[float,0.99],				# Pitch adjustment rate [0.1,0.99]
-                		'dbw':[int,2000],				# Variable Bandwidth Quantization
-                		'maxoutiter':[int,2e3],			# Maximum Number of Outer Loop Iterations (Major Iterations)
-                		'maxinniter':[int,2e2],			# Maximum Number of Inner Loop Iterations (Minor Iterations)
-                		'stopcriteria':[int,1],			# Stopping Criteria Flag
-                		'stopiters':[int,20],			# Consecutively Number of Outer Iterations for which the Stopping Criteria must be Satisfied
-                		'etol':[float,0.0001],			# Absolute Tolerance for Equality constraints
-                		'itol':[float,0.0001],			# Absolute Tolerance for Inequality constraints
-                		'atol':[float,0.0001],			# Absolute Tolerance for Objective Function 1e-6
-                		'rtol':[float,0.0001],			# Relative Tolerance for Objective Function
-                		'prtoutiter':[int,0],			# Number of Iterations Before Print Outer Loop Information
-                		'prtinniter':[int,0],			# Number of Iterations Before Print Inner Loop Information
-                		'xinit':[int,0],				# Initial Position Flag (0 - no position, 1 - position given)
-                		'rinit':[float,1.0],			# Initial Penalty Factor
-                		'fileout':[int,store_history],				# Flag to Turn On Output to filename
-                		'filename':[str,history_fname],	# We could probably remove fileout flag if filename or fileinstance is given
-                		'seed':[float,0.5],				# Random Number Seed (0 - Auto-Seed based on time clock)
-                		'scaling':[int,1],				# Design Variables Scaling Flag (0 - no scaling, 1 - scaling between [-1,1])
-                		})
+    opt_engine = HSapi(pll_type=pll_type , options=ApiObjArgs)
 
-    res = opt_engine(opt_prob)
+    # parse the ApiSolveArgs inputs
+    availablekeys = ['store_sol',"display_opts","store_hst","hot_start"]
+
+    store_sol = ApiSolveArgs['store_sol']
+    display_opts = ApiSolveArgs['display_opts']
+    store_hst = ApiSolveArgs['store_hst']
+    hot_start = ApiSolveArgs['hot_start']
+
+    # for i in range(len(availablekeys)):
+        # if availablekeys[i] in ApiSolveArgs.keys():
+            # exec(availablekeys[i] + "=" + str(ApiSolveArgs[availablekeys[i]]))
+        # print(availablekeys[i] + " = " + str(ApiSolveArgs[availablekeys[i]]))
+
+    res = opt_engine(opt_prob, store_sol=store_sol, display_opts=display_opts,
+                     store_hst=store_hst, hot_start=hot_start)
 
 
     return res
