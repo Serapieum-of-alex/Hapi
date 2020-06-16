@@ -81,10 +81,10 @@ def PrepareInputs(Rasteri,InputFolder,FolderName):
     shutil.rmtree(temp)
 
 
-def ParametersBoundaries(Basin):
+def ExtractParametersBoundaries(Basin):
     """
     =====================================================
-        ParametersBoundaries(Basin)
+        ExtractParametersBoundaries(Basin)
     =====================================================
 
     Parameters
@@ -136,6 +136,52 @@ def ParametersBoundaries(Basin):
     # ax.set_ybound([Basin.bounds.loc[0,'miny']-1, Basin.bounds.loc[0,'maxy']+1])
 
     return UB, LB
+
+def ExtractParameters(Basin,scenario):
+    """
+    =====================================================
+        ExtractParameters(Basin)
+    =====================================================
+
+    Parameters
+    ----------
+    Basin : [Geodataframe]
+        gepdataframe of catchment polygon, make sure that the geodataframe contains
+        one row only, if not merge all the polygons in the shapefile first.
+
+    Returns
+    -------
+    Parameters : [list]
+        list of the upper bound of the parameters.
+
+    the parameters are
+        ["tt", "sfcf","cfmax","cwh","cfr","fc","beta",
+         "lp","k0","k1","k2","uzl","perc", "maxbas"]
+    """
+    ParametersPath = os.path.dirname(Hapi.__file__)
+    ParametersPath = ParametersPath + "/Parameters/" + scenario
+    ParamList = ["Par_tt", "Par_sfcf","Par_cfmax","Par_cwh","Par_cfr","Par_fc","Par_beta", #"rfcf","e_corr",
+             "Par_lp","Par_k0","Par_k1","Par_k2","Par_uzl","Par_perc", "Par_maxbas"] #,"c_flux"
+
+    raster = rasterio.open(ParametersPath + "/" + ParamList[0] + ".tif")
+    Basin = Basin.to_crs(crs=raster.crs)
+    # max values
+    Par = list()
+    for i in range(len(ParamList)):
+        raster = rasterio.open(ParametersPath + "/" + ParamList[i] + ".tif")
+        array = raster.read(1)
+        affine = raster.transform
+        Par.append(zonal_stats(Basin, array, affine=affine, stats=['max'])[0]['max']) #stats=['min', 'max', 'mean', 'median', 'majority']
+
+    # plot the given basin with the parameters raster
+
+    # Plot DEM
+    ax = show((raster, 1), with_bounds=True)
+    Basin.plot(facecolor='None', edgecolor='blue', linewidth=2, ax=ax)
+    # ax.set_xbound([Basin.bounds.loc[0,'minx']-10,Basin.bounds.loc[0,'maxx']+10])
+    # ax.set_ybound([Basin.bounds.loc[0,'miny']-1, Basin.bounds.loc[0,'maxy']+1])
+
+    return Par
 
 def RenameFiles(Path, fmt = '%Y.%m.%d'):
     """
