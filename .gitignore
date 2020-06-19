@@ -43,3 +43,5 @@ build_artifacts
 .github/workflows/automerge.yml
 docs/source/HapiDocs.sublime-project
 docs/source/HapiDocs.sublime-workspace
+docs/HapiDocs.sublime-project
+docs/HapiDocs.sublime-workspace
