@@ -13,8 +13,8 @@ nav:
     - Home: index.md
     - Tutorial:
         - Introduction: README.md
-#        - Getting Started: getting_started.md
-#        - Hydrological_model: Hydrological_model.md
+        - Getting Started: getting_started.md
+        - Hydrological_model: Hydrological_model.md
     - License: license.md
 
 
