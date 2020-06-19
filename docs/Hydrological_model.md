@@ -4,6 +4,8 @@ One of the Inputs to Hapi in the Conceptual Hydrological model, HBV is one of th
 
 ## Parameters
 
+You will find the following example in the `ExtractParametersBounds.py` file under the folder `/Examples/Create Inputs`. There is no need for copy paste work.
+
 To Extract the parameters range needed for the Calibration you have to prepare a shapefile of the catchment you are developing a distributed model and read it using `geopandas`, 
 
 	import geopandas as gpd
@@ -27,9 +29,4 @@ To extract the parameters from one of the ten scenarios developed to derive the 
 	# extract parameters in a specific scenarion from the 10 scenarios
 	Par['1'] = IN.ExtractParameters(Basin,"01")
 
-```
-# extract parameters in a specific scenarion from the 10 scenarios
-	Par['1'] = IN.ExtractParameters(Basin,"01")
-```
-
-Optional packages are:
+the extracted parameters needs to be modified incase you are not considering the snow bucket the first 5 parameters are disregarded
