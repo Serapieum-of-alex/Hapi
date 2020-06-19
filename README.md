@@ -3,7 +3,6 @@
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/MAfarrag/HAPI/master)
 [![conda](https://anaconda.org/mafarrag/hapi/badges/version.svg)](https://anaconda.org/MAfarrag/hapi)
 [![Build Status](https://travis-ci.org/MAfarrag/Hapi.svg?branch=master)](https://travis-ci.org/MAfarrag/Hapi)
-[![PyPI pyversions](https://img.shields.io/pypi/pyversions/ansicolortags.svg)](https://pypi.python.org/pypi/ansicolortags/)
 [![Python Versions](https://img.shields.io/pypi/pyversions/HAPI-Nile.png)](https://img.shields.io/pypi/pyversions/HAPI-Nile)
 [![Documentation Status](https://readthedocs.org/projects/hapi-hm/badge/?version=latest)](https://hapi-hm.readthedocs.io/en/latest/?badge=latest)
 
