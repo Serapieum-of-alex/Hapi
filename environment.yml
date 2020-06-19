@@ -1,5 +1,6 @@
 channels:
   - conda-forge
+  - mafarrag
 dependencies:
   - pip
   - numpy
@@ -16,6 +17,8 @@ dependencies:
   - shapely
   - statsmodels
   - rasterio
+  - rasterstats
+  - oasis
   - pip:
     #- hapi-nile==0.1.0
     - git+https://github.com/MAfarrag/HAPI.git

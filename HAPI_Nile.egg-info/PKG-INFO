@@ -1,18 +1,23 @@
 Metadata-Version: 2.1
 Name: HAPI-Nile
-Version: 0.2.0
+Version: 0.3.0
 Summary: Distributed Hydrological model
 Home-page: https://github.com/MAfarrag/HAPI
 Author: Mostafa Farrag
 Author-email: moah.farag@gmail.come
 License: UNKNOWN
-Description: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2572035.svg)](https://doi.org/10.5281/zenodo.2572035)
+Description: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3819624.svg)](https://doi.org/10.5281/zenodo.3819624)
         [![PyPI version](https://badge.fury.io/py/HAPI-Nile.svg)](https://badge.fury.io/py/HAPI-Nile)
         [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/MAfarrag/HAPI/master)
+        [![conda](https://anaconda.org/mafarrag/hapi/badges/version.svg)](https://anaconda.org/MAfarrag/hapi)
+        [![Build Status](https://travis-ci.org/MAfarrag/Hapi.svg?branch=master)](https://travis-ci.org/MAfarrag/Hapi)
+        [![PyPI pyversions](https://img.shields.io/pypi/pyversions/ansicolortags.svg)](https://pypi.python.org/pypi/ansicolortags/)
+        [![Documentation Status](https://readthedocs.org/projects/hapi-hm/badge/?version=latest)](https://hapi-hm.readthedocs.io/en/latest/?badge=latest)
         
-        HAPI - Hydrological library for Python 
+        
+        Hapi - Hydrological library for Python 
         =====================================================================
-        **HAPI** is a Python package providing fast and flexible, way to build Hydrological models with different spatial representations (lumped, semidistributed and conceptual distributed) using HBV96.
+        **Hapi** is a Python package providing fast and flexible way to build Hydrological models with different spatial representations (lumped, semidistributed and conceptual distributed) using HBV96.
         The package is very flexible to an extent that it allows developers to change the structure of the defined conceptual model or to enter
         their own model, it contains two routing functions muskingum cunge, and MAXBAS triangular function.
         (all function has been tested and validated during a Master thesis at IHE-Delft April 2018 and the library is still under development)
@@ -26,9 +31,9 @@ Description: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2572035.svg)](h
           - Easy calibration of the model using Harmony search method and Genetic Algorithms
           - flexible GIS function to process rasters interpolate values and georeference 
             calculated discharge values to the correct place.
-          - Different ways for considering variability of catchment properties, lumped properties,
+          - Different ways for considering the variability of catchment properties, lumped properties,
             distributed properties and hydrologic response units
-          - Two different Ways of generating input data, from satellite data and from simple statistics
+          - Two different Ways of generating input data, from satellite data and from simple statistical
             methods like IDW(inverse distance weighting method) and ISDW(inverse dsquared istance weighting method)
           - Wide range of GIS function to process Rasters (execute some functions on a folder of rasters) like 
             project raster, resampling, Clipping, creating a raster fom arrays, Map algebra.
@@ -99,18 +104,28 @@ Description: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2572035.svg)](h
         ```
         pip install HAPI-Nile
         ```
+        ## conda
+        ```
+        conda install -c mafarrag hapi
+        ```
         ## YML file
         using the environment.yml file included with hapi you can create a new environment with all the dependencies installed with the latest Hapi version
         in the master branch
         ```
         conda env create --name Hapi_env -f environment.yml
         ```
+        
 Keywords: Hydrology,Distributed hydrological model
 Platform: UNKNOWN
 Classifier: Development Status :: 4 - Beta
 Classifier: Environment :: Console
 Classifier: Intended Audience :: Developers
 Classifier: Natural Language :: English
-Classifier: Programming Language :: Python 
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
 Classifier: Topic :: Software Development
 Description-Content-Type: text/markdown
