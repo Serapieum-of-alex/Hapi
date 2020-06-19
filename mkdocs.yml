@@ -12,7 +12,7 @@ theme:
 nav:
     - Home: index.md
     - Tutorial:
-        - Introduction: README.md
+        - Introduction: Introduction.md
         - Getting Started: getting_started.md
         - Inputs: Inputs.md
         - Hydrological model: Hydrological_model.md
