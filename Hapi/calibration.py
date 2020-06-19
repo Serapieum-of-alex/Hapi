@@ -395,7 +395,7 @@ def LumpedCalibration(ConceptualModel, data, Basic_inputs, OF, OF_args, Q_obs,
     opt_engine = HSapi(pll_type=pll_type , options=ApiObjArgs)
 
     # parse the ApiSolveArgs inputs
-    availablekeys = ['store_sol',"display_opts","store_hst","hot_start"]
+    # availablekeys = ['store_sol',"display_opts","store_hst","hot_start"]
 
     store_sol = ApiSolveArgs['store_sol']
     display_opts = ApiSolveArgs['display_opts']

@@ -19,6 +19,7 @@ dependencies:
   - rasterio
   - rasterstats
   - oasis
-  - pip:
+  - hapi
+  #- pip:
     #- hapi-nile==0.1.0
-    - git+https://github.com/MAfarrag/HAPI.git
+    #- git+https://github.com/MAfarrag/HAPI.git
