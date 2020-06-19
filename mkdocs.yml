@@ -15,7 +15,7 @@ nav:
         - Introduction: README.md
         - Getting Started: getting_started.md
         - Inputs: Inputs.md
-        - Hydrological_model: Hydrological_model.md
+        - Hydrological model: Hydrological_model.md
 
     - About:
         - License: license.md
