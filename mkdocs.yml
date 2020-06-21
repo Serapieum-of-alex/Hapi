@@ -10,12 +10,13 @@ theme:
     name: readthedocs
 
 nav:
-    - Home: index.md
+    - Home: Introduction.md
+    - Content: index.md
     - Tutorial:
-        - Introduction: Introduction.md
         - Getting Started: getting_started.md
         - Inputs: Inputs.md
         - Hydrological model: Hydrological_model.md
+        - Sensitivity Analysis: Sensitivity_Analysis.md
 
     - About:
         - License: license.md
