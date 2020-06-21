@@ -4,7 +4,7 @@ The SMHI version of the HBV model is usually run with daily time steps, but high
 HBV model consists of three main components:
 snow accumulation and melt, soil moisture accounting, response and river routing subroutines
 
-![HBV Component](../img/water_cycle.png)
+![HBV Component](/img/water_cycle.png)
 
 [Bergström, 1992]
 The model has number of free parameters, values of which are found by calibration, There are also parameters describing the characteristics of the basin and its climate
