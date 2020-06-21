@@ -15,8 +15,8 @@ to correct for systematic errors before entering the model.
 
 where 14 parameters ["tt","sfcf","cfmax","cwh","cfr","fc","beta","lp","k0","k1","k2","uzl","perc","maxbas"]
 
-![HBV Component](../img/water_cycle.png)
-
+![HBV Component](../img/HBV_buckets.png)
+[Bergström, 1992]
 ## Snow
 The snow routine controls snow accumulation and melt. The precipitation accumulates as snow when the air temperature drops below a threshold value (TT). snow accumulation is adjusted by a free parameter, Sfcf, the snowfall correction factor.
 Melt starts with temperatures above the threshold, TT, according to a simple degree-day
@@ -48,3 +48,25 @@ Tm is monthly long term average temperature (C)
 Ep is monthly long term average potential evapotranspiration
 ```
 ![Beta](../img/Evapotranspiration.png)
+
+## Runoff response
+The runoff response routine transforms excess water from the soil moisture routine to discharge. The routine consists of two reservoirs with three free parameters: three recession coefficients, K0, K1 and :K2, a threshold UZL, and a constant percolation rate, PERC. 
+
+Finally there is a filter for smoothing of the generated flow. This filter consists of a triangular weighting function with one free parameter, MAXBAS. There is also a Muskingum routing procedure available for flood routing.
+
+![MaxBas](../img/maxbas.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Bergström, Sten. 1992. “The HBV Model - Its Structure and Applications.” Smhi Rh 4(4): 35.
