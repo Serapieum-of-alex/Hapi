@@ -24,9 +24,14 @@ where: MELT = snowmelt (mm/day)
 Cfmax = degree-day factor (mm/°C · day)
 TT = temperature threshold (C).
 ```
-The liquid water holding capacity of snow has to be exceeded before any runoff is generated. It is usually preset to 10 % . A refreezing coefficient, which is used to refreeze free water in the snow if snowmelt is interrupted, is fix.ed in the code.
-Thus the snow routine of the HBV model has primarily three free parameters that have to be estimated by calibration: TT, CsF and CMELT· lf a separation into vegetation zones is used, the number doubles. It is also common to use separate threshold temperatures
-for snow accumulation and melt. 
-The snow routine of the HBV model has been subject to major modifications in the Norwegian, Finnish and Swiss versions of the model. A statistical routine for redistribution of snow over the timber-line has, for example, been introduced by Killingtveit and Aam (1978), and several attempts have been made to introduce glacier-melt subroutines 
+The liquid water holding capacity of snow has to be exceeded before any runoff is generated. A refreezing coefficient, which is used to refreeze free water in the snow if snowmelt is interrupted.
+
+The snow routine of the HBV model has primarily four free parameters that have to be estimated by calibration: TT, Cfmax, cfr, cwh· 
+
+## Soil moisture
+The soil moisture accounting routine computes an index of the wetness of the entire basin and integrates interception and soil moisture storage. Soil moisture subroutine is controlled by three free parameters, FC, BETA and LP. FC (Field capacity) is the maximum soil moisture storage in the basin and BETA determines the relative contribution to runoff from a millimeter of rain or snowmelt at a given soil moisture deficit. 
+![Beta](../img/Beta.png)
+
+LP controls the shape of the reduction curve for potential evaporation. At soil moisture values below LP the actual evapotranspiration will be reduced.
 
 ["tt","sfcf","cfmax","cwh","cfr","fc","beta","lp","k0","k1","k2","uzl","perc","maxbas"]
