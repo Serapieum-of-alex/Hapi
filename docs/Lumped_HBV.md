@@ -56,17 +56,13 @@ Finally there is a filter for smoothing of the generated flow. This filter consi
 
 ![MaxBas](../img/maxbas.png)
 
+## Lake
 
+lakes can be included explicitly using a storage discharge curve relationship which requires dividing the catchment into sub-basins defined by outlet of lakes.
+In case of the existence of a lake in the catchment, the outflow from basins upstream of the lake will be summed and be used as an inflow to the lake. 
+Storage in the lake will be computed according to water stage/storage curve or water stage/lake surface area table and outflow can be obtained from a rating curve (IHMS 2010).
+Lakes have a significant impact on the dynamics of runoff process and the routing and therefore modelled explicitly, and for that the presence of a lake in the catchment is an important factor for choosing substructure based on sub basins. (Lindström et al. 1997)
 
-
-
-
-
-
-
-
-
-
-
+![MaxBas](../img/lake.png)
 
 Bergström, Sten. 1992. “The HBV Model - Its Structure and Applications.” Smhi Rh 4(4): 35.
