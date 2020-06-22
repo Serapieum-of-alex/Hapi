@@ -10,7 +10,7 @@ theme:
     name: readthedocs
 
 nav:
-    - Home: Introduction.md
+    - Home: index.md
     - Tutorial:
         - Inputs: Inputs.md
         - Lumped Hydrological Model: Lumped_HBV.md
