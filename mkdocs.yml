@@ -15,7 +15,7 @@ nav:
         - Inputs: Inputs.md
         - Lumped Hydrological Model: Lumped_HBV.md
         - Sensitivity Analysis: Sensitivity_Analysis.md
-        - License: license.md
+    - License: license.md
 
 
 
