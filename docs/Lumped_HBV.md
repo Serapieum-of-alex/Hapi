@@ -17,7 +17,7 @@ where 14 parameters ["tt","sfcf","cfmax","cwh","cfr","fc","beta","lp","k0","k1",
 
 ![HBV Component](../img/HBV_buckets.png)
 [Bergström, 1992]
-### Snow
+## Snow
 The snow routine controls snow accumulation and melt. The precipitation accumulates as snow when the air temperature drops below a threshold value (TT). snow accumulation is adjusted by a free parameter, Sfcf, the snowfall correction factor.
 Melt starts with temperatures above the threshold, TT, according to a simple degree-day
 ```
@@ -30,7 +30,7 @@ The liquid water holding capacity of snow has to be exceeded before any runoff i
 
 The snow routine of the HBV model has primarily four free parameters that have to be estimated by calibration: TT, Cfmax, cfr, cwh· 
 
-### Soil moisture
+## Soil moisture
 The soil moisture accounting routine computes an index of the wetness of the entire basin and integrates interception and soil moisture storage. Soil moisture subroutine is controlled by three free parameters, FC, BETA and LP. FC (Field capacity) is the maximum soil moisture storage in the basin and BETA determines the relative contribution to runoff from a millimeter of rain or snowmelt at a given soil moisture deficit. 
 
 ![Beta](../img/Beta.png)
@@ -49,14 +49,14 @@ Ep is monthly long term average potential evapotranspiration
 ```
 ![Beta](../img/Evapotranspiration.png)
 
-### Runoff response
+## Runoff response
 The runoff response routine transforms excess water from the soil moisture routine to discharge. The routine consists of two reservoirs with three free parameters: three recession coefficients, K0, K1 and :K2, a threshold UZL, and a constant percolation rate, PERC. 
 
 Finally there is a filter for smoothing of the generated flow. This filter consists of a triangular weighting function with one free parameter, MAXBAS. There is also a Muskingum routing procedure available for flood routing.
 
 ![MaxBas](../img/maxbas.png)
 
-### Lake
+## Lake
 
 lakes can be included explicitly using a storage discharge curve relationship which requires dividing the catchment into sub-basins defined by outlet of lakes.
 In case of the existence of a lake in the catchment, the outflow from basins upstream of the lake will be summed and be used as an inflow to the lake. 
@@ -68,3 +68,30 @@ Lakes have a significant impact on the dynamics of runoff process and the routin
 Bergström, Sten. 1992. “The HBV Model - Its Structure and Applications.” Smhi Rh 4(4): 35.
 
 # Hapi Lumped Model
+
+to run the HBV lumped model inside Hapi you need to prepare the meteorological inputs (rainfall, temperature and potential evapotranspiration), HBV parameters, and the HBV model (you can load Bergström, 1992 version of HBV from Hapi )
+
+- First load the prepared lumped version of the HBV module inside Hapi, the triangular routing function and the wrapper function that runs the lumped model `RUN`.
+```
+import Hapi.hbv_bergestrom92 as HBVLumped
+import Hapi.run as RUN
+from Hapi.routing import TriangularRouting
+```
+- read the meteorological data, data has be in the form of numpy array with the following order [rainfall, ET, Temp, Tm], ET is the potential evapotranspiration, Temp is the temperature (C), and Tm is the long term monthly average temperature.
+```
+import numpy as np
+import pandas as pd
+
+data=pd.read_csv("meteo_data.txt",header=0 ,delimiter=',', index_col=0)
+data=data.values
+```
+- Loat the pre-estimated parameters with the following order ["rfcf","tt","sfcf","cfmax","cwh","cfr","fc","beta","lp","k0","k1","k2","uzl","perc","maxbas"] if the catchment has snow, if not ["rfcf","fc","beta","lp","k0","k1","k2","uzl","perc","maxbas"], 
+
+```
+parameters = pd.read_csv("parameter.txt", index_col = 0, header = None)
+parameters = parameters[1].tolist()
+```
+```
+import Hapi.performancecriteria as PC
+import matplotlib.pyplot as plt
+```

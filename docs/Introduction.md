@@ -84,9 +84,7 @@ You can compile the repository after you clone it
 iF python is already added to your system environment variable
 ```
 python setup.py install
-```
-###### or 
-```
+# 
 pathto_your_env\python setup.py install
 ```
 ## pip
