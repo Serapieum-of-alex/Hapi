@@ -1,62 +1,32 @@
-# Welcome to Hapi 
-Distributed Hydrological Model
+# Hapi Inputs
+One of the Inputs to Hapi in the Conceptual Hydrological model, HBV is one of the most used lumped conceptual hydrological model
 
 
+## Parameters
 
+You will find the following example in the `ExtractParametersBounds.py` file under the folder `/Examples/Create Inputs`. There is no need for copy paste work.
 
+To Extract the parameters range needed for the Calibration you have to prepare a shapefile of the catchment you are developing a distributed model and read it using `geopandas`, 
 
-## Purpose
+	import geopandas as gpd
+	import numpy as np
+	import pandas as pd
+	import Hapi.inputs as IN
 
-Discription
+	BasinF = "Path to shapefile"
+	Basin = gpd.read_file(BasinF)
+	# parameters name with the same order inside the Input module
+	ind = ["tt","sfcf","cfmax","cwh","cfr","fc","beta","lp","k0","k1","k2","uzl","perc","maxbas"]
+	Par = pd.DataFrame(index = ind)
 
-```
-some code
-```
+the `inputs` module in Hapi has a `ExtractParametersBoundaries` method to overlay the basin shapefile with the global parameters rasters and extract the max and min parameter values within the basin and plots your basin shapefile in top of the world map to make sure of the projection transformation from whatever projection your basin shapefile to the `WGS64` that the parameters rasters have
 
+	# extract parameters boundaries
+	Par['UB'], Par['LB'] = IN.ExtractParametersBoundaries(Basin)
 
-## Features
+To extract the parameters from one of the ten scenarios developed to derive the Global model `ExtractParameters` method takes the number of the scenario as a string and return the parameters
 
+	# extract parameters in a specific scenarion from the 10 scenarios
+	Par['1'] = IN.ExtractParameters(Basin,"01")
 
-* Available algorithms are (`HBV`).
-* Nash-Sutcliff (`NSE`), log Nash-Sutcliff (`logNSE`), Root Mean Squared Error (`RMSE`), Mean Absolute Error (`MAE`).
-  Kling-Gupta Efficiency (`KGE`).
-
-
-
-## Installation
-
-### Dependencies
-
-* [NumPy](http://www.numpy.org/ "Numpy")
-* [Scipy](http://www.scipy.org/ "Scipy")
-
-Optional packages are:
-
-* [Matplotlib](http://matplotlib.org/ "Matplotlib")
-* [Pandas](http://pandas.pydata.org/ "Pandas")
-* [mpi4py](http://mpi4py.scipy.org/ "mpi4py")
-
-### Download
-
-	pip install Hapi
-
-
-## Project layout
-
-
-
-*Above: Overview about functionality of the Hapi package*
-
-
-	
-	__init__.py             # Ensures that all needed files are loaded.
-	
-    algorithms/
-        __init__.py   # Ensures the availability of all algorithms
-	
-	parallel/
-		mpi.py        #Basic Parralel Computing features 
-
-	examples/
-		3dplot.py                   # Response surface plot of example files
-
+the extracted parameters needs to be modified incase you are not considering the snow bucket the first 5 parameters are disregarded

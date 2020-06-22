@@ -16,7 +16,7 @@ nav:
         - Getting Started: getting_started.md
         - Inputs: Inputs.md
         - Lumped Hydrological Model: Lumped_HBV.md
-        - Hydrological model: Hydrological_model.md
+        #- Hydrological model: Hydrological_model.md
         - Sensitivity Analysis: Sensitivity_Analysis.md
 
     - About:
