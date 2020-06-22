@@ -779,7 +779,7 @@ class CrossSections():
 
 
     def reg_plot_river(self, river_lst, data, minmax_XS_area, filename, log,
-                       Save = False):
+                       Save = False, *args, **kargs):
         """
         Use the ordinary least squares to make a regression and plot the
         output.
@@ -787,6 +787,14 @@ class CrossSections():
         This version makes use of the field 'river' in data to define a subset
         of gauges used for the regression.
         """
+        # for key in kwargs.keys():
+        #     if key == "XLim":
+        #         xmin = kwargs['XLim'][0]
+        #         xmax = kwargs['XLim'][1]
+        #     if key == "area":
+        #         minmax_XS_area = kwargs['area']
+
+
         df_output = pd.DataFrame()
         fig1 = plt.figure(figsize=(11.69, 16.53))
         for i, riveri in enumerate(river_lst):
@@ -875,7 +883,8 @@ class CrossSections():
             plt.close(fig2)
 
 
-    def reg_plot_subbasin(subbasin_lst, data, filename, log, redfact):
+    def reg_plot_subbasin(self, subbasin_lst, data, minmax_XS_area, filename, log,
+                          redfact, Save = False,):
         """
         Use the ordinary least squares to make a regression and plot the
         output.
@@ -955,17 +964,23 @@ class CrossSections():
                 # plt.show()
         plt.tight_layout()
         if log is True:
-            fig1.savefig(filename + '_LogLog.png', dpi=400)
+            if Save:
+                fig1.savefig(filename + '_LogLog.png', dpi=400)
+                plt.close(fig1)
             fig2 = sm.graphics.plot_regress_exog(resultslog, 1)
-            fig2.savefig(filename + '_ResidLogLog.png', dpi=400)
-            df_output.to_csv(filename + '_LogLog.csv', sep=',')
+            if Save:
+                fig2.savefig(filename + '_ResidLogLog.png', dpi=400)
+                df_output.to_csv(filename + '_LogLog.csv', sep=',')
         elif log is False:
-            fig1.savefig(filename + '_Linear.png', dpi=400)
+            if Save:
+                fig1.savefig(filename + '_Linear.png', dpi=400)
+                plt.close(fig1)
             fig2 = sm.graphics.plot_regress_exog(results, 1)
-            fig2.savefig(filename + '_ResidLinear.png', dpi=400)
-            df_output.to_csv(filename + '_Linear.csv', sep=',')
-        plt.close(fig1)
-        plt.close(fig2)
+            if Save:
+                fig2.savefig(filename + '_ResidLinear.png', dpi=400)
+                plt.close(fig2)
+                df_output.to_csv(filename + '_Linear.csv', sep=',')
+
 
     @staticmethod
     def results_summary_to_dataframe(res):
