@@ -488,8 +488,10 @@ def StepRun(p, p2, v, St, snow=0):
     inf, wc_new, sp_new = Snow(temp, rf, sf, wc_old, sp_old,
                                tt, cfmax, cfr, cwh)
 
+    # sm_new, uz_int_1 = Soil(temp, inf, ep, sm_old, uz_old, tm,
+                            # fc, beta, e_corr, lp, c_flux)
     sm_new, uz_int_1 = Soil(temp, inf, ep, sm_old, uz_old, tm,
-                            fc, beta, e_corr, lp, c_flux)
+                            fc, beta, e_corr, lp)
 
     q_uz, q_lz, uz_new, lz_new = Response(tfac, lz_old, uz_int_1,
                                           perc, k, k1, k2, uzl)
