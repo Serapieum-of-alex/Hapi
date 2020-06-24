@@ -101,7 +101,7 @@ parameters = parameters[1].tolist()
 ConceptualModel = HBVLumped
 # p2 = [temporal resolution, catchment area]
 p2=[24, 1530]
-init_st=[0,5,5,5,0]
+init_st=[0,10,10,10,0]
 # no snow subroutine
 snow = 0
 ```

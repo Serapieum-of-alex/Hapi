@@ -13,7 +13,7 @@ import Hapi.hbv_bergestrom92 as HBVLumped
 import Hapi.run as RUN
 from Hapi.routing import TriangularRouting
 ```
-load the meteorological data
+load all data needed to run the model as mentioned in [Lumped model](Lumped_HBV.md)
 ```
 ### meteorological data
 path= comp + "/Coello/Hapi/Data/00inputs/Lumped/"
@@ -25,7 +25,7 @@ data=data.values
 ConceptualModel = HBVLumped
 # p2 = [temporal resolution, catchment area]
 p2=[24, 1530]
-init_st=[0,5,5,5,0]
+init_st=[0,10,10,10,0]
 # no snow subroutine
 snow = 0
 
