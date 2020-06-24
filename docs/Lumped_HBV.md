@@ -13,7 +13,11 @@ The soil moisture accounting calculations require data on the potential evapotra
 be used. The source of these data may either be calculations according to the Penman formula or similar, or measurements by evaporimeters. In the latter case it is important
 to correct for systematic errors before entering the model.
 
-where 14 parameters ["tt","sfcf","cfmax","cwh","cfr","fc","beta","lp","k0","k1","k2","uzl","perc","maxbas"]
+where 14 parameters [`tt`,`sfcf`,`cfmax`,`cwh`,`cfr`,`fc`,`beta`,`lp`,`k0`,`k1`,`k2`,`uzl`,`perc`,`maxbas`]
+
+another two parameters are added for the correction of the rainfall values `rfcf` and for the correction of the calculated evapotranspiration values `E_corr`, therefore the HBV version used inside Hapi uses 16 parameter with the following order 
+[`tt`,`sfcf`,`cfmax`,`cwh`,`cfr`,`rfcf`,`fc`,`beta`,`E_corr`,`lp`,`k0`,`k1`,`k2`,`uzl`,`perc`,`maxbas`], and in case the catchment does not have a snow then the HBV model used 11 parameter (excluding the first 5 parameters)
+
 
 ![HBV Component](../img/HBV_buckets.png)
 [Bergström, 1992]
