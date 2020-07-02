@@ -10,7 +10,7 @@ import os
 import numpy as np
 import Hapi.raster as R
 
-Path = "F:/02Case studies/Hapi Examples/"
+Path = "F:/02Case studies/El Salvador/Hapi Examples/"
 SavePath  = Path + "results/ZonalStatistics"
 BaseMapF = Path + "data/Polygons.tif"
 
