@@ -12,7 +12,7 @@ import Hapi.raster as R
 
 Path = "F:/02Case studies/Hapi Examples/"
 SavePath  = Path + "results/ZonalStatistics"
-BaseMapF = Path + "data/SubID.tif"
+BaseMapF = Path + "data/Polygons.tif"
 
 
 ExcludedValue = 0
@@ -23,12 +23,12 @@ OccupiedCellsOnly = False
 ExtractedValues, NonZeroCells = R.OverlayMap(Path+"data/Map1.zip", BaseMapF,
                                              ExcludedValue, Compressed,OccupiedCellsOnly)
 
-DepthPrefix = "Map"
+MapPrefix = "Map"
 # several maps
-ExtractedValues, NonZeroCells = R.OverlayMaps(Path+"data", BaseMapF, DepthPrefix,
+ExtractedValues, NonZeroCells = R.OverlayMaps(Path+"data", BaseMapF, MapPrefix,
                                               ExcludedValue, Compressed,OccupiedCellsOnly)
 
-# save depths of each sub-basin
+# save extracted values in different files
 Polygons = list(ExtractedValues.keys())
 for i in range(len(Polygons)):
     np.savetxt(SavePath +"/" + str(Polygons[i]) + ".txt",
