@@ -60,11 +60,14 @@ ExtractedValues, Cells = R.OverlayMap(Path+"DepthMax22489.zip", BaseMapF,Exclude
 
 ## OverlayMap Several maps
 
+The `OverlayMaps` function takes path to the folder where more than one map exist instead of a path to one file, it also takes an extra parameter `FilePrefix`, this prefix is used to name the files in the given path and all the file has to start with the prefix
+
 ```
-MapPrefix = "Map"
+FilePrefix = "Map"
 # several maps
-ExtractedValues, NonZeroCells = R.OverlayMaps(Path+"data", BaseMapF, MapPrefix,ExcludedValue, Compressed,OccupiedCellsOnly)
+ExtractedValues, Cells = R.OverlayMaps(Path+"data", BaseMapF, FilePrefix,ExcludedValue, Compressed,OccupiedCellsOnly)
 ```
+both methods `OverlayMap` and `OverlayMaps` returns the values as a `dict`, the difference is in the number of cells `OverlayMaps` returns a single integer number while `OverlayMap` returns a `dataframe` with two columns the first in the map name and the second is the number of occupied cell in each map.
 
 ## Save extracted values 
 
