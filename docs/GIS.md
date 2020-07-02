@@ -1,15 +1,13 @@
 # GIS Functions
 
-This file includes
-- [event module](GIS#zonal-statistics)
 
-# Zonal Statistics
+## Zonal Statistics
 
 one of the most frequent used function in geospatial analysis is zonal statistics, where you overlay a shapefile contains some polygons with some maps and you want each polygon to extract the values that locates inside it from the map, `raster` module in `Hapi` contains a similar function `OverlayMap` where you can convert the polygon shapefile into a raster first and use it as a base map to overlay with other maps
 
 You don't need to copy and paste the code in this page you can find it in the examples ([Zonal Statistics](https://github.com/MAfarrag/Hapi/blob/master/Examples/GIS/ZonalStatistics.py))
 
-## OverlayMap one map
+### OverlayMap one map
 
 The `OverlayMap` function takes two ascii files the `BaseMap` which is the raster/asc file of the polygons and the secon is the asc file you want to extract its values. 
 
@@ -58,7 +56,7 @@ OccupiedCellsOnly = False
 ExtractedValues, Cells = R.OverlayMap(Path+"DepthMax22489.zip", BaseMapF,ExcludedValue, Compressed,OccupiedCellsOnly)
 ```
 
-## OverlayMap Several maps
+### OverlayMap Several maps
 
 The `OverlayMaps` function takes path to the folder where more than one map exist instead of a path to one file, it also takes an extra parameter `FilePrefix`, this prefix is used to name the files in the given path and all the file has to start with the prefix
 
@@ -69,7 +67,7 @@ ExtractedValues, Cells = R.OverlayMaps(Path+"data", BaseMapF, FilePrefix,Exclude
 ```
 both methods `OverlayMap` and `OverlayMaps` returns the values as a `dict`, the difference is in the number of cells `OverlayMaps` returns a single integer number while `OverlayMap` returns a `dataframe` with two columns the first in the map name and the second is the number of occupied cell in each map.
 
-## Save extracted values 
+### Save extracted values 
 
 ```
 # save extracted values in different files
