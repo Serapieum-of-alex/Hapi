@@ -2060,20 +2060,17 @@ def ExtractValues(Path, ExcludeValue, Compressed = True, OccupiedCellsOnly=True)
 def OverlayMap(Path, BaseMap, ExcludeValue, Compressed = False, OccupiedCellsOnly=True):
     """
     =================================================================
-        OverlayMaps(Path, ExcludeValue, Compressed = True)
+        (Path, BaseMap, ExcludeValue, Compressed = False, OccupiedCellsOnly=True)
     =================================================================
     this function is written to extract and return a list of all the values
     in an ASCII file
 
     Inputs:
         1-Path:
-            [String] a path to the folder includng the maps.
+            [String] a path to ascii file (inclusing the extension).
         2-BaseMap:
             [String/array] a path includng the name of the ASCII and extention like
-            path="data/cropped.asc" / or the array it self.
-        3-FilePrefix:
-            [String] a string that make the files you want to filter in the folder
-            uniq.
+            path="data/cropped.asc".
         3-ExcludedValue:
             [Numeric] values you want to exclude from extracted values.
         4-Compressed:
@@ -2259,6 +2256,7 @@ def OverlayMaps(Path, BaseMapF, FilePrefix, ExcludeValue, Compressed = False,
             continue
 
     return ExtractedValues, NonZeroCells
+
 
 def Normalize(array):
     """Normalizes numpy arrays into scale 0.0 - 1.0"""
