@@ -19,7 +19,7 @@ import numpy as np
 import gdal
 from Oasis.optimization import Optimization
 from Oasis.hsapi import HSapi
-from Oasis.optimizer import Optimizer
+# from Oasis.optimizer import Optimizer
 
 
 # functions
@@ -182,12 +182,12 @@ def RunCalibration(ConceptualModel, Paths, Basic_inputs, SpatialVarFun, SpatialV
     ### optimization
 
     # get arguments
-    store_history=OptimizationArgs[0]
-    history_fname=OptimizationArgs[1]
+    ApiObjArgs = OptimizationArgs[0]
+    pll_type = OptimizationArgs[1]
+    ApiSolveArgs = OptimizationArgs[2]
     # check optimization arguement
-    assert store_history !=0 or store_history != 1,"store_history should be 0 or 1"
-    assert type(history_fname) == str, "history_fname should be of type string "
-    assert history_fname[-4:] == ".txt", "history_fname should be txt file please change extension or add .txt ad the end of the history_fname"
+    assert type(ApiObjArgs) == dict, "store_history should be 0 or 1"
+    assert type(ApiSolveArgs) == dict, "history_fname should be of type string "
 
     print('Calibration starts')
     ### calculate the objective function
@@ -201,7 +201,7 @@ def RunCalibration(ConceptualModel, Paths, Basic_inputs, SpatialVarFun, SpatialV
             par_dist=SpatialVarFun(par,*SpatialVarArgs,kub=kub,klb=klb)
 
             #run the model
-            _, q_out, q_uz_routed, q_lz_trans=wrapper.Dist_model(ConceptualModel,
+            _, q_out, q_uz_routed, q_lz_trans = wrapper.HapiModel(ConceptualModel,
                                                                  acc, fd, prec, evap,
                                                                  temp, par_dist, p2,
                                                                  snow , init_st)
@@ -231,21 +231,17 @@ def RunCalibration(ConceptualModel, Paths, Basic_inputs, SpatialVarFun, SpatialV
 
     print(opt_prob)
 
-    opt_engine = HSapi(etol=0.0001,atol=0.0001,rtol=0.0001, stopiters=10,
-                       hmcr=0.5,par=0.5) #,filename='mostafa.out'
+    opt_engine = HSapi(pll_type=pll_type , options=ApiObjArgs)
 
-    Optimizer.__init__(opt_engine, def_options={
-                    'hms':[int,9], 'hmcr':[float,0.95], 'par':[float,0.99], 'dbw':[int,2000],
-                	'maxoutiter':[int,2e3],'maxinniter':[int,2e2], 'stopcriteria':[int,1],
-                	'stopiters':[int,20], 'etol':[float,0.0001], 'itol':[float,0.0001],
-                	'atol':[float,0.0001], 'rtol':[float,0.0001], 'prtoutiter':[int,0],
-                	'prtinniter':[int,0], 'xinit':[int,0], 'rinit':[float,1.0],
-                	'fileout':[int,store_history], 'filename':[str,'parameters.txt'],
-                	'seed':[float,0.5], 'scaling':[int,1],
-                		})
 
-    res = opt_engine(opt_prob)
+    store_sol = ApiSolveArgs['store_sol']
+    display_opts = ApiSolveArgs['display_opts']
+    store_hst = ApiSolveArgs['store_hst']
+    hot_start = ApiSolveArgs['hot_start']
 
+
+    res = opt_engine(opt_prob, store_sol=store_sol, display_opts=display_opts,
+                     store_hst=store_hst, hot_start=hot_start)
 
     return res
 
@@ -334,6 +330,8 @@ def LumpedCalibration(ConceptualModel, data, Basic_inputs, OF, OF_args, Q_obs,
     snow = Basic_inputs['snow']
     Routing = Basic_inputs["Routing"]
     RoutingFn = Basic_inputs["RoutingFn"]
+    if 'InitialValues' in Basic_inputs.keys():
+        InitialValues = Basic_inputs['InitialValues']
 
     assert len(UB)==len(LB), "length of UB should be the same like LB"
 
@@ -387,7 +385,7 @@ def LumpedCalibration(ConceptualModel, data, Basic_inputs, OF, OF_args, Q_obs,
     opt_prob = Optimization('HBV Calibration', opt_fun)
 
     for i in range(len(LB)):
-        opt_prob.addVar('x{0}'.format(i), type='c', lower=LB[i], upper=UB[i])
+        opt_prob.addVar('x{0}'.format(i), type='c', lower=LB[i], upper=UB[i], value=InitialValues[i])
 
     print(opt_prob)
 
