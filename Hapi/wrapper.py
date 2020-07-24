@@ -252,7 +252,7 @@ def Lumped(ConceptualModel,data,parameters,p2,init_st,snow,Routing=0, RoutingFn=
 
     # from the conceptual model calculate the upper and lower response mm/time step
 
-    q_uz, q_lz, st = ConceptualModel.Simulate(p, t, et, parameters, p2,
+    q_uz, q_lz, st = ConceptualModel.Simulate(p, t, et, parameters,#p2,
                                                  init_st = init_st,
                                                  ll_temp = tm,
                                                  q_init = None,
