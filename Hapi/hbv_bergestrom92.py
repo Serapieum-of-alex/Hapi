@@ -203,8 +203,6 @@ def Soil(temp, inf, ep, sm_old, uz_old, tm, fc, beta, e_corr, lp): #, c_flux
         Evapotranspiration corrector factor
     lp : float _soil
         wilting point
-    tfac : float
-        Time conversion factor
     c_flux : float
         Capilar flux in the root zone
     _in : float
@@ -258,10 +256,10 @@ def Soil(temp, inf, ep, sm_old, uz_old, tm, fc, beta, e_corr, lp): #, c_flux
     return sm_new, uz_int_1
 
 
-def Response(tfac, lz_old, uz_int_1, perc, k, k1, k2, uzl):
+def Response(lz_old, uz_int_1, perc, k, k1, k2, uzl):
     """
     ============================================================
-        Response(tfac, perc, k, k1, k2, uzl, area, lz_old, uz_int_1)
+        Response(perc, k, k1, k2, uzl, area, lz_old, uz_int_1)
     ============================================================
     The response routine of the HBV-96 model.
 
@@ -279,8 +277,6 @@ def Response(tfac, lz_old, uz_int_1, perc, k, k1, k2, uzl):
 
     Parameters
     ----------
-        tfac : float
-            Number of hours in the time step
         perc : float
             Percolation value [mm\hr]
         k : float
@@ -334,6 +330,7 @@ def Response(tfac, lz_old, uz_int_1, perc, k, k1, k2, uzl):
     lz_new = lz_int_1 - (q_2)
 
     q_uz=q_0+q_1
+    # convert the discharge to m3/sec
 #    q_new = area*(q_0 + q_1)/(3.6*tfac)  # q mm , area sq km  (1000**2)/1000/f/60/60 = 1/(3.6*f)
                                                     # if daily tfac=24 if hourly tfac=1 if 15 min tfac=0.25
 
@@ -389,7 +386,7 @@ def Routing(q, maxbas=1):
     return q_r
 
 
-def StepRun(p, p2, v, St, snow=0):
+def StepRun(p, v, St, snow=0): #p2,
     """
     ============================================================
         StepRun(p, p2, v, St, snow=0)
@@ -467,8 +464,8 @@ def StepRun(p, p2, v, St, snow=0):
         perc = p[9]
 
     ## Non optimisable parameters
-    tfac = p2[0]
-    area = p2[1]
+    # tfac = p2[0]
+    # area = p2[1]
 
     ## Parse of Inputs
     prec = v[0] # Precipitation [mm]
@@ -493,14 +490,14 @@ def StepRun(p, p2, v, St, snow=0):
     sm_new, uz_int_1 = Soil(temp, inf, ep, sm_old, uz_old, tm,
                             fc, beta, e_corr, lp)
 
-    q_uz, q_lz, uz_new, lz_new = Response(tfac, lz_old, uz_int_1,
+    q_uz, q_lz, uz_new, lz_new = Response(lz_old, uz_int_1,
                                           perc, k, k1, k2, uzl)
 
 #    return q_new, [sp_new, sm_new, uz_new, lz_new, wc_new], uz_int_2, lz_int_1
     return q_uz, q_lz, [sp_new, sm_new, uz_new, lz_new, wc_new]
 
 
-def Simulate(prec, temp, et, par, p2, init_st=None, ll_temp=None,
+def Simulate(prec, temp, et, par, init_st=None, ll_temp=None, #p2,
              q_init=None, snow=0):
     """
     ================================================================
@@ -544,8 +541,8 @@ def Simulate(prec, temp, et, par, p2, init_st=None, ll_temp=None,
     ### inputs validation
     # data type
     assert len(init_st) == 5, "state variables are 5 and the given initial values are "+str(len(init_st))
-    assert type(p2) == list, " p2 should be of type list"
-    assert len(p2) == 2, "p2 should contains tfac and catchment area"
+    # assert type(p2) == list, " p2 should be of type list"
+    # assert len(p2) == 2, "p2 should contains tfac and catchment area"
     assert snow == 0 or snow == 1, " snow input defines whether to consider snow subroutine or not it has to be 0 or 1"
 
     if init_st is None:#   0  1  2  3  4  5
@@ -561,18 +558,18 @@ def Simulate(prec, temp, et, par, p2, init_st=None, ll_temp=None,
     if q_init == None:
         if snow == 1:
             # upper zone
-            q_0=[par[11]*np.max([st[0][2] - par[14],0]), ]
-            q_1=[par[12]*((st[0][2])), ]
+            q_0=[par[10]*np.max([st[0][2] - par[13],0]), ]
+            q_1=[par[11]*((st[0][2])), ]
             q_uz = [q_0[0]+q_1[0],]
             # lower zone
-            q_lz=[par[13]*st[0][3], ]
+            q_lz=[par[12]*st[0][3], ]
         else:
             # upper zone
-            q_0=[par[6]*np.max([st[0][2] - par[9],0]), ]
-            q_1=[par[7]*((st[0][2])), ]
+            q_0=[par[5]*np.max([st[0][2] - par[8],0]), ]
+            q_1=[par[6]*((st[0][2])), ]
             q_uz = [q_0[0]+q_1[0],]
             # lower zone
-            q_lz=[par[8]*st[0][3], ]
+            q_lz=[par[7]*st[0][3], ]
     else: # if initial runoff value is given distribute it evenlt between upper and lower responses
         q_uz = [q_init/2, ]
         q_lz = [q_init/2, ]
@@ -580,7 +577,7 @@ def Simulate(prec, temp, et, par, p2, init_st=None, ll_temp=None,
 
     for i in range(len(prec)):
         v = [prec[i], temp[i], et[i], ll_temp[i]]
-        q_uzi, q_lzi, st_out = StepRun(par, p2, v, st[i], snow=0)
+        q_uzi, q_lzi, st_out = StepRun(par, v, st[i], snow=0) #p2,
         q_uz.append(q_uzi)
         q_lz.append(q_lzi)
         st.append(st_out)
