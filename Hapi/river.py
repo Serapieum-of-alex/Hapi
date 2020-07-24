@@ -29,7 +29,8 @@ class River():
     # class attributes
 
 
-    def __init__(self, name, Version = 2, days = 36890, start = "1950-1-1",
+    def __init__(self, name, Version = 2, start = "1950-1-1", days = 36890,
+                 RRMstart = "1950-1-1", RRMdays =36890,
                  leftOvertopping_Suffix = "_left.txt",
                  RightOvertopping_Suffix = "_right.txt", DepthPrefix = "DepthMax",
                  DurationPrefix = "Duration", ReturnPeriodPrefix = "ReturnPeriod" ):
@@ -37,6 +38,9 @@ class River():
         self.Version = Version
         self.start = dt.datetime.strptime(start,"%Y-%m-%d")
         self.end = self.start + dt.timedelta(days = days)
+
+        self.RRMstart = dt.datetime.strptime(RRMstart,"%Y-%m-%d")
+        self.RRMend = self.RRMstart  + dt.timedelta(days = RRMdays)
 
         self.leftOvertopping_Suffix = leftOvertopping_Suffix
         self.RightOvertopping_Suffix = RightOvertopping_Suffix
@@ -46,12 +50,17 @@ class River():
         self.DurationPrefix = DurationPrefix
         self.ReturnPeriodPrefix = ReturnPeriodPrefix
 
-        Ref_ind = pd.date_range(self.start,self.end, freq='D')
+        Ref_ind = pd.date_range(self.start, self.end, freq='D')
         # the last day is not in the results day Ref_ind[-1]
         # write the number of days + 1 as python does not include the last number in the range
         # 19723 days so write 19724
         self.ReferenceIndex = pd.DataFrame(index = list(range(1,days+1)))
         self.ReferenceIndex['date'] = Ref_ind[:-1]
+
+        Ref_ind = pd.date_range(self.RRMstart,self.RRMend, freq='D')
+        self.RRMReferenceIndex = pd.DataFrame(index = list(range(1,RRMdays+1)))
+        self.RRMReferenceIndex['date'] = Ref_ind[:-1]
+
         self.FigureOptions = FigureDefaultOptions
 
 
@@ -63,7 +72,7 @@ class River():
         # convert the index into date+
         # Date = dt.datetime(1950,1,1)
         if type(Date) == str:
-            Date = dt.datetime.strptime(filter1,"%Y-%m-%d")
+            Date = dt.datetime.strptime(Date,"%Y-%m-%d")
         return np.where(self.ReferenceIndex['date'] == Date)[0][0]+1
 
     def CrossSections(self,Path):
@@ -1909,6 +1918,8 @@ class Sub(River):
         self.XSname = self.crosssections['xsid'].tolist()
 
         self.ReferenceIndex = River.ReferenceIndex
+        self.RRMReferenceIndex = River.RRMReferenceIndex
+
         self.OneDResultPath = River.OneDResultPath
         self.slope = River.slope[River.slope['SubID']==ID]['slope'].tolist()[0]
         self.USnode, self.DSnode = River.Trace(ID)
@@ -1964,18 +1975,23 @@ class Sub(River):
                 the last day in the 1D result
 
         """
-        River.Read1DResult(self,self.ID, FromDay, ToDay, Path = Path, FillMissing = FillMissing)
+        # if the results are not read yet read it
+        if not hasattr(self, "Result1D") :
+            River.Read1DResult(self,self.ID, FromDay, ToDay, Path = Path, FillMissing = FillMissing)
 
         if FromDay == '':
             FromDay = self.Result1D.loc[0,'day']
         if ToDay ==  '':
             ToDay = self.Result1D.loc[len(self.Result1D)-1,'day']
 
-        start = self.ReferenceIndex.loc[FromDay,'date']
-        end = self.ReferenceIndex.loc[ToDay+1,'date']
+        # start = self.ReferenceIndex.loc[FromDay,'date']
+        start = self.IndexToDate(FromDay)
+        # end = self.ReferenceIndex.loc[ToDay+1,'date']
+        end = self.IndexToDate(ToDay+1)
 
-        self.XSHydrographs = pd.DataFrame(index = pd.date_range(start,end,freq = 'H')[:-1])
-        self.XSWaterLevel = pd.DataFrame(index = pd.date_range(start,end,freq = 'H')[:-1])
+        if not hasattr(self, "XSHydrographs") :
+            self.XSHydrographs = pd.DataFrame(index = pd.date_range(start,end,freq = 'H')[:-1])
+            self.XSWaterLevel = pd.DataFrame(index = pd.date_range(start,end,freq = 'H')[:-1])
 
         # self.XSHydrographs['ID'] = pd.date_range(start, end, freq = 'H')[:-1]
         # self.XSWaterLevel['ID'] = pd.date_range(start, end, freq = 'H')[:-1]
@@ -1986,18 +2002,18 @@ class Sub(River):
             self.XSHydrographs[self.FirstXS] = self.Result1D['q'][self.Result1D['xs'] == self.FirstXS ].values + self.RP['HQ2'].tolist()[0]
 
             if XSID != '':
-                self.XSHydrographs[XSID] = self.Result1D['q'][self.Result1D['xs'] == self.XSID ].values + self.RP['HQ2'].tolist()[0]
+                self.XSHydrographs[XSID] = self.Result1D['q'][self.Result1D['xs'] == XSID ].values + self.RP['HQ2'].tolist()[0]
         else:
             self.XSHydrographs[self.LastXS] = self.Result1D['q'][self.Result1D['xs'] == self.LastXS ].values
             self.XSHydrographs[self.FirstXS] = self.Result1D['q'][self.Result1D['xs'] == self.FirstXS ].values
             if XSID != '':
-                self.XSHydrographs[XSID] = self.Result1D['q'][self.Result1D['xs'] == self.XSID ].values
+                self.XSHydrographs[XSID] = self.Result1D['q'][self.Result1D['xs'] == XSID ].values
 
         self.XSWaterLevel[self.LastXS]  = self.Result1D['wl'][self.Result1D['xs'] == self.LastXS ].values
         self.XSWaterLevel[self.FirstXS] = self.Result1D['wl'][self.Result1D['xs'] == self.FirstXS ].values
 
         if XSID != '':
-            self.XSWaterLevel[self.XSID]  = self.Result1D['wl'][self.Result1D['xs'] == self.XSID ].values
+            self.XSWaterLevel[XSID]  = self.Result1D['wl'][self.Result1D['xs'] == XSID ].values
 
 
         # check the first day in the results and get the date of the first day and last day
@@ -2097,7 +2113,7 @@ class Sub(River):
                         plt.plot(self.Negative['QN'][self.Negative['NegXS'][i]])
 
                     plt.title("Discharge ", fontsize = 25)
-                    plt.legend(NegXS,fontsize = 15) #+['SWIMM']
+                    plt.legend(self.Negative['NegXS'],fontsize = 15)
                     plt.xlabel("Time", fontsize = 15)
                     plt.ylabel("Discharge m3/s", fontsize = 15)
 
@@ -2116,6 +2132,7 @@ class Sub(River):
                 f = f.append( NegQmin[NegQmin[self.XSname[i+1]] < 0])
 
             self.NegQmin = f
+
 
     def ReadBoundaryConditions(self, FromDay = '', ToDay = '', Path = ''):
         """
@@ -2153,7 +2170,7 @@ class Sub(River):
             ToDay = len(self.ReferenceIndex_Results) - 1
 
         if Path != '':
-            self.USbndPath = path
+            self.USbndPath = Path
         QBC = pd.DataFrame(index = self.ReferenceIndex_Results[FromDay-1:ToDay] ,columns = list(range(24)))
         HBC = pd.DataFrame(index = self.ReferenceIndex_Results[FromDay-1:ToDay] ,columns = list(range(24)))
 
@@ -2169,6 +2186,30 @@ class Sub(River):
 
     @staticmethod
     def ReadRRMResults(Path, NodeID, FromDay, ToDay):
+        """
+        ===================================================================
+             ReadRRMResults(Path, NodeID, FromDay, ToDay)
+        ===================================================================
+        ReadRRMResults is a static method to read the results of the rainfall-runoff
+        model
+
+        Parameters
+        ----------
+        Path : [String]
+            Path to the result files.
+        NodeID : [Integer]
+            the ID given the the sub-basin .
+        FromDay : [integer], optional
+                the day you want to read the result from, the first day is 1 not zero.The default is ''.
+        ToDay : [integer], optional
+                the day you want to read the result to.
+
+        Returns
+        -------
+        Q : [Dataframe]
+            time series of the runoff .
+
+        """
 
 
         Q = pd.read_csv(Path + "/" + str(NodeID) + '.txt',header = None)
@@ -2264,12 +2305,14 @@ class Sub(River):
             # ToDay = len(self.RRM[self.USnode])-1
             ToDay = len(self.RRM[NodeID])
 
-        start = self.ReferenceIndex.loc[FromDay,'date']
-        end = self.ReferenceIndex.loc[ToDay,'date']
+        start = self.RRMReferenceIndex.loc[FromDay,'date']
+        end = self.RRMReferenceIndex.loc[ToDay,'date']
 
         # self.RRM['ID'] = pd.date_range(start, end, freq = 'D')
         self.RRM.index = pd.date_range(start, end, freq = 'D')
         # get the simulated hydrograph and add the cutted HQ2
+
+
 
     def Resample(self, XSID, ColumnName, FromDay='', ToDay = '', Delete=False):
         assert hasattr(self,"Result1D") , "please read the 1D results"
@@ -2309,6 +2352,7 @@ class Sub(River):
             self.ResampledWL.loc[:,XSID] = Q.tolist()
         elif ColumnName == "h":
             self.ResampledH.loc[:,XSID] = Q.tolist()
+
 
     def DetailedStatisticalCalculation(self, T):
         """
