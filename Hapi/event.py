@@ -219,8 +219,7 @@ class Event():
     def OverlayMaps(self, Path, BaseMapF, ExcludedValue, OccupiedCellsOnly, SavePath):
         """
         ==================================================================
-          OverlayMaps(self, Path, BaseMapF, FilePrefix, ExcludedValue,
-                      Compressed, OccupiedCellsOnly, SavePath)
+          OverlayMaps(self, Path, BaseMapF, ExcludedValue, OccupiedCellsOnly, SavePath)
         ==================================================================
         OverlayMaps method reads all the maps in the folder given by Path
         input and overlay them with the basemap and for each value in the basemap
@@ -232,15 +231,10 @@ class Event():
             2-BaseMapF:
                 [String] a path includng the name of the ASCII and extention like
                 path="data/cropped.asc"
-            3-FilePrefix:
-                [String] a string that make the files you want to filter in the folder
-                uniq
             3-ExcludedValue:
                 [Numeric] values you want to exclude from exteacted values
-            4-Compressed:
-                [Bool] if the map you provided is compressed
             5-OccupiedCellsOnly:
-                [Bool] if you want to count only cells that is not zero
+                [Bool] if you want to count only cells that is not ExcludedValue.
             6-SavePath:
                 [String] a path to the folder to save a text file for each
                 value in the base map including all the intersected values
