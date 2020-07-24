@@ -25,7 +25,7 @@ Par = pd.DataFrame(index = ind)
 # extract parameters boundaries
 Par['UB'], Par['LB'] = IN.ExtractParametersBoundaries(Basin)
 # extract parameters in a specific scenarion from the 10 scenarios
-Par['1'] = IN.ExtractParameters(Basin,"01")
+Par['1'] = IN.ExtractParameters(Basin,"10")
 """
 zoom to the place where the catchment exist to check if the basin polygon overlay
 the right location, if not there is a problem in the coordinate reference system
@@ -34,4 +34,4 @@ transformation
 #%% save the parameters
 Par['UB'].to_csv(SaveTo + "/UB-Extracted.txt", header=None)
 Par['LB'].to_csv(SaveTo + "/LB-Extracted.txt", header=None)
-Par['1'].to_csv(SaveTo + "/scenario1.txt", header=None)
+Par['1'].to_csv(SaveTo + "/scenario10.txt", header=None)
