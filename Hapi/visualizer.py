@@ -69,7 +69,8 @@ class Visualize():
 
 
     def WaterSurfaceProfile(self, Sub, PlotStart, PlotEnd, Interval = 200, XS=0,
-                            XSbefore = 10, XSafter = 10):
+                            XSbefore = 10, XSafter = 10, Save=False, Path = '',
+                            SaveFrames=60):
         """
         =============================================================================
             WaterSurfaceProfile(Sub, PlotStart, PlotEnd, interval = 200, XS=0,
@@ -92,6 +93,19 @@ class Visualize():
             number of cross sections to be displayed before the chosen cross section . The default is 10.
         XSafter : [integer], optional
             number of cross sections to be displayed after the chosen cross section . The default is 10.
+        Save : [Boolen/string]
+            different formats to save the animation 'gif', 'avi', 'mov', 'mp4'.The default is False
+        Path : [String]
+            Path where you want to save the animation, you have to include the
+            extension at the end of the path.
+        SaveFrames : [integer]
+            numper of frames per second
+
+        in order to save a video using matplotlib you have to download ffmpeg from
+        https://ffmpeg.org/ and define this path to matplotlib
+
+        import matplotlib as mpl
+        mpl.rcParams['animation.ffmpeg_path'] = "path where you saved the ffmpeg.exe/ffmpeg.exe"
 
         Returns
         -------
@@ -206,9 +220,9 @@ class Visualize():
         ax4.grid()
 
         if XS == 0 :
-            day_text = ax4.annotate('',xy=(Sub.XSname[0],Sub.crosssections['gl'].min()),fontsize= 20)
+            day_text = ax4.annotate('Begining',xy=(Sub.XSname[0],Sub.crosssections['gl'].min()),fontsize= 20)
         else:
-            day_text = ax4.annotate('',xy=(FigureFirstXS+1,Sub.crosssections['gl'][FigureLastXS]+1),fontsize= 20)
+            day_text = ax4.annotate('Begining',xy=(FigureFirstXS+1,Sub.crosssections['gl'][FigureLastXS]+1),fontsize= 20)
 
 
         WLline, = ax4.plot([],[],linewidth = 5)
@@ -277,7 +291,7 @@ class Visualize():
 
 
             return Qline, WLline, hLline, day_text, BC_q_line, BC_h_line, ax2.scatter(x, Sub.QBC[x][y],s=300),ax3.scatter(x, Sub.HBC[x][y],s=300)
-        plt.tight_layout()
+        # plt.tight_layout()
 
         #Writer = animation.FFMpegWriter
         #Writer= Writer(fps=30, bitrate=1800, #, metadata=dict(artist='Me')
@@ -286,6 +300,21 @@ class Visualize():
 
         anim = animation.FuncAnimation(fig, animate_q, init_func=init_q, frames = np.shape(counter)[0],
                                        interval = Interval, blit = True)
+        if Save != False:
+            if Save == "gif":
+                assert len(Path) >= 1 and Path.endswith(".gif"), "please enter a valid path to save the animation"
+                writergif = animation.PillowWriter(fps=SaveFrames)
+                anim.save(Path, writer=writergif)
+            else:
+                try:
+                    if Save=='avi' or Save=='mov':
+                        writervideo = animation.FFMpegWriter(fps=SaveFrames,bitrate=1800)
+                        anim.save(Path, writer=writervideo)
+                    elif Save=='mp4':
+                        writermp4 = animation.FFMpegWriter(fps=SaveFrames,bitrate=1800)
+                        anim.save(Path, writer=writermp4)
+                except FileNotFoundError:
+                    print("please visit https://ffmpeg.org/ and download a version of ffmpeg compitable with your operating system, for more details please check the method definition")
 
         #anim.save('basic_animation.mp4', writer =Writer) #fps=30,
         plt.show()
