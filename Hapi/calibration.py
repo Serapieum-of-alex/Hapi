@@ -201,7 +201,7 @@ def RunCalibration(ConceptualModel, Paths, Basic_inputs, SpatialVarFun, SpatialV
             par_dist=SpatialVarFun(par,*SpatialVarArgs,kub=kub,klb=klb)
 
             #run the model
-            _, q_out, q_uz_routed, q_lz_trans=wrapper.Dist_model(ConceptualModel,
+            _, q_out, q_uz_routed, q_lz_trans=wrapper.HapiModel(ConceptualModel,
                                                                  acc, fd, prec, evap,
                                                                  temp, par_dist, p2,
                                                                  snow , init_st)

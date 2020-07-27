@@ -20,6 +20,7 @@ import numpy as np
 import pandas as pd
 from datetime import datetime
 import gdal
+import time
 #from pyOpt import Optimization, ALHSO,Optimizer
 
 # functions
@@ -87,7 +88,7 @@ Qobs =Qobs.loc[Sdate:Edate]
 Qobs[6] =np.loadtxt("data/Discharge/Qout_c.txt")
 Qobs=Qobs.as_matrix()
 
-stations=pd.read_excel("data/Discharge/stations/4000/Q.xlsx",sheetname="coordinates",convert_float=True)
+stations=pd.read_excel("data/Discharge/stations/4000/Q.xlsx",sheet_name="coordinates",convert_float=True)
 coordinates=stations[['id','x','y','weight']][:]
 
 # calculate the nearest cell to each station
@@ -105,19 +106,30 @@ station and sum both then calculate the error based on RMSE and gives a weight
 for each station (weights are given in the excel sheet read in
 the variable stations)
 
+This function only takes available data in a flow series for the calibration process,
+since many times observed data have gaps.
+
 """
 def OF(Qobs,Qout,q_uz_routed,q_lz_trans,coordinates):
+    print('Starts OF', time.ctime())
     all_errors=[]
-    # error for all internal stations
-    for i in range(len(coordinates)-1):
-        Quz=np.reshape(q_uz_routed[int(coordinates.loc[coordinates.index[i],"cell_row"]),int(coordinates.loc[coordinates.index[i],"cell_col"]),:-1],len(Qobs))
-        Qlz=np.reshape(q_lz_trans[int(coordinates.loc[coordinates.index[i],"cell_row"]),int(coordinates.loc[coordinates.index[i],"cell_col"]),:-1],len(Qobs))
-        Q=Quz+Qlz
-        all_errors.append((PC.RMSE(Qobs[:,i],Q))*coordinates.loc[coordinates.index[i],'weight'])
-    #outlet observed discharge is at the end of the array
-    all_errors.append((PC.RMSE(Qobs[:,-1],Qout))*coordinates.loc[coordinates.index[-1],'weight'])
+    for station_id in Qobs:
+        Quz = np.reshape(q_uz_routed[int(coordinates.loc[station_id, "cell_row"]),int(coordinates.loc[station_id, "cell_col"]),:-1],len(Qobs))
+        Qlz = np.reshape(q_lz_trans[int(coordinates.loc[station_id, "cell_row"]),int(coordinates.loc[station_id, "cell_col"]),:-1],len(Qobs))
+        Q = Quz + Qlz
+        #CREATE DATAFRAME WITH AVAILABLE QOBS DATA AND DATE INDEXING
+        Qobs_inner_station = pd.notnull(Qobs[station_id])
+        dates_Qobs_avail = Qobs[Qobs_inner_station].index.tolist()
+        Qobs_avail_df = Qobs.loc[dates_Qobs_avail,str(station_id)].to_frame()
+        #CREATE DATAFRAME WITH CALCULATED Q AND DATE INDEXING
+        Qcal_df = pd.DataFrame(Q, columns=["Qcal"], index=pd.date_range(start=Sdate, end=Edate))
+        #MERGE BOTH TO COMPARE Q ONLY IN THE DATES GIVEN BY THE AVAILABLE DATA
+        Q_compared = pd.merge(left=Qobs_avail_df, left_index=True, right=Qcal_df, right_index=True, how='inner')
+        error = PC.RMSE(Q_compared.loc[:,station_id].values,Q_compared.loc[:,'Qcal'].values)*coordinates.loc[station_id,'weight']
+        all_errors.append(error)
     print(all_errors)
-    error=sum(all_errors)
+    error = np.nansum(all_errors)
+    print('Ends OF', time.ctime())
     return error
 
 ### Optimization

@@ -147,7 +147,8 @@ def par2d_lumpedK1_lake(par_g,raster,no_parameters,no_parameters_lake,kub,klb):
     return par_2d,lake_par
 
 
-def par3dLumped(par_g,raster,no_parameters,kub=1,klb=0.5,Maskingum = True):
+def par3dLumped(par_g,raster,no_parameters,no_lumped_par=None,lumped_par_pos=None,
+                kub=1,klb=0.5,Maskingum = True):
     """
     ===========================================================
       par3dLumped(par_g,raster, no_parameters, kub, klb)
@@ -165,10 +166,14 @@ def par3dLumped(par_g,raster,no_parameters,kub=1,klb=0.5,Maskingum = True):
             (DEM, flow accumulation or flow direction raster)
         3- no_parameters
             [int] no of parameters of the cell according to the rainfall runoff model
-        4- kub:
+        4- no_lumped_par
+            None
+        5- lumped_par_pos
+            None
+        6- kub:
             [float] upper bound of K value (traveling time in muskingum routing method)
             default is 1 hour
-        5- klb:
+        7- klb:
             [float] Lower bound of K value (traveling time in muskingum routing method)
             default is 0.5 hour (30 min)
 

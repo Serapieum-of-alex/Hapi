@@ -10,8 +10,10 @@ based on a source raster, perform any algebric operation on cell's values
 import os
 
 import numpy as np
+from datetime import datetime, timedelta
 
 import gdal
+from osgeo import ogr
 import osr
 import pandas as pd
 import geopandas as gpd
@@ -589,15 +591,16 @@ def ReprojectDataset(src, to_epsg=3857, cell_size=[], resample_technique="Neares
     return dst
 
 
-def RasterLike(src,array,path,pixel_type=1):
+def RasterLike(src,array,path,pixel_type=1,netCDFtoTIF=False,reference_raster=None):
     """
     ====================================================================
       RasterLike(src,array,path)
     ====================================================================
-    this function creates a Geotiff raster like another input raster, new raster
-    will have the same projection, coordinates or the top left corner of the original
-    raster, cell size, nodata velue, and number of rows and columns
-    the raster and the dem should have the same number of columns and rows
+    this function creates a Geotiff raster like another input raster or from a netCDF file
+    with a reference raster to take projection, new raster will have the same projection, 
+    coordinates or the top left corner of the original raster, cell size, nodata velue, 
+    and number of rows and columns the raster and the dem should have the same number of
+    columns and rows
 
     inputs:
     ----------
@@ -616,6 +619,12 @@ def RasterLike(src,array,path,pixel_type=1):
             4 for Unsigned integer 32
             5 for integer 16
             6 for integer 32
+        5-netCDFtoTIF:
+            [Boolean] Defines if the function will perform a conversion from netCDF to tif file
+            True    for activate conversion
+            False   for not performing any conversion
+        6-reference_raster:
+            [gdal.dataset] source raster to get the projection information
 
     outputs:
     ----------
@@ -634,16 +643,23 @@ def RasterLike(src,array,path,pixel_type=1):
     assert type(array)==np.ndarray, "array should be of type numpy array"
     assert type(path)== str, "Raster_path input should be string type"
     assert type(pixel_type)== int, "pixel type input should be integer type please check documentations"
+    assert type(netCDFtoTIF)== bool, "netCDFtoTIF determines if a conversion from netCDF to tif is required, in that case it is needed a reference raster for projection" 
     # input values
 #    assert os.path.exists(path), path+ " you have provided does not exist"
     ext=path[-4:]
     assert ext == ".tif", "please add the extension at the end of the path input"
 #    assert os.path.exists(path), "source raster you have provided does not exist"
-
-    prj=src.GetProjection()
+    
+    if netCDFtoTIF == True:
+        assert type(reference_raster)==gdal.Dataset, "Reference raster should be read using gdal (gdal dataset please read it using gdal library) "
+        prj=reference_raster.GetProjection()
+        gt=reference_raster.GetGeoTransform()
+    else:
+        prj=src.GetProjection()
+        gt=src.GetGeoTransform()
+    
     cols=src.RasterXSize
     rows=src.RasterYSize
-    gt=src.GetGeoTransform()
     noval=src.GetRasterBand(1).GetNoDataValue()
     if pixel_type==1:
         outputraster=gdal.GetDriverByName('GTiff').Create(path,cols,rows,1,gdal.GDT_Float32)
@@ -1945,6 +1961,7 @@ def ReadRastersFolder(path,WithOrder=True):
     # get list of all files
     files=os.listdir(path)
     if "desktop.ini" in files: files.remove("desktop.ini")
+    if ".DS_Store" in files: files.remove(".DS_Store")
 
     # to sort the files in the same order as the first number in the name
     if WithOrder == True:
@@ -2262,3 +2279,176 @@ def Normalize(array):
     """Normalizes numpy arrays into scale 0.0 - 1.0"""
     array_min, array_max = array.min(), array.max()
     return ((array - array_min)/(array_max - array_min))
+
+
+def AlignRasters(dem, parameter_raster, output):
+    """
+    CODE FOR ALIGNING RASTERS TO A REFERENCE RASTER
+    
+    - dem : "/Users/juanmanuel/Documents/Juan Manuel/Universidad/TESIS/Datos/GIS/Mapa_General/RASTERS_CUENCA/DEM.tif"
+    - parameter_raster : "/Users/juanmanuel/Documents/Juan Manuel/Universidad/TESIS/Datos/meteodata_RAW/calib/prec/CHIRPS/P_CHIRPS.v2.0_mm-day-1_daily_2000.01.01.tif"
+    - output : "/Users/juanmanuel/Documents/Juan Manuel/Universidad/TESIS/Datos/meteodata/calib/prec/P_CHIRPS.v2.0_mm-day-1_daily_2000.01.01_aligned.tif"
+    
+    """
+    
+    DEM = gdal.Open(dem)
+    raster = gdal.Open(parameter_raster)
+    
+    # align
+    aligned_raster = MatchRasterAlignment(DEM, raster)
+    dst_Aligned_M = MatchNoDataValue(DEM, aligned_raster)
+    
+    # save the new raster
+    SaveRaster(dst_Aligned_M, output)
+    
+    DEM = None
+    raster = None
+
+
+def RastersSeriesFromPointsSHPtoXLSX(start_date, end_date, shp_filename, SHPField_name, rasters_path, file_first_str, file_second_str, date_format, output_file):
+    """
+    CODE FOR EXTRACT DATA FROM CERTAIN CELLS IN RASTERS. EXPORTED TO A EXCEL DATABASE.
+    
+    - start_date : "01-01-2000"
+    - end_date : "31-12-2011"
+    - shp_filename : '/Users/juanmanuel/Documents/Juan Manuel/Universidad/TESIS/Datos/GIS/CALIBRATION_POINTS/CALIBRATION_POINTS.shp' (Absolute path)
+    - rasters_path : '/Users/juanmanuel/Documents/Juan Manuel/Universidad/TESIS/Datos/meteodata/calib/flow/'
+    - file_first_str : "daily-flow_"
+    - file_second_str : ".tif"
+    - date_format : "%Y%m%d"
+    - SHPField_name : 'id'
+    """
+
+    start = datetime.strptime(start_date, "%d-%m-%Y")
+    end = datetime.strptime(end_date, "%d-%m-%Y")
+    date_generated = [start + timedelta(days=x) for x in range(0, (end-start).days + 1)]
+    
+    ds = ogr.Open(shp_filename)
+    lyr = ds.GetLayer()
+    
+    features = ['Date']
+    
+    for feat in lyr:
+        features.append(str(feat.GetField(SHPField_name)))
+    
+    df = pd.DataFrame(columns=features)
+    
+    i=0
+    
+    for date in date_generated:
+        
+        fulldate = date.strftime(date_format)
+        src_filename = rasters_path + file_first_str + str(fulldate) + file_second_str
+        src_ds=gdal.Open(src_filename) 
+        gt=src_ds.GetGeoTransform()
+        rb=src_ds.GetRasterBand(1)
+    
+        df.at[i, 'Date'] = date.strftime('%d/%m/%Y')
+        
+        for feat in lyr:
+    
+            geom = feat.GetGeometryRef()
+            feat_id = feat.GetField(SHPField_name)
+            mx, my=geom.GetX(), geom.GetY()  #coord in map units
+        
+            #Convert from map to pixel coordinates.
+            #Only works for geotransforms with no rotation.
+            px = int((mx - gt[0]) / gt[1]) #x pixel
+            py = int((my - gt[3]) / gt[5]) #y pixel
+        
+            intval=rb.ReadAsArray(px, py, 1, 1)
+            df.at[i, str(feat_id)] = intval[0][0]
+    
+        i+=1
+    
+    df.to_excel(output_file, index = False)
+
+
+def GetDataFromRasters(start_date, end_date, src_filepath, reference_file, file_first_str, file_second_str, date_format):
+    """
+    CODE FOR EXTRACTING DATA RASTERS. EXPORTED TO A NUMPY DATABASE
+    
+    - start_date : "01-01-2000"
+    - end_date : "31-12-2011"
+    - src_filepath : "/Users/juanmanuel/Documents/Juan Manuel/Universidad/TESIS/Datos/meteodata/calib/prec/" (Absolute path)
+    - reference_file : "0_P_CHIRPS.v2.0_mm-day-1_daily_2000.01.01_aligned.tif"
+    - file_first_str : "_P_CHIRPS.v2.0_mm-day-1_daily_"
+    - file_second_str : "_aligned.tif"
+    - date_format : "%Y.%m.%d"
+    """
+    
+    start = datetime.strptime(start_date, "%d-%m-%Y")
+    end = datetime.strptime(end_date, "%d-%m-%Y")
+    analysis_period_years = end.year - start.year + 1
+    date_generated = [start + timedelta(days=x) for x in range(0, (end-start).days + 1)]
+    
+    reference_raster = gdal.Open(src_filepath + reference_file)
+    reference_raster_array = np.array(reference_raster.GetRasterBand(1).ReadAsArray())
+    raster_rows = len(reference_raster_array)
+    raster_columns = len(reference_raster_array[0])
+    reference_raster = None
+    
+    db_daily = np.zeros(shape=(raster_rows, raster_columns, analysis_period_years, 12, 31))
+    db_monthly = np.zeros(shape=(raster_rows, raster_columns, analysis_period_years, 12))
+    
+    year = 0
+    month = 0
+    day = 0
+    
+    c = 0
+    for date in date_generated:
+        fulldate = str(date.strftime(date_format))
+        raster = gdal.Open( src_filepath + str(c) + file_first_str + fulldate + file_second_str )
+        nodatavalue = raster.GetRasterBand(1).GetNoDataValue()
+        raster_array = np.array(raster.GetRasterBand(1).ReadAsArray())
+        raster_array[raster_array == nodatavalue] = np.nan
+        raster = None
+        db_daily[:, :, year, month, day] = raster_array
+        day += 1
+        c += 1
+        if date.year == (date + timedelta(days = 1)).year:
+            if date.month != (date + timedelta(days = 1)).month:
+                month += 1
+                day = 0
+        else:
+            year += 1
+            month = 0
+            day = 0
+    
+    for row in range(raster_rows):
+        for column in range(raster_columns):
+            for year in range(analysis_period_years):
+                for month in range(12):
+                    db_monthly[row, column, year, month] = np.sum(db_daily[row, column, year, month, :])
+
+    return db_daily, db_monthly
+
+def MultipleNetCDFtoTIF(start_date, end_date, src_filepath, file_first_str, file_second_str, date_format, reference_file,
+                        dst_filepath, dst_label):
+  
+    """
+    CODE FOR CONVERTING MULTIPLE NETCDF FILES INTO RASTERS
+    
+    - start_date : "01-01-2000"
+    - end_date : "31-12-2011"
+    - src_filepath : "/Users/juanmanuel/Documents/Juan Manuel/Universidad/TESIS/Datos/meteodata/calib/prec/" (Absolute path)
+    - file_first_str : "_P_CHIRPS.v2.0_mm-day-1_daily_"
+    - file_second_str : "_aligned.nc"
+    - date_format : "%Y.%m.%d"
+    - reference_file : "/Users/juanmanuel/Documents/Juan Manuel/Universidad/TESIS/Datos/GIS/Mapa_General/RASTERS_CUENCA/DEM.tif"
+    - dst_filepath : "/Users/juanmanuel/Documents/Juan Manuel/Universidad/TESIS/Datos/meteodata/calib/prec/" (Absolute path)
+    - dst_label : "precipitation"
+    """
+  
+    start = datetime.strptime(start_date, "%d-%m-%Y")
+    end = datetime.strptime(end_date, "%d-%m-%Y")
+    date_generated = [start + timedelta(days=x) for x in range(0, (end-start).days + 1)]
+    
+    for date in date_generated:
+        day = str(date.strftime(date_format))
+        src_file = src_filepath + file_first_str + day + file_second_str
+        src_ds = gdal.Open( src_file )
+        arr = src_ds.GetRasterBand(1).ReadAsArray() #right now only takes the first band of the netCDF
+        reference_raster = gdal.Open(reference_file)
+        out_file = dst_filepath + dst_label + day + ".tif"
+        RasterLike(src_ds,arr,out_file,1,True,reference_raster)
