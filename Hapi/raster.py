@@ -14,6 +14,7 @@ from datetime import datetime, timedelta
 
 import gdal
 from osgeo import ogr
+import osgeo
 import osr
 import pandas as pd
 import geopandas as gpd
@@ -591,7 +592,7 @@ def ReprojectDataset(src, to_epsg=3857, cell_size=[], resample_technique="Neares
     return dst
 
 
-def RasterLike(src,array,path,pixel_type=1,netCDFtoTIF=False,reference_raster=None):
+def RasterLike(src,array,path,pixel_type=1):
     """
     ====================================================================
       RasterLike(src,array,path)
@@ -619,12 +620,6 @@ def RasterLike(src,array,path,pixel_type=1,netCDFtoTIF=False,reference_raster=No
             4 for Unsigned integer 32
             5 for integer 16
             6 for integer 32
-        5-netCDFtoTIF:
-            [Boolean] Defines if the function will perform a conversion from netCDF to tif file
-            True    for activate conversion
-            False   for not performing any conversion
-        6-reference_raster:
-            [gdal.dataset] source raster to get the projection information
 
     outputs:
     ----------
@@ -643,21 +638,14 @@ def RasterLike(src,array,path,pixel_type=1,netCDFtoTIF=False,reference_raster=No
     assert type(array)==np.ndarray, "array should be of type numpy array"
     assert type(path)== str, "Raster_path input should be string type"
     assert type(pixel_type)== int, "pixel type input should be integer type please check documentations"
-    assert type(netCDFtoTIF)== bool, "netCDFtoTIF determines if a conversion from netCDF to tif is required, in that case it is needed a reference raster for projection" 
     # input values
 #    assert os.path.exists(path), path+ " you have provided does not exist"
     ext=path[-4:]
     assert ext == ".tif", "please add the extension at the end of the path input"
 #    assert os.path.exists(path), "source raster you have provided does not exist"
     
-    if netCDFtoTIF == True:
-        assert type(reference_raster)==gdal.Dataset, "Reference raster should be read using gdal (gdal dataset please read it using gdal library) "
-        prj=reference_raster.GetProjection()
-        gt=reference_raster.GetGeoTransform()
-    else:
-        prj=src.GetProjection()
-        gt=src.GetGeoTransform()
-    
+    prj=src.GetProjection()
+    gt=src.GetGeoTransform()
     cols=src.RasterXSize
     rows=src.RasterYSize
     noval=src.GetRasterBand(1).GetNoDataValue()
@@ -690,7 +678,8 @@ def RasterLike(src,array,path,pixel_type=1,netCDFtoTIF=False,reference_raster=No
     outputraster.GetRasterBand(1).WriteArray(array)
     outputraster.FlushCache()
     outputraster = None
-
+    
+    
 def MatchNoDataValue(src,dst):
     """
     ==================================================================
@@ -2281,7 +2270,7 @@ def Normalize(array):
     return ((array - array_min)/(array_max - array_min))
 
 
-def AlignRasters(dem, parameter_raster, output):
+def AlignRaster(dem, parameter_raster, output):
     """
     CODE FOR ALIGNING RASTERS TO A REFERENCE RASTER
     
@@ -2303,6 +2292,33 @@ def AlignRasters(dem, parameter_raster, output):
     
     DEM = None
     raster = None
+
+
+def AlignMultipleRasters(start_date, end_date, src_filepath, file_first_str, file_second_str, date_format, reference_file,
+                         dst_filepath, dst_label):
+    """
+    CODE FOR CONVERTING MULTIPLE NETCDF FILES INTO RASTERS
+    
+    - start_date : "01-01-2000"
+    - end_date : "31-12-2011"
+    - src_filepath : "/Users/juanmanuel/Documents/Juan Manuel/Universidad/TESIS/Datos/meteodata/calib/prec/" (Absolute path)
+    - file_first_str : "_P_CHIRPS.v2.0_mm-day-1_daily_"
+    - file_second_str : "_aligned.nc"
+    - date_format : "%Y.%m.%d"
+    - reference_file : "/Users/juanmanuel/Documents/Juan Manuel/Universidad/TESIS/Datos/GIS/Mapa_General/RASTERS_CUENCA/DEM.tif"
+    - dst_filepath : "/Users/juanmanuel/Documents/Juan Manuel/Universidad/TESIS/Datos/meteodata/calib/prec/" (Absolute path)
+    - dst_label : "precipitation"
+    """
+    
+    start = datetime.strptime(start_date, "%d-%m-%Y")
+    end = datetime.strptime(end_date, "%d-%m-%Y")
+    date_generated = [start + timedelta(days=x) for x in range(0, (end-start).days + 1)]
+    
+    for date in date_generated:
+        day = str(date.strftime(date_format))
+        src_file = src_filepath + file_first_str + day + file_second_str
+        out_file = dst_filepath + dst_label + day + ".tif"
+        AlignRaster(reference_file,src_file,out_file)
 
 
 def RastersSeriesFromPointsSHPtoXLSX(start_date, end_date, shp_filename, SHPField_name, rasters_path, file_first_str, file_second_str, date_format, output_file):
@@ -2423,8 +2439,68 @@ def GetDataFromRasters(start_date, end_date, src_filepath, reference_file, file_
 
     return db_daily, db_monthly
 
-def MultipleNetCDFtoTIF(start_date, end_date, src_filepath, file_first_str, file_second_str, date_format, reference_file,
-                        dst_filepath, dst_label):
+def NetCDFtoTIF(dst_ds, src_ds, dst_EPSG, no_data_value=-9999):
+    """
+    CODE FOR CONVERTING NETCDF FILE INTO RASTER
+    
+    - dst_ds : "/Users/juanmanuel/Documents/Juan Manuel/Universidad/TESIS/Datos/meteodata_RAW/NETCDF/MSWEP_2000010100.tif" (Absolute path)
+    - src_ds : "/Users/juanmanuel/Documents/Juan Manuel/Universidad/TESIS/Datos/meteodata_RAW/NETCDF/MSWEP_2000010100.nc" (Absolute path)
+    - dst_EPSG : "21897"
+    - no_data_value : -9999
+    """
+    
+    raster_1 = gdal.Translate(dst_ds,
+                              src_ds,
+                              format="GTiff",
+                              outputSRS = "EPSG:4326")
+    
+    prj = raster_1.GetProjection()
+    gt = raster_1.GetGeoTransform()
+    cols = raster_1.RasterXSize
+    rows = raster_1.RasterYSize
+    no_bands = raster_1.RasterCount
+    
+    noval = []
+    scale_value = []
+    offset_value = []
+    arr = []
+    
+    for band in range(no_bands):
+        original_arr = raster_1.GetRasterBand(band+1).ReadAsArray()
+        noval.append(raster_1.GetRasterBand(band+1).GetNoDataValue())
+        scale_value.append(osgeo.gdal.Band.GetScale(raster_1.GetRasterBand(band+1)))
+        offset_value.append(osgeo.gdal.Band.GetOffset(raster_1.GetRasterBand(band+1)))
+        recalculated_arr = original_arr * scale_value[band] + offset_value[band]
+        arr.append(recalculated_arr)
+    
+    raster_1.FlushCache()
+    raster_1 = None
+    
+    raster_2 = gdal.GetDriverByName('GTiff').Create(dst_ds,cols,rows,no_bands,gdal.GDT_Float32)
+    raster_2.SetGeoTransform(gt)
+    raster_2.SetProjection(prj)
+    
+    for band in range(no_bands):
+        raster_2.GetRasterBand(band+1).SetNoDataValue(noval[band])
+        raster_2.GetRasterBand(band+1).Fill(noval[band])
+        raster_2.GetRasterBand(band+1).WriteArray(arr[band])
+    
+    raster_2.FlushCache()
+    raster_2 = None
+
+    output_raster = gdal.Warp(dst_ds,
+                              dst_ds, 
+                              format = "GTiff",
+                              outputType = gdal.gdalconst.GDT_Float32,
+                              resampleAlg = gdal.gdalconst.GRIORA_Cubic,
+                              srcSRS = 'EPSG:4326',
+                              dstSRS = 'EPSG:' + str(dst_EPSG),
+                              dstNodata = no_data_value)
+    output_raster.FlushCache()
+    output_raster = None
+
+def MultipleNetCDFtoTIF(start_date, end_date, src_filepath, file_first_str, file_second_str, date_format,
+                        dst_filepath, dst_label, dst_EPSG, no_data_value = -9999):
   
     """
     CODE FOR CONVERTING MULTIPLE NETCDF FILES INTO RASTERS
@@ -2432,12 +2508,13 @@ def MultipleNetCDFtoTIF(start_date, end_date, src_filepath, file_first_str, file
     - start_date : "01-01-2000"
     - end_date : "31-12-2011"
     - src_filepath : "/Users/juanmanuel/Documents/Juan Manuel/Universidad/TESIS/Datos/meteodata/calib/prec/" (Absolute path)
-    - file_first_str : "_P_CHIRPS.v2.0_mm-day-1_daily_"
+    - file_first_str : "P_CHIRPS.v2.0_mm-day-1_daily_"
     - file_second_str : "_aligned.nc"
     - date_format : "%Y.%m.%d"
-    - reference_file : "/Users/juanmanuel/Documents/Juan Manuel/Universidad/TESIS/Datos/GIS/Mapa_General/RASTERS_CUENCA/DEM.tif"
     - dst_filepath : "/Users/juanmanuel/Documents/Juan Manuel/Universidad/TESIS/Datos/meteodata/calib/prec/" (Absolute path)
-    - dst_label : "precipitation"
+    - dst_label : "prec_"
+    - dst_EPSG : "21897"
+    - no_data_value : -9999
     """
   
     start = datetime.strptime(start_date, "%d-%m-%Y")
@@ -2447,8 +2524,5 @@ def MultipleNetCDFtoTIF(start_date, end_date, src_filepath, file_first_str, file
     for date in date_generated:
         day = str(date.strftime(date_format))
         src_file = src_filepath + file_first_str + day + file_second_str
-        src_ds = gdal.Open( src_file )
-        arr = src_ds.GetRasterBand(1).ReadAsArray() #right now only takes the first band of the netCDF
-        reference_raster = gdal.Open(reference_file)
         out_file = dst_filepath + dst_label + day + ".tif"
-        RasterLike(src_ds,arr,out_file,1,True,reference_raster)
+        NetCDFtoTIF(out_file,src_file,dst_EPSG,no_data_value)
