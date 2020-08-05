@@ -2346,6 +2346,7 @@ def RastersSeriesFromPointsSHPtoXLSX(start_date, end_date, shp_filename, SHPFiel
     
     for feat in lyr:
         features.append(str(feat.GetField(SHPField_name)))
+    lyr.ResetReading()
     
     df = pd.DataFrame(columns=features)
     
@@ -2374,7 +2375,8 @@ def RastersSeriesFromPointsSHPtoXLSX(start_date, end_date, shp_filename, SHPFiel
         
             intval=rb.ReadAsArray(px, py, 1, 1)
             df.at[i, str(feat_id)] = intval[0][0]
-    
+        
+        lyr.ResetReading()
         i+=1
     
     df.to_excel(output_file, index = False)
