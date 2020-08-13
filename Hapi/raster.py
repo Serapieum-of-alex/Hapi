@@ -2579,5 +2579,6 @@ def MatchRasterAlignment_V2(master, slave, dst_filename):
 
     gdal.ReprojectImage(slave_ds, dst_ds, slave_proj, master_proj, gdal.GRA_NearestNeighbour)
     dst_Aligned_M = MatchNoDataValue(master_ds, dst_ds)
-    SaveRaster(dst_Aligned_M, dst_filename)
     dst_ds = None  # Flush to disk
+    SaveRaster(dst_Aligned_M, dst_filename)
+    
