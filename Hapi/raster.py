@@ -16,12 +16,14 @@ import osr
 import pandas as pd
 import geopandas as gpd
 from osgeo import gdalconst
+
 import zipfile
 import pyproj
 import rasterio
 import rasterio.merge
 import rasterio.mask
 import json
+import datetime as dt
 
 import Hapi.vector as vector
 
@@ -1375,7 +1377,7 @@ def Clip(Raster_path,shapefile_path,save=False,output_path=None):
     # read the clipped raster
     raster=gdal.Open(temp_path)
     # reproject the clipped raster back to its original crs
-    projected_raster=project_raster(raster,int(src_epsg.GetAttrValue('AUTHORITY',1)))
+    projected_raster=ProjectRaster(raster,int(src_epsg.GetAttrValue('AUTHORITY',1)))
     # close the clipped raster
     raster=None
 
@@ -2262,3 +2264,93 @@ def Normalize(array):
     """Normalizes numpy arrays into scale 0.0 - 1.0"""
     array_min, array_max = array.min(), array.max()
     return ((array - array_min)/(array_max - array_min))
+
+
+# def NetCDFtoTIF(dst_ds, src_ds, dst_EPSG, no_data_value=-9999):
+#     """
+#     CODE FOR CONVERTING NETCDF FILE INTO RASTER
+
+#     - dst_ds : "/Users/juanmanuel/Documents/Juan Manuel/Universidad/TESIS/Datos/meteodata_RAW/NETCDF/MSWEP_2000010100.tif" (Absolute path)
+#     - src_ds : "/Users/juanmanuel/Documents/Juan Manuel/Universidad/TESIS/Datos/meteodata_RAW/NETCDF/MSWEP_2000010100.nc" (Absolute path)
+#     - dst_EPSG : "21897"
+#     - no_data_value : -9999
+#     """
+
+#     raster_1 = gdal.Translate(dst_ds,
+#                               src_ds,
+#                               format="GTiff",
+#                               outputSRS = "EPSG:4326")
+
+#     prj = raster_1.GetProjection()
+#     gt = raster_1.GetGeoTransform()
+#     cols = raster_1.RasterXSize
+#     rows = raster_1.RasterYSize
+#     no_bands = raster_1.RasterCount
+
+#     noval = []
+#     scale_value = []
+#     offset_value = []
+#     arr = []
+
+#     for band in range(no_bands):
+#         original_arr = raster_1.GetRasterBand(band+1).ReadAsArray()
+#         noval.append(raster_1.GetRasterBand(band+1).GetNoDataValue())
+
+#         scale_value.append(gdal.Band.GetScale(raster_1.GetRasterBand(band+1)))
+#         offset_value.append(gdal.Band.GetOffset(raster_1.GetRasterBand(band+1)))
+#         recalculated_arr = original_arr * scale_value[band] + offset_value[band]
+#         arr.append(recalculated_arr)
+
+#     raster_1.FlushCache()
+#     raster_1 = None
+
+#     raster_2 = gdal.GetDriverByName('GTiff').Create(dst_ds,cols,rows,no_bands,gdal.GDT_Float32)
+#     raster_2.SetGeoTransform(gt)
+#     raster_2.SetProjection(prj)
+
+#     for band in range(no_bands):
+#         raster_2.GetRasterBand(band+1).SetNoDataValue(noval[band])
+#         raster_2.GetRasterBand(band+1).Fill(noval[band])
+#         raster_2.GetRasterBand(band+1).WriteArray(arr[band])
+
+#     raster_2.FlushCache()
+#     raster_2 = None
+
+#     output_raster = gdal.Warp(dst_ds,
+#                               dst_ds,
+#                               format = "GTiff",
+#                               outputType = gdal.gdalconst.GDT_Float32,
+#                               resampleAlg = gdal.gdalconst.GRIORA_Cubic,
+#                               srcSRS = 'EPSG:4326',
+#                               dstSRS = 'EPSG:' + str(dst_EPSG),
+#                               dstNodata = no_data_value)
+#     output_raster.FlushCache()
+#     output_raster = None
+
+# def MultipleNetCDFtoTIF(start_date, end_date, src_filepath, file_first_str, file_second_str, date_format,
+#                         dst_filepath, dst_label, dst_EPSG, no_data_value = -9999):
+
+#     """
+#     CODE FOR CONVERTING MULTIPLE NETCDF FILES INTO RASTERS
+
+#     - start_date : "01-01-2000"
+#     - end_date : "31-12-2011"
+#     - src_filepath : "/Users/juanmanuel/Documents/Juan Manuel/Universidad/TESIS/Datos/meteodata/calib/prec/" (Absolute path)
+#     - file_first_str : "P_CHIRPS.v2.0_mm-day-1_daily_"
+#     - file_second_str : "_aligned.nc"
+#     - date_format : "%Y.%m.%d"
+#     - dst_filepath : "/Users/juanmanuel/Documents/Juan Manuel/Universidad/TESIS/Datos/meteodata/calib/prec/" (Absolute path)
+#     - dst_label : "prec_"
+#     - dst_EPSG : "21897"
+#     - no_data_value : -9999
+#     """
+
+#     start = dt.datetime.strptime(start_date, "%d-%m-%Y")
+#     end = dt.datetime.strptime(end_date, "%d-%m-%Y")
+#     date_generated = [start + dt.timedelta(days=x) for x in range(0, (end-start).days + 1)]
+
+#     for date in date_generated:
+#         day = str(date.strftime(date_format))
+#         src_file = src_filepath + file_first_str + day + file_second_str
+#         out_file = dst_filepath + dst_label + day + ".tif"
+#         NetCDFtoTIF(out_file,src_file,dst_EPSG,no_data_value)
