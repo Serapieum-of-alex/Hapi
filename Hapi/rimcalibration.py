@@ -363,7 +363,7 @@ class RIMCalibration():
         ----------
         option : [integer], optional
             1 for the historical observed data, 2 for the rainfall-runoff data
-            3 for the rim result. The default is 1.
+            3 for the rim discharge result, 4 for the rim water level result. The default is 1.
 
         Returns
         -------
@@ -371,14 +371,20 @@ class RIMCalibration():
 
         """
         if option == 1:
-            assert hasattr(self, "QGauges"), "please read the observed data first with the ReadObservedQ method"
+            assert hasattr(self, "QGauges"), "please read the observed Discharge data first with the ReadObservedQ method"
             columns = self.QGauges.columns.tolist()
         elif option == 2:
-            assert hasattr(self, "QRRM"), "please read the observed data first with the ReadRRM method"
+            assert hasattr(self, "WLGauges"), "please read the observed Water level data first with the ReadObservedWL method"
+            columns = self.WLGauges.columns.tolist()
+        elif option == 3:
+            assert hasattr(self, "QRRM"), "please read the Rainfall-runoff data first with the ReadRRM method"
             columns = self.QRRM.columns.tolist()
-        else :#option == 3:
-            assert hasattr(self, "QRIM"), "please read the observed data first with the ReadRIMQ method"
+        elif option == 4:
+            assert hasattr(self, "QRIM"), "please read the RIM results first with the ReadRIMQ method"
             columns = self.QRIM.columns.tolist()
+        else:
+            assert hasattr(self, "WLRIM"), "please read the RIM results first with the ReadRIMWL method"
+            columns = self.WLRIM.columns.tolist()
 
         AnnualMax = pd.DataFrame(columns = columns)
         # RIM2 results
@@ -387,18 +393,25 @@ class RIMCalibration():
             if option ==1:
                 QTS = self.QGauges.loc[:, Sub]
             elif option ==2:
+                QTS = self.WLGauges.loc[:, Sub]
+            elif option ==3:
                 QTS = self.QRRM.loc[:, Sub]
-            else:
+            elif option ==4:
                 QTS = self.QRIM.loc[:, Sub]
+            else:
+                QTS = self.WLRIM.loc[:, Sub]
 
             AnnualMax.loc[:, Sub] = QTS.resample('A-OCT').max().values
 
         AnnualMax.index = QTS.resample('A-OCT').indices.keys()
 
         if option ==1:
-            self.AnnualMaxObs = AnnualMax
+            self.AnnualMaxObsQ = AnnualMax
         elif option ==2:
+            self.AnnualMaxObsWL = AnnualMax
+        elif option ==3:
             self.AnnualMaxRRM = AnnualMax
+        elif option ==4:
+            self.AnnualMaxRIMQ = AnnualMax #AnnualMaxRIM
         else:
-            self.AnnualMaxRIM = AnnualMax
-
+            self.AnnualMaxRIMWL = AnnualMax
