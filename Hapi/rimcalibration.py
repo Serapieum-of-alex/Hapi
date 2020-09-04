@@ -350,7 +350,8 @@ class RIMCalibration():
         self.rivernetwork = pd.read_csv(Path, delimiter = ',') #,header = None
         # self.rivernetwork.columns = ['SubID','US','DS']
 
-    def GetAnnualMax(self, option=1):
+    def GetAnnualMax(self, option=1, CorespondingToMaxObservedQ=False,
+                     CorespondingToMaxObservedWL=False):
         """
         ========================================================
               GetAnnualMax(option=1)
@@ -361,9 +362,14 @@ class RIMCalibration():
 
         Parameters
         ----------
+        CorespondingToMaxObserved: [Boolen], optional
+            if you want to extract the max annual values from the observed time
+            series and then extract the values of the same dates in the result
+            time series. The default is False.
         option : [integer], optional
-            1 for the historical observed data, 2 for the rainfall-runoff data
-            3 for the rim discharge result, 4 for the rim water level result. The default is 1.
+            1 for the historical observed Discharge data, 2 for the historical observed water level data,
+            3 for the rainfall-runoff data, 4 for the rim discharge result,
+            5 for the rim water level result. The default is 1.
 
         Returns
         -------
@@ -386,24 +392,97 @@ class RIMCalibration():
             assert hasattr(self, "WLRIM"), "please read the RIM results first with the ReadRIMWL method"
             columns = self.WLRIM.columns.tolist()
 
-        AnnualMax = pd.DataFrame(columns = columns)
-        # RIM2 results
-        for i in range(len(columns)):
-            Sub = columns[i]
-            if option ==1:
-                QTS = self.QGauges.loc[:, Sub]
-            elif option ==2:
-                QTS = self.WLGauges.loc[:, Sub]
-            elif option ==3:
-                QTS = self.QRRM.loc[:, Sub]
-            elif option ==4:
-                QTS = self.QRIM.loc[:, Sub]
-            else:
-                QTS = self.WLRIM.loc[:, Sub]
 
-            AnnualMax.loc[:, Sub] = QTS.resample('A-OCT').max().values
+        if CorespondingToMaxObservedWL:
+            assert hasattr(self, "WLGauges"), "please read the observed Water level data first with the ReadObservedWL method"
 
-        AnnualMax.index = QTS.resample('A-OCT').indices.keys()
+            startdate = self.WLGauges.index[0]
+            AnnualMax = self.WLGauges.loc[:,self.WLGauges.columns[0]].resample('A-OCT').max()
+            self.AnnualMaxDates = pd.DataFrame(index = AnnualMax.index, columns = self.WLGauges.columns)
+
+            # get the dates when the max value happen every year
+            for i in range(len(self.WLGauges.columns)):
+                sub = self.WLGauges.columns[i]
+                for j in range(len(AnnualMax)):
+                    if j == 0:
+                        f = self.WLGauges.loc[startdate:AnnualMax.index[j],sub]
+                        self.AnnualMaxDates.loc[AnnualMax.index[j],sub] = f.index[f.argmax()]
+                    else:
+                        f = self.WLGauges.loc[AnnualMax.index[j-1]:AnnualMax.index[j],sub]
+                        self.AnnualMaxDates.loc[AnnualMax.index[j],sub] = f.index[f.argmax()]
+
+            # extract the values at the dates of the previous max value
+            AnnualMax = pd.DataFrame(index = self.AnnualMaxDates.index, columns = columns)
+            # Extract time series
+            for i in range(len(columns)):
+                Sub = columns[i]
+                if option ==1:
+                    QTS = self.QGauges.loc[self.AnnualMaxDates.loc[:,Sub].values, Sub].values
+                elif option ==2:
+                    QTS = self.WLGauges.loc[self.AnnualMaxDates.loc[:,Sub].values, Sub].values
+                elif option ==3:
+                    QTS = self.QRRM.loc[self.AnnualMaxDates.loc[:,Sub].values, Sub].values
+                elif option ==4:
+                    QTS = self.QRIM.loc[self.AnnualMaxDates.loc[:,Sub].values, Sub].values
+                else:
+                    QTS = self.WLRIM.loc[self.AnnualMaxDates.loc[:,Sub].values, Sub].values
+                # resample to annual time step
+                AnnualMax.loc[:, Sub] = QTS
+
+        elif CorespondingToMaxObservedQ:
+            assert hasattr(self, "QGauges"), "please read the observed Discharge data first with the ReadObservedQ method"
+
+            startdate = self.QGauges.index[0]
+            AnnualMax = self.QGauges.loc[:,self.QGauges.columns[0]].resample('A-OCT').max()
+            self.AnnualMaxDates = pd.DataFrame(index = AnnualMax.index, columns = self.QGauges.columns)
+
+            # get the date when the max value happen every year
+            for i in range(len(self.QGauges.columns)):
+                sub = self.QGauges.columns[i]
+                for j in range(len(AnnualMax)):
+                    if j == 0:
+                        f = self.QGauges.loc[startdate:AnnualMax.index[j],sub]
+                        self.AnnualMaxDates.loc[AnnualMax.index[j],sub] = f.index[f.argmax()]
+                    else:
+                        f = self.QGauges.loc[AnnualMax.index[j-1]:AnnualMax.index[j],sub]
+                        self.AnnualMaxDates.loc[AnnualMax.index[j],sub] = f.index[f.argmax()]
+
+            # extract the values at the dates of the previous max value
+            AnnualMax = pd.DataFrame(index = self.AnnualMaxDates.index, columns = columns)
+            # Extract time series
+            for i in range(len(columns)):
+                Sub = columns[i]
+                if option ==1:
+                    QTS = self.QGauges.loc[self.AnnualMaxDates.loc[:,Sub].values, Sub].values
+                elif option ==2:
+                    QTS = self.WLGauges.loc[self.AnnualMaxDates.loc[:,Sub].values, Sub].values
+                elif option ==3:
+                    QTS = self.QRRM.loc[self.AnnualMaxDates.loc[:,Sub].values, Sub].values
+                elif option ==4:
+                    QTS = self.QRIM.loc[self.AnnualMaxDates.loc[:,Sub].values, Sub].values
+                else:
+                    QTS = self.WLRIM.loc[self.AnnualMaxDates.loc[:,Sub].values, Sub].values
+                # resample to annual time step
+                AnnualMax.loc[:, Sub] = QTS
+        else :
+            AnnualMax = pd.DataFrame(columns = columns)
+            # Extract time series
+            for i in range(len(columns)):
+                Sub = columns[i]
+                if option ==1:
+                    QTS = self.QGauges.loc[:, Sub]
+                elif option ==2:
+                    QTS = self.WLGauges.loc[:, Sub]
+                elif option ==3:
+                    QTS = self.QRRM.loc[:, Sub]
+                elif option ==4:
+                    QTS = self.QRIM.loc[:, Sub]
+                else:
+                    QTS = self.WLRIM.loc[:, Sub]
+                # resample to annual time step
+                AnnualMax.loc[:, Sub] = QTS.resample('A-OCT').max().values
+
+            AnnualMax.index = QTS.resample('A-OCT').indices.keys()
 
         if option ==1:
             self.AnnualMaxObsQ = AnnualMax
