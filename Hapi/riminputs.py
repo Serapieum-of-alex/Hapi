@@ -8,11 +8,14 @@ import os
 import numpy as np
 import pandas as pd
 import datetime as dt
-from scipy.stats import gumbel_r
+from scipy.stats import gumbel_r, norm
 import matplotlib.pyplot as plt
 import gdal
 import zipfile
 from statsmodels import api as sm
+from matplotlib import gridspec
+
+import Hapi.statisticaltools as st
 
 
 class Inputs():
@@ -23,7 +26,7 @@ class Inputs():
 
 
     def ExtractHydrologicalInputs(self, WeatherGenerator, FilePrefix, realization,
-                                   path, SWIMNodes, SavePath):
+                                  path, SWIMNodes, SavePath):
         """
 
 
@@ -84,10 +87,12 @@ class Inputs():
                         header = None, index = None)
 
     def StatisticalProperties(self, PathNodes, PathTS, StartDate, WarmUpPeriod, SavePlots, SavePath,
-                              SeparateFiles = False, Filter = False, RIMResults = False):
+                              SeparateFiles = False, Filter = False, EstimateParameters=False, Quartile=0,
+                              RIMResults = False, SignificanceLevel=0.1):
         """
         =============================================================================
-          StatisticalProperties(PathNodes, PathTS, StartDate, WarmUpPeriod, SavePlots, saveto)
+          StatisticalProperties(PathNodes, PathTS, StartDate, WarmUpPeriod, SavePlots, SavePath,
+                              SeparateFiles = False, Filter = False, RIMResults = False)
         =============================================================================
 
         StatisticalProperties method reads the SWIM output file (.dat file) that
@@ -122,6 +127,9 @@ class Inputs():
                 model did not run or gaps in the observed data if these gap days
                 are filled with a specific value and you want to ignore it here
                 give Filter = Value you want
+            9-RIMResults: [Bool]
+                If the files are results form RIM or observed, as the format
+                differes between the two. default [False]
 
         Returns
         -------
@@ -134,31 +142,31 @@ class Inputs():
         ComputationalNodes = np.loadtxt(PathNodes, dtype=np.uint16)
         # hydrographs
         if SeparateFiles:
-            ObservedTS = pd.DataFrame()
+            TS = pd.DataFrame()
             if RIMResults:
                 for i in range(len(ComputationalNodes)):
-                    ObservedTS.loc[:,int(ComputationalNodes[i])] =  self.ReadRIMResult(PathTS + "/" +
+                    TS.loc[:,int(ComputationalNodes[i])] =  self.ReadRIMResult(PathTS + "/" +
                                   str(int(ComputationalNodes[i])) + '.txt')
             else:
                 for i in range(len(ComputationalNodes)):
-                    ObservedTS.loc[:,int(ComputationalNodes[i])] = np.loadtxt(PathTS + "/" +
+                    TS.loc[:,int(ComputationalNodes[i])] = np.loadtxt(PathTS + "/" +
                               str(int(ComputationalNodes[i])) + '.txt') #,skiprows = 0
 
             StartDate = dt.datetime.strptime(StartDate,"%Y-%m-%d")
-            EndDate = StartDate + dt.timedelta(days = ObservedTS.shape[0]-1)
+            EndDate = StartDate + dt.timedelta(days = TS.shape[0]-1)
             ind = pd.date_range(StartDate,EndDate)
-            ObservedTS.index = ind
+            TS.index = ind
         else:
-            ObservedTS = pd.read_csv(PathTS , delimiter = r'\s+', header = None)
+            TS = pd.read_csv(PathTS , delimiter = r'\s+', header = None)
             StartDate = dt.datetime.strptime(StartDate,"%Y-%m-%d")
-            EndDate = StartDate + dt.timedelta(days = ObservedTS.shape[0]-1)
-            ObservedTS.index = pd.date_range(StartDate,EndDate, freq="D")
+            EndDate = StartDate + dt.timedelta(days = TS.shape[0]-1)
+            TS.index = pd.date_range(StartDate,EndDate, freq="D")
             # delete the first two columns
-            del ObservedTS[0], ObservedTS[1]
-            ObservedTS.columns = ComputationalNodes
+            del TS[0], TS[1]
+            TS.columns = ComputationalNodes
 
         # neglect the first year (warmup year) in the time series
-        ObservedTS = ObservedTS.loc[StartDate + dt.timedelta(days = WarmUpPeriod):EndDate,:]
+        TS = TS.loc[StartDate + dt.timedelta(days = WarmUpPeriod):EndDate,:]
 
         # List of the table output, including some general data and the return periods.
         col_csv = ['mean', 'std', 'min', '5%', '25%', 'median',
@@ -187,31 +195,81 @@ class Inputs():
         F = 1-(1/T)
         # Iteration over all the gauge numbers.
         for i in ComputationalNodes:
-            QTS = ObservedTS.loc[:,i]
+            QTS = TS.loc[:,i]
             # The time series is resampled to the annual maxima, and turned into a
             # numpy array.
             # The hydrological year is 1-Nov/31-Oct (from Petrow and Merz, 2009, JoH).
             amax = QTS.resample('A-OCT').max().values
             if type(Filter) != bool:
                 amax = amax[amax != Filter]
-            # A gumbel distribution is fitted to the annual maxima
-            param_dist = gumbel_r.fit(amax)
+            if EstimateParameters:
+                # alpha = (np.sqrt(6) / np.pi) * amax.std()
+                # beta = amax.mean() - 0.5772 * alpha
+                # param_dist = [beta, alpha]
+
+                threshold = np.quantile(amax,Quartile)
+
+                # create the object
+                sst = st.StatisticalTools()
+                param = sst.EstimateParameter(amax, threshold)
+                param_dist = [param[1], param[2]]
+            else:
+                # A gumbel distribution is fitted to the annual maxima
+                param_dist = gumbel_r.fit(amax)
             DistributionPr.loc[i,'loc'] = param_dist[0]
-            DistributionPr.loc[i,'scale'] =param_dist[1]
+            DistributionPr.loc[i,'scale'] = param_dist[1]
             # Return periods from the fitted distribution are stored.
             # get the Discharge coresponding to the return periods
             Qrp = gumbel_r.ppf(F,loc=param_dist[0], scale=param_dist[1])
             # to get the Non Exceedance probability for a specific Value
-            #gumbel_r.cdf(Qrp, loc=param_dist[0], scale=param_dist[1])
-            # then calculate the the T (return period) T = 1/(1-F)
+            # sort the amax
+            amax.sort()
+            # calculate the F (Exceedence probability based on weibul)
+            cdf_obs = [j/(len(amax)+1) for j in range(1,len(amax)+1)]
+            Qth = [param_dist[0] - param_dist[1]*(np.log(-np.log(j))) for j in cdf_obs]
+            Y = [-np.log(-np.log(j)) for j in cdf_obs]
+            StdError = [(param_dist[1]/np.sqrt(len(amax))) * np.sqrt(1.1087+0.5140*j+0.6079*j**2) for j in Y]
+            v = norm.ppf(1-SignificanceLevel/2)
+            Qupper = [Qth[j] + v * StdError[j] for j in range(len(amax))]
+            Qlower = [Qth[j] - v * StdError[j] for j in range(len(amax))]
+            # gumbel_r.interval(SignificanceLevel)
 
-            # Plot the histogram and the fitted distribution, save it for each gauge.
+            # to calculate the F theoretical
             Qx = np.linspace(0, 1.5*float(amax.max()), 10000)
             pdf_fitted = gumbel_r.pdf(Qx, loc=param_dist[0], scale=param_dist[1])
+            cdf_fitted = gumbel_r.cdf(Qx, loc=param_dist[0], scale=param_dist[1])
+            # then calculate the the T (return period) T = 1/(1-F)
             if SavePlots :
-                plt.plot(Qx, pdf_fitted, 'r-')
-                plt.hist(amax, density=True)
+                fig = plt.figure(60, figsize = (20,10) )
+                gs = gridspec.GridSpec(nrows = 1, ncols = 2, figure = fig )
+                # Plot the histogram and the fitted distribution, save it for each gauge.
+                ax1 = fig.add_subplot(gs[0,0])
+                ax1.plot(Qx, pdf_fitted, 'r-')
+                ax1.hist(amax, density=True)
+                ax1.set_xlabel('Annual Discharge(m3/s)', fontsize= 15)
+                ax1.set_ylabel('pdf', fontsize= 15)
+
+                ax2 = fig.add_subplot(gs[0,1])
+                ax2.plot(Qx,cdf_fitted,'r-')
+                ax2.plot(amax,cdf_obs,'.-')
+                ax2.set_xlabel('Annual Discharge(m3/s)', fontsize= 15)
+                ax2.set_ylabel('cdf', fontsize= 15)
+
                 plt.savefig(SavePath + "/" + "Figures/" + str(i) + '.png', format='png')
+                plt.close()
+
+                fig = plt.figure(70, figsize = (10,8) )
+                plt.plot(Qth, amax,'d',color='#606060', markersize = 12,
+                         label='Gumbel Distribution')
+                plt.plot(Qth, Qth,'^-.',color="#3D59AB", label = "Weibul plotting position")
+                plt.plot(Qth, Qlower,'*--', color="#DC143C",markersize = 12,
+                         label = 'Lower limit (' + str(int((1-SignificanceLevel)*100)) +" % CI)")
+                plt.plot(Qth, Qupper,'*--', color="#DC143C", markersize = 12,
+                         label = 'Upper limit (' + str(int((1-SignificanceLevel)*100)) + " % CI)")
+                plt.legend(fontsize=15, framealpha=1)
+                plt.xlabel('Theoretical Annual Discharge(m3/s)', fontsize= 15)
+                plt.ylabel('Annual Discharge(m3/s)', fontsize= 15)
+                plt.savefig(SavePath + "/" + "Figures/F-" + str(i) + '.png', format='png')
                 plt.close()
 
             StatisticalPr.loc[i, 'mean'] = QTS.mean()
@@ -486,6 +544,30 @@ class Inputs():
 
     def CreateTraceALL(self, ConfigFilePath, RIMSubsFilePath, TraceFile, USonly=1,
                        HydrologicalInputsFile=''):
+        """
+        =============================================================================
+            CreateTraceALL(ConfigFilePath, RIMSubsFilePath, TraceFile, USonly=1,
+                               HydrologicalInputsFile='')
+        =============================================================================
+
+        Parameters
+        ----------
+        ConfigFilePath : [String]
+            SWIM configuration file.
+        RIMSubsFilePath : [String]
+            path to text file with all the ID of SWIM sub-basins.
+        TraceFile : TYPE
+            DESCRIPTION.
+        USonly : TYPE, optional
+            DESCRIPTION. The default is 1.
+        HydrologicalInputsFile : TYPE, optional
+            DESCRIPTION. The default is ''.
+
+        Returns
+        -------
+        None.
+
+        """
 
         # reading the file
         Config = pd.read_csv(ConfigFilePath, header = None)
