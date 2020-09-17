@@ -8,15 +8,15 @@ import os
 import numpy as np
 import pandas as pd
 import datetime as dt
-from scipy.stats import gumbel_r, norm
+from scipy.stats import gumbel_r, genextreme
 import matplotlib.pyplot as plt
 import gdal
 import zipfile
 from statsmodels import api as sm
 from matplotlib import gridspec
 
-import Hapi.statisticaltools as st
-
+from Hapi.statisticaltools import StatisticalTools as ST
+from Hapi.statisticaltools import Gumbel, GEV
 
 class Inputs():
 
@@ -87,8 +87,8 @@ class Inputs():
                         header = None, index = None)
 
     def StatisticalProperties(self, PathNodes, PathTS, StartDate, WarmUpPeriod, SavePlots, SavePath,
-                              SeparateFiles = False, Filter = False, EstimateParameters=False, Quartile=0,
-                              RIMResults = False, SignificanceLevel=0.1):
+                              SeparateFiles = False, Filter = False, Distibution = "GEV", EstimateParameters=False,
+                              Quartile=0, RIMResults = False, SignificanceLevel=0.1):
         """
         =============================================================================
           StatisticalProperties(PathNodes, PathTS, StartDate, WarmUpPeriod, SavePlots, SavePath,
@@ -200,44 +200,65 @@ class Inputs():
             # numpy array.
             # The hydrological year is 1-Nov/31-Oct (from Petrow and Merz, 2009, JoH).
             amax = QTS.resample('A-OCT').max().values
+
             if type(Filter) != bool:
                 amax = amax[amax != Filter]
             if EstimateParameters:
+                # estimate the parameters through an optimization
                 # alpha = (np.sqrt(6) / np.pi) * amax.std()
                 # beta = amax.mean() - 0.5772 * alpha
                 # param_dist = [beta, alpha]
-
                 threshold = np.quantile(amax,Quartile)
+                if Distibution == "GEV":
+                    print("Still to be finished later")
+                else:
+                    param = Gumbel.EstimateParameter(amax, Gumbel.ObjectiveFn,threshold)
+                    param_dist = [param[1], param[2]]
 
-                # create the object
-                sst = st.StatisticalTools()
-                param = sst.EstimateParameter(amax, threshold)
-                param_dist = [param[1], param[2]]
             else:
-                # A gumbel distribution is fitted to the annual maxima
-                param_dist = gumbel_r.fit(amax)
-            DistributionPr.loc[i,'loc'] = param_dist[0]
-            DistributionPr.loc[i,'scale'] = param_dist[1]
+                # estimate the parameters through an maximum liklehood method
+                if Distibution == "GEV":
+                    param_dist = genextreme.fit(amax)
+                else:
+                    # A gumbel distribution is fitted to the annual maxima
+                    param_dist = gumbel_r.fit(amax)
+
+            if Distibution == "GEV":
+                DistributionPr.loc[i,'c'] = param_dist[0]
+                DistributionPr.loc[i,'loc'] = param_dist[1]
+                DistributionPr.loc[i,'scale'] = param_dist[2]
+            else:
+                DistributionPr.loc[i,'loc'] = param_dist[0]
+                DistributionPr.loc[i,'scale'] = param_dist[1]
+
             # Return periods from the fitted distribution are stored.
             # get the Discharge coresponding to the return periods
-            Qrp = gumbel_r.ppf(F,loc=param_dist[0], scale=param_dist[1])
+            if Distibution == "GEV":
+                Qrp = genextreme.ppf(F, param_dist[0], loc=param_dist[1], scale=param_dist[2])
+            else:
+                Qrp = gumbel_r.ppf(F,loc=param_dist[0], scale=param_dist[1])
             # to get the Non Exceedance probability for a specific Value
             # sort the amax
             amax.sort()
             # calculate the F (Exceedence probability based on weibul)
-            cdf_obs = [j/(len(amax)+1) for j in range(1,len(amax)+1)]
-            Qth = [param_dist[0] - param_dist[1]*(np.log(-np.log(j))) for j in cdf_obs]
-            Y = [-np.log(-np.log(j)) for j in cdf_obs]
-            StdError = [(param_dist[1]/np.sqrt(len(amax))) * np.sqrt(1.1087+0.5140*j+0.6079*j**2) for j in Y]
-            v = norm.ppf(1-SignificanceLevel/2)
-            Qupper = [Qth[j] + v * StdError[j] for j in range(len(amax))]
-            Qlower = [Qth[j] - v * StdError[j] for j in range(len(amax))]
-            # gumbel_r.interval(SignificanceLevel)
-
-            # to calculate the F theoretical
-            Qx = np.linspace(0, 1.5*float(amax.max()), 10000)
-            pdf_fitted = gumbel_r.pdf(Qx, loc=param_dist[0], scale=param_dist[1])
-            cdf_fitted = gumbel_r.cdf(Qx, loc=param_dist[0], scale=param_dist[1])
+            cdf_Weibul = ST.Weibul(amax)
+            # Gumbel.ProbapilityPlot method calculates the theoretical values based on the Gumbel distribution
+            # parameters, theoretical cdf (or weibul), and calculate the confidence interval
+            if Distibution == "GEV":
+                Qth, Qupper, Qlower = GEV.ProbapilityPlot(param_dist, cdf_Weibul,
+                                                             amax, SignificanceLevel)
+                                # to calculate the F theoretical
+                Qx = np.linspace(0, 1.5*float(amax.max()), 10000)
+                pdf_fitted = genextreme.pdf(Qx, param_dist[0], loc=param_dist[2], scale=param_dist[2])
+                cdf_fitted = genextreme.cdf(Qx, param_dist[0], loc=param_dist[1], scale=param_dist[2])
+            else:
+                Qth, Qupper, Qlower = Gumbel.ProbapilityPlot(param_dist, cdf_Weibul,
+                                                             amax, SignificanceLevel)
+                # gumbel_r.interval(SignificanceLevel)
+                # to calculate the F theoretical
+                Qx = np.linspace(0, 1.5*float(amax.max()), 10000)
+                pdf_fitted = gumbel_r.pdf(Qx, loc=param_dist[0], scale=param_dist[1])
+                cdf_fitted = gumbel_r.cdf(Qx, loc=param_dist[0], scale=param_dist[1])
             # then calculate the the T (return period) T = 1/(1-F)
             if SavePlots :
                 fig = plt.figure(60, figsize = (20,10) )
@@ -251,7 +272,7 @@ class Inputs():
 
                 ax2 = fig.add_subplot(gs[0,1])
                 ax2.plot(Qx,cdf_fitted,'r-')
-                ax2.plot(amax,cdf_obs,'.-')
+                ax2.plot(amax,cdf_Weibul,'.-')
                 ax2.set_xlabel('Annual Discharge(m3/s)', fontsize= 15)
                 ax2.set_ylabel('cdf', fontsize= 15)
 
@@ -262,10 +283,12 @@ class Inputs():
                 plt.plot(Qth, amax,'d',color='#606060', markersize = 12,
                          label='Gumbel Distribution')
                 plt.plot(Qth, Qth,'^-.',color="#3D59AB", label = "Weibul plotting position")
-                plt.plot(Qth, Qlower,'*--', color="#DC143C",markersize = 12,
-                         label = 'Lower limit (' + str(int((1-SignificanceLevel)*100)) +" % CI)")
-                plt.plot(Qth, Qupper,'*--', color="#DC143C", markersize = 12,
-                         label = 'Upper limit (' + str(int((1-SignificanceLevel)*100)) + " % CI)")
+                if Distibution != "GEV":
+                    plt.plot(Qth, Qlower,'*--', color="#DC143C",markersize = 12,
+                             label = 'Lower limit (' + str(int((1-SignificanceLevel)*100)) +" % CI)")
+                    plt.plot(Qth, Qupper,'*--', color="#DC143C", markersize = 12,
+                             label = 'Upper limit (' + str(int((1-SignificanceLevel)*100)) + " % CI)")
+
                 plt.legend(fontsize=15, framealpha=1)
                 plt.xlabel('Theoretical Annual Discharge(m3/s)', fontsize= 15)
                 plt.ylabel('Annual Discharge(m3/s)', fontsize= 15)
