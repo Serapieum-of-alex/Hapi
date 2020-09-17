@@ -10,11 +10,12 @@ Created on Thu May 17 04:26:42 2018
 import numpy as np
 # import pandas as pd
 import scipy.optimize as so
+from scipy.stats import gumbel_r, norm, genextreme
 
 class StatisticalTools():
 
-    def __init__(self ):
-        self.Name = ''
+    def __init__(self):
+        pass
 
     @staticmethod
     def IDW(raster,coordinates,data,No_data_cells=False):
@@ -264,8 +265,47 @@ class StatisticalTools():
 
         return sen
 
+
     @staticmethod
-    def Gumbel_pdf(x, loc, scale):
+    def Weibul(data,option=1):
+        """
+        =========================================
+          Weibul(data,option)
+        =========================================
+        Weibul method to calculate the cumulative distribution function or
+        return period.
+
+        Parameters
+        ----------
+        data : [list/array]
+            list/array of the data.
+        option : [1/2]
+            1 to calculate the cumulative distribution function cdf or
+            2 to calculate the return period.default=1
+
+        Returns
+        -------
+        CDF/T: [list]
+            list of cumulative distribution function or return period.
+        """
+        data.sort()
+
+        if option==1:
+            CDF = [j/(len(data)+1) for j in range(1,len(data)+1)]
+            return CDF
+        else:
+            CDF = [j/(len(data)+1) for j in range(1,len(data)+1)]
+            T = [1/(1-j) for j in CDF]
+            return T
+
+
+class Gumbel():
+
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def Pdf(x, loc, scale):
         """
         ========================================================================
           Returns the value of Gumbel's pdf with parameters loc and scale at x .
@@ -291,14 +331,14 @@ class StatisticalTools():
         return (1./scale) * (np.exp(-(z + (np.exp(-z)))))
 
     @staticmethod
-    def Gumbel_cdf(x, loc, scale):
+    def Cdf(x, loc, scale):
         """
         Returns the value of Gumbel's cdf with parameters loc and scale at x.
         """
         return np.exp(-np.exp(-(x-loc)/scale))
 
-
-    def ObjectiveFn(self, p, x): #, threshold
+    @staticmethod
+    def ObjectiveFn(p, x): #, threshold
 
         threshold=p[0]
         loc=p[1]
@@ -308,14 +348,14 @@ class StatisticalTools():
         nx2=len(x[x>=threshold])
         # pdf with a scaled pdf
         # L1 is pdf based
-        L1=(-np.log((self.Gumbel_pdf(x1, loc, scale)/scale))).sum()
+        L1=(-np.log((Gumbel.Pdf(x1, loc, scale)/scale))).sum()
         # L2 is cdf based
-        L2=(-np.log(1-self.Gumbel_cdf(threshold, loc, scale)))*nx2
+        L2=(-np.log(1-Gumbel.Cdf(threshold, loc, scale)))*nx2
         #print x1, nx2, L1, L2
         return L1+L2
 
-
-    def EstimateParameter(self, data, threshold):
+    @staticmethod
+    def EstimateParameter(data, ObjFunc, threshold):
         """
         There are two likelihood functions (L1 and L2), one for values above some
         threshold (x>=C) and one for values below (x < C), now the likeliest parameters
@@ -337,13 +377,107 @@ class StatisticalTools():
         Param : TYPE
             DESCRIPTION.
 
-        """
-        obj_func = lambda p, x: (-np.log(self.Gumbel_pdf(x, p[0], p[1]))).sum()
-        #first we make a simple Gumbel fit
-        Par1 = so.fmin(obj_func, [0.5,0.5], args=(np.array(data),))
+        Example:
+            from Hapi.statisticaltools import StatisticalTools as ST
+            Param_dist = Gumbel.EstimateParameter(data, threshold)
 
+        """
+        # obj_func = lambda p, x: (-np.log(Gumbel.Pdf(x, p[0], p[1]))).sum()
+        # #first we make a simple Gumbel fit
+        # Par1 = so.fmin(obj_func, [0.5,0.5], args=(np.array(data),))
+        Par1 = gumbel_r.fit(data)
         #then we use the result as starting value for your truncated Gumbel fit
-        Param = so.fmin(self.ObjectiveFn, [threshold, Par1[0], Par1[1]],  args=(np.array(data),))
+        Param = so.fmin(ObjFunc, [threshold, Par1[0], Par1[1]],  args=(np.array(data),),
+                        maxiter=500, maxfun=500)
         # Param_dist = [Param[1], Param[2]]
 
         return Param
+
+    @staticmethod
+    def ProbapilityPlot(param, cdf, data, SignificanceLevel):
+        """
+        ===================================================================
+            ProbapilityPlot(param, cdf, data, SignificanceLevel)
+        ===================================================================
+        this method calculates the theoretical values based on the Gumbel distribution
+        parameters, theoretical cdf (or weibul), and calculate the confidence interval.
+
+        Parameters
+        ----------
+        param : [list]
+            list of the distribution parameters [loc, scale].
+        cdf : [list]
+            theoretical cdf calculated using weibul or using the distribution cdf function.
+        data : [list/array]
+            list of the values.
+        SignificanceLevel : [float]
+            value between 0 and 1.
+
+        Returns
+        -------
+        Qth : [list]
+            theoretical generated values based on the theoretical cdf calculated from
+            weibul or the distribution parameters.
+        Qupper : [list]
+            upper bound coresponding to the confidence interval.
+        Qlower : [list]
+            lower bound coresponding to the confidence interval.
+        """
+
+        Qth = [param[0] - param[1]*(np.log(-np.log(j))) for j in cdf]
+        Y = [-np.log(-np.log(j)) for j in cdf]
+        StdError = [(param[1]/np.sqrt(len(data))) * np.sqrt(1.1087+0.5140*j+0.6079*j**2) for j in Y]
+        v = norm.ppf(1-SignificanceLevel/2)
+        Qupper = [Qth[j] + v * StdError[j] for j in range(len(data))]
+        Qlower = [Qth[j] - v * StdError[j] for j in range(len(data))]
+
+        return Qth, Qupper, Qlower
+
+class GEV():
+
+    def __init__():
+        pass
+
+    @staticmethod
+    def ProbapilityPlot(param, cdf, data, SignificanceLevel):
+        """
+        still not finished
+        the equations are the same of the gumbel dist and have to be changed to
+        GEV equations
+        ===================================================================
+            ProbapilityPlot(param, cdf, data, SignificanceLevel)
+        ===================================================================
+        this method calculates the theoretical values based on the Gumbel distribution
+        parameters, theoretical cdf (or weibul), and calculate the confidence interval.
+
+        Parameters
+        ----------
+        param : [list]
+            list of the distribution parameters [loc, scale].
+        cdf : [list]
+            theoretical cdf calculated using weibul or using the distribution cdf function.
+        data : [list/array]
+            list of the values.
+        SignificanceLevel : [float]
+            value between 0 and 1.
+
+        Returns
+        -------
+        Qth : [list]
+            theoretical generated values based on the theoretical cdf calculated from
+            weibul or the distribution parameters.
+        Qupper : [list]
+            upper bound coresponding to the confidence interval.
+        Qlower : [list]
+            lower bound coresponding to the confidence interval.
+        """
+
+        # Qth = [param[0] - param[1]*(np.log(-np.log(j))) for j in cdf]
+        Qth = genextreme.ppf(cdf, c=param[0], loc=param[1], scale=param[2])
+        Y = [-np.log(-np.log(j)) for j in cdf]
+        StdError = [(param[1]/np.sqrt(len(data))) * np.sqrt(1.1087+0.5140*j+0.6079*j**2) for j in Y]
+        v = norm.ppf(1-SignificanceLevel/2)
+        Qupper = [Qth[j] + v * StdError[j] for j in range(len(data))]
+        Qlower = [Qth[j] - v * StdError[j] for j in range(len(data))]
+
+        return Qth, Qupper, Qlower
