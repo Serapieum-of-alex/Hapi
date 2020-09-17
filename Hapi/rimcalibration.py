@@ -244,7 +244,8 @@ class RIMCalibration():
             if Shift:
                 f2[ShiftSteps:-1] = f2[0:-(ShiftSteps+1)]
 
-            QRIM.loc[:,QRIM.columns[i]].loc[ind[f1[0]-1]:ind[f1[-1]-1]] = f2
+            # QRIM.loc[:,QRIM.columns[i]].loc[ind[f1[0]-1]:ind[f1[-1]-1]] = f2
+            QRIM.loc[ind[f1[0]-1]:ind[f1[-1]-1],QRIM.columns[i]] = f2
 
         self.QRIM = QRIM[:]
 
@@ -301,7 +302,8 @@ class RIMCalibration():
                 f2[ShiftSteps:-1] = f2[0:-(ShiftSteps+1)]
                 # f2[1:-1] = f2[0:-2]
 
-            WLRIM.loc[:,WLRIM.columns[i]].loc[ind[f1[0]-1]:ind[f1[-1]-1]] = f2
+            # WLRIM.loc[:,WLRIM.columns[i]].loc[ind[f1[0]-1]:ind[f1[-1]-1]] = f2
+            WLRIM.loc[ind[f1[0]-1]:ind[f1[-1]-1],WLRIM.columns[i]] = f2
 
         self.WLRIM = WLRIM[:]
 
