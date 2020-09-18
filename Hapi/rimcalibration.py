@@ -441,40 +441,40 @@ class RIMCalibration():
                     for j in range(len(self.AnnualMaxDates.loc[:,Sub])):
                         ind = self.AnnualMaxDates.index[j]
                         date = self.AnnualMaxDates.loc[ind,Sub]
-                        Startdate = date + dt.timedelta(days = CorespondingTo['TimeWindow'])
-                        EndDate = date - dt.timedelta(days = CorespondingTo['TimeWindow'])
+                        Startdate = date - dt.timedelta(days = CorespondingTo['TimeWindow'])
+                        EndDate = date + dt.timedelta(days = CorespondingTo['TimeWindow'])
                         QTS.append(self.QGauges.loc[Startdate:EndDate, Sub].max())
                 elif option ==2:
                     # QTS = self.WLGauges.loc[self.AnnualMaxDates.loc[:,Sub].values, Sub].values
                     for j in range(len(self.AnnualMaxDates.loc[:,Sub])):
                         ind = self.AnnualMaxDates.index[j]
                         date = self.AnnualMaxDates.loc[ind,Sub]
-                        Startdate = date + dt.timedelta(days = 1)
-                        EndDate = date - dt.timedelta(days = 1)
+                        Startdate = date - dt.timedelta(days = 1)
+                        EndDate = date + dt.timedelta(days = 1)
                         QTS.append(self.WLGauges.loc[Startdate:EndDate, Sub].max())
                 elif option ==3:
                     # QTS = self.QRRM.loc[self.AnnualMaxDates.loc[:,Sub].values, Sub].values
                     for j in range(len(self.AnnualMaxDates.loc[:,Sub])):
                         ind = self.AnnualMaxDates.index[j]
                         date = self.AnnualMaxDates.loc[ind,Sub]
-                        Startdate = date + dt.timedelta(days = CorespondingTo['TimeWindow'])
-                        EndDate = date - dt.timedelta(days = CorespondingTo['TimeWindow'])
+                        Startdate = date - dt.timedelta(days = CorespondingTo['TimeWindow'])
+                        EndDate = date + dt.timedelta(days = CorespondingTo['TimeWindow'])
                         QTS.append(self.QRRM.loc[Startdate:EndDate, Sub].max())
                 elif option ==4:
                     # QTS = self.QRIM.loc[self.AnnualMaxDates.loc[:,Sub].values, Sub].values
                     for j in range(len(self.AnnualMaxDates.loc[:,Sub])):
                         ind = self.AnnualMaxDates.index[j]
                         date = self.AnnualMaxDates.loc[ind,Sub]
-                        Startdate = date + dt.timedelta(days = CorespondingTo['TimeWindow'])
-                        EndDate = date - dt.timedelta(days = CorespondingTo['TimeWindow'])
+                        Startdate = date - dt.timedelta(days = CorespondingTo['TimeWindow'])
+                        EndDate = date + dt.timedelta(days = CorespondingTo['TimeWindow'])
                         QTS.append(self.QRIM.loc[Startdate:EndDate, Sub].max())
                 else:
                     # QTS = self.WLRIM.loc[self.AnnualMaxDates.loc[:,Sub].values, Sub].values
                     for j in range(len(self.AnnualMaxDates.loc[:,Sub])):
                         ind = self.AnnualMaxDates.index[j]
                         date = self.AnnualMaxDates.loc[ind,Sub]
-                        Startdate = date + dt.timedelta(days = CorespondingTo['TimeWindow'])
-                        EndDate = date - dt.timedelta(days = CorespondingTo['TimeWindow'])
+                        Startdate = date - dt.timedelta(days = CorespondingTo['TimeWindow'])
+                        EndDate = date + dt.timedelta(days = CorespondingTo['TimeWindow'])
                         QTS.append(self.WLRIM.loc[Startdate:EndDate, Sub].max())
 
                 AnnualMax.loc[:, Sub] = QTS
@@ -509,8 +509,8 @@ class RIMCalibration():
                     for j in range(len(self.AnnualMaxDates.loc[:,Sub])):
                         ind = self.AnnualMaxDates.index[j]
                         date = self.AnnualMaxDates.loc[ind,Sub]
-                        Startdate = date + dt.timedelta(days = CorespondingTo['TimeWindow'])
-                        EndDate = date - dt.timedelta(days = CorespondingTo['TimeWindow'])
+                        Startdate = date - dt.timedelta(days = CorespondingTo['TimeWindow'])
+                        EndDate = date + dt.timedelta(days = CorespondingTo['TimeWindow'])
                         QTS.append(self.QGauges.loc[Startdate:EndDate, Sub].max())
 
                 elif option ==2:
@@ -518,8 +518,8 @@ class RIMCalibration():
                     for j in range(len(self.AnnualMaxDates.loc[:,Sub])):
                         ind = self.AnnualMaxDates.index[j]
                         date = self.AnnualMaxDates.loc[ind,Sub]
-                        Startdate = date + dt.timedelta(days = CorespondingTo['TimeWindow'])
-                        EndDate = date - dt.timedelta(days = CorespondingTo['TimeWindow'])
+                        Startdate = date - dt.timedelta(days = CorespondingTo['TimeWindow'])
+                        EndDate = date + dt.timedelta(days = CorespondingTo['TimeWindow'])
                         QTS.append(self.WLGauges.loc[Startdate:EndDate, Sub].max())
 
                 elif option ==3:
@@ -527,8 +527,8 @@ class RIMCalibration():
                     for j in range(len(self.AnnualMaxDates.loc[:,Sub])):
                         ind = self.AnnualMaxDates.index[j]
                         date = self.AnnualMaxDates.loc[ind,Sub]
-                        Startdate = date + dt.timedelta(days = CorespondingTo['TimeWindow'])
-                        EndDate = date - dt.timedelta(days = CorespondingTo['TimeWindow'])
+                        Startdate = date - dt.timedelta(days = CorespondingTo['TimeWindow'])
+                        EndDate = date + dt.timedelta(days = CorespondingTo['TimeWindow'])
                         QTS.append(self.QRRM.loc[Startdate:EndDate, Sub].max())
 
                 elif option ==4:
@@ -536,16 +536,16 @@ class RIMCalibration():
                     for j in range(len(self.AnnualMaxDates.loc[:,Sub])):
                         ind = self.AnnualMaxDates.index[j]
                         date = self.AnnualMaxDates.loc[ind,Sub]
-                        Startdate = date + dt.timedelta(days = CorespondingTo['TimeWindow'])
-                        EndDate = date - dt.timedelta(days = CorespondingTo['TimeWindow'])
+                        Startdate = date - dt.timedelta(days = CorespondingTo['TimeWindow'])
+                        EndDate = date + dt.timedelta(days = CorespondingTo['TimeWindow'])
                         QTS.append(self.QRIM.loc[Startdate:EndDate, Sub].max())
                 else:
                     # QTS = self.WLRIM.loc[self.AnnualMaxDates.loc[:,Sub].values, Sub].values
                     for j in range(len(self.AnnualMaxDates.loc[:,Sub])):
                         ind = self.AnnualMaxDates.index[j]
                         date = self.AnnualMaxDates.loc[ind,Sub]
-                        Startdate = date + dt.timedelta(days = CorespondingTo['TimeWindow'])
-                        EndDate = date - dt.timedelta(days = CorespondingTo['TimeWindow'])
+                        Startdate = date - dt.timedelta(days = CorespondingTo['TimeWindow'])
+                        EndDate = date + dt.timedelta(days = CorespondingTo['TimeWindow'])
                         QTS.append(self.WLRIM.loc[Startdate:EndDate, Sub].max())
 
                 # resample to annual time step
