@@ -352,11 +352,10 @@ class RIMCalibration():
         self.rivernetwork = pd.read_csv(Path, delimiter = ',') #,header = None
         # self.rivernetwork.columns = ['SubID','US','DS']
 
-    def GetAnnualMax(self, option=1, CorespondingToMaxObservedQ=False,
-                     CorespondingToMaxObservedWL=False):
+    def GetAnnualMax(self, option=1, CorespondingTo=dict(MaxObserved=" ", TimeWindow=0)):
         """
         ========================================================
-              GetAnnualMax(option=1)
+              GetAnnualMax(option=1, option=1, CorespondingTo=dict(MaxObserved=" ", TimeWindow=0))
         ========================================================
         GetAnnualMax method get the max annual time series out of time series of any
         temporal resolution, the code assumes that the hydrological year is
@@ -364,19 +363,35 @@ class RIMCalibration():
 
         Parameters
         ----------
-        CorespondingToMaxObserved: [Boolen], optional
-            if you want to extract the max annual values from the observed time
-            series and then extract the values of the same dates in the result
-            time series. The default is False.
-        option : [integer], optional
-            1 for the historical observed Discharge data, 2 for the historical observed water level data,
-            3 for the rainfall-runoff data, 4 for the rim discharge result,
-            5 for the rim water level result. The default is 1.
+            option : [integer], optional
+                1 for the historical observed Discharge data, 2 for the historical observed water level data,
+                3 for the rainfall-runoff data, 4 for the rim discharge result,
+                5 for the rim water level result. The default is 1.
+
+            CorespondingTo: [Dict], optional
+                -if you want to extract the max annual values from the observed discharge
+                    time series (CorespondingTo=dict(MaxObserved = "Q") and then extract the
+                    values of the same dates in the result time series
+                    the same for observed water level time series (CorespondingTo=dict(MaxObserved = "WL").
+                    or if you just want to extract the max annual time values from each time series
+                    (CorespondingTo=dict(MaxObserved = " ").The default is " ".
+
+                - if you want to extract some values before and after the coresponding
+                    date and then take the max value of all extracted values specify the
+                    number of days using the keyword Window CorespondingTo=dict(TimeWindow =  1)
 
         Returns
         -------
-        None.
-
+            AnnualMaxObsQ: [dataframe attribute]
+                when using Option=1
+            AnnualMaxObsWL: [dataframe attribute]
+                when using option = 2
+            AnnualMaxRRM: [dataframe attribute]
+                when using option = 3
+            AnnualMaxRIMQ: [dataframe attribute]
+                when using option = 4
+            AnnualMaxRIMWL: [dataframe attribute]
+                when using option = 5
         """
         if option == 1:
             assert hasattr(self, "QGauges"), "please read the observed Discharge data first with the ReadObservedQ method"
@@ -395,7 +410,7 @@ class RIMCalibration():
             columns = self.WLRIM.columns.tolist()
 
 
-        if CorespondingToMaxObservedWL:
+        if CorespondingTo['MaxObserved'] == "WL":
             assert hasattr(self, "WLGauges"), "please read the observed Water level data first with the ReadObservedWL method"
 
             startdate = self.WLGauges.index[0]
@@ -415,23 +430,56 @@ class RIMCalibration():
 
             # extract the values at the dates of the previous max value
             AnnualMax = pd.DataFrame(index = self.AnnualMaxDates.index, columns = columns)
+
             # Extract time series
             for i in range(len(columns)):
                 Sub = columns[i]
+                QTS = list()
+
                 if option ==1:
-                    QTS = self.QGauges.loc[self.AnnualMaxDates.loc[:,Sub].values, Sub].values
+                    # QTS = self.QGauges.loc[self.AnnualMaxDates.loc[:,Sub].values, Sub].values
+                    for j in range(len(self.AnnualMaxDates.loc[:,Sub])):
+                        ind = self.AnnualMaxDates.index[j]
+                        date = self.AnnualMaxDates.loc[ind,Sub]
+                        Startdate = date + dt.timedelta(days = CorespondingTo['TimeWindow'])
+                        EndDate = date - dt.timedelta(days = CorespondingTo['TimeWindow'])
+                        QTS.append(self.QGauges.loc[Startdate:EndDate, Sub].max())
                 elif option ==2:
-                    QTS = self.WLGauges.loc[self.AnnualMaxDates.loc[:,Sub].values, Sub].values
+                    # QTS = self.WLGauges.loc[self.AnnualMaxDates.loc[:,Sub].values, Sub].values
+                    for j in range(len(self.AnnualMaxDates.loc[:,Sub])):
+                        ind = self.AnnualMaxDates.index[j]
+                        date = self.AnnualMaxDates.loc[ind,Sub]
+                        Startdate = date + dt.timedelta(days = 1)
+                        EndDate = date - dt.timedelta(days = 1)
+                        QTS.append(self.WLGauges.loc[Startdate:EndDate, Sub].max())
                 elif option ==3:
-                    QTS = self.QRRM.loc[self.AnnualMaxDates.loc[:,Sub].values, Sub].values
+                    # QTS = self.QRRM.loc[self.AnnualMaxDates.loc[:,Sub].values, Sub].values
+                    for j in range(len(self.AnnualMaxDates.loc[:,Sub])):
+                        ind = self.AnnualMaxDates.index[j]
+                        date = self.AnnualMaxDates.loc[ind,Sub]
+                        Startdate = date + dt.timedelta(days = CorespondingTo['TimeWindow'])
+                        EndDate = date - dt.timedelta(days = CorespondingTo['TimeWindow'])
+                        QTS.append(self.QRRM.loc[Startdate:EndDate, Sub].max())
                 elif option ==4:
-                    QTS = self.QRIM.loc[self.AnnualMaxDates.loc[:,Sub].values, Sub].values
+                    # QTS = self.QRIM.loc[self.AnnualMaxDates.loc[:,Sub].values, Sub].values
+                    for j in range(len(self.AnnualMaxDates.loc[:,Sub])):
+                        ind = self.AnnualMaxDates.index[j]
+                        date = self.AnnualMaxDates.loc[ind,Sub]
+                        Startdate = date + dt.timedelta(days = CorespondingTo['TimeWindow'])
+                        EndDate = date - dt.timedelta(days = CorespondingTo['TimeWindow'])
+                        QTS.append(self.QRIM.loc[Startdate:EndDate, Sub].max())
                 else:
-                    QTS = self.WLRIM.loc[self.AnnualMaxDates.loc[:,Sub].values, Sub].values
-                # resample to annual time step
+                    # QTS = self.WLRIM.loc[self.AnnualMaxDates.loc[:,Sub].values, Sub].values
+                    for j in range(len(self.AnnualMaxDates.loc[:,Sub])):
+                        ind = self.AnnualMaxDates.index[j]
+                        date = self.AnnualMaxDates.loc[ind,Sub]
+                        Startdate = date + dt.timedelta(days = CorespondingTo['TimeWindow'])
+                        EndDate = date - dt.timedelta(days = CorespondingTo['TimeWindow'])
+                        QTS.append(self.WLRIM.loc[Startdate:EndDate, Sub].max())
+
                 AnnualMax.loc[:, Sub] = QTS
 
-        elif CorespondingToMaxObservedQ:
+        elif CorespondingTo['MaxObserved'] == "Q":
             assert hasattr(self, "QGauges"), "please read the observed Discharge data first with the ReadObservedQ method"
 
             startdate = self.QGauges.index[0]
@@ -454,16 +502,52 @@ class RIMCalibration():
             # Extract time series
             for i in range(len(columns)):
                 Sub = columns[i]
+                QTS = list()
+
                 if option ==1:
-                    QTS = self.QGauges.loc[self.AnnualMaxDates.loc[:,Sub].values, Sub].values
+                    # QTS = self.QGauges.loc[self.AnnualMaxDates.loc[:,Sub].values, Sub].values
+                    for j in range(len(self.AnnualMaxDates.loc[:,Sub])):
+                        ind = self.AnnualMaxDates.index[j]
+                        date = self.AnnualMaxDates.loc[ind,Sub]
+                        Startdate = date + dt.timedelta(days = CorespondingTo['TimeWindow'])
+                        EndDate = date - dt.timedelta(days = CorespondingTo['TimeWindow'])
+                        QTS.append(self.QGauges.loc[Startdate:EndDate, Sub].max())
+
                 elif option ==2:
-                    QTS = self.WLGauges.loc[self.AnnualMaxDates.loc[:,Sub].values, Sub].values
+                    # QTS = self.WLGauges.loc[self.AnnualMaxDates.loc[:,Sub].values, Sub].values
+                    for j in range(len(self.AnnualMaxDates.loc[:,Sub])):
+                        ind = self.AnnualMaxDates.index[j]
+                        date = self.AnnualMaxDates.loc[ind,Sub]
+                        Startdate = date + dt.timedelta(days = CorespondingTo['TimeWindow'])
+                        EndDate = date - dt.timedelta(days = CorespondingTo['TimeWindow'])
+                        QTS.append(self.WLGauges.loc[Startdate:EndDate, Sub].max())
+
                 elif option ==3:
-                    QTS = self.QRRM.loc[self.AnnualMaxDates.loc[:,Sub].values, Sub].values
+                    # QTS = self.QRRM.loc[self.AnnualMaxDates.loc[:,Sub].values, Sub].values
+                    for j in range(len(self.AnnualMaxDates.loc[:,Sub])):
+                        ind = self.AnnualMaxDates.index[j]
+                        date = self.AnnualMaxDates.loc[ind,Sub]
+                        Startdate = date + dt.timedelta(days = CorespondingTo['TimeWindow'])
+                        EndDate = date - dt.timedelta(days = CorespondingTo['TimeWindow'])
+                        QTS.append(self.QRRM.loc[Startdate:EndDate, Sub].max())
+
                 elif option ==4:
-                    QTS = self.QRIM.loc[self.AnnualMaxDates.loc[:,Sub].values, Sub].values
+                    # QTS = self.QRIM.loc[self.AnnualMaxDates.loc[:,Sub].values, Sub].values
+                    for j in range(len(self.AnnualMaxDates.loc[:,Sub])):
+                        ind = self.AnnualMaxDates.index[j]
+                        date = self.AnnualMaxDates.loc[ind,Sub]
+                        Startdate = date + dt.timedelta(days = CorespondingTo['TimeWindow'])
+                        EndDate = date - dt.timedelta(days = CorespondingTo['TimeWindow'])
+                        QTS.append(self.QRIM.loc[Startdate:EndDate, Sub].max())
                 else:
-                    QTS = self.WLRIM.loc[self.AnnualMaxDates.loc[:,Sub].values, Sub].values
+                    # QTS = self.WLRIM.loc[self.AnnualMaxDates.loc[:,Sub].values, Sub].values
+                    for j in range(len(self.AnnualMaxDates.loc[:,Sub])):
+                        ind = self.AnnualMaxDates.index[j]
+                        date = self.AnnualMaxDates.loc[ind,Sub]
+                        Startdate = date + dt.timedelta(days = CorespondingTo['TimeWindow'])
+                        EndDate = date - dt.timedelta(days = CorespondingTo['TimeWindow'])
+                        QTS.append(self.WLRIM.loc[Startdate:EndDate, Sub].max())
+
                 # resample to annual time step
                 AnnualMax.loc[:, Sub] = QTS
         else :
