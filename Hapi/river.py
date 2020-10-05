@@ -83,7 +83,10 @@ class River():
         ReadXS method reads the cross section data of the river and assign it
         to an attribute "Crosssections" of type dataframe
         """
-        self.crosssections = pd.read_csv(Path, delimiter = ',', skiprows =1  )
+        if self.Version == 1 or self.Version == 2:
+            self.crosssections = pd.read_csv(Path, delimiter = ',', skiprows =1  )
+        else:
+            self.crosssections = pd.read_csv(Path, delimiter = ',')
 
     def Slope(self,Path):
         """
@@ -1903,15 +1906,18 @@ class Sub(River):
         self.ReturnPeriodPrefix = River.ReturnPeriodPrefix
         self.Compressed = River.Compressed
         self.TwoDResultPath = River.TwoDResultPath
+        
         if hasattr(River,'USbndPath'):
             self.USbndPath = River.USbndPath
         if hasattr(River,"OneMinResultPath"):
             self.OneMinResultPath = River.OneMinResultPath
-
         if hasattr(River, "USbndPath"):
             self.USbndPath = River.USbndPath
-
-        self.crosssections = River.crosssections[River.crosssections['swimid'] == ID]
+        # filter the whole cross section file and get the cross section of the segment
+        if self.Version == 1 or self.Version == 2:
+            self.crosssections = River.crosssections[River.crosssections['swimid'] == ID]
+        else:
+            self.crosssections = River.crosssections[River.crosssections['segment'] == ID]    
         self.crosssections.index = list(range(len(self.crosssections)))
         self.LastXS = self.crosssections.loc[len(self.crosssections)-1,'xsid']
         self.FirstXS = self.crosssections.loc[0,'xsid']
@@ -1922,13 +1928,16 @@ class Sub(River):
 
         self.OneDResultPath = River.OneDResultPath
         self.slope = River.slope[River.slope['SubID']==ID]['slope'].tolist()[0]
-        self.USnode, self.DSnode = River.Trace(ID)
+        
+        if hasattr(River, "rivernetwork"):
+            self.USnode, self.DSnode = River.Trace(ID)
 
         if hasattr(River, 'RP'):
             self.RP = River.RP.loc[River.RP['node'] == self.USnode,['HQ2','HQ10','HQ100']]
         if hasattr(River,"SP"):
             self.SP = River.SP.loc[River.SP['ID'] == self.ID,:]
             self.SP.index = list(range(len(self.SP)))
+            
         self.RRMPath = River.RRMPath
         # create dictionary to store any extracted values from maps
         self.ExtractedValues = dict()
@@ -1936,7 +1945,7 @@ class Sub(River):
         self.FigureOptions = River.FigureOptions
 
     def Read1DResult(self, FromDay = '', ToDay = '', FillMissing = False,
-                     addHQ2 = True, Path = '', XSID = ''):
+                     addHQ2 = False, Path = '', XSID = ''):
         """
         ===================================================================
            Read1DResult(FromDay = '', ToDay = '', FillMissing = False)
@@ -2315,6 +2324,29 @@ class Sub(River):
 
 
     def Resample(self, XSID, ColumnName, FromDay='', ToDay = '', Delete=False):
+        """
+        =============================================================================
+            Resample(self, XSID, ColumnName, FromDay='', ToDay = '', Delete=False)
+        =============================================================================
+
+        Parameters
+        ----------
+        XSID : [Integer]
+            cross-section id.
+        ColumnName : TYPE
+            DESCRIPTION.
+        FromDay : TYPE, optional
+            DESCRIPTION. The default is ''.
+        ToDay : TYPE, optional
+            DESCRIPTION. The default is ''.
+        Delete : TYPE, optional
+            DESCRIPTION. The default is False.
+
+        Returns
+        -------
+        None.
+
+        """
         assert hasattr(self,"Result1D") , "please read the 1D results"
 
         if FromDay == '':
@@ -2324,6 +2356,7 @@ class Sub(River):
 
         start = self.ReferenceIndex.loc[FromDay,'date']
         end = self.ReferenceIndex.loc[ToDay,'date']
+        
         ind = pd.date_range(start, end, freq = 'D')
 
         if ColumnName == 'q' and not hasattr(self,"ResampledQ"):
@@ -2337,6 +2370,7 @@ class Sub(River):
         else:
             if Delete==True:
                 del self.ResampledWL
+        
         if ColumnName == 'h' and not hasattr(self,"ResampledH"):
             self.ResampledH = pd.DataFrame(index=ind)
         else:

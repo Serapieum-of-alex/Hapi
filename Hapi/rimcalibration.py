@@ -87,17 +87,17 @@ class RIMCalibration():
         self.WLGaugesTable = GaugesTable
 
 
-    def ReadObservedQ(self, CalibratedSubs, Path, StartDate, EndDate, NoValue):
+    def ReadObservedQ(self, Gauges, Path, StartDate, EndDate, NoValue):
         """
         ========================================================================
-            ReadObservedQ(CalibratedSubs, Path, StartDate, EndDate, NoValue)
+            ReadObservedQ(Gauges, Path, StartDate, EndDate, NoValue)
         ========================================================================
         ReadObservedQ method reads discharge data and store it in a dataframe
         attribute "QGauges"
 
         Parameters
         ----------
-        CalibratedSubs : [DATAFRAME]
+        Gauges : [DATAFRAME]
             Dataframe containing sub-id of the gauges under a column with a name 0.
         Path : [String]
             path to the folder where files for the gauges exist.
@@ -119,24 +119,24 @@ class RIMCalibration():
 
         ind = pd.date_range(StartDate, EndDate)
         GRDC = pd.DataFrame(index = ind)
-
-        for i in range(len(CalibratedSubs[0])):
-            GRDC.loc[:,int(CalibratedSubs[0][i])] = np.loadtxt(Path +
-                      str(int(CalibratedSubs[0][i])) + '.txt') #,skiprows = 0
+        ID = Gauges.columns[0]
+        for i in range(len(Gauges[ID])):
+            GRDC.loc[:,int(Gauges[ID][i])] = np.loadtxt(Path +
+                      str(int(Gauges[ID][i])) + '.txt') #,skiprows = 0
         self.QGauges = GRDC
 
-        GaugesTable = pd.DataFrame(index = CalibratedSubs[0])
-        # GaugesTable['SubID'] = CalibratedSubs[0]
+        GaugesTable = pd.DataFrame(index = Gauges[ID])
+        # GaugesTable['SubID'] = Gauges[0]
         GaugesTable['start'] = 0
         GaugesTable['end'] = 0
 
-        for i in range(len(CalibratedSubs[0])):
-            st1 = GRDC[CalibratedSubs[0][i]][GRDC[CalibratedSubs[0][i]] != NoValue].index[0]
-            end1 = GRDC[CalibratedSubs[0][i]][GRDC[CalibratedSubs[0][i]] != NoValue].index[-1]
-            # GaugesTable.loc[GaugesTable.loc[:,'SubID'] == CalibratedSubs[0][i],'start'] = st1
-            # GaugesTable.loc[GaugesTable.loc[:,'SubID'] == CalibratedSubs[0][i],'end'] = end1
-            GaugesTable.loc[CalibratedSubs[0][i],'start'] = st1
-            GaugesTable.loc[CalibratedSubs[0][i],'end'] = end1
+        for i in range(len(Gauges[ID])):
+            st1 = GRDC[Gauges[ID][i]][GRDC[Gauges[ID][i]] != NoValue].index[0]
+            end1 = GRDC[Gauges[ID][i]][GRDC[Gauges[ID][i]] != NoValue].index[-1]
+            # GaugesTable.loc[GaugesTable.loc[:,'SubID'] == Gauges[0][i],'start'] = st1
+            # GaugesTable.loc[GaugesTable.loc[:,'SubID'] == Gauges[0][i],'end'] = end1
+            GaugesTable.loc[Gauges[ID][i],'start'] = st1
+            GaugesTable.loc[Gauges[ID][i],'end'] = end1
 
         self.QGaugesTable = GaugesTable
 
