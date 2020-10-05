@@ -363,7 +363,8 @@ class Visualize():
 
             zl = Sub.crosssections['zl'].loc[Sub.crosssections.index == Sub.crosssections.index[i]].values[0]
             zr = Sub.crosssections['zr'].loc[Sub.crosssections.index == Sub.crosssections.index[i]].values[0]
-            if Sub.Version == 2:
+            
+            if Sub.Version > 1:
                 dbf = Sub.crosssections['dbf'].loc[Sub.crosssections.index == Sub.crosssections.index[i]].values[0]
 
             hl = Sub.crosssections['hl'].loc[Sub.crosssections.index == Sub.crosssections.index[i]].values[0]
