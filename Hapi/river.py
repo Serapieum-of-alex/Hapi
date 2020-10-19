@@ -78,9 +78,9 @@ class River():
     def CrossSections(self,Path):
         """
         ===========================================
-          ReadXS(self,Path)
+          CrossSections(self,Path)
         ===========================================
-        ReadXS method reads the cross section data of the river and assign it
+        CrossSections method reads the cross section data of the river and assign it
         to an attribute "Crosssections" of type dataframe
         """
         if self.Version == 1 or self.Version == 2:
@@ -1513,21 +1513,6 @@ class River():
 
         self.Result1D = data
 
-    # def IndexToDate(self,):
-    #     """
-
-
-    #     Returns
-    #     -------
-    #     None.
-
-    #     """
-    #     # convert the index into date
-    #     dateFn = lambda x: self.ReferenceIndex.loc[x,'date']
-    #     # get the date the column 'ID'
-    #     date = self.EventIndex.loc[:,'ID'].to_frame().applymap(dateFn)
-    #     self.EventIndex['date'] = date
-
 
     @staticmethod
     def Collect1DResults(Path, FolderNames, Left, Right, SavePath, OneD,
@@ -1663,40 +1648,76 @@ class River():
                 exec(var + ".to_csv(path ,index= None, sep = ' ', header = None)")
 
     @staticmethod
-    def CorrectMaps(DEMPath,Filelist, Resultpath, DepthPrefix, Saveto):
+    def CorrectMaps(DEMPath,Filelist, Resultpath, MapsPrefix, Saveto):
+        """
+        =========================================================================
+             CorrectMaps(DEMPath,Filelist, Resultpath, MapsPrefix, Saveto)
+        =========================================================================
+        CorrectMaps method check every 2D result that starts with the given Mapsprefix
+        and replace the Nan value with zeros and the values higher than 99 with zeros
+        
+        Parameters
+        ----------
+        DEMPath : [String]
+            Path to the DEM ascii file including the name and extension 
+            (i.e., c\files\RhineDEM.asc) .
+        Filelist : [String]
+            - if you have a list of files to correct enter the Filelist as the path to the file
+            containing the names
+            ex, 
+                Filelist = "F:/RFM/RIM_all/RIM1.0/M35(done)/errorlist.txt"
+            
+            - if you want to check all the files in the resultpath enter the
+            Filelist as '0'
+            ex,
+                Filelist = '0'
+        Resultpath : [String]
+            Path where the Maps exist.
+        MapsPrefix : [String]
+            the name prefix that distinguish the maps you want to correct from 
+            other maps in the same folder, like the first part of the name you 
+            use to name all files.
+        Saveto : [String]
+            Path to where you will save the corrected files.
+
+        Returns
+        -------
+        Errors : [list]
+            list of the files' names that has errors and are already corrected.
+        """
 
 
         DEM, SpatialRef = raster.ReadASCII(DEMPath)
         NoDataValue = SpatialRef[-1]
 
 
-        # filter and get the max depth maps
+        # filter and get the required maps
         if Filelist == '0' :
             # read list of file names
             AllResults = os.listdir(Resultpath)
 
-            MaxDepthList = list()
+            MapsNameList = list()
             for i in range(len(AllResults)):
-                if AllResults[i].startswith(DepthPrefix):
-                    MaxDepthList.append(AllResults[i])
+                if AllResults[i].startswith(MapsPrefix):
+                    MapsNameList.append(AllResults[i])
         elif type(Filelist) == str:
-            MaxDepthList = pd.read_csv(Filelist, header = None)[0].tolist()
+            MapsNameList = pd.read_csv(Filelist, header = None)[0].tolist()
 
         Errors = list()
 
-        for k in range(len(MaxDepthList)):
+        for k in range(len(MapsNameList)):
             try:
                 # open the zip file
-                Compressedfile = zipfile.ZipFile( Resultpath + "/" + MaxDepthList[k])
+                Compressedfile = zipfile.ZipFile( Resultpath + "/" + MapsNameList[k])
             except:
                 print("Error Opening the compressed file")
-                Errors.append(MaxDepthList[k][len(DepthPrefix):-4])
+                Errors.append(MapsNameList[k][len(MapsPrefix):-4])
                 continue
 
             # get the file name
             fname = Compressedfile.infolist()[0]
             # get the time step from the file name
-            timestep = int(fname.filename[len(DepthPrefix):-4])
+            timestep = int(fname.filename[len(MapsPrefix):-4])
             print("File No = " + str(k))
 
             ASCIIF = Compressedfile.open(fname)
@@ -1705,30 +1726,30 @@ class River():
             ASCIIRaw = ASCIIF.readlines()[6:]
             rows = len(ASCIIRaw)
             cols = len(ASCIIRaw[0].split())
-            MaxDepth = np.ones((rows,cols), dtype = np.float32)*0
+            MapArray = np.ones((rows,cols), dtype = np.float32)*0
             # read the ascii file
             for i in range(rows):
                 x = ASCIIRaw[i].split()
-                MaxDepth[i,:] = list(map(float, x ))
+                MapArray[i,:] = list(map(float, x ))
 
             Save = 0
             # Clip all maps
-            if MaxDepth[DEM == NoDataValue].max() > 0:
-                MaxDepth[DEM == NoDataValue] = 0
+            if MapArray[DEM == NoDataValue].max() > 0:
+                MapArray[DEM == NoDataValue] = 0
                 Save = 1
             # replace nan values with zero
-            if len(MaxDepth[np.isnan(MaxDepth)]) > 0:
-                MaxDepth[np.isnan(MaxDepth)] = 0
+            if len(MapArray[np.isnan(MapArray)]) > 0:
+                MapArray[np.isnan(MapArray)] = 0
                 Save = 1
             # replace 99 value with 0
-            if len(MaxDepth[MaxDepth > 99]) > 0 :
-                MaxDepth[MaxDepth > 99] = 0
+            if len(MapArray[MapArray > 99]) > 0 :
+                MapArray[MapArray > 99] = 0
                 Save = 1
 
             if Save == 1:
                 print("File= " + str(timestep))
                 # write the new file
-                fname = DepthPrefix + str(timestep) + ".asc"
+                fname = MapsPrefix + str(timestep) + ".asc"
                 newfile = Saveto + "/" + fname
 
                 with open(newfile,'w') as File:
@@ -1738,7 +1759,7 @@ class River():
 
 
                     for i in range(rows):
-                        File.writelines(list(map(raster.StringSpace,MaxDepth[i,:])))
+                        File.writelines(list(map(raster.StringSpace,MapArray[i,:])))
                         File.write("\n")
 
                 #zip the file
