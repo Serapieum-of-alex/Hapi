@@ -1752,8 +1752,8 @@ class River():
                 MapArray[np.isnan(MapArray)] = 0
                 Save = 1
             # replace 99 value with 0
-            if len(MapArray[MapArray > 99]) > 0 :
-                MapArray[MapArray > 99] = 0
+            if len(MapArray[MapArray >= 99]) > 0 :
+                MapArray[MapArray >= 99] = 0
                 Save = 1
 
             if Save == 1:
