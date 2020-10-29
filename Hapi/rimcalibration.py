@@ -7,15 +7,37 @@ Created on Tue Apr  7 22:27:32 2020
 import pandas as pd
 import datetime as dt
 import numpy as np
+import datetime as dt
 
 datafn = lambda x: dt.datetime.strptime(x,"%Y-%m-%d")
 
 class RIMCalibration():
 
-    def __init__(self, name, Version):
+    def __init__(self, name, Version, start, days):
         self.name = name
         self.Version = Version
+        
+        self.start = dt.datetime.strptime(start,"%Y-%m-%d")
+        self.end = self.start + dt.timedelta(days = days)
+        self.days = days
+        
+        Ref_ind = pd.date_range(self.start, self.end, freq='D')
+        self.ReferenceIndex = pd.DataFrame(index = list(range(1,days+1)))
+        self.ReferenceIndex['date'] = Ref_ind[:-1]
+        
 
+    def IndexToDate(self,Index):
+        # convert the index into date
+        return self.ReferenceIndex.loc[Index,'date']
+
+    def DateToIndex(self,Date):
+        # convert the index into date+
+        # Date = dt.datetime(1950,1,1)
+        if type(Date) == str:
+            Date = dt.datetime.strptime(Date,"%Y-%m-%d")
+        return np.where(self.ReferenceIndex['date'] == Date)[0][0]+1
+        
+        
     def ReadObservedWL(self, GaugesTable, Path, StartDate, EndDate, NoValue):
         """
         ============================================================================
@@ -25,7 +47,7 @@ class RIMCalibration():
         Parameters
         ----------
             1-GaugesTable : [dataframe]
-                Dataframe contains columns [swimid,xsid,datum(m)].
+                Dataframe contains columns [Segment,xsid,datum(m)].
             2-Path : [String]
                     path to the folder containing the text files of the water level gauges
             3-StartDate : [datetime object]
@@ -37,20 +59,25 @@ class RIMCalibration():
 
         Returns
         -------
-            1-WL: [dataframe attribute].
-
-
+            1-WLGauges: [dataframe attiribute].
+                dataframe containing the data of the water level gauges and 
+                the index as the time series from the StartDate till the EndDate
+                and the gaps filled with the NoValue 
+            2-WLGaugesTable:[dataframe attiribute].
+                the input WLGaugesTable dataframe with the index replaced to 
+                be the segment ID
         """
 
         ind = pd.date_range(StartDate, EndDate)
-        columns = GaugesTable['swimid'].tolist()
+        columns = GaugesTable['segment'].tolist()
 
         WLGauges = pd.DataFrame(index = ind)
         # WLGaugesf.loc[:,:] = NoValue
         WLGauges.loc[:,0] = ind
 
         for i in range(len(columns)):
-            f = pd.read_csv(Path + str(int(columns[i])) + ".txt",
+            gid = GaugesTable.loc[GaugesTable['segment']==columns[i],'gid'].values[0]
+            f = pd.read_csv(Path + str(gid) + ".txt",
                            delimiter = ",", header = None)
             f[0] = f[0].map(datafn)
             # sort by date as some values are missed up
@@ -75,14 +102,14 @@ class RIMCalibration():
         del WLGauges[0]
         self.WLGauges = WLGauges
 
-        GaugesTable.index = GaugesTable['swimid'].tolist()
+        GaugesTable.index = GaugesTable['segment'].tolist()
         GaugesTable['start'] = 0
         GaugesTable['end'] = 0
         for i in range(len(columns)):
             st1 = WLGauges[columns[i]][WLGauges[columns[i]] != NoValue].index[0]
             end1 = WLGauges[columns[i]][WLGauges[columns[i]] != NoValue].index[-1]
-            GaugesTable.loc[GaugesTable.loc[:,'swimid'] == columns[i],'start'] = st1
-            GaugesTable.loc[GaugesTable.loc[:,'swimid'] == columns[i],'end'] = end1
+            GaugesTable.loc[GaugesTable.loc[:,'segment'] == columns[i],'start'] = st1
+            GaugesTable.loc[GaugesTable.loc[:,'segment'] == columns[i],'end'] = end1
 
         self.WLGaugesTable = GaugesTable
 
@@ -121,23 +148,22 @@ class RIMCalibration():
         GRDC = pd.DataFrame(index = ind)
         ID = Gauges.columns[0]
         for i in range(len(Gauges[ID])):
-            GRDC.loc[:,int(Gauges[ID][i])] = np.loadtxt(Path +
+            GRDC.loc[:,int(Gauges['segment'][i])] = np.loadtxt(Path +
                       str(int(Gauges[ID][i])) + '.txt') #,skiprows = 0
         self.QGauges = GRDC
 
-        GaugesTable = pd.DataFrame(index = Gauges[ID])
-        # GaugesTable['SubID'] = Gauges[0]
+        GaugesTable = pd.DataFrame(index = Gauges['segment'])
         GaugesTable['start'] = 0
         GaugesTable['end'] = 0
 
         for i in range(len(Gauges[ID])):
-            st1 = GRDC[Gauges[ID][i]][GRDC[Gauges[ID][i]] != NoValue].index[0]
-            end1 = GRDC[Gauges[ID][i]][GRDC[Gauges[ID][i]] != NoValue].index[-1]
+            st1 = GRDC[Gauges['segment'][i]][GRDC[Gauges['segment'][i]] != NoValue].index[0]
+            end1 = GRDC[Gauges['segment'][i]][GRDC[Gauges['segment'][i]] != NoValue].index[-1]
             # GaugesTable.loc[GaugesTable.loc[:,'SubID'] == Gauges[0][i],'start'] = st1
             # GaugesTable.loc[GaugesTable.loc[:,'SubID'] == Gauges[0][i],'end'] = end1
-            GaugesTable.loc[Gauges[ID][i],'start'] = st1
-            GaugesTable.loc[Gauges[ID][i],'end'] = end1
-
+            GaugesTable.loc[Gauges['segment'][i],'start'] = st1
+            GaugesTable.loc[Gauges['segment'][i],'end'] = end1
+        
         self.QGaugesTable = GaugesTable
 
     def ReadRRM(self, Qgauges, Path, StartDate, EndDate):
@@ -280,7 +306,7 @@ class RIMCalibration():
         EndDate = StartDate + dt.timedelta(days = days-1)
         ind = pd.date_range(StartDate,EndDate)
 
-        WLRIM = pd.DataFrame(index = ind, columns = WLGaugesTable['swimid'].tolist())
+        WLRIM = pd.DataFrame(index = ind, columns = WLGaugesTable['Segment'].tolist())
         WLRIM.loc[:,:] = NoValue
 
         for i in range(len(WLRIM.columns)):
@@ -307,7 +333,55 @@ class RIMCalibration():
 
         self.WLRIM = WLRIM[:]
 
+    def ReadCalirationResult(self, SubID, Path = ''):
+        """
+        =============================================================================
+          ReadCalirationResult(SubID, FromDay = [], ToDay = [], Path = '', FillMissing = True)
+        =============================================================================
+        Read1DResult method reads the 1D results and fill the missing days in the middle
 
+        Parameters
+        ----------
+            1-SubID : [integer]
+                ID of the sub-basin you want to read its data.
+            2-FromDay : [integer], optional
+                the index of the day you want the data to start from. The default is empty.
+                means read everything
+            3-ToDay : [integer], optional
+                the index of the day you want the data to end to. The default is empty.
+                means read everything
+            4-Path : [String], optional
+                Path to read the results from. The default is ''.
+            5-FillMissing : [Bool], optional
+                Fill the missing days. The default is False.
+
+        Returns
+        -------
+            6-Result1D : [attribute]
+                the results read will be stored (as it is without any filter)
+                in the attribute "Result1D"
+        """
+        hasattr(self,"QGauges"),"Please read the discharge gauges first"
+        hasattr(self,"WlGauges"),"Please read the water level gauges first"
+        
+        if not hasattr(self, "CalibrationQ"):
+            indD = pd.date_range(self.start, self.end, freq = "D")[:-1]
+            self.CalibrationQ = pd.DataFrame(index = indD)
+        if not hasattr(self, "CalibrationWL"):
+            indD = pd.date_range(self.start, self.end, freq = "D")[:-1]
+            self.CalibrationWL = pd.DataFrame(index = indD)
+        
+        ind = pd.date_range(self.start, self.end, freq = "H")[:-1]
+        q = pd.read_csv(Path + str(SubID) + "_q.txt", header = None)
+        wl = pd.read_csv(Path + str(SubID) + "_wl.txt", header = None)
+        
+        q.index = ind
+        wl.index = ind
+        
+        self.CalibrationQ[SubID] = q[0].resample('D').mean()
+        self.CalibrationWL[SubID] = wl[0].resample('D').mean()
+        
+        
     def ReturnPeriod(self,Path):
         """
         ==========================================
@@ -580,3 +654,57 @@ class RIMCalibration():
             self.AnnualMaxRIMQ = AnnualMax #AnnualMaxRIM
         else:
             self.AnnualMaxRIMWL = AnnualMax
+            
+    
+    def CalculateProfile(self, Segmenti, BedlevelDS, Manning):
+        """
+        ===========================================================================
+            CalculateProfile(Segmenti, BedlevelDS, Manning)
+        ===========================================================================
+        CalculateProfile method takes the river segment ID and the calibration parameters
+        (last downstream cross-section bed level and the manning coefficient) and 
+        calculates the new profiles
+        
+        Parameters
+        ----------
+        Segmenti : [Integer]
+            cross-sections segment ID .
+        BedlevelDS : [Float]
+            the bed level of the last cross section in the segment.
+        Manning : [float]
+            manning coefficient.
+
+        Returns
+        -------
+        crosssection:[dataframe attribute]
+            crosssection attribute will be updated with the newly calculated 
+            profile for the given segment
+        slope:[dataframe attribute]
+            slope attribute will be updated with the newly calculated average
+            slope for the given segment
+        """
+    
+        levels = pd.DataFrame(columns=['segment','bedlevelUS','bedlevelDS'])
+        
+        # change cross-section
+        bedlevel = self.crosssections.loc[self.crosssections["segment"]==Segmenti,'gl'].values
+        # get the bedlevel of the last cross section in the segment as a calibration parameter
+        levels.loc[Segmenti,'bedlevelDS'] = BedlevelDS
+        levels.loc[Segmenti,'bedlevelUS'] = bedlevel[0]
+        
+        NoDistances = len(bedlevel)-1
+        AvgSlope = ((levels.loc[Segmenti,'bedlevelUS'] - levels.loc[Segmenti,'bedlevelDS'] )/ (500 * NoDistances)) *-500
+        
+        # calculate the new bed levels 
+        bedlevelNew = np.zeros(len(bedlevel))
+        bedlevelNew[len(bedlevel)-1] = levels.loc[Segmenti,'bedlevelDS']
+        for i in range(len(bedlevel)-1):
+            bedlevelNew[i] = levels.loc[Segmenti,'bedlevelDS'] + (len(bedlevel) - i -1) * abs(AvgSlope)
+        
+        self.crosssections.loc[self.crosssections["segment"]==Segmenti,'gl'] = bedlevelNew
+        
+        # change manning
+        self.crosssections.loc[self.crosssections["segment"]==Segmenti,'m'] = Manning
+        
+        ## change slope
+        self.slope.loc[self.slope['segment']==Segmenti, 'slope'] = AvgSlope
