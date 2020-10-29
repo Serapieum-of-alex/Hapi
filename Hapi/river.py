@@ -33,7 +33,8 @@ class River():
                  RRMstart = "1950-1-1", RRMdays =36890,
                  leftOvertopping_Suffix = "_left.txt",
                  RightOvertopping_Suffix = "_right.txt", DepthPrefix = "DepthMax",
-                 DurationPrefix = "Duration", ReturnPeriodPrefix = "ReturnPeriod" ):
+                 DurationPrefix = "Duration", ReturnPeriodPrefix = "ReturnPeriod",
+                 Compressed=True, OneDResultPath='', TwoDResultPath=''):
         self.name = name
         self.Version = Version
         self.start = dt.datetime.strptime(start,"%Y-%m-%d")
@@ -44,12 +45,12 @@ class River():
 
         self.leftOvertopping_Suffix = leftOvertopping_Suffix
         self.RightOvertopping_Suffix = RightOvertopping_Suffix
-        self.OneDResultPath = ''
-        self.TwoDResultPath = ''
+        self.OneDResultPath = OneDResultPath
+        self.TwoDResultPath = TwoDResultPath
         self.DepthPrefix = DepthPrefix
         self.DurationPrefix = DurationPrefix
         self.ReturnPeriodPrefix = ReturnPeriodPrefix
-
+        self.Compressed = Compressed
         Ref_ind = pd.date_range(self.start, self.end, freq='D')
         # the last day is not in the results day Ref_ind[-1]
         # write the number of days + 1 as python does not include the last number in the range
@@ -106,7 +107,7 @@ class River():
 
         """
         self.slope = pd.read_csv(Path, delimiter = ",",header = None)
-        self.slope.columns = ['SubID','f1','slope','f2']
+        self.slope.columns = ['segment','f1','slope','f2']
 
     def ReturnPeriod(self,Path):
         """
@@ -150,9 +151,18 @@ class River():
             1-rivernetwork:[data frame attribute]
                 containing the river network with columns ['SubID','US','DS']
         """
-        self.rivernetwork = pd.read_csv(Path, delimiter = ',') #,header = None
-        # self.rivernetwork.columns = ['SubID','US','DS']
-
+        if self.Version == 1 or self.Version == 2:
+            self.rivernetwork = pd.read_csv(Path, delimiter = ',') #,header = None
+            # self.rivernetwork.columns = ['SubID','US','DS']
+        else:
+            File  = open(Path)
+            Wholefile = File.readlines()
+            File.close()
+            rivernetwork = pd.DataFrame(columns=Wholefile[0][:-1].split(','))
+            for i in range(1,len(Wholefile)):
+                rivernetwork.loc[i-1,rivernetwork.columns[0:2].tolist()] = [int(j) for j in Wholefile[i][:-1].split(',')[0:2]]
+                rivernetwork.loc[i-1,rivernetwork.columns[2]] = [int(j) for j in Wholefile[i][:-1].split(',')[2:]]
+            self.rivernetwork = rivernetwork
 
     def Trace(self,SubID):
         """
@@ -1948,7 +1958,10 @@ class Sub(River):
         self.RRMReferenceIndex = River.RRMReferenceIndex
 
         self.OneDResultPath = River.OneDResultPath
-        self.slope = River.slope[River.slope['SubID']==ID]['slope'].tolist()[0]
+        if self.Version == 1 or self.Version == 2 :
+            self.slope = River.slope[River.slope['SubID']==ID]['slope'].tolist()[0]
+        else:
+            self.slope = River.slope[River.slope['segment']==ID]['slope'].tolist()[0]
         
         if hasattr(River, "rivernetwork"):
             self.USnode, self.DSnode = River.Trace(ID)
