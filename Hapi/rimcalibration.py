@@ -656,7 +656,7 @@ class RIMCalibration():
             self.AnnualMaxRIMWL = AnnualMax
             
     
-    def CalculateProfile(self, Segmenti, BedlevelDS, Manning):
+    def CalculateProfile(self, Segmenti, BedlevelDS, Manning, BC_slope):
         """
         ===========================================================================
             CalculateProfile(Segmenti, BedlevelDS, Manning)
@@ -693,13 +693,18 @@ class RIMCalibration():
         levels.loc[Segmenti,'bedlevelUS'] = bedlevel[0]
         
         NoDistances = len(bedlevel)-1
-        AvgSlope = ((levels.loc[Segmenti,'bedlevelUS'] - levels.loc[Segmenti,'bedlevelDS'] )/ (500 * NoDistances)) *-500
+        # AvgSlope = ((levels.loc[Segmenti,'bedlevelUS'] - levels.loc[Segmenti,'bedlevelDS'] )/ (500 * NoDistances)) *-500
+        # change in the bed level of the last XS
+        AverageDelta = (levels.loc[Segmenti,'bedlevelDS'] - bedlevel[-1])/ NoDistances
         
         # calculate the new bed levels 
         bedlevelNew = np.zeros(len(bedlevel))
         bedlevelNew[len(bedlevel)-1] = levels.loc[Segmenti,'bedlevelDS']
+        bedlevelNew[0] = levels.loc[Segmenti,'bedlevelUS']
+        
         for i in range(len(bedlevel)-1):
-            bedlevelNew[i] = levels.loc[Segmenti,'bedlevelDS'] + (len(bedlevel) - i -1) * abs(AvgSlope)
+            # bedlevelNew[i] = levels.loc[Segmenti,'bedlevelDS'] + (len(bedlevel) - i -1) * abs(AvgSlope)
+            bedlevelNew[i] = bedlevel[i] + i * AverageDelta
         
         self.crosssections.loc[self.crosssections["segment"]==Segmenti,'gl'] = bedlevelNew
         
@@ -707,4 +712,5 @@ class RIMCalibration():
         self.crosssections.loc[self.crosssections["segment"]==Segmenti,'m'] = Manning
         
         ## change slope
-        self.slope.loc[self.slope['segment']==Segmenti, 'slope'] = AvgSlope
+        # self.slope.loc[self.slope['segment']==Segmenti, 'slope'] = AvgSlope
+        self.slope.loc[self.slope['segment']==Segmenti, 'slope'] = BC_slope
