@@ -20,8 +20,13 @@ class Visualize():
         # self.XSname = Sub.crosssections['xsid'].tolist()
 
 
-    def GroundSurface(self, Sub, XS=0, XSbefore = 10, XSafter = 10):
-
+    def GroundSurface(self, Sub, XSID='', XSbefore = 10, XSafter = 10, FloodPlain = False):
+        
+        if XSID == '':
+            XS = 0
+        else:
+            XS = np.where(Sub.crosssections['xsid'] == XSID )[0][0]
+        
         GroundSurfacefig = plt.figure(70, figsize = (20,10) )
         gs = gridspec.GridSpec(nrows = 2, ncols = 6, figure = GroundSurfacefig )
         axGS = GroundSurfacefig.add_subplot(gs[0:2,0:6])
@@ -43,9 +48,17 @@ class Visualize():
 
 
         axGS.tick_params(labelsize= 8)
+        # plot dikes
         axGS.plot(Sub.XSname, Sub.crosssections['zl'],'k--', dashes = (5,1), linewidth = 2, label = 'Left Dike')
         axGS.plot(Sub.XSname, Sub.crosssections['zr'],'k.-', linewidth = 2, label = 'Right Dike')
-
+        
+        if FloodPlain:
+            fpl = Sub.crosssections['gl'] + Sub.crosssections['dbf'] + Sub.crosssections['hl']
+            fpr = Sub.crosssections['gl'] + Sub.crosssections['dbf'] + Sub.crosssections['hr']
+            axGS.plot(Sub.XSname, fpl,'b-.',linewidth = 2, label = 'Floodplain left')
+            axGS.plot(Sub.XSname, fpr,'r-.',linewidth = 2, label = 'Floodplain right')
+        
+        # plot the bedlevel/baklevel
         if Sub.Version == 1:
             axGS.plot(Sub.XSname, Sub.crosssections['gl'],'k-', linewidth = 5, label = 'Bankful level')
         else:
@@ -413,10 +426,10 @@ class Visualize():
             ax_XS1.title.set_text('XS ID = '+str(XsId))
             ax_XS1.title.set_fontsize(titlesize )
 
-            if Sub.Version == 2:
+            if Sub.Version > 1:
                 dbf= Sub.crosssections['dbf'].loc[Sub.crosssections['xsid'] == XSS.index[XSno]].values[0]
                 ax_XS1.annotate("dbf="+str(round(dbf,2)),xy=(bl,dbf-0.5), fontsize = textsize  )
-                ax_XS1.annotate("Area="+str(round(dbf*b,2))+"m2",xy=(bl,dbf-1.4), fontsize = textsize  )
+                # ax_XS1.annotate("Area="+str(round(dbf*b,2))+"m2",xy=(bl,dbf-1.4), fontsize = textsize  )
 
             ax_XS1.annotate("b="+str(round(b,2)),xy=(bl,0), fontsize = textsize  )
 
@@ -432,10 +445,10 @@ class Visualize():
             ax_XS2.title.set_text('XS ID = '+str(XsId))
             ax_XS2.title.set_fontsize(titlesize)
 
-            if Sub.Version == 2:
+            if Sub.Version > 1:
                 dbf= Sub.crosssections['dbf'].loc[Sub.crosssections['xsid'] == XSS.index[XSno]].values[0]
                 ax_XS2.annotate("dbf="+str(round(dbf,2)),xy=(bl,dbf-0.5), fontsize = textsize  )
-                ax_XS2.annotate("Area="+str(round(dbf*b,2))+"m2",xy=(bl,dbf-1.4), fontsize = textsize  )
+                # ax_XS2.annotate("Area="+str(round(dbf*b,2))+"m2",xy=(bl,dbf-1.4), fontsize = textsize  )
 
             ax_XS2.annotate("b="+str(round(b,2)),xy=(bl,0), fontsize = textsize  )
 
@@ -451,10 +464,10 @@ class Visualize():
             ax_XS3.title.set_text('XS ID = '+str(XsId))
             ax_XS3.title.set_fontsize(titlesize)
 
-            if Sub.Version == 2:
+            if Sub.Version > 1:
                 dbf= Sub.crosssections['dbf'].loc[Sub.crosssections['xsid'] == XSS.index[XSno]].values[0]
                 ax_XS3.annotate("dbf="+str(round(dbf,2)),xy=(bl,dbf-0.5), fontsize = textsize  )
-                ax_XS3.annotate("Area="+str(round(dbf*b,2))+"m2",xy=(bl,dbf-1.4), fontsize = textsize  )
+                # ax_XS3.annotate("Area="+str(round(dbf*b,2))+"m2",xy=(bl,dbf-1.4), fontsize = textsize  )
             ax_XS3.annotate("b="+str(round(b,2)),xy=(bl,0), fontsize = textsize  )
 
 
@@ -468,10 +481,10 @@ class Visualize():
             ax_XS4.plot(xcoord,ycoord, linewidth = 6)
             ax_XS4.title.set_text('XS ID = '+str(XsId))
             ax_XS4.title.set_fontsize(titlesize)
-            if Sub.Version == 2:
+            if Sub.Version > 1:
                 dbf= Sub.crosssections['dbf'].loc[Sub.crosssections['xsid'] == XSS.index[XSno]].values[0]
                 ax_XS4.annotate("dbf="+str(round(dbf,2)),xy=(bl,dbf-0.5), fontsize = textsize  )
-                ax_XS4.annotate("Area="+str(round(dbf*b,2))+"m2",xy=(bl,dbf-1.4), fontsize = textsize  )
+                # ax_XS4.annotate("Area="+str(round(dbf*b,2))+"m2",xy=(bl,dbf-1.4), fontsize = textsize  )
 
             ax_XS4.annotate("b="+str(round(b,2)),xy=(bl,0), fontsize = textsize  )
 
@@ -487,10 +500,10 @@ class Visualize():
             ax_XS5.title.set_text('XS ID = '+str(XsId))
             ax_XS5.title.set_fontsize(titlesize)
 
-            if Sub.Version == 2:
+            if Sub.Version > 1:
                 dbf= Sub.crosssections['dbf'].loc[Sub.crosssections['xsid'] == XSS.index[XSno]].values[0]
                 ax_XS5.annotate("dbf="+str(round(dbf,2)),xy=(bl,dbf-0.5), fontsize = textsize  )
-                ax_XS5.annotate("Area="+str(round(dbf*b,2))+"m2",xy=(bl,dbf-1.4), fontsize = textsize  )
+                # ax_XS5.annotate("Area="+str(round(dbf*b,2))+"m2",xy=(bl,dbf-1.4), fontsize = textsize  )
 
             ax_XS5.annotate("b="+str(round(b,2)),xy=(bl,0), fontsize = textsize  )
 
@@ -506,10 +519,10 @@ class Visualize():
             ax_XS6.title.set_text('XS ID = '+str(XsId))
             ax_XS6.title.set_fontsize(titlesize)
 
-            if Sub.Version == 2:
+            if Sub.Version > 1:
                 dbf= Sub.crosssections['dbf'].loc[Sub.crosssections['xsid'] == XSS.index[XSno]].values[0]
                 ax_XS6.annotate("dbf="+str(round(dbf,2)),xy=(bl,dbf-0.5), fontsize = textsize  )
-                ax_XS6.annotate("Area="+str(round(dbf*b,2))+"m2",xy=(bl,dbf-1.4), fontsize = textsize  )
+                # ax_XS6.annotate("Area="+str(round(dbf*b,2))+"m2",xy=(bl,dbf-1.4), fontsize = textsize  )
 
             ax_XS6.annotate("b="+str(round(b,2)),xy=(bl,0), fontsize = textsize  )
 
@@ -524,10 +537,10 @@ class Visualize():
             ax_XS7.title.set_text('XS ID = '+str(XsId))
             ax_XS7.title.set_fontsize(titlesize)
 
-            if Sub.Version == 2:
+            if Sub.Version > 1:
                 dbf= Sub.crosssections['dbf'].loc[Sub.crosssections['xsid'] == XSS.index[XSno]].values[0]
                 ax_XS7.annotate("dbf="+str(round(dbf,2)),xy=(bl,dbf-0.5), fontsize = textsize  )
-                ax_XS7.annotate("Area="+str(round(dbf*b,2))+"m2",xy=(bl,dbf-1.4), fontsize = textsize  )
+                # ax_XS7.annotate("Area="+str(round(dbf*b,2))+"m2",xy=(bl,dbf-1.4), fontsize = textsize  )
             ax_XS7.annotate("b="+str(round(b,2)),xy=(bl,0), fontsize = textsize  )
 
 
@@ -542,10 +555,10 @@ class Visualize():
             ax_XS8.title.set_text('XS ID = '+str(XsId))
             ax_XS8.title.set_fontsize(titlesize)
 
-            if Sub.Version == 2:
+            if Sub.Version > 1:
                 dbf= Sub.crosssections['dbf'].loc[Sub.crosssections['xsid'] == XSS.index[XSno]].values[0]
                 ax_XS8.annotate("dbf="+str(round(dbf,2)),xy=(bl,dbf-0.5), fontsize = textsize  )
-                ax_XS8.annotate("Area="+str(round(dbf*b,2))+"m2",xy=(bl,dbf-1.4), fontsize = textsize  )
+                # ax_XS8.annotate("Area="+str(round(dbf*b,2))+"m2",xy=(bl,dbf-1.4), fontsize = textsize  )
 
             ax_XS8.annotate("b="+str(round(b,2)),xy=(bl,0), fontsize = textsize )
 
@@ -561,10 +574,10 @@ class Visualize():
             ax_XS9.title.set_text('XS ID = '+str(XsId))
             ax_XS9.title.set_fontsize(titlesize)
 
-            if Sub.Version == 2:
+            if Sub.Version > 1:
                 dbf= Sub.crosssections['dbf'].loc[Sub.crosssections['xsid'] == XSS.index[XSno]].values[0]
                 ax_XS9.annotate("dbf="+str(round(dbf,2)),xy=(bl,dbf-0.5), fontsize = textsize  )
-                ax_XS9.annotate("Area="+str(round(dbf*b,2))+"m2",xy=(bl,dbf-1.4), fontsize = textsize  )
+                # ax_XS9.annotate("Area="+str(round(dbf*b,2))+"m2",xy=(bl,dbf-1.4), fontsize = textsize  )
             ax_XS9.annotate("b="+str(round(b,2)),xy=(bl,0), fontsize = textsize  )
 
             gs.update(wspace = 0.2, hspace = 0.2, top= 0.96, bottom = 0.1, left = 0.05, right = 0.96)
