@@ -76,6 +76,17 @@ class River():
             Date = dt.datetime.strptime(Date,"%Y-%m-%d")
         return np.where(self.ReferenceIndex['date'] == Date)[0][0]+1
 
+    def IndexToDateRRM(self,Index):
+        # convert the index into date
+        return self.ReferenceIndex.loc[Index,'date']
+
+    def DateToIndexRRM(self,Date):
+        # convert the index into date+
+        # Date = dt.datetime(1950,1,1)
+        if type(Date) == str:
+            Date = dt.datetime.strptime(Date,"%Y-%m-%d")
+        return np.where(self.ReferenceIndex['date'] == Date)[0][0]+1
+    
     def CrossSections(self,Path):
         """
         ===========================================
@@ -106,8 +117,12 @@ class River():
         None.
 
         """
-        self.slope = pd.read_csv(Path, delimiter = ",",header = None)
-        self.slope.columns = ['segment','f1','slope','f2']
+        if self.Version == 1 or self.Version == 2:
+            self.slope = pd.read_csv(Path, delimiter = ",",header = None)
+            self.slope.columns = ['segment','f1','slope','f2']
+        else:
+            self.slope = pd.read_csv(Path, delimiter = ",",header = None)
+            self.slope.columns = ['segment','slope']
 
     def ReturnPeriod(self,Path):
         """
@@ -1958,10 +1973,12 @@ class Sub(River):
         self.RRMReferenceIndex = River.RRMReferenceIndex
 
         self.OneDResultPath = River.OneDResultPath
-        if self.Version == 1 or self.Version == 2 :
-            self.slope = River.slope[River.slope['SubID']==ID]['slope'].tolist()[0]
-        else:
-            self.slope = River.slope[River.slope['segment']==ID]['slope'].tolist()[0]
+        
+        if hasattr(River, 'slope'):
+            if self.Version == 1 or self.Version == 2 :
+                self.slope = River.slope[River.slope['SubID']==ID]['slope'].tolist()[0]
+            else:
+                self.slope = River.slope[River.slope['segment']==ID]['slope'].tolist()[0]
         
         if hasattr(River, "rivernetwork"):
             self.USnode, self.DSnode = River.Trace(ID)
@@ -1971,14 +1988,15 @@ class Sub(River):
         if hasattr(River,"SP"):
             self.SP = River.SP.loc[River.SP['ID'] == self.ID,:]
             self.SP.index = list(range(len(self.SP)))
-            
-        self.RRMPath = River.RRMPath
+        
+        if hasattr(River,"RRMPath"):
+            self.RRMPath = River.RRMPath
         # create dictionary to store any extracted values from maps
         self.ExtractedValues = dict()
 
         self.FigureOptions = River.FigureOptions
 
-    def Read1DResult(self, FromDay = '', ToDay = '', FillMissing = False,
+    def Read1DResult(self, FromDay = '', ToDay = '', FillMissing = True,
                      addHQ2 = False, Path = '', XSID = ''):
         """
         ===================================================================
@@ -1986,7 +2004,9 @@ class Sub(River):
         ===================================================================
         Read1DResult method reads the 1D (1D-2D coupled) result of the sub-basin the object is
         created for and return the hydrograph of the first and last cross section
-
+        the method will not read the 1D result file again if you tried to read results 
+        of the same sub-basin again, so you have to re-instantiate the object
+        
         Parameters
         ----------
             1-FromDay : [integer], optional
@@ -2016,7 +2036,6 @@ class Sub(River):
                 the first day in the 1D result
             5-EndDays:[attribute]
                 the last day in the 1D result
-
         """
         # if the results are not read yet read it
         if not hasattr(self, "Result1D") :
@@ -2027,18 +2046,18 @@ class Sub(River):
         if ToDay ==  '':
             ToDay = self.Result1D.loc[len(self.Result1D)-1,'day']
 
-        # start = self.ReferenceIndex.loc[FromDay,'date']
         start = self.IndexToDate(FromDay)
-        # end = self.ReferenceIndex.loc[ToDay+1,'date']
         end = self.IndexToDate(ToDay+1)
 
         if not hasattr(self, "XSHydrographs") :
             self.XSHydrographs = pd.DataFrame(index = pd.date_range(start,end,freq = 'H')[:-1])
             self.XSWaterLevel = pd.DataFrame(index = pd.date_range(start,end,freq = 'H')[:-1])
-
-        # self.XSHydrographs['ID'] = pd.date_range(start, end, freq = 'H')[:-1]
-        # self.XSWaterLevel['ID'] = pd.date_range(start, end, freq = 'H')[:-1]
-
+        
+        #check if the XSID is in the sub-basin
+        if XSID != '':
+            XSsub = list(set(self.Result1D['xs']))
+            assert  XSID in XSsub, "The given cross-section " + str(XSID) + " does not exist inside the current Segment of the river, first XS is " + str(self.FirstXS) + ", and last XS is " + str(self.LastXS)
+            
         # get the simulated hydrograph and add the cutted HQ2
         if addHQ2:
             self.XSHydrographs[self.LastXS] = self.Result1D['q'][self.Result1D['xs'] == self.LastXS ].values + self.RP['HQ2'].tolist()[0]
@@ -2062,13 +2081,7 @@ class Sub(River):
         # check the first day in the results and get the date of the first day and last day
         ## create time series
 
-        # self.from_beginning  = self.Result1D['day'][0] + 1
         self.from_beginning  = self.Result1D['day'][0]
-
-        # if from_beginning == 1:
-            # self.FirstDay = self.ReferenceIndex.loc[1,'date']
-            # self.FirstDayResults = self.ReferenceIndex.loc[self.Result1D['day'][0],'date']
-        #    list1 = range((FirstDayResults-s).days+1,(EndDays-s).days+1)
 
         # else:
         self.FirstDay =  self.ReferenceIndex.loc[self.from_beginning,'date']
@@ -2077,14 +2090,10 @@ class Sub(River):
         # empty days at the beginning
 
         self.FirstDayResults = self.ReferenceIndex.loc[self.Result1D['day'][0],'date']
-
-        # EndDays = River.ReferenceIndex.loc[Sub.Result1D['day'][Sub.Result1D.index[-1]]+1,'date']
         self.EndDays = self.ReferenceIndex.loc[self.Result1D['day'][self.Result1D.index[-1]],'date']
 
         # last days+1 as range does not include the last element
-        # self.Daylist = list(range(self.Result1D['day'][0]+1, self.Result1D['day'][self.Result1D.index[-1]]+1))
         self.Daylist = list(range(self.Result1D['day'][0], self.Result1D['day'][self.Result1D.index[-1]]+1))
-
         self.ReferenceIndex_Results = pd.date_range(self.FirstDayResults, self.EndDays,freq = "D")
 
 
@@ -2227,50 +2236,6 @@ class Sub(River):
 
 
 
-    @staticmethod
-    def ReadRRMResults(Path, NodeID, FromDay, ToDay):
-        """
-        ===================================================================
-             ReadRRMResults(Path, NodeID, FromDay, ToDay)
-        ===================================================================
-        ReadRRMResults is a static method to read the results of the rainfall-runoff
-        model
-
-        Parameters
-        ----------
-        Path : [String]
-            Path to the result files.
-        NodeID : [Integer]
-            the ID given the the sub-basin .
-        FromDay : [integer], optional
-                the day you want to read the result from, the first day is 1 not zero.The default is ''.
-        ToDay : [integer], optional
-                the day you want to read the result to.
-
-        Returns
-        -------
-        Q : [Dataframe]
-            time series of the runoff .
-
-        """
-
-
-        Q = pd.read_csv(Path + "/" + str(NodeID) + '.txt',header = None)
-        Q = Q.rename(columns = {0:NodeID})
-        Q.index = list(range(1,len(Q)+1))
-
-
-        if FromDay == '':
-            FromDay = 1
-        if ToDay == '':
-            ToDay = len(Q)
-
-        Q = Q.loc[Q.index >= FromDay,:]
-        Q = Q.loc[Q.index <= ToDay]
-
-        return Q
-
-
     def Read1DResults1Min(self, Smin, Emin):
 
         indmin = pd.date_range(Smin,Emin,freq = "min")[:-1]
@@ -2307,8 +2272,68 @@ class Sub(River):
         self.HBCmin = BC_h
 
 
+    @staticmethod
+    def ReadRRMResults(Version, RRMReferenceIndex, Path, NodeID, FromDay, ToDay):
+        """
+        ===================================================================
+             ReadRRMResults(Path, NodeID, FromDay, ToDay)
+        ===================================================================
+        ReadRRMResults is a static method to read the results of the rainfall-runoff
+        model
 
-    def ReadHydrographs(self, NodeID, FromDay = '', ToDay = '',Path = ''):
+        Parameters
+        ----------
+        Path : [String]
+            Path to the result files.
+        NodeID : [Integer]
+            the ID given the the sub-basin .
+        FromDay : [integer], optional
+                the day you want to read the result from, the first day is 1 not zero.The default is ''.
+        ToDay : [integer], optional
+                the day you want to read the result to.
+
+        Returns
+        -------
+        Q : [Dataframe]
+            time series of the runoff .
+
+        """
+                
+        if Version < 3:
+            Q = pd.read_csv(Path + "/" + str(NodeID) + '.txt',header = None)
+            Q = Q.rename(columns = {0:NodeID})
+            Q.index = list(range(1,len(Q)+1))
+    
+            if FromDay == '':
+                FromDay = 1
+            if ToDay == '':
+                ToDay = len(Q)
+    
+            Q = Q.loc[Q.index >= FromDay,:]
+            Q = Q.loc[Q.index <= ToDay]
+        else:
+            Q = pd.read_csv(Path + "/" + str(NodeID) + '.txt',header = None, skiprows=1)
+            Q.index = [dt.datetime.strptime(date,"%d_%m_%Y") for date in Q[0]]
+            del Q[0]
+            Q = Q.rename(columns = {1:NodeID})
+            
+            s = np.where(RRMReferenceIndex['date'] == Q.index[0])[0][0]+1
+            e = np.where(RRMReferenceIndex['date'] == Q.index[-1])[0][0]+1
+            Q.index = list(range(s,e+1))
+            
+            if FromDay == '':
+                FromDay = 1
+            if ToDay == '':
+                ToDay = len(Q)
+            
+            Q = Q.loc[Q.index >= FromDay,:]
+            Q = Q.loc[Q.index <= ToDay, :]
+                
+        return Q
+
+
+
+    def ReadRRMHydrograph(self, NodeID, FromDay = '', ToDay = '',Path = ''):
         """
         =================================================================
             ReadHydrographs(NodeID, FromDay = [], ToDay = [])
@@ -2338,20 +2363,19 @@ class Sub(River):
             self.RRM = pd.DataFrame()
 
         if Path == '':
-            self.RRM[NodeID] = self.ReadRRMResults(self.RRMPath, NodeID, FromDay, ToDay)[NodeID].tolist()
+            self.RRM[NodeID] = self.ReadRRMResults(self.Version, self.RRMReferenceIndex, self.RRMPath, NodeID, FromDay, ToDay)[NodeID].tolist()
         else :
-            self.RRM[NodeID] = self.ReadRRMResults(Path, NodeID, FromDay, ToDay)[NodeID].tolist()
-        # self.RRM[self.USnode] = self.ReadRRMResults(Path, self.USnode, FromDay, ToDay)[self.USnode]
+            self.RRM[NodeID] = self.ReadRRMResults(self.Version, self.RRMReferenceIndex, Path, NodeID, FromDay, ToDay)[NodeID].tolist()
+        
         if FromDay == '':
             FromDay = 1
         if ToDay == '':
-            # ToDay = len(self.RRM[self.USnode])-1
             ToDay = len(self.RRM[NodeID])
 
         start = self.RRMReferenceIndex.loc[FromDay,'date']
         end = self.RRMReferenceIndex.loc[ToDay,'date']
 
-        # self.RRM['ID'] = pd.date_range(start, end, freq = 'D')
+        
         self.RRM.index = pd.date_range(start, end, freq = 'D')
         # get the simulated hydrograph and add the cutted HQ2
 
@@ -2362,24 +2386,32 @@ class Sub(River):
         =============================================================================
             Resample(self, XSID, ColumnName, FromDay='', ToDay = '', Delete=False)
         =============================================================================
-
+        Resample method extract the value at the last hour of the dat [hour == 24]
+        from the 1D Result  file, for the discharge, water level, and water depth.
+        
         Parameters
         ----------
         XSID : [Integer]
             cross-section id.
-        ColumnName : TYPE
-            DESCRIPTION.
-        FromDay : TYPE, optional
-            DESCRIPTION. The default is ''.
-        ToDay : TYPE, optional
-            DESCRIPTION. The default is ''.
-        Delete : TYPE, optional
-            DESCRIPTION. The default is False.
+        ColumnName : [string]
+            the column name you want to resample in the results1D. ColumnName 
+            could be 'q' for discharge, 'wl' for water level, and 'h' for water 
+            depth.
+        FromDay : [integer], optional
+            starting day. The default is ''.
+        ToDay : [integer], optional
+            end day. The default is ''.
+        Delete : [boolen], optional
+            to delete the previously resampled data frame to create another one. 
+            The default is False.
 
         Returns
         -------
-        None.
-
+        ResampledQ, ResampledWL, ResampledH: [dataframe attribute]
+            depends on the given ColumnName the attribute will be created, 
+            if 'q' the attribute will be ResampledQ, and the same for "wl", and "H"
+            and inside the ResampledQ a column will be created with the given XSID
+            containing the resampled valeus
         """
         assert hasattr(self,"Result1D") , "please read the 1D results"
 
