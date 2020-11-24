@@ -36,9 +36,13 @@ class RIMCalibration():
         if type(Date) == str:
             Date = dt.datetime.strptime(Date,"%Y-%m-%d")
         return np.where(self.ReferenceIndex['date'] == Date)[0][0]+1
+    
+    def ReadGaugesTable(self,Path):
+        self.GaugesTable = pd.read_csv(Path)
         
         
-    def ReadObservedWL(self, GaugesTable, Path, StartDate, EndDate, NoValue):
+    def ReadObservedWL(self, Path, StartDate, EndDate, NoValue, # GaugesTable,
+                       column='oid'):
         """
         ============================================================================
             ReadObservedWL( WLGauges, Path, StartDate, EndDate, NoValue)
@@ -69,52 +73,53 @@ class RIMCalibration():
         """
 
         ind = pd.date_range(StartDate, EndDate)
-        columns = GaugesTable['segment'].tolist()
-
+        columns = self.GaugesTable['oid'].tolist()
+        
         WLGauges = pd.DataFrame(index = ind)
         # WLGaugesf.loc[:,:] = NoValue
         WLGauges.loc[:,0] = ind
-
+        
         for i in range(len(columns)):
-            gid = GaugesTable.loc[GaugesTable['segment']==columns[i],'gid'].values[0]
-            f = pd.read_csv(Path + str(gid) + ".txt",
-                           delimiter = ",", header = None)
-            f[0] = f[0].map(datafn)
-            # sort by date as some values are missed up
-            f.sort_values(by = [0], ascending = True, inplace = True)
-            # filter to the range we want
-            f = f.loc[f[0] >= ind[0],:]
-            f = f.loc[f[0] <= ind[-1],:]
-            # reindex
-            f.index = list(range(len(f)))
-            # add datum and convert to meter
-            f.loc[f[1]!= NoValue,1] = (f.loc[f[1]!= NoValue,1] / 100) + GaugesTable.loc[i,'datum(m)']
-            f = f.rename(columns={1:columns[i]})
-
-
-            # assign the values in the dateframe
-            # WLGauges.loc[:,WLGauges.columns[i]].loc[f[0][0]:f[0][len(f)-1]] = f[1].tolist()
-            # use merge as there are some gaps in the middle
-            WLGauges = WLGauges.merge(f, on=0, how='left', sort=False)
-
+            if self.GaugesTable.loc[i,'waterlevel'] == 1:
+                name = self.GaugesTable.loc[i,column]
+                f = pd.read_csv(Path + str(name) + ".txt",
+                               delimiter = ",", header = None)
+                f[0] = f[0].map(datafn)
+                # sort by date as some values are missed up
+                f.sort_values(by = [0], ascending = True, inplace = True)
+                # filter to the range we want
+                f = f.loc[f[0] >= ind[0],:]
+                f = f.loc[f[0] <= ind[-1],:]
+                # reindex
+                f.index = list(range(len(f)))
+                # add datum and convert to meter
+                f.loc[f[1]!= NoValue,1] = (f.loc[f[1]!= NoValue,1] / 100) + self.GaugesTable.loc[i,'datum(m)']
+                f = f.rename(columns={1:columns[i]})
+        
+                # assign the values in the dateframe
+                # WLGauges.loc[:,WLGauges.columns[i]].loc[f[0][0]:f[0][len(f)-1]] = f[1].tolist()
+                # use merge as there are some gaps in the middle
+                WLGauges = WLGauges.merge(f, on=0, how='left', sort=False)
+        
         WLGauges.replace(to_replace = np.nan, value = NoValue, inplace=True)
         WLGauges.index = ind
         del WLGauges[0]
         self.WLGauges = WLGauges
-
-        GaugesTable.index = GaugesTable['segment'].tolist()
-        GaugesTable['start'] = 0
-        GaugesTable['end'] = 0
+        
+        # GaugesTable.index = GaugesTable['segment'].tolist()
+        self.GaugesTable['WLstart'] = 0
+        self.GaugesTable['WLend'] = 0
         for i in range(len(columns)):
-            st1 = WLGauges[columns[i]][WLGauges[columns[i]] != NoValue].index[0]
-            end1 = WLGauges[columns[i]][WLGauges[columns[i]] != NoValue].index[-1]
-            GaugesTable.loc[GaugesTable.loc[:,'segment'] == columns[i],'start'] = st1
-            GaugesTable.loc[GaugesTable.loc[:,'segment'] == columns[i],'end'] = end1
+            if self.GaugesTable.loc[i,'waterlevel'] == 1:
+                st1 = WLGauges[columns[i]][WLGauges[columns[i]] != NoValue].index[0]
+                end1 = WLGauges[columns[i]][WLGauges[columns[i]] != NoValue].index[-1]
+                self.GaugesTable.loc[i,'WLstart'] = st1
+                self.GaugesTable.loc[i,'WLend'] = end1
+        
+        # self.GaugesTable = GaugesTable
 
-        self.WLGaugesTable = GaugesTable
 
-
-    def ReadObservedQ(self, Gauges, Path, StartDate, EndDate, NoValue):
+    def ReadObservedQ(self, Path, StartDate, EndDate, NoValue, column='oid'): #Gauges,
         """
         ========================================================================
             ReadObservedQ(Gauges, Path, StartDate, EndDate, NoValue)
@@ -144,27 +149,58 @@ class RIMCalibration():
             dataframe containing gauge dataframe entered toi the method.
         """
 
-        ind = pd.date_range(StartDate, EndDate)
-        GRDC = pd.DataFrame(index = ind)
-        ID = Gauges.columns[0]
-        for i in range(len(Gauges[ID])):
-            GRDC.loc[:,int(Gauges['segment'][i])] = np.loadtxt(Path +
-                      str(int(Gauges[ID][i])) + '.txt') #,skiprows = 0
-        self.QGauges = GRDC
+        # ind = pd.date_range(StartDate, EndDate)
+        # GRDC = pd.DataFrame(index = ind)
+        # # ID = Gauges.columns[0]
+        # columns = Gauges['gid'].tolist()
+        # for i in range(len(Gauges)):
+        #     if Gauges.loc[Gauges['oid']==columns[i],'discharge'] ==1:
+        #         name = Gauges.loc[Gauges['oid']==columns[i],column].values[0]
+                
+        #         GRDC.loc[:,int(Gauges['oid'][i])] = np.loadtxt(Path +
+        #                   str(int(Gauges[ID][i])) + '.txt') #,skiprows = 0
+        # self.QGauges = GRDC
 
-        GaugesTable = pd.DataFrame(index = Gauges['segment'])
-        GaugesTable['start'] = 0
-        GaugesTable['end'] = 0
+        # GaugesTable = pd.DataFrame(index = Gauges['segment'])
+        # GaugesTable['start'] = 0
+        # GaugesTable['end'] = 0
 
-        for i in range(len(Gauges[ID])):
-            st1 = GRDC[Gauges['segment'][i]][GRDC[Gauges['segment'][i]] != NoValue].index[0]
-            end1 = GRDC[Gauges['segment'][i]][GRDC[Gauges['segment'][i]] != NoValue].index[-1]
-            # GaugesTable.loc[GaugesTable.loc[:,'SubID'] == Gauges[0][i],'start'] = st1
-            # GaugesTable.loc[GaugesTable.loc[:,'SubID'] == Gauges[0][i],'end'] = end1
-            GaugesTable.loc[Gauges['segment'][i],'start'] = st1
-            GaugesTable.loc[Gauges['segment'][i],'end'] = end1
+        # for i in range(len(Gauges[ID])):
+        #     st1 = GRDC[Gauges['segment'][i]][GRDC[Gauges['segment'][i]] != NoValue].index[0]
+        #     end1 = GRDC[Gauges['segment'][i]][GRDC[Gauges['segment'][i]] != NoValue].index[-1]
+        #     # GaugesTable.loc[GaugesTable.loc[:,'SubID'] == Gauges[0][i],'start'] = st1
+        #     # GaugesTable.loc[GaugesTable.loc[:,'SubID'] == Gauges[0][i],'end'] = end1
+        #     GaugesTable.loc[Gauges['segment'][i],'start'] = st1
+        #     GaugesTable.loc[Gauges['segment'][i],'end'] = end1
         
-        self.QGaugesTable = GaugesTable
+        # self.QGaugesTable = GaugesTable
+        
+        ind = pd.date_range(StartDate, EndDate)
+        QGauges = pd.DataFrame(index = ind)
+        # ID = Gauges.columns[0]
+        # columns = Gauges['gid'].tolist()
+        for i in range(len(self.GaugesTable)):
+            if self.GaugesTable.loc[i,'discharge'] == 1:
+                name = self.GaugesTable.loc[i,column]
+                QGauges.loc[:,int(name)] = np.loadtxt(Path +
+                          str(int(name)) + '.txt') #,skiprows = 0
+                
+        self.QGauges = QGauges
+        
+        # Gauges = pd.DataFrame(index = Gauges['segment'])
+        self.GaugesTable['Qstart'] = 0
+        self.GaugesTable['Qend'] = 0
+        
+        for i in range(len(self.GaugesTable)):
+            if self.GaugesTable.loc[i,'discharge'] == 1:
+                ii = self.GaugesTable.loc[i,column]
+                st1 = QGauges[ii][QGauges[ii] != NoValue].index[0]
+                end1 = QGauges[ii][QGauges[ii] != NoValue].index[-1]
+                self.GaugesTable.loc[i,'Qstart'] = st1
+                self.GaugesTable.loc[i,'Qend'] = end1
+        
+        # self.QGaugesTable = GaugesTable
+
 
     def ReadRRM(self, Qgauges, Path, StartDate, EndDate):
         """
