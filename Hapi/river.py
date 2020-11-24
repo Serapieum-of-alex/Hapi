@@ -2273,7 +2273,8 @@ class Sub(River):
 
 
     @staticmethod
-    def ReadRRMResults(Version, RRMReferenceIndex, Path, NodeID, FromDay, ToDay):
+    def ReadRRMResults(Version, RRMReferenceIndex, Path, NodeID, FromDay, ToDay,
+                       date_format="%d_%m_%Y"):
         """
         ===================================================================
              ReadRRMResults(Path, NodeID, FromDay, ToDay)
@@ -2313,7 +2314,7 @@ class Sub(River):
             Q = Q.loc[Q.index <= ToDay]
         else:
             Q = pd.read_csv(Path + "/" + str(NodeID) + '.txt',header = None, skiprows=1)
-            Q.index = [dt.datetime.strptime(date,"%d_%m_%Y") for date in Q[0]]
+            Q.index = [dt.datetime.strptime(date,date_format) for date in Q[0]]
             del Q[0]
             Q = Q.rename(columns = {1:NodeID})
             
@@ -2333,7 +2334,8 @@ class Sub(River):
 
 
 
-    def ReadRRMHydrograph(self, NodeID, FromDay = '', ToDay = '',Path = ''):
+    def ReadRRMHydrograph(self, NodeID, FromDay = '', ToDay = '',Path = '',
+                          date_format="%d_%m_%Y"):
         """
         =================================================================
             ReadHydrographs(NodeID, FromDay = [], ToDay = [])
@@ -2363,9 +2365,13 @@ class Sub(River):
             self.RRM = pd.DataFrame()
 
         if Path == '':
-            self.RRM[NodeID] = self.ReadRRMResults(self.Version, self.RRMReferenceIndex, self.RRMPath, NodeID, FromDay, ToDay)[NodeID].tolist()
+            self.RRM[NodeID] = self.ReadRRMResults(self.Version, self.RRMReferenceIndex, 
+                                                   self.RRMPath, NodeID, FromDay, ToDay,
+                                                   date_format)[NodeID].tolist()
         else :
-            self.RRM[NodeID] = self.ReadRRMResults(self.Version, self.RRMReferenceIndex, Path, NodeID, FromDay, ToDay)[NodeID].tolist()
+            self.RRM[NodeID] = self.ReadRRMResults(self.Version, self.RRMReferenceIndex, 
+                                                   Path, NodeID, FromDay, ToDay,
+                                                   date_format)[NodeID].tolist()
         
         if FromDay == '':
             FromDay = 1
@@ -2427,19 +2433,19 @@ class Sub(River):
 
         if ColumnName == 'q' and not hasattr(self,"ResampledQ"):
             self.ResampledQ = pd.DataFrame(index=ind)
-        else:
+        elif ColumnName == 'q':
             if Delete==True:
                 del self.ResampledQ
 
         if ColumnName == 'wl' and not hasattr(self,"ResampledWL"):
             self.ResampledWL = pd.DataFrame(index=ind)
-        else:
+        elif ColumnName == 'wl':
             if Delete==True:
                 del self.ResampledWL
         
         if ColumnName == 'h' and not hasattr(self,"ResampledH"):
             self.ResampledH = pd.DataFrame(index=ind)
-        else:
+        elif ColumnName == 'h':
             if Delete==True:
                 del self.ResampledH
 
