@@ -1673,7 +1673,7 @@ class River():
                 exec(var + ".to_csv(path ,index= None, sep = ' ', header = None)")
 
     @staticmethod
-    def CorrectMaps(DEMPath,Filelist, Resultpath, MapsPrefix, Saveto):
+    def CorrectMaps(DEMPath,Filelist, Resultpath, MapsPrefix, FilterValue, Saveto):
         """
         =========================================================================
              CorrectMaps(DEMPath,Filelist, Resultpath, MapsPrefix, Saveto)
@@ -1766,9 +1766,9 @@ class River():
             if len(MapArray[np.isnan(MapArray)]) > 0:
                 MapArray[np.isnan(MapArray)] = 0
                 Save = 1
-            # replace 99 value with 0
-            if len(MapArray[MapArray >= 99]) > 0 :
-                MapArray[MapArray >= 99] = 0
+            # replace FilterValue in the result raster with 0
+            if len(MapArray[MapArray >= FilterValue]) > 0 :
+                MapArray[MapArray >= FilterValue] = 0
                 Save = 1
 
             if Save == 1:
