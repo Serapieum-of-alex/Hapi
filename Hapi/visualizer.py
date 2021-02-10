@@ -125,7 +125,6 @@ class Visualize():
         TYPE
 
         """
-
         assert PlotStart < PlotEnd, "start Simulation date should be before the end simulation date "
         if Sub.from_beginning == 1:
             Period = Sub.Daylist[np.where(Sub.ReferenceIndex == PlotStart)[0][0]:np.where(Sub.ReferenceIndex == PlotEnd)[0][0]+1]
@@ -244,7 +243,8 @@ class Visualize():
 
         gs.update(wspace = 0.2, hspace = 0.2, top= 0.96, bottom = 0.1, left = 0.05, right = 0.96)
         # animation
-
+        plt.show()
+        
         def init_q() :
             Qline.set_data([],[])
             WLline.set_data([],[])
@@ -275,7 +275,6 @@ class Visualize():
             y= Sub.Result1D['h'][Sub.Result1D['day'] == counter[i][0]][Sub.Result1D['hour'] == counter[i][1]].values*2 + Sub.crosssections['gl'][Sub.crosssections.index[len(Sub.XSname)-1]]
             hLline.set_data(x,y)
 
-            # BC Q (ax2)
             x = Sub.QBC.columns.values
         #    if XS == 0:
         #        y = BC_q_T.loc[Qobs.index[counter[i][0]-1]].values
@@ -306,13 +305,11 @@ class Visualize():
             return Qline, WLline, hLline, day_text, BC_q_line, BC_h_line, ax2.scatter(x, Sub.QBC[x][y],s=300),ax3.scatter(x, Sub.HBC[x][y],s=300)
         # plt.tight_layout()
 
-        #Writer = animation.FFMpegWriter
-        #Writer= Writer(fps=30, bitrate=1800, #, metadata=dict(artist='Me')
-        #               extra_args=['-vcodec', 'libx264'])
-        #animation.FFMpegFileWriter(**kwargs = {"outfile" : 'basic_animation.mp4'})
-
+        
+        
         anim = animation.FuncAnimation(fig, animate_q, init_func=init_q, frames = np.shape(counter)[0],
                                        interval = Interval, blit = True)
+        
         if Save != False:
             if Save == "gif":
                 assert len(Path) >= 1 and Path.endswith(".gif"), "please enter a valid path to save the animation"
@@ -328,9 +325,6 @@ class Visualize():
                         anim.save(Path, writer=writermp4)
                 except FileNotFoundError:
                     print("please visit https://ffmpeg.org/ and download a version of ffmpeg compitable with your operating system, for more details please check the method definition")
-
-        #anim.save('basic_animation.mp4', writer =Writer) #fps=30,
-        plt.show()
 
 
     def CrossSections(self, Sub):

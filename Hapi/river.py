@@ -1,8 +1,3 @@
-"""
-Created on Sat Feb  8 18:04:32 2020.
-
-@author: mofarrag
-"""
 import os
 import pandas as pd
 import numpy as np
@@ -18,8 +13,7 @@ FigureDefaultOptions = dict( ylabel = '', xlabel = '',
                       labelsize = 10, fontsize = 10, name = 'hist.tif',
                       color1 = '#3D59AB', color2 = "#DC143C", linewidth = 3,
                       Axisfontsize = 15
-                        )
-#
+                      )
 
 class River():
     """
@@ -35,6 +29,7 @@ class River():
                  RightOvertopping_Suffix = "_right.txt", DepthPrefix = "DepthMax",
                  DurationPrefix = "Duration", ReturnPeriodPrefix = "ReturnPeriod",
                  Compressed=True, OneDResultPath='', TwoDResultPath=''):
+        
         self.name = name
         self.Version = Version
         self.start = dt.datetime.strptime(start,"%Y-%m-%d")
@@ -64,30 +59,104 @@ class River():
 
         self.FigureOptions = FigureDefaultOptions
 
-
+    
     def IndexToDate(self,Index):
+        """
+        =======================================================
+           IndexToDate(Index)
+        =======================================================
+        IndexToDate takes an integer number and returns the date coresponding 
+        to this date based on a time series starting from the "start" attribute 
+        of  River object and for a length of the value of the "days" attribute
+        
+        Parameters
+        ----------
+        Index : [Integer]
+            Integer number ranges from 1 and max value of the value of the attribute 
+            "days" of the River object.
+
+        Returns
+        -------
+        [Date time ]
+            date object.
+
+        """
         # convert the index into date
         return self.ReferenceIndex.loc[Index,'date']
 
     def DateToIndex(self,Date):
-        # convert the index into date+
-        # Date = dt.datetime(1950,1,1)
+        """
+        ===================================================
+             DateToIndex(Date)
+        ===================================================
+        DateToIndex takes a date and returns a the order of the days in the 
+        time series. The time series starts from the value of the "start" for 
+        a length of "days" value
+        
+        Parameters
+        ----------
+        Date : [string/date time object]
+            string in the format of "%Y-%m-%d" or a date time object.
+
+        Returns
+        -------
+        [Integer]
+            the order oif the date in the time series.
+
+        """
         if type(Date) == str:
             Date = dt.datetime.strptime(Date,"%Y-%m-%d")
         return np.where(self.ReferenceIndex['date'] == Date)[0][0]+1
 
     def IndexToDateRRM(self,Index):
+        """
+        =======================================================
+           IndexToDateRRM(Index)
+        =======================================================
+        IndexToDate takes an integer number and returns the date coresponding 
+        to this date based on a time series starting from the "start" attribute 
+        of  River object and for a length of the value of the "days" attribute
+        
+        Parameters
+        ----------
+        Index : [Integer]
+            Integer number ranges from 1 and max value of the value of the attribute 
+            "days" of the River object.
+
+        Returns
+        -------
+        [Date time ]
+            date object.
+
+        """
         # convert the index into date
         return self.ReferenceIndex.loc[Index,'date']
 
     def DateToIndexRRM(self,Date):
-        # convert the index into date+
-        # Date = dt.datetime(1950,1,1)
+        """
+        ===================================================
+             DateToIndexRRM(Date)
+        ===================================================
+        DateToIndex takes a date and returns a the order of the days in the 
+        time series. The time series starts from the value of the "start" for 
+        a length of "days" value
+        
+        Parameters
+        ----------
+        Date : [string/date time object]
+            string in the format of "%Y-%m-%d" or a date time object.
+
+        Returns
+        -------
+        [Integer]
+            the order oif the date in the time series.
+
+        """
         if type(Date) == str:
             Date = dt.datetime.strptime(Date,"%Y-%m-%d")
         return np.where(self.ReferenceIndex['date'] == Date)[0][0]+1
     
-    def CrossSections(self,Path):
+    def ReadCrossSections(self,Path):
         """
         ===========================================
           CrossSections(self,Path)
@@ -314,28 +383,6 @@ class River():
             return Q
         except:
             return -1
-    # def GetBankfullQ(self):
-    #     """
-    #     =================================================
-    #         GetBankfullQ
-    #     =================================================
-    #     GetBankfullQ method calculates the discharge that fills
-
-    #     Returns
-    #     -------
-    #     None.
-
-    #     """
-    #     self.USBC = pd.DataFrame(columns = ['SubID','Qbf'])
-    #     for i in range(len(self.slope)):
-    #         self.USBC.loc[i,'SubID'] = self.slope.loc[i,'SubID']
-    #         s = abs(self.slope.loc[i,'slope'])
-    #         loc = np.where(self.crosssections['swimid'] == self.slope.loc[i,'SubID'])[0][0]
-    #         b = self.crosssections.loc[loc,'b']
-    #         dbf = self.crosssections.loc[loc,'dbf']
-    #         n = self.crosssections.loc[loc,'m']
-
-    #         self.USBC.loc[i,'Qbf'] = (1/n) * b * (dbf**(5/3)) * ((s/500)**0.5)
 
 
     def GetBankfullDepth(self,function,ColumnName):
@@ -1672,6 +1719,7 @@ class River():
                 path = SavePath + '/' + var[3:]+ '.txt'
                 exec(var + ".to_csv(path ,index= None, sep = ' ', header = None)")
 
+
     @staticmethod
     def CorrectMaps(DEMPath,Filelist, Resultpath, MapsPrefix, FilterValue, Saveto):
         """
@@ -1935,9 +1983,6 @@ class River():
             plt.savefig(self.FigureOptions['name'] +"-hist.tif", transparent=True)
             # plt.close()
 
-    # @staticmethod
-    # def datafn(date):
-        # return  dt.datetime.strptime(date,"%Y-%m-%d")
 
 class Sub(River):
 
@@ -1963,7 +2008,8 @@ class Sub(River):
         if self.Version == 1 or self.Version == 2:
             self.crosssections = River.crosssections[River.crosssections['swimid'] == ID]
         else:
-            self.crosssections = River.crosssections[River.crosssections['segment'] == ID]    
+            self.crosssections = River.crosssections[River.crosssections['segment'] == ID]
+            
         self.crosssections.index = list(range(len(self.crosssections)))
         self.LastXS = self.crosssections.loc[len(self.crosssections)-1,'xsid']
         self.FirstXS = self.crosssections.loc[0,'xsid']
@@ -2333,7 +2379,6 @@ class Sub(River):
         return Q
 
 
-
     def ReadRRMHydrograph(self, NodeID, FromDay = '', ToDay = '',Path = '',
                           date_format="%d_%m_%Y"):
         """
@@ -2426,10 +2471,13 @@ class Sub(River):
         if ToDay ==  '':
             ToDay = self.Result1D.loc[len(self.Result1D)-1,'day']
 
-        start = self.ReferenceIndex.loc[FromDay,'date']
-        end = self.ReferenceIndex.loc[ToDay,'date']
+        # start = self.IndexToDate(FromDay)
+        # end = self.IndexToDate(ToDay)
         
-        ind = pd.date_range(start, end, freq = 'D')
+        # start = self.ReferenceIndex.loc[FromDay,'date']
+        # end = self.ReferenceIndex.loc[ToDay,'date']
+        
+        ind = pd.date_range(self.IndexToDate(FromDay), self.IndexToDate(ToDay), freq = 'D')
 
         if ColumnName == 'q' and not hasattr(self,"ResampledQ"):
             self.ResampledQ = pd.DataFrame(index=ind)
@@ -2451,6 +2499,7 @@ class Sub(River):
 
         Q = self.Result1D[self.Result1D['xs'] == XSID][self.Result1D['hour'] == 24]
         Q = Q[ColumnName][self.Result1D['day'] >= FromDay][self.Result1D['day'] <= ToDay]
+        
         # self.Q = Q
         if ColumnName == 'q':
             self.ResampledQ.loc[:,XSID] = Q.tolist()
