@@ -45,12 +45,12 @@ import Hapi.hbv
 import Hapi.hbv_lake
 import Hapi.hbvlumped
 import Hapi.hbv_bergestrom92
-import Hapi.riminputs
+import Hapi.hminputs
 import Hapi.event
 import Hapi.river
 import Hapi.visualizer
 import Hapi.crosssection
-import Hapi.rimcalibration
+import Hapi.hmcalibration
 # module level doc-string
 __doc__ = """
 Hapi - Hydrological library for Python

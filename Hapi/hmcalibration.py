@@ -5,7 +5,7 @@ import numpy as np
 datafn = lambda x: dt.datetime.strptime(x,"%Y-%m-%d")
 
 
-class RIMCalibration():
+class HMCalibration():
 
     def __init__(self, name, Version = 3, start = "1950-1-1", days = 36890):
         self.name = name
@@ -21,10 +21,49 @@ class RIMCalibration():
         
 
     def IndexToDate(self,Index):
+        """
+        =======================================================
+           IndexToDate(Index)
+        =======================================================
+        IndexToDate takes an integer number and returns the date coresponding 
+        to this date based on a time series starting from the "start" attribute 
+        of  River object and for a length of the value of the "days" attribute
+        
+        Parameters
+        ----------
+        Index : [Integer]
+            Integer number ranges from 1 and max value of the value of the attribute 
+            "days" of the River object.
+
+        Returns
+        -------
+        [Date time ]
+            date object.
+
+        """
         # convert the index into date
         return self.ReferenceIndex.loc[Index,'date']
 
     def DateToIndex(self,Date):
+        """
+        ===================================================
+             DateToIndex(Date)
+        ===================================================
+        DateToIndex takes a date and returns a the order of the days in the 
+        time series. The time series starts from the value of the "start" for 
+        a length of "days" value
+        
+        Parameters
+        ----------
+        Date : [string/date time object]
+            string in the format of "%Y-%m-%d" or a date time object.
+
+        Returns
+        -------
+        [Integer]
+            the order oif the date in the time series.
+
+        """
         # convert the index into date+
         # Date = dt.datetime(1950,1,1)
         if type(Date) == str:
@@ -32,6 +71,23 @@ class RIMCalibration():
         return np.where(self.ReferenceIndex['date'] == Date)[0][0]+1
     
     def ReadGaugesTable(self,Path):
+        """
+        =======================================================
+               ReadGaugesTable(Path)
+        =======================================================
+        ReadGaugesTable reads the table of the gauges
+        
+        Parameters
+        ----------
+        Path : [String]
+            the path to the text file of the gauges table.
+
+        Returns
+        -------
+        GaugesTable: [dataframe attribute]
+            the table will be read in a dataframe attribute
+
+        """
         self.GaugesTable = pd.read_csv(Path)
         
         
