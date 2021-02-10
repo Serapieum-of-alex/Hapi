@@ -306,19 +306,19 @@ def NSEHF(Qobs, Qsim):
 
     return e
 
-def MBE (series1, series2):
+def MBE (Qobs, Qsim):
     """
     =================================================
         MBE (series1, series2)
     ================================================
     MBE (mean bias error)
-    MBE = (series1 - series2)/n
+    MBE = (Qsim - Qobs)/n
     
     Parameters
     ----------
-        1-series1 : [list]
+        1-Qobs : [list]
             list of the first time series.
-        2-series2 : [list]
+        2-Qsim : [list]
             list of the first time series.
 
     Returns
@@ -328,21 +328,21 @@ def MBE (series1, series2):
 
     """
 
-    return (np.array(series1) - np.array(series2)).mean()
+    return (np.array(Qsim) - np.array(Qobs)).mean()
 
-def MAE (series1, series2):
+def MAE (Qobs, Qsim):
     """
     =================================================
-        MAE (series1, series2)
+        MAE (Qobs, Qsim)
     ================================================
     MAE (mean absolute error)
-    MAE = |(series1 - series2)|/n
+    MAE = |(Qobs - Qsim)|/n
     
     Parameters
     ----------
-        1-series1 : [list]
+        1-Qobs : [list]
             list of the first time series.
-        2-series2 : [list]
+        2-Qsim : [list]
             list of the first time series.
 
     Returns
@@ -352,4 +352,4 @@ def MAE (series1, series2):
 
     """
     
-    return np.abs(series1 - series2).mean()
+    return np.abs(np.array(Qobs) - np.array(Qsim)).mean()
