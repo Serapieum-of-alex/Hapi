@@ -1,19 +1,13 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Apr  7 22:27:32 2020
-
-@author: mofarrag
-"""
 import pandas as pd
 import datetime as dt
 import numpy as np
-import datetime as dt
 
 datafn = lambda x: dt.datetime.strptime(x,"%Y-%m-%d")
 
+
 class RIMCalibration():
 
-    def __init__(self, name, Version, start, days):
+    def __init__(self, name, Version = 3, start = "1950-1-1", days = 36890):
         self.name = name
         self.Version = Version
         
@@ -82,7 +76,7 @@ class RIMCalibration():
         for i in range(len(columns)):
             if self.GaugesTable.loc[i,'waterlevel'] == 1:
                 name = self.GaugesTable.loc[i,column]
-                f = pd.read_csv(Path + str(name) + ".txt",
+                f = pd.read_csv(Path + str(int(name)) + ".txt",
                                delimiter = ",", header = None)
                 f[0] = f[0].map(datafn)
                 # sort by date as some values are missed up
@@ -182,9 +176,11 @@ class RIMCalibration():
         for i in range(len(self.GaugesTable)):
             if self.GaugesTable.loc[i,'discharge'] == 1:
                 name = self.GaugesTable.loc[i,column]
-                QGauges.loc[:,int(name)] = np.loadtxt(Path +
-                          str(int(name)) + '.txt') #,skiprows = 0
-                
+                try:
+                    QGauges.loc[:,int(name)] = np.loadtxt(Path +
+                              str(int(name)) + '.txt') #,skiprows = 0
+                except:
+                    print(str(i) + "-" + Path + str(int(name)) + '.txt')
         self.QGauges = QGauges
         
         # Gauges = pd.DataFrame(index = Gauges['segment'])
@@ -374,7 +370,7 @@ class RIMCalibration():
         =============================================================================
           ReadCalirationResult(SubID, FromDay = [], ToDay = [], Path = '', FillMissing = True)
         =============================================================================
-        Read1DResult method reads the 1D results and fill the missing days in the middle
+        ReadCalirationResult method reads the 1D results and fill the missing days in the middle
 
         Parameters
         ----------
@@ -750,3 +746,312 @@ class RIMCalibration():
         ## change slope
         # self.slope.loc[self.slope['segment']==Segmenti, 'slope'] = AvgSlope
         self.slope.loc[self.slope['segment']==Segmenti, 'slope'] = BC_slope
+        
+    def ReadCrossSections(self,Path):
+        """
+        ===========================================
+          CrossSections(self,Path)
+        ===========================================
+        CrossSections method reads the cross section data of the river and assign it
+        to an attribute "Crosssections" of type dataframe
+        """
+        if self.Version == 1 or self.Version == 2:
+            self.crosssections = pd.read_csv(Path, delimiter = ',', skiprows =1  )
+        else:
+            self.crosssections = pd.read_csv(Path, delimiter = ',')
+            
+    def SmoothBedLevel(self, segmenti):
+        """
+        ================================================
+               SmoothXS(segmenti)
+        =================================================
+        SmoothBedLevel method smoothes the bed level of a given segment ID by 
+        calculating the moving average of three cross sections
+        
+        Parameters
+        ----------
+        segmenti : [Integer]
+            segment ID.
+
+        Returns
+        -------
+        crosssections: [dataframe attribute]
+            the "gl" column in the crosssections attribute will be smoothed
+
+        """
+        assert hasattr(self,"crosssections"), "please read the cross section first"
+        g = self.crosssections.loc[self.crosssections['segment']==segmenti,:].index[0]
+        
+        segment = self.crosssections.loc[self.crosssections['segment']==segmenti,:]
+        segment.index = range(len(segment))
+        segment['glnew'] = 0
+        # the bed level at the beginning and end of the egment
+        segment.loc[0,'glnew'] = segment.loc[0,'gl']
+        segment.loc[len(segment)-1,'glnew'] = segment.loc[len(segment)-1,'gl']
+        # calculate the average of three XS bed level
+        for j in range(1,len(segment)-1):
+            segment.loc[j,'glnew'] = (segment.loc[j-1,'gl'] + segment.loc[j,'gl'] + segment.loc[j+1,'gl'])/3
+        # calculate the difference in the bed level and take it from the bankful depth
+        segment['diff'] = segment['glnew'] - segment['gl']
+        segment['dbf'] = segment['dbf'] - segment['diff']
+        segment['gl'] = segment['glnew']
+        del segment['glnew'], segment['diff']
+        
+        segment.index = range(g, g + len(segment))
+        # copy back the segment to the whole XS df
+        self.crosssections.loc[self.crosssections['segment']==segmenti,:] = segment
+        # g = g + len(segment)
+
+    def SmoothBankLevel(self,segmenti):
+        """
+        ========================================================
+              SmoothBankLevel(segmenti)
+        ========================================================
+        SmoothBankLevel method smoothes the bankfull depth for a given segment
+        
+        Parameters
+        ----------
+        segmenti : [Integer]
+            segment ID.
+
+        Returns
+        -------
+        crosssections: [dataframe attribute]
+            the "dbf" column in the crosssections attribute will be smoothed
+
+        """
+        
+        self.crosssections['banklevel'] = self.crosssections['dbf'] + self.crosssections['gl']
+
+        # g = 0
+        
+        
+        
+        # for i in range(len(segments)):
+        # i=30
+        g = self.crosssections.loc[self.crosssections['segment']==segmenti,:].index[0]
+        #---
+        # segmenti = segments[i]
+        segment = self.crosssections.loc[self.crosssections['segment']==segmenti,:]
+        segment.index = range(len(segment))
+        segment['banklevelnew'] = 0
+        segment.loc[0,'banklevelnew'] = segment.loc[0,'banklevel']
+        segment.loc[len(segment)-1,'banklevelnew'] = segment.loc[len(segment)-1,'banklevel']
+        
+        for j in range(1,len(segment)-1):
+            segment.loc[j,'banklevelnew'] = (segment.loc[j-1,'banklevel'] + segment.loc[j,'banklevel'] + segment.loc[j+1,'banklevel'])/3
+        
+        segment['diff'] = segment['banklevelnew'] - segment['banklevel']
+        segment['dbf'] = segment['dbf'] + segment['diff']
+        
+        del self.crosssections['banklevel']
+        segment.index = range(g, g + len(segment))
+        
+        # copy back the segment to the whole XS df
+        self.crosssections.loc[self.crosssections['segment']==segmenti,:] = segment
+        # g = g + len(segment)
+        # end of loop
+        
+    def SmoothFloodplainHeight(self,segmenti):
+        """
+        ========================================================
+              SmoothFloodplainHeight(segmenti)
+        ========================================================
+        SmoothFloodplainHeight method smoothes the Floodplain Height the point 5 and 6
+        in the cross section for a given segment
+        
+        Parameters
+        ----------
+        segmenti : [Integer]
+            segment ID.
+
+        Returns
+        -------
+        crosssections: [dataframe attribute]
+            the "hl" and "hr" column in the crosssections attribute will be smoothed
+
+        """
+        
+        self.crosssections['banklevel'] = self.crosssections['dbf'] + self.crosssections['gl']
+        self.crosssections['fpl'] = self.crosssections['hl'] + self.crosssections['banklevel']
+        self.crosssections['fpr'] = self.crosssections['hr'] + self.crosssections['banklevel']
+        
+        # g = 0
+        
+        # for i in range(len(segments)):
+        # i=30
+        g = self.crosssections.loc[self.crosssections['segment']==segmenti,:].index[0]
+        #------
+        
+        # segmenti = segments[i]
+        segment = self.crosssections.loc[self.crosssections['segment']==segmenti,:]
+        segment.index = range(len(segment))
+        
+        segment['fplnew'] = 0
+        segment['fprnew'] = 0
+        segment.loc[0,'fplnew'] = segment.loc[0,'fpl']
+        segment.loc[len(segment)-1,'fplnew'] = segment.loc[len(segment)-1,'fpl']
+        
+        segment.loc[0,'fprnew'] = segment.loc[0,'fpr']
+        segment.loc[len(segment)-1,'fprnew'] = segment.loc[len(segment)-1,'fpr']
+        
+        for j in range(1,len(segment)-1):
+            segment.loc[j,'fplnew'] = (segment.loc[j-1,'fpl'] + segment.loc[j,'fpl'] + segment.loc[j+1,'fpl'])/3
+            segment.loc[j,'fprnew'] = (segment.loc[j-1,'fpr'] + segment.loc[j,'fpr'] + segment.loc[j+1,'fpr'])/3
+        
+        segment['diff0'] = segment['fplnew'] - segment['fpl']
+        segment['diff1'] = segment['fprnew'] - segment['fpr']
+        
+        
+        segment['hl'] = segment['hl'] + segment['diff0']
+        segment['hr'] = segment['hr'] + segment['diff1']
+        
+        segment.index = range(g, g + len(segment))
+        # copy back the segment to the whole XS df
+        self.crosssections.loc[self.crosssections['segment']==segmenti,:] = segment
+        
+        del self.crosssections['banklevel'], self.crosssections['fpr'], self.crosssections['fpl']
+        # g = g + len(segment)
+        # end of loop
+
+    def SmoothBedWidth(self,segmenti):
+        """
+        ========================================================
+              SmoothBedWidth(segmenti)
+        ========================================================
+        SmoothBedWidth method smoothes the Bed Width the in the cross section 
+        for a given segment
+        
+        Parameters
+        ----------
+        segmenti : [Integer]
+            segment ID.
+
+        Returns
+        -------
+        crosssections: [dataframe attribute]
+            the "b" column in the crosssections attribute will be smoothed
+
+        """
+        # for i in range(len(segments)):
+        # i=30
+        g = self.crosssections.loc[self.crosssections['segment']==segmenti,:].index[0]
+        #------
+        
+        # segmenti = segments[i]
+        segment = self.crosssections.loc[self.crosssections['segment']==segmenti,:]
+        segment.index = range(len(segment))
+        segment['bnew'] = 0
+        segment.loc[0,'bnew'] = segment.loc[0,'b']
+        segment.loc[len(segment)-1,'bnew'] = segment.loc[len(segment)-1,'b']
+        
+        for j in range(1,len(segment)-1):
+            segment.loc[j,'bnew'] = (segment.loc[j-1,'b'] + segment.loc[j,'b'] + segment.loc[j+1,'b'])/3
+        
+        segment['b'] = segment['bnew']
+        segment.index = range(g, g + len(segment))
+        # copy back the segment to the whole XS df
+        self.crosssections.loc[self.crosssections['segment']==segmenti,:] = segment
+        # g = g + len(segment)
+        # end of loop
+    
+    def SmoothMaxSlope(self,segmenti, SlopePercentThreshold = 1.5):
+        """
+        ========================================================
+              SmoothMaxSlope(segmenti,SlopePercentThreshold = 1.5)
+        ========================================================
+        SmoothMaxSlope method smoothes the bed level the in the cross section 
+        for a given segment
+        
+        As now the slope is not very smoothed as it was when using the average slope 
+        everywhere, when the the difference between two consecutive slopes is very high, 
+        the difference is reflected in the calculated discharge from both cross section
+        
+        Qout is very high
+        Qin is smaller compared to Qout3
+        and from the continuity equation the amount of water that stays at the cross-section 
+        is very few water(Qin3-Qout3), less than the minimum depth
+        
+        then the minimum depth is assigned at the cross-section, applying the minimum 
+        depth in all time steps will make the delta A / delta t equals zero
+        As a result, the integration of delta Q/delta x will give a constant discharge 
+        for all the downstream cross-section.
+        
+        To overcome this limitation, a manual check is performed during the calibration 
+        process by visualizing the hydrographs of the first and last cross-section in 
+        the sub-basin and the water surface profile to make sure that the algorithm 
+        does not give a constant discharge.
+        
+        Parameters
+        ----------
+        segmenti : [Integer]
+            segment ID.
+        SlopePercentThreshold  : [Float]
+             the percent of change in slope between three successive  cross sections
+             The default is 1.5.
+
+        Returns
+        -------
+        crosssections: [dataframe attribute]
+            the "gl" column in the crosssections attribute will be smoothed
+
+        """
+        # segments = list(set(XS['segment']))
+        # SlopePercentThreshold = 1.5
+        # g = 0
+        
+        # for i in range(len(segments)):
+        #-------
+        # i=30
+        g = self.crosssections.loc[self.crosssections['segment']==segmenti,:].index[0]
+        #-------
+        # segmenti = segments[i]
+        segment = self.crosssections.loc[self.crosssections['segment']==segmenti,:]
+        segment.index = range(len(segment))
+        # slope must be positive due to the smoothing
+        slopes = [(segment.loc[k,'gl']-segment.loc[k+1,'gl'])/500 for k in range(len(segment)-1)]
+        # if percent is -ve means second slope is steeper
+        precent = [(slopes[k] - slopes[k+1])/ slopes[k] for k in range(len(slopes)-1)]
+        
+        # at row 1 in precent list is difference between row 1 and row 2 in slopes list
+        # and slope in row 2 is the steep slope, 
+        # slope at row 2 is the difference 
+        # between gl in row 2 and row 3 in the segment dataframe, and gl row 3 is very 
+        # and we want to elevate it to reduce the slope
+        for j in range(len(precent)):
+            if precent[j] < 0 and abs(precent[j]) >= SlopePercentThreshold:
+                print(j)
+                # get the calculated slope based on the slope percent threshold
+                slopes[j+1] = slopes[j] - (-SlopePercentThreshold * slopes[j])
+                segment.loc[j+2,'gl'] = segment.loc[j+1,'gl'] - slopes[j+1] * 500
+                # recalculate all the slopes again
+                slopes = [(segment.loc[k,'gl']-segment.loc[k+1,'gl'])/500 for k in range(len(segment)-1)]
+                precent = [(slopes[k] - slopes[k+1])/ slopes[k] for k in range(len(slopes)-1)]
+        
+        segment.index = range(g, g + len(segment))
+        # copy back the segment to the whole XS df
+        self.crosssections.loc[self.crosssections['segment']==segmenti,:] = segment
+        # g = g + len(segment)
+        
+    def CheckFloodplain(self):
+        """
+        =================================================
+               CheckFloodplain(self)
+        =================================================
+        CheckFloodplain method check if the dike levels is higher than the 
+        floodplain height (point 5 and 6 has to be lower than point 7 and 8 
+                           in the cross sections)
+        
+        Returns
+        -------
+        crosssection : [dataframe attribute]
+            the "zl" and "zr" column in the "crosssections" attribute will be updated
+        """
+        assert hasattr(self, "crosssections"), "please read the cross section first or copy it to the Calibration object"
+        for i in range(len(self.crosssections)):    
+            BankLevel = self.crosssections.loc[i,'gl']+ self.crosssections.loc[i,'dbf']
+            
+            if BankLevel + self.crosssections.loc[i,'hl'] > self.crosssections.loc[i,'zl']:
+                self.crosssections.loc[i,'zl'] = BankLevel + self.crosssections.loc[i,'hl'] + 0.5
+            if BankLevel + self.crosssections.loc[i,'hr'] > self.crosssections.loc[i,'zr']:
+                self.crosssections.loc[i,'zr'] = BankLevel + self.crosssections.loc[i,'hr'] + 0.5
