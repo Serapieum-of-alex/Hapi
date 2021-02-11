@@ -18,7 +18,7 @@ from matplotlib import gridspec
 from Hapi.statisticaltools import StatisticalTools as ST
 from Hapi.statisticaltools import Gumbel, GEV
 
-class Inputs():
+class HMInputs():
 
     def __init__(self, Name, Version=2 ):
         self.Name = Name

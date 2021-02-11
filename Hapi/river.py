@@ -6,7 +6,7 @@ from scipy.stats import gumbel_r
 import matplotlib.pyplot as plt
 import zipfile
 
-import Hapi.raster as raster
+from Hapi.raster import Raster as raster
 
 FigureDefaultOptions = dict( ylabel = '', xlabel = '',
                       legend = '', legend_size = 10, figsize = (10,8),

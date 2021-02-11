@@ -6,7 +6,10 @@ datafn = lambda x: dt.datetime.strptime(x,"%Y-%m-%d")
 
 
 class HMCalibration():
-
+    """
+    Hydraulic model calibration class
+    
+    """
     def __init__(self, name, Version = 3, start = "1950-1-1", days = 36890):
         self.name = name
         self.Version = Version
