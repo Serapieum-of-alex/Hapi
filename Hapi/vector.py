@@ -71,8 +71,8 @@ class Vector():
         if coord_type=="y":
             return geometry.y
     
-    
-    def GetLineCoords(self,geometry,coord_type):
+    @staticmethod
+    def GetLineCoords(geometry,coord_type):
         """
         ====================================================
             getLineCoords(geometry)
@@ -87,10 +87,11 @@ class Vector():
             1-array:
                 contains x coordinates or y coordinates of all edges of the shapefile
         """
-        return self.GetXYCoords(geometry,coord_type)
+        return Vector.GetXYCoords(geometry,coord_type)
     
     
-    def GetPolyCoords(self,geometry,coord_type):
+    @staticmethod
+    def GetPolyCoords(geometry,coord_type):
         """
         =====================================================
              getPolyCoords(geometry,coord_type)
@@ -108,7 +109,7 @@ class Vector():
         # convert the polygon into lines
         ext=geometry.exterior # type = LinearRing
     
-        return self.GetXYCoords(ext,coord_type)
+        return Vector.GetXYCoords(ext,coord_type)
     
     @staticmethod    
     def Explode(dataframe_row):
@@ -138,8 +139,8 @@ class Vector():
             multdf.loc[geom,'geometry'] = row.geometry[geom]
         outdf = outdf.append(multdf,ignore_index=True)
     
-    
-    def MultiGeomHandler(self, multi_geometry, coord_type, geom_type):
+    @staticmethod
+    def MultiGeomHandler(multi_geometry, coord_type, geom_type):
         """
         # =============================================================================
         #     multiGeomHandler(multi_geometry, coord_type, geom_type)
@@ -166,35 +167,36 @@ class Vector():
                 # On the first part of the Multi-geometry initialize the coord_array (np.array)
                 if i ==0:
                     if geom_type=="MultiPoint":
-                        coord_arrays= self.GetPointCoords(part, coord_type)#,np.nan)
+                        coord_arrays= Vector.GetPointCoords(part, coord_type)#,np.nan)
                     elif geom_type=="MultiLineString":
         #                coord_arrays= np.append(getLineCoords(part,coord_type))#,np.nan)
-                        coord_arrays= self.GetLineCoords(part,coord_type)
+                        coord_arrays= Vector.GetLineCoords(part,coord_type)
                 else:
                     if geom_type=="MultiPoint":
-                        coord_arrays= np.concatenate([coord_arrays,self.GetPointCoords(part, coord_type)]) #,np.nan
+                        coord_arrays= np.concatenate([coord_arrays,Vector.GetPointCoords(part, coord_type)]) #,np.nan
                     elif geom_type=="MultiLineString":
-                        coord_arrays= np.concatenate([coord_arrays,self.GetLineCoords(part,coord_type)]) #,np.nan
+                        coord_arrays= np.concatenate([coord_arrays,Vector.GetLineCoords(part,coord_type)]) #,np.nan
     
         elif geom_type=="MultiPolygon":
             if i ==0:
     #            coord_arrays= getPolyCoords(part,coord_type)#,np.nan)
-                multi_2_single=self.Explode(multi_geometry)
+                multi_2_single=Vector.Explode(multi_geometry)
                 for j in range(len(multi_2_single)):
                     if j ==0:
-                        coord_arrays= self.GetPolyCoords(multi_2_single[j],coord_type)#,np.nan)
+                        coord_arrays= Vector.GetPolyCoords(multi_2_single[j],coord_type)#,np.nan)
                     else:
-                        coord_arrays= np.concatenate([coord_arrays,self.GetPolyCoords(multi_2_single[j],coord_type)]) #,np.nan
+                        coord_arrays= np.concatenate([coord_arrays,Vector.GetPolyCoords(multi_2_single[j],coord_type)]) #,np.nan
             else:
                 # explode the multipolygon into polygons
-                multi_2_single=self.Explode(part)
+                multi_2_single=Vector.Explode(part)
                 for j in range(len(multi_2_single)):
-                    coord_arrays= np.concatenate([coord_arrays,self.GetPolyCoords(multi_2_single[j],coord_type)]) #,np.nan
+                    coord_arrays= np.concatenate([coord_arrays,Vector.GetPolyCoords(multi_2_single[j],coord_type)]) #,np.nan
             # return the coordinates
             return coord_arrays
     
     
-    def GetCoords(self,row, geom_col, coord_type):
+    @staticmethod
+    def GetCoords(row, geom_col, coord_type):
         """
         ======================================================
             getCoords(row, geom_col, coord_type)
@@ -222,19 +224,19 @@ class Vector():
         gtype=geom.geom_type
         # "Normal" geometries
         if gtype=="Point":
-            return self.GetPointCoords(geom,coord_type)
+            return Vector.GetPointCoords(geom,coord_type)
         elif gtype=="LineString":
-            return list(self.GetLineCoords(geom,coord_type))
+            return list(Vector.GetLineCoords(geom,coord_type))
         elif gtype=="Polygon":
-            return list(self.GetPolyCoords(geom,coord_type))
+            return list(Vector.GetPolyCoords(geom,coord_type))
         elif gtype=="MultiPolygon":
             return 999
         # Multi geometries
         else:
-            return list(self.MultiGeomHandler(geom,coord_type,gtype))
+            return list(Vector.MultiGeomHandler(geom,coord_type,gtype))
     
-    
-    def XY(self,input_dataframe):
+    @staticmethod
+    def XY(input_dataframe):
         """
         ===================================================
           XY(input_dataframe)
@@ -255,8 +257,8 @@ class Vector():
                 object in each row
         """
         # get the x & y coordinates for all types of geometries except multi_polygon
-        input_dataframe['x'] = input_dataframe.apply(self.GetCoords,geom_col="geometry", coord_type="x", axis=1)
-        input_dataframe['y'] = input_dataframe.apply(self.GetCoords,geom_col="geometry", coord_type="y", axis=1)
+        input_dataframe['x'] = input_dataframe.apply(Vector.GetCoords,geom_col="geometry", coord_type="x", axis=1)
+        input_dataframe['y'] = input_dataframe.apply(Vector.GetCoords,geom_col="geometry", coord_type="y", axis=1)
     
         # if the Geometry of type MultiPolygon
         # explode the multi_polygon into polygon
@@ -275,8 +277,8 @@ class Vector():
                 input_dataframe= input_dataframe.append(multdf,ignore_index=True)
     
         # get the x & y coordinates of the exploded multi_polygons
-        input_dataframe['x']=input_dataframe.apply(self.GetCoords,geom_col="geometry", coord_type="x", axis=1)
-        input_dataframe['y']=input_dataframe.apply(self.GetCoords,geom_col="geometry", coord_type="y", axis=1)
+        input_dataframe['x']=input_dataframe.apply(Vector.GetCoords,geom_col="geometry", coord_type="x", axis=1)
+        input_dataframe['y']=input_dataframe.apply(Vector.GetCoords,geom_col="geometry", coord_type="y", axis=1)
     
         to_delete=np.where(input_dataframe['x']==999)[0]
         input_dataframe=input_dataframe.drop(to_delete)
@@ -617,8 +619,8 @@ class Vector():
     
         return GpdDF
     
-    
-    def PolygonCenterPoint(self,PolygonDataFrame, Save=False, SavePath=None):
+    @staticmethod
+    def PolygonCenterPoint(PolygonDataFrame, Save=False, SavePath=None):
         """
         ======================================================================
             PolygonCenterPoint(PolygonDataFrame, Save=False, SavePath)
@@ -667,7 +669,7 @@ class Vector():
             assert ext == ".shp", "please add the extension at the end of the SavePath"
     
         # get the X, Y coordinates of the points of the polygons and the multipolygons
-        PolygonDataFrame = self.XY(PolygonDataFrame)
+        PolygonDataFrame = Vector.XY(PolygonDataFrame)
     
         # re-index the data frame
         PolygonDataFrame.index = [i for i in range(len(PolygonDataFrame))]
@@ -687,7 +689,7 @@ class Vector():
         # create a list of tuples of the coordinates (x,y) or (long, lat)
         # of the points
         CoordinatesList = zip(PolygonDataFrame['AvgX'].tolist(),PolygonDataFrame['AvgY'].tolist())
-        PointsList = self.CreatePoint(CoordinatesList)
+        PointsList = Vector.CreatePoint(CoordinatesList)
         # set the spatial reference
         MiddlePointdf['geometry'] = PointsList
         MiddlePointdf.crs = PolygonDataFrame.crs

@@ -188,10 +188,10 @@ class River():
         """
         if self.Version == 1 or self.Version == 2:
             self.slope = pd.read_csv(Path, delimiter = ",",header = None)
-            self.slope.columns = ['segment','f1','slope','f2']
+            self.slope.columns = ['ID','f1','slope','f2']
         else:
             self.slope = pd.read_csv(Path, delimiter = ",",header = None)
-            self.slope.columns = ['segment','slope']
+            self.slope.columns = ['ID','slope']
 
     def ReturnPeriod(self,Path):
         """
@@ -317,10 +317,10 @@ class River():
             # filter all the computational nodes in the file to those only
             # exist in the slope attribute (the nodes in the guide file)
             NewSP = pd.DataFrame(columns = ['ID','loc','scale'])
-            NewSP['ID'] = self.slope['SubID']
+            NewSP['ID'] = self.slope['ID']
             for i in range(len(self.slope)):
                 # get the location of the USnode in the rivernetwork attribute
-                loc = np.where(self.rivernetwork['SubID'] == self.slope.loc[i,'SubID'])[0][0]
+                loc = np.where(self.rivernetwork['SubID'] == self.slope.loc[i,'ID'])[0][0]
                 #  get the location of USnode in the SP attribute
                 try:
                     loc = np.where(self.SP['ID'] == self.rivernetwork.loc[loc,'US'])[0][0]
@@ -372,6 +372,7 @@ class River():
             return 1/(1-F)
         except:
             return -1
+        
     def GetQForReturnPeriod(self, SubID, T):
 
         assert hasattr(self, "SP"), "Please read the statistical properties file for the catchment first"
@@ -2008,7 +2009,7 @@ class Sub(River):
         if self.Version == 1 or self.Version == 2:
             self.crosssections = River.crosssections[River.crosssections['swimid'] == ID]
         else:
-            self.crosssections = River.crosssections[River.crosssections['segment'] == ID]
+            self.crosssections = River.crosssections[River.crosssections['ID'] == ID]
             
         self.crosssections.index = list(range(len(self.crosssections)))
         self.LastXS = self.crosssections.loc[len(self.crosssections)-1,'xsid']
@@ -2024,7 +2025,7 @@ class Sub(River):
             if self.Version == 1 or self.Version == 2 :
                 self.slope = River.slope[River.slope['SubID']==ID]['slope'].tolist()[0]
             else:
-                self.slope = River.slope[River.slope['segment']==ID]['slope'].tolist()[0]
+                self.slope = River.slope[River.slope['ID']==ID]['slope'].tolist()[0]
         
         if hasattr(River, "rivernetwork"):
             self.USnode, self.DSnode = River.Trace(ID)

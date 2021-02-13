@@ -25,7 +25,7 @@ import rasterio.mask
 import json
 import datetime as dt
 
-from Hapi.vector import Vector as vector
+from Hapi.vector import Vector
 
 
 class Raster():
@@ -55,8 +55,8 @@ class Raster():
         mask = raster.ReadAsArray() # read all values
         return mask, no_val
     
-    
-    def AddMask(self, var, dem=None, mask=None, no_val=None):
+    @staticmethod
+    def AddMask(var, dem=None, mask=None, no_val=None):
         """
         ===================================================================
              add_mask(var, dem=None, mask=None, no_val=None)
@@ -82,7 +82,7 @@ class Raster():
         """
     
         if dem is not None:
-            mask, no_val = self.GetMask(dem)
+            mask, no_val = Raster.GetMask(dem)
     
         # Replace the no_data value
         assert var.shape == mask.shape, 'Mask and data do not have the same shape'
@@ -450,9 +450,9 @@ class Raster():
     
         if src_epsg.GetAttrValue('AUTHORITY',1) != str(to_epsg):
             # transform the two points coordinates to the new crs to calculate the new cell size
-            new_xs, new_ys= vector.ReprojectPoints(ys,xs,from_epsg=int(src_epsg.GetAttrValue('AUTHORITY',1)),
+            new_xs, new_ys= Vector.ReprojectPoints(ys,xs,from_epsg=int(src_epsg.GetAttrValue('AUTHORITY',1)),
                                               to_epsg=int(dst_epsg.GetAttrValue('AUTHORITY',1)))
-            # new_xs, new_ys= vector.ReprojectPoints_2(ys,xs,from_epsg=int(src_epsg.GetAttrValue('AUTHORITY',1)),
+            # new_xs, new_ys= Vector.ReprojectPoints_2(ys,xs,from_epsg=int(src_epsg.GetAttrValue('AUTHORITY',1)),
             #                                  to_epsg=int(dst_epsg.GetAttrValue('AUTHORITY',1)))
         else:
             new_xs = xs
@@ -572,7 +572,7 @@ class Raster():
                 coords_1 = (src_gt[3], src_gt[0])
                 coords_2 = (src_gt[3], src_gt[0]+src_gt[1])
     #            pixel_spacing=geopy.distance.vincenty(coords_1, coords_2).m
-                pixel_spacing = vector.GCSDistance(coords_1, coords_2)
+                pixel_spacing = Vector.GCSDistance(coords_1, coords_2)
             else:
                 pixel_spacing=src_gt[1]
         else:
@@ -687,8 +687,8 @@ class Raster():
         outputraster.FlushCache()
         outputraster = None
     
-    
-    def MatchNoDataValue(self, src, dst):
+    @staticmethod
+    def MatchNoDataValue(src, dst):
         """
         ==================================================================
           MatchNoDataValue(src,dst)
@@ -758,7 +758,7 @@ class Raster():
             cols=[j for i in range(src_row) for j in range(src_col) if dst_array[i,j]==src_noval and src_array[i,j] != src_noval]
         # interpolate those missing cells by nearest neighbour
         if elem_src > elem_dst :
-            dst_array = self.NearestNeighbour(dst_array, src_noval, rows, cols)
+            dst_array = Raster.NearestNeighbour(dst_array, src_noval, rows, cols)
     
     
         mem_drv=gdal.GetDriverByName("MEM")
@@ -833,8 +833,8 @@ class Raster():
     
         return dst
     
-    
-    def MatchRasterAlignment(self,RasterA,RasterB):
+    @staticmethod
+    def MatchRasterAlignment(RasterA,RasterB):
         """
         =========================================================================
           MatchRasterAlignment(RasterA,RasterB)
@@ -885,7 +885,7 @@ class Raster():
     
         # unite the crs
         # TODO still doesn't work with all projections better to use UTM zones for the moment
-        data_src=self.ProjectRaster(RasterB,int(gt_src_epsg.GetAttrValue('AUTHORITY',1)))
+        data_src=Raster.ProjectRaster(RasterB,int(gt_src_epsg.GetAttrValue('AUTHORITY',1)))
     
         # create a new raster
         mem_drv=gdal.GetDriverByName("MEM")
@@ -1075,8 +1075,8 @@ class Raster():
     def StringSpace(Inp):
         return str(Inp) + "  "
     
-    
-    def WriteASCII(self, ASCIIFile, ASCIIDetails, ASCIIValues):
+    @staticmethod
+    def WriteASCII(ASCIIFile, ASCIIDetails, ASCIIValues):
         """
         =========================================================================
             WriteASCII(ASCIIFile, ASCIIDetails, ASCIIValues, pixel_type=1)
@@ -1129,13 +1129,13 @@ class Raster():
     
         # write the array
         for i in range(np.shape(ASCIIValues)[0]):
-            File.writelines(list(map(self.StringSpace,ASCIIValues[i,:])))
+            File.writelines(list(map(Raster.StringSpace,ASCIIValues[i,:])))
             File.write("\n")
     
         File.close()
     
-    
-    def ASCIItoRaster(self,ASCIIFile,savePath,pixel_type=1,RasterFile = None,epsg = None):
+    @staticmethod
+    def ASCIItoRaster(ASCIIFile,savePath,pixel_type=1,RasterFile = None,epsg = None):
         """
         =========================================================================
             ASCIItoRaster(ASCIIFile,savePath,pixel_type=1,RasterFile = None,epsg = None)
@@ -1222,7 +1222,7 @@ class Raster():
         assert RasterFile != None or epsg != None, message
     
         ### read the ASCII file
-        ASCIIValues, ASCIIDetails = self.ReadASCII(ASCIIFile,pixel_type)
+        ASCIIValues, ASCIIDetails = Raster.ReadASCII(ASCIIFile,pixel_type)
         ASCIIRows = ASCIIDetails[0]
         ASCIIColumns = ASCIIDetails[1]
     
@@ -1239,7 +1239,7 @@ class Raster():
     
             assert ASCIIRows == RasterRows and ASCIIColumns == RasterColumns, " Data in both ASCII file and Raster file should have the same number of row and columns"
     
-            self.RasterLike(src,ASCIIValues, savePath, pixel_type)
+            Raster.RasterLike(src,ASCIIValues, savePath, pixel_type)
         elif epsg != None :
             assert type(epsg)== int, "epsg input should be integer type please check documentations"
             # coordinates of the lower left corner
@@ -1279,8 +1279,8 @@ class Raster():
     
     
     
-    
-    def Clip(self,Raster_path,shapefile_path,save=False,output_path=None):
+    @staticmethod
+    def Clip(Raster_path,shapefile_path,save=False,output_path=None):
         """
         =========================================================================
           ClipRasterWithPolygon(Raster_path, shapefile_path, output_path)
@@ -1338,10 +1338,10 @@ class Raster():
         # while rasterio and gdal not
         if src_epsg.GetAttrValue('AUTHORITY',1) == "4326" and gt[0] > 180:
             # reproject the raster to web mercator crs
-            raster=self.ReprojectDataset(raster)
+            raster=Raster.ReprojectDataset(raster)
             out_transformed = os.environ['Temp']+"/transformed.tif"
             # save the raster with the new crs
-            self.SaveRaster(raster,out_transformed)
+            Raster.SaveRaster(raster,out_transformed)
             raster = rasterio.open(out_transformed)
         else:
             # crs of the raster was not GCS or longitudes are less than 180
@@ -1391,7 +1391,7 @@ class Raster():
         # read the clipped raster
         raster=gdal.Open(temp_path)
         # reproject the clipped raster back to its original crs
-        projected_raster=self.ProjectRaster(raster,int(src_epsg.GetAttrValue('AUTHORITY',1)))
+        projected_raster=Raster.ProjectRaster(raster,int(src_epsg.GetAttrValue('AUTHORITY',1)))
         # close the clipped raster
         raster=None
     
@@ -1399,7 +1399,7 @@ class Raster():
         os.remove(temp_path)
         # write the raster to the file
         if save:
-            self.SaveRaster(projected_raster,output_path)
+            Raster.SaveRaster(projected_raster,output_path)
     
         return projected_raster
     
@@ -1529,7 +1529,8 @@ class Raster():
     
         return dst, dst_meta
     
-    def ReadASCIIsFolder(self, path, pixel_type):
+    @staticmethod
+    def ReadASCIIsFolder(path, pixel_type):
         """
         ===========================================================
            ReadASCIIsFolder(path, pixel_type)
@@ -1579,19 +1580,20 @@ class Raster():
         assert all(f.endswith(".asc") for f in files), "all files in the given folder should have .tif extension"
         # create a 3d array with the 2d dimension of the first raster and the len
         # of the number of rasters in the folder
-        ASCIIValues, ASCIIDetails = self.ReadASCII(path+"/"+files[0], pixel_type)
+        ASCIIValues, ASCIIDetails = Raster.ReadASCII(path+"/"+files[0], pixel_type)
         noval = ASCIIDetails[5]
         # fill the array with noval data
         arr_3d=np.ones((ASCIIDetails[0],ASCIIDetails[1],len(files)))*noval
     
         for i in range(len(files)):
             # read the tif file
-            f,_ = self.ReadASCII(path+"/"+files[0], pixel_type)
+            f,_ = Raster.ReadASCII(path+"/"+files[0], pixel_type)
             arr_3d[:,:,i]=f
     
         return arr_3d, ASCIIDetails, files
     
-    def ASCIIFoldertoRaster(self,path,savePath,pixel_type=1,RasterFile = None,epsg = None):
+    
+    def ASCIIFoldertoRaster(path,savePath,pixel_type=1,RasterFile = None,epsg = None):
         """
         =========================================================================
         ASCIItoRaster(path,savePath,pixel_type)
@@ -1673,10 +1675,11 @@ class Raster():
         for i in range(len(files)):
                 ASCIIFile = path + "/" + files[i]
                 name = savePath + "/" + files[i].split(".")[0] + ".tif"
-                self.ASCIItoRaster(ASCIIFile,name,pixel_type,RasterFile = None,epsg = epsg)
+                Raster.ASCIItoRaster(ASCIIFile,name,pixel_type,RasterFile = None,epsg = epsg)
     
     
-    def RastersLike(self,src,array,path=None):
+    @staticmethod
+    def RastersLike(src,array,path=None):
         """
         ====================================================================
           RasterLike(src,array,path)
@@ -1730,10 +1733,11 @@ class Raster():
             path=["result_rasters/"+str(i)+".tif" for i in range(l)]
     
         for i in range(l):
-            self.RasterLike(src,array[:,:,i],path[i])
+            Raster.RasterLike(src,array[:,:,i],path[i])
     
     
-    def MatchDataAlignment(self,A_path,B_input_path,new_B_path):
+    @staticmethod
+    def MatchDataAlignment(A_path,B_input_path,new_B_path):
         """
         =========================================================================
           MatchData(A_path,B_input_path,new_B_path)
@@ -1790,11 +1794,11 @@ class Raster():
         for i in range(len(files_list)):
             print(str(i+1) + '/' + str(len(files_list)) + " - " + new_B_path+files_list[i])
             B=gdal.Open(B_input_path+files_list[i])
-            new_B=self.MatchRasterAlignment(A,B)
-            self.SaveRaster(new_B,new_B_path+files_list[i])
+            new_B=Raster.MatchRasterAlignment(A,B)
+            Raster.SaveRaster(new_B,new_B_path+files_list[i])
     
-    
-    def MatchDataNoValuecells(self,A_path,B_input_path,new_B_path):
+    @staticmethod
+    def MatchDataNoValuecells(A_path,B_input_path,new_B_path):
         """
         ==============================================================
           MatchData(A_path,B_input_path,new_B_path)
@@ -1854,8 +1858,8 @@ class Raster():
         for i in range(len(files_list)):
             print(str(i+1) + '/' + str(len(files_list)) + " - " + new_B_path+files_list[i])
             B=gdal.Open(B_input_path+files_list[i])
-            new_B=self.MatchNoDataValue(A,B)
-            self.SaveRaster(new_B,new_B_path+files_list[i])
+            new_B=Raster.MatchNoDataValue(A,B)
+            Raster.SaveRaster(new_B,new_B_path+files_list[i])
     
     
     @staticmethod
@@ -1998,7 +2002,7 @@ class Raster():
         return arr_3d
     
     
-    def ExtractValues(self, Path, ExcludeValue, Compressed = True, OccupiedCellsOnly=True):
+    def ExtractValues(Path, ExcludeValue, Compressed = True, OccupiedCellsOnly=True):
         """
         =================================================================
             ExtractValues(Path, ExcludeValue, Compressed = True)
@@ -2017,7 +2021,7 @@ class Raster():
         """
         # input data validation
         # data type
-        assert type(Path)== str, "Path input should be string type"
+        assert type(Path)== str, "Path input should be string type" + str(Path)
         assert type(Compressed) == bool, "Compressed input should be Boolen type"
         # input values
         # check wether the path exist or not
@@ -2051,7 +2055,7 @@ class Raster():
                     MapValues[i,:] = list(map(float, x ))
     
             else:
-                MapValues, SpatialRef= self.ReadASCII(Path)
+                MapValues, SpatialRef= Raster.ReadASCII(Path)
     
             # count nonzero cells
             NonZeroCells = np.count_nonzero(MapValues)
@@ -2078,7 +2082,8 @@ class Raster():
         return ExtractedValues, NonZeroCells
     
     
-    def OverlayMap(self, Path, BaseMap, ExcludeValue, Compressed = False, OccupiedCellsOnly=True):
+    @staticmethod
+    def OverlayMap(Path, BaseMap, ExcludeValue, Compressed = False, OccupiedCellsOnly=True):
         """
         =================================================================
             (Path, BaseMap, ExcludeValue, Compressed = False, OccupiedCellsOnly=True)
@@ -2122,7 +2127,7 @@ class Raster():
         # read the base map
         if type(BaseMap) == str:
             if BaseMap.endswith('.asc'):
-                BaseMapV, _ = self.ReadASCII(BaseMap)
+                BaseMapV, _ = Raster.ReadASCII(BaseMap)
             else:
                 BaseMap = gdal.Open(BaseMap)
                 BaseMapV = BaseMap.ReadAsArray()
@@ -2150,7 +2155,7 @@ class Raster():
                     MapValues[row,:] = list(map(float, x ))
     
             else:
-                MapValues, SpatialRef= self.ReadASCII(Path)
+                MapValues, SpatialRef= Raster.ReadASCII(Path)
             # count number of nonzero cells
             NonZeroCells = np.count_nonzero(MapValues)
     
@@ -2183,8 +2188,8 @@ class Raster():
     
         return ExtractedValues, NonZeroCells
     
-    
-    def OverlayMaps(self, Path, BaseMapF, FilePrefix, ExcludeValue, Compressed = False,
+    @staticmethod
+    def OverlayMaps(Path, BaseMapF, FilePrefix, ExcludeValue, Compressed = False,
                     OccupiedCellsOnly=True):
         """
         =================================================================
@@ -2243,7 +2248,7 @@ class Raster():
         NonZeroCells['cells'] = 0
         # read the base map
         if BaseMapF.endswith('.asc'):
-            BaseMapV, _ = self.ReadASCII(BaseMapF)
+            BaseMapV, _ = Raster.ReadASCII(BaseMapF)
         else:
             BaseMap = gdal.Open(BaseMapF)
             BaseMapV = BaseMap.ReadAsArray()
@@ -2254,11 +2259,11 @@ class Raster():
         for i in range(len(FilteredList)):
             print("File " + FilteredList[i])
             if OccupiedCellsOnly == True :
-                ExtractedValuesi , NonZeroCells.loc[i,'cells'] = self.OverlayMap(Path + "/" + FilteredList[i],
+                ExtractedValuesi , NonZeroCells.loc[i,'cells'] = Raster.OverlayMap(Path + "/" + FilteredList[i],
                                                                       BaseMapV, ExcludeValue, Compressed,
                                                                       OccupiedCellsOnly)
             else:
-                ExtractedValuesi, NonZeroCells.loc[i,'cells'] = self.OverlayMap(Path + "/" + FilteredList[i],
+                ExtractedValuesi, NonZeroCells.loc[i,'cells'] = Raster.OverlayMap(Path + "/" + FilteredList[i],
                                                                       BaseMapV, ExcludeValue, Compressed,
                                                                       OccupiedCellsOnly)
     

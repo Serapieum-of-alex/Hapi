@@ -108,8 +108,8 @@ class Routing():
         wi = np.array(wi)/np.sum(wi)
         return wi
     
-    
-    def TriangularRouting(self, q, maxbas=1):
+    @staticmethod
+    def TriangularRouting(q, maxbas=1):
         """
         ==========================================================
              TriangularRouting(q, maxbas=1)
@@ -142,7 +142,7 @@ class Routing():
         maxbas = int(round(maxbas,0))
         
         # get the weights
-        w = self.Tf(maxbas)
+        w = Routing.Tf(maxbas)
         
         # rout the discharge signal
         q_r = np.zeros_like(q, dtype='float64')
@@ -243,8 +243,8 @@ class Routing():
         
         return maxbasW
     
-    
-    def RoutingMAXBAS(self,Q,MAXBAS):
+    @staticmethod
+    def RoutingMAXBAS(Q,MAXBAS):
         """
         ====================================================
              RoutingMAXBAS(Q,MAXBAS)
@@ -263,7 +263,7 @@ class Routing():
         """
         
         # CALCULATE MAXBAS WEIGHTS
-        maxbasW = self.CalculateMaxBas(MAXBAS);
+        maxbasW = Routing.CalculateMaxBas(MAXBAS);
         
         Qw=np.ones((len(Q),len(maxbasW)))
         # Calculate the matrix discharge

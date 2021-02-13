@@ -58,8 +58,8 @@ class DistParameters():
         k=generatedK[int(round(position,0))]
         return k
     
-    
-    def par2d_lumpedK1_lake(self,par_g,raster,no_parameters,no_parameters_lake,kub,klb):
+    @staticmethod
+    def par2d_lumpedK1_lake(par_g,raster,no_parameters,no_parameters_lake,kub,klb):
         """
         ===========================================================
           par2d_lumpedK1_lake(par_g,raster,no_parameters,no_par_lake,kub,klb)
@@ -143,16 +143,16 @@ class DistParameters():
         # calculate the value of k(travelling time in muskingum based on value of
         # x and the position and upper, lower bound of k value
         for i in range(no_elem):
-            par_2d[celli[i],cellj[i],-2]= self.calculateK(par_2d[celli[i],cellj[i],-1],par_2d[celli[i],cellj[i],-2],kub,klb)
+            par_2d[celli[i],cellj[i],-2]= DistParameters.calculateK(par_2d[celli[i],cellj[i],-1],par_2d[celli[i],cellj[i],-2],kub,klb)
     
         # lake parameters
         lake_par=par_g[len(par_g)-no_parameters_lake:]
-        lake_par[-2] = self.calculateK(lake_par[-1],lake_par[-2],kub,klb)
+        lake_par[-2] = DistParameters.calculateK(lake_par[-1],lake_par[-2],kub,klb)
     
         return par_2d,lake_par
     
-    
-    def par3dLumped(self,par_g,raster,no_parameters,kub=1,klb=0.5,Maskingum = True):
+    @staticmethod
+    def par3dLumped(par_g,raster,no_parameters,kub=1,klb=0.5,Maskingum = True):
         """
         ===========================================================
           par3dLumped(par_g,raster, no_parameters, kub, klb)
@@ -242,12 +242,13 @@ class DistParameters():
         # x and the position and upper, lower bound of k value
         if Maskingum == True:
             for i in range(no_elem):
-                par_2d[celli[i],cellj[i],-2]= self.calculateK(par_2d[celli[i],cellj[i],-1],par_2d[celli[i],cellj[i],-2],kub,klb)
+                par_2d[celli[i],cellj[i],-2]= DistParameters.calculateK(par_2d[celli[i],cellj[i],-1],par_2d[celli[i],cellj[i],-2],kub,klb)
     
         return par_2d
     
     
-    def par3d(self,par_g,raster,no_parameters,no_lumped_par=0,lumped_par_pos=[],
+    @staticmethod
+    def par3d(par_g,raster,no_parameters,no_lumped_par=0,lumped_par_pos=[],
                        kub=1,klb=0.5,Maskingum = True):
         """
         ===========================================================
@@ -398,12 +399,13 @@ class DistParameters():
         # x and the position and upper, lower bound of k value
         if Maskingum == True:
             for i in range(no_elem):
-                par_2d[celli[i],cellj[i],-2]= self.calculateK(par_2d[celli[i],cellj[i],-1],par_2d[celli[i],cellj[i],-2],kub,klb)
+                par_2d[celli[i],cellj[i],-2]= DistParameters.calculateK(par_2d[celli[i],cellj[i],-1],par_2d[celli[i],cellj[i],-2],kub,klb)
     
         return par_2d
     
     
-    def HRU(self,par_g,raster,no_parameters,no_lumped_par=0,lumped_par_pos=[],
+    @staticmethod
+    def HRU(par_g,raster,no_parameters,no_lumped_par=0,lumped_par_pos=[],
                        kub=1,klb=0.5):
         """
         ===========================================================
@@ -543,7 +545,7 @@ class DistParameters():
         # calculate the value of k(travelling time in muskingum based on value of
         # x and the position and upper, lower bound of k value
         for i in range(no_elem):
-            par_arr[-2,i]= self.calculateK(par_arr[-1,i],par_arr[-2,i],kub,klb)
+            par_arr[-2,i]= DistParameters.calculateK(par_arr[-1,i],par_arr[-2,i],kub,klb)
     
         # assign the parameters from the array (no_parameters, no_cells) to
         # the spatially corrected location in par2d each soil type will have the same

@@ -250,6 +250,7 @@ class Inputs():
                       int(string[11:13]),int(string[14:16]),int(string[17:]))
         return time
     
+    @staticmethod
     def rescale(OldValue,OldMin,OldMax,NewMin,NewMax):
         """
         # =============================================================================
@@ -279,8 +280,8 @@ class Inputs():
     
         return NewValue
     
-    
-    def mycolor(self,x,min_old,max_old,min_new, max_new):
+    @staticmethod
+    def mycolor(x,min_old,max_old,min_new, max_new):
         """
         # =============================================================================
         #  mycolor(x,min_old,max_old,min_new, max_new)
@@ -316,7 +317,7 @@ class Inputs():
         else:
             x_log=np.log(x)
     
-        y=int(np.round(self.rescale(x_log,min_old_log,max_old_log,min_new,max_new)))
+        y=int(np.round(Inputs.rescale(x_log,min_old_log,max_old_log,min_new,max_new)))
     
         return y
 

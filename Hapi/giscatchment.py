@@ -294,8 +294,8 @@ class GISCatchment():
     
         return fd_cell
     
-    
-    def FlowDirecTable(self,flow_direct):
+    @staticmethod
+    def FlowDirecTable(flow_direct):
         """
         ====================================================================
              FlowDirecTable(flow_direct)
@@ -322,7 +322,7 @@ class GISCatchment():
         """
         # input data validation
         # validation is inside FlowDirectِِIndex
-        FDI=self.FlowDirectIndex(flow_direct)
+        FDI=GISCatchment.FlowDirectIndex(flow_direct)
     
         rows=flow_direct.RasterYSize
         cols=flow_direct.RasterXSize
