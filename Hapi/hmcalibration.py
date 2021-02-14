@@ -257,7 +257,7 @@ class HMCalibration():
         # self.QGaugesTable = GaugesTable
 
 
-    def ReadRRM(self, Qgauges, Path, StartDate, EndDate):
+    def ReadRRM(self, Path, StartDate, EndDate, column='oid'): #Qgauges, 
         """
         ==============================================================
             ReadRRM(Qgauges, Path, StartDate, EndDate)
@@ -285,17 +285,17 @@ class HMCalibration():
         ind = pd.date_range(StartDate,EndDate)
         QSWIM = pd.DataFrame(index = ind)
 
-
-        for i in range(len(Qgauges[0])):
+        
+        for i in range(len(self.GaugesTable[column])):
             # read SWIM data
             # only at the begining to get the length of the time series
-            QSWIM.loc[:,int(Qgauges[0][i])] = np.loadtxt(Path +
-                  str(int(Qgauges[0][i])) + '.txt')#,skiprows = 0
+            QSWIM.loc[:,int(self.GaugesTable.loc[i,column])] = np.loadtxt(Path +
+                  str(int(self.GaugesTable.loc[i,column])) + '.txt')#,skiprows = 0
         self.QRRM = QSWIM
 
 
-    def ReadRIMQ(self, Qgauges, Path, StartDate, days, NoValue, AddHQ2=False,
-                 Shift=False, ShiftSteps=0):
+    def ReadRIMQ(self, Path, StartDate, days, NoValue, AddHQ2=False, #, column='oid'
+                 Shift=False, ShiftSteps=0, column='oid'):
         """
         ===============================================================
              ReadRIMQ(Qgauges, Path, StartDate, days, NoValue)
@@ -326,7 +326,7 @@ class HMCalibration():
             assert hasattr(self, "RP"), "please read the HQ file first using ReturnPeriod method"
         EndDate = StartDate + dt.timedelta(days = days-1)
         ind = pd.date_range(StartDate,EndDate)
-        QRIM = pd.DataFrame(index = ind, columns = Qgauges[0].tolist())
+        QRIM = pd.DataFrame(index = ind, columns = self.GaugesTable[column].tolist())
         # for RIM1.0 don't fill with -9 as the empty days will be filled with 0 so to get
         # the event days we have to filter 0 and -9
         if self.Version == 1:
@@ -335,14 +335,14 @@ class HMCalibration():
             QRIM.loc[:,:] = NoValue
 
         # fill non modelled time steps with zeros
-        for i in range(len(Qgauges)):
+        for i in range(len(self.GaugesTable[column])):
             f = np.loadtxt( Path + str(int(QRIM.columns[i])) + ".txt",
                        delimiter = ",")
             f1 = list(range(int(f[0,0]),int(f[-1,0])+1))
             f2 = list()
 
             if AddHQ2 and self.Version == 1:
-                USnode = self.rivernetwork.loc[np.where(self.rivernetwork['SubID'] == Qgauges.loc[i,0])[0][0],'US']
+                USnode = self.rivernetwork.loc[np.where(self.rivernetwork['SubID'] == self.GaugesTable.loc[i,column])[0][0],'US']
                 CutValue = self.RP.loc[np.where(self.RP['node'] == USnode)[0][0],'HQ2']
 
 
