@@ -13,8 +13,8 @@ import pandas as pd
 
 # Hapi modules
 import Hapi.hbvlumped as HBVLumped
-import Hapi.run as RUN
-from Hapi.routing import RoutingMAXBAS
+from Hapi.run import Run
+from Hapi.routing import Routing
 #import Hapi.GISpy as GIS
 #import GISCatchment as GC
 #from Hapi.RUN import RunModel
@@ -39,9 +39,9 @@ First model needs to be calibrated to have the model parameters
 parameters= []#np.loadtxt("")
 
 ### Routing
-Routing=1
-RoutingFn=RoutingMAXBAS
+routing=1
+RoutingFn=Routing.RoutingMAXBAS
 ### run the model
-st, q_sim=RUN.RunLumped(ConceptualModel,data_matrix,parameters,p2,init_st,snow,Routing, RoutingFn)
+st, q_sim=Run.RunLumped(ConceptualModel,data_matrix,parameters,p2,init_st,snow,routing, RoutingFn)
 #%% store the result into rasters
 # create list of names

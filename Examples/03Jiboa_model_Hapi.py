@@ -18,10 +18,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # HAPI modules
-from Hapi.run import RunHAPIwithLake
+from Hapi.run import Run
 import Hapi.hbv as HBV
 import Hapi.performancecriteria as Pf
-import Hapi.raster as Raster
+from Hapi.raster import Raster
 #%%
 """
 paths to meteorological data
@@ -76,7 +76,7 @@ Lake_init_st = np.loadtxt("inputs/Hapi/meteodata/Initia-lake.txt", usecols=0).to
 
 #%% run the model
 Sim =pd.DataFrame(index = lakeCalib.index)
-st, Sim['Q'], q_uz_routed, q_lz_trans = RunHAPIwithLake(HBV, Paths, ParPath, p2, init_st,
+st, Sim['Q'], q_uz_routed, q_lz_trans = Run.RunHAPIwithLake(HBV, Paths, ParPath, p2, init_st,
                                                      snow, lakeCalibArray, StageDischargeCurve,
                                                      LakeParameters, lakecell,Lake_init_st)
 

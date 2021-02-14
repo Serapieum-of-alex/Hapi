@@ -11,8 +11,8 @@ import pandas as pd
 
 # Hapi modules
 import Hapi.hbvlumped as HBVLumped
-from Hapi.calibration import LumpedCalibration
-from Hapi.routing import TriangularRouting
+from Hapi.calibration import Calibration
+from Hapi.routing import Routing
 import Hapi.performancecriteria as PC
 #%%
 ### meteorological data
@@ -32,11 +32,11 @@ UB=np.loadtxt("data/Basic_inputs/UB_Lumped.txt", usecols=0)
 LB=np.loadtxt("data/Basic_inputs/LB_Lumped.txt", usecols=0)
 
 # Routing
-Routing=1
-RoutingFn=TriangularRouting
+routing=1
+RoutingFn=Routing.TriangularRouting
 
 Basic_inputs=dict(p2=p2, init_st=init_st, UB=UB, LB=LB, snow=snow,
-                  Routing=Routing, RoutingFn=RoutingFn)
+                  Routing=routing, RoutingFn=RoutingFn)
 
 ### Objective function
 # outlet discharge
@@ -54,7 +54,7 @@ history_fname="par_history.txt"
 OptimizationArgs=[store_history,history_fname]
 #%%
 # run calibration
-cal_parameters=LumpedCalibration(ConceptualModel, data, Basic_inputs,
+cal_parameters=Calibration.LumpedCalibration(ConceptualModel, data, Basic_inputs,
                    OF, OF_args, Qobs, OptimizationArgs, printError=None)
 #%% convert parameters to rasters
 ParPath = "par15_7_2018.txt"

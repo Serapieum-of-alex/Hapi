@@ -12,9 +12,9 @@ import pandas as pd
 #import matplotlib.pyplot as plt
 
 # HAPI modules
-from Hapi.run import RunModel
+from Hapi.run import Run
 import Hapi.hbv as HBV
-import Hapi.raster as GIS
+from Hapi.raster import Raster as GIS
 #%%
 """
 paths to meteorological data
@@ -34,7 +34,7 @@ p2=[24, 1530]
 init_st=[0,5,5,5,0]
 snow = 0
 
-st, q_out, q_uz_routed, q_lz_trans = RunModel(HBV,Paths,ParPathRun,p2,init_st,snow)
+st, q_out, q_uz_routed, q_lz_trans = Run.RunModel(HBV,Paths,ParPathRun,p2,init_st,snow)
 
 #%% store the result into rasters
 # create list of names

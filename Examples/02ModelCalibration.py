@@ -18,11 +18,11 @@ import gdal
 
 
 # functions
-from Hapi.calibration import RunCalibration
+from Hapi.calibration import Calibration
 #import Wrapper
 #import GISpy as GIS
 #import GISCatchment as GC
-import Hapi.distparameters as DP
+from Hapi.distparameters import DistParameters as DP
 import Hapi.performancecriteria as PC
 
 #%%
@@ -60,4 +60,4 @@ f=objective_function(np.array([1,2,3]),np.array([5,6,8]),*args)
 OptimizationArgs=[]
 
 # run calibration
-cal_parameters=RunCalibration(Paths,p2,Q_obs,UB,LB,SpatialVarFun,SpatialVarArgs,objective_function,printError=None,*args)
+cal_parameters=Calibration.RunCalibration(Paths,p2,Q_obs,UB,LB,SpatialVarFun,SpatialVarArgs,objective_function,printError=None,*args)

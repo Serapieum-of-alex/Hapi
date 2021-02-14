@@ -23,12 +23,12 @@ import gdal
 #from pyOpt import Optimization, ALHSO,Optimizer
 
 # functions
-from Hapi.calibration import RunCalibration
+from Hapi.calibration import Calibration
 import Hapi.hbv as HBV
 #import Wrapper
 #import Hapi.GISpy as GIS
-import Hapi.giscatchment as GC
-import Hapi.distparameters as DP
+from Hapi.giscatchment import GISCatchment as GC
+from Hapi.distparameters import DistParameters as DP
 import Hapi.performancecriteria as PC
 #import Inputs
 #%%
@@ -126,7 +126,7 @@ history_fname="par_history.txt"
 OptimizationArgs=[store_history,history_fname]
 #%%
 # run calibration
-cal_parameters=RunCalibration(HBV, Paths, Basic_inputs,
+cal_parameters=Calibration.RunCalibration(HBV, Paths, Basic_inputs,
                               SpatialVarFun, SpatialVarArgs,
                               OF,OF_args,Qobs,
                               OptimizationArgs,
