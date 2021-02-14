@@ -2023,7 +2023,7 @@ class Sub(River):
         
         if hasattr(River, 'slope'):
             if self.Version == 1 or self.Version == 2 :
-                self.slope = River.slope[River.slope['SubID']==ID]['slope'].tolist()[0]
+                self.slope = River.slope[River.slope['ID']==ID]['slope'].tolist()[0]
             else:
                 self.slope = River.slope[River.slope['ID']==ID]['slope'].tolist()[0]
         
