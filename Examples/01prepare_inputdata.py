@@ -7,8 +7,8 @@ Created on Sat Jun 23 23:51:26 2018
 #%library
 import numpy as np
 # functions
-from Hapi import raster
-from Hapi import inputs
+from Hapi.raster import Raster
+from Hapi.inputs import Inputs
 
 import gdal
 import os
@@ -23,14 +23,14 @@ dem_path="Data/GIS/4000/acc4000.tif"
 outputpath="Data/meteodata_prepared/"
 # prec
 prec_in_path="Data/meteodata/4000/complete_dataset/prec/"
-inputs.PrepareInputs(dem_path,prec_in_path,outputpath+"prec")
+Inputs.PrepareInputs(dem_path,prec_in_path,outputpath+"prec")
 
 # evap
 evap_in_path="Data/meteodata/4000/complete_dataset/evap/"
-# inputs.PrepareInputs(dem_path,evap_in_path,outputpath+"evap")
+# Inputs.PrepareInputs(dem_path,evap_in_path,outputpath+"evap")
 # temp
 temp_in_path="Data/meteodata/4000/complete_dataset/temp/"
-# inputs.PrepareInputs(dem_path,temp_in_path,outputpath+"temp")
+# Inputs.PrepareInputs(dem_path,temp_in_path,outputpath+"temp")
 
 """
 in case you want to manipulate the value in all the rasters of one of the inputs
@@ -57,12 +57,12 @@ def function(args):
     path = args[1]
     func=np.abs
     # first function
-    B=raster.MapAlgebra(A,func)
-    raster.SaveRaster(B,path)
+    B=Raster.MapAlgebra(A,func)
+    Raster.SaveRaster(B,path)
 
 folder_path = evap_out_path
 new_folder_path="data/meteodata_prepared/new_evap/"
-# raster.FolderCalculator(folder_path,new_folder_path,function)
+# Raster.FolderCalculator(folder_path,new_folder_path,function)
 
 """
 in order to run the model all inputs have to have the same number of rows and columns
@@ -77,7 +77,7 @@ soil=gdal.Open(soil_path)
 soil_A=soil.ReadAsArray()
 
 # align
-aligned_soil=raster.MatchRasterAlignment(DEM,soil)
+aligned_soil=Raster.MatchRasterAlignment(DEM,soil)
 
 # to check alignment of DEM raster compared to aligned_soil_A raster
 aligned_soil_A=aligned_soil.ReadAsArray()
@@ -85,10 +85,10 @@ aligned_soil_A=aligned_soil.ReadAsArray()
 # nodatavalue is still different and some cells are no data value in the soil type raster but it is not in the dem raster
 # to match use Match MatchNoDataValue
 # match
-dst_Aligned_M=raster.MatchNoDataValue(DEM,aligned_soil)
+dst_Aligned_M=Raster.MatchNoDataValue(DEM,aligned_soil)
 dst_Aligned_M_A=dst_Aligned_M.ReadAsArray()
 
 # save the new raster
-raster.SaveRaster(dst_Aligned_M,"Data/GIS/soil/4000/soil_type.tif")
+Raster.SaveRaster(dst_Aligned_M,"Data/GIS/soil/4000/soil_type.tif")
 
-#raster.SaveRaster(dst_Aligned_M,"00inputs/GIS/4000/soil_typeِِA.tif")
+#Raster.SaveRaster(dst_Aligned_M,"00inputs/GIS/4000/soil_typeِِA.tif")
