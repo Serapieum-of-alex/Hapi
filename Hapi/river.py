@@ -2009,7 +2009,7 @@ class Sub(River):
         if self.Version == 1 or self.Version == 2:
             self.crosssections = River.crosssections[River.crosssections['swimid'] == ID]
         else:
-            self.crosssections = River.crosssections[River.crosssections['ID'] == ID]
+            self.crosssections = River.crosssections[River.crosssections['id'] == ID]
             
         self.crosssections.index = list(range(len(self.crosssections)))
         self.LastXS = self.crosssections.loc[len(self.crosssections)-1,'xsid']
