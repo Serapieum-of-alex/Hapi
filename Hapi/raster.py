@@ -2376,6 +2376,10 @@ class Raster():
             Var = list(nc.variables.keys())[-1]
 
         data = nc.variables[Var]
+        # nodatavalue
+        NoDataValue = data._FillValue
+        # data type
+        datatype = data.datatype
 
         size_Y, size_X = np.int_(data.shape[-2:])
         # if there is a stack of layers in the file (3d array)
@@ -2430,7 +2434,7 @@ class Raster():
 
         geo = tuple([Geo1, Geo2, 0, Geo4, 0, Geo2])
 
-        return geo, epsg, size_X, size_Y, size_Z, Time
+        return geo, epsg, size_X, size_Y, size_Z, Time, NoDataValue, datatype
 
     @staticmethod
     def NCtoTiff(input_nc, SaveTo):
@@ -2461,7 +2465,7 @@ class Raster():
         # extract the data
         All_Data = nc[Var]
         # get the details of the file
-        geo, epsg, size_X, size_Y, size_Z, Time = Raster.NCdetails(nc)
+        geo, epsg, size_X, size_Y, size_Z, Time, NoDataValue, datatype = Raster.NCdetails(nc)
 
         # Create output folder if needed
         if not os.path.exists(SaveTo):
@@ -2480,11 +2484,28 @@ class Raster():
                 name_out = os.path.join(SaveTo, name + '.tif')
                 data = All_Data[0,:,:]
 
-            # Save_as_tiff(name_out, Data_one, geo, epsg)
-            # save as a geotiff
             driver = gdal.GetDriverByName("GTiff")
-            dst_ds = driver.Create(name_out, int(data.shape[1]), int(data.shape[0]), 1,
+            # driver = gdal.GetDriverByName("MEM")
+
+            if datatype == np.float32:
+                dst = driver.Create(name_out,int(data.shape[1]), int(data.shape[0]), 1,
                                    gdal.GDT_Float32, ['COMPRESS=LZW'])
+            elif datatype == np.float64:
+                dst = driver.Create(name_out,int(data.shape[1]), int(data.shape[0]), 1,
+                                   gdal.GDT_Float64)
+            elif datatype == np.uint16:
+                dst = driver.Create(name_out,int(data.shape[1]), int(data.shape[0]), 1,
+                                   gdal.GDT_UInt16, ['COMPRESS=LZW'])
+            elif datatype == np.uint32:
+                dst = driver.Create(name_out,int(data.shape[1]), int(data.shape[0]), 1,
+                                   gdal.GDT_UInt32, ['COMPRESS=LZW'])
+            elif datatype == np.int16:
+                dst = driver.Create(name_out,int(data.shape[1]), int(data.shape[0]), 1,
+                                   gdal.GDT_Int16, ['COMPRESS=LZW'])
+            elif datatype == np.int32:
+                dst = driver.Create(name_out,int(data.shape[1]), int(data.shape[0]), 1,
+                                   gdal.GDT_Int32, ['COMPRESS=LZW'])
+
             srse = osr.SpatialReference()
             if epsg == '':
                 srse.SetWellKnownGeogCS("WGS84")
@@ -2504,11 +2525,24 @@ class Raster():
                     except:
                         srse.ImportFromWkt(epsg)
 
-            dst_ds.SetProjection(srse.ExportToWkt())
-            dst_ds.GetRasterBand(1).SetNoDataValue(-9999)
-            dst_ds.SetGeoTransform(geo)
-            dst_ds.GetRasterBand(1).WriteArray(data)
-            dst_ds.FlushCache()
-            dst_ds = None
+            # set the geotransform
+            dst.SetGeoTransform(geo)
+            # set the projection
+            dst.SetProjection(srse.ExportToWkt())
+            # setting the NoDataValue does not accept double precision numbers
+            try:
+                dst.GetRasterBand(1).SetNoDataValue(NoDataValue)
+                # initialize the band with the nodata value instead of 0
+                dst.GetRasterBand(1).Fill(NoDataValue)
+            except:
+                NoDataValue = -9999
+                dst.GetRasterBand(1).SetNoDataValue(NoDataValue)
+                dst.GetRasterBand(1).Fill(NoDataValue)
+                # assert False, "please change the NoDataValue in the source raster as it is not accepted by Gdal"
+                print("the NoDataValue in the source Netcdf is double precission and as it is not accepted by Gdal")
+                print("the NoDataValue now is et to -9999 in the raster")
 
-        return()
+            dst.GetRasterBand(1).WriteArray(data)
+            dst.FlushCache()
+            dst = None
+
