@@ -10,34 +10,55 @@ match two rasters
 from IPython import get_ipython   # to reset the variable explorer each time
 get_ipython().magic('reset -f')
 import os
-os.chdir("F:/01Algorithms/HAPI/Examples/GIS")
-
+os.chdir("F:/01Algorithms/Hydrology/HAPI/Examples/GIS")
 
 #%library
-import numpy as np
+# import numpy as np
 import gdal
-import datetime as dt
+# import datetime as dt
 #import pandas as pd
-import Hapi.raster as GIS
+from Hapi.raster import Raster
 #import matplotlib.pyplot as plt
 #%% inputs
-RasterAPath = "Inputs/NewDEM.tif"
-RasterBpath = "Inputs/SWIM_sub_4647.tif"
+RasterAPath = "F:/01Algorithms/Hydrology/HAPI/Examples/data/GIS/DEM5km_Rhine_burned_acc.tif"
+RasterBPath = "F:/01Algorithms/Hydrology/HAPI/Examples/data/GIS/MSWEP_1979010100_reprojected.tif"
 
-
-
+SaveTo = "F:/01Algorithms/Hydrology/HAPI/Examples/data/GIS/MSWEP_1979010100_Matched.tif"
 #%%
-"""
-Read the Input rasters
 
-"""
+### Read the Input rasters
+
 # the source raster is of the ASCII format
 src = gdal.Open(RasterAPath)
-#src_Array = src.ReadAsArray()
+src_Array = src.ReadAsArray()
+print("Shape of source raster = " + str(src_Array.shape))
 
 # read destination array
-dst = gdal.Open(RasterBpath)
-#Dst_Array = dst.ReadAsArray()
-NewRasterB = GIS.MatchRasterAlignment(src,dst)
+dst = gdal.Open(RasterBPath)
+Dst_Array = dst.ReadAsArray()
+print("Shape of distnation raster Before matching = " + str(Dst_Array.shape))
 
-GIS.SaveRaster(NewRasterB,"Inputs/NewSWIMSubs.tif")
+### Match the alignment of both rasters
+NewRasterB = Raster.MatchRasterAlignment(src,dst)
+
+NewRasterB_array = NewRasterB.ReadAsArray()
+print("Shape of distnation  raster after matching = " + str(NewRasterB_array.shape))
+
+message = "Error the shape of the result raster does not match the source raster"
+assert NewRasterB_array.shape[0] == src_Array.shape[0] and NewRasterB_array.shape[1] == src_Array.shape[1], message
+
+### Match the NODataValue
+
+NewRasterB_ND = Raster.MatchNoDataValue(src, NewRasterB)
+
+NoDataValue = NewRasterB_ND.GetRasterBand(1).GetNoDataValue()
+
+assert src.GetRasterBand(1).GetNoDataValue() == NoDataValue,  "NoData Value does not match"
+
+# NewRasterB_ND_array =NewRasterB_ND.ReadAsArray()
+
+# f = NewRasterB_ND_array[NewRasterB_ND_array == NoDataValue]
+# g = src_Array[src_Array == NoDataValue]
+
+#%%
+Raster.SaveRaster(NewRasterB_ND,SaveTo)

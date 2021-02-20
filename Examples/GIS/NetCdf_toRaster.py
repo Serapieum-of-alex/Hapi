@@ -12,7 +12,7 @@ import rasterio
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-#%%
+#%% Paths
 FileName = "F:/01Algorithms/Hydrology/HAPI/Examples/data/GIS/MSWEP_1979010100.nc"
 SaveTo = "F:/01Algorithms/Hydrology/HAPI/Examples/data/GIS/"
 VarName=None
