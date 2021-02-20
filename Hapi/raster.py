@@ -333,7 +333,7 @@ class Raster():
         pixel_spacing=cell_size
         # create a new raster
         mem_drv=gdal.GetDriverByName("MEM")
-        dst=mem_drv.Create("",int(np.round((lrx-ulx)/pixel_spacing)),int(np.round((uly-lry)/pixel_spacing)),
+        dst=mem_drv.Create("",int(np.round(abs(lrx-ulx)/pixel_spacing)),int(np.round(abs(uly-lry)/pixel_spacing)),
                            1,gdalconst.GDT_Float32,['COMPRESS=LZW']) # LZW is a lossless compression method achieve the highst compression but with lot of computation
 
         # set the geotransform
@@ -407,7 +407,7 @@ class Raster():
         # get number of rows
         src_y=src.RasterYSize
         # number of bands
-    #    src_bands=src.RasterCount
+        # src_bands=src.RasterCount
         # spatial ref
         src_epsg=osr.SpatialReference(wkt=src_proj)
 
@@ -415,34 +415,34 @@ class Raster():
         # spatial ref
         dst_epsg=osr.SpatialReference()
         dst_epsg.ImportFromEPSG(to_epsg)
-        # transformation factors
-        tx = osr.CoordinateTransformation(src_epsg,dst_epsg)
+
 
         # in case the source crs is GCS and longitude is in the west hemisphere gdal
-        # reads longitude fron 0 to 360 and transformation factor wont work with valeus
+        # reads longitude fron 0 to 360 and transformation factor wont work with values
         # greater than 180
         if src_epsg.GetAttrValue('AUTHORITY',1) != str(to_epsg) :
             if src_epsg.GetAttrValue('AUTHORITY',1)=="4326" and src_gt[0] > 180:
                 lng_new=src_gt[0]-360
+                # transformation factors
+                tx = osr.CoordinateTransformation(src_epsg,dst_epsg)
                 # transform the right upper corner point
                 (ulx,uly,ulz) = tx.TransformPoint(lng_new, src_gt[3])
                 # transform the right lower corner point
                 (lrx,lry,lrz)=tx.TransformPoint(lng_new+src_gt[1]*src_x,
                                                 src_gt[3]+src_gt[5]*src_y)
             else:
-                # transform the right upper corner point
-                (ulx,uly,ulz) = tx.TransformPoint(src_gt[0], src_gt[3])
-                # transform the right lower corner point
-                (lrx,lry,lrz)=tx.TransformPoint(src_gt[0]+src_gt[1]*src_x,
-                                                src_gt[3]+src_gt[5]*src_y)
+                xs = [src_gt[0], src_gt[0]+src_gt[1]*src_x]
+                ys = [src_gt[3], src_gt[3]+src_gt[5]*src_y]
+
+                [uly,lry] , [ulx,lrx] = Vector.ReprojectPoints(ys,xs,from_epsg=int(src_epsg.GetAttrValue('AUTHORITY',1)),
+                                               to_epsg=int(dst_epsg.GetAttrValue('AUTHORITY',1)))
+
+
         else:
             ulx = src_gt[0]
             uly = src_gt[3]
-    #        ulz = 0
             lrx = src_gt[0]+src_gt[1]*src_x
             lry = src_gt[3]+src_gt[5]*src_y
-    #        lrz = 0
-
 
         # get the cell size in the source raster and convert it to the new crs
         # x coordinates or longitudes
@@ -452,23 +452,23 @@ class Raster():
 
         if src_epsg.GetAttrValue('AUTHORITY',1) != str(to_epsg):
             # transform the two points coordinates to the new crs to calculate the new cell size
-            new_xs, new_ys= Vector.ReprojectPoints(ys,xs,from_epsg=int(src_epsg.GetAttrValue('AUTHORITY',1)),
-                                              to_epsg=int(dst_epsg.GetAttrValue('AUTHORITY',1)))
+            new_ys, new_xs = Vector.ReprojectPoints(ys,xs,from_epsg=int(src_epsg.GetAttrValue('AUTHORITY',1)),
+                                              to_epsg=int(dst_epsg.GetAttrValue('AUTHORITY',1)),precision=6)
             # new_xs, new_ys= Vector.ReprojectPoints_2(ys,xs,from_epsg=int(src_epsg.GetAttrValue('AUTHORITY',1)),
             #                                  to_epsg=int(dst_epsg.GetAttrValue('AUTHORITY',1)))
         else:
             new_xs = xs
             new_ys = ys
 
-        pixel_spacing=np.abs(new_xs[0]-new_xs[1])
+        pixel_spacing = np.abs(new_xs[0]-new_xs[1])
 
         # create a new raster
-        mem_drv=gdal.GetDriverByName("MEM")
-        dst=mem_drv.Create("",int(np.round((lrx-ulx)/pixel_spacing)),int(np.round(abs(uly-lry)/pixel_spacing)),
+        mem_drv = gdal.GetDriverByName("MEM")
+        dst = mem_drv.Create("",int(np.round(abs(lrx-ulx)/pixel_spacing)),int(np.round(abs(uly-lry)/pixel_spacing)),
                            1,gdalconst.GDT_Float32) #['COMPRESS=LZW'] LZW is a lossless compression method achieve the highst compression but with lot of computation
 
         # new geotransform
-        new_geo=(ulx,pixel_spacing,src_gt[2],uly,src_gt[4],-pixel_spacing)
+        new_geo = (ulx, pixel_spacing, src_gt[2], uly, src_gt[4], np.sign(src_gt[-1])*pixel_spacing)
         # set the geotransform
         dst.SetGeoTransform(new_geo)
         # set the projection
@@ -481,6 +481,7 @@ class Raster():
         gdal.ReprojectImage(src,dst,src_epsg.ExportToWkt(),dst_epsg.ExportToWkt(),resample_technique)
 
         return dst
+
 
     @staticmethod
     def ReprojectDataset(src, to_epsg=3857, cell_size=[], resample_technique="Nearest"):
@@ -584,7 +585,7 @@ class Raster():
 
         # create a new raster
         mem_drv=gdal.GetDriverByName("MEM")
-        dst=mem_drv.Create("",int(np.round((lrx-ulx)/pixel_spacing)),int(np.round((uly-lry)/pixel_spacing)),
+        dst=mem_drv.Create("",int(np.round(abs(lrx-ulx)/pixel_spacing)),int(np.round(abs(uly-lry)/pixel_spacing)),
                            1,gdalconst.GDT_Float32) # ['COMPRESS=LZW'] LZW is a lossless compression method achieve the highst compression but with lot of computation
 
         # new geotransform
@@ -725,7 +726,7 @@ class Raster():
         src_proj=src.GetProjection()
         src_row=src.RasterYSize
         src_col=src.RasterXSize
-        src_noval=np.float32(src.GetRasterBand(1).GetNoDataValue())
+        src_noval=src.GetRasterBand(1).GetNoDataValue()
         src_sref=osr.SpatialReference(wkt=src_proj)
         src_epsg=int(src_sref.GetAttrValue('AUTHORITY',1))
 
@@ -744,7 +745,7 @@ class Raster():
         assert dst_gt==src_gt, "location of upper left corner of both rasters are not the same or cell size is different please match both rasters first "
         assert src_epsg == dst_epsg, "Raster A & B are using different coordinate system please reproject one of them to the other raster coordinate system"
 
-        dst_array = np.float32(dst.ReadAsArray())
+        dst_array = dst.ReadAsArray()
         dst_array[src_array==src_noval] = src_noval
 
         # align function only equate the no of rows and columns only
@@ -886,7 +887,7 @@ class Raster():
     #    gt_src_epsg.GetAttrValue('AUTHORITY',1)
 
         # unite the crs
-        # TODO still doesn't work with all projections better to use UTM zones for the moment
+        # TODO https://github.com/MAfarrag/Hapi/issues/33
         data_src=Raster.ProjectRaster(RasterB,int(gt_src_epsg.GetAttrValue('AUTHORITY',1)))
 
         # create a new raster
@@ -905,7 +906,6 @@ class Raster():
 
         gdal.ReprojectImage(data_src,dst,gt_src_epsg.ExportToWkt(),gt_src_epsg.ExportToWkt(),resample_technique)
 
-    #    SaveRaster(dst,"colombia/newraster.tif")
         return dst
 
     @staticmethod
