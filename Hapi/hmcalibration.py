@@ -126,7 +126,7 @@ class HMCalibration():
         """
 
         ind = pd.date_range(StartDate, EndDate)
-        columns = self.GaugesTable['oid'].tolist()
+        columns = self.GaugesTable[column].tolist()
         
         WLGauges = pd.DataFrame(index = ind)
         # WLGaugesf.loc[:,:] = NoValue
@@ -168,8 +168,6 @@ class HMCalibration():
                 end1 = WLGauges[columns[i]][WLGauges[columns[i]] != NoValue].index[-1]
                 self.GaugesTable.loc[i,'WLstart'] = st1
                 self.GaugesTable.loc[i,'WLend'] = end1
-        
-        # self.GaugesTable = GaugesTable
 
 
     def ReadObservedQ(self, Path, StartDate, EndDate, NoValue, column='oid'): #Gauges,
@@ -253,8 +251,6 @@ class HMCalibration():
                 end1 = QGauges[ii][QGauges[ii] != NoValue].index[-1]
                 self.GaugesTable.loc[i,'Qstart'] = st1
                 self.GaugesTable.loc[i,'Qend'] = end1
-        
-        # self.QGaugesTable = GaugesTable
 
 
     def ReadRRM(self, Path, StartDate, EndDate, column='oid'): #Qgauges, 
@@ -326,7 +322,7 @@ class HMCalibration():
             assert hasattr(self, "RP"), "please read the HQ file first using ReturnPeriod method"
         EndDate = StartDate + dt.timedelta(days = days-1)
         ind = pd.date_range(StartDate,EndDate)
-        QRIM = pd.DataFrame(index = ind, columns = self.GaugesTable[column].tolist())
+        QRIM = pd.DataFrame(index = ind, columns = self.GaugesTable.loc[self.GaugesTable['discharge']==1,column].tolist())
         # for RIM1.0 don't fill with -9 as the empty days will be filled with 0 so to get
         # the event days we have to filter 0 and -9
         if self.Version == 1:
@@ -367,7 +363,8 @@ class HMCalibration():
         self.QRIM = QRIM[:]
 
 
-    def ReadRIMWL(self, WLGaugesTable, Path, StartDate, days, NoValue, Shift=False, ShiftSteps=0):
+    def ReadRIMWL(self, Path, StartDate, days, NoValue, Shift=False, ShiftSteps=0,
+                  column='oid'): #WLGaugesTable,
         """
         =============================================================================
             ReadRIMWL(WLGaugesTable, Path, StartDate, days, NoValue, Shift=False)
@@ -397,7 +394,7 @@ class HMCalibration():
         EndDate = StartDate + dt.timedelta(days = days-1)
         ind = pd.date_range(StartDate,EndDate)
 
-        WLRIM = pd.DataFrame(index = ind, columns = WLGaugesTable['Segment'].tolist())
+        WLRIM = pd.DataFrame(index = ind, columns = self.GaugesTable.loc[self.GaugesTable['waterlevel']==1,column].tolist()) #WLGaugesTable['Segment'].tolist()
         WLRIM.loc[:,:] = NoValue
 
         for i in range(len(WLRIM.columns)):
