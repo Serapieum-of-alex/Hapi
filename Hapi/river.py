@@ -17,7 +17,43 @@ FigureDefaultOptions = dict( ylabel = '', xlabel = '',
 
 class River():
     """
+    River object
+    
+    
+    Parameters
+    ----------
+    name : [string]
+        DESCRIPTION.
+    Version : [integer], optional
+        DESCRIPTION. The default is 2.
+    start : [string], optional
+        DESCRIPTION. The default is "1950-1-1".
+    days : [integer], optional
+        DESCRIPTION. The default is 36890.
+    RRMstart : [string], optional
+        DESCRIPTION. The default is "1950-1-1".
+    RRMdays : [integer], optional
+        DESCRIPTION. The default is 36890.
+    leftOvertopping_Suffix : [string], optional
+        DESCRIPTION. The default is "_left.txt".
+    RightOvertopping_Suffix : [string], optional
+        DESCRIPTION. The default is "_right.txt".
+    DepthPrefix : [string], optional
+        DESCRIPTION. The default is "DepthMax".
+    DurationPrefix : [string], optional
+        DESCRIPTION. The default is "Duration".
+    ReturnPeriodPrefix : [string], optional
+        DESCRIPTION. The default is "ReturnPeriod".
+    Compressed : [boolen], optional
+        DESCRIPTION. The default is True.
+    OneDResultPath : [string], optional
+        DESCRIPTION. The default is ''.
+    TwoDResultPath : [string], optional
+        DESCRIPTION. The default is ''.
 
+    Returns
+    -------
+    None.
 
     """
     # class attributes
@@ -29,6 +65,45 @@ class River():
                  RightOvertopping_Suffix = "_right.txt", DepthPrefix = "DepthMax",
                  DurationPrefix = "Duration", ReturnPeriodPrefix = "ReturnPeriod",
                  Compressed=True, OneDResultPath='', TwoDResultPath=''):
+        """
+        
+
+        Parameters
+        ----------
+        name : TYPE
+            DESCRIPTION.
+        Version : TYPE, optional
+            DESCRIPTION. The default is 2.
+        start : TYPE, optional
+            DESCRIPTION. The default is "1950-1-1".
+        days : TYPE, optional
+            DESCRIPTION. The default is 36890.
+        RRMstart : TYPE, optional
+            DESCRIPTION. The default is "1950-1-1".
+        RRMdays : TYPE, optional
+            DESCRIPTION. The default is 36890.
+        leftOvertopping_Suffix : TYPE, optional
+            DESCRIPTION. The default is "_left.txt".
+        RightOvertopping_Suffix : TYPE, optional
+            DESCRIPTION. The default is "_right.txt".
+        DepthPrefix : TYPE, optional
+            DESCRIPTION. The default is "DepthMax".
+        DurationPrefix : TYPE, optional
+            DESCRIPTION. The default is "Duration".
+        ReturnPeriodPrefix : TYPE, optional
+            DESCRIPTION. The default is "ReturnPeriod".
+        Compressed : TYPE, optional
+            DESCRIPTION. The default is True.
+        OneDResultPath : TYPE, optional
+            DESCRIPTION. The default is ''.
+        TwoDResultPath : TYPE, optional
+            DESCRIPTION. The default is ''.
+
+        Returns
+        -------
+        None.
+
+        """
         
         self.name = name
         self.Version = Version
@@ -188,10 +263,10 @@ class River():
         """
         if self.Version == 1 or self.Version == 2:
             self.slope = pd.read_csv(Path, delimiter = ",",header = None)
-            self.slope.columns = ['ID','f1','slope','f2']
+            self.slope.columns = ['id','f1','slope','f2']
         else:
             self.slope = pd.read_csv(Path, delimiter = ",",header = None)
-            self.slope.columns = ['ID','slope']
+            self.slope.columns = ['id','slope']
 
     def ReturnPeriod(self,Path):
         """
@@ -316,14 +391,14 @@ class River():
             assert hasattr(self, "rivernetwork"), "Please read the Tracefile.txt with the RiverNetwork method data "
             # filter all the computational nodes in the file to those only
             # exist in the slope attribute (the nodes in the guide file)
-            NewSP = pd.DataFrame(columns = ['ID','loc','scale'])
-            NewSP['ID'] = self.slope['ID']
+            NewSP = pd.DataFrame(columns = ['id','loc','scale'])
+            NewSP['id'] = self.slope['id']
             for i in range(len(self.slope)):
                 # get the location of the USnode in the rivernetwork attribute
-                loc = np.where(self.rivernetwork['SubID'] == self.slope.loc[i,'ID'])[0][0]
+                loc = np.where(self.rivernetwork['SubID'] == self.slope.loc[i,'id'])[0][0]
                 #  get the location of USnode in the SP attribute
                 try:
-                    loc = np.where(self.SP['ID'] == self.rivernetwork.loc[loc,'US'])[0][0]
+                    loc = np.where(self.SP['id'] == self.rivernetwork.loc[loc,'US'])[0][0]
                     NewSP.loc[i,['loc','scale']] = self.SP.loc[loc,['loc','scale']]
                 except:
                     NewSP.loc[i,['loc','scale']] = [-1,-1]
@@ -366,7 +441,7 @@ class River():
         assert hasattr(self, "SP"), "Please read the statistical properties file for the catchment first"
 
         try:
-            loc = np.where(self.SP['ID'] == SubID)[0][0]
+            loc = np.where(self.SP['id'] == SubID)[0][0]
             F = gumbel_r.cdf(Q, loc = self.SP.loc[loc,'loc'],
                          scale = self.SP.loc[loc,'scale'])
             return 1/(1-F)
@@ -378,7 +453,7 @@ class River():
         assert hasattr(self, "SP"), "Please read the statistical properties file for the catchment first"
         F = 1 - (1/T)
         try:
-            loc = np.where(self.SP['ID'] == SubID)[0][0]
+            loc = np.where(self.SP['id'] == SubID)[0][0]
             Q = gumbel_r.ppf(F, loc=self.SP.loc[loc,"loc"],
                              scale=self.SP.loc[loc,"scale"])
             return Q
@@ -560,7 +635,7 @@ class River():
                 print("---------------------------")
 
 
-    def Overtopping(self):
+    def Overtopping(self,OvertoppingResultPath=''):
 
         """
         =====================================================
@@ -596,7 +671,10 @@ class River():
         leftOverTop = list()
         RightOverTop = list()
         # get names of files that has _left or _right at its end
-        All1DFiles = os.listdir(self.OneDResultPath)
+        if OvertoppingResultPath == '':
+            OvertoppingResultPath = self.OneDResultPath
+            
+        All1DFiles = os.listdir(OvertoppingResultPath)
         for i in range(len(All1DFiles)) :
             if All1DFiles[i].endswith(self.leftOvertopping_Suffix):
                 leftOverTop.append(All1DFiles[i])
@@ -692,10 +770,10 @@ class River():
 
         """
         if allEventdays:
-            loc = np.where(self.EventIndex['ID'] == day)[0][0]
+            loc = np.where(self.EventIndex['id'] == day)[0][0]
             # get all the days in the same event before that day as the inundation in the maps may
             # happen due to any of the days before not in this day
-            Eventdays = self.EventIndex.loc[loc - self.EventIndex.loc[loc,'IndDiff'] : loc,'ID'].tolist()
+            Eventdays = self.EventIndex.loc[loc - self.EventIndex.loc[loc,'IndDiff'] : loc,'id'].tolist()
         else:
             Eventdays = [day,]
 
@@ -804,7 +882,7 @@ class River():
         ========================================================
            DetailedOvertopping(floodedSubs,eventdays)
         ========================================================
-        DetailedOvertopping method takes list of days ond the flooded subs-basins
+        DetailedOvertopping method takes list of days and the flooded subs-basins
         in those days and get the left and right overtopping for each sub-basin for
         each day
 
@@ -1359,8 +1437,9 @@ class River():
         Returns
         -------
             1-Message stating whether the given days exist or not, and if not two
-            alternatives are given instead.
-
+            alternatives are given instead (the earliest day before the given day
+                                            and the earliest day after the given 
+                                            day).
         """
 
         data = pd.read_csv(self.OneDResultPath + str(SubID) +'.txt',
@@ -1411,15 +1490,16 @@ class River():
                 Alt1 = Alt2
         else:
             print("FromDay you entered does exist in the data ")
-            Alt1 = False
+            # Alt1 = False
+            Alt1 = FromDay
 
 
-
+        # if ToDay does not exist in the results
         if ToDay not in days:
             Alt3 = ToDay
 
             stop = 0
-            # search for the FromDay in the days column
+            # search for the ToDay in the days column
             while stop == 0:
             # for i in range(0,10):
                 try:
@@ -1458,7 +1538,8 @@ class River():
 
         else:
             print("ToDay you entered does exist in the data ")
-            Alt3 = False
+            # Alt3 = False
+            Alt3 = ToDay
 
 
         return Alt1, Alt3
@@ -2023,9 +2104,9 @@ class Sub(River):
         
         if hasattr(River, 'slope'):
             if self.Version == 1 or self.Version == 2 :
-                self.slope = River.slope[River.slope['ID']==ID]['slope'].tolist()[0]
+                self.slope = River.slope[River.slope['id']==ID]['slope'].tolist()[0]
             else:
-                self.slope = River.slope[River.slope['ID']==ID]['slope'].tolist()[0]
+                self.slope = River.slope[River.slope['id']==ID]['slope'].tolist()[0]
         
         if hasattr(River, "rivernetwork"):
             self.USnode, self.DSnode = River.Trace(ID)
@@ -2033,7 +2114,7 @@ class Sub(River):
         if hasattr(River, 'RP'):
             self.RP = River.RP.loc[River.RP['node'] == self.USnode,['HQ2','HQ10','HQ100']]
         if hasattr(River,"SP"):
-            self.SP = River.SP.loc[River.SP['ID'] == self.ID,:]
+            self.SP = River.SP.loc[River.SP['id'] == self.ID,:]
             self.SP.index = list(range(len(self.SP)))
         
         if hasattr(River,"RRMPath"):
@@ -2541,11 +2622,14 @@ class Sub(River):
         =========================================================
                 DetailedOvertopping(eventdays)
         =========================================================
+        
+        DetailedOvertopping method takes list of days and get the left and right 
+        overtopping for the sub-basin each day
 
         Parameters
         ----------
-        eventdays : TYPE
-            DESCRIPTION.
+            1-eventdays : [list]
+                list od daysof an event.                
 
         Returns
         -------
@@ -2559,6 +2643,7 @@ class Sub(River):
             4-AllOvertoppingVSTime:
 
         """
+        
         # River.DetailedOvertopping(self, [self.ID], eventdays)
         XSs = self.crosssections.loc[:,'xsid'].tolist()
         columns = [self.ID] + XSs + ['sum']
@@ -2634,7 +2719,7 @@ class Sub(River):
         self.AllOvertoppingVSXS = self.DetailedOvertoppingLeft.loc['sum', XSs] + self.DetailedOvertoppingRight.loc['sum', XSs]
 
         self.AllOvertoppingVSTime = pd.DataFrame()
-        self.AllOvertoppingVSTime['ID']  = eventdays
+        self.AllOvertoppingVSTime['id']  = eventdays
         self.AllOvertoppingVSTime.loc[:,'Overtopping'] = (self.DetailedOvertoppingLeft.loc[eventdays, 'sum'] + self.DetailedOvertoppingRight.loc[eventdays, 'sum']).tolist()
         self.AllOvertoppingVSTime.loc[:,'date'] = (self.ReferenceIndex.loc[eventdays[0]:eventdays[-1],'date']).tolist()
     # def Read1DResult1Donly(self,Path):
