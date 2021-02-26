@@ -383,7 +383,7 @@ def Soil(temp, inf, ep, sm_old, uz_old, tm, fc, beta, e_corr, lp): #, c_flux
     return sm_new, uz_int_1
 
 
-def Response(tfac, lz_old, uz_int_1, perc, k, k1, k2, uzl):
+def Response(lz_old, uz_int_1, perc, k, k1, k2, uzl): #tfac,
     """
     ============================================================
         Response(tfac, perc, k, k1, k2, uzl, area, lz_old, uz_int_1)
@@ -551,7 +551,7 @@ def TriangularRouting(q, maxbas=1):
     return q_r
 
 
-def StepRun(p, p2, v, St, snow=0):
+def StepRun(p, v, St, snow=0):#p2,
     """
     ============================================================
         StepRun(p, p2, v, St, snow=0)
@@ -629,8 +629,8 @@ def StepRun(p, p2, v, St, snow=0):
         perc = p[10]
 
     ## Non optimisable parameters
-    tfac = p2[0]
-    area = p2[1]
+    # tfac = p2[0]
+    # area = p2[1]
 
     ## Parse of Inputs
     prec = v[0] # Precipitation [mm]
@@ -653,14 +653,14 @@ def StepRun(p, p2, v, St, snow=0):
     sm_new, uz_int_1 = Soil(temp, inf, ep, sm_old, uz_old, tm,
                             fc, beta, e_corr, lp, c_flux)
 
-    q_uz, q_lz, uz_new, lz_new = Response(tfac, lz_old, uz_int_1,
+    q_uz, q_lz, uz_new, lz_new = Response(lz_old, uz_int_1, #tfac,
                                           perc, k, k1, k2, uzl)
 
 #    return q_new, [sp_new, sm_new, uz_new, lz_new, wc_new], uz_int_2, lz_int_1
     return q_uz, q_lz, [sp_new, sm_new, uz_new, lz_new, wc_new]
 
 
-def Simulate(prec, temp, et, par, p2, init_st=None, ll_temp=None,
+def Simulate(prec, temp, et, par, init_st=None, ll_temp=None, # p2,
              q_init=None, snow=0):
     """
     ================================================================
@@ -704,8 +704,8 @@ def Simulate(prec, temp, et, par, p2, init_st=None, ll_temp=None,
     ### inputs validation
     # data type
     assert len(init_st) == 5, "state variables are 5 and the given initial values are "+str(len(init_st))
-    assert type(p2) == list, " p2 should be of type list"
-    assert len(p2) == 2, "p2 should contains tfac and catchment area"
+    # assert type(p2) == list, " p2 should be of type list"
+    # assert len(p2) == 2, "p2 should contains tfac and catchment area"
     assert snow == 0 or snow == 1, " snow input defines whether to consider snow subroutine or not it has to be 0 or 1"
 
     if init_st is None:#   0  1  2  3  4  5
@@ -740,7 +740,7 @@ def Simulate(prec, temp, et, par, p2, init_st=None, ll_temp=None,
 
     for i in range(len(prec)):
         v = [prec[i], temp[i], et[i], ll_temp[i]]
-        q_uzi, q_lzi, st_out = StepRun(par, p2, v, st[i], snow=0)
+        q_uzi, q_lzi, st_out = StepRun(par, v, st[i], snow=0) # p2,
         q_uz.append(q_uzi)
         q_lz.append(q_lzi)
         st.append(st_out)
