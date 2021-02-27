@@ -5,14 +5,13 @@ Created on Wed Jun 27 19:17:15 2018
 """
 #library
 import numpy as np
-import gdal
-# from types import ModuleType
+# import gdal
 
 # functions
 from Hapi.raster import Raster as raster
 #import HBV
 from Hapi.routing import Routing as routing
-from Hapi.giscatchment import GISCatchment as GC
+# from Hapi.giscatchment import GISCatchment as GC
 
 class DistributedRRM():
 
@@ -122,7 +121,7 @@ class DistributedRRM():
                                                                      temp = Model.Temp[x, y,:],
                                                                      et = Model.ET[x, y,:],
                                                                      par = Model.Parameters[x, y, :],
-                                                                     p2 = [Model.TemporalRsolution, Model.AreaCoeff],
+                                                                     # p2 = [Model.Timef, Model.AreaCoeff],
                                                                      init_st = Model.InitialCond,
                                                                      ll_temp = None,
                                                                      q_init = q_init,
@@ -164,14 +163,14 @@ class DistributedRRM():
         q_uz = np.array(q_uz)
         # convert quz from mm/time step to m3/sec
         area_coef = Model.AreaCoeff/Model.px_tot_area
-        q_uz=q_uz*Model.px_area*area_coef/(Model.TemporalRsolution*3.6)
+        q_uz=q_uz*Model.px_area*area_coef/(Model.Timef*3.6)
 
     #    # convert QLZ to 1D time series
     #    q_lz = np.array([np.nanmean(q_lz[:,:,i]) for i in range(n_steps)]) # average of all cells (not routed mm/timestep)
     #    # convert Qlz to m3/sec
-    #    q_lz = q_lz* p2[1]/ (Model.TemporalRsolution*3.6) # generation
+    #    q_lz = q_lz* p2[1]/ (Model.Timef*3.6) # generation
 
-        q_lz=q_lz*Model.px_area*area_coef/(Model.TemporalRsolution*3.6)
+        q_lz=q_lz*Model.px_area*area_coef/(Model.Timefsolution*3.6)
 
         # convert all to float32 to save storage
         q_lz = np.float32(q_lz)
@@ -280,7 +279,7 @@ class DistributedRRM():
                                 y_ind = Model.FDT[str(x)+","+str(y)][i][1]
                                 # sum the Q of the US cells (already routed for its cell)
                                 # route first with there own k & xthen sum
-                                q_r = q_r + routing.muskingum(q_uz_routed[x_ind,y_ind,:],q_uz_routed[x_ind,y_ind,0],Model.Parameters[x_ind,y_ind,10],Model.Parameters[x_ind,y_ind,11],Model.TemporalRsolution)
+                                q_r = q_r + routing.muskingum(q_uz_routed[x_ind,y_ind,:],q_uz_routed[x_ind,y_ind,0],Model.Parameters[x_ind,y_ind,10],Model.Parameters[x_ind,y_ind,11],Model.Timef)
                                 q= q + q_lz_translated[x_ind,y_ind,:]
 
                             # add the routed upstream flows to the current Quz in the cell

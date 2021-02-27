@@ -225,8 +225,8 @@ class Wrapper():
                                                      ll_temp = tm,
                                                      q_init = None,
                                                      snow = Model.Snow)
-        q_uz = q_uz*Model.AreaCoeff/(Model.TemporalRsolution*3.6) # q mm , area sq km  (1000**2)/1000/f/60/60 = 1/(3.6*f)
-        q_lz = q_lz*Model.AreaCoeff/(Model.TemporalRsolution*3.6) # if daily tfac=24 if hourly tfac=1 if 15 min tfac=0.25
+        q_uz = q_uz*Model.AreaCoeff/(Model.Timef*3.6) # q mm , area sq km  (1000**2)/1000/f/60/60 = 1/(3.6*f)
+        q_lz = q_lz*Model.AreaCoeff/(Model.Timef*3.6) # if daily tfac=24 if hourly tfac=1 if 15 min tfac=0.25
 
         q_sim = q_uz + q_lz
 
