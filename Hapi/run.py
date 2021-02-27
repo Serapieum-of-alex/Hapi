@@ -31,20 +31,9 @@ from Hapi.giscatchment import GISCatchment as GC
 
 class Model():
 
-    def __init__(self, name, start, end, fmt="%Y-%m-%d", SpatialR = 'Lumped'):
+    def __init__(self, name, start, end, fmt="%Y-%m-%d", SpatialResolution = 'Lumped',
+                 TemporalResolution = "Daily"):
         """
-
-
-        Parameters
-        ----------
-        name : TYPE
-            DESCRIPTION.
-        start : TYPE
-            DESCRIPTION.
-        end : TYPE
-            DESCRIPTION.
-        fmt : TYPE, optional
-            DESCRIPTION. The default is "%Y-%m-%d".
         SpatialR : TYPE, optional
             Spatial Resolution "Distributed" or "Lumped". The default is 'Lumped'.
 
@@ -56,7 +45,13 @@ class Model():
         self.name = name
         self.start = dt.datetime.strptime(start,fmt)
         self.end = dt.datetime.strptime(end,fmt)
-        self.SpatialR = SpatialR
+        self.SpatialResolution = SpatialResolution
+        self.TemporalResolution = TemporalResolution
+        if TemporalResolution == "Daily":
+            self.Timef = 24
+        else:
+            #TODO calculate the teporal resolution factor
+            self.Tfactor = 24
         pass
 
     def ReadRainfall(self,Path):
@@ -158,7 +153,7 @@ class Model():
         print("Flow Direction inputs is read successfully")
 
     def ReadParameters(self,Path):
-        if self.SpatialR == 'Distributed':
+        if self.SpatialResolution == 'Distributed':
             # data type
             assert type(Path) == str, "PrecPath input should be string type"
             # check wether the path exists or not
@@ -171,7 +166,7 @@ class Model():
             self.Parameters = pd.read_csv(Path, index_col = 0, header = None)[1].tolist()
 
 
-    def ReadLumpedModel(self, LumpedModel, AreaCoeff, InitialCond, Snow,TemporalRsolution):
+    def ReadLumpedModel(self, LumpedModel, AreaCoeff, InitialCond, Snow):
         assert isinstance(LumpedModel,ModuleType) , "ConceptualModel should be a module or a python file contains functions "
         self.LumpedModel = LumpedModel
         self.AreaCoeff = AreaCoeff
@@ -180,7 +175,6 @@ class Model():
             assert type(self.InitialCond)==list, "init_st should be of type list"
 
         self.Snow = Snow
-        self.TemporalRsolution = TemporalRsolution
 
     def ReadLumpedInputs(self,Path):
         self.data = pd.read_csv(Path,header=0 ,delimiter=',',#"\t", #skiprows=11,
@@ -188,6 +182,40 @@ class Model():
         self.data = self.data.values
         assert np.shape(self.data)[1] == 3 or np.shape(self.data)[1] == 4," meteorological data should be of length at least 3 (prec, ET, temp) or 4(prec, ET, temp, tm) "
 
+    def ReadGaugeTable(self, Path):
+        self.GaugesTable = pd.read_csv(Path)
+
+        # coordinates = stations[['id','x','y','weight']][:]
+        if hasattr(self, 'FlowAcc'):
+            # calculate the nearest cell to each station
+            self.GaugesTable.loc[:,["cell_row","cell_col"]] = GC.NearestCell(self.FlowAcc,self.GaugesTable[['id','x','y','weight']][:])
+
+    def ReadDischargeGauges(self, Path, delimiter=",", column='id',fmt="%Y-%m-%d"):
+
+        if self.SpatialResolution == "Distributed":
+            assert hasattr(self, 'GaugesTable'), 'please read the gauges table first'
+
+            ind = pd.date_range(self.start, self.end)
+            self.QGauges = pd.DataFrame(index=ind, columns = self.GaugesTable[column].tolist())
+
+            for i in range(len(self.GaugesTable)):
+                name = self.GaugesTable.loc[i,'id']
+                f = pd.read_csv(Path + str(name) + '.csv', header=0, index_col=0, delimiter=delimiter)# ,#delimiter="\t", skiprows=11,
+
+                f.index = [ dt.datetime.strptime(i,fmt) for i in f.index.tolist()]
+
+                self.QGauges[int(name)] = f.loc[self.start:self.end,f.columns[0]]
+        else:
+            ind = pd.date_range(self.start, self.end)
+            self.QGauges = pd.DataFrame(index=ind)
+            f = pd.read_csv(Path, header=0, index_col=0, delimiter=delimiter)# ,#delimiter="\t", skiprows=11,
+            f.index = [ dt.datetime.strptime(i,fmt) for i in f.index.tolist()]
+            self.QGauges[f.columns[0]] = f.loc[self.start:self.end,f.columns[0]]
+
+    def ReadParametersBounds(self, UB, LB):
+        assert len(UB)==len(LB), "length of UB should be the same like LB"
+        self.UB = np.array(UB)
+        self.LB = np.array(LB)
 
 class Run(Model):
 
@@ -544,6 +572,12 @@ class Run(Model):
             init_st=[0,5,5,5,0]
             snow=0
         """
-        st, q_sim = Wrapper.Lumped(Model, Route, RoutingFn)
+        if Model.TemporalResolution == "Daily":
+            ind = pd.date_range(Model.start, Model.end, freq="D")
+        else:
+            ind = pd.date_range(Model.start, Model.end, freq="H")
 
-        return st, q_sim
+        Model.Qsim = pd.DataFrame(index = ind)
+
+        Model.StateVariables, Model.Qsim[0] = Wrapper.Lumped(Model, Route, RoutingFn)
+

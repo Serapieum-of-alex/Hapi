@@ -16,7 +16,7 @@ runoff at known locations based on given performance function
 #%library
 # import os
 import numpy as np
-import pandas as pd
+# import pandas as pd
 import datetime as dt
 # import gdal
 from Oasis.optimization import Optimization
@@ -27,49 +27,46 @@ from Oasis.hsapi import HSapi
 # functions
 # from Hapi.raster import Raster as raster
 from Hapi.run import Model
-from Hapi.giscatchment import GISCatchment as GC
+# from Hapi.giscatchment import GISCatchment as GC
 #import DistParameters as Dp
 #import PerformanceCriteria as PC
 from Hapi.wrapper import Wrapper
 
 class Calibration(Model):
 
-    def __init__(self, name, start, end, fmt="%Y-%m-%d", SpatialR = 'Lumped'):
+    def __init__(self, name, start, end, fmt="%Y-%m-%d", SpatialResolution = 'Lumped',
+                 TemporalResolution = "Daily"):
+        """
+        SpatialR : TYPE, optional
+            Spatial Resolution "Distributed" or "Lumped". The default is 'Lumped'.
+
+        Returns
+        -------
+        None.
+
+        """
         self.name = name
         self.start = dt.datetime.strptime(start,fmt)
         self.end = dt.datetime.strptime(end,fmt)
-        self.SpatialR = SpatialR
+        self.SpatialResolution = SpatialResolution
+        self.TemporalResolution = TemporalResolution
+        if TemporalResolution == "Daily":
+            self.Timef = 24
+        else:
+            #TODO calculate the temporal resolution factor
+            self.Tfactor = 24
         pass
 
-    def ReadParametersBounds(self, UB, LB):
-        assert len(UB)==len(LB), "length of UB should be the same like LB"
-        self.UB = np.array(UB)
-        self.LB = np.array(LB)
 
-    def ReadGaugeTable(self, Path):
-        self.GaugesTable = pd.read_csv(Path)
+    def ReadObjectiveFn(self,OF,args):
+        # check objective_function
+        assert callable(OF) , "The Objective function should be a function"
+        self.OF = OF
 
-        # coordinates = stations[['id','x','y','weight']][:]
-        if hasattr(self, 'FlowAcc'):
-            # calculate the nearest cell to each station
-            self.GaugesTable.loc[:,["cell_row","cell_col"]] = GC.NearestCell(self.FlowAcc,self.GaugesTable[['id','x','y','weight']][:])
+        if args == None :
+            args = []
 
-    def ReadDischargeGauges(self, Path, delimiter=",", column='id',fmt="%Y-%m-%d"):
-
-        assert hasattr(self, 'GaugesTable'), 'please read the gauges table first'
-
-        ind = pd.date_range(self.start, self.end)
-        self.QGauges = pd.DataFrame(index=ind, columns = self.GaugesTable[column].tolist())
-
-        for i in range(len(self.GaugesTable)):
-            name = self.GaugesTable.loc[i,'id']
-            f = pd.read_csv(Path + str(name) + '.csv', header=0, index_col=0, delimiter=delimiter)# ,#delimiter="\t", skiprows=11,
-
-            f.index = [ dt.datetime.strptime(i,fmt) for i in f.index.tolist()]
-
-            self.QGauges[int(name)] = f.loc[self.start:self.end,f.columns[0]]
-
-
+        self.OFArgs = args
 
     def RunCalibration(self, SpatialVarFun, SpatialVarArgs,
                        OF, OF_args, OptimizationArgs, printError=None):
@@ -84,19 +81,6 @@ class Calibration(Model):
         ----------
             1-ConceptualModel:
                 [function] conceptual model and it should contain a function called simulate
-            1-Paths:
-                1-PrecPath:
-                    [String] path to the Folder contains precipitation rasters
-                2-Evap_Path:
-                    [String] path to the Folder contains Evapotranspiration rasters
-                3-TempPath:
-                    [String] path to the Folder contains Temperature rasters
-                4-FlowAccPath:
-                    [String] path to the Flow Accumulation raster of the catchment (it should
-                    include the raster name and extension)
-                5-FlowDPath:
-                    [String] path to the Flow Direction raster of the catchment (it should
-                    include the raster name and extension)
 
             2-Basic_inputs:
                 1-p2:
@@ -163,20 +147,6 @@ class Calibration(Model):
         # check if all inputs are included
         # assert all(["p2","init_st","UB","LB","snow "][i] in Basic_inputs.keys() for i in range(4)), "Basic_inputs should contain ['p2','init_st','UB','LB'] "
 
-        # p2 = Basic_inputs['p2']
-        # init_st = Basic_inputs["init_st"]
-        # UB = Basic_inputs['UB']
-        # LB = Basic_inputs['LB']
-        # snow = Basic_inputs['snow']
-
-
-        # check objective_function
-        assert callable(OF) , "second argument should be a function"
-
-        if OF_args== None :
-            OF_args=[]
-
-
         ### optimization
 
         # get arguments
@@ -196,7 +166,7 @@ class Calibration(Model):
                 kub=float(par[-1])
                 par=par[:-2]
 
-                Model.Parameters = SpatialVarFun(par,*SpatialVarArgs,kub=kub,klb=klb)
+                self.Parameters = SpatialVarFun(par,*SpatialVarArgs,kub=kub,klb=klb)
 
 
                 #run the model
@@ -204,7 +174,7 @@ class Calibration(Model):
 
                 # calculate performance of the model
                 try:
-                    error=OF(self.QGauges,q_out,q_uz_routed,q_lz_trans,*[self.GaugesTable])
+                    error = self.OF(self.QGauges,q_out,q_uz_routed,q_lz_trans,*[self.GaugesTable])
                 except TypeError: # if no of inputs less than what the function needs
                     assert 1==5, "the objective function you have entered needs more inputs please enter then in a list as *args"
 
@@ -239,11 +209,13 @@ class Calibration(Model):
         res = opt_engine(opt_prob, store_sol=store_sol, display_opts=display_opts,
                          store_hst=store_hst, hot_start=hot_start)
 
+        self.Parameters = res[1]
+        self.OFvalue = res[0]
+
         return res
 
-    @staticmethod
-    def LumpedCalibration(ConceptualModel, data, Basic_inputs, OF, OF_args, Q_obs,
-                          OptimizationArgs, printError=None):
+
+    def LumpedCalibration(self, Basic_inputs, OptimizationArgs, printError=None):
         """
         =======================================================================
             RunCalibration(ConceptualModel, data,parameters, p2, init_st, snow, Routing=0, RoutingFn=[], objective_function, printError=None, *args):
@@ -309,34 +281,14 @@ class Calibration(Model):
             st, q_out, q_uz_routed = RunModel(PrecPath,Evap_Path,TempPath,DemPath,
                                               FlowAccPath,FlowDPath,ParPath,p2)
         """
-        ### inputs validation
-        # data type
-
-
-
-        # input values
-
         # basic inputs
         # check if all inputs are included
-        assert all(["p2","init_st","UB","LB","snow","Routing","RoutingFn"][i] in Basic_inputs.keys() for i in range(4)), "Basic_inputs should contain ['p2','init_st','UB','LB'] "
+        assert all(["Route","RoutingFn", "InitialValues"][i] in Basic_inputs.keys() for i in range(3)), "Basic_inputs should contain ['p2','init_st','UB','LB'] "
 
-        p2 = Basic_inputs['p2']
-        init_st = Basic_inputs["init_st"]
-        UB = Basic_inputs['UB']
-        LB = Basic_inputs['LB']
-        snow = Basic_inputs['snow']
-        Routing = Basic_inputs["Routing"]
+        Route = Basic_inputs["Route"]
         RoutingFn = Basic_inputs["RoutingFn"]
         if 'InitialValues' in Basic_inputs.keys():
             InitialValues = Basic_inputs['InitialValues']
-
-        assert len(UB)==len(LB), "length of UB should be the same like LB"
-
-        # check objective_function
-        assert callable(OF) , "second argument should be a function"
-
-        if OF_args== None :
-            OF_args=[]
 
         ### optimization
 
@@ -355,14 +307,13 @@ class Calibration(Model):
         def opt_fun(par):
             try:
                 # parameters
-
+                self.Parameters = par
                 #run the model
-                _, q_out = Wrapper.Lumped(ConceptualModel,data,par,p2,init_st,
-                                   snow,Routing, RoutingFn)
+                _, q_out = Wrapper.Lumped(self, Route, RoutingFn)
 
                 # calculate performance of the model
                 try:
-                    error=OF(Q_obs,q_out,*OF_args)
+                    error = self.OF(self.QGauges[self.QGauges.columns[0]],q_out,*self.OFArgs)
                 except TypeError: # if no of inputs less than what the function needs
                     assert 1==5, "the objective function you have entered needs more inputs please enter then in a list as *args"
 
@@ -381,8 +332,8 @@ class Calibration(Model):
         ### define the optimization components
         opt_prob = Optimization('HBV Calibration', opt_fun)
 
-        for i in range(len(LB)):
-            opt_prob.addVar('x{0}'.format(i), type='c', lower=LB[i], upper=UB[i], value=InitialValues[i])
+        for i in range(len(self.LB)):
+            opt_prob.addVar('x{0}'.format(i), type='c', lower=self.LB[i], upper=self.UB[i], value=InitialValues[i])
 
         print(opt_prob)
 
@@ -405,5 +356,7 @@ class Calibration(Model):
         res = opt_engine(opt_prob, store_sol=store_sol, display_opts=display_opts,
                          store_hst=store_hst, hot_start=hot_start)
 
+        self.Parameters = res[1]
+        self.OFvalue = res[0]
 
         return res
