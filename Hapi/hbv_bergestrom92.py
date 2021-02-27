@@ -167,7 +167,7 @@ def Snow(temp, rf, sf, wc_old, sp_old, tt, cfmax, cfr, cwh):
 
 
 
-def Soil(temp, inf, ep, sm_old, uz_old, tm, fc, beta, e_corr, lp): #, c_flux
+def Soil(temp, inf, ep, sm_old, uz_old, tm, fc, beta, e_corr, lp):
     """
     ============================================================
         Soil(fc, beta, temp, tm, e_corr, lp, c_flux, inf, ep, sm_old, uz_old)
@@ -370,7 +370,6 @@ def Routing(q, maxbas=1):
     """
     assert maxbas >= 1, 'Maxbas value has to be larger than 1'
     # Get integer part of maxbas
-#    maxbas = int(maxbas)
     maxbas = int(round(maxbas,0))
 
     # get the weights
@@ -386,7 +385,7 @@ def Routing(q, maxbas=1):
     return q_r
 
 
-def StepRun(p, v, St, snow=0): #p2,
+def StepRun(p, v, St, snow=0):
     """
     ============================================================
         StepRun(p, p2, v, St, snow=0)
@@ -433,7 +432,6 @@ def StepRun(p, v, St, snow=0): #p2,
         beta = p[7]
         e_corr =[8]
         lp =p[9]
-        # c_flux =p[10]
         # response function
         k = p[10]
         k1 = p[11]
@@ -455,17 +453,12 @@ def StepRun(p, v, St, snow=0): #p2,
         beta = p[2]
         e_corr =p[3]
         lp =p[4]
-        # c_flux =p[5]
         # response function
         k = p[5]
         k1 = p[6]
         k2 = p[7]
         uzl = p[8]
         perc = p[9]
-
-    ## Non optimisable parameters
-    # tfac = p2[0]
-    # area = p2[1]
 
     ## Parse of Inputs
     prec = v[0] # Precipitation [mm]
@@ -485,8 +478,6 @@ def StepRun(p, v, St, snow=0): #p2,
     inf, wc_new, sp_new = Snow(temp, rf, sf, wc_old, sp_old,
                                tt, cfmax, cfr, cwh)
 
-    # sm_new, uz_int_1 = Soil(temp, inf, ep, sm_old, uz_old, tm,
-                            # fc, beta, e_corr, lp, c_flux)
     sm_new, uz_int_1 = Soil(temp, inf, ep, sm_old, uz_old, tm,
                             fc, beta, e_corr, lp)
 
@@ -497,7 +488,7 @@ def StepRun(p, v, St, snow=0): #p2,
     return q_uz, q_lz, [sp_new, sm_new, uz_new, lz_new, wc_new]
 
 
-def Simulate(prec, temp, et, par, init_st=None, ll_temp=None, #p2,
+def Simulate(prec, temp, et, par, init_st=None, ll_temp=None,
              q_init=None, snow=0):
     """
     ================================================================
@@ -541,8 +532,6 @@ def Simulate(prec, temp, et, par, init_st=None, ll_temp=None, #p2,
     ### inputs validation
     # data type
     assert len(init_st) == 5, "state variables are 5 and the given initial values are "+str(len(init_st))
-    # assert type(p2) == list, " p2 should be of type list"
-    # assert len(p2) == 2, "p2 should contains tfac and catchment area"
     assert snow == 0 or snow == 1, " snow input defines whether to consider snow subroutine or not it has to be 0 or 1"
 
     if init_st is None:#   0  1  2  3  4  5
@@ -577,7 +566,7 @@ def Simulate(prec, temp, et, par, init_st=None, ll_temp=None, #p2,
 
     for i in range(len(prec)):
         v = [prec[i], temp[i], et[i], ll_temp[i]]
-        q_uzi, q_lzi, st_out = StepRun(par, v, st[i], snow=0) #p2,
+        q_uzi, q_lzi, st_out = StepRun(par, v, st[i], snow=0)
         q_uz.append(q_uzi)
         q_lz.append(q_lzi)
         st.append(st_out)
