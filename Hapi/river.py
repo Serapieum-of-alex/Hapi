@@ -1416,7 +1416,7 @@ class River():
 
 
 
-    def GetDays(self,FromDay,ToDay,SubID):
+    def GetDays(self,FromDay,ToDay):
         """
         ========================================================
             GetDays(FromDay,ToDay)
@@ -1442,7 +1442,7 @@ class River():
                                             day).
         """
 
-        data = pd.read_csv(self.OneDResultPath + str(SubID) +'.txt',
+        data = pd.read_csv(self.OneDResultPath + str(self.ID) +'.txt',
                                header =None,delimiter = r'\s+')
         data.columns=["day" , "hour", "xs", "q", "h", "wl"]
         days = list(set(data['day']))
@@ -1525,6 +1525,7 @@ class River():
                     Alt4 = Alt4 + 1
                     # print(Alt2)
                     if Alt4 >= data.loc[len(data)-1,'day']:
+                        Alt4 = data.loc[len(data)-1,'day']
                         stop = 1
                     continue
             # Alt3 = [Alt3, Alt4]
