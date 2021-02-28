@@ -3,15 +3,10 @@ Created on Wed Jun 27 19:17:15 2018
 
 @author: Mostafa
 """
-#library
-import numpy as np
-# import gdal
 
-# functions
+import numpy as np
 from Hapi.raster import Raster as raster
-#import HBV
 from Hapi.routing import Routing as routing
-# from Hapi.giscatchment import GISCatchment as GC
 
 class DistributedRRM():
 
@@ -87,100 +82,39 @@ class DistributedRRM():
                                    init_st=init_st)
         """
         ### input data validation
-        # data type
-        # assert type(Raster)==gdal.Dataset, "Raster should be read using gdal (gdal dataset please read it using gdal library) "
-
-        # if init_st != None:
-        #     assert type(init_st)==list, "init_st should be of type list"
         if ll_temp != None:
             assert type(ll_temp)==np.ndarray, "init_st should be of type list"
         if q_init != None:
             assert type(q_init)==float, "init_st should be of type list"
 
+        Model.StateVariables = np.empty([Model.rows,Model.cols,Model.TS,5], dtype=np.float32)
+        Model.StateVariables[:] = np.nan
+        Model.q_uz = np.empty([Model.rows,Model.cols, Model.TS], dtype=np.float32)
+        Model.q_uz[:] = np.nan
+        Model.q_lz = np.empty([Model.rows,Model.cols, Model.TS], dtype=np.float32)
+        Model.q_lz[:] = np.nan
 
-        # intiialise vector of nans to fill states
-        dummy_states = np.empty([Model.TS, 5]) # [sp,sm,uz,lz,wc]
-        dummy_states[:] = np.nan
-        dummy_states=np.float32(dummy_states)
-
-
-        st = []  # Spatially distributed states
-        q_lz = []
-        q_uz = []
-        # no of rows
         for x in range(Model.rows):
-            st_row = []
-            q_lz_row = []
-            q_uz_row = []
-            # no of columns
             for y in range(Model.cols):
                 if Model.FlowAccArr [x, y] != Model.NoDataValue:  # only for cells in the domain
-                    # Calculate the states per cell
-                    try:
-                        uzg, lzg,  stvar  = Model.LumpedModel.Simulate(prec = Model.Prec[x, y,:],
+                        Model.q_uz[x,y,:], Model.q_lz[x,y,:], Model.StateVariables[x,y,:,:] = Model.LumpedModel.Simulate(prec = Model.Prec[x, y,:],
                                                                      temp = Model.Temp[x, y,:],
                                                                      et = Model.ET[x, y,:],
                                                                      par = Model.Parameters[x, y, :],
-                                                                     # p2 = [Model.Timef, Model.AreaCoeff],
                                                                      init_st = Model.InitialCond,
                                                                      ll_temp = None,
                                                                      q_init = q_init,
                                                                      snow=Model.Snow)
-                    except:
-                        print("conceptual model argument are not correct")
 
-                    # append column after column in the same row
-    #                st_i.append(np.array(_st))
-                    st_row.append(stvar)
-
-                    # calculate upper zone Q = k*(UZ_int_3)**(1+alpha)
-    #                q_uz_temp = np.array(sp_pars[x, y, 5])*(np.power(_uzg, (1.0 + sp_pars[x, y, 7])))
-    #                q_uzi.append(q_uz_temp)
-                    q_uz_row.append(uzg)
-
-                    #calculate lower zone Q = K1*(LZ_int_1)
-    #                q_lz_temp=np.array(sp_pars[x, y, 6])*_lzg
-    #                q_lzi.append(q_lz_temp)
-                    q_lz_row.append(lzg)
-
-        #                print("total = "+str(fff)+"/"+str(tot_elem)+" cell, row= "+str(x+1)+" column= "+str(y+1) )
-
-                else: # if the cell is novalue-------------------------------------
-                    # Fill the empty cells with a nan vector
-                    st_row.append(dummy_states) # fill all states(5 states) for all time steps = nan
-                    q_lz_row.append(dummy_states[:,0]) # q lower zone =nan  for all time steps = nan
-                    q_uz_row.append(dummy_states[:,0]) # q upper zone =nan  for all time steps = nan
-
-        # store row by row-------- ----------------------------------------------------
-        #        st.append(st_i) # state variables
-            st.append(st_row) # state variables
-            q_lz.append(q_lz_row) # lower zone discharge mm/timestep
-            q_uz.append(q_uz_row) # upper zone routed discharge mm/timestep
-        #------------------------------------------------------------------------------
-        # convert to arrays
-        st = np.array(st)
-        q_lz = np.array(q_lz)
-        q_uz = np.array(q_uz)
-        # convert quz from mm/time step to m3/sec
         area_coef = Model.AreaCoeff/Model.px_tot_area
-        q_uz=q_uz*Model.px_area*area_coef/(Model.Timef*3.6)
-
-    #    # convert QLZ to 1D time series
-    #    q_lz = np.array([np.nanmean(q_lz[:,:,i]) for i in range(n_steps)]) # average of all cells (not routed mm/timestep)
-    #    # convert Qlz to m3/sec
-    #    q_lz = q_lz* p2[1]/ (Model.Timef*3.6) # generation
-
-        q_lz=q_lz*Model.px_area*area_coef/(Model.Timefsolution*3.6)
-
-        # convert all to float32 to save storage
-        q_lz = np.float32(q_lz)
-        q_uz = np.float32(q_uz)
-        st = np.float32(st)
-        return st, q_lz, q_uz
+        # convert quz from mm/time step to m3/sec
+        Model.q_uz = Model.q_uz*Model.px_area*area_coef/(Model.Timef*3.6)
+        # convert Qlz to m3/sec
+        Model.q_lz = Model.q_lz*Model.px_area*area_coef/(Model.Timef*3.6)
 
 
     @staticmethod
-    def SpatialRouting(Model, q_lz, q_uz):
+    def SpatialRouting(Model):
         """
         ====================================================================
           SpatialRouting(q_lz,q_uz,flow_acc,flow_direct,sp_pars,p2)
@@ -235,10 +169,7 @@ class DistributedRRM():
             q_out, q_uz_routed, q_lz_trans = DistRRM.SpatialRouting(q_lz, q_uz,
                                                                     flow_acc,flow_direct,sp_par,p2)
         """
-
-        n_steps = np.shape(q_lz)[2] #len(q_lz)
-
-    #    #%% routing lake discharge with DS cell k & x and adding to cell Q
+    #    # routing lake discharge with DS cell k & x and adding to cell Q
     #    q_lake=Routing.muskingum(q_lake,q_lake[0],sp_pars[lakecell[0],lakecell[1],10],sp_pars[lakecell[0],lakecell[1],11],p2[0])
     #    q_lake=np.append(q_lake,q_lake[-1])
     #    # both lake & Quz are in m3/s
@@ -246,21 +177,20 @@ class DistributedRRM():
     #    q_uz[lakecell[0],lakecell[1],:]=q_uz[lakecell[0],lakecell[1],:]+q_lake
 
         ### cells at the divider
-        q_uz_routed=np.zeros_like(q_uz)*np.nan
-
+        q_uz_routed=np.zeros_like(Model.q_uz)*np.nan
         """
         lower zone discharge is going to be just translated without any attenuation
         in order to be able to calculate total discharge (uz+lz) at internal points
         in the catchment
         """
-        q_lz_translated=np.zeros_like(q_uz)*np.nan
+        q_lz_translated=np.zeros_like(Model.q_uz)*np.nan
 
         # for all cell with 0 flow acc put the q_uz
         for x in range(Model.rows): # no of rows
             for y in range(Model.cols): # no of columns
                 if Model.FlowAccArr [x, y] != Model.NoDataValue and Model.FlowAccArr [x, y]==0:
-                    q_uz_routed[x,y,:]=q_uz[x,y,:]
-                    q_lz_translated[x,y,:]=q_lz[x,y,:]
+                    q_uz_routed[x,y,:]= Model.q_uz[x,y,:]
+                    q_lz_translated[x,y,:]= Model.q_lz[x,y,:]
 
         ### remaining cells
         for j in range(1,len(Model.acc_val)): #2):#
@@ -269,9 +199,9 @@ class DistributedRRM():
                         # check from total flow accumulation
                         if Model.FlowAccArr [x, y] != Model.NoDataValue and Model.FlowAccArr[x, y] == Model.acc_val[j]:
                             # for UZ
-                            q_r=np.zeros(n_steps)
+                            q_r=np.zeros(Model.TS)
                             # for lz
-                            q=np.zeros(n_steps)
+                            q=np.zeros(Model.TS)
                             # iterate to route uz and translate lz
                             for i in range(len(Model.FDT[str(x)+","+str(y)])): #  Model.acc_val[j]
                                 # bring the indexes of the us cell
@@ -283,8 +213,8 @@ class DistributedRRM():
                                 q= q + q_lz_translated[x_ind,y_ind,:]
 
                             # add the routed upstream flows to the current Quz in the cell
-                            q_uz_routed[x,y,:]=q_uz[x,y,:]+q_r
-                            q_lz_translated[x,y,:]=q_lz[x,y,:]+q
+                            q_uz_routed[x,y,:] = Model.q_uz[x,y,:] + q_r
+                            q_lz_translated[x,y,:] = Model.q_lz[x,y,:] + q
 
 
         outletx = Model.Outlet[0][0]
