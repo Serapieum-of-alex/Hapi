@@ -152,7 +152,7 @@ class Calibration(Model):
                 kub=float(par[-1])
                 par=par[:-2]
                 SpatialVarFun.Function(par, kub=kub, klb=klb)
-                self.Parameters = SpatialVarFun.par_2d
+                self.Parameters = SpatialVarFun.Par3d
                 #run the model
                 q_out, q_uz_routed, q_lz_trans = Wrapper.HapiModel(self)
                 # calculate performance of the model

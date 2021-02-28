@@ -9,7 +9,7 @@ into rasters
 """
 import numbers
 import numpy as np
-import os
+# import os
 import gdal
 from Hapi.raster import Raster
 from Hapi.giscatchment import GISCatchment as GC
@@ -18,7 +18,7 @@ from Hapi.giscatchment import GISCatchment as GC
 class DistParameters():
 
     def __init__(self, raster, no_parameters, no_lumped_par=0, lumped_par_pos=[],
-                 Lake = 0, Function=1):
+                 Lake = 0, Snow=0, Function=1):
 
         assert type(raster)==gdal.Dataset, "raster should be read using gdal (gdal dataset please read it using gdal library) "
         assert type(no_parameters)==int, " no_parameters should be integer number"
@@ -31,9 +31,11 @@ class DistParameters():
                 assert False ,"you have one or more lumped parameters so the position has to be entered as a list"
 
         self.Lake = Lake
+        self.Snow = Snow
         self.no_lumped_par = no_lumped_par
         self.lumped_par_pos = lumped_par_pos
         # read the raster
+        self.raster = raster
         self.raster_A = raster.ReadAsArray()
         # get the shape of the raster
         self.rows = raster.RasterYSize
@@ -46,16 +48,16 @@ class DistParameters():
         self.no_parameters = no_parameters
 
         # store the indeces of the non-empty cells
-        self.celli=[]#np.ones((no_elem,2))
+        self.celli=[]
         self.cellj=[]
-        for i in range(self.rows): # rows
-            for j in range(self.cols): # columns
+        for i in range(self.rows):
+            for j in range(self.cols):
                 if self.raster_A[i,j] != self.noval:
                     self.celli.append(i)
                     self.cellj.append(j)
 
         # create an empty 3D array [[raster dimension], no_parameters]
-        self.par_2d = np.zeros([self.rows, self.cols, self.no_parameters])*np.nan
+        self.Par3d = np.zeros([self.rows, self.cols, self.no_parameters])*np.nan
 
         if no_lumped_par >= 1:
             # parameters in array
@@ -64,7 +66,8 @@ class DistParameters():
 
         # parameters in array
         # create a 2d array [no_parameters, no_cells]
-        self.par_arr = np.ones((self.no_parameters,self.no_elem))
+        self.Par2d = np.ones((self.no_parameters,self.no_elem))
+
         if Function == 1:
             self.Function = self.par3dLumped
         elif Function == 2:
@@ -167,27 +170,27 @@ class DistParameters():
         # take the parameters from the generated parameters or the 1D list and
         # assign them to each cell
         for i in range(self.no_elem):
-            self.par_arr[:,i] = par_g[i*self.no_parameters:(i*self.no_parameters) + self.no_parameters]
+            self.Par2d[:,i] = par_g[i*self.no_parameters:(i*self.no_parameters) + self.no_parameters]
 
         ### lumped parameters
         if self.no_lumped_par > 0:
             for i in range(self.no_lumped_par):
                 # create a list with the value of the lumped parameter(k1)
                 # (stored at the end of the list of the parameters)
-                pk1 = np.ones((1,self.no_elem))*par_g[(self.no_parameters * np.shape(self.par_arr)[1])+i]
+                pk1 = np.ones((1,self.no_elem))*par_g[(self.no_parameters * np.shape(self.Par2d)[1])+i]
                 # put the list of parameter k1 at the 6 row
-                self.par_arr = np.vstack([self.par_arr[:self.lumped_par_pos[i],:],pk1,self.par_arr[self.lumped_par_pos[i]:,:]])
+                self.Par2d = np.vstack([self.Par2d[:self.lumped_par_pos[i],:],pk1,self.Par2d[self.lumped_par_pos[i]:,:]])
 
         # assign the parameters from the array (no_parameters, no_cells) to
         # the spatially corrected location in par2d
         for i in range(self.no_elem):
-            self.par_2d[self.celli[i],self.cellj[i],:] = self.par_arr[:,i]
+            self.Par3d[self.celli[i],self.cellj[i],:] = self.Par2d[:,i]
 
         # calculate the value of k(travelling time in muskingum based on value of
         # x and the position and upper, lower bound of k value
         if Maskingum == True:
             for i in range(self.no_elem):
-                self.par_2d[self.celli[i],self.cellj[i],-2]= DistParameters.calculateK(self.par_2d[self.celli[i],self.cellj[i],-1],self.par_2d[self.celli[i],self.cellj[i],-2],kub,klb)
+                self.Par3d[self.celli[i],self.cellj[i],-2]= DistParameters.calculateK(self.Par3d[self.celli[i],self.cellj[i],-1],self.Par3d[self.celli[i],self.cellj[i],-2],kub,klb)
 
 
 
@@ -236,18 +239,18 @@ class DistParameters():
         # take the parameters from the generated parameters or the 1D list and
         # assign them to each cell
         for i in range(self.no_elem):
-            self.par_arr[:,i] = par_g
+            self.Par2d[:,i] = par_g
 
         # assign the parameters from the array (no_parameters, no_cells) to
         # the spatially corrected location in par2d
         for i in range(self.no_elem):
-            self.par_2d[self.celli[i],self.cellj[i],:] = self.par_arr[:,i]
+            self.Par3d[self.celli[i],self.cellj[i],:] = self.Par2d[:,i]
 
         # calculate the value of k(travelling time in muskingum based on value of
         # x and the position and upper, lower bound of k value
         if Maskingum == True:
             for i in range(self.no_elem):
-                self.par_2d[self.celli[i],self.cellj[i],-2] = DistParameters.calculateK(self.par_2d[self.celli[i],self.cellj[i],-1],self.par_2d[self.celli[i],self.cellj[i],-2],kub,klb)
+                self.Par3d[self.celli[i],self.cellj[i],-2] = DistParameters.calculateK(self.Par3d[self.celli[i],self.cellj[i],-1],self.Par3d[self.celli[i],self.cellj[i],-2],kub,klb)
 
 
     @staticmethod
@@ -271,8 +274,8 @@ class DistParameters():
             3-LB
                 Lower bound for k parameter
         """
-        constraint1=0.5*1/(1-x) # k has to be smaller than this constraint
-        constraint2=0.5*1/x   # k has to be greater than this constraint
+        constraint1 = 0.5*1/(1-x) # k has to be smaller than this constraint
+        constraint2 = 0.5*1/x   # k has to be greater than this constraint
 
         if constraint2 >= UB : #if constraint is higher than UB take UB
             constraint2 = UB
@@ -310,7 +313,7 @@ class DistParameters():
 
         Output:
         ----------
-            1- par_2d: 3D array of the parameters distributed horizontally on the cells
+            1- Par3d: 3D array of the parameters distributed horizontally on the cells
             2- lake_par: list of the lake parameters.
 
         Example:
@@ -327,35 +330,35 @@ class DistParameters():
         no_parameters = self.no_parameters-1
 
         # create a 2d array [no_parameters, no_cells]
-        self.par_arr = np.ones((no_parameters,self.no_elem))
+        self.Par2d = np.ones((no_parameters,self.no_elem))
 
         # take the parameters from the generated parameters or the 1D list and
         # assign them to each cell
         for i in range(self.no_elem):
-            self.par_arr[:,i] = par_g[i*no_parameters:(i*no_parameters)+no_parameters]
+            self.Par2d[:,i] = par_g[i*no_parameters:(i*no_parameters)+no_parameters]
 
         # create a list with the value of the lumped parameter(k1)
         # (stored at the end of the list of the parameters)
-        pk1 = np.ones((1,self.no_elem))*par_g[(np.shape(self.par_arr)[0]*np.shape(self.par_arr)[1])]
+        pk1 = np.ones((1,self.no_elem))*par_g[(np.shape(self.Par2d)[0]*np.shape(self.Par2d)[1])]
 
         # put the list of parameter k1 at the 6 row
-        self.par_arr = np.vstack([self.par_arr[:6,:],pk1,self.par_arr[6:,:]])
+        self.Par2d = np.vstack([self.Par2d[:6,:],pk1,self.Par2d[6:,:]])
 
         # assign the parameters from the array (no_parameters, no_cells) to
         # the spatially corrected location in par2d
         for i in range(self.no_elem):
-            self.par_2d[self.celli[i],self.cellj[i],:] = self.par_arr[:,i]
+            self.Par3d[self.celli[i],self.cellj[i],:] = self.Par2d[:,i]
 
         # calculate the value of k(travelling time in muskingum based on value of
         # x and the position and upper, lower bound of k value
         for i in range(self.no_elem):
-            self.par_2d[self.celli[i],self.cellj[i],-2]= DistParameters.calculateK(self.par_2d[self.celli[i],self.cellj[i],-1],self.par_2d[self.celli[i],self.cellj[i],-2],kub,klb)
+            self.Par3d[self.celli[i],self.cellj[i],-2]= DistParameters.calculateK(self.Par3d[self.celli[i],self.cellj[i],-1],self.Par3d[self.celli[i],self.cellj[i],-2],kub,klb)
 
         # lake parameters
         self.lake_par = par_g[len(par_g)-no_parameters_lake:]
         self.lake_par[-2] = DistParameters.calculateK(self.lake_par[-1],self.lake_par[-2],kub,klb)
 
-        # return self.par_2d, lake_par
+        # return self.Par3d, lake_par
 
 
     def HRU(self,par_g,kub=1,klb=0.5):
@@ -446,27 +449,27 @@ class DistParameters():
         # take the parameters from the generated parameters or the 1D list and
         # assign them to each cell
         for i in range(no_elem):
-            self.par_arr[:,i] = par_g[i*self.no_parameters:(i*self.no_parameters) + self.no_parameters]
+            self.Par2d[:,i] = par_g[i*self.no_parameters:(i*self.no_parameters) + self.no_parameters]
 
         ### lumped parameters
         if self.no_lumped_par > 0:
             for i in range(self.no_lumped_par):
                 # create a list with the value of the lumped parameter(k1)
                 # (stored at the end of the list of the parameters)
-                pk1 = np.ones((1,self.no_elem))*par_g[(self.no_parameters*np.shape(self.par_arr)[1])+i]
+                pk1 = np.ones((1,self.no_elem))*par_g[(self.no_parameters*np.shape(self.Par2d)[1])+i]
                 # put the list of parameter k1 at the 6 row
-                self.par_arr = np.vstack([self.par_arr[:self.lumped_par_pos[i],:],pk1,self.par_arr[self.lumped_par_pos[i]:,:]])
+                self.Par2d = np.vstack([self.Par2d[:self.lumped_par_pos[i],:],pk1,self.Par2d[self.lumped_par_pos[i]:,:]])
 
         # calculate the value of k(travelling time in muskingum based on value of
         # x and the position and upper, lower bound of k value
         for i in range(no_elem):
-            self.par_arr[-2,i] = DistParameters.calculateK(self.par_arr[-1,i],self.par_arr[-2,i],kub,klb)
+            self.Par2d[-2,i] = DistParameters.calculateK(self.Par2d[-1,i],self.Par2d[-2,i],kub,klb)
 
         # assign the parameters from the array (no_parameters, no_cells) to
         # the spatially corrected location in par2d each soil type will have the same
         # generated parameters
         for i in range(no_elem):
-            self.par_2d[self.raster_A == values[i]] = self.par_arr[:,i]
+            self.Par3d[self.raster_A == values[i]] = self.Par2d[:,i]
 
 
     @staticmethod
@@ -566,9 +569,7 @@ class DistParameters():
         return HAND, DTND
 
 
-    @staticmethod
-    def SaveParameters(DistParFn, raster, Par, No_parameters, no_lumped_par,
-                       lumped_par_pos, snow, kub, klb, Path=None):
+    def SaveParameters(self, Path):
         """
         ============================================================
             SaveParameters(DistParFn, raster, Par, No_parameters, snow, kub, klb, Path=None)
@@ -618,19 +619,19 @@ class DistParameters():
 
             SaveParameters(DistParFn, raster, par, no_parameters,snow ,kub, klb,Path)
         """
-        assert callable(DistParFn), " please check the function to distribute your parameters"
-        assert type(raster)==gdal.Dataset, "raster should be read using gdal (gdal dataset please read it using gdal library) "
-        assert type(Par)==np.ndarray or type(Par)==list, "par_g should be of type 1d array or list"
-        assert type(No_parameters) == int, "No of parameters should be integer"
-        assert isinstance(kub,numbers.Number) , " kub should be a number"
-        assert isinstance(klb,numbers.Number) , " klb should be a number"
-        assert type(Path) == str, "path should be of type string"
-        assert os.path.exists(Path), Path + " you have provided does not exist"
+        # assert callable(DistParFn), " please check the function to distribute your parameters"
+        # assert type(raster)==gdal.Dataset, "raster should be read using gdal (gdal dataset please read it using gdal library) "
+        # assert type(Par)==np.ndarray or type(Par)==list, "par_g should be of type 1d array or list"
+        # assert type(No_parameters) == int, "No of parameters should be integer"
+        # assert isinstance(kub,numbers.Number) , " kub should be a number"
+        # assert isinstance(klb,numbers.Number) , " klb should be a number"
+        # assert type(Path) == str, "path should be of type string"
+        # assert os.path.exists(Path), Path + " you have provided does not exist"
 
-        par2d = DistParFn(Par,raster,No_parameters,no_lumped_par,lumped_par_pos,kub,klb)
+        # par2d = DistParFn(Par,raster,No_parameters,no_lumped_par,lumped_par_pos,kub,klb)
 
         # save
-        if snow == 0: # now snow subroutine
+        if self.Snow == 0: # now snow subroutine
             pnme=["01_rfcf.tif","02_FC.tif", "03_BETA.tif", "04_ETF.tif", "05_LP.tif", "06_CFLUX.tif", "07_K.tif",
                   "08_K1.tif","09_ALPHA.tif", "10_PERC.tif", "11_Kmuskingum.tif", "12_Xmuskingum.tif"]
         else: # there is snow subtoutine
@@ -641,8 +642,8 @@ class DistParameters():
         if Path != None:
             pnme=[Path+i for i in pnme]
 
-        for i in range(np.shape(par2d)[2]):
-            Raster.RasterLike(raster,par2d[:,:,i],pnme[i])
+        for i in range(np.shape(self.Par3d)[2]):
+            Raster.RasterLike(self.raster,self.Par3d[:,:,i],pnme[i])
 
 
     @staticmethod
