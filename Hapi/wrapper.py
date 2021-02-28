@@ -4,28 +4,17 @@ Created on Sun Apr 29 17:17:54 2018
 
 @author: Mostafa
 """
-#%links
-
-
-#%library
 import numpy as np
-import gdal
-from types import ModuleType
-
-# functions
-#import DistParameters
 import Hapi.hbv_lake as hbv_lake
 from Hapi.distrrm import DistributedRRM as distrrm
 from Hapi.routing import Routing as routing
-
 
 class Wrapper():
 
     def __init__(self):
         pass
-
     @staticmethod
-    def HapiModel(Model,ll_temp=None, q_0=None):
+    def HapiModel(Model, ll_temp=None, q_0=None):
         """
         =======================================================================
           Dist_model(DEM,flow_acc,flow_direct,sp_prec,sp_et,sp_temp,sp_par,p2,kub,klb,init_st,ll_temp,q_0)
@@ -82,18 +71,18 @@ class Wrapper():
                 entire time series
         """
         # run the rainfall runoff model separately
-        st, q_lz, q_uz = distrrm.RunLumpedRRP(Model)
+        distrrm.RunLumpedRRP(Model)
 
         # run the GIS part to rout from cell to another
-        q_out, q_uz_routed, q_lz_trans = distrrm.SpatialRouting(Model, q_lz, q_uz)
+        q_out, q_uz_routed, q_lz_trans = distrrm.SpatialRouting(Model)
 
         q_out=q_out[:-1]
 
-        return st, q_out, q_uz_routed, q_lz_trans
+        return q_out, q_uz_routed, q_lz_trans
 
 
     @staticmethod
-    def HapiWithlake(Model,lakeCalibArray,StageDischargeCurve,
+    def HapiWithlake(Model, lakeCalibArray,StageDischargeCurve,
                      LakeParameters,lakecell,lake_initial,ll_temp=None, q_0=None):
 
         plake = lakeCalibArray[:,0]
@@ -122,7 +111,7 @@ class Wrapper():
         q_uz[lakecell[0],lakecell[1],:] = q_uz[lakecell[0],lakecell[1],:] + q_lake
 
         # run the GIS part to rout from cell to another
-        q_out, q_uz_routed, q_lz_trans = distrrm.SpatialRouting(Model, q_lz, q_uz)
+        q_out, q_uz_routed, q_lz_trans = distrrm.SpatialRouting(Model)
 
         q_out=q_out[:-1]
 
@@ -164,7 +153,6 @@ class Wrapper():
         q_out = q_out[:-1] + qlake_r
 
         return st, q_out, q_uz, q_lz
-
 
     @staticmethod
     def Lumped(Model, Routing=0, RoutingFn=[]):
@@ -220,17 +208,19 @@ class Wrapper():
         tm = Model.data[:,3]
 
         # from the conceptual model calculate the upper and lower response mm/time step
-        q_uz, q_lz, st = Model.LumpedModel.Simulate(p, t, et, Model.Parameters,#p2,
+        q_uz, q_lz, st = Model.LumpedModel.Simulate(p, t, et, Model.Parameters,
                                                      init_st = Model.InitialCond,
                                                      ll_temp = tm,
                                                      q_init = None,
                                                      snow = Model.Snow)
-        q_uz = q_uz*Model.AreaCoeff/(Model.Timef*3.6) # q mm , area sq km  (1000**2)/1000/f/60/60 = 1/(3.6*f)
-        q_lz = q_lz*Model.AreaCoeff/(Model.Timef*3.6) # if daily tfac=24 if hourly tfac=1 if 15 min tfac=0.25
+        # q mm , area sq km  (1000**2)/1000/f/60/60 = 1/(3.6*f)
+        # if daily tfac=24 if hourly tfac=1 if 15 min tfac=0.25
+        q_uz = q_uz*Model.AreaCoeff/(Model.Timef*3.6)
+        q_lz = q_lz*Model.AreaCoeff/(Model.Timef*3.6)
 
         q_sim = q_uz + q_lz
 
         if Routing != 0 :
-            q_sim=RoutingFn(np.array(q_sim[:-1]), Model.Parameters[-1])
+            q_sim = RoutingFn(np.array(q_sim[:-1]), Model.Parameters[-1])
 
         return st, q_sim
