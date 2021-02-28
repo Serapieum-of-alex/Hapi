@@ -11,26 +11,13 @@ runoff at known locations based on given performance function
 
 
 """
-#%links
-
-#%library
-# import os
 import numpy as np
-# import pandas as pd
 import datetime as dt
-# import gdal
 from Oasis.optimization import Optimization
 from Oasis.hsapi import HSapi
-# from Oasis.optimizer import Optimizer
-
-
-# functions
-# from Hapi.raster import Raster as raster
 from Hapi.run import Model
-# from Hapi.giscatchment import GISCatchment as GC
-#import DistParameters as Dp
-#import PerformanceCriteria as PC
 from Hapi.wrapper import Wrapper
+
 
 class Calibration(Model):
 
@@ -68,8 +55,7 @@ class Calibration(Model):
 
         self.OFArgs = args
 
-    def RunCalibration(self, SpatialVarFun, SpatialVarArgs,
-                       OF, OF_args, OptimizationArgs, printError=None):
+    def RunCalibration(self, SpatialVarFun, OptimizationArgs, printError=None):
         """
         =======================================================================
             RunCalibration(ConceptualModel, Paths, p2, Q_obs, UB, LB, SpatialVarFun, lumpedParNo, lumpedParPos, objective_function, printError=None, *args):
@@ -165,18 +151,15 @@ class Calibration(Model):
                 klb=float(par[-2])
                 kub=float(par[-1])
                 par=par[:-2]
-
-                self.Parameters = SpatialVarFun(par,*SpatialVarArgs,kub=kub,klb=klb)
-
-
+                SpatialVarFun.Function(par, kub=kub, klb=klb)
+                self.Parameters = SpatialVarFun.par_2d
                 #run the model
-                _, q_out, q_uz_routed, q_lz_trans = Wrapper.HapiModel(self)
-
+                q_out, q_uz_routed, q_lz_trans = Wrapper.HapiModel(self)
                 # calculate performance of the model
                 try:
-                    error = self.OF(self.QGauges,q_out,q_uz_routed,q_lz_trans,*[self.GaugesTable])
+                    error = self.OF(self.QGauges, q_out, q_uz_routed, q_lz_trans,*[self.GaugesTable])
                 except TypeError: # if no of inputs less than what the function needs
-                    assert 1==5, "the objective function you have entered needs more inputs please enter then in a list as *args"
+                    assert False, "the objective function you have entered needs more inputs please enter then in a list as *args"
 
                 # print error
                 if printError != 0:
