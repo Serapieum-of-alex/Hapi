@@ -14,11 +14,11 @@ of catchment response based on dynamic weighting of hydrological models" on apri
 - Model inputs are Precipitation, evapotranspiration and temperature, initial
     state variables, and initial discharge.
 - Model output is Qalculated dicharge at time t+1
-- Model equations are solved using explicit scheme 
+- Model equations are solved using explicit scheme
 - model structure uses 18 parameters if the catchment has snow
     [ltt, utt, rfcf, sfcf, ttm, cfmax, cwh, cfr, fc, beta, e_corr, etf, lp,
     c_flux, k, k1, alpha, perc]
-    
+
     otherwise it uses 10 parameters
     [rfcf, fc, beta, etf, lp, c_flux, k, k1, alpha, perc]
 """
@@ -74,7 +74,7 @@ DEF_q0 = 0
 #    return np.random.uniform(P_LB, P_UB)
 
 
-def Precipitation(temp, ltt, utt, prec, rfcf, sfcf, tfac):
+def Precipitation(temp, ltt, utt, prec, rfcf, sfcf): #, tfac
     """
     ==============
     Precipitation
@@ -95,7 +95,7 @@ def Precipitation(temp, ltt, utt, prec, rfcf, sfcf, tfac):
         Lower temperature treshold [C]
     utt : float
         Upper temperature treshold [C]
-    prec : float 
+    prec : float
         Precipitation [mm]
     rfcf : float
         Rainfall corrector factor
@@ -110,12 +110,12 @@ def Precipitation(temp, ltt, utt, prec, rfcf, sfcf, tfac):
         Snowfall [mm]
     """
 
-    if temp <= ltt:  # if temp <= lower temp threshold 
+    if temp <= ltt:  # if temp <= lower temp threshold
         rf = 0.0         #no rainfall all the precipitation will convert into snowfall
         sf = prec*sfcf
 
-    elif temp >= utt: # if temp > upper threshold 
-        rf = prec*rfcf # no snowfall all the precipitation becomes rainfall 
+    elif temp >= utt: # if temp > upper threshold
+        rf = prec*rfcf # no snowfall all the precipitation becomes rainfall
         sf = 0.0
 
     else:               # if  ltt< temp < utt
@@ -126,17 +126,17 @@ def Precipitation(temp, ltt, utt, prec, rfcf, sfcf, tfac):
 
 
 
-def Snow(cfmax, tfac, temp, ttm, cfr, cwh, rf, sf, wc_old, sp_old):
+def Snow(cfmax, temp, ttm, cfr, cwh, rf, sf, wc_old, sp_old): #tfac,
     """
     ====
     Snow
     ====
-    
+
     Snow routine of the HBV-96 model.
-    
-    The snow pack consists of two states: Water Content (wc) and Snow Pack 
+
+    The snow pack consists of two states: Water Content (wc) and Snow Pack
     (sp). The first corresponds to the liquid part of the water in the snow,
-    while the latter corresponds to the solid part. If the temperature is 
+    while the latter corresponds to the solid part. If the temperature is
     higher than the melting point, the snow pack will melt and the solid snow
     will become liquid. In the opposite case, the liquid part of the snow will
     refreeze, and turn into solid. The water that cannot be stored by the solid
@@ -144,39 +144,39 @@ def Snow(cfmax, tfac, temp, ttm, cfr, cwh, rf, sf, wc_old, sp_old):
 
     Parameters
     ----------
-    cfmax : float 
+    cfmax : float
         Day degree factor
     tfac : float
         Temperature correction factor
-    temp : float 
+    temp : float
         Temperature [C]
-    ttm : float 
+    ttm : float
         Temperature treshold for Melting [C]
-    cfr : float 
+    cfr : float
         Refreezing factor
-    cwh : float 
+    cwh : float
         Capacity for water holding in snow pack
-    _rf : float 
+    _rf : float
         Rainfall [mm]
-    _sf : float 
+    _sf : float
         Snowfall [mm]
-    wc_old : float 
+    wc_old : float
         Water content in previous state [mm]
-    sp_old : float 
+    sp_old : float
         snow pack in previous state [mm]
 
     Returns
     -------
-    _in : float 
+    _in : float
         Infiltration [mm]
-    _wc_new : float 
+    _wc_new : float
         Water content in posterior state [mm]
-    _sp_new : float 
+    _sp_new : float
         Snowpack in posterior state [mm]
     """
 
     if temp > ttm:# if temp > melting threshold
-        # then either some snow will melt or the entire snow will melt 
+        # then either some snow will melt or the entire snow will melt
         if cfmax*(temp-ttm) < sp_old+sf: #if amount of melted snow < the entire existing snow (previous amount+new)
             melt = cfmax*(temp-ttm)
         else:                             #if amount of melted snow > the entire existing snow (previous amount+new)
@@ -188,7 +188,7 @@ def Snow(cfmax, tfac, temp, ttm, cfr, cwh, rf, sf, wc_old, sp_old):
     else:                               # if temp < melting threshold
         #then either some water will freeze or all the water willfreeze
         if cfr*cfmax*(ttm-temp) < wc_old+rf: #then either some water will freeze or all the water willfreeze
-            refr = cfr*cfmax*(ttm - temp)  #cfmax*(ttm-temp) is the rate of melting of snow while cfr*cfmax*(ttm-temp) is the rate of freeze of melted water  (rate of freezing > rate of melting) 
+            refr = cfr*cfmax*(ttm - temp)  #cfmax*(ttm-temp) is the rate of melting of snow while cfr*cfmax*(ttm-temp) is the rate of freeze of melted water  (rate of freezing > rate of melting)
         else:                               # if the amount of frozen water > entire water available
             refr = wc_old + rf
 
@@ -206,54 +206,54 @@ def Snow(cfmax, tfac, temp, ttm, cfr, cwh, rf, sf, wc_old, sp_old):
 
 
 
-def Soil(fc, beta, etf, temp, tm, e_corr, lp, tfac, c_flux, inf,
+def Soil(fc, beta, etf, temp, tm, e_corr, lp, c_flux, inf,# tfac,
           ep, sm_old, uz_old):
     """
     ============================================================
         Soil(fc, beta, etf, temp, tm, e_corr, lp, tfac, c_flux, inf, ep, sm_old, uz_old)
     ============================================================
-    
+
     Soil routine of the HBV-96 model.
-    
-    The model checks for the amount of water that can infiltrate the soil, 
-    coming from the liquid precipitation and the snow pack melting. A part of 
-    the water will be stored as soil moisture, while other will become runoff, 
+
+    The model checks for the amount of water that can infiltrate the soil,
+    coming from the liquid precipitation and the snow pack melting. A part of
+    the water will be stored as soil moisture, while other will become runoff,
     and routed to the upper zone tank.
 
     Parameters
     ----------
-    fc : float 
+    fc : float
         Filed capacity
-    beta : float 
+    beta : float
         Shape coefficient for effective precipitation separation
-    etf : float 
+    etf : float
         Total potential evapotranspiration
-    temp : float 
+    temp : float
         Temperature
-    tm : float 
+    tm : float
         Average long term temperature
-    e_corr : float 
+    e_corr : float
         Evapotranspiration corrector factor
-    lp : float _soil 
+    lp : float _soil
         wilting point
-    tfac : float 
+    tfac : float
         Time conversion factor
-    c_flux : float 
+    c_flux : float
         Capilar flux in the root zone
-    _in : float 
+    _in : float
         actual infiltration
-    ep : float 
+    ep : float
         actual evapotranspiration
-    sm_old : float 
+    sm_old : float
         Previous soil moisture value
-    uz_old : float 
+    uz_old : float
         Previous Upper zone value
 
     Returns
     -------
-    sm_new : float 
+    sm_new : float
         New value of soil moisture
-    uz_int_1 : float 
+    uz_int_1 : float
         New value of direct runoff into upper zone
     """
 
@@ -261,41 +261,41 @@ def Soil(fc, beta, etf, temp, tm, e_corr, lp, tfac, c_flux, inf,
 
     inf = inf - qdr
     r = ((sm_old/fc)** beta) * inf   # recharge to the upper zone
-    
+
     ep_int = (1.0 + etf*(temp - tm))*e_corr*ep  # Adjusted potential evapotranspiration
-    
+
     ea = min(ep_int, (sm_old/(lp*fc))*ep_int)
 
     cf = c_flux*((fc - sm_old)/fc) # capilary rise
-    
+
     # if capilary rise is more than what is available take all the available and leave it empty
-    
-    if uz_old + r < cf: 
+
+    if uz_old + r < cf:
         cf= uz_old + r
         uz_int_1=0
     else:
 #        uz_int_1 = uz_old + _r - _cf
         uz_int_1 = uz_old + r - cf + qdr
-    
+
     sm_new = max(sm_old + inf - r + cf - ea, 0)
-    
+
 #    uz_int_1 = uz_old + _r - _cf + qdr
 
     return sm_new, uz_int_1
 
 
-def Response(tfac, perc, alpha, k, k1, area, lz_old, uz_int_1):
+def Response(perc, alpha, k, k1, lz_old, uz_int_1): #tfac,area,
     """
     ============================================================
         Response(tfac, perc, alpha, k, k1, area, lz_old, uz_int_1)
     ============================================================
     The response routine of the HBV-96 model.
-    
-    The response routine is in charge of transforming the current values of 
-    upper and lower zone into discharge. This routine also controls the 
-    recharge of the lower zone tank (baseflow). The transformation of units 
+
+    The response routine is in charge of transforming the current values of
+    upper and lower zone into discharge. This routine also controls the
+    recharge of the lower zone tank (baseflow). The transformation of units
     also occurs in this point.
-    
+
     Parameters
     ----------
     tfac : float
@@ -306,36 +306,36 @@ def Response(tfac, perc, alpha, k, k1, area, lz_old, uz_int_1):
         Response box parameter
     k : float
         Upper zone recession coefficient
-    k1 : float 
+    k1 : float
         Lower zone recession coefficient
     area : float
         Catchment area [Km2]
-    lz_old : float 
+    lz_old : float
         Previous lower zone value [mm]
-    uz_int_1 : float 
+    uz_int_1 : float
         Previous upper zone value before percolation [mm]
     qdr : float
         Direct runoff [mm]
-    
+
     """
-    # upper zone 
-    # if perc > Quz then perc = Quz and Quz = 0 if not perc = value and Quz= Quz-perc so take the min 
+    # upper zone
+    # if perc > Quz then perc = Quz and Quz = 0 if not perc = value and Quz= Quz-perc so take the min
     uz_int_2 = np.max([uz_int_1 - perc, 0.0])
-    
+
     q_0 = k*(uz_int_2**(1.0 + alpha))
-    
+
     if q_0 > uz_int_2: # if q_0 =30 and UZ=20
-        q_0= uz_int_2  # q_0=20 
-        
-    uz_new = uz_int_2 - (q_0) 
-    
+        q_0= uz_int_2  # q_0=20
+
+    uz_new = uz_int_2 - (q_0)
+
     lz_int_1 = lz_old + np.min([perc, uz_int_1])  # if the percolation > upper zone Q all the Quz will percolate
-    
+
     q_1 = k1*lz_int_1
-    
+
     if q_1 > lz_int_1:
         q_1=lz_int_1
-    
+
     lz_new = lz_int_1 - (q_1)
 
 #    q_new = area*(q_0 + q_1)/(3.6*tfac)  # q mm , area sq km  (1000**2)/1000/f/60/60 = 1/(3.6*f)
@@ -355,7 +355,7 @@ def Tf(maxbas):
         else:
             # Receding transfer
             wi.append(1.0 - (x+1)/(maxbas+2.0))
-    
+
     #Normalise weights
     wi = np.array(wi)/np.sum(wi)
     return wi
@@ -363,17 +363,17 @@ def Tf(maxbas):
 
 def Routing(q, maxbas=1):
     """
-    This function implements the transfer function using a triangular 
+    This function implements the transfer function using a triangular
     function
     """
     assert maxbas >= 1, 'Maxbas value has to be larger than 1'
     # Get integer part of maxbas
 #    maxbas = int(maxbas)
     maxbas = int(round(maxbas,0))
-    
+
     # get the weights
     w = Tf(maxbas)
-    
+
     # rout the discharge signal
     q_r = np.zeros_like(q, dtype='float64')
     q_temp = q
@@ -384,19 +384,19 @@ def Routing(q, maxbas=1):
     return q_r
 
 
-def StepRun(p, p2, v, St, snow=0):
+def StepRun(p, v, St, snow=0): #p2,
     """
     ============================================================
         StepRun(p, p2, v, St, snow=0)
     ============================================================
-    
+
     Makes the calculation of next step of discharge and states
-    
+
     Parameters
     ----------
     p : array_like [18]
         Parameter vector, set up as:
-        [ltt, utt, ttm, cfmax, fc, ecorr, etf, lp, k, k1, 
+        [ltt, utt, ttm, cfmax, fc, ecorr, etf, lp, k, k1,
         alpha, beta, cwh, cfr, c_flux, perc, rfcf, sfcf]
     p2 : array_like [2]
         Problem parameter vector setup as:
@@ -419,29 +419,29 @@ def StepRun(p, p2, v, St, snow=0):
     #picipitation function
     if snow==1:
         assert len(p) == 18, "current version of HBV (with snow) takes 18 parameter you have entered "+str(len(p))
-        ltt = p[0]   
-        utt = p[1]  
-        rfcf = p[2] 
-        sfcf = p[3]  
+        ltt = p[0]
+        utt = p[1]
+        rfcf = p[2]
+        sfcf = p[3]
         # snow function
-        ttm = p[4]    
-        cfmax = p[5] 
-        cwh = p[6]    
+        ttm = p[4]
+        cfmax = p[5]
+        cwh = p[6]
         cfr = p[7]
         #soil function
-        fc = p[8]       
-        beta = p[9]     
+        fc = p[8]
+        beta = p[9]
         e_corr =[10]
-        etf = p[11]       
-        lp =p[12]        
-        c_flux =p[13]   
+        etf = p[11]
+        lp =p[12]
+        c_flux =p[13]
         # response function
         k = p[14]
         k1 = p[15]
         alpha = p[16]
         perc = p[17]
 #        pcorr=p[18]
-        
+
     elif snow == 0:
         ltt = 1.0     # less than utt and less than lowest temp to prevent sf formation
         utt = 2.0     # very low but it does not matter as temp is 25 so it is greater than 2
@@ -450,24 +450,24 @@ def StepRun(p, p2, v, St, snow=0):
         # snow function
         ttm = 1          # should be very low lower than lowest temp as temp is 25 all the time so it does not matter
         cfmax = 0.00001  # as there is no melting  and sp+sf=zero all the time so it doesn't matter the value of cfmax
-        cwh = 0.00001    # as sp is always zero it doesn't matter all wc will go as inf 
+        cwh = 0.00001    # as sp is always zero it doesn't matter all wc will go as inf
         cfr = 0.000001   # as temp > ttm all the time so it doesn't matter the value of cfr but put it zero
         #soil function
-        fc = p[1]       
-        beta = p[2]     
+        fc = p[1]
+        beta = p[2]
         e_corr =1 #p[2]
-        etf = p[3]       
-        lp =p[4]        
-        c_flux =p[5]   
+        etf = p[3]
+        lp =p[4]
+        c_flux =p[5]
         # response function
         k = p[6]
         k1 = p[7]
         alpha = p[8]
         perc = p[9]
-        
+
     ## Non optimisable parameters
-    tfac = p2[0] 
-    area = p2[1] 
+    # tfac = p2[0]
+    # area = p2[1]
 
     ## Parse of Inputs
     prec = v[0] # Precipitation [mm]
@@ -482,32 +482,30 @@ def StepRun(p, p2, v, St, snow=0):
     lz_old = St[3]
     wc_old = St[4]
 
-    rf, sf = Precipitation(temp, ltt, utt, prec, rfcf, sfcf, tfac)
-    inf, wc_new, sp_new = Snow(cfmax, tfac, temp, ttm, cfr, cwh, rf, sf,
+    rf, sf = Precipitation(temp, ltt, utt, prec, rfcf, sfcf) #, tfac
+    inf, wc_new, sp_new = Snow(cfmax, temp, ttm, cfr, cwh, rf, sf, #tfac,
                                wc_old, sp_old)
-    sm_new, uz_int_1 = Soil(fc, beta, etf, temp, tm, e_corr, lp, tfac, c_flux,
+    sm_new, uz_int_1 = Soil(fc, beta, etf, temp, tm, e_corr, lp, c_flux,#tfac,
                             inf, ep, sm_old, uz_old)
-#    q_new, uz_new, lz_new, uz_int_2, lz_int_1 = Response(tfac, perc, alpha, 
-#                                                          k, k1, area, lz_old,
-#                                                          uz_int_1)
-    q_uz, q_lz, uz_new, lz_new = Response(tfac, perc, alpha, 
-                                          k, k1, area, lz_old,
+
+    q_uz, q_lz, uz_new, lz_new = Response(perc, alpha,#tfac,
+                                          k, k1, lz_old, #area,
                                           uz_int_1)
-   
+
 #    return q_new, [sp_new, sm_new, uz_new, lz_new, wc_new], uz_int_2, lz_int_1
     return q_uz, q_lz, [sp_new, sm_new, uz_new, lz_new, wc_new]
 
 
-def Simulate(prec, temp, et, par, p2, init_st=None, ll_temp=None, 
+def Simulate(prec, temp, et, par, init_st=None, ll_temp=None,#p2,
              q_init=None, snow=0):
-    """    
+    """
     ================================================================
         Simulate(prec, temp, et, par, p2, init_st=None, ll_temp=None, q_0=None, snow=0):
     ================================================================
     Run the HBV model for the number of steps (n) in precipitation. The
     resluts are (n+1) simulation of discharge as the model calculates step n+1
 
-    
+
     Parameters
     ----------
     prec : array_like [n]
@@ -518,19 +516,19 @@ def Simulate(prec, temp, et, par, p2, init_st=None, ll_temp=None,
         Potential Evapotranspiration [mm/h]
     par : array_like [18]
         Parameter vector, set up as:
-        [ltt, utt, ttm, cfmax, fc, ecorr, etf, lp, k, k1, 
+        [ltt, utt, ttm, cfmax, fc, ecorr, etf, lp, k, k1,
         alpha, beta, cwh, cfr, c_flux, perc, rfcf, sfcf]
     p2 : array_like [2]
         Problem parameter vector setup as:
         [tfac, area]
     init_st : array_like [5], optional
-        Initial model states, [sp, sm, uz, lz, wc]. If unspecified, 
+        Initial model states, [sp, sm, uz, lz, wc]. If unspecified,
         [0.0, 30.0, 30.0, 30.0, 0.0] mm
     ll_temp : array_like [n], optional
         Long term average temptearature. If unspecified, calculated from temp.
     q_0 : float, optional
         Initial discharge value. If unspecified set to 10.0
-    
+
 
     Returns
     -------
@@ -542,8 +540,8 @@ def Simulate(prec, temp, et, par, p2, init_st=None, ll_temp=None,
     ### inputs validation
     # data type
     assert len(init_st) == 5, "state variables are 5 and the given initial values are "+str(len(init_st))
-    assert type(p2) == list, " p2 should be of type list"
-    assert len(p2) == 2, "p2 should contains tfac and catchment area"
+    # assert type(p2) == list, " p2 should be of type list"
+    # assert len(p2) == 2, "p2 should contains tfac and catchment area"
     assert snow == 0 or snow == 1, " snow input defines whether to consider snow subroutine or not it has to be 0 or 1"
 
     if init_st is None:#   0  1  2  3  4  5
@@ -561,20 +559,20 @@ def Simulate(prec, temp, et, par, p2, init_st=None, ll_temp=None,
     else:
         q_uz=[par[14]*((st[0][2])**(1.0 + par[16])), ]
         q_lz=[par[15]*st[0][3], ]
-    
-#    uz_int_2 = [st[0][2], ] 
+
+#    uz_int_2 = [st[0][2], ]
 #    lz_int_1 = [st[0][3], ]
-    
-    
+
+
     for i in range(len(prec)):
         v = [prec[i], temp[i], et[i], ll_temp[i]]
 #        q_out, st_out, uz_int_2_out, lz_int_1_out = StepRun(par, p2, v, st[i], snow=0)
-        q_uzi, q_lzi, st_out = StepRun(par, p2, v, st[i], snow=0)
+        q_uzi, q_lzi, st_out = StepRun(par, v, st[i], snow=0)# p2,
 #        q_sim.append(q_out)
         q_uz.append(q_uzi)
         q_lz.append(q_lzi)
         st.append(st_out)
 #        uz_int_2.append(uz_int_2_out) # upper zone - perc
 #        lz_int_1.append(lz_int_1_out) # lower zone + perc
-    
+
     return np.float32(q_uz), np.float32(q_lz), np.float32(st)
