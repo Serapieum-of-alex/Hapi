@@ -31,11 +31,6 @@ import numpy as np
 DEF_ST = [0.0, 10.0, 10.0, 10.0, 0.0]
 DEF_q0 = 0
 
-# Get random parameter set
-#def get_random_pars():
-#    return np.random.uniform(P_LB, P_UB)
-
-
 def Precipitation(prec, temp, tt, rfcf, sfcf):
     """
     ========================================================
@@ -221,11 +216,6 @@ def Soil(temp, inf, ep, sm_old, uz_old, tm, fc, beta, e_corr, lp):
     uz_int_1 : float
         New value of direct runoff into upper zone
     """
-
-#    qdr = max(sm_old + inf - fc, 0)  # direct run off as soil moisture exceeded the field capacity
-
-#    inf = inf - qdr
-
     # recharge to the upper zone
     r = ((sm_old/fc)** beta) * inf
 
@@ -325,17 +315,14 @@ def Response(lz_old, uz_int_1, perc, k, k1, k2, uzl):
     q_2 = k2*lz_int_1
 
     if q_2 > lz_int_1:
-        q_2=lz_int_1
+        q_2 = lz_int_1
 
     lz_new = lz_int_1 - (q_2)
 
-    q_uz=q_0+q_1
-    # convert the discharge to m3/sec
-#    q_new = area*(q_0 + q_1)/(3.6*tfac)  # q mm , area sq km  (1000**2)/1000/f/60/60 = 1/(3.6*f)
-                                                    # if daily tfac=24 if hourly tfac=1 if 15 min tfac=0.25
+    q_uz = q_0 + q_1
 
-#    return q_new, uz_new, lz_new, uz_int_2, lz_int_1
-    return q_uz, q_2, uz_new, lz_new #,uz_int_2, lz_int_1
+
+    return q_uz, q_2, uz_new, lz_new
 
 
 def Tf(maxbas):
@@ -484,7 +471,6 @@ def StepRun(p, v, St, snow=0):
     q_uz, q_lz, uz_new, lz_new = Response(lz_old, uz_int_1,
                                           perc, k, k1, k2, uzl)
 
-#    return q_new, [sp_new, sm_new, uz_new, lz_new, wc_new], uz_int_2, lz_int_1
     return q_uz, q_lz, [sp_new, sm_new, uz_new, lz_new, wc_new]
 
 
@@ -533,42 +519,46 @@ def Simulate(prec, temp, et, par, init_st=None, ll_temp=None,
     # data type
     assert len(init_st) == 5, "state variables are 5 and the given initial values are "+str(len(init_st))
     assert snow == 0 or snow == 1, " snow input defines whether to consider snow subroutine or not it has to be 0 or 1"
-
+    st = np.empty([len(prec)+1, 5], dtype=np.float32)*np.nan
+    q_0 = np.empty([len(prec)+1], dtype=np.float32)*np.nan
+    q_1 = np.empty([len(prec)+1], dtype=np.float32)*np.nan
+    q_uz = np.empty([len(prec)+1], dtype=np.float32)*np.nan
+    q_lz = np.empty([len(prec)+1], dtype=np.float32)*np.nan
+    
     if init_st is None:#   0  1  2  3  4  5
-        st = [DEF_ST, ]  #[sp,sm,uz,lz,wc,LA]
+        st[0,:] = DEF_ST  #[sp,sm,uz,lz,wc,LA]        
     else:
-        st = [init_st,]
+        st[0,:] = init_st
 
     if ll_temp is None:
         ll_temp = [np.mean(temp), ] * len(prec)
-
+    
+    
     ### initial runoff
     # calculate the runoff for the first time step
     if q_init == None:
         if snow == 1:
-            # upper zone
-            q_0=[par[10]*np.max([st[0][2] - par[13],0]), ]
-            q_1=[par[11]*((st[0][2])), ]
-            q_uz = [q_0[0]+q_1[0],]
+            # upper zone            
+            q_0[0] = par[10] * np.max(st[0,2] - par[13],0)
+            q_1[0] = par[11] * st[0,2]
+            q_uz[0] = q_0[0] + q_1[0]
             # lower zone
-            q_lz=[par[12]*st[0][3], ]
-        else:
+            q_lz[0] = par[12] * st[0,3]
+            
+        else:            
             # upper zone
-            q_0=[par[5]*np.max([st[0][2] - par[8],0]), ]
-            q_1=[par[6]*((st[0][2])), ]
-            q_uz = [q_0[0]+q_1[0],]
+            q_0[0] = par[5] * np.max(st[0,2] - par[8],0)
+            q_1[0] = par[6] * st[0,2]
+            q_uz[0] = q_0[0] + q_1[0]
             # lower zone
-            q_lz=[par[7]*st[0][3], ]
+            q_lz[0] = par[7] * st[0,3]
     else: # if initial runoff value is given distribute it evenlt between upper and lower responses
-        q_uz = [q_init/2, ]
-        q_lz = [q_init/2, ]
+        q_uz[0] = q_init/2
+        q_lz[0] = q_init/2
 
 
-    for i in range(len(prec)):
+    for i in range(1,len(prec)):
         v = [prec[i], temp[i], et[i], ll_temp[i]]
-        q_uzi, q_lzi, st_out = StepRun(par, v, st[i], snow=0)
-        q_uz.append(q_uzi)
-        q_lz.append(q_lzi)
-        st.append(st_out)
+        q_uz[i], q_lz[i], st[i,:] = StepRun(par, v, st[i-1,:], snow=0)
 
-    return np.float32(q_uz), np.float32(q_lz), np.float32(st)
+    return q_uz, q_lz, st
