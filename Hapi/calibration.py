@@ -266,12 +266,14 @@ class Calibration(Model):
         """
         # basic inputs
         # check if all inputs are included
-        assert all(["Route","RoutingFn", "InitialValues"][i] in Basic_inputs.keys() for i in range(3)), "Basic_inputs should contain ['p2','init_st','UB','LB'] "
+        assert all(["Route","RoutingFn"][i] in Basic_inputs.keys() for i in range(2)), "Basic_inputs should contain ['p2','init_st','UB','LB'] "
 
         Route = Basic_inputs["Route"]
         RoutingFn = Basic_inputs["RoutingFn"]
         if 'InitialValues' in Basic_inputs.keys():
             InitialValues = Basic_inputs['InitialValues']
+        else:
+            InitialValues = []
 
         ### optimization
 
@@ -314,9 +316,13 @@ class Calibration(Model):
 
         ### define the optimization components
         opt_prob = Optimization('HBV Calibration', opt_fun)
-
-        for i in range(len(self.LB)):
-            opt_prob.addVar('x{0}'.format(i), type='c', lower=self.LB[i], upper=self.UB[i], value=InitialValues[i])
+        
+        if InitialValues != []:
+            for i in range(len(self.LB)):
+                opt_prob.addVar('x{0}'.format(i), type='c', lower=self.LB[i], upper=self.UB[i], value=InitialValues[i])
+        else:
+            for i in range(len(self.LB)):
+                opt_prob.addVar('x{0}'.format(i), type='c', lower=self.LB[i], upper=self.UB[i])
 
         print(opt_prob)
 
