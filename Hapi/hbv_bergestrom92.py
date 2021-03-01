@@ -538,8 +538,8 @@ def Simulate(prec, temp, et, par, init_st=None, ll_temp=None,
     # calculate the runoff for the first time step
     if q_init == None:
         if snow == 1:
-            # upper zone            
-            q_0[0] = par[10] * np.max(st[0,2] - par[13],0)
+            # upper zone          
+            q_0[0] = par[10] * max(st[0,2] - par[13],0)
             q_1[0] = par[11] * st[0,2]
             q_uz[0] = q_0[0] + q_1[0]
             # lower zone
@@ -547,7 +547,7 @@ def Simulate(prec, temp, et, par, init_st=None, ll_temp=None,
             
         else:            
             # upper zone
-            q_0[0] = par[5] * np.max(st[0,2] - par[8],0)
+            q_0[0] = par[5] * max(st[0,2] - par[8],0)
             q_1[0] = par[6] * st[0,2]
             q_uz[0] = q_0[0] + q_1[0]
             # lower zone
