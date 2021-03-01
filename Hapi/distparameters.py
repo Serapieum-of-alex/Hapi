@@ -9,7 +9,8 @@ into rasters
 """
 import numbers
 import numpy as np
-# import os
+import datetime as dt
+import os
 import gdal
 from Hapi.raster import Raster
 from Hapi.giscatchment import GISCatchment as GC
@@ -619,28 +620,20 @@ class DistParameters():
 
             SaveParameters(DistParFn, raster, par, no_parameters,snow ,kub, klb,Path)
         """
-        # assert callable(DistParFn), " please check the function to distribute your parameters"
-        # assert type(raster)==gdal.Dataset, "raster should be read using gdal (gdal dataset please read it using gdal library) "
-        # assert type(Par)==np.ndarray or type(Par)==list, "par_g should be of type 1d array or list"
-        # assert type(No_parameters) == int, "No of parameters should be integer"
-        # assert isinstance(kub,numbers.Number) , " kub should be a number"
-        # assert isinstance(klb,numbers.Number) , " klb should be a number"
-        # assert type(Path) == str, "path should be of type string"
-        # assert os.path.exists(Path), Path + " you have provided does not exist"
-
-        # par2d = DistParFn(Par,raster,No_parameters,no_lumped_par,lumped_par_pos,kub,klb)
+        assert type(Path) == str, "path should be of type string"
+        assert os.path.exists(Path), Path + " you have provided does not exist"
 
         # save
         if self.Snow == 0: # now snow subroutine
-            pnme=["01_rfcf.tif","02_FC.tif", "03_BETA.tif", "04_ETF.tif", "05_LP.tif", "06_CFLUX.tif", "07_K.tif",
-                  "08_K1.tif","09_ALPHA.tif", "10_PERC.tif", "11_Kmuskingum.tif", "12_Xmuskingum.tif"]
+            pnme=["01_rfcf","02_FC", "03_BETA", "04_ETF", "05_LP", "06_K0","07_K1",
+                  "08_K2","09_UZL","10_PERC", "11_Kmuskingum", "12_Xmuskingum"]
         else: # there is snow subtoutine
-            pnme=["01_ltt.tif", "02_utt.tif", "03_rfcf.tif", "04_sfcf.tif", "05_ttm.tif", "06_cfmax.tif", "07_cwh.tif",
-                  "08_cfr.tif", "09_fc.tif", "10_fc.tif", "11_beta.tif","12_etf.tif","13_lp.tif","14_cflux.tif",
-                  "15_k.tif","16_k1.tif","17_alpha.tif","18_perc.tif"]
+            pnme=["01_ltt", "02_rfcf", "03_sfcf", "04_cfmax", "05_cwh", "06_cfr", 
+                  "07_fc", "08_beta","09_etf","10_lp", "11_k0", "12_k1", "13_k2",
+                  "14_uzl", "18_perc"]
 
         if Path != None:
-            pnme=[Path+i for i in pnme]
+            pnme = [Path+i+"_"+str(dt.datetime.now())[0:10]+".tif" for i in pnme]
 
         for i in range(np.shape(self.Par3d)[2]):
             Raster.RasterLike(self.raster,self.Par3d[:,:,i],pnme[i])
