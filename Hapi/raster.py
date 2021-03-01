@@ -1978,7 +1978,12 @@ class Raster():
             try:
                 filesNo = [int(files[i].split("_")[0]) for i in range(len(files))]
             except:
-                assert False, "please include a number at the beginning of the rasters name to indicate the order of the raster please use the Inputs.RenameFiles method to solve this issue"
+                ErrorMsg = """please include a number at the beginning of the 
+                rasters name to indicate the order of the raster please use the 
+                Inputs.RenameFiles method to solve this issue and don't include 
+                any other files in the folder with the rasters"""
+                assert False, ErrorMsg
+                
 
             filetuple = sorted(zip(filesNo, files))
             files = [x for _,x in filetuple]
