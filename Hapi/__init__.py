@@ -51,6 +51,7 @@ import Hapi.river
 import Hapi.visualizer
 import Hapi.crosssection
 import Hapi.hmcalibration
+import Hapi.interface
 # module level doc-string
 __doc__ = """
 Hapi - Hydrological library for Python
