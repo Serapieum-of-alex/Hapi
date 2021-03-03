@@ -2091,6 +2091,8 @@ class Sub(River):
         self.Compressed = River.Compressed
         self.TwoDResultPath = River.TwoDResultPath
         
+        if hasattr(River, 'CustomizedRunsPath'):
+                self.CustomizedRunsPath = River.CustomizedRunsPath
         if hasattr(River,'USbndPath'):
             self.USbndPath = River.USbndPath
         if hasattr(River,"OneMinResultPath"):
@@ -2502,14 +2504,12 @@ class Sub(River):
         if not hasattr(self,"RRM"):
             self.RRM = pd.DataFrame()
 
-        if Path == '':
-            self.RRM[NodeID] = self.ReadRRMResults(self.Version, self.RRMReferenceIndex, 
-                                                   self.RRMPath, NodeID, FromDay, ToDay,
-                                                   date_format)[NodeID].tolist()
-        else :
-            self.RRM[NodeID] = self.ReadRRMResults(self.Version, self.RRMReferenceIndex, 
-                                                   Path, NodeID, FromDay, ToDay,
-                                                   date_format)[NodeID].tolist()
+        if Path == '':            
+            Path = self.RRMPath
+            
+        self.RRM[NodeID] = self.ReadRRMResults(self.Version, self.RRMReferenceIndex, 
+                                               Path, NodeID, FromDay, ToDay,
+                                               date_format)[NodeID].tolist()
         
         if FromDay == '':
             FromDay = 1
@@ -2522,7 +2522,38 @@ class Sub(River):
         
         self.RRM.index = pd.date_range(start, end, freq = 'D')
         # get the simulated hydrograph and add the cutted HQ2
-
+    
+    def ReadUSHydrograph(self, FromDay = '', ToDay = '', Path = '',
+                          date_format="'%Y-%m-%d'"):
+        
+        self.USHydrographs = pd.DataFrame()
+        
+        if Path == '':
+            Path = self.CustomizedRunsPath
+        
+        if self.USnode != []:
+            # there is more than one upstream segment
+            if type(self.USnode) == list:
+                for i in range(len(self.USnode)):
+                    NodeID = self.USnode[i]
+                    self.USHydrographs[NodeID]  = self.ReadRRMResults(self.Version, self.RRMReferenceIndex, 
+                                                                    Path, NodeID, FromDay, ToDay,
+                                                                    date_format)[NodeID].tolist()
+            #there is one upstream segment
+        else:
+            NodeID = self.USnode
+            self.USHydrographs[NodeID] = self.ReadRRMResults(self.Version, self.RRMReferenceIndex, 
+                                                                    Path, NodeID, FromDay, ToDay,
+                                                                    date_format)[NodeID].tolist()
+        if FromDay == '':
+            FromDay = 1
+        if ToDay == '':
+            ToDay = len(self.USHydrographs[NodeID])
+    
+        start = self.ReferenceIndex.loc[FromDay,'date']
+        end = self.ReferenceIndex.loc[ToDay,'date']
+    
+        self.USHydrographs.index = pd.date_range(start, end, freq = 'D')
 
 
     def Resample(self, XSID, ColumnName, FromDay='', ToDay = '', Delete=False):
@@ -2737,15 +2768,17 @@ class Sub(River):
         # River.Read1DResult(self,self.ID, FromDay, ToDay, FillMissing)
 
     def SaveHydrograph(self, xsid, Path=''):
+        
         if Path == '' :
             assert hasattr(self, 'CustomizedRunsPath'), "please enter the value of the CustomizedRunsPath or use the Path argument to specify where to save the file"
             Path = self.CustomizedRunsPath
         
         saveDS = self.XSHydrographs[xsid].resample('D').backfill()
+        # saveDS.to_csv(savepath+str(Sub.ID)+"_00.txt", header = None, float_format="%.3f") #index = False,
         f = pd.DataFrame(index = saveDS.index)
-        f['values'] = saveDS
         f['date'] = ["'" + str(i)[:10] + "'" for i in saveDS.index]
-        f.to_csv(Path+str(self.ID)+"_00.txt", header = None ,index = False, float_format="%.3f") 
+        f['values'] = saveDS
+        f.to_csv(Path+str(self.ID)+".txt", index = False, float_format="%.3f")  #header = None ,
         
     def Histogram(self, Day, BaseMapF, ExcludeValue, OccupiedCellsOnly, Map = 1,
                   filter1 = 0.2, filter2 = 15):
