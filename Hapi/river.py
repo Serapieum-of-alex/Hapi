@@ -312,7 +312,7 @@ class River():
         """
         if self.Version == 1 or self.Version == 2:
             self.rivernetwork = pd.read_csv(Path, delimiter = ',') #,header = None
-            # self.rivernetwork.columns = ['SubID','US','DS']
+            self.rivernetwork.columns = ['id','us','ds']
         else:
             File  = open(Path)
             Wholefile = File.readlines()
@@ -321,9 +321,10 @@ class River():
             for i in range(1,len(Wholefile)):
                 rivernetwork.loc[i-1,rivernetwork.columns[0:2].tolist()] = [int(j) for j in Wholefile[i][:-1].split(',')[0:2]]
                 rivernetwork.loc[i-1,rivernetwork.columns[2]] = [int(j) for j in Wholefile[i][:-1].split(',')[2:]]
-            self.rivernetwork = rivernetwork
+            rivernetwork.columns = ["No","id","us"]
+            self.rivernetwork = rivernetwork[:]
 
-    def Trace(self,SubID):
+    def Trace(self,ID):
         """
         ========================================
         	Trace(self,SubID)
@@ -352,11 +353,20 @@ class River():
             print("US node= "+str(SWIMUS))
         """
 
+        if self.Version == 1 or self.Version == 2: 
+            DS = int(self.rivernetwork['ds'][np.where(self.rivernetwork['id'] == ID)[0][0]])
+            US = int(self.rivernetwork['us'][np.where(self.rivernetwork['id'] == ID)[0][0]])
+        else:
+            US = self.rivernetwork['us'][np.where(self.rivernetwork['id'] == ID)[0][0]]
+            for i in range(len(self.rivernetwork)):
+                if ID in self.rivernetwork.loc[i,'us']:
+                    DS = self.rivernetwork.loc[i,'id']
+                    break
+                
+        return  US, DS
+        
 
-        SWIMDS = int(self.rivernetwork['DS'][np.where(self.rivernetwork['SubID'] == SubID)[0][0]])
-        SWIMUS = int(self.rivernetwork['US'][np.where(self.rivernetwork['SubID'] == SubID)[0][0]])
-
-        return  SWIMUS, SWIMDS
+        
 
     def StatisticalProperties(self, Path, Filter = True):
         """
@@ -395,7 +405,7 @@ class River():
             NewSP['id'] = self.slope['id']
             for i in range(len(self.slope)):
                 # get the location of the USnode in the rivernetwork attribute
-                loc = np.where(self.rivernetwork['SubID'] == self.slope.loc[i,'id'])[0][0]
+                loc = np.where(self.rivernetwork['id'] == self.slope.loc[i,'id'])[0][0]
                 #  get the location of USnode in the SP attribute
                 try:
                     loc = np.where(self.SP['id'] == self.rivernetwork.loc[loc,'US'])[0][0]
@@ -2163,7 +2173,7 @@ class Sub(River):
                 dataframe containing waterlevels at the position of the first and last cross section
             4-FirstDayResults:[attribute]
                 the first day in the 1D result
-            5-EndDays:[attribute]
+            5-LastDay:[attribute]
                 the last day in the 1D result
         """
         # if the results are not read yet read it
@@ -2219,11 +2229,11 @@ class Sub(River):
         # empty days at the beginning
 
         self.FirstDayResults = self.ReferenceIndex.loc[self.Result1D['day'][0],'date']
-        self.EndDays = self.ReferenceIndex.loc[self.Result1D['day'][self.Result1D.index[-1]],'date']
+        self.LastDay = self.ReferenceIndex.loc[self.Result1D['day'][self.Result1D.index[-1]],'date']
 
         # last days+1 as range does not include the last element
         self.Daylist = list(range(self.Result1D['day'][0], self.Result1D['day'][self.Result1D.index[-1]]+1))
-        self.ReferenceIndex_Results = pd.date_range(self.FirstDayResults, self.EndDays,freq = "D")
+        self.ReferenceIndex_Results = pd.date_range(self.FirstDayResults, self.LastDay,freq = "D")
 
 
     def ExtractXS(self, XSID, addHQ2=False, WaterLevel=True):
@@ -2726,7 +2736,17 @@ class Sub(River):
     # def Read1DResult1Donly(self,Path):
         # River.Read1DResult(self,self.ID, FromDay, ToDay, FillMissing)
 
-
+    def SaveHydrograph(self, xsid, Path=''):
+        if Path == '' :
+            assert hasattr(self, 'CustomizedRunsPath'), "please enter the value of the CustomizedRunsPath or use the Path argument to specify where to save the file"
+            Path = self.CustomizedRunsPath
+        
+        saveDS = self.XSHydrographs[xsid].resample('D').backfill()
+        f = pd.DataFrame(index = saveDS.index)
+        f['values'] = saveDS
+        f['date'] = ["'" + str(i)[:10] + "'" for i in saveDS.index]
+        f.to_csv(Path+str(self.ID)+"_00.txt", header = None ,index = False, float_format="%.3f") 
+        
     def Histogram(self, Day, BaseMapF, ExcludeValue, OccupiedCellsOnly, Map = 1,
                   filter1 = 0.2, filter2 = 15):
 
