@@ -2109,6 +2109,7 @@ class Sub(River):
         self.LastXS = self.crosssections.loc[len(self.crosssections)-1,'xsid']
         self.FirstXS = self.crosssections.loc[0,'xsid']
         self.XSname = self.crosssections['xsid'].tolist()
+        self.XSno = len(self.XSname)
 
         self.ReferenceIndex = River.ReferenceIndex
         self.RRMReferenceIndex = River.RRMReferenceIndex
@@ -2523,38 +2524,6 @@ class Sub(River):
         self.RRM.index = pd.date_range(start, end, freq = 'D')
         # get the simulated hydrograph and add the cutted HQ2
     
-    def ReadUSHydrograph(self, FromDay = '', ToDay = '', Path = '',
-                          date_format="'%Y-%m-%d'"):
-        
-        self.USHydrographs = pd.DataFrame()
-        
-        if Path == '':
-            Path = self.CustomizedRunsPath
-        
-        if self.USnode != []:
-            # there is more than one upstream segment
-            if type(self.USnode) == list:
-                for i in range(len(self.USnode)):
-                    NodeID = self.USnode[i]
-                    self.USHydrographs[NodeID]  = self.ReadRRMResults(self.Version, self.RRMReferenceIndex, 
-                                                                    Path, NodeID, FromDay, ToDay,
-                                                                    date_format)[NodeID].tolist()
-            #there is one upstream segment
-        else:
-            NodeID = self.USnode
-            self.USHydrographs[NodeID] = self.ReadRRMResults(self.Version, self.RRMReferenceIndex, 
-                                                                    Path, NodeID, FromDay, ToDay,
-                                                                    date_format)[NodeID].tolist()
-        if FromDay == '':
-            FromDay = 1
-        if ToDay == '':
-            ToDay = len(self.USHydrographs[NodeID])
-    
-        start = self.ReferenceIndex.loc[FromDay,'date']
-        end = self.ReferenceIndex.loc[ToDay,'date']
-    
-        self.USHydrographs.index = pd.date_range(start, end, freq = 'D')
-
 
     def Resample(self, XSID, ColumnName, FromDay='', ToDay = '', Delete=False):
         """
@@ -2767,7 +2736,30 @@ class Sub(River):
     # def Read1DResult1Donly(self,Path):
         # River.Read1DResult(self,self.ID, FromDay, ToDay, FillMissing)
 
+
     def SaveHydrograph(self, xsid, Path=''):
+        """
+        ==============================================================
+            SaveHydrograph(xsid, Path='')
+        ==============================================================
+        SaveHydrograph method saves the hydrograph of any cross-section in 
+        the segment.
+        Mainly the method is created to to be used to save the last cross-section 
+        hydrograph to use it as as a boundary condition for the downstream segment
+        
+        
+        Parameters
+        ----------
+        xsid : [integer]
+            the id of the cross section.
+        Path : [string], optional
+            Path to the directory where you want to save the file to. The default is ''.
+
+        Returns
+        -------
+        None.
+
+        """
         
         if Path == '' :
             assert hasattr(self, 'CustomizedRunsPath'), "please enter the value of the CustomizedRunsPath or use the Path argument to specify where to save the file"
@@ -2779,6 +2771,116 @@ class Sub(River):
         f['date'] = ["'" + str(i)[:10] + "'" for i in saveDS.index]
         f['values'] = saveDS
         f.to_csv(Path+str(self.ID)+".txt", index = False, float_format="%.3f")  #header = None ,
+    
+    
+    def PlotHydrographProgression(self, XSs, plotstart, plotend, linewidth = 4, 
+                                  Spacing=5):
+        """
+        ============================================================================
+             PlotHydrographProgression(XSs, plotstart, plotend, linewidth = 4, Spacing=5)
+        =============================================================================
+
+        Parameters
+        ----------
+        XSs : TYPE
+            DESCRIPTION.
+        plotstart : TYPE
+            DESCRIPTION.
+        plotend : TYPE
+            DESCRIPTION.
+        linewidth : [integer], optional
+            width of the plots. The default is 4.
+        Spacing : [integer]
+            hydrographs are going to be plots every spacing. The default is 5.
+        Returns
+        -------
+        None.
+
+        """
+        plotstart = dt.datetime.strptime(plotstart,"%Y-%m-%d")
+        plotend = dt.datetime.strptime(plotend,"%Y-%m-%d")
+
+        XSlist = self.XSname[5:self.XSno:int(self.XSno/5)]
+        
+        XSlist = XSlist + XSs
+        
+        for i in range(len(XSlist)):
+            self.Read1DResult(XSID=XSlist[i])
+        
+        XSlist = [self.FirstXS] + XSlist + [self.LastXS]
+        XSlist.sort()
+        
+        
+        fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(6, 5))
+        
+        for i in range(len(XSlist)):
+            ax.plot(self.XSHydrographs.loc[plotstart:plotend,XSlist[i]], label = "XS-" + str(XSlist[i]),
+                        linewidth=linewidth),#color = XScolor,zorder=XSorder
+                        # linestyle = list(linestyles.items())[i][1])
+        
+        ax.legend(fontsize = 12)
+        ax.set_xlabel("Time", fontsize = 12)
+        ax.set_ylabel("Discharge m3/s", fontsize = 12)
+        plt.tight_layout()
+    
+    
+    def ReadUSHydrograph(self, FromDay = '', ToDay = '', Path = '',
+                          date_format="'%Y-%m-%d'"):
+        """
+        =======================================================================
+            ReadUSHydrograph(FromDay = '', ToDay = '', Path = '',
+                                date_format="'%Y-%m-%d'")
+        =======================================================================
+
+        Parameters
+        ----------
+        1-FromDay : [integer], optional
+                the day you want to read the result from, the first day is 1 not zero.The default is ''.
+        2-ToDay : [integer], optional
+                the day you want to read the result to.
+        3-Path : [String], optional
+            Path to read the results from. The default is ''.
+        4-date_format : "TYPE, optional
+            DESCRIPTION. The default is "'%Y-%m-%d'".
+
+        Returns
+        -------
+        1-USHydrographs : [dataframe attribute].
+            dataframe contains the hydrograph of each of the upstream segments
+            with segment id as a column name and a column 'total' contains the 
+            sum of all the hydrographs.
+        """
+        self.USHydrographs = pd.DataFrame()
+        
+        if Path == '':
+            Path = self.CustomizedRunsPath
+        
+        if self.USnode != []:
+            # there is more than one upstream segment
+            if type(self.USnode) == list:
+                for i in range(len(self.USnode)):
+                    NodeID = self.USnode[i]
+                    self.USHydrographs[NodeID]  = self.ReadRRMResults(self.Version, self.RRMReferenceIndex, 
+                                                                    Path, NodeID, FromDay, ToDay,
+                                                                    date_format)[NodeID].tolist()
+            #there is one upstream segment
+        else:
+            NodeID = self.USnode
+            self.USHydrographs[NodeID] = self.ReadRRMResults(self.Version, self.RRMReferenceIndex, 
+                                                                    Path, NodeID, FromDay, ToDay,
+                                                                    date_format)[NodeID].tolist()
+            
+        self.USHydrographs['total'] = self.USHydrographs.sum(axis=1)
+        if FromDay == '':
+            FromDay = 1
+        if ToDay == '':
+            ToDay = len(self.USHydrographs[NodeID])
+    
+        start = self.ReferenceIndex.loc[FromDay,'date']
+        end = self.ReferenceIndex.loc[ToDay,'date']
+    
+        self.USHydrographs.index = pd.date_range(start, end, freq = 'D')
+        
         
     def Histogram(self, Day, BaseMapF, ExcludeValue, OccupiedCellsOnly, Map = 1,
                   filter1 = 0.2, filter2 = 15):
