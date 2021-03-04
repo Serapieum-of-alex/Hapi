@@ -2855,9 +2855,9 @@ class Sub(River):
         if Path == '':
             Path = self.CustomizedRunsPath
         
-        if self.USnode != []:
+        if len(self.USnode) > 1 :
             # there is more than one upstream segment
-            if type(self.USnode) == list:
+            if type(Sub.USnode) == list:
                 for i in range(len(self.USnode)):
                     NodeID = self.USnode[i]
                     self.USHydrographs[NodeID]  = self.ReadRRMResults(self.Version, self.RRMReferenceIndex, 
@@ -2865,10 +2865,12 @@ class Sub(River):
                                                                     date_format)[NodeID].tolist()
             #there is one upstream segment
         else:
-            NodeID = self.USnode
+            
+            NodeID = self.USnode[0]
             self.USHydrographs[NodeID] = self.ReadRRMResults(self.Version, self.RRMReferenceIndex, 
                                                                     Path, NodeID, FromDay, ToDay,
                                                                     date_format)[NodeID].tolist()
+            
             
         self.USHydrographs['total'] = self.USHydrographs.sum(axis=1)
         if FromDay == '':
