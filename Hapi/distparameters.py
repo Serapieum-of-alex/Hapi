@@ -19,7 +19,7 @@ from Hapi.giscatchment import GISCatchment as GC
 class DistParameters():
 
     def __init__(self, raster, no_parameters, no_lumped_par=0, lumped_par_pos=[],
-                 Lake = 0, Snow=0, Function=1):
+                 Lake = 0, Snow=0, HRUs=0, Function=1):
 
         assert type(raster)==gdal.Dataset, "raster should be read using gdal (gdal dataset please read it using gdal library) "
         assert type(no_parameters)==int, " no_parameters should be integer number"
@@ -35,6 +35,7 @@ class DistParameters():
         self.Snow = Snow
         self.no_lumped_par = no_lumped_par
         self.lumped_par_pos = lumped_par_pos
+        self.HRUs = HRUs
         # read the raster
         self.raster = raster
         self.raster_A = raster.ReadAsArray()
@@ -43,8 +44,13 @@ class DistParameters():
         self.cols = raster.RasterXSize
         # get the no_value of in the raster
         self.noval = np.float32(raster.GetRasterBand(1).GetNoDataValue())
+
         # count the number of non-empty cells
-        self.no_elem = np.size(self.raster_A[:,:])-np.count_nonzero((self.raster_A[self.raster_A == self.noval]))
+        if self.HRUs == 1:
+            self.values = list(set([int(self.raster_A[i,j]) for i in range(self.rows) for j in range(self.cols) if self.raster_A[i,j] != self.noval]))
+            self.no_elem = len(self.values)
+        else:
+            self.no_elem = np.size(self.raster_A[:,:])-np.count_nonzero((self.raster_A[self.raster_A == self.noval]))
 
         self.no_parameters = no_parameters
 
@@ -63,7 +69,7 @@ class DistParameters():
         if no_lumped_par >= 1:
             # parameters in array
             # remove a place for the lumped parameter (k1) lower zone coefficient
-            no_parameters = self.no_parameters - no_lumped_par
+            self.no_parameters = self.no_parameters - no_lumped_par
 
         # parameters in array
         # create a 2d array [no_parameters, no_cells]
@@ -75,8 +81,14 @@ class DistParameters():
             self.Function = self.par3d
         elif Function == 3:
             self.Function = self.par2d_lumpedK1_lake
-        elif Function == 3:
+        elif Function == 4:
             self.Function = self.HRU
+
+        if self.HRUs == 1:
+            self.Function = self.HRU
+
+        self.ParametersNumber()
+
         pass
 
 
@@ -437,19 +449,20 @@ class DistParameters():
         assert isinstance(klb,numbers.Number) , " klb should be a number"
 
         # count the number of non-empty cells
-        values = list(set([int(self.raster_A[i,j]) for i in range(self.rows) for j in range(self.cols) if self.raster_A[i,j] != self.noval]))
-        no_elem=len(values)
+        # values = list(set([int(self.raster_A[i,j]) for i in range(self.rows) for j in range(self.cols) if self.raster_A[i,j] != self.noval]))
+        # no_elem=len(values)
 
         # input values
         if self.no_lumped_par > 0:
-            assert len(par_g)==(no_elem*(self.no_parameters-self.no_lumped_par))+self.no_lumped_par,"As there is "+str(self.no_lumped_par)+" lumped parameters, length of input parameters should be "+str(self.no_elem)+"*"+"("+str(self.no_parameters)+"-"+str(self.no_lumped_par)+")"+"+"+str(self.no_lumped_par)+"="+str(self.no_elem*(self.no_parameters-self.no_lumped_par)+self.no_lumped_par)+" not "+str(len(par_g))+" probably you have to add the value of the lumped parameter at the end of the list"
+            # assert len(par_g) == (self.no_elem*(self.no_parameters-self.no_lumped_par))+self.no_lumped_par,"As there is "+str(self.no_lumped_par)+" lumped parameters, length of input parameters should be "+str(self.no_elem)+"*"+"("+str(self.no_parameters)+"-"+str(self.no_lumped_par)+")"+"+"+str(self.no_lumped_par)+"="+str(self.no_elem*(self.no_parameters-self.no_lumped_par)+self.no_lumped_par)+" not "+str(len(par_g))+" probably you have to add the value of the lumped parameter at the end of the list"
+            assert len(par_g) == (self.no_elem*(self.no_parameters))+self.no_lumped_par,"As there is "+str(self.no_lumped_par)+" lumped parameters, length of input parameters should be "+str(self.no_elem)+"*"+"("+str(self.no_parameters)+"-"+str(self.no_lumped_par)+")"+"+"+str(self.no_lumped_par)+"="+str(self.no_elem*(self.no_parameters-self.no_lumped_par)+self.no_lumped_par)+" not "+str(len(par_g))+" probably you have to add the value of the lumped parameter at the end of the list"
         else:
             # if there is no lumped parameters
             assert len(par_g) == self.no_elem*self.no_parameters,"As there is no lumped parameters length of input parameters should be "+str(self.no_elem)+"*"+str(self.no_parameters)+"="+str(self.no_elem*self.no_parameters)
 
         # take the parameters from the generated parameters or the 1D list and
         # assign them to each cell
-        for i in range(no_elem):
+        for i in range(self.no_elem):
             self.Par2d[:,i] = par_g[i*self.no_parameters:(i*self.no_parameters) + self.no_parameters]
 
         ### lumped parameters
@@ -463,14 +476,14 @@ class DistParameters():
 
         # calculate the value of k(travelling time in muskingum based on value of
         # x and the position and upper, lower bound of k value
-        for i in range(no_elem):
+        for i in range(self.no_elem):
             self.Par2d[-2,i] = DistParameters.calculateK(self.Par2d[-1,i],self.Par2d[-2,i],kub,klb)
 
         # assign the parameters from the array (no_parameters, no_cells) to
         # the spatially corrected location in par2d each soil type will have the same
         # generated parameters
-        for i in range(no_elem):
-            self.Par3d[self.raster_A == values[i]] = self.Par2d[:,i]
+        for i in range(self.no_elem):
+            self.Par3d[self.raster_A == self.values[i]] = self.Par2d[:,i]
 
 
     @staticmethod
@@ -570,6 +583,45 @@ class DistParameters():
         return HAND, DTND
 
 
+    def ParametersNumber(self):
+        """
+        ==================================================================
+             ParametersNO(raster,no_parameters,no_lumped_par,HRUs=0)
+        ==================================================================
+        this function calculates the nomber of parameters that the optimization
+        algorithm is going top search for, use it only in case of totally distributed
+        catchment parameters (in case of lumped parameters no of parameters are the same
+        as the no of parameters of the conceptual model)
+
+        Inputs:
+        ----------
+            1- raster:
+                [gdal.dataset] raster to get the spatial information of the catchment
+                (DEM, flow accumulation or flow direction raster)
+            2- no_parameters
+                [int] no of parameters of the cell according to the rainfall runoff model
+            3-no_lumped_par:
+                [int] nomber of lumped parameters, you have to enter the value of
+                the lumped parameter at the end of the list, default is 0 (no lumped parameters)
+            4-HRUs:
+                [0 or 1] 0 to define that no hydrologic response units (HRUs), 1 to define that
+                HRUs are used
+
+        """
+        if self.HRUs == 0:
+            if self.no_lumped_par > 0:
+                self.ParametersNO = (self.no_elem *( self.no_parameters - self.no_lumped_par)) + self.no_lumped_par
+            else:
+                # if there is no lumped parameters
+                self.ParametersNO = self.no_elem * self.no_parameters
+        else:
+            if self.no_lumped_par > 0:
+                self.ParametersNO = (self.no_elem * (self.no_parameters - self.no_lumped_par)) + self.no_lumped_par
+            else:
+                # if there is no lumped parameters
+                self.ParametersNO = self.no_elem * self.no_parameters
+
+
     def SaveParameters(self, Path):
         """
         ============================================================
@@ -628,7 +680,7 @@ class DistParameters():
             pnme=["01_rfcf","02_FC", "03_BETA", "04_ETF", "05_LP", "06_K0","07_K1",
                   "08_K2","09_UZL","10_PERC", "11_Kmuskingum", "12_Xmuskingum"]
         else: # there is snow subtoutine
-            pnme=["01_ltt", "02_rfcf", "03_sfcf", "04_cfmax", "05_cwh", "06_cfr", 
+            pnme=["01_ltt", "02_rfcf", "03_sfcf", "04_cfmax", "05_cwh", "06_cfr",
                   "07_fc", "08_beta","09_etf","10_lp", "11_k0", "12_k1", "13_k2",
                   "14_uzl", "18_perc"]
 
@@ -637,69 +689,3 @@ class DistParameters():
 
         for i in range(np.shape(self.Par3d)[2]):
             Raster.RasterLike(self.raster,self.Par3d[:,:,i],pnme[i])
-
-
-    @staticmethod
-    def ParametersNO(raster, no_parameters, no_lumped_par,
-                     HRUs=0):
-        """
-        ==================================================================
-             ParametersNO(raster,no_parameters,no_lumped_par,HRUs=0)
-        ==================================================================
-        this function calculates the nomber of parameters that the optimization
-        algorithm is going top search for, use it only in case of totally distributed
-        catchment parameters (in case of lumped parameters no of parameters are the same
-        as the no of parameters of the conceptual model)
-
-        Inputs:
-        ----------
-            1- raster:
-                [gdal.dataset] raster to get the spatial information of the catchment
-                (DEM, flow accumulation or flow direction raster)
-            2- no_parameters
-                [int] no of parameters of the cell according to the rainfall runoff model
-            3-no_lumped_par:
-                [int] nomber of lumped parameters, you have to enter the value of
-                the lumped parameter at the end of the list, default is 0 (no lumped parameters)
-            4-HRUs:
-                [0 or 1] 0 to define that no hydrologic response units (HRUs), 1 to define that
-                HRUs are used
-
-        """
-        # input data validation
-        # data type
-        assert type(raster)==gdal.Dataset, "raster should be read using gdal (gdal dataset please read it using gdal library) "
-        assert type(no_parameters)== int, "no of lumped parameters should be integer"
-        assert type(no_lumped_par)== int, "no of lumped parameters should be integer"
-
-        # read the raster
-        raster_A=raster.ReadAsArray()
-        # get the shape of the raster
-        rows=raster.RasterYSize
-        cols=raster.RasterXSize
-        # get the no_value of in the raster
-        noval=np.float32(raster.GetRasterBand(1).GetNoDataValue())
-
-        # count the number of non-empty cells
-        no_elem = np.size(raster_A[:,:])-np.count_nonzero((raster_A[raster_A==noval]))
-
-        if HRUs == 0:
-            # input values
-            if no_lumped_par > 0:
-                ParametersNO=(no_elem*(no_parameters-no_lumped_par))+no_lumped_par #,"As there is "+str(no_lumped_par)+" lumped parameters, length of input parameters should be "+str(no_elem)+"*"+"("+str(no_parameters)+"-"+str(no_lumped_par)+")"+"+"+str(no_lumped_par)+"="+str(no_elem*(no_parameters-no_lumped_par)+no_lumped_par)+" not "+str(len(par_g))+" probably you have to add the value of the lumped parameter at the end of the list"
-            else:
-                # if there is no lumped parameters
-                ParametersNO = no_elem*no_parameters #,"As there is no lumped parameters length of input parameters should be "+str(no_elem)+"*"+str(no_parameters)+"="+str(no_elem*no_parameters)
-        else:
-            # count the number of non-empty cells
-            values=list(set([int(raster_A[i,j]) for i in range(rows) for j in range(cols) if raster_A[i,j] != noval]))
-            no_elem=len(values)
-
-            # input values
-            if no_lumped_par > 0:
-                ParametersNO = (no_elem*(no_parameters-no_lumped_par))+no_lumped_par #,"As there is "+str(no_lumped_par)+" lumped parameters, length of input parameters should be "+str(no_elem)+"*"+"("+str(no_parameters)+"-"+str(no_lumped_par)+")"+"+"+str(no_lumped_par)+"="+str(no_elem*(no_parameters-no_lumped_par)+no_lumped_par)+" not "+str(len(par_g))+" probably you have to add the value of the lumped parameter at the end of the list"
-            else:
-                # if there is no lumped parameters
-                ParametersNO = no_elem*no_parameters #,"As there is no lumped parameters length of input parameters should be "+str(no_elem)+"*"+str(no_parameters)+"="+str(no_elem*no_parameters)
-
-        return ParametersNO
