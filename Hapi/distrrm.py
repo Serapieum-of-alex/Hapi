@@ -177,13 +177,13 @@ class DistributedRRM():
     #    q_uz[lakecell[0],lakecell[1],:]=q_uz[lakecell[0],lakecell[1],:]+q_lake
 
         ### cells at the divider
-        q_uz_routed=np.zeros_like(Model.q_uz)*np.nan
+        q_uz_routed = np.zeros_like(Model.q_uz)*np.nan
         """
         lower zone discharge is going to be just translated without any attenuation
         in order to be able to calculate total discharge (uz+lz) at internal points
         in the catchment
         """
-        q_lz_translated=np.zeros_like(Model.q_uz)*np.nan
+        q_lz_translated = np.zeros_like(Model.q_uz)*np.nan
 
         # for all cell with 0 flow acc put the q_uz
         for x in range(Model.rows): # no of rows
@@ -199,9 +199,9 @@ class DistributedRRM():
                         # check from total flow accumulation
                         if Model.FlowAccArr [x, y] != Model.NoDataValue and Model.FlowAccArr[x, y] == Model.acc_val[j]:
                             # for UZ
-                            q_r=np.zeros(Model.TS)
+                            q_r = np.zeros(Model.TS)
                             # for lz
-                            q=np.zeros(Model.TS)
+                            q = np.zeros(Model.TS)
                             # iterate to route uz and translate lz
                             for i in range(len(Model.FDT[str(x)+","+str(y)])): #  Model.acc_val[j]
                                 # bring the indexes of the us cell
