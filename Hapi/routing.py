@@ -60,13 +60,13 @@ class Routing():
     #    if c1+c2+c3!=1:
     #        raise("sim of c1,c2 & c3 is not 1")
         
-        outflow=np.ones_like(inflow)*np.nan    
-        outflow[0]=Qinitial
+        outflow = np.ones_like(inflow)*np.nan    
+        outflow[0] = Qinitial
         
         for i in range(1,len(inflow)):
-            outflow[i]=c1*inflow[i]+c2*inflow[i-1]+c3*outflow[i-1]
+            outflow[i] = c1*inflow[i] + c2*inflow[i-1] + c3*outflow[i-1]
         
-        outflow=np.round(outflow,4)
+        outflow = np.round(outflow,4)
         
         return outflow
     
