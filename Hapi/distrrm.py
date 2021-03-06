@@ -14,10 +14,10 @@ class DistributedRRM():
         pass
 
     @staticmethod
-    def RunLumpedRRP(Model, ll_temp=None, q_init=None):
+    def RunLumpedRRM(Model, ll_temp=None, q_init=None):
         """
         ========================================================================
-          RunLumpedRRP(Raster,sp_prec,sp_et,sp_temp,sp_pars,p2,init_st,ll_temp,q_init)
+          RunLumpedRRM(Raster,sp_prec,sp_et,sp_temp,sp_pars,p2,init_st,ll_temp,q_init)
         ========================================================================
 
         this function runs the rainfall runoff lumped model (HBV, GR4,...) separately
@@ -106,7 +106,7 @@ class DistributedRRM():
                                                                      q_init = q_init,
                                                                      snow=Model.Snow)
 
-        area_coef = Model.AreaCoeff/Model.px_tot_area
+        area_coef = Model.CatArea/Model.px_tot_area
         # convert quz from mm/time step to m3/sec
         Model.q_uz = Model.q_uz*Model.px_area*area_coef/(Model.Timef*3.6)
         # convert Qlz to m3/sec
@@ -210,7 +210,7 @@ class DistributedRRM():
                                 # sum the Q of the US cells (already routed for its cell)
                                 # route first with there own k & xthen sum
                                 q_r = q_r + routing.muskingum(q_uz_routed[x_ind,y_ind,:],q_uz_routed[x_ind,y_ind,0],Model.Parameters[x_ind,y_ind,10],Model.Parameters[x_ind,y_ind,11],Model.Timef)
-                                q= q + q_lz_translated[x_ind,y_ind,:]
+                                q = q + q_lz_translated[x_ind,y_ind,:]
 
                             # add the routed upstream flows to the current Quz in the cell
                             q_uz_routed[x,y,:] = Model.q_uz[x,y,:] + q_r
