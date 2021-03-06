@@ -25,7 +25,7 @@ from Hapi.giscatchment import GISCatchment as GC
 
 class Model():
 
-    def __init__(self, name, start, end, fmt="%Y-%m-%d", SpatialResolution = 'Lumped',
+    def __init__(self, name, StartDate, EndDate, fmt="%Y-%m-%d", SpatialResolution = 'Lumped',
                  TemporalResolution = "Daily"):
         """
         SpatialR : TYPE, optional
@@ -37,12 +37,16 @@ class Model():
 
         """
         self.name = name
-        self.start = dt.datetime.strptime(start,fmt)
-        self.end = dt.datetime.strptime(end,fmt)
+        self.StartDate = dt.datetime.strptime(StartDate,fmt)
+        self.EndDate = dt.datetime.strptime(EndDate,fmt)
         self.SpatialResolution = SpatialResolution
         self.TemporalResolution = TemporalResolution
         if TemporalResolution == "Daily":
             self.Timef = 24
+            self.Index = pd.date_range(self.StartDate, self.EndDate, freq = "D" )
+        elif TemporalResolution == "Hourly":
+            self.Timef = 1
+            self.Index = pd.date_range(self.StartDate, self.EndDate, freq = "H" )
         else:
             #TODO calculate the teporal resolution factor
             # q mm , area sq km  (1000**2)/1000/f/60/60 = 1/(3.6*f)
@@ -51,6 +55,21 @@ class Model():
         pass
 
     def ReadRainfall(self,Path):
+        """
+        =========================================================
+             ReadRainfall(Path)
+        =========================================================
+
+        Parameters
+        ----------
+        Path : [String]
+            path to the Folder contains precipitation rasters.
+
+        Returns
+        -------
+        Prec : [array attribute]
+            array containing the spatial rainfall values
+        """
         # data type
         assert type(Path) == str, "PrecPath input should be string type"
         # check wether the path exists or not
@@ -61,8 +80,26 @@ class Model():
         self.Prec = raster.ReadRastersFolder(Path)
         self.TS = self.Prec.shape[2] + 1 # no of time steps =length of time series +1
         assert type(self.Prec) == np.ndarray, "array should be of type numpy array"
+        print("Rainfall data are read successfully")
+
 
     def ReadTemperature(self,Path):
+        """
+        =========================================================
+            ReadTemperature(Path)
+        =========================================================
+
+        Parameters
+        ----------
+        Path : [String]
+            path to the Folder contains temperature rasters.
+
+        Returns
+        -------
+        Temp : [array attribute]
+            array containing the spatial temperature values
+
+        """
         # data type
         assert type(Path) == str, "PrecPath input should be string type"
         # check wether the path exists or not
@@ -72,8 +109,25 @@ class Model():
         # read data
         self.Temp = raster.ReadRastersFolder(Path)
         assert type(self.Temp) == np.ndarray, "array should be of type numpy array"
+        print("Temperature data are read successfully")
 
     def ReadET(self,Path):
+        """
+        =========================================================
+            ReadET(Path)
+        =========================================================
+
+        Parameters
+        ----------
+        Path : [String]
+            path to the Folder contains Evapotranspiration rasters.
+
+        Returns
+        -------
+        ET : [array attribute]
+            array containing the spatial Evapotranspiration values
+
+        """
         # data type
         assert type(Path) == str, "PrecPath input should be string type"
         # check wether the path exists or not
@@ -83,8 +137,31 @@ class Model():
         # read data
         self.ET = raster.ReadRastersFolder(Path)
         assert type(self.ET) == np.ndarray, "array should be of type numpy array"
+        print("Potential Evapotranspiration data are read successfully")
+
 
     def ReadFlowAcc(self, Path):
+        """
+        =========================================================
+            ReadET(Path)
+        =========================================================
+
+        Parameters
+        ----------
+        Path : [String]
+            path to the Flow Accumulation raster of the catchment
+            (it should include the raster name and extension).
+
+        Returns
+        -------
+        FlowAcc : [array attribute]
+            array containing the spatial Evapotranspiration values
+        rows:
+        cols:
+        NoDataValue:
+        no_elem:
+
+        """
         # data type
         assert type(Path) == str, "PrecPath input should be string type"
         # check wether the path exists or not
@@ -145,7 +222,6 @@ class Model():
 
         # create the flow direction table
         self.FDT = GC.FlowDirecTable(self.FlowDir)
-
         print("Flow Direction inputs is read successfully")
 
     def ReadParameters(self,Path):
@@ -161,22 +237,27 @@ class Model():
         else:
             self.Parameters = pd.read_csv(Path, index_col = 0, header = None)[1].tolist()
 
+        print("Parameters are read successfully")
 
-    def ReadLumpedModel(self, LumpedModel, AreaCoeff, InitialCond, Snow):
+
+    def ReadLumpedModel(self, LumpedModel, CatArea, InitialCond, Snow):
         assert isinstance(LumpedModel,ModuleType) , "ConceptualModel should be a module or a python file contains functions "
         self.LumpedModel = LumpedModel
-        self.AreaCoeff = AreaCoeff
+        self.CatArea = CatArea
         self.InitialCond = InitialCond
         if self.InitialCond != None:
             assert type(self.InitialCond)==list, "init_st should be of type list"
 
         self.Snow = Snow
+        print("Lumped model is read successfully")
+
 
     def ReadLumpedInputs(self,Path):
         self.data = pd.read_csv(Path,header=0 ,delimiter=',',#"\t", #skiprows=11,
                    index_col=0)
         self.data = self.data.values
         assert np.shape(self.data)[1] == 3 or np.shape(self.data)[1] == 4," meteorological data should be of length at least 3 (prec, ET, temp) or 4(prec, ET, temp, tm) "
+        print("Lumped Model inputs are read successfully")
 
     def ReadGaugeTable(self, Path):
         self.GaugesTable = pd.read_csv(Path)
@@ -185,13 +266,20 @@ class Model():
         if hasattr(self, 'FlowAcc'):
             # calculate the nearest cell to each station
             self.GaugesTable.loc[:,["cell_row","cell_col"]] = GC.NearestCell(self.FlowAcc,self.GaugesTable[['id','x','y','weight']][:])
+        print("Gauge Table is read successfully")
 
-    def ReadDischargeGauges(self, Path, delimiter=",", column='id',fmt="%Y-%m-%d"):
+
+    def ReadDischargeGauges(self, Path, delimiter=",", column='id',fmt="%Y-%m-%d",
+                            Split=False, Date1='', Date2=''):
+
+        if self.TemporalResolution == "Daily":
+            ind = pd.date_range(self.StartDate, self.EndDate, freq="D")
+        else:
+            ind = pd.date_range(self.StartDate, self.EndDate, freq="H")
 
         if self.SpatialResolution == "Distributed":
             assert hasattr(self, 'GaugesTable'), 'please read the gauges table first'
 
-            ind = pd.date_range(self.start, self.end)
             self.QGauges = pd.DataFrame(index=ind, columns = self.GaugesTable[column].tolist())
 
             for i in range(len(self.GaugesTable)):
@@ -200,18 +288,80 @@ class Model():
 
                 f.index = [ dt.datetime.strptime(i,fmt) for i in f.index.tolist()]
 
-                self.QGauges[int(name)] = f.loc[self.start:self.end,f.columns[0]]
+                self.QGauges[int(name)] = f.loc[self.StartDate:self.EndDate,f.columns[0]]
         else:
-            ind = pd.date_range(self.start, self.end)
             self.QGauges = pd.DataFrame(index=ind)
             f = pd.read_csv(Path, header=0, index_col=0, delimiter=delimiter)# ,#delimiter="\t", skiprows=11,
             f.index = [ dt.datetime.strptime(i,fmt) for i in f.index.tolist()]
-            self.QGauges[f.columns[0]] = f.loc[self.start:self.end,f.columns[0]]
+            self.QGauges[f.columns[0]] = f.loc[self.StartDate:self.EndDate,f.columns[0]]
+
+
+        if Split:
+            Date1 = dt.datetime.strptime(Date1,fmt)
+            Date2 = dt.datetime.strptime(Date2,fmt)
+            self.QGauges = self.QGauges.loc[Date1:Date2]
+
+        print("Gauges data are read successfully")
+
 
     def ReadParametersBounds(self, UB, LB):
         assert len(UB)==len(LB), "length of UB should be the same like LB"
         self.UB = np.array(UB)
         self.LB = np.array(LB)
+        print("Parameters bounds are read successfully")
+
+
+class Lake():
+
+    def __init__(self, StartDate='', EndDate='', fmt="%Y-%m-%d",
+                 TemporalResolution="Daily", Split=False):
+
+        self.Split = Split
+        self.StartDate = dt.datetime.strptime(StartDate,fmt)
+        self.EndDate = dt.datetime.strptime(EndDate,fmt)
+
+        if TemporalResolution == "Daily":
+            self.Index = pd.date_range(StartDate, EndDate, freq = "D" )
+        elif TemporalResolution == "Hourly":
+            self.Index = pd.date_range(StartDate, EndDate, freq = "H" )
+        else:
+            assert False , "Error"
+        pass
+
+    def ReadMeteoData(self, Path, fmt):
+
+        df = pd.read_csv(Path, index_col = 0)
+        df.index = [dt.datetime.strptime(date,fmt) for date in df.index]
+
+        if self.Split:
+             df = df.loc[self.StartDate:self.EndDate,:]
+
+        self.MeteoData = df.values # lakeCalibArray = lakeCalibArray[:,0:-1]
+
+        print("Lake Meteo data are read successfully")
+
+    def ReadParameters(self, Path):
+        Parameters = np.loadtxt(Path).tolist()
+        self.Parameters = Parameters
+        print("Lake Parameters are read successfully")
+
+    def ReadLumpedModel(self, LumpedModel, CatArea, LakeArea, InitialCond,
+                        OutflowCell, StageDischargeCurve, Snow):
+        assert isinstance(LumpedModel,ModuleType) , "ConceptualModel should be a module or a python file contains functions "
+        self.LumpedModel = LumpedModel
+
+        self.CatArea = CatArea
+        self.LakeArea = LakeArea
+        self.InitialCond = InitialCond
+
+        if self.InitialCond != None:
+            assert type(self.InitialCond)==list, "init_st should be of type list"
+
+        self.Snow = Snow
+        self.OutflowCell = OutflowCell
+        self.StageDischargeCurve = StageDischargeCurve
+        print("Lumped model is read successfully")
+
 
 
 class Run(Model):
@@ -230,15 +380,9 @@ class Run(Model):
         Inputs:
         ----------
             1-Paths:
-                1-PrecPath:
-                    [String] path to the Folder contains precipitation rasters
-                2-Evap_Path:
-                    [String] path to the Folder contains Evapotranspiration rasters
-                3-TempPath:
-                    [String] path to the Folder contains Temperature rasters
+
                 4-FlowAccPath:
-                    [String] path to the Flow Accumulation raster of the catchment (it should
-                    include the raster name and extension)
+
                 5-FlowDPath:
                     [String] path to the Flow Direction raster of the catchment (it should
                     include the raster name and extension)
@@ -292,8 +436,7 @@ class Run(Model):
         return q_out, q_uz, q_lz
 
 
-    def RunHAPIwithLake(self, lakeCalibArray, StageDischargeCurve, LakeParameters,
-                        lakecell,Lake_init_st):
+    def RunHAPIwithLake(self, Lake):
         """
         =======================================================================
             RunDistwithLake(PrecPath, Evap_Path, TempPath, DemPath, FlowAccPath, FlowDPath, ParPath, p2)
@@ -359,11 +502,13 @@ class Run(Model):
         assert np.shape(self.Prec)[1] == cols and np.shape(self.ET)[1] == cols and np.shape(self.Temp)[1] == cols and np.shape(self.Parameters)[1] == cols, "all input data should have the same number of columns"
         assert np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2], "all meteorological input data should have the same length"
 
-        #run the model
-        st, q_out, q_uz, q_lz = Wrapper.HapiWithlake(lakeCalibArray, StageDischargeCurve,
-                                                   LakeParameters, lakecell,Lake_init_st)
+        assert np.shape(Lake.MeteoData)[0] == np.shape(self.Prec)[2], "Lake meteorological data has to have the same length as the distributed raster data"
+        assert np.shape(Lake.MeteoData)[1] >= 3, "Lake Meteo data has to have at least three columns rain, ET, and Temp"
 
-        return st, q_out, q_uz, q_lz
+        #run the model
+        q_out, q_uz, q_lz = Wrapper.HapiWithlake(self, Lake)
+
+        return q_out, q_uz, q_lz
 
 
     @staticmethod
@@ -522,9 +667,9 @@ class Run(Model):
             snow=0
         """
         if self.TemporalResolution == "Daily":
-            ind = pd.date_range(self.start, self.end, freq="D")
+            ind = pd.date_range(self.StartDate, self.EndDate, freq="D")
         else:
-            ind = pd.date_range(self.start, self.end, freq="H")
+            ind = pd.date_range(self.StartDate, self.EndDate, freq="H")
 
         self.Qsim = pd.DataFrame(index = ind)
 
