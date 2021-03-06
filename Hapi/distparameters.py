@@ -296,8 +296,8 @@ class DistParameters():
         if constraint1 <= LB : #if constraint is lower than LB take UB
             constraint1 = LB
 
-        generatedK=np.linspace(constraint1,constraint2,101)
-        k=generatedK[int(round(position,0))]
+        generatedK = np.linspace(constraint1,constraint2,101)
+        k = generatedK[int(round(position,0))]
         return k
 
 
