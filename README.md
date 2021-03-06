@@ -8,6 +8,7 @@
 [![Downloads](https://pepy.tech/badge/hapi-nile)](https://pepy.tech/project/hapi-nile)
 [![Downloads](https://pepy.tech/badge/hapi-nile/month)](https://pepy.tech/project/hapi-nile)
 [![Downloads](https://pepy.tech/badge/hapi-nile/week)](https://pepy.tech/project/hapi-nile)
+[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/MAfarrag/Hapi/master.svg)](https://results.pre-commit.ci/badge/github/MAfarrag/Hapi/master.svg)
 
 
 Hapi - Hydrological library for Python 
