@@ -181,7 +181,12 @@ class Model():
         self.acc_val = list(set(self.acc_val))
         self.acc_val.sort()
         acc_val_mx = max(self.acc_val)
-        assert acc_val_mx == self.no_elem or acc_val_mx == self.no_elem -1, "flow accumulation raster values are not correct max value should equal number of cells or number of cells -1"
+        if not (acc_val_mx == self.no_elem or acc_val_mx == self.no_elem -1):
+            message = """ flow accumulation raster values are not correct max value should equal number of cells or number of cells -1 """
+            message = message + " Max Value in the Flow Acc raster is " + str(acc_val_mx)
+            message = message + " while No of cells are " + str(self.no_elem)
+            print(message)
+        # assert acc_val_mx == self.no_elem or acc_val_mx == self.no_elem -1,
 
         # location of the outlet
         # outlet is the cell that has the max flow_acc
