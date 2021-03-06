@@ -13,6 +13,7 @@ class Wrapper():
 
     def __init__(self):
         pass
+
     @staticmethod
     def HapiModel(Model, ll_temp=None, q_0=None):
         """
@@ -71,7 +72,7 @@ class Wrapper():
                 entire time series
         """
         # run the rainfall runoff model separately
-        distrrm.RunLumpedRRP(Model)
+        distrrm.RunLumpedRRM(Model)
 
         # run the GIS part to rout from cell to another
         q_out, q_uz_routed, q_lz_trans = distrrm.SpatialRouting(Model)
@@ -82,40 +83,44 @@ class Wrapper():
 
 
     @staticmethod
-    def HapiWithlake(Model, lakeCalibArray,StageDischargeCurve,
-                     LakeParameters,lakecell,lake_initial,ll_temp=None, q_0=None):
+    def HapiWithlake(Model, Lake,ll_temp=None, q_0=None):
 
-        plake = lakeCalibArray[:,0]
-        et = lakeCalibArray[:,1]
-        t = lakeCalibArray[:,2]
-        tm = lakeCalibArray[:,3]
+        plake = Lake.MeteoData[:,0]
+        et = Lake.MeteoData[:,1]
+        t = Lake.MeteoData[:,2]
+        tm = Lake.MeteoData[:,3]
 
         # lake simulation
-        q_lake, _ = hbv_lake.simulate(plake, t, et, LakeParameters, [Model.TemporalRsolution, Model.AreaCoeff],
-                                      StageDischargeCurve,0,init_st=lake_initial,ll_temp=tm,lake_sim=True)
+        Lake.Qlake, _ = hbv_lake.simulate(plake, t, et, Lake.Parameters,
+                                      [Model.Timef, Lake.CatArea, Lake.LakeArea],
+                                      Lake.StageDischargeCurve, 0,
+                                      init_st=Lake.InitialCond,
+                                      ll_temp=tm, lake_sim=True)
         # qlake is in m3/sec
         # lake routing
-        qlake_r = routing.muskingum(q_lake,q_lake[0],LakeParameters[11],
-                                  LakeParameters[12],Model.TemporalRsolution)
+        Lake.QlakeR = routing.muskingum(Lake.Qlake, Lake.Qlake[0], Lake.Parameters[11],
+                                  Lake.Parameters[12], Model.Timef)
 
         # subcatchment
-        # AdditionalParameters = p2[0:2]
-        st, q_lz, q_uz = distrrm.RunLumpedRRP(Model)
+        # st, q_lz, q_uz = distrrm.RunLumpedRRM(Model)
+        distrrm.RunLumpedRRM(Model)
 
         # routing lake discharge with DS cell k & x and adding to cell Q
-        q_lake = routing.muskingum(qlake_r,qlake_r[0],Model.Parameters[lakecell[0],lakecell[1],10],
-                                   Model.Parameters[lakecell[0],lakecell[1],11],Model.TemporalRsolution)
+        q_lake = routing.muskingum(Lake.QlakeR,Lake.QlakeR[0],
+                                   Model.Parameters[Lake.OutflowCell[0],Lake.OutflowCell[1],10],
+                                   Model.Parameters[Lake.OutflowCell[0],Lake.OutflowCell[1],11],
+                                   Model.Timef)
 
         q_lake = np.append(q_lake,q_lake[-1])
         # both lake & Quz are in m3/s
-        q_uz[lakecell[0],lakecell[1],:] = q_uz[lakecell[0],lakecell[1],:] + q_lake
+        Model.q_uz[Lake.OutflowCell[0],Lake.OutflowCell[1],:] = Model.q_uz[Lake.OutflowCell[0],Lake.OutflowCell[1],:] + q_lake
 
         # run the GIS part to rout from cell to another
         q_out, q_uz_routed, q_lz_trans = distrrm.SpatialRouting(Model)
 
         q_out=q_out[:-1]
 
-        return st, q_out, q_uz_routed, q_lz_trans
+        return q_out, q_uz_routed, q_lz_trans
 
 
     @staticmethod
@@ -137,7 +142,7 @@ class Wrapper():
 
         # subcatchment
         AdditionalParameters = p2[0:2]
-        st, q_lz, q_uz = distrrm.RunLumpedRRP(ConceptualModel, FPL, sp_prec=sp_prec,
+        st, q_lz, q_uz = distrrm.RunLumpedRRM(ConceptualModel, FPL, sp_prec=sp_prec,
                                               sp_et=sp_et, sp_temp=sp_temp, sp_pars=parameters,
                                               p2=AdditionalParameters, snow=snow,
                                               init_st=init_st)
@@ -215,8 +220,8 @@ class Wrapper():
                                                      snow = Model.Snow)
         # q mm , area sq km  (1000**2)/1000/f/60/60 = 1/(3.6*f)
         # if daily tfac=24 if hourly tfac=1 if 15 min tfac=0.25
-        q_uz = q_uz*Model.AreaCoeff/(Model.Timef*3.6)
-        q_lz = q_lz*Model.AreaCoeff/(Model.Timef*3.6)
+        q_uz = q_uz*Model.CatArea/(Model.Timef*3.6)
+        q_lz = q_lz*Model.CatArea/(Model.Timef*3.6)
 
         q_sim = q_uz + q_lz
 
