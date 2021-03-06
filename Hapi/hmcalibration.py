@@ -104,7 +104,7 @@ class HMCalibration():
         Parameters
         ----------
             1-GaugesTable : [dataframe]
-                Dataframe contains columns [Segment,xsid,datum(m)].
+                Dataframe contains columns [id,xsid,datum(m)].
             2-Path : [String]
                     path to the folder containing the text files of the water level gauges
             3-StartDate : [datetime object]
@@ -159,7 +159,7 @@ class HMCalibration():
         del WLGauges[0]
         self.WLGauges = WLGauges
         
-        # GaugesTable.index = GaugesTable['segment'].tolist()
+        # GaugesTable.index = GaugesTable['id'].tolist()
         self.GaugesTable['WLstart'] = 0
         self.GaugesTable['WLend'] = 0
         for i in range(len(columns)):
@@ -212,17 +212,17 @@ class HMCalibration():
         #                   str(int(Gauges[ID][i])) + '.txt') #,skiprows = 0
         # self.QGauges = GRDC
 
-        # GaugesTable = pd.DataFrame(index = Gauges['segment'])
+        # GaugesTable = pd.DataFrame(index = Gauges['id'])
         # GaugesTable['start'] = 0
         # GaugesTable['end'] = 0
 
         # for i in range(len(Gauges[ID])):
-        #     st1 = GRDC[Gauges['segment'][i]][GRDC[Gauges['segment'][i]] != NoValue].index[0]
-        #     end1 = GRDC[Gauges['segment'][i]][GRDC[Gauges['segment'][i]] != NoValue].index[-1]
+        #     st1 = GRDC[Gauges['id'][i]][GRDC[Gauges['id'][i]] != NoValue].index[0]
+        #     end1 = GRDC[Gauges['id'][i]][GRDC[Gauges['id'][i]] != NoValue].index[-1]
         #     # GaugesTable.loc[GaugesTable.loc[:,'SubID'] == Gauges[0][i],'start'] = st1
         #     # GaugesTable.loc[GaugesTable.loc[:,'SubID'] == Gauges[0][i],'end'] = end1
-        #     GaugesTable.loc[Gauges['segment'][i],'start'] = st1
-        #     GaugesTable.loc[Gauges['segment'][i],'end'] = end1
+        #     GaugesTable.loc[Gauges['id'][i],'start'] = st1
+        #     GaugesTable.loc[Gauges['id'][i],'end'] = end1
         
         # self.QGaugesTable = GaugesTable
         
@@ -240,7 +240,7 @@ class HMCalibration():
                     print(str(i) + "-" + Path + str(int(name)) + '.txt')
         self.QGauges = QGauges
         
-        # Gauges = pd.DataFrame(index = Gauges['segment'])
+        # Gauges = pd.DataFrame(index = Gauges['id'])
         self.GaugesTable['Qstart'] = 0
         self.GaugesTable['Qend'] = 0
         
@@ -394,7 +394,7 @@ class HMCalibration():
         EndDate = StartDate + dt.timedelta(days = days-1)
         ind = pd.date_range(StartDate,EndDate)
 
-        WLRIM = pd.DataFrame(index = ind, columns = self.GaugesTable.loc[self.GaugesTable['waterlevel']==1,column].tolist()) #WLGaugesTable['Segment'].tolist()
+        WLRIM = pd.DataFrame(index = ind, columns = self.GaugesTable.loc[self.GaugesTable['waterlevel']==1,column].tolist()) #WLGaugesTable['id'].tolist()
         WLRIM.loc[:,:] = NoValue
 
         for i in range(len(WLRIM.columns)):
@@ -772,10 +772,10 @@ class HMCalibration():
             slope for the given segment
         """
     
-        levels = pd.DataFrame(columns=['segment','bedlevelUS','bedlevelDS'])
+        levels = pd.DataFrame(columns=['id','bedlevelUS','bedlevelDS'])
         
         # change cross-section
-        bedlevel = self.crosssections.loc[self.crosssections["segment"]==Segmenti,'gl'].values
+        bedlevel = self.crosssections.loc[self.crosssections["id"]==Segmenti,'gl'].values
         # get the bedlevel of the last cross section in the segment as a calibration parameter
         levels.loc[Segmenti,'bedlevelDS'] = BedlevelDS
         levels.loc[Segmenti,'bedlevelUS'] = bedlevel[0]
@@ -794,14 +794,14 @@ class HMCalibration():
             # bedlevelNew[i] = levels.loc[Segmenti,'bedlevelDS'] + (len(bedlevel) - i -1) * abs(AvgSlope)
             bedlevelNew[i] = bedlevel[i] + i * AverageDelta
         
-        self.crosssections.loc[self.crosssections["segment"]==Segmenti,'gl'] = bedlevelNew
+        self.crosssections.loc[self.crosssections["id"]==Segmenti,'gl'] = bedlevelNew
         
         # change manning
-        self.crosssections.loc[self.crosssections["segment"]==Segmenti,'m'] = Manning
+        self.crosssections.loc[self.crosssections["id"]==Segmenti,'m'] = Manning
         
         ## change slope
-        # self.slope.loc[self.slope['segment']==Segmenti, 'slope'] = AvgSlope
-        self.slope.loc[self.slope['segment']==Segmenti, 'slope'] = BC_slope
+        # self.slope.loc[self.slope['id']==Segmenti, 'slope'] = AvgSlope
+        self.slope.loc[self.slope['id']==Segmenti, 'slope'] = BC_slope
         
     def ReadCrossSections(self,Path):
         """
@@ -836,9 +836,9 @@ class HMCalibration():
 
         """
         assert hasattr(self,"crosssections"), "please read the cross section first"
-        g = self.crosssections.loc[self.crosssections['segment']==segmenti,:].index[0]
+        g = self.crosssections.loc[self.crosssections['id']==segmenti,:].index[0]
         
-        segment = self.crosssections.loc[self.crosssections['segment']==segmenti,:]
+        segment = self.crosssections.loc[self.crosssections['id']==segmenti,:]
         segment.index = range(len(segment))
         segment['glnew'] = 0
         # the bed level at the beginning and end of the egment
@@ -855,7 +855,7 @@ class HMCalibration():
         
         segment.index = range(g, g + len(segment))
         # copy back the segment to the whole XS df
-        self.crosssections.loc[self.crosssections['segment']==segmenti,:] = segment
+        self.crosssections.loc[self.crosssections['id']==segmenti,:] = segment
         # g = g + len(segment)
 
     def SmoothBankLevel(self,segmenti):
@@ -885,10 +885,10 @@ class HMCalibration():
         
         # for i in range(len(segments)):
         # i=30
-        g = self.crosssections.loc[self.crosssections['segment']==segmenti,:].index[0]
+        g = self.crosssections.loc[self.crosssections['id']==segmenti,:].index[0]
         #---
         # segmenti = segments[i]
-        segment = self.crosssections.loc[self.crosssections['segment']==segmenti,:]
+        segment = self.crosssections.loc[self.crosssections['id']==segmenti,:]
         segment.index = range(len(segment))
         segment['banklevelnew'] = 0
         segment.loc[0,'banklevelnew'] = segment.loc[0,'banklevel']
@@ -904,7 +904,7 @@ class HMCalibration():
         segment.index = range(g, g + len(segment))
         
         # copy back the segment to the whole XS df
-        self.crosssections.loc[self.crosssections['segment']==segmenti,:] = segment
+        self.crosssections.loc[self.crosssections['id']==segmenti,:] = segment
         # g = g + len(segment)
         # end of loop
         
@@ -936,11 +936,11 @@ class HMCalibration():
         
         # for i in range(len(segments)):
         # i=30
-        g = self.crosssections.loc[self.crosssections['segment']==segmenti,:].index[0]
+        g = self.crosssections.loc[self.crosssections['id']==segmenti,:].index[0]
         #------
         
         # segmenti = segments[i]
-        segment = self.crosssections.loc[self.crosssections['segment']==segmenti,:]
+        segment = self.crosssections.loc[self.crosssections['id']==segmenti,:]
         segment.index = range(len(segment))
         
         segment['fplnew'] = 0
@@ -964,7 +964,7 @@ class HMCalibration():
         
         segment.index = range(g, g + len(segment))
         # copy back the segment to the whole XS df
-        self.crosssections.loc[self.crosssections['segment']==segmenti,:] = segment
+        self.crosssections.loc[self.crosssections['id']==segmenti,:] = segment
         
         del self.crosssections['banklevel'], self.crosssections['fpr'], self.crosssections['fpl']
         # g = g + len(segment)
@@ -991,11 +991,11 @@ class HMCalibration():
         """
         # for i in range(len(segments)):
         # i=30
-        g = self.crosssections.loc[self.crosssections['segment']==segmenti,:].index[0]
+        g = self.crosssections.loc[self.crosssections['id']==segmenti,:].index[0]
         #------
         
         # segmenti = segments[i]
-        segment = self.crosssections.loc[self.crosssections['segment']==segmenti,:]
+        segment = self.crosssections.loc[self.crosssections['id']==segmenti,:]
         segment.index = range(len(segment))
         segment['bnew'] = 0
         segment.loc[0,'bnew'] = segment.loc[0,'b']
@@ -1007,7 +1007,7 @@ class HMCalibration():
         segment['b'] = segment['bnew']
         segment.index = range(g, g + len(segment))
         # copy back the segment to the whole XS df
-        self.crosssections.loc[self.crosssections['segment']==segmenti,:] = segment
+        self.crosssections.loc[self.crosssections['id']==segmenti,:] = segment
         # g = g + len(segment)
         # end of loop
     
@@ -1052,17 +1052,17 @@ class HMCalibration():
             the "gl" column in the crosssections attribute will be smoothed
 
         """
-        # segments = list(set(XS['segment']))
+        # segments = list(set(XS['id']))
         # SlopePercentThreshold = 1.5
         # g = 0
         
         # for i in range(len(segments)):
         #-------
         # i=30
-        g = self.crosssections.loc[self.crosssections['segment']==segmenti,:].index[0]
+        g = self.crosssections.loc[self.crosssections['id']==segmenti,:].index[0]
         #-------
         # segmenti = segments[i]
-        segment = self.crosssections.loc[self.crosssections['segment']==segmenti,:]
+        segment = self.crosssections.loc[self.crosssections['id']==segmenti,:]
         segment.index = range(len(segment))
         # slope must be positive due to the smoothing
         slopes = [(segment.loc[k,'gl']-segment.loc[k+1,'gl'])/500 for k in range(len(segment)-1)]
@@ -1086,7 +1086,7 @@ class HMCalibration():
         
         segment.index = range(g, g + len(segment))
         # copy back the segment to the whole XS df
-        self.crosssections.loc[self.crosssections['segment']==segmenti,:] = segment
+        self.crosssections.loc[self.crosssections['id']==segmenti,:] = segment
         # g = g + len(segment)
         
     def CheckFloodplain(self):
