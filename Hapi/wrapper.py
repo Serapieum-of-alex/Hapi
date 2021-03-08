@@ -62,24 +62,29 @@ class Wrapper():
 
         Outputs:
         ----------
-            1- st:
-                [numpy array] 3d array of the 5 state variable data for each cell
-            2- q_lz:
-                [numpy array] 1d array of the calculated discharge of the lower zone
-                of the rainfall runoff model
-            3- q_uz:
-                [numpy array] 3d array of calculated discharge for each cell for the
-                entire time series
+            1-statevariables:
+                [numpy ndarray] 4D array (rows,cols,time,states) states are [sp,wc,sm,uz,lv]
+            2-qlz:
+                [numpy ndarray] 3D array of the lower zone discharge
+            3-quz:
+                [numpy ndarray] 3D array of the upper zone discharge
+            4-qout:
+                [numpy array] 1D timeseries of discharge at the outlet of the catchment
+                of unit m3/sec
+            5-quz_routed:
+                [numpy ndarray] 3D array of the upper zone discharge  accumulated and
+                routed at each time step
+            6-qlz_translated:
+                [numpy ndarray] 3D array of the lower zone discharge translated at each time step
         """
         # run the rainfall runoff model separately
         distrrm.RunLumpedRRM(Model)
 
         # run the GIS part to rout from cell to another
-        q_out, q_uz_routed, q_lz_trans = distrrm.SpatialRouting(Model)
+        distrrm.SpatialRouting(Model)
 
-        q_out=q_out[:-1]
+        Model.qout = Model.qout[:-1]
 
-        return q_out, q_uz_routed, q_lz_trans
 
 
     @staticmethod
@@ -116,11 +121,11 @@ class Wrapper():
         Model.q_uz[Lake.OutflowCell[0],Lake.OutflowCell[1],:] = Model.q_uz[Lake.OutflowCell[0],Lake.OutflowCell[1],:] + q_lake
 
         # run the GIS part to rout from cell to another
-        q_out, q_uz_routed, q_lz_trans = distrrm.SpatialRouting(Model)
+        distrrm.SpatialRouting(Model)
 
-        q_out=q_out[:-1]
+        Model.q_out = Model.q_out[:-1]
 
-        return q_out, q_uz_routed, q_lz_trans
+        # return q_out, q_uz_routed, q_lz_trans
 
 
     @staticmethod
