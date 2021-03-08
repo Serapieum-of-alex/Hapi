@@ -218,19 +218,17 @@ class Wrapper():
         tm = Model.data[:,3]
 
         # from the conceptual model calculate the upper and lower response mm/time step
-        q_uz, q_lz, st = Model.LumpedModel.Simulate(p, t, et, Model.Parameters,
+        Model.quz, Model.qlz, Model.statevariables = Model.LumpedModel.Simulate(p, t, et, Model.Parameters,
                                                      init_st = Model.InitialCond,
                                                      ll_temp = tm,
                                                      q_init = None,
                                                      snow = Model.Snow)
         # q mm , area sq km  (1000**2)/1000/f/60/60 = 1/(3.6*f)
         # if daily tfac=24 if hourly tfac=1 if 15 min tfac=0.25
-        q_uz = q_uz*Model.CatArea/(Model.Timef*3.6)
-        q_lz = q_lz*Model.CatArea/(Model.Timef*3.6)
+        Model.quz = Model.quz*Model.CatArea/(Model.Timef*3.6)
+        Model.qlz = Model.qlz*Model.CatArea/(Model.Timef*3.6)
 
-        q_sim = q_uz + q_lz
+        Model.Qsim = Model.quz + Model.qlz
 
         if Routing != 0 :
-            q_sim = RoutingFn(np.array(q_sim[:-1]), Model.Parameters[-1])
-
-        return st, q_sim
+            Model.Qsim = RoutingFn(np.array(Model.Qsim[:-1]), Model.Parameters[-1])

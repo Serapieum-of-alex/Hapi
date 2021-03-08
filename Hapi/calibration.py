@@ -307,11 +307,10 @@ class Calibration(Model):
                 # parameters
                 self.Parameters = par
                 #run the model
-                _, q_out = Wrapper.Lumped(self, Route, RoutingFn)
-
+                Wrapper.Lumped(self, Route, RoutingFn)
                 # calculate performance of the model
                 try:
-                    error = self.OF(self.QGauges[self.QGauges.columns[0]],q_out,*self.OFArgs)
+                    error = self.OF(self.QGauges[self.QGauges.columns[-1]],self.Qsim,*self.OFArgs)
                 except TypeError: # if no of inputs less than what the function needs
                     assert 1==5, "the objective function you have entered needs more inputs please enter then in a list as *args"
 

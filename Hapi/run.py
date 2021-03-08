@@ -265,14 +265,16 @@ class Model():
         assert np.shape(self.data)[1] == 3 or np.shape(self.data)[1] == 4," meteorological data should be of length at least 3 (prec, ET, temp) or 4(prec, ET, temp, tm) "
         print("Lumped Model inputs are read successfully")
 
-    def ReadGaugeTable(self, Path, FlowaccPath):
+    def ReadGaugeTable(self, Path, FlowaccPath=''):
+        # read the gauge table
         self.GaugesTable = pd.read_csv(Path)
-
         
-        # if hasattr(self, 'FlowAcc'):
-        FlowAcc = gdal.Open(FlowaccPath)
-        # calculate the nearest cell to each station
-        self.GaugesTable.loc[:,["cell_row","cell_col"]] = GC.NearestCell(FlowAcc,self.GaugesTable[['id','x','y','weight']][:])
+        if FlowaccPath != '':
+            # if hasattr(self, 'FlowAcc'):
+            FlowAcc = gdal.Open(FlowaccPath)
+            # calculate the nearest cell to each station
+            self.GaugesTable.loc[:,["cell_row","cell_col"]] = GC.NearestCell(FlowAcc,self.GaugesTable[['id','x','y','weight']][:])
+        
         print("Gauge Table is read successfully")
 
 
@@ -286,15 +288,15 @@ class Model():
 
         if self.SpatialResolution == "Distributed":
             assert hasattr(self, 'GaugesTable'), 'please read the gauges table first'
-
+    
             self.QGauges = pd.DataFrame(index=ind, columns = self.GaugesTable[column].tolist())
-
+    
             for i in range(len(self.GaugesTable)):
                 name = self.GaugesTable.loc[i,'id']
                 f = pd.read_csv(Path + str(name) + '.csv', header=0, index_col=0, delimiter=delimiter)# ,#delimiter="\t", skiprows=11,
-
+    
                 f.index = [ dt.datetime.strptime(i,fmt) for i in f.index.tolist()]
-
+    
                 self.QGauges[int(name)] = f.loc[self.StartDate:self.EndDate,f.columns[0]]
         else:
             self.QGauges = pd.DataFrame(index=ind)
@@ -319,7 +321,7 @@ class Model():
 
     
     def ExtractDischarge(self, CalculateMetrics=True):
-        self.QSim = pd.DataFrame(index = self.Index, columns = self.QGauges.columns)
+        self.Qsim = pd.DataFrame(index = self.Index, columns = self.QGauges.columns)
         
         if CalculateMetrics:
             index = ['RMSE', 'NSE', 'NSEhf', 'KGE', 'WB']
@@ -708,7 +710,9 @@ class Run(Model):
         else:
             ind = pd.date_range(self.StartDate, self.EndDate, freq="H")
 
-        self.Qsim = pd.DataFrame(index = ind)
+        Qsim = pd.DataFrame(index = ind)
 
-        self.StateVariables, self.Qsim[0] = Wrapper.Lumped(self, Route, RoutingFn)
+        Wrapper.Lumped(self, Route, RoutingFn)
+        Qsim['q'] = self.Qsim
+        self.Qsim = Qsim[:]
 

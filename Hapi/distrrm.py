@@ -193,7 +193,9 @@ class DistributedRRM():
                     Model.qlz_translated[x,y,:]= Model.qlz[x,y,:]
 
         ### remaining cells
-        for j in range(1,len(Model.acc_val)): #2):#
+        for j in range(1,len(Model.acc_val)):
+            #TODO parallelize 
+            # all cells with the same acc_val can run at the same time
             for x in range(Model.rows): # no of rows
                 for y in range(Model.cols): # no of columns
                         # check from total flow accumulation
