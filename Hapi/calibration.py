@@ -21,7 +21,7 @@ from Hapi.wrapper import Wrapper
 
 class Calibration(Model):
 
-    def __init__(self, name, start, end, fmt="%Y-%m-%d", SpatialResolution = 'Lumped',
+    def __init__(self, name, StartDate, EndDate, fmt="%Y-%m-%d", SpatialResolution = 'Lumped',
                  TemporalResolution = "Daily"):
         """
         SpatialR : TYPE, optional
@@ -33,8 +33,8 @@ class Calibration(Model):
 
         """
         self.name = name
-        self.start = dt.datetime.strptime(start,fmt)
-        self.end = dt.datetime.strptime(end,fmt)
+        self.StartDate = dt.datetime.strptime(StartDate,fmt)
+        self.EndDate = dt.datetime.strptime(EndDate,fmt)
         self.SpatialResolution = SpatialResolution
         self.TemporalResolution = TemporalResolution
         if TemporalResolution == "Daily":
@@ -54,6 +54,22 @@ class Calibration(Model):
             args = []
 
         self.OFArgs = args
+    
+    def ExtractDischarge(self):
+        self.Qsim = np.zeros((self.TS-1,len(self.GaugesTable)))
+        # error = 0
+        for i in range(len(self.GaugesTable)):
+            Xind = int(self.GaugesTable.loc[self.GaugesTable.index[i],"cell_row"])
+            Yind = int(self.GaugesTable.loc[self.GaugesTable.index[i],"cell_col"])
+            # gaugeid = Coello.GaugesTable.loc[Coello.GaugesTable.index[i],"id"]
+            
+            Quz = self.quz_routed[Xind,Yind,:-1]
+            Qlz = self.qlz_translated[Xind,Yind,:-1]
+            self.Qsim[:,i] = Quz + Qlz
+            # Qobs = Coello.QGauges.loc[:,gaugeid]
+            # error = error + OF(Qobs, Qsim)
+            
+        # return error
 
     def RunCalibration(self, SpatialVarFun, OptimizationArgs, printError=None):
         """
@@ -120,13 +136,13 @@ class Calibration(Model):
                                               FlowAccPath,FlowDPath,ParPath,p2)
         """
         # input dimensions
-        [rows,cols] = self.FlowAcc.ReadAsArray().shape
-        [fd_rows,fd_cols] = self.FlowDir.ReadAsArray().shape
-        assert fd_rows == rows and fd_cols == cols, "all input data should have the same number of rows"
+        # [rows,cols] = self.FlowAcc.ReadAsArray().shape
+        [fd_rows,fd_cols] = self.FlowDirArr.shape
+        assert fd_rows == self.rows and fd_cols == self.cols, "all input data should have the same number of rows"
 
         # input dimensions
-        assert np.shape(self.Prec)[0] == rows and np.shape(self.ET)[0] == rows and np.shape(self.Temp)[0] == rows, "all input data should have the same number of rows"
-        assert np.shape(self.Prec)[1] == cols and np.shape(self.ET)[1] == cols and np.shape(self.Temp)[1] == cols, "all input data should have the same number of columns"
+        assert np.shape(self.Prec)[0] == self.rows and np.shape(self.ET)[0] == self.rows and np.shape(self.Temp)[0] == self.rows, "all input data should have the same number of rows"
+        assert np.shape(self.Prec)[1] == self.cols and np.shape(self.ET)[1] == self.cols and np.shape(self.Temp)[1] == self.cols, "all input data should have the same number of columns"
         assert np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2], "all meteorological input data should have the same length"
 
         # basic inputs
@@ -147,17 +163,14 @@ class Calibration(Model):
         ### calculate the objective function
         def opt_fun(par):
             try:
-                # parameters
-                klb=float(par[-2])
-                kub=float(par[-1])
-                par=par[:-2]
-                SpatialVarFun.Function(par, kub=kub, klb=klb)
+                # distribute the parameters
+                SpatialVarFun.Function(par, kub=SpatialVarFun.Kub, klb=SpatialVarFun.Klb)
                 self.Parameters = SpatialVarFun.Par3d
                 #run the model
-                q_out, q_uz_routed, q_lz_trans = Wrapper.HapiModel(self)
+                Wrapper.HapiModel(self)
                 # calculate performance of the model
                 try:
-                    error = self.OF(self.QGauges, q_out, q_uz_routed, q_lz_trans,*[self.GaugesTable])
+                    error = self.OF(self.QGauges, self.qout, self.quz_routed, self.qlz_translated,*[self.GaugesTable])
                 except TypeError: # if no of inputs less than what the function needs
                     assert False, "the objective function you have entered needs more inputs please enter then in a list as *args"
 
