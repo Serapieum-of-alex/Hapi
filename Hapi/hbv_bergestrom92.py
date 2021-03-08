@@ -519,11 +519,11 @@ def Simulate(prec, temp, et, par, init_st=None, ll_temp=None,
     # data type
     assert len(init_st) == 5, "state variables are 5 and the given initial values are "+str(len(init_st))
     assert snow == 0 or snow == 1, " snow input defines whether to consider snow subroutine or not it has to be 0 or 1"
-    st = np.empty([len(prec)+1, 5], dtype=np.float32)*np.nan
-    q_0 = np.empty([len(prec)+1], dtype=np.float32)*np.nan
-    q_1 = np.empty([len(prec)+1], dtype=np.float32)*np.nan
-    q_uz = np.empty([len(prec)+1], dtype=np.float32)*np.nan
-    q_lz = np.empty([len(prec)+1], dtype=np.float32)*np.nan
+    st = np.zeros([len(prec)+1, 5], dtype=np.float32)#*np.nan
+    q_0 = np.zeros([len(prec)+1], dtype=np.float32)#*np.nan
+    q_1 = np.zeros([len(prec)+1], dtype=np.float32)#*np.nan
+    q_uz = np.zeros([len(prec)+1], dtype=np.float32)#*np.nan
+    q_lz = np.zeros([len(prec)+1], dtype=np.float32)#*np.nan
     
     if init_st is None:#   0  1  2  3  4  5
         st[0,:] = DEF_ST  #[sp,sm,uz,lz,wc,LA]        
