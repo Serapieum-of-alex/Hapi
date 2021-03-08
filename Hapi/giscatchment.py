@@ -15,10 +15,10 @@ from Hapi.raster import Raster as raster
 #import osr
 
 class GISCatchment():
-    
+
     def __init__(self):
         pass
-    
+
     @staticmethod
     def FD_from_DEM(DEM):
         """
@@ -26,12 +26,12 @@ class GISCatchment():
            FD_from_DEM(Raster)
         ===========================================================
         this function generate flow direction raster from DEM and fill sinks
-    
+
         inputs:
         ----------
             1-Raster:
                 [Gdal object] DEM
-    
+
         Outputs:
         ----------
             1- flow_direction_cell:
@@ -41,22 +41,22 @@ class GISCatchment():
                 [numpy array] DEM after filling sinks
         """
     #        DEM=self.DEM
-    
+
         gt=DEM.GetGeoTransform()
         cellsize=gt[1]
         dist2=cellsize*np.sqrt(2)
         no_columns=DEM.RasterXSize
         no_rows=DEM.RasterYSize
-    
-    
+
+
         elev=DEM.ReadAsArray()
         # get the value stores in novalue cells
         dem_no_val = np.float32(DEM.GetRasterBand(1).GetNoDataValue())
         elev[elev==dem_no_val]=np.nan
-    
+
         slopes=np.ones((no_rows,no_columns,9))*np.nan
         distances=[cellsize,dist2,cellsize,dist2,cellsize,dist2,cellsize,dist2]
-    
+
         # filling sinks
         elev_sinkless=elev
         for i in range(1,no_rows-1):
@@ -65,10 +65,10 @@ class GISCatchment():
                 f=[elev[i-1,j],elev[i-1,j-1],elev[i,j-1],elev[i+1,j-1],elev[i+1,j],elev[i+1,j+1],elev[i,j+1],elev[i-1,j+1]]
                 if elev[i,j]< min(f):
                     elev_sinkless[i,j]=min(f)+0.1
-    
-    
+
+
         flow_direction=np.ones((no_rows,no_columns))*np.nan
-    
+
         for i in range(1,no_rows-1):
             for j in range(1,no_columns-1):
                 # calculate only if cell in elev is not nan
@@ -85,7 +85,7 @@ class GISCatchment():
                     # get the flow direction index
                     flow_direction[i,j]=np.where(slopes[i,j,:]==np.nanmax(slopes[i,j,:]))[0][0]
                     slopes[i,j,8]=np.nanmax(slopes[i,j,:])
-    
+
         # first row without corners
         for i in [0]:
             for j in range(1,no_columns-1): # all columns
@@ -95,10 +95,10 @@ class GISCatchment():
                     slopes[i,j,5]=(elev_sinkless[i,j]-elev_sinkless[i+1,j-1])/distances[5] # slope with cell to the bottom left
                     slopes[i,j,6]=(elev_sinkless[i,j]-elev_sinkless[i+1,j])/distances[6] # slope with cell to the bottom
                     slopes[i,j,7]=(elev_sinkless[i,j]-elev_sinkless[i+1,j+1])/distances[7] # slope with cell to the bottom right
-    
+
                     flow_direction[i,j]=np.where(slopes[i,j,:]==np.nanmax(slopes[i,j,:]))[0][0]
                     slopes[i,j,8]=np.nanmax(slopes[i,j,:])
-    
+
         # last row without corners
         for i in [no_rows-1]:
             for j in range(1,no_columns-1): # all columns
@@ -108,10 +108,10 @@ class GISCatchment():
                     slopes[i,j,2]=(elev_sinkless[i,j]-elev_sinkless[i-1,j])/distances[2] # slope with cell to the top
                     slopes[i,j,3]=(elev_sinkless[i,j]-elev_sinkless[i-1,j-1])/distances[3] # slope with cell to the top left
                     slopes[i,j,4]=(elev_sinkless[i,j]-elev_sinkless[i,j-1])/distances[4] # slope with cell to the left
-    
+
                     flow_direction[i,j]=np.where(slopes[i,j,:]==np.nanmax(slopes[i,j,:]))[0][0]
                     slopes[i,j,8]=np.nanmax(slopes[i,j,:])
-    
+
         # top left corner
         i=0
         j=0
@@ -119,10 +119,10 @@ class GISCatchment():
             slopes[i,j,0]=(elev_sinkless[i,j]-elev_sinkless[i,j+1])/distances[0] # slope with cell to the left
             slopes[i,j,6]=(elev_sinkless[i,j]-elev_sinkless[i+1,j])/distances[6] # slope with cell to the bottom
             slopes[i,j,7]=(elev_sinkless[i,j]-elev_sinkless[i+1,j+1])/distances[7] # slope with cell to the bottom right
-    
+
             flow_direction[i,j]=np.where(slopes[i,j,:]==np.nanmax(slopes[i,j,:]))[0][0]
             slopes[i,j,8]=np.nanmax(slopes[i,j,:])
-    
+
         # top right corner
         i=0
         j=no_columns-1
@@ -130,10 +130,10 @@ class GISCatchment():
             slopes[i,j,4]=(elev_sinkless[i,j]-elev_sinkless[i,j-1])/distances[4] # slope with cell to the left
             slopes[i,j,5]=(elev_sinkless[i,j]-elev_sinkless[i+1,j-1])/distances[5] # slope with cell to the bottom left
             slopes[i,j,6]=(elev_sinkless[i,j]-elev_sinkless[i+1,j])/distances[6] # slope with cell to the bott
-    
+
             flow_direction[i,j]=np.where(slopes[i,j,:]==np.nanmax(slopes[i,j,:]))[0][0]
             slopes[i,j,8]=np.nanmax(slopes[i,j,:])
-    
+
         # bottom left corner
         i=no_rows-1
         j=0
@@ -141,10 +141,10 @@ class GISCatchment():
             slopes[i,j,0]=(elev_sinkless[i,j]-elev_sinkless[i,j+1])/distances[0] # slope with cell to the right
             slopes[i,j,1]=(elev_sinkless[i,j]-elev_sinkless[i-1,j+1])/distances[1]# slope with cell to the top right
             slopes[i,j,2]=(elev_sinkless[i,j]-elev_sinkless[i-1,j])/distances[2] # slope with cell to the top
-    
+
             flow_direction[i,j]=np.where(slopes[i,j,:]==np.nanmax(slopes[i,j,:]))[0][0]
             slopes[i,j,8]=np.nanmax(slopes[i,j,:])
-    
+
         # bottom right
         i=no_rows-1
         j=no_columns-1
@@ -152,10 +152,10 @@ class GISCatchment():
             slopes[i,j,2]=(elev_sinkless[i,j]-elev_sinkless[i-1,j])/distances[2] # slope with cell to the top
             slopes[i,j,3]=(elev_sinkless[i,j]-elev_sinkless[i-1,j-1])/distances[3] # slope with cell to the top left
             slopes[i,j,4]=(elev_sinkless[i,j]-elev_sinkless[i,j-1])/distances[4] # slope with cell to the left
-    
+
             flow_direction[i,j]=np.where(slopes[i,j,:]==np.nanmax(slopes[i,j,:]))[0][0]
             slopes[i,j,8]=np.nanmax(slopes[i,j,:])
-    
+
         # first column
         for i in range(1,no_rows-1):
             for j in [0]:
@@ -166,10 +166,10 @@ class GISCatchment():
                     slopes[i,j,6]=(elev_sinkless[i,j]-elev_sinkless[i+1,j])/distances[6] # slope with cell to the bottom
                     slopes[i,j,7]=(elev_sinkless[i,j]-elev_sinkless[i+1,j+1])/distances[7] # slope with cell to the bottom right
                     # get the flow direction index
-    
+
                     flow_direction[i,j]=np.where(slopes[i,j,:]==np.nanmax(slopes[i,j,:]))[0][0]
                     slopes[i,j,8]=np.nanmax(slopes[i,j,:])
-    
+
         # last column
         for i in range(1,no_rows-1):
             for j in [no_columns-1]:
@@ -180,11 +180,11 @@ class GISCatchment():
                     slopes[i,j,5]=(elev_sinkless[i,j]-elev_sinkless[i+1,j-1])/distances[5] # slope with cell to the bottom left
                     slopes[i,j,6]=(elev_sinkless[i,j]-elev_sinkless[i+1,j])/distances[6] # slope with cell to the bottom
                     # get the flow direction index
-    
+
                     flow_direction[i,j]=np.where(slopes[i,j,:]==np.nanmax(slopes[i,j,:]))[0][0]
                     slopes[i,j,8]=np.nanmax(slopes[i,j,:])
         #        print(str(i)+","+str(j))
-    
+
         flow_direction_cell=np.ones((no_rows,no_columns,2))*np.nan
         #for i in range(1,no_rows-1):
         #    for j in range(1,no_columns-1):
@@ -214,11 +214,11 @@ class GISCatchment():
                 elif flow_direction[i,j]==7:
                     flow_direction_cell[i,j,0]=i+1
                     flow_direction_cell[i,j,1]=j+1
-    
+
         return flow_direction_cell,elev_sinkless
-    
-    
-    
+
+
+
     @staticmethod
     def FlowDirectIndex(flow_direct):
         """
@@ -227,19 +227,19 @@ class GISCatchment():
         =============================================================
         this function takes flow firection raster and convert codes for the 8 directions
         (1,2,4,8,16,32,64,128) into indices of the Downstream cell
-    
+
         inputs:
         ----------
             1- flow_direct:
                 [gdal.dataset] flow direction raster obtained from catchment delineation
                 it only contains values [1,2,4,8,16,32,64,128]
-    
+
         output:
         ----------
             1-fd_indices:
                 [numpy array] with the same dimensions of the raster and 2 layers
                 first layer for row index and second row for column index
-    
+
         Example:
         ----------
             fd=gdal.Open("Flowdir.tif")
@@ -248,23 +248,23 @@ class GISCatchment():
         # input data validation
         # data type
         assert type(flow_direct)==gdal.Dataset, "src should be read using gdal (gdal dataset please read it using gdal library) "
-    
+
         # check flow direction input raster
         no_val=np.float32(flow_direct.GetRasterBand(1).GetNoDataValue())
         cols=flow_direct.RasterXSize
         rows=flow_direct.RasterYSize
-    
+
         fd=flow_direct.ReadAsArray()
         fd_val=[int(fd[i,j]) for i in range(rows) for j in range(cols) if fd[i,j] != no_val]
         fd_val=list(set(fd_val))
         fd_should=[1,2,4,8,16,32,64,128]
         assert all(fd_val[i] in fd_should for i in range(len(fd_val))), "flow direction raster should contain values 1,2,4,8,16,32,64,128 only "
-    
-    
+
+
     #    fd=np.float32(flow_direct.ReadAsArray())
     #    fd[fd==no_val]=np.nan
         fd_cell=np.ones((rows,cols,2))*np.nan
-    
+
         for i in range(rows):
             for j in range(cols):
                 if fd[i,j]==1:
@@ -291,9 +291,9 @@ class GISCatchment():
                 elif fd[i,j]==2:
                     fd_cell[i,j,0]=i+1
                     fd_cell[i,j,1]=j+1
-    
+
         return fd_cell
-    
+
     @staticmethod
     def FlowDirecTable(flow_direct):
         """
@@ -303,30 +303,30 @@ class GISCatchment():
         this function takes flow direction indices created by FlowDirectِِIndex function
         and create a dictionary with the cells indices as a key and  indices of directly
         upstream cells as values (list of tuples)
-    
+
         Inputs:
         ----------
             1- flow_direct:
                 [gdal.dataset] flow direction raster obtained from catchment delineation
                 it only contains values [1,2,4,8,16,32,64,128]
-    
+
         Outputs:
         ----------
             1-flowAccTable:
                 [Dict] dictionary with the cells indices as a key and indices of directly
                 upstream cells as values (list of tuples)
-    
+
         Example:
         ----------
-    
+
         """
         # input data validation
         # validation is inside FlowDirectِِIndex
         FDI=GISCatchment.FlowDirectIndex(flow_direct)
-    
+
         rows=flow_direct.RasterYSize
         cols=flow_direct.RasterXSize
-    
+
         celli=[]
         cellj=[]
         celli_content=[]
@@ -340,7 +340,7 @@ class GISCatchment():
                     # store the index of the receiving cells
                     celli_content.append(FDI[i,j,0])
                     cellj_content.append(FDI[i,j,1])
-    
+
         flow_acc_table={}
         # for each cell store the directly giving cells
         for i in range(rows): # rows
@@ -353,9 +353,9 @@ class GISCatchment():
                         # search if any cell are giving this cell
                         if i==celli_content[k] and j==cellj_content[k]:
                             flow_acc_table[name].append((celli[k],cellj[k]))
-    
+
         return flow_acc_table
-    
+
     @staticmethod
     def DeleteBasins(basins,pathout):
         """
@@ -364,7 +364,7 @@ class GISCatchment():
         ===========================================================
         this function deletes all the basins in a basin raster created when delineating
         a catchment and leave only the first basin which is the biggest basin in the raster
-    
+
         Inputs:
         ----------
             1- basins:
@@ -376,7 +376,7 @@ class GISCatchment():
         Outputs:
         ----------
             1- raster with only one basin (the basin that its name is 1 )
-    
+
         Example:
         ----------
             basins=gdal.Open("Data/basins.tif")
@@ -387,12 +387,12 @@ class GISCatchment():
         # data type
         assert type(pathout) == str, "A_path input should be string type"
         assert type(basins)==gdal.Dataset, "basins raster should be read using gdal (gdal dataset please read it using gdal library) "
-    
+
         # input values
         # check wether the user wrote the extension of the raster or not
         ext=pathout[-4:]
         assert ext == ".tif", "please add the extension at the end of the path input"
-    
+
         # get number of rows
         rows=basins.RasterYSize
         # get number of columns
@@ -403,15 +403,15 @@ class GISCatchment():
         no_val=np.float32(basins.GetRasterBand(1).GetNoDataValue())
         # get number of basins and there names
         basins_val=list(set([int(basins_A[i,j]) for i in range(rows) for j in range(cols) if basins_A[i,j] != no_val]))
-    
+
         # keep the first basin and delete the others by filling their cells by nodata value
         for i in range(rows):
             for j in range(cols):
                 if basins_A[i,j] != no_val and basins_A[i,j] != basins_val[0]:
                     basins_A[i,j] = no_val
-    
+
         raster.RasterLike(basins,basins_A,pathout)
-    
+
     @staticmethod
     def NearestCell(Raster,StCoord):
         """
@@ -422,7 +422,7 @@ class GISCatchment():
         raster to a station
         coordinate system of the raster has to be projected to be able to calculate
         the distance
-    
+
         Inputs:
         ----------
             1-Raster:
@@ -430,11 +430,11 @@ class GISCatchment():
             2-StCoord:
                 [Dataframe] dataframe with two columns "x", "y" contains the coordinates
                 of each station
-    
+
         Output:
         ----------
             1-StCoord:the same input dataframe with two extra columns "cellx","celly"
-    
+
         Examples:
             soil_type=gdal.Open("DEM.tif")
             coordinates=stations[['id','x','y']][:]
@@ -444,15 +444,15 @@ class GISCatchment():
         # data type
         assert type(Raster)==gdal.Dataset, "raster should be read using gdal (gdal dataset please read it using gdal library) "
         assert type(StCoord)==pd.core.frame.DataFrame, "please check StCoord input it should be pandas dataframe "
-    
+
         # check if the user has stored the coordinates in the dataframe with the right names or not
         assert "x" in StCoord.columns, "please check the StCoord x coordinates of the stations should be stored in a column name 'x'"
         assert "y" in StCoord.columns, "please check the StCoord y coordinates of the stations should be stored in a column name 'y'"
-    
-    
+
+
         StCoord['cell_row']=np.nan
         StCoord['cell_col']=np.nan
-    
+
         rows=Raster.RasterYSize
         cols=Raster.RasterXSize
         geo_trans = Raster.GetGeoTransform() # get the coordinates of the top left corner and cell size [x,dx,y,dy]
@@ -463,7 +463,7 @@ class GISCatchment():
             for j in range(cols):# iteration by column
                 coox[i,j]=geo_trans[0]+geo_trans[1]/2+j*geo_trans[1] # calculate x
                 cooy[i,j]=geo_trans[3]+geo_trans[5]/2+i*geo_trans[5] # calculate y
-    
+
         Dist=np.ones((rows,cols))
         for no in range(len(StCoord['x'])):
             # calculate the distance from the station to all cells
@@ -471,7 +471,79 @@ class GISCatchment():
                     for j in range(cols):# iteration by column
                             Dist[i,j]=np.sqrt(np.power((StCoord.loc[StCoord.index[no],'x']-coox[i,j]),2)
                                              +np.power((StCoord.loc[StCoord.index[no],'y']-cooy[i,j]),2))
-    
+
             StCoord.loc[no,'cell_row'],StCoord.loc[no,'cell_col']=np.where(Dist==np.min(Dist))
-    
+
         return StCoord.loc[:,["cell_row","cell_col"]]
+
+
+    @staticmethod
+    def GroupNeighbours(array, i,j, lowervalue, uppervalue, position, values, count,cluster):
+		# bottom cell
+    	if array[i+1,j] >= lowervalue and array[i+1,j] <= uppervalue and cluster[i+1,j] == 0 and i+1 < array.shape[0]:
+    		position.append([i+1,j])
+    		values.append(array[i+1,j])
+    		cluster[i+1,j] = count
+    		GISCatchment.GroupNeighbours(array, i+1,j, lowervalue, uppervalue, position, values, count, cluster)
+    	# bottom right
+    	if j+1 < array.shape[1] and i+1 < array.shape[0] and array[i+1,j+1] >= lowervalue and array[i+1,j+1] <= uppervalue and cluster[i+1,j+1] == 0:
+    		position.append([i+1,j+1])
+    		values.append(array[i+1,j+1])
+    		cluster[i+1,j+1] = count
+    		GISCatchment.GroupNeighbours(array,i+1,j+1, lowervalue, uppervalue, position, values, count, cluster)
+    	# right
+    	if j+1 < array.shape[1] and array[i,j+1] >= lowervalue and array[i,j+1] <= uppervalue and cluster[i,j+1] == 0:
+    		position.append([i,j+1])
+    		values.append(array[i,j+1])
+    		cluster[i,j+1] = count
+    		GISCatchment.GroupNeighbours(array, i,j+1, lowervalue, uppervalue, position, values, count, cluster)
+    	# upper right
+    	if j+1 < array.shape[1] and i-1 >= 0 and array[i-1,j+1] >= lowervalue and array[i-1,j+1] <= uppervalue and cluster[i-1,j+1] == 0:
+    		position.append([i-1,j+1])
+    		values.append(array[i-1,j+1])
+    		cluster[i-1,j+1] = count
+    		GISCatchment.GroupNeighbours(array, i-1,j+1, lowervalue, uppervalue, position, values, count, cluster)
+    	# top
+    	if i-1 >= 0 and array[i-1,j] >= lowervalue and array[i-1,j] <= uppervalue and cluster[i-1,j] == 0:
+    		position.append([i-1,j])
+    		values.append(array[i-1,j])
+    		cluster[i-1,j] = count
+    		GISCatchment.GroupNeighbours(array, i-1,j, lowervalue, uppervalue, position, values, count, cluster)
+    	# top left
+    	if i-1 >= 0 and j-1 >= 0 and array[i-1,j-1] >= lowervalue and array[i-1,j-1] <= uppervalue and cluster[i-1,j-1] == 0:
+    		position.append([i-1,j-1])
+    		values.append(array[i-1,j-1])
+    		cluster[i-1,j-1] = count
+    		GISCatchment.GroupNeighbours(array, i-1,j-1, lowervalue, uppervalue, position, values, count, cluster)
+    	# left
+    	if j-1 >= 0 and array[i,j-1] >= lowervalue and array[i,j-1] <= uppervalue and cluster[i,j-1] == 0:
+    		position.append([i,j-1])
+    		values.append(array[i,j-1])
+    		cluster[i,j-1] = count
+    		GISCatchment.GroupNeighbours(array, i,j-1, lowervalue, uppervalue, position, values, count, cluster)
+    	# bottom left
+    	if j-1 >= 0 and i+1 < array.shape[0] and array[i+1,j-1] >= lowervalue and array[i+1,j-1] <= uppervalue and cluster[i+1,j-1] == 0:
+    		position.append([i+1,j-1])
+    		values.append(array[i+1,j-1])
+    		cluster[i+1,j-1] = count
+    		GISCatchment.GroupNeighbours(array, i+1,j-1, lowervalue, uppervalue, position, values, count, cluster)
+
+    @staticmethod
+    def Cluster(Data, LowerValue, UpperValue):
+        position = []
+        values = []
+        count = 1
+        cluster = np.zeros(shape = (Data.shape[0],Data.shape[1]))
+
+        for i in range(Data.shape[0]):
+        	for j in range(Data.shape[1]):
+
+        		if Data[i,j] >= LowerValue and Data[i,j] <= UpperValue and cluster[i,j] == 0 :
+        			GISCatchment.GroupNeighbours(Data, i,j, LowerValue, UpperValue,position,values, count, cluster)
+        			if cluster[i,j] == 0 :
+        				position.append([i,j])
+        				values.append(Data[i,j])
+        				cluster[i,j] = count
+        			count = count + 1
+
+        return cluster,count, position, values
