@@ -22,6 +22,7 @@ from types import ModuleType
 from Hapi.wrapper import Wrapper
 from Hapi.raster import Raster as raster
 from Hapi.giscatchment import GISCatchment as GC
+import Hapi.performancecriteria as PC
 
 class Model():
 
@@ -171,11 +172,11 @@ class Model():
         # check wether the path exists or not
         assert os.path.exists(Path), Path + " you have provided does not exist"
 
-        self.FlowAcc = gdal.Open(Path)
-        [self.rows,self.cols] = self.FlowAcc.ReadAsArray().shape
+        FlowAcc = gdal.Open(Path)
+        [self.rows,self.cols] = FlowAcc.ReadAsArray().shape
         # check flow accumulation input raster
-        self.NoDataValue = np.float32(self.FlowAcc.GetRasterBand(1).GetNoDataValue())
-        self.FlowAccArr = self.FlowAcc.ReadAsArray()
+        self.NoDataValue = np.float32(FlowAcc.GetRasterBand(1).GetNoDataValue())
+        self.FlowAccArr = FlowAcc.ReadAsArray()
         self.no_elem = np.size(self.FlowAccArr[:,:])-np.count_nonzero((self.FlowAccArr[self.FlowAccArr==self.NoDataValue]))
         self.acc_val = [int(self.FlowAccArr[i,j]) for i in range(self.rows) for j in range(self.cols) if self.FlowAccArr[i,j] != self.NoDataValue]
         self.acc_val = list(set(self.acc_val))
@@ -193,7 +194,7 @@ class Model():
         self.Outlet = np.where(self.FlowAccArr == np.nanmax(self.FlowAccArr[self.FlowAccArr != self.NoDataValue ]))
 
         # calculate area covered by cells
-        geo_trans = self.FlowAcc.GetGeoTransform() # get the coordinates of the top left corner and cell size [x,dx,y,dy]
+        geo_trans = FlowAcc.GetGeoTransform() # get the coordinates of the top left corner and cell size [x,dx,y,dy]
         dx = np.abs(geo_trans[1])/1000.0  # dx in Km
         dy = np.abs(geo_trans[-1])/1000.0  # dy in Km
         # area of the cell
@@ -213,20 +214,20 @@ class Model():
         assert Path[-4:] == ".tif", "please add the extension at the end of the Flow accumulation raster path input"
         # check wether the path exists or not
         assert os.path.exists(Path), Path + " you have provided does not exist"
-        self.FlowDir = gdal.Open(Path)
+        FlowDir = gdal.Open(Path)
 
-        [rows,cols] = self.FlowDir.ReadAsArray().shape
+        [rows,cols] = FlowDir.ReadAsArray().shape
 
         # check flow direction input raster
-        fd_noval = np.float32(self.FlowDir.GetRasterBand(1).GetNoDataValue())
-        fd = self.FlowDir.ReadAsArray()
-        fd_val = [int(fd[i,j]) for i in range(rows) for j in range(cols) if fd[i,j] != fd_noval]
+        fd_noval = np.float32(FlowDir.GetRasterBand(1).GetNoDataValue())
+        self.FlowDirArr = FlowDir.ReadAsArray()
+        fd_val = [int(self.FlowDirArr[i,j]) for i in range(rows) for j in range(cols) if self.FlowDirArr[i,j] != fd_noval]
         fd_val = list(set(fd_val))
         fd_should = [1,2,4,8,16,32,64,128]
         assert all(fd_val[i] in fd_should for i in range(len(fd_val))), "flow direction raster should contain values 1,2,4,8,16,32,64,128 only "
 
         # create the flow direction table
-        self.FDT = GC.FlowDirecTable(self.FlowDir)
+        self.FDT = GC.FlowDirecTable(FlowDir)
         print("Flow Direction inputs is read successfully")
 
     def ReadParameters(self,Path):
@@ -264,13 +265,14 @@ class Model():
         assert np.shape(self.data)[1] == 3 or np.shape(self.data)[1] == 4," meteorological data should be of length at least 3 (prec, ET, temp) or 4(prec, ET, temp, tm) "
         print("Lumped Model inputs are read successfully")
 
-    def ReadGaugeTable(self, Path):
+    def ReadGaugeTable(self, Path, FlowaccPath):
         self.GaugesTable = pd.read_csv(Path)
 
-        # coordinates = stations[['id','x','y','weight']][:]
-        if hasattr(self, 'FlowAcc'):
-            # calculate the nearest cell to each station
-            self.GaugesTable.loc[:,["cell_row","cell_col"]] = GC.NearestCell(self.FlowAcc,self.GaugesTable[['id','x','y','weight']][:])
+        
+        # if hasattr(self, 'FlowAcc'):
+        FlowAcc = gdal.Open(FlowaccPath)
+        # calculate the nearest cell to each station
+        self.GaugesTable.loc[:,["cell_row","cell_col"]] = GC.NearestCell(FlowAcc,self.GaugesTable[['id','x','y','weight']][:])
         print("Gauge Table is read successfully")
 
 
@@ -315,6 +317,30 @@ class Model():
         self.LB = np.array(LB)
         print("Parameters bounds are read successfully")
 
+    
+    def ExtractDischarge(self, CalculateMetrics=True):
+        self.QSim = pd.DataFrame(index = self.Index, columns = self.QGauges.columns)
+        
+        if CalculateMetrics:
+            index = ['RMSE', 'NSE', 'NSEhf', 'KGE', 'WB']
+            self.Metrics = pd.DataFrame(index = index, columns = self.QGauges.columns)
+        
+        for i in range(len(self.GaugesTable)):
+            Xind = int(self.GaugesTable.loc[self.GaugesTable.index[i],"cell_row"])
+            Yind = int(self.GaugesTable.loc[self.GaugesTable.index[i],"cell_col"])
+            gaugeid = self.GaugesTable.loc[self.GaugesTable.index[i],"id"]
+            
+            Quz = np.reshape(self.quz_routed[Xind,Yind,:-1],self.TS-1)
+            Qlz = np.reshape(self.qlz_translated[Xind,Yind,:-1],self.TS-1)
+            Qsim = Quz + Qlz
+            self.QSim.loc[:,gaugeid] = Qsim
+            if CalculateMetrics:
+                Qobs = self.QGauges.loc[:,gaugeid]
+                self.Metrics.loc['RMSE',gaugeid] = round(PC.RMSE(Qobs, Qsim),3)
+                self.Metrics.loc['NSE',gaugeid] = round(PC.NSE(Qobs, Qsim),3)
+                self.Metrics.loc['NSEhf',gaugeid] = round(PC.NSEHF(Qobs, Qsim),3)
+                self.Metrics.loc['KGE',gaugeid] = round(PC.KGE(Qobs, Qsim),3)
+                self.Metrics.loc['WB',gaugeid] = round(PC.WB(Qobs, Qsim),3)
 
 class Lake():
 
@@ -368,7 +394,6 @@ class Lake():
         print("Lumped model is read successfully")
 
 
-
 class Run(Model):
 
     def __init__(self):
@@ -400,12 +425,20 @@ class Run(Model):
 
         Outputs:
         ----------
-            1- st:
-                [4D array] state variables
-            2- q_out:
-                [1D array] calculated Discharge at the outlet of the catchment
-            3- q_uz:
-                [3D array] Distributed discharge for each cell
+            1-statevariables: [numpy attribute] 
+                4D array (rows,cols,time,states) states are [sp,wc,sm,uz,lv]
+            2-qlz: [numpy attribute] 
+                3D array of the lower zone discharge
+            3-quz: [numpy attribute] 
+                3D array of the upper zone discharge
+            4-qout: [numpy attribute] 
+                1D timeseries of discharge at the outlet of the catchment
+                of unit m3/sec
+            5-quz_routed: [numpy attribute] 
+                3D array of the upper zone discharge  accumulated and
+                routed at each time step
+            6-qlz_translated: [numpy attribute] 
+                3D array of the lower zone discharge translated at each time step
 
         Example:
         ----------
@@ -422,23 +455,22 @@ class Run(Model):
         """
         ### input data validation
         # data type
-        assert type(self.FlowAcc)==gdal.Dataset, "flow_acc should be read using gdal (gdal dataset please read it using gdal library) "
-        assert type(self.FlowDir)==gdal.Dataset, "flow_direct should be read using gdal (gdal dataset please read it using gdal library) "
+        # assert type(self.FlowAcc)==gdal.Dataset, "flow_acc should be read using gdal (gdal dataset please read it using gdal library) "
+        # assert type(self.FlowDir)==gdal.Dataset, "flow_direct should be read using gdal (gdal dataset please read it using gdal library) "
 
         # input dimensions
-        [rows,cols] = self.FlowAcc.ReadAsArray().shape
-        [fd_rows,fd_cols] = self.FlowDir.ReadAsArray().shape
-        assert fd_rows == rows and fd_cols == cols, "all input data should have the same number of rows"
+        [fd_rows,fd_cols] = self.FlowDirArr.shape
+        assert fd_rows == self.rows and fd_cols == self.cols, "all input data should have the same number of rows"
 
         # input dimensions
-        assert np.shape(self.Prec)[0] == rows and np.shape(self.ET)[0] == rows and np.shape(self.Temp)[0] == rows and np.shape(self.Parameters)[0] == rows, "all input data should have the same number of rows"
-        assert np.shape(self.Prec)[1] == cols and np.shape(self.ET)[1] == cols and np.shape(self.Temp)[1] == cols and np.shape(self.Parameters)[1] == cols, "all input data should have the same number of columns"
+        assert np.shape(self.Prec)[0] == self.rows and np.shape(self.ET)[0] == self.rows and np.shape(self.Temp)[0] == self.rows and np.shape(self.Parameters)[0] == self.rows, "all input data should have the same number of rows"
+        assert np.shape(self.Prec)[1] == self.cols and np.shape(self.ET)[1] == self.cols and np.shape(self.Temp)[1] == self.cols and np.shape(self.Parameters)[1] == self.cols, "all input data should have the same number of columns"
         assert np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2], "all meteorological input data should have the same length"
 
         #run the model
-        q_out, q_uz, q_lz = Wrapper.HapiModel(self)
-
-        return q_out, q_uz, q_lz
+        Wrapper.HapiModel(self)
+        # extract gischarge at the gauges
+        
 
 
     def RunHAPIwithLake(self, Lake):
