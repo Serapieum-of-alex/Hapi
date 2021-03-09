@@ -335,7 +335,7 @@ class Model():
             Quz = np.reshape(self.quz_routed[Xind,Yind,:-1],self.TS-1)
             Qlz = np.reshape(self.qlz_translated[Xind,Yind,:-1],self.TS-1)
             Qsim = Quz + Qlz
-            self.QSim.loc[:,gaugeid] = Qsim
+            self.Qsim.loc[:,gaugeid] = Qsim
             if CalculateMetrics:
                 Qobs = self.QGauges.loc[:,gaugeid]
                 self.Metrics.loc['RMSE',gaugeid] = round(PC.RMSE(Qobs, Qsim),3)
