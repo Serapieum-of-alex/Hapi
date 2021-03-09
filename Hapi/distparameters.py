@@ -19,7 +19,7 @@ from Hapi.giscatchment import GISCatchment as GC
 class DistParameters():
 
     def __init__(self, raster, no_parameters, no_lumped_par=0, lumped_par_pos=[],
-                 Lake = 0, Snow=0, HRUs=0, Function=1, Kub=1, Klb= 0):
+                 Lake = 0, Snow=0, HRUs=0, Function=1, Kub=1, Klb= 0.5):
 
         assert type(raster)==gdal.Dataset, "raster should be read using gdal (gdal dataset please read it using gdal library) "
         assert type(no_parameters)==int, " no_parameters should be integer number"
