@@ -10,6 +10,21 @@ import numpy as np
 import pandas as pd
 import datetime as dt
 import math
+from collections import OrderedDict
+linestyles = OrderedDict( [('solid', (0, ())),                              #0
+                               ('loosely dotted', (0, (1, 10))),                #1
+                               ('dotted', (0, (1, 5))),                         #2
+                               ('densely dotted', (0, (1, 1))),                 #3
+                               ('loosely dashed', (0, (5, 10))),                #4
+                               ('dashed',(0, (5, 5))),                          #5
+                               ('densely dashed', (0, (5, 1))),                 #6
+                               ('loosely dashdotted', (0, (3, 10, 1, 10))),     #7
+                               ('dashdotted', (0, (3, 5, 1, 5))),               #8
+                               ('densely dashdotted',  (0, (3, 1, 1, 1))),      #9                                      
+                               ('loosely dashdotdotted', (0, (3, 10, 1, 10, 1, 10))), #10
+                               ('dashdotdotted', (0, (3, 5, 1, 5, 1, 5))),            #11
+                               ('densely dashdotdotted', (0, (3, 1, 1, 1, 1, 1))),    #12
+                               ('densely dashdotdottededited', (0, (6, 1, 1, 1, 1, 1)))])  #13
 
 hours = list(range(1,25))
 
@@ -18,8 +33,20 @@ class Visualize():
     def __init__(self, Sub, resolution = "Hourly"):
         self.resolution = "Hourly"
         # self.XSname = Sub.crosssections['xsid'].tolist()
-
-
+    
+    @staticmethod
+    def LineStyle(Style = 'loosely dotted'):
+                
+        if type(Style) == str:
+            try:
+                return linestyles[Style]
+            except KeyError:
+                print("The Style name you entered-" + Style + "-does not exist please choose from the available styles")
+                print(list(linestyles))
+        else:
+            return list(linestyles.items())[Style][1]
+            
+            
     def GroundSurface(self, Sub, XSID='', XSbefore = 10, XSafter = 10, FloodPlain = False):
         
         if XSID == '':
@@ -748,3 +775,4 @@ class Visualize():
 
         anim = animation.FuncAnimation(fig2, animate_min, init_func=init_min, frames = len(Sub.Qmin.index),
                                        interval = Interval, blit = True)
+        
