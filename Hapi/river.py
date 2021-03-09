@@ -2465,9 +2465,9 @@ class Sub(River):
             Q.index = list(range(s,e+1))
             
             if FromDay == '':
-                FromDay = 1
+                FromDay = s#1
             if ToDay == '':
-                ToDay = len(Q)
+                ToDay = e#len(Q)
             
             Q = Q.loc[Q.index >= FromDay,:]
             Q = Q.loc[Q.index <= ToDay, :]
@@ -2857,7 +2857,7 @@ class Sub(River):
         
         if len(self.USnode) > 1 :
             # there is more than one upstream segment
-            if type(Sub.USnode) == list:
+            if type(self.USnode) == list:
                 for i in range(len(self.USnode)):
                     NodeID = self.USnode[i]
                     self.USHydrographs[NodeID]  = self.ReadRRMResults(self.Version, self.RRMReferenceIndex, 
