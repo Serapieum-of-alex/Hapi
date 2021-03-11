@@ -1011,6 +1011,45 @@ class HMCalibration():
         # g = g + len(segment)
         # end of loop
     
+    def DownWardBedLevel(self,segmenti, height):
+        """
+        ========================================================
+              SmoothBedWidth(segmenti)
+        ========================================================
+        SmoothBedWidth method smoothes the Bed Width the in the cross section 
+        for a given segment
+        
+        Parameters
+        ----------
+        segmenti : [Integer]
+            segment ID.
+
+        Returns
+        -------
+        crosssections: [dataframe attribute]
+            the "b" column in the crosssections attribute will be smoothed
+
+        """
+        g = self.crosssections.loc[self.crosssections['id']==segmenti,:].index[0]
+        
+        segment = self.crosssections.loc[self.crosssections['id']==segmenti,:]
+        segment.index = range(len(segment))
+        
+        
+        for j in range(1,len(segment)):
+            if segment.loc[j-1,'gl'] - segment.loc[j,'gl'] < height:
+                segment.loc[j,'gl'] = segment.loc[j-1,'gl'] - height
+        
+        segment.index = range(g, g + len(segment))
+        # copy back the segment to the whole XS df
+        self.crosssections.loc[self.crosssections['id']==segmenti,:] = segment
+        
+        
+        
+    
+    
+    
+    
     def SmoothMaxSlope(self,segmenti, SlopePercentThreshold = 1.5):
         """
         ========================================================
