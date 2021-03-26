@@ -5,7 +5,6 @@ Examples/data/Hapi.sublime-project
 Examples/data/Hapi.sublime-workspace
 HapiSpyder/
 *.pyc
-*.tif
 *.zip
 *.ini
 *.drawio
