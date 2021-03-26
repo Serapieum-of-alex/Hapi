@@ -1,4 +1,5 @@
 build/
+SpyderHapi/
 dist/
 HAPI_Nile.egg-info/
 Examples/data/Hapi.sublime-project

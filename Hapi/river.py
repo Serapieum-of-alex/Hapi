@@ -121,6 +121,7 @@ class River():
         self.DurationPrefix = DurationPrefix
         self.ReturnPeriodPrefix = ReturnPeriodPrefix
         self.Compressed = Compressed
+        
         Ref_ind = pd.date_range(self.start, self.end, freq='D')
         # the last day is not in the results day Ref_ind[-1]
         # write the number of days + 1 as python does not include the last number in the range
@@ -318,13 +319,19 @@ class River():
             Wholefile = File.readlines()
             File.close()
             rivernetwork = pd.DataFrame(columns=Wholefile[0][:-1].split(','))
-            for i in range(1,len(Wholefile)):
+            # all lines excpt the last line
+            for i in range(1,len(Wholefile)-1):
                 rivernetwork.loc[i-1,rivernetwork.columns[0:2].tolist()] = [int(j) for j in Wholefile[i][:-1].split(',')[0:2]]
                 rivernetwork.loc[i-1,rivernetwork.columns[2]] = [int(j) for j in Wholefile[i][:-1].split(',')[2:]]
+            # last line does not have the \n at the end
+            i = len(Wholefile)-1
+            rivernetwork.loc[i-1,rivernetwork.columns[0:2].tolist()] = [int(j) for j in Wholefile[i][:-1].split(',')[0:2]]
+            rivernetwork.loc[i-1,rivernetwork.columns[2]] = [int(j) for j in Wholefile[i].split(',')[2:]]
             rivernetwork.columns = ["No","id","us"]
             self.rivernetwork = rivernetwork[:]
 
-    def Trace(self,ID):
+    
+    def TraceSegment(self,ID):
         """
         ========================================
         	Trace(self,SubID)
@@ -362,11 +369,40 @@ class River():
                 if ID in self.rivernetwork.loc[i,'us']:
                     DS = self.rivernetwork.loc[i,'id']
                     break
+                else:
+                    DS = []
                 
         return  US, DS
+    
+    
+    def Trace2(self, ID, US):
+        # trace the given segment
+            US1, _ = self.TraceSegment(ID)
+            if len(US1) > 0 :
+                for i in range(len(US1)):
+                    US.append(US1[i])
+                    self.Trace2(US1[i], US)
+                    
+    def Trace(self, ID):
+        """
+        ============================================================
+             Trace(self, ID ,US=[])
+        ============================================================
+        Trace method takes the Id of the segment and trace it upstream 
         
+        Parameters
+        ----------
+        ID : TYPE
+            DESCRIPTION.
 
-        
+        Returns
+        -------
+        US : [list attribute], optional
+            the ID of all the upstream segments are going to be stored in a list 
+            attribute.
+        """
+        self.US = []
+        self.Trace2(ID, self.US)
 
     def StatisticalProperties(self, Path, Filter = True):
         """
@@ -1812,6 +1848,66 @@ class River():
                 path = SavePath + '/' + var[3:]+ '.txt'
                 exec(var + ".to_csv(path ,index= None, sep = ' ', header = None)")
 
+    @staticmethod
+    def ReadRRMResults(Version, RRMReferenceIndex, Path, NodeID, FromDay, ToDay,
+                       date_format="%d_%m_%Y"):
+        """
+        ===================================================================
+             ReadRRMResults(Path, NodeID, FromDay, ToDay)
+        ===================================================================
+        ReadRRMResults is a static method to read the results of the rainfall-runoff
+        model
+
+        Parameters
+        ----------
+        Path : [String]
+            Path to the result files.
+        NodeID : [Integer]
+            the ID given the the sub-basin .
+        FromDay : [integer], optional
+                the day you want to read the result from, the first day is 1 not zero.The default is ''.
+        ToDay : [integer], optional
+                the day you want to read the result to.
+
+        Returns
+        -------
+        Q : [Dataframe]
+            time series of the runoff .
+
+        """
+                
+        if Version < 3:
+            Q = pd.read_csv(Path + "/" + str(NodeID) + '.txt',header = None)
+            Q = Q.rename(columns = {0:NodeID})
+            Q.index = list(range(1,len(Q)+1))
+    
+            if FromDay == '':
+                FromDay = 1
+            if ToDay == '':
+                ToDay = len(Q)
+    
+            Q = Q.loc[Q.index >= FromDay,:]
+            Q = Q.loc[Q.index <= ToDay]
+        else:
+            Q = pd.read_csv(Path + "/" + str(NodeID) + '.txt',header = None, skiprows=1)
+            Q.index = [dt.datetime.strptime(date,date_format) for date in Q[0]]
+            del Q[0]
+            Q = Q.rename(columns = {1:NodeID})
+            
+            s = np.where(RRMReferenceIndex['date'] == Q.index[0])[0][0]+1
+            e = np.where(RRMReferenceIndex['date'] == Q.index[-1])[0][0]+1
+            Q.index = list(range(s,e+1))
+            
+            if FromDay == '':
+                FromDay = s#1
+            if ToDay == '':
+                ToDay = e#len(Q)
+            
+            Q = Q.loc[Q.index >= FromDay,:]
+            Q = Q.loc[Q.index <= ToDay, :]
+                
+        return Q
+
 
     @staticmethod
     def CorrectMaps(DEMPath,Filelist, Resultpath, MapsPrefix, FilterValue, Saveto):
@@ -2123,7 +2219,7 @@ class Sub(River):
                 self.slope = River.slope[River.slope['id']==ID]['slope'].tolist()[0]
         
         if hasattr(River, "rivernetwork"):
-            self.USnode, self.DSnode = River.Trace(ID)
+            self.USnode, self.DSnode = River.TraceSegment(ID)
 
         if hasattr(River, 'RP'):
             self.RP = River.RP.loc[River.RP['node'] == self.USnode,['HQ2','HQ10','HQ100']]
@@ -2412,67 +2508,6 @@ class Sub(River):
         self.Qmin = Qmin
         self.QBCmin = BC_q
         self.HBCmin = BC_h
-
-
-    @staticmethod
-    def ReadRRMResults(Version, RRMReferenceIndex, Path, NodeID, FromDay, ToDay,
-                       date_format="%d_%m_%Y"):
-        """
-        ===================================================================
-             ReadRRMResults(Path, NodeID, FromDay, ToDay)
-        ===================================================================
-        ReadRRMResults is a static method to read the results of the rainfall-runoff
-        model
-
-        Parameters
-        ----------
-        Path : [String]
-            Path to the result files.
-        NodeID : [Integer]
-            the ID given the the sub-basin .
-        FromDay : [integer], optional
-                the day you want to read the result from, the first day is 1 not zero.The default is ''.
-        ToDay : [integer], optional
-                the day you want to read the result to.
-
-        Returns
-        -------
-        Q : [Dataframe]
-            time series of the runoff .
-
-        """
-                
-        if Version < 3:
-            Q = pd.read_csv(Path + "/" + str(NodeID) + '.txt',header = None)
-            Q = Q.rename(columns = {0:NodeID})
-            Q.index = list(range(1,len(Q)+1))
-    
-            if FromDay == '':
-                FromDay = 1
-            if ToDay == '':
-                ToDay = len(Q)
-    
-            Q = Q.loc[Q.index >= FromDay,:]
-            Q = Q.loc[Q.index <= ToDay]
-        else:
-            Q = pd.read_csv(Path + "/" + str(NodeID) + '.txt',header = None, skiprows=1)
-            Q.index = [dt.datetime.strptime(date,date_format) for date in Q[0]]
-            del Q[0]
-            Q = Q.rename(columns = {1:NodeID})
-            
-            s = np.where(RRMReferenceIndex['date'] == Q.index[0])[0][0]+1
-            e = np.where(RRMReferenceIndex['date'] == Q.index[-1])[0][0]+1
-            Q.index = list(range(s,e+1))
-            
-            if FromDay == '':
-                FromDay = s#1
-            if ToDay == '':
-                ToDay = e#len(Q)
-            
-            Q = Q.loc[Q.index >= FromDay,:]
-            Q = Q.loc[Q.index <= ToDay, :]
-                
-        return Q
 
 
     def ReadRRMHydrograph(self, NodeID, FromDay = '', ToDay = '',Path = '',
@@ -2803,7 +2838,9 @@ class Sub(River):
         XSlist = self.XSname[5:self.XSno:int(self.XSno/5)]
         
         XSlist = XSlist + XSs
-        
+        # to remove repeated XSs
+        XSlist = list(set(XSlist))
+        # extract the XS hydrographs
         for i in range(len(XSlist)):
             self.Read1DResult(XSID=XSlist[i])
         
