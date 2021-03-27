@@ -6,7 +6,14 @@ Created on Fri Feb 19 17:57:06 2021
 """
 from Hapi.vector import Vector
 
+#%%
+lon = [-180,-179.5]
+lat = [90,90]
 
+from_epsg = 4326
+to_epsg = 32618
+
+y, x = Vector.ReprojectPoints(lat, lon, from_epsg, to_epsg, precision=9)
 
 #%% brazil
 x = 4522693.11
