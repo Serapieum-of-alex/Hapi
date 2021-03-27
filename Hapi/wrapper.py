@@ -86,7 +86,7 @@ class Wrapper():
         Model.qout = Model.qout[:-1]
 
 
-
+    
     @staticmethod
     def HapiWithlake(Model, Lake,ll_temp=None, q_0=None):
 
@@ -125,44 +125,57 @@ class Wrapper():
 
         Model.q_out = Model.q_out[:-1]
 
-        # return q_out, q_uz_routed, q_lz_trans
-
-
+    
     @staticmethod
-    def FW1Withlake(ConceptualModel,FPL,sp_prec,sp_et,sp_temp,
-                     parameters,p2,snow,init_st,lakeCalibArray,StageDischargeCurve,
-                     LakeParameters,lakecell,lake_initial,ll_temp=None, q_0=None):
-
-        plake = lakeCalibArray[:,0]
-        et = lakeCalibArray[:,1]
-        t = lakeCalibArray[:,2]
-        tm = lakeCalibArray[:,3]
-
-        # lake simulation
-        q_lake, _ = hbv_lake.simulate(plake, t, et, LakeParameters[:-1], p2,StageDischargeCurve,
-                                      0,init_st=lake_initial,ll_temp=tm,lake_sim=True)
-        # qlake is in m3/sec
-        # lake routing
-        qlake_r = routing.TriangularRouting(q_lake,LakeParameters[-1])
+    def FW1(Model,ll_temp=None, q_0=None):        
 
         # subcatchment
-        AdditionalParameters = p2[0:2]
-        st, q_lz, q_uz = distrrm.RunLumpedRRM(ConceptualModel, FPL, sp_prec=sp_prec,
-                                              sp_et=sp_et, sp_temp=sp_temp, sp_pars=parameters,
-                                              p2=AdditionalParameters, snow=snow,
-                                              init_st=init_st)
+        distrrm.RunLumpedRRM(Model)
 
-        SPMAXBAS = parameters[:,:,-1]
-        q_uz = distrrm.DistMAXBAS(FPL, SPMAXBAS, q_uz)
-        #
-        q_lz1 = np.array([np.nansum(q_lz[:,:,i]) for i in range(sp_prec.shape[2]+1)]) # average of all cells (not routed mm/timestep)
-        q_uz1 = np.array([np.nansum(q_uz[:,:,i]) for i in range(sp_prec.shape[2]+1)]) # average of all cells (routed mm/timestep)
+        distrrm.DistMaxbas1(Model)
+        
+        qlz1 = np.array([np.nansum(Model.qlz[:,:,i]) for i in range(Model.TS)]) # average of all cells (not routed mm/timestep)
+        quz1 = np.array([np.nansum(Model.quz[:,:,i]) for i in range(Model.TS)]) # average of all cells (routed mm/timestep)
+        
+        Model.qout = qlz1 + quz1
 
-        q_out = (q_lz1 + q_uz1) * p2[1] / (p2[0] * 3.6)
+        Model.qout = Model.qout[:-1]
+        
 
-        q_out = q_out[:-1] + qlake_r
+    @staticmethod
+    def FW1Withlake(Model, Lake,ll_temp=None, q_0=None):
 
-        return st, q_out, q_uz, q_lz
+        plake = Lake.MeteoData[:,0]
+        et = Lake.MeteoData[:,1]
+        t = Lake.MeteoData[:,2]
+        tm = Lake.MeteoData[:,3]
+
+        # lake simulation
+        Lake.Qlake, _ = hbv_lake.simulate(plake, t, et, Lake.Parameters,
+                                      [Model.Timef, Lake.CatArea, Lake.LakeArea],
+                                      Lake.StageDischargeCurve, 0,
+                                      init_st=Lake.InitialCond,
+                                      ll_temp=tm, lake_sim=True)
+        
+        # qlake is in m3/sec
+        # lake routing
+        Lake.QlakeR = routing.muskingum(Lake.Qlake, Lake.Qlake[0], Lake.Parameters[11],
+                                  Lake.Parameters[12], Model.Timef)
+
+        # subcatchment
+        distrrm.RunLumpedRRM(Model)
+
+        distrrm.DistMAXBAS(Model)
+        
+        qlz1 = np.array([np.nansum(Model.qlz[:,:,i]) for i in range(Model.Parameters.shape[2]+1)]) # average of all cells (not routed mm/timestep)
+        quz1 = np.array([np.nansum(Model.quz[:,:,i]) for i in range(Model.Parameters.shape[2]+1)]) # average of all cells (routed mm/timestep)
+        
+        qout = qlz1 + quz1
+        
+        # qout = (qlz1 + quz1) * Model.CatArea / (Model.Timef* 3.6)
+
+        Model.qout = qout[:-1] + Lake.QlakeR
+
 
     @staticmethod
     def Lumped(Model, Routing=0, RoutingFn=[]):
