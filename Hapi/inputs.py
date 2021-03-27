@@ -11,6 +11,7 @@ import numpy as np
 import shutil
 import pandas as pd
 from datetime import datetime
+# import pkg_resources
 # import geopandas as gpd
 from rasterstats import zonal_stats
 import rasterio
@@ -144,7 +145,7 @@ class Inputs():
 
 
     @staticmethod
-    def ExtractParameters(Basin,scenario):
+    def ExtractParameters(src,scenario, AsRaster=False, SaveTo=''):
         """
         =====================================================
             ExtractParameters(Basin)
@@ -152,7 +153,7 @@ class Inputs():
 
         Parameters
         ----------
-        Basin : [Geodataframe]
+        src : [Geodataframe]
             gepdataframe of catchment polygon, make sure that the geodataframe contains
             one row only, if not merge all the polygons in the shapefile first.
 
@@ -169,26 +170,28 @@ class Inputs():
         ParametersPath = ParametersPath + "/Parameters/" + scenario
         ParamList = ["Par_tt", "Par_sfcf","Par_cfmax","Par_cwh","Par_cfr","Par_fc","Par_beta", #"rfcf","e_corr",
                  "Par_lp","Par_k0","Par_k1","Par_k2","Par_uzl","Par_perc", "Par_maxbas"] #,"c_flux"
+        if not AsRaster:
+            raster = rasterio.open(ParametersPath + "/" + ParamList[0] + ".tif")
+            src = src.to_crs(crs=raster.crs)
+            # max values
+            Par = list()
+            for i in range(len(ParamList)):
+                raster = rasterio.open(ParametersPath + "/" + ParamList[i] + ".tif")
+                array = raster.read(1)
+                affine = raster.transform
+                Par.append(zonal_stats(src, array, affine=affine, stats=['max'])[0]['max']) #stats=['min', 'max', 'mean', 'median', 'majority']
+    
+            # plot the given basin with the parameters raster
+    
+            # Plot DEM
+            ax = show((raster, 1), with_bounds=True)
+            src.plot(facecolor='None', edgecolor='blue', linewidth=2, ax=ax)
+            # ax.set_xbound([Basin.bounds.loc[0,'minx']-10,Basin.bounds.loc[0,'maxx']+10])
+            # ax.set_ybound([Basin.bounds.loc[0,'miny']-1, Basin.bounds.loc[0,'maxy']+1])
 
-        raster = rasterio.open(ParametersPath + "/" + ParamList[0] + ".tif")
-        Basin = Basin.to_crs(crs=raster.crs)
-        # max values
-        Par = list()
-        for i in range(len(ParamList)):
-            raster = rasterio.open(ParametersPath + "/" + ParamList[i] + ".tif")
-            array = raster.read(1)
-            affine = raster.transform
-            Par.append(zonal_stats(Basin, array, affine=affine, stats=['max'])[0]['max']) #stats=['min', 'max', 'mean', 'median', 'majority']
-
-        # plot the given basin with the parameters raster
-
-        # Plot DEM
-        ax = show((raster, 1), with_bounds=True)
-        Basin.plot(facecolor='None', edgecolor='blue', linewidth=2, ax=ax)
-        # ax.set_xbound([Basin.bounds.loc[0,'minx']-10,Basin.bounds.loc[0,'maxx']+10])
-        # ax.set_ybound([Basin.bounds.loc[0,'miny']-1, Basin.bounds.loc[0,'maxy']+1])
-
-        return Par
+            return Par
+        else:
+            Inputs.PrepareInputs(src,ParametersPath+ "/",SaveTo)
 
     @staticmethod
     def CreateLumpedInputs(Path):
@@ -248,7 +251,8 @@ class Inputs():
         for i in range(len(files)):
             os.rename(Path + "/" + df.loc[i,'files'], Path + "/" + df.loc[i,'new_names'])
 
-
+    # def LoadParameters():
+        
     @staticmethod
     def changetext2time(string):
         """
