@@ -171,17 +171,20 @@ class DistParameters():
         """
         # input data validation
         # data type
-        assert type(par_g)==np.ndarray or type(par_g)==list, "par_g should be of type 1d array or list"
-        assert isinstance(kub,numbers.Number) , " kub should be a number"
-        assert isinstance(klb,numbers.Number) , " klb should be a number"
+        # assert type(par_g)==np.ndarray or type(par_g)==list, "par_g should be of type 1d array or list"
+        # assert isinstance(kub,numbers.Number) , " kub should be a number"
+        # assert isinstance(klb,numbers.Number) , " klb should be a number"
 
         # input values
         if self.no_lumped_par > 0:
-            assert len(par_g) == (self.no_elem*(self.no_parameters-self.no_lumped_par))+self.no_lumped_par,"As there is "+str(self.no_lumped_par)+" lumped parameters, length of input parameters should be "+str(self.no_elem)+"*"+"("+str(self.no_parameters)+"-"+str(self.no_lumped_par)+")"+"+"+str(self.no_lumped_par)+"="+str(self.no_elem*(self.no_parameters-self.no_lumped_par)+self.no_lumped_par)+" not "+str(len(par_g))+" probably you have to add the value of the lumped parameter at the end of the list"
+            assert len(par_g) == (self.no_elem*(self.no_parameters))+self.no_lumped_par,"As there is "+str(self.no_lumped_par)+" lumped parameters, length of input parameters should be "+str(self.no_elem)+"*"+"("+str(self.no_parameters)+"-"+str(self.no_lumped_par)+")"+"+"+str(self.no_lumped_par)+"="+str(self.no_elem*(self.no_parameters-self.no_lumped_par)+self.no_lumped_par)+" not "+str(len(par_g))+" probably you have to add the value of the lumped parameter at the end of the list"
         else:
             # if there is no lumped parameters
             assert len(par_g) == self.no_elem*self.no_parameters,"As there is no lumped parameters length of input parameters should be "+str(self.no_elem)+"*"+str(self.no_parameters)+"="+str(self.no_elem*self.no_parameters)
-
+        
+        # parameters in array
+        # create a 2d array [no_parameters, no_cells]
+        self.Par2d = np.ones((self.no_parameters,self.no_elem))
         # take the parameters from the generated parameters or the 1D list and
         # assign them to each cell
         for i in range(self.no_elem):
@@ -450,13 +453,9 @@ class DistParameters():
         assert isinstance(kub,numbers.Number) , " kub should be a number"
         assert isinstance(klb,numbers.Number) , " klb should be a number"
 
-        # count the number of non-empty cells
-        # values = list(set([int(self.raster_A[i,j]) for i in range(self.rows) for j in range(self.cols) if self.raster_A[i,j] != self.noval]))
-        # no_elem=len(values)
 
         # input values
         if self.no_lumped_par > 0:
-            # assert len(par_g) == (self.no_elem*(self.no_parameters-self.no_lumped_par))+self.no_lumped_par,"As there is "+str(self.no_lumped_par)+" lumped parameters, length of input parameters should be "+str(self.no_elem)+"*"+"("+str(self.no_parameters)+"-"+str(self.no_lumped_par)+")"+"+"+str(self.no_lumped_par)+"="+str(self.no_elem*(self.no_parameters-self.no_lumped_par)+self.no_lumped_par)+" not "+str(len(par_g))+" probably you have to add the value of the lumped parameter at the end of the list"
             assert len(par_g) == (self.no_elem*(self.no_parameters))+self.no_lumped_par,"As there is "+str(self.no_lumped_par)+" lumped parameters, length of input parameters should be "+str(self.no_elem)+"*"+"("+str(self.no_parameters)+"-"+str(self.no_lumped_par)+")"+"+"+str(self.no_lumped_par)+"="+str(self.no_elem*(self.no_parameters-self.no_lumped_par)+self.no_lumped_par)+" not "+str(len(par_g))+" probably you have to add the value of the lumped parameter at the end of the list"
         else:
             # if there is no lumped parameters
