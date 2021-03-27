@@ -109,7 +109,7 @@ class Routing():
         return wi
 
     @staticmethod
-    def TriangularRouting(q, maxbas=1):
+    def TriangularRouting1(q, maxbas=1):
         """
         ==========================================================
              TriangularRouting(q, maxbas=1)
@@ -155,7 +155,7 @@ class Routing():
 
 
     @staticmethod
-    def CalculateMaxBas(MAXBAS):
+    def CalculateWeights(MAXBAS):
         """
         ======================================================
             CalculateMaxBas(MAXBAS)
@@ -194,16 +194,18 @@ class Routing():
         flag = 1  # 1 = "up"  ; 2 = down
 
         if RealPart>0 : # even number 2,4,6,8,10
-            maxbasW=np.ones(int(IntPart)+1) # if even add 1
+            maxbasW = np.ones(int(IntPart)+1) # if even add 1
         else:            # odd number
-            maxbasW=np.ones(int(IntPart))
+            maxbasW = np.ones(int(IntPart))
 
 
         for x in range(int(MAXBAS)):
 
             if x < (MAXBAS / 2.0)-1:
-                ynow = np.tan(np.pi/3) * (x+1); #Integral of  x dx with slope of 60 degree Equilateral triangle
-                maxbasW[x] = ((ynow + yant) / 2) / TotalA # ' Area / Total Area
+                #Integral of  x dx with slope of 60 degree Equilateral triangle
+                ynow = np.tan(np.pi/3) * (x+1)
+                # ' Area / Total Area
+                maxbasW[x] = ((ynow + yant) / 2) / TotalA 
 
             else:     #The area here is calculated by the formlua of a trapezoidal (B1+B2)*h /2
                 if flag == 1 :
@@ -219,14 +221,16 @@ class Routing():
 
                     flag = 2
                 else:
-                    ynow = (MAXBAS * np.sin(np.pi / 3) - np.tan(np.pi / 3) * (x+1 - MAXBAS / 2.0))#'sum of the two height in the descending part of the triangle
-                    maxbasW[x] = ((ynow + yant) / 2) / TotalA; #Multiplying by the height of the trapezoidal and dividing by 2
+                    #'sum of the two height in the descending part of the triangle
+                    ynow = (MAXBAS * np.sin(np.pi / 3) - np.tan(np.pi / 3) * (x+1 - MAXBAS / 2.0))
+                    #Multiplying by the height of the trapezoidal and dividing by 2
+                    maxbasW[x] = ((ynow + yant) / 2) / TotalA
 
             Total = Total + maxbasW[x];
             yant = ynow;
 
-
-        x = x + 1;
+        x = int(MAXBAS)
+        # x = x + 1
 
         if RealPart > 0 :
             if np.floor(MAXBAS)== 0 :
@@ -243,8 +247,9 @@ class Routing():
 
         return maxbasW
 
+
     @staticmethod
-    def RoutingMAXBAS(Q,MAXBAS):
+    def TriangularRouting2(Q,MAXBAS):
         """
         ====================================================
              RoutingMAXBAS(Q,MAXBAS)
@@ -263,9 +268,9 @@ class Routing():
         """
 
         # CALCULATE MAXBAS WEIGHTS
-        maxbasW = Routing.CalculateMaxBas(MAXBAS);
+        maxbasW = Routing.CalculateWeights(MAXBAS);
 
-        Qw=np.ones((len(Q),len(maxbasW)))
+        Qw = np.ones((len(Q),len(maxbasW)))
         # Calculate the matrix discharge
         for i in range(len(Q)): # 0 to 10
             for k in range(len(maxbasW)):  # 0 to 4
@@ -281,7 +286,7 @@ class Routing():
 
         # Calculate routing
         j = 0
-        Qout=np.ones((len(Q),1))
+        Qout = np.ones(shape=(len(Q)))
 
         for i in range(len(Q) ):
             if i == 0:
@@ -289,13 +294,13 @@ class Routing():
             elif i < len(maxbasW)-1:
                 A = Qw[0:i+1,:]
                 s = len(A)-1    # len(A) is the no of rows or use int(np.shape(A)[0])
-                Su=mm(A,s)
+                Su= mm(A,s)
 
                 Qout[i] = sum(Su[0:i+1])
             else:
                 A = Qw[j:i+1,:]
                 s = len(A)-1
-                Su=mm(A,s)
+                Su = mm(A,s)
                 Qout[i] = sum(Su)
                 j = j + 1
 
