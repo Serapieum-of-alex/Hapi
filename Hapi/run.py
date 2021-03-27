@@ -202,7 +202,7 @@ class Model():
         # no_cells=np.size(raster[:,:])-np.count_nonzero(raster[raster==no_val])
         self.px_tot_area = self.no_elem*self.px_area # total area of pixels
 
-        print("Flow Accmulation inputs is read successfully")
+        print("Flow Accmulation input is read successfully")
 
 
     def ReadFlowDir(self, Path):
@@ -228,8 +228,28 @@ class Model():
 
         # create the flow direction table
         self.FDT = GC.FlowDirecTable(FlowDir)
-        print("Flow Direction inputs is read successfully")
+        print("Flow Direction input is read successfully")
 
+
+    def ReadFlowPathLength(self, Path):
+        # data type
+        assert type(Path) == str, "PrecPath input should be string type"
+        # input values
+        FPL_ext = Path[-4:]
+        assert FPL_ext == ".tif", "please add the extension at the end of the Flow accumulation raster path input"
+        # check wether the path exists or not
+        assert os.path.exists(Path), Path + " you have provided does not exist"    
+        
+        FPL = gdal.Open(Path)
+        [self.rows,self.cols] = FPL.ReadAsArray().shape
+        # check flow accumulation input raster
+        self.NoDataValue = np.float32(FPL.GetRasterBand(1).GetNoDataValue())
+        self.FPLArr = FPL.ReadAsArray()
+        self.no_elem = np.size(self.FPLArr[:,:])-np.count_nonzero((self.FPLArr[self.FPLArr==self.NoDataValue]))
+        
+        print("Flow Path length input is read successfully")
+        
+        
     def ReadParameters(self,Path):
         if self.SpatialResolution == 'Distributed':
             # data type
@@ -244,7 +264,7 @@ class Model():
             self.Parameters = pd.read_csv(Path, index_col = 0, header = None)[1].tolist()
 
         print("Parameters are read successfully")
-
+    
 
     def ReadLumpedModel(self, LumpedModel, CatArea, InitialCond, Snow):
         assert isinstance(LumpedModel,ModuleType) , "ConceptualModel should be a module or a python file contains functions "
@@ -320,30 +340,46 @@ class Model():
         print("Parameters bounds are read successfully")
 
     
-    def ExtractDischarge(self, CalculateMetrics=True):
-        self.Qsim = pd.DataFrame(index = self.Index, columns = self.QGauges.columns)
+    def ExtractDischarge(self, CalculateMetrics=True, FW1=False):
         
-        if CalculateMetrics:
-            index = ['RMSE', 'NSE', 'NSEhf', 'KGE', 'WB']
-            self.Metrics = pd.DataFrame(index = index, columns = self.QGauges.columns)
         
-        for i in range(len(self.GaugesTable)):
-            Xind = int(self.GaugesTable.loc[self.GaugesTable.index[i],"cell_row"])
-            Yind = int(self.GaugesTable.loc[self.GaugesTable.index[i],"cell_col"])
-            gaugeid = self.GaugesTable.loc[self.GaugesTable.index[i],"id"]
-            
-            Quz = np.reshape(self.quz_routed[Xind,Yind,:-1],self.TS-1)
-            Qlz = np.reshape(self.qlz_translated[Xind,Yind,:-1],self.TS-1)
-            Qsim = Quz + Qlz
+        if not FW1:
+            self.Qsim = pd.DataFrame(index = self.Index, columns = self.QGauges.columns)
+            if CalculateMetrics:
+                index = ['RMSE', 'NSE', 'NSEhf', 'KGE', 'WB']
+                self.Metrics = pd.DataFrame(index = index, columns = self.QGauges.columns)
+            for i in range(len(self.GaugesTable)):
+                Xind = int(self.GaugesTable.loc[self.GaugesTable.index[i],"cell_row"])
+                Yind = int(self.GaugesTable.loc[self.GaugesTable.index[i],"cell_col"])
+                gaugeid = self.GaugesTable.loc[self.GaugesTable.index[i],"id"]
+                
+                Quz = np.reshape(self.quz_routed[Xind,Yind,:-1],self.TS-1)
+                Qlz = np.reshape(self.qlz_translated[Xind,Yind,:-1],self.TS-1)
+                Qsim = Quz + Qlz
+                self.Qsim.loc[:,gaugeid] = Qsim
+                if CalculateMetrics:
+                    Qobs = self.QGauges.loc[:,gaugeid]
+                    self.Metrics.loc['RMSE',gaugeid] = round(PC.RMSE(Qobs, Qsim),3)
+                    self.Metrics.loc['NSE',gaugeid] = round(PC.NSE(Qobs, Qsim),3)
+                    self.Metrics.loc['NSEhf',gaugeid] = round(PC.NSEHF(Qobs, Qsim),3)
+                    self.Metrics.loc['KGE',gaugeid] = round(PC.KGE(Qobs, Qsim),3)
+                    self.Metrics.loc['WB',gaugeid] = round(PC.WB(Qobs, Qsim),3)
+        else:
+            self.Qsim = pd.DataFrame(index = self.Index)
+            gaugeid = self.GaugesTable.loc[self.GaugesTable.index[-1],"id"]
+            Qsim = np.reshape(self.qout,self.TS-1)
             self.Qsim.loc[:,gaugeid] = Qsim
             if CalculateMetrics:
-                Qobs = self.QGauges.loc[:,gaugeid]
-                self.Metrics.loc['RMSE',gaugeid] = round(PC.RMSE(Qobs, Qsim),3)
-                self.Metrics.loc['NSE',gaugeid] = round(PC.NSE(Qobs, Qsim),3)
-                self.Metrics.loc['NSEhf',gaugeid] = round(PC.NSEHF(Qobs, Qsim),3)
-                self.Metrics.loc['KGE',gaugeid] = round(PC.KGE(Qobs, Qsim),3)
-                self.Metrics.loc['WB',gaugeid] = round(PC.WB(Qobs, Qsim),3)
-
+                index = ['RMSE', 'NSE', 'NSEhf', 'KGE', 'WB']
+                self.Metrics = pd.DataFrame(index = index)
+            if CalculateMetrics:
+                    Qobs = self.QGauges.loc[:,gaugeid]
+                    self.Metrics.loc['RMSE',gaugeid] = round(PC.RMSE(Qobs, Qsim),3)
+                    self.Metrics.loc['NSE',gaugeid] = round(PC.NSE(Qobs, Qsim),3)
+                    self.Metrics.loc['NSEhf',gaugeid] = round(PC.NSEHF(Qobs, Qsim),3)
+                    self.Metrics.loc['KGE',gaugeid] = round(PC.KGE(Qobs, Qsim),3)
+                    self.Metrics.loc['WB',gaugeid] = round(PC.WB(Qobs, Qsim),3)
+            
 class Lake():
 
     def __init__(self, StartDate='', EndDate='', fmt="%Y-%m-%d",
@@ -528,32 +564,27 @@ class Run(Model):
         """
         ### input data validation
         # data type
-        assert type(self.FlowAcc)==gdal.Dataset, "flow_acc should be read using gdal (gdal dataset please read it using gdal library) "
-        assert type(self.FlowDir)==gdal.Dataset, "flow_direct should be read using gdal (gdal dataset please read it using gdal library) "
+        # assert type(self.FlowAcc)==gdal.Dataset, "flow_acc should be read using gdal (gdal dataset please read it using gdal library) "
+        # assert type(self.FlowDir)==gdal.Dataset, "flow_direct should be read using gdal (gdal dataset please read it using gdal library) "
 
         # input dimensions
-        [rows,cols] = self.FlowAcc.ReadAsArray().shape
-        [fd_rows,fd_cols] = self.FlowDir.ReadAsArray().shape
-        assert fd_rows == rows and fd_cols == cols, "all input data should have the same number of rows"
+        # [rows,cols] = self.FlowAcc.ReadAsArray().shape
+        [fd_rows,fd_cols] = self.FlowDirArr.shape
+        assert fd_rows == self.rows and fd_cols == self.cols, "all input data should have the same number of rows"
 
         # input dimensions
-        assert np.shape(self.Prec)[0] == rows and np.shape(self.ET)[0] == rows and np.shape(self.Temp)[0] == rows and np.shape(self.Parameters)[0] == rows, "all input data should have the same number of rows"
-        assert np.shape(self.Prec)[1] == cols and np.shape(self.ET)[1] == cols and np.shape(self.Temp)[1] == cols and np.shape(self.Parameters)[1] == cols, "all input data should have the same number of columns"
+        assert np.shape(self.Prec)[0] == self.rows and np.shape(self.ET)[0] == self.rows and np.shape(self.Temp)[0] == self.rows and np.shape(self.Parameters)[0] == self.rows, "all input data should have the same number of rows"
+        assert np.shape(self.Prec)[1] == self.cols and np.shape(self.ET)[1] == self.cols and np.shape(self.Temp)[1] == self.cols and np.shape(self.Parameters)[1] == self.cols, "all input data should have the same number of columns"
         assert np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2], "all meteorological input data should have the same length"
 
         assert np.shape(Lake.MeteoData)[0] == np.shape(self.Prec)[2], "Lake meteorological data has to have the same length as the distributed raster data"
         assert np.shape(Lake.MeteoData)[1] >= 3, "Lake Meteo data has to have at least three columns rain, ET, and Temp"
 
         #run the model
-        q_out, q_uz, q_lz = Wrapper.HapiWithlake(self, Lake)
-
-        return q_out, q_uz, q_lz
+        Wrapper.HapiWithlake(self, Lake)
 
 
-    @staticmethod
-    def RunFW1withLake(ConceptualModel, Paths, ParPath, p2, init_st, snow,
-                        lakeCalibArray, StageDischargeCurve, LakeParameters ,
-                        lakecell,Lake_init_st,LumpedPar = True):
+    def RunFW1(self):
         """
         =======================================================================
             RunDistwithLake(PrecPath, Evap_Path, TempPath, DemPath, FlowAccPath, FlowDPath, ParPath, p2)
@@ -605,62 +636,80 @@ class Run(Model):
                                               FlowAccPath,FlowDPath,ParPath,p2)
         """
         # input data validation
-        assert len(Paths) == 4, "Paths should include 5 folder pathes " +str(len(Paths))+" paths are only provided"
 
-        PrecPath = Paths[0]
-        Evap_Path = Paths[1]
-        TempPath = Paths[2]
-        FlowPathLengthPath = Paths[3]
-
-        # data type
-        assert type(PrecPath) == str, "PrecPath input should be string type"
-        assert type(Evap_Path) == str, "Evap_Path input should be string type"
-        assert type(TempPath) == str, "TempPath input should be string type"
-        assert type(FlowPathLengthPath) == str, "Flow Path Length Path input should be string type"
-        assert type(ParPath) == str, "ParPath input should be string type"
-
-
-        # input values
-        FPL_ext = FlowPathLengthPath[-4:]
-        assert FPL_ext == ".tif", "please add the extension at the end of the Flow accumulation raster path input"
-        # check wether the path exists or not
-        assert os.path.exists(PrecPath), PrecPath + " you have provided does not exist"
-        assert os.path.exists(Evap_Path), Evap_Path+" path you have provided does not exist"
-        assert os.path.exists(TempPath), TempPath+" path you have provided does not exist"
-        assert os.path.exists(FlowPathLengthPath), FlowPathLengthPath + " you have provided does not exist"
-        # check wether the folder has the rasters or not
-        assert len(os.listdir(PrecPath)) > 0, PrecPath+" folder you have provided is empty"
-        assert len(os.listdir(Evap_Path)) > 0, Evap_Path+" folder you have provided is empty"
-        assert len(os.listdir(TempPath)) > 0, TempPath+" folder you have provided is empty"
-
-        # read data
-        ### meteorological data
-        prec = raster.ReadRastersFolder(PrecPath)
-        evap = raster.ReadRastersFolder(Evap_Path)
-        temp = raster.ReadRastersFolder(TempPath)
-        print("meteorological data are read successfully")
-
-        #### GIS data
-    #    dem= gdal.Open(DemPath)
-        FPL = gdal.Open(FlowPathLengthPath)
-        print("GIS data are read successfully")
-
-        # parameters
-    #    if LumpedPar == True:
-    #        parameters = np.loadtxt(ParPath)#.tolist()
-    #    else:
-        parameters = raster.ReadRastersFolder(ParPath)
-
-        print("Parameters are read successfully")
-
-
+        # input dimensions
+        assert np.shape(self.Prec)[0] == self.rows and np.shape(self.ET)[0] == self.rows and np.shape(self.Temp)[0] == self.rows and np.shape(self.Parameters)[0] == self.rows, "all input data should have the same number of rows"
+        assert np.shape(self.Prec)[1] == self.cols and np.shape(self.ET)[1] == self.cols and np.shape(self.Temp)[1] == self.cols and np.shape(self.Parameters)[1] == self.cols, "all input data should have the same number of columns"
+        assert np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2], "all meteorological input data should have the same length"
+        
         #run the model
-        st, q_out, q_uz, q_lz = Wrapper.FW1Withlake(ConceptualModel, FPL, prec, evap,
-                                                   temp, parameters, p2, snow, init_st,
-                                                   lakeCalibArray, StageDischargeCurve,
-                                                   LakeParameters, lakecell,Lake_init_st)
+        Wrapper.FW1(self)
+        
 
-        return st, q_out, q_uz, q_lz
+    def RunFW1withLake(self,Lake):
+        """
+        =======================================================================
+            RunDistwithLake(PrecPath, Evap_Path, TempPath, DemPath, FlowAccPath, FlowDPath, ParPath, p2)
+        =======================================================================
+        this function runs the conceptual distributed hydrological model
+
+        Inputs:
+        ----------
+            1-Paths:
+                1-PrecPath:
+                    [String] path to the Folder contains precipitation rasters
+                2-Evap_Path:
+                    [String] path to the Folder contains Evapotranspiration rasters
+                3-TempPath:
+                    [String] path to the Folder contains Temperature rasters
+                4-FlowAccPath:
+                    [String] path to the Flow Accumulation raster of the catchment (it should
+                    include the raster name and extension)
+                5-FlowDPath:
+                    [String] path to the Flow Direction raster of the catchment (it should
+                    include the raster name and extension)
+            7-ParPath:
+                [String] path to the Folder contains parameters rasters of the catchment
+            8-p2:
+                [List] list of unoptimized parameters
+                p2[0] = tfac, 1 for hourly, 0.25 for 15 min time step and 24 for daily time step
+                p2[1] = catchment area in km2
+
+        Outputs:
+        ----------
+            1- st:
+                [4D array] state variables
+            2- q_out:
+                [1D array] calculated Discharge at the outlet of the catchment
+            3- q_uz:
+                [3D array] Distributed discharge for each cell
+
+        Example:
+        ----------
+            PrecPath = prec_path="meteodata/4000/calib/prec"
+            Evap_Path = evap_path="meteodata/4000/calib/evap"
+            TempPath = temp_path="meteodata/4000/calib/temp"
+            DemPath = "GIS/4000/dem4000.tif"
+            FlowAccPath = "GIS/4000/acc4000.tif"
+            FlowDPath = "GIS/4000/fd4000.tif"
+            ParPath = "meteodata/4000/parameters"
+            p2=[1, 227.31]
+            st, q_out, q_uz_routed = RunModel(PrecPath,Evap_Path,TempPath,DemPath,
+                                              FlowAccPath,FlowDPath,ParPath,p2)
+        """
+        # input data validation
+
+        # input dimensions
+        assert np.shape(self.Prec)[0] == self.rows and np.shape(self.ET)[0] == self.rows and np.shape(self.Temp)[0] == self.rows and np.shape(self.Parameters)[0] == self.rows, "all input data should have the same number of rows"
+        assert np.shape(self.Prec)[1] == self.cols and np.shape(self.ET)[1] == self.cols and np.shape(self.Temp)[1] == self.cols and np.shape(self.Parameters)[1] == self.cols, "all input data should have the same number of columns"
+        assert np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2], "all meteorological input data should have the same length"
+
+        assert np.shape(Lake.MeteoData)[0] == np.shape(self.Prec)[2], "Lake meteorological data has to have the same length as the distributed raster data"
+        assert np.shape(Lake.MeteoData)[1] >= 3, "Lake Meteo data has to have at least three columns rain, ET, and Temp"
+        
+        #run the model
+        Wrapper.FW1Withlake(self, Lake)
+
 
 
     def RunLumped(self, Route=0, RoutingFn=[]):
