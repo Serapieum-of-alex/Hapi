@@ -2,11 +2,16 @@ import os
 import pandas as pd
 import numpy as np
 import datetime as dt
+from bisect import bisect
 from scipy.stats import gumbel_r
 import matplotlib.pyplot as plt
 import zipfile
 
 from Hapi.raster import Raster as raster
+from Hapi import performancecriteria as Pf
+import Hapi.visualizer as V
+# for line styling
+Vis = V.Visualize(1)
 
 FigureDefaultOptions = dict( ylabel = '', xlabel = '',
                       legend = '', legend_size = 10, figsize = (10,8),
@@ -132,7 +137,7 @@ class River():
         Ref_ind = pd.date_range(self.RRMstart,self.RRMend, freq='D')
         self.RRMReferenceIndex = pd.DataFrame(index = list(range(1,RRMdays+1)))
         self.RRMReferenceIndex['date'] = Ref_ind[:-1]
-
+        self.NoTimeSteps = len(self.RRMReferenceIndex)
         self.FigureOptions = FigureDefaultOptions
 
     
@@ -232,6 +237,100 @@ class River():
             Date = dt.datetime.strptime(Date,"%Y-%m-%d")
         return np.where(self.ReferenceIndex['date'] == Date)[0][0]+1
     
+    def Read1DConfigFile(self, Path):
+        File  = open(Path)
+        Wholefile = File.readlines()
+        File.close()
+        # project path
+        self.WorkDirectory = Wholefile[1][:-1]
+        # cross sections file
+        self.XSF  = Wholefile[4][:-1]
+        self.ReadCrossSections(self.WorkDirectory + "/inputs/1d/topo/" + self.XSF)
+        # Laterals file, BC file
+        self.LateralsF, self.BCF= Wholefile[6][:-1].split(" ")
+        # RiverNetwork file
+        self.RiverNetworkF = Wholefile[8][:-1]
+        self.RiverNetwork(self.WorkDirectory + "/inputs/1d/topo/" + self.RiverNetworkF)
+        # Slope File
+        self.SlopeF = Wholefile[10][:-1]
+        self.Slope(self.WorkDirectory + "/inputs/1d/topo/" + self.SlopeF)
+        self.NoSeg = len(self.slope)
+        # Calibration file
+        self.CalibrationF = Wholefile[12][:-1]
+        # 1D-2D Coupling file
+        self.Coupling1D2DF = Wholefile[14][:-1]
+        # Run mode
+        RunMode, SubID = Wholefile[16][:-1].split("#")[0].strip().split(" ")
+        self.RunMode = int(RunMode)
+        # Segment ID
+        self.SubID = int(SubID)
+        # Customized Run file
+        self.Customized_BC_F = Wholefile[18][:-1]   
+        self.CustomizedRunsPath = Wholefile[19][:-1]
+        
+        # Results
+        DeleteOld = Wholefile[22][:-1]
+        DeleteOld = int(DeleteOld)
+        SaveHourly, SaveOverToppingTot, SaveOverToppingDetailed = Wholefile[24][:-1].split(" ")
+        SaveHourly = int(SaveHourly)
+        SaveOverToppingTot = int(SaveOverToppingTot)
+        SaveOverToppingDetailed = int(SaveOverToppingDetailed)
+        SaveQ, SaveWL, SaveUSBC = Wholefile[26].split("#")[0][:-1].split(" ")
+        SaveQ = int(SaveQ)
+        SaveWL = int(SaveWL)
+        SaveUSBC = int(SaveUSBC)
+        
+        self.ResultsDetails = dict(DeleteOld=DeleteOld, SaveHourly=SaveHourly, 
+                       SaveOverToppingTot=SaveOverToppingTot, 
+                       SaveOverToppingDetailed=SaveOverToppingDetailed,
+                       SaveQ = SaveQ, SaveWL=SaveWL, SaveUSBC=SaveUSBC)
+        
+        # Temporal Resolution
+        self.RRMTemporalResolution = Wholefile[29].split("#")[0][:-1]
+        self.HMTemporalResolution = Wholefile[30].split("#")[0][:-1]
+        self.HMTemporalResolution = int(self.HMTemporalResolution)
+        
+        if self.RRMTemporalResolution == "Daily":
+            # number of time steps for the 1D model
+            self.TS = 24*self.HMTemporalResolution
+            
+        Start, End = Wholefile[32][:-1].split(" ")
+        self.SimStartIndex = int(Start)
+        self.SimEndIndex = int(End)
+        self.SimStart = self.IndexToDate(self.SimStartIndex)
+        self.SimEnd = self.IndexToDate(self.SimEndIndex)
+        self.OneDTempR = 60 # in seconds
+        
+        
+        
+        # 1D thresholds
+        MinQ, MinDepth = Wholefile[34][:-1].split(" ")
+        MinQ = float(MinQ)
+        MinDepth = float(MinDepth)
+        
+        # 1D or 2D
+        ModelMode, OvertoppingOnly = Wholefile[36][:-1].split(" ")
+        ModelMode = int(ModelMode)
+        OvertoppingOnly = int(OvertoppingOnly)
+        
+        self.D1 = dict(MinQ=MinQ, MinDepth=MinDepth, ModelMode=ModelMode, 
+                       OvertoppingOnly=OvertoppingOnly)
+        
+        DischargeThreshold = Wholefile[38][:-1]
+        DischargeThreshold = int(DischargeThreshold)
+        
+        SimulationMode = Wholefile[40][:-1]
+        SimulationMode = int(SimulationMode)
+        ResultsFormat = Wholefile[42][:-1]
+        ResultsFormat = int(ResultsFormat)
+        CalcInundationDuration = Wholefile[44][:-1]
+        CalcInundationDuration = int(CalcInundationDuration)
+        CalcReturnPerion = Wholefile[46][:-1]
+        CalcReturnPerion = int(CalcReturnPerion)
+        self.D2 = dict(DischargeThreshold=DischargeThreshold, SimulationMode=SimulationMode,
+                       ResultsFormat=ResultsFormat, CalcInundationDuration=CalcInundationDuration, 
+                       CalcReturnPerion=CalcReturnPerion)
+    
     def ReadCrossSections(self,Path):
         """
         ===========================================
@@ -244,6 +343,7 @@ class River():
             self.crosssections = pd.read_csv(Path, delimiter = ',', skiprows =1  )
         else:
             self.crosssections = pd.read_csv(Path, delimiter = ',')
+            self.XSno = len(self.crosssections)
 
     def Slope(self,Path):
         """
@@ -329,6 +429,7 @@ class River():
             rivernetwork.loc[i-1,rivernetwork.columns[2]] = [int(j) for j in Wholefile[i].split(',')[2:]]
             rivernetwork.columns = ["No","id","us"]
             self.rivernetwork = rivernetwork[:]
+            self.Segments = self.rivernetwork['id'].tolist()
 
     
     def TraceSegment(self,ID):
@@ -1452,15 +1553,60 @@ class River():
         Coords = np.array([Xcoords, Ycoords]).transpose()
 
         return Coords
-    # @staticmethod
-    # def GetGeometry(H, Hl, Hr, Bl, Br, B, Dbf):
+    
 
-    #     Coords = GetVortices(H, Hl, Hr, Bl, Br, B, Dbf)
-    #     area, Perimiter = PolygonGeometry(Coords)
-
-    #     return Area, Perimeter
-
-
+    def GetRatingCurve(self, MaxH=20, Interval=0.02, dx=500):
+        
+        So = self.slope/dx
+        # Rating Curve
+        geom = self.crosssections.loc[self.crosssections.index[0],:]
+        # 0  1   2   3  4 5  6  7  8  9  10 11 12 13 14 15
+        "id,xsid,gl,zl,zr,hl,hr,bl,br,xl,yl,xr,yr,b,m,dbf"
+        
+        Nint = int((max(geom['zl'] - geom['gl'], geom['zr'] - geom['gl']) + MaxH)/Interval)
+        
+        Table = np.zeros(shape=(Nint,10))
+        HQ = np.zeros(shape=(Nint,2))
+        
+        for i in range(Nint):
+            Table[i,0] = Interval*(i+1)
+            # calculate area & perimeter
+            Coords = self.GetVortices(Table[i,0], geom['hl'], geom['hr'], geom['bl'], geom['br'], geom['b'], geom['dbf'])
+            Table[i,1:3] = self.PolygonGeometry(Coords)
+            
+            # area & perimeter of the Upper part only
+            if Table[i,0] <= geom['dbf']:
+            	Table[i,3] = 0
+            	Table[i,4] = 0
+            else :
+            	# area of upper part only
+            	Table[i,3] =  Table[i,1] - geom['dbf'] * geom['b']
+            	# perimeter of upper part
+            	Table[i,4] =  Table[i,2] -  2* geom['dbf'] - geom['b']
+            
+            # area & perimeter of the lower part only
+            Table[i,5] = Table[i,1] - Table[i,3]
+            Table[i,6] = Table[i,2] - Table[i,4]
+            
+            # Discharge of Upper & lower
+            if Table[i,0] <= geom['dbf']:
+            	Table[i,7] = 0
+            else:
+            	Table[i,7] = Table[i,3] * ((Table[i,3] / Table[i,4])** (2.0/3.0)) 
+            
+            Table[i,8] = Table[i,5] * ((Table[i,5]/Table[i,6])** (2.0/3.0)) 
+            
+            Table[i,7] = (1.0/geom['m']) * Table[i,7] * (abs(So)**(0.5))
+            Table[i,8] = (1.0/geom['m']) * Table[i,8] * (abs(So)**(0.5))
+            
+            # total discharge
+            Table[i,9] = Table[i,7] + Table[i,8]
+                
+        HQ[:,0] = Table[:,0]
+        HQ[:,1] = Table[:,9]
+        
+        self.HQ = HQ[:,:]
+    
 
     def GetDays(self,FromDay,ToDay):
         """
@@ -1893,7 +2039,7 @@ class River():
             Q.index = [dt.datetime.strptime(date,date_format) for date in Q[0]]
             del Q[0]
             Q = Q.rename(columns = {1:NodeID})
-            
+            # convert the date into integer index
             s = np.where(RRMReferenceIndex['date'] == Q.index[0])[0][0]+1
             e = np.where(RRMReferenceIndex['date'] == Q.index[-1])[0][0]+1
             Q.index = list(range(s,e+1))
@@ -2175,7 +2321,7 @@ class River():
 
 class Sub(River):
 
-    def __init__(self,ID, River):
+    def __init__(self,ID, River, RunModel=False):
         self.ID = ID
         self.RIM = River.name
         self.Version = River.Version
@@ -2200,6 +2346,18 @@ class Sub(River):
             self.crosssections = River.crosssections[River.crosssections['swimid'] == ID]
         else:
             self.crosssections = River.crosssections[River.crosssections['id'] == ID]
+            if RunModel:
+                self.xsid = Sub.crosssections.loc[:,'xsid'].values
+                self.Dbf = Sub.crosssections.loc[:,'dbf'].values
+                self.bedlevel = Sub.crosssections.loc[:,'gl'].values
+                self.hl = Sub.crosssections.loc[:,'hl'].values
+                self.cl = Sub.crosssections.loc[:,'bl'].values
+                self.zl = Sub.crosssections.loc[:,'zl'].values
+                self.hr = Sub.crosssections.loc[:,'hr'].values
+                self.cr = Sub.crosssections.loc[:,'br'].values
+                self.zr = Sub.crosssections.loc[:,'zr'].values
+                self.mw = Sub.crosssections.loc[:,'b'].values
+                self.mn = Sub.crosssections.loc[:,'m'].values
             
         self.crosssections.index = list(range(len(self.crosssections)))
         self.LastXS = self.crosssections.loc[len(self.crosssections)-1,'xsid']
@@ -2835,7 +2993,7 @@ class Sub(River):
         plotstart = dt.datetime.strptime(plotstart,"%Y-%m-%d")
         plotend = dt.datetime.strptime(plotend,"%Y-%m-%d")
 
-        XSlist = self.XSname[5:self.XSno:int(self.XSno/5)]
+        XSlist = self.XSname[Spacing:self.XSno:Spacing]
         
         XSlist = XSlist + XSs
         # to remove repeated XSs
@@ -2848,18 +3006,18 @@ class Sub(River):
         XSlist.sort()
         
         
-        fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(6, 5))
+        fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(7, 5))
         
         for i in range(len(XSlist)):
             ax.plot(self.XSHydrographs.loc[plotstart:plotend,XSlist[i]], label = "XS-" + str(XSlist[i]),
                         linewidth=linewidth),#color = XScolor,zorder=XSorder
-                        # linestyle = list(linestyles.items())[i][1])
         
-        ax.legend(fontsize = 12)
-        ax.set_xlabel("Time", fontsize = 12)
-        ax.set_ylabel("Discharge m3/s", fontsize = 12)
+        ax.legend(fontsize = 10, loc='best')
+        ax.set_xlabel("Time", fontsize = 10)
+        ax.set_ylabel("Discharge m3/s", fontsize = 10)
         plt.tight_layout()
     
+        return ax
     
     def ReadUSHydrograph(self, FromDay = '', ToDay = '', Path = '',
                           date_format="'%Y-%m-%d'"):
@@ -2899,28 +3057,438 @@ class Sub(River):
                     NodeID = self.USnode[i]
                     self.USHydrographs[NodeID]  = self.ReadRRMResults(self.Version, self.RRMReferenceIndex, 
                                                                     Path, NodeID, FromDay, ToDay,
-                                                                    date_format)[NodeID].tolist()
+                                                                    date_format)[NodeID]
             #there is one upstream segment
-        else:
-            
+        elif self.USnode != []:
             NodeID = self.USnode[0]
             self.USHydrographs[NodeID] = self.ReadRRMResults(self.Version, self.RRMReferenceIndex, 
-                                                                    Path, NodeID, FromDay, ToDay,
-                                                                    date_format)[NodeID].tolist()
-            
+                                                                   Path, NodeID, FromDay, ToDay,
+                                                                    date_format)[NodeID]
+        else:
+            print("the Segment Does not have any Upstream Segments")
+            return
             
         self.USHydrographs['total'] = self.USHydrographs.sum(axis=1)
         if FromDay == '':
-            FromDay = 1
+            # FromDay = 1
+            FromDay = self.USHydrographs.index[0]
         if ToDay == '':
-            ToDay = len(self.USHydrographs[NodeID])
+            # ToDay = len(self.USHydrographs[NodeID])
+            ToDay = self.USHydrographs.index[-1]
     
         start = self.ReferenceIndex.loc[FromDay,'date']
         end = self.ReferenceIndex.loc[ToDay,'date']
     
         self.USHydrographs.index = pd.date_range(start, end, freq = 'D')
+    
+    
+    
+    def GetUSHydrograph(self, River):
+        """
+        ==================================================================
+            GetUSHydrograph(River)
+        ==================================================================
+        GetUSHydrograph methods gets the sum of all the upstream hydrographs
+        whither it is routed inside the model or a boundary condition.
+        
+        Parameters
+        ----------
+        River : [object]
+            the object of the river.
+
+        Returns
+        -------
+        USHydrographs : [array].
+            array of the hydrograph
+        """
+        
+        self.USHydrographs = np.zeros(shape=(River.NoTimeSteps))
+        
+        if len(self.USnode) > 1 :
+            # there is more than one upstream segment
+            if type(self.USnode) == list:
+                for i in range(len(self.USnode)):
+                    NodeID = self.USnode[i]
+                    # get the order of the segment
+                    River.Segments.index(NodeID)
+                    self.USHydrographs = self.USHydrographs + River.RoutedQ[:,River.Segments.index(NodeID)]
+            #there is one upstream segment
+        elif self.USnode != []:
+            NodeID = self.USnode[0]
+            River.Segments.index(NodeID)
+            self.USHydrographs = self.USHydrographs + River.RoutedQ[:,River.Segments.index(NodeID)]
+        
+        if type(self.BC) != bool:
+            self.USHydrographs = self.USHydrographs + self.BC.values.reshape(len(self.USHydrographs))
         
         
+    def GetXSGeometry(self):
+        AreaPerLow = np.zeros(shape=(self.XSno,2))
+        AreaPerHigh = np.zeros(shape=(self.XSno,2))
+        for i in range(self.XSno):
+            geom = self.crosssections.loc[i,:]
+            H = min(geom['hl'], geom['hr']) + geom['dbf']
+            Coords = self.GetVortices(H, geom['hl'], geom['hr'], geom['bl'], geom['br'], geom['b'], geom['dbf'])
+            AreaPerLow[i,:] = self.PolygonGeometry(Coords)
+            H = max(geom['hl'], geom['hr']) + geom['dbf']
+            Coords = self.GetVortices(H, geom['hl'], geom['hr'], geom['bl'], geom['br'], geom['b'], geom['dbf'])
+            AreaPerHigh[i,:] = self.PolygonGeometry(Coords)
+        self.AreaPerHigh = AreaPerHigh[:,:]
+        self.AreaPerLow = AreaPerLow[:,:]
+    
+            
+    
+    def GetFlow(self, IF, ID, FromDay='', ToDay='', date_format="%d_%m_%Y"):
+        """
+        =============================================================================
+             GetFlow(IF, ID, FromDay='', ToDay='', date_format="%d_%m_%Y")
+        =============================================================================
+
+        Parameters
+        ----------
+        IF : [Interface object]
+            You Have to create the interface object then read the laterals and the 
+            boundary conditions first.
+        ID : [Integer]
+            the id of the segment you want to extract the laterals for.
+        FromDay : [string], optional
+            the starting day. The default is ''.
+        ToDay : [string], optional
+            the ending day. The default is ''.
+        date_format : [string], optional
+            the format of the given dates. The default is "%d_%m_%Y".
+
+        Returns
+        -------
+        BC : [dataframe attribute].
+            dataframe containing the boundary condition under a column by the name 
+            of the segment id.
+        Laterals : [dataframe attribute].
+            dataframe containing a column for each cross section that has a lateral.
+        """
+        hasattr(IF, "BC"), "the boundary condition does not exist you have to read it first"
+        hasattr(IF, "Laterals"), "the Laterals does not exist you have to read it first"
+        
+        if FromDay == '':
+            FromDay = IF.BC.index[0]
+        else:
+            FromDay = dt.datetime.strptime(FromDay,date_format)
+            
+        if ToDay == '':
+            ToDay = IF.BC.index[-1]
+        else:
+            ToDay = dt.datetime.strptime(ToDay,date_format)
+        
+        if ID in IF.BCTable['id'].tolist():
+            self.BC = IF.BC.loc[FromDay:ToDay,ID].to_frame()
+        else:
+            self.BC = False
+        
+        self.LateralsTable = [value for value in self.XSname if value in IF.LateralsTable['xsid'].tolist()] 
+    
+        if len(self.LateralsTable) > 0:
+            self.Laterals = pd.DataFrame(index = pd.date_range(FromDay, ToDay, freq='D'), 
+                                         columns=self.LateralsTable)
+            
+            for i in self.LateralsTable:
+                self.Laterals.loc[:,i] = IF.Laterals.loc[FromDay:ToDay,i]
+            
+            self.Laterals['total'] = self.Laterals.sum(axis=1)
+    
+    
+    def GetLaterals(self, xsid):
+        """
+        =================================================================
+               GetLaterals(xsid)
+        =================================================================
+        GetLaterals method gets the sum of the laterals of all the cross sections
+        in the segment upstream of a given xsid
+        
+        Parameters
+        ----------
+        xsid : [integer]
+            id of the cross section.
+
+        Returns
+        -------
+        dataframe 
+            sum of the laterals of all the cross sections in the segment 
+            upstream of a given xsid.
+
+        """
+        USgauge = self.LateralsTable[:bisect(self.LateralsTable, xsid)]
+        return self.Laterals[USgauge].sum(axis=1).to_frame()
+    
+    
+    def H2Q(self, Q):
+    
+        H = np.zeros(shape=(len(Q)))
+        
+        for i in range(len(Q)):
+        	# if Qbnd >  calculated Q for the highest depth in the table 
+        	# highest depth = (dike height + 15 m)
+        	if Q[i] > self.HQ[-1,1] :
+        		# depth = highest depth
+        		H[i] = self.HQ[-1,0]
+        	# if not calculate the Q for each discretized depth in the table 
+        	# and take the one with the smallest difference from the q given 
+        	else :
+        		qq = Q[i]
+        		diff = abs(qq - self.HQ[:,1])
+        		H[i] = self.HQ[np.argmin(diff),0]
+                
+        return H
+    
+    def PlotQ(self, Calib, GagueXS,plotstart,plotend,stationname, Gaugename, Segment_XS,
+             PlotLaterals=True, plotUS=True, SpecificXS=False, plotRRM=True, 
+             PlotGauge=True, RIMcolor="#004c99",gaugecolor="#DC143C",
+             RRMcolor = "green",Latcolor = (0.3,0,0),XScolor = "grey",linewidth = 4,
+             RIMorder = 6, Gaugeorder = 5, RRMorder = 4, BCorder = 7, USHorder = 2,
+             XSorder = 1):
+        
+        plotstart = dt.datetime.strptime(plotstart,"%Y-%m-%d")
+        plotend = dt.datetime.strptime(plotend,"%Y-%m-%d")
+        #"#FF34B3"
+        
+        fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(6, 5))
+
+        if hasattr(self,"XSHydrographs"):
+            # plot if you read the results using ther read1DResults
+            ax.plot(self.XSHydrographs.loc[plotstart:plotend,GagueXS], label = "RIM",zorder=RIMorder, 
+                     linewidth=linewidth, linestyle = Vis.LineStyle(6), color = RIMcolor)
+            
+            if PlotLaterals:
+                Laterals = self.GetLaterals(GagueXS)
+                if type(self.BC) != bool:
+                    ax.plot(self.BC.loc[plotstart:plotend,self.ID], label = "BC",zorder=BCorder, 
+                            linewidth=linewidth, linestyle = Vis.LineStyle(9), color = RRMcolor)
+                if len(self.LateralsTable) > 0:
+                    ax.plot(Laterals.loc[plotstart:plotend,0], label = "Laterals",zorder=RRMorder, 
+                            linewidth=linewidth, linestyle = Vis.LineStyle(9), color = Latcolor)
+                    
+            if self.USnode != [] and plotUS :
+                ax.plot(self.USHydrographs.loc[plotstart:plotend,'total'], label = "US Hydrograph",zorder=USHorder, 
+                        linewidth=linewidth, linestyle = Vis.LineStyle(9), color = RRMcolor)
+            
+            if PlotGauge:
+                # plot the gauge data
+                ax.plot(Calib.QGauges.loc[plotstart:plotend,stationname],label = 'Gauge',
+                        linewidth=linewidth, zorder=Gaugeorder, color = gaugecolor,
+                        linestyle = Vis.LineStyle(9))
+        
+            # plot for specific XS
+            if type(SpecificXS) != bool :
+                self.Read1DResult(XSID=SpecificXS)
+                ax.plot(self.XSHydrographs.loc[plotstart:plotend,SpecificXS], label = "XS-" + str(SpecificXS),
+                        zorder=XSorder, linewidth=linewidth, color = XScolor,
+                        linestyle = Vis.LineStyle(3))
+            if plotRRM:
+               ax.plot(self.RRM.loc[plotstart:plotend,stationname], label="mHM", 
+                        zorder=RRMorder, linewidth=linewidth, 
+                        linestyle = Vis.LineStyle(6), color = "green")        
+        
+        elif hasattr(Calib,"CalibrationQ"):
+            # plot if you read the data using ReadCalirationResult
+            ax.plot(Calib.CalibrationQ[Segment_XS], label = "RIM",zorder=3, linewidth=linewidth, 
+                      linestyle = Vis.LineStyle(6), color = RIMcolor)
+            # plot the gauge data
+            ax.plot(Calib.QGauges.loc[Calib.CalibrationQ.index[0]:Calib.CalibrationQ.index[-1],stationname],
+                    label = 'Gauge-' + str(self.ID), linewidth=linewidth, color = gaugecolor)
+            if plotRRM:
+                ax.plot(Sub.RRM.loc[Calib.CalibrationQ.index[0]:Calib.CalibrationQ.index[-1],stationname],
+                        label="RRM")
+        
+        
+        start, end = ax.get_xlim()
+        ax.xaxis.set_ticks(np.linspace(start,end,4))
+        # xlabels = ["1990-01-01","1990-11-13","1991-11-15","1992-11-16"]
+        # ax.set_xticklabels(xlabels)
+        
+        ax.set_title("Discharge - " + Gaugename, fontsize = 20)
+        
+        ax.legend(fontsize = 12)
+        ax.set_xlabel("Time", fontsize = 12)
+        ax.set_ylabel("Discharge m3/s", fontsize = 12)
+        plt.tight_layout()
+        
+        return ax
+    
+    
+    def CalculateQMetrics(self,Calib, stationname, startError,endError,startgauge,
+                         endgauge, Filter=False):
+        
+        QRIM = pd.DataFrame()        
+        startError = dt.datetime.strptime(startError,"%Y-%m-%d")
+        endError = dt.datetime.strptime(endError,"%Y-%m-%d")
+        
+        if Filter :
+            # get the latest date of the filter date and the first date in the result
+            # get the earliest date of the end and the last date in the result
+            st2 = max(startgauge,startError, self.FirstDayResults)
+            end2 = min(endgauge,endError, self.EndDays)
+            
+            # starti = River.DateToIndex(st2)
+            # endi = River.DateToIndex(end2)
+            
+            # get the observed discharge
+            Qobs = Calib.QGauges.loc[st2:end2,stationname]
+            
+            # resample the times series to average daily
+            ind = pd.date_range(self.FirstDayResults, self.EndDays + dt.timedelta(days=1), freq = 'h')[:-1]
+            Q = self.Result1D[self.Result1D['xs'] == self.LastXS]#['q']#[Sub.Result1D['hour'] == 24]
+            Q.index = ind
+            QRIM['q'] = Q['q'].resample('D').mean()
+            QRIM['q'] = QRIM.loc[st2:end2,'q']
+            
+            # try:
+            #     Sub.Resample(GagueXS, 'q', starti, endi, Delete=True)
+            # except:
+            #     Sub.Resample(GagueXS, 'q', starti, endi, Delete=False)
+            # QRIM['q']  = Sub.ResampledQ[GagueXS][:]    
+            # QRIM.index = pd.date_range(st2, end2)    
+            
+        else:
+            st2 = max(startgauge,self.FirstDayResults)
+            end2 = min(endgauge,self.LastDay)
+            # get the observed discharge
+            Qobs = Calib.QGauges.loc[st2:end2,stationname]
+            
+            # resample the times series to average daily
+            ind = pd.date_range(self.FirstDayResults, self.LastDay + dt.timedelta(days=1), freq = 'h')[:-1]
+            Q = self.Result1D[self.Result1D['xs'] == self.LastXS]#['q']#[Sub.Result1D['hour'] == 24]
+            Q.index = ind
+            QRIM['q'] = Q['q'].resample('D').mean()
+            QRIM['q'] = QRIM.loc[st2:end2,'q']
+            
+            # old
+            # QRIM['q'] = Sub.Result1D['q'][Sub.Result1D['xs'] == GagueXS][Sub.Result1D['hour'] == 24][:]
+            # QRIM.index = pd.date_range(st2, end2)
+                        
+        rmse = round(Pf.RMSE(Qobs,QRIM.loc[st2:end2,'q'].tolist()),0)
+        kge = round(Pf.KGE(Qobs,QRIM.loc[st2:end2,'q'].tolist()),2)
+        wb = round(Pf.WB(Qobs,QRIM.loc[st2:end2,'q'].tolist()),0)
+        nsehf = round(Pf.NSEHF(Qobs,QRIM.loc[st2:end2,'q'].tolist()),2)
+        nse = round(Pf.NSE(Qobs,QRIM.loc[st2:end2,'q'].tolist()),2)
+        print("--------------------")
+        print("RMSE = " + str(rmse))
+        print("KGE = " + str(kge))
+        print("WB = " + str(wb))
+        print("NSEHF = " + str(nsehf))
+        print("NSE = " + str(nse))
+        
+        return rmse, kge, wb, nsehf, nse
+    
+    def PlotWL(self, Calib, plotstart, plotend, GagueXS, stationname, Gaugename,
+               Filter = False, gaugecolor = "#DC143C", RIMcolor = "#004c99",
+               linewidth=2, RIMorder=1, Gaugeorder=0):
+        
+        fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(6, 5))
+        
+        
+        plotstart = dt.datetime.strptime(plotstart,"%Y-%m-%d")
+        plotend = dt.datetime.strptime(plotend,"%Y-%m-%d")
+        
+        # if self.ID == SubID :
+        """
+        these lines were made to only plot the gauge if existed inside the processed sub-basin
+        """
+        # extract the water levels at the gauge cross section
+        self.ExtractXS(GagueXS)
+        
+        ax.plot(self.XSWaterLevel.loc[plotstart:plotend,GagueXS],label="RIM" ,
+                 zorder=RIMorder, linewidth=linewidth, color = RIMcolor, linestyle = Vis.LineStyle(6))
+        ax.plot(Calib.WLGauges.loc[plotstart:plotend,stationname],label='Gauge',
+                 zorder = Gaugeorder, linewidth=linewidth, color = gaugecolor)
+        
+        # ax1.plot(Sub2.XSWaterLevel.loc[plotstart:plotend,GagueXS],label="step-1" + str(GagueXS),
+        #          zorder=3, linewidth=linewidth, color = 'grey')
+        
+        # else:
+        #     """ 
+        #     these lines are made to plot the closest downstreeam gauge
+        #     """
+        #     ax.plot(Sub.XSWaterLevel.loc[plotstart:plotend,Sub.LastXS], label = "RIM-XS " + str(Sub.LastXS),
+        #              zorder=3, linewidth = linewidth, color = RIMcolor)
+        #     ax.plot(Calib.WLGauges.loc[plotstart:plotend,stationname], label = 'Gauge' +str(stationname),
+        #              linewidth = linewidth)
+        
+        start, end = ax.get_xlim()
+        ax.xaxis.set_ticks(np.linspace(start,end,4))
+        # xlabels = ["1990-01-01","1990-11-13","1991-11-15","1992-11-16"]
+        # ax1.set_xticklabels(xlabels)
+        
+        ax.set_title("Water Level - " + Gaugename, fontsize = 20)
+        plt.legend(fontsize = 15)
+        ax.set_xlabel("Time", fontsize = 15)
+        ax.set_ylabel("Water Level m", fontsize = 15)
+        plt.tight_layout()
+        
+        return ax
+    
+    def CalculateWLMetrics(self, Calib, stationname, gaugestart, gaugeend, startError,
+                           endError, GagueXS, Filter=False):
+        
+        startError = dt.datetime.strptime(startError,"%Y-%m-%d")
+        endError = dt.datetime.strptime(endError,"%Y-%m-%d")
+
+        if Filter:
+            st2 = max(gaugestart,startError, self.FirstDayResults)
+            end2 = min(gaugeend,endError,self.EndDays)
+            # observed
+            obs = np.array(Calib.WLGauges.loc[st2:end2,stationname])
+            
+            # RIM
+            ind = pd.date_range(Sub.FirstDayResults, Sub.EndDays+dt.timedelta(days=1), freq = 'h')[:-1]
+            mod = Sub.Result1D[Sub.Result1D['xs'] == Sub.LastXS]#['q']#[Sub.Result1D['hour'] == 24]
+            mod.index = ind
+            mod = mod['wl'].resample('D').mean()
+            mod = mod.loc[st2:end2]
+            
+            
+            # RIM
+            # try:
+            #     Sub.Resample(GagueXS, 'wl', River.DateToIndex(st2), River.DateToIndex(end2), Delete = True)
+            # except:
+            #     Sub.Resample(GagueXS, 'wl', River.DateToIndex(st2), River.DateToIndex(end2), Delete = False)
+            # series1 = np.array(Sub.ResampledWL[GagueXS])
+            
+        else:
+            st2 = max(gaugestart,self.FirstDayResults)
+            end2 = min(gaugeend,self.LastDay)
+            # Observed
+            obs = np.array(Calib.WLGauges.loc[st2:end2,stationname])
+            
+            
+            # RIM
+            ind = pd.date_range(self.FirstDayResults, self.LastDay + dt.timedelta(days=1), freq = 'h')[:-1]
+            mod = self.Result1D[self.Result1D['xs'] == GagueXS]#['q']#[Sub.Result1D['hour'] == 24]
+            mod.index = ind
+            mod = mod['wl'].resample('D').mean()
+            mod = mod.loc[st2:end2]
+            
+            # RIM
+            # Sub.Resample(GagueXS, 'wl', River.DateToIndex(st2), River.DateToIndex(end2), Delete = False)
+            # series1 = np.array(Sub.ResampledWL[GagueXS])
+            
+        
+        
+        MBE = round(Pf.MBE(obs, mod),2)
+        MAE = round(Pf.MAE(obs, mod),2)
+        RMSE = round(Pf.RMSE(obs, mod),2)
+        KGE = round(Pf.KGE(obs, mod),2)
+        NSEHF = round(Pf.NSEHF(obs, mod),2)
+        NSE = round(Pf.NSE(obs, mod),2)
+        
+        
+        print("RMSE= " + str(RMSE))
+        print("KGE= " + str(KGE))
+        print("NSEHF= " + str(NSEHF))
+        print("NSE= " + str(NSE))
+        print("MBE= " + str(MBE))
+        print("MAE= " + str(MAE))
+        
+        return MBE, MAE, RMSE, KGE, NSEHF, NSE
+    
     def Histogram(self, Day, BaseMapF, ExcludeValue, OccupiedCellsOnly, Map = 1,
                   filter1 = 0.2, filter2 = 15):
 
