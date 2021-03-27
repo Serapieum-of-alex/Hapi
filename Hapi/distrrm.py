@@ -108,9 +108,9 @@ class DistributedRRM():
 
         area_coef = Model.CatArea/Model.px_tot_area
         # convert quz from mm/time step to m3/sec
-        Model.quz = Model.quz*Model.px_area*area_coef/(Model.Timef*3.6)
+        Model.quz = Model.quz * Model.px_area * area_coef / (Model.Timef*3.6)
         # convert Qlz to m3/sec
-        Model.qlz = Model.qlz*Model.px_area*area_coef/(Model.Timef*3.6)
+        Model.qlz = Model.qlz * Model.px_area * area_coef / (Model.Timef*3.6)
 
 
     @staticmethod
@@ -199,7 +199,7 @@ class DistributedRRM():
             for x in range(Model.rows): # no of rows
                 for y in range(Model.cols): # no of columns
                         # check from total flow accumulation
-                        if Model.FlowAccArr [x, y] != Model.NoDataValue and Model.FlowAccArr[x, y] == Model.acc_val[j]:
+                        if Model.FlowAccArr[x, y] != Model.NoDataValue and Model.FlowAccArr[x, y] == Model.acc_val[j]:
                             # for UZ
                             q_r = np.zeros(Model.TS)
                             # for lz
@@ -223,31 +223,44 @@ class DistributedRRM():
         outlety = Model.Outlet[1][0]
 
         Model.qout = Model.qlz_translated[outletx,outlety,:] + Model.quz_routed[outletx,outlety,:]
+        
+    @staticmethod
+    def DistMaxbas1(Model):
+        
+        Maxbas = Model.Parameters[:,:,-1]
+        # Model.FPLArr[Model.FPLArr == Model.NoDataValue] = np.nan # replace novalue cells by nan
 
+        # MaxFPL = np.nanmax(Model.FPLArr)
+        # MinFPL = np.nanmin(Model.FPLArr)
+    #    resize_fun = lambda x: np.round(((((x - min_dist)/(max_dist - min_dist))*(1*maxbas - 1)) + 1), 0)
+        # resize_fun = lambda x: ((((x - MinFPL)/(MaxFPL - MinFPL))*(1*MAXBAS - 1)) + 1)
+
+        # NormalizedFPL = resize_fun(Model.FPLArr)
+
+        for x in range(Model.rows):
+            for y in range(Model.cols):
+                if Model.FlowAccArr [x, y] != Model.NoDataValue:
+                    Model.quz[x,y,:] = routing.TriangularRouting2(Model.quz[x,y,:], Maxbas[x,y])
 
     @staticmethod
-    def DistMAXBAS(FPL,SPMAXBAS, quz):
+    def DistMaxbas2(Model):
+        
+        MAXBAS = np.nanmax(Model.Parameters[:,:,-1])
+        Model.FPLArr[Model.FPLArr == Model.NoDataValue] = np.nan # replace novalue cells by nan
 
-        MAXBAS = np.nanmax(SPMAXBAS)
-        FPLArray = FPL.ReadAsArray()
-        rows = FPL.RasterYSize
-        cols = FPL.RasterXSize
-        NoDataValue = np.float32(FPL.GetRasterBand(1).GetNoDataValue())
-        FPLArray[FPLArray == NoDataValue] = np.nan # replace novalue cells by nan
-
-        MaxFPL = np.nanmax(FPLArray)
-        MinFPL = np.nanmin(FPLArray)
+        MaxFPL = np.nanmax(Model.FPLArr)
+        MinFPL = np.nanmin(Model.FPLArr)
     #    resize_fun = lambda x: np.round(((((x - min_dist)/(max_dist - min_dist))*(1*maxbas - 1)) + 1), 0)
         resize_fun = lambda x: ((((x - MinFPL)/(MaxFPL - MinFPL))*(1*MAXBAS - 1)) + 1)
 
-        NormalizedFPL = resize_fun(FPLArray)
+        NormalizedFPL = resize_fun(Model.FPLArr)
 
-        for x in range(rows):
-            for y in range(cols):
-                if not np.isnan(FPLArray[x,y]):# FPLArray[x,y] != np.nan: #NoDataValue:
-                    quz[x,y,:] = routing.TriangularRouting(quz[x,y,:], NormalizedFPL[x,y])
+        for x in range(Model.rows):
+            for y in range(Model.cols):
+                if not np.isnan(Model.FPLArr[x,y]):# FPLArray[x,y] != np.nan: #NoDataValue:
+                    Model.quz[x,y,:] = routing.TriangularRouting(Model.quz[x,y,:], NormalizedFPL[x,y])
 
-        return quz
+
 
     @staticmethod
     def Dist_HBV2(ConceptualModel,lakecell,q_lake,DEM,flow_acc,flow_acc_plan, sp_prec, sp_et, sp_temp, sp_pars, p2, init_st=None,
