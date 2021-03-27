@@ -6,7 +6,7 @@ Created on Tue May 22 09:01:55 2018
 """
 # documentation format
 __author__ = 'Mostafa Farrag'
-__version__ = '0.2.0'
+__version__ = '0.3.0'
 
 __docformat__ = 'restructuredtext'
 
@@ -52,6 +52,7 @@ import Hapi.visualizer
 import Hapi.crosssection
 import Hapi.hmcalibration
 import Hapi.interface
+import Hapi.saintvenant
 # module level doc-string
 __doc__ = """
 Hapi - Hydrological library for Python
