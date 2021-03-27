@@ -13,7 +13,7 @@ class Interface(River):
     Interface between the Rainfall runoff model and the Hydraulic model
     """
     
-    def __init__(self, name, Version=3, start = "1950-1-1", days =36890,):
+    def __init__(self, name, Version=3, start = "1952-1-1", days =36890,):
         self.name = name
         self.Version = Version
         self.start = dt.datetime.strptime(start,"%Y-%m-%d")
@@ -131,9 +131,10 @@ class Interface(River):
         None.
 
         """
-        self.BC = pd.read_csv(Path, skiprows=[0], header=None)
-        self.BC.columns = ["xsid"]
-            
+        self.BCTable = pd.read_csv(Path, skiprows=[0], header=None)
+        self.BCTable.columns = ["id"]
+        self.BCTable['id'] = [int(i[3:]) for i in self.BCTable['id'].tolist()]
+        
     
     def ReadBoundaryConditions(self, FromDay = '', ToDay = '', Path = '',
                           date_format="'%Y-%m-%d'"):
@@ -161,33 +162,31 @@ class Interface(River):
             with segment id as a column name and a column 'total' contains the 
             sum of all the hydrographs.
         """        
-        assert hasattr(self, 'LateralsTable'), "Please read the lateras table first using the 'ReadLateralsTable' method"
+        assert hasattr(self, 'BCTable'), "Please read the lateras table first using the 'ReadLateralsTable' method"
         
         # if Path == '':
             # Path = self.CustomizedRunsPath
         
-        self.Laterals = pd.DataFrame()
+        self.BC = pd.DataFrame()
         
-        for i in range(len(self.LateralsTable)):
-            NodeID = self.LateralsTable.loc[i,'xsid']
-            fname = "LF_xsid" + str(NodeID)
-            self.Laterals[NodeID]  = self.ReadRRMResults(self.Version, self.ReferenceIndex, 
+        for i in range(len(self.BCTable)):
+            NodeID = self.BCTable.loc[i,'id']
+            fname = "BC_" + str(NodeID)
+            self.BC[NodeID] = self.ReadRRMResults(self.Version, self.ReferenceIndex, 
                                                             Path, fname, FromDay, ToDay,
                                                             date_format)[fname].tolist()
             
             
-        self.Laterals['total'] = self.Laterals.sum(axis=1)
+        self.BC['total'] = self.BC.sum(axis=1)
         if FromDay == '':
             FromDay = 1
         if ToDay == '':
-            ToDay = len(self.Laterals[NodeID])
+            ToDay = len(self.BC[NodeID])
     
         start = self.ReferenceIndex.loc[FromDay,'date']
         end = self.ReferenceIndex.loc[ToDay,'date']
     
-        self.Laterals.index = pd.date_range(start, end, freq = 'D')
-        
-    
+        self.BC.index = pd.date_range(start, end, freq = 'D')
             
         
     
