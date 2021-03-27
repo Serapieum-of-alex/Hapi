@@ -522,13 +522,13 @@ class Vector():
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore", category=FutureWarning)
 
-            from_epsg="epsg:"+str(from_epsg)
+            from_epsg = "epsg:"+str(from_epsg)
             inproj = Proj(init=from_epsg) # GCS geographic coordinate system
-            to_epsg="epsg:"+str(to_epsg)
+            to_epsg = "epsg:"+str(to_epsg)
             outproj = Proj(init=to_epsg) # WGS84 web mercator
 
-        x=np.ones(len(lat))*np.nan
-        y=np.ones(len(lat))*np.nan
+        x = np.ones(len(lat))*np.nan
+        y = np.ones(len(lat))*np.nan
 
         for i in range(len(lat)):
             x[i],y[i] = np.round(transform(inproj,outproj,lon[i],lat[i],always_xy=True),precision)
