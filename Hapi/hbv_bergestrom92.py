@@ -417,8 +417,8 @@ def StepRun(p, v, St, snow=0):
         #soil function
         fc = p[6]
         beta = p[7]
-        e_corr =[8]
-        lp =p[9]
+        e_corr = p[8]
+        lp = p[9]
         # response function
         k = p[10]
         k1 = p[11]
@@ -429,7 +429,7 @@ def StepRun(p, v, St, snow=0):
     elif snow == 0:
         assert len(p) >= 11, "current version of HBV (without snow) takes 11 parameter you have entered "+str(len(p))
         tt = 2.0     # very low but it does not matter as temp is 25 so it is greater than 2
-        rfcf =p[0]    # 1.0 #p[16] # all precipitation becomes rainfall
+        rfcf = p[0]    # 1.0 #p[16] # all precipitation becomes rainfall
         sfcf = 0.00001  # there is no snow
         # snow function
         cfmax = 0.00001  # as there is no melting  and sp+sf=zero all the time so it doesn't matter the value of cfmax
@@ -438,8 +438,8 @@ def StepRun(p, v, St, snow=0):
         #soil function
         fc = p[1]
         beta = p[2]
-        e_corr =p[3]
-        lp =p[4]
+        e_corr = p[3]
+        lp = p[4]
         # response function
         k = p[5]
         k1 = p[6]
@@ -559,6 +559,6 @@ def Simulate(prec, temp, et, par, init_st=None, ll_temp=None,
 
     for i in range(1,len(prec)):
         v = [prec[i], temp[i], et[i], ll_temp[i]]
-        q_uz[i], q_lz[i], st[i,:] = StepRun(par, v, st[i-1,:], snow=0)
+        q_uz[i], q_lz[i], st[i,:] = StepRun(par, v, st[i-1,:], snow=snow)
 
     return q_uz, q_lz, st
