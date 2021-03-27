@@ -460,14 +460,14 @@ class HMCalibration():
             self.CalibrationWL = pd.DataFrame(index = indD)
         
         ind = pd.date_range(self.start, self.end, freq = "H")[:-1]
-        q = pd.read_csv(Path + str(SubID) + "_q.txt", header = None)
-        wl = pd.read_csv(Path + str(SubID) + "_wl.txt", header = None)
+        q = pd.read_csv(Path + str(SubID) + "_q.txt", header = None, delimiter=r'\s+')
+        wl = pd.read_csv(Path + str(SubID) + "_wl.txt", header = None, delimiter=r'\s+')
         
         q.index = ind
         wl.index = ind
         
-        self.CalibrationQ[SubID] = q[0].resample('D').mean()
-        self.CalibrationWL[SubID] = wl[0].resample('D').mean()
+        self.CalibrationQ[SubID] = q[1].resample('D').mean()
+        self.CalibrationWL[SubID] = wl[1].resample('D').mean()
         
         
     def ReturnPeriod(self,Path):
