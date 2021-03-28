@@ -372,110 +372,109 @@ def Routing(q, maxbas=1):
     return q_r
 
 
-def StepRun(p, v, St, snow=0):
-    """
-    ============================================================
-        StepRun(p, p2, v, St, snow=0)
-    ============================================================
+# def StepRun(p, v, St, snow=0):
+#     """
+#     ============================================================
+#         StepRun(p, p2, v, St, snow=0)
+#     ============================================================
 
-    Makes the calculation of next step of discharge and states
+#     Makes the calculation of next step of discharge and states
 
-    Parameters
-    ----------
-    p : array_like [18]
-        Parameter vector, set up as:
-        [tt, rfcf, sfcf, cfmax, cfr, cwh, fc, ecorr, etf, lp, k, k1,
-        alpha, beta, cwh, cfr, c_flux, perc, ]
-    p2 : array_like [2]
-        Problem parameter vector setup as:
-        [tfac, area]
-    v : array_like [4]
-        Input vector setup as:
-        [prec, temp, evap, llt]
-    St : array_like [5]
-        Previous model states setup as:
-        [sp, sm, uz, lz, wc]
+#     Parameters
+#     ----------
+#     p : array_like [18]
+#         Parameter vector, set up as:
+#         [tt, rfcf, sfcf, cfmax, cfr, cwh, fc, ecorr, etf, lp, k, k1,
+#         alpha, beta, cwh, cfr, c_flux, perc, ]
+#     p2 : array_like [2]
+#         Problem parameter vector setup as:
+#         [tfac, area]
+#     v : array_like [4]
+#         Input vector setup as:
+#         [prec, temp, evap, llt]
+#     St : array_like [5]
+#         Previous model states setup as:
+#         [sp, sm, uz, lz, wc]
 
-    Returns
-    -------
-    q_new : float
-        Discharge [m3/s]
-    St : array_like [5]
-        Posterior model states
-    """
-    ## Parse of parameters from input vector to model
-    #picipitation function
-    if snow==1:
-        assert len(p) == 16, "current version of HBV (with snow) takes 18 parameter you have entered "+str(len(p))
-        tt = p[0]
-        rfcf = p[1]
-        sfcf = p[2]
-        # snow function
-        cfmax = p[3]
-        cwh = p[4]
-        cfr = p[5]
-        #soil function
-        fc = p[6]
-        beta = p[7]
-        e_corr = p[8]
-        lp = p[9]
-        # response function
-        k = p[10]
-        k1 = p[11]
-        k2 = p[12]
-        uzl = p[13]
-        perc = p[14]
+#     Returns
+#     -------
+#     q_new : float
+#         Discharge [m3/s]
+#     St : array_like [5]
+#         Posterior model states
+#     """
+#     ## Parse of parameters from input vector to model
+#     if snow==1:
+#         # assert len(p) == 16, "current version of HBV (with snow) takes 18 parameter you have entered "+str(len(p))
+#         tt = p[0]
+#         rfcf = p[1]
+#         sfcf = p[2]
+#         # snow function
+#         cfmax = p[3]
+#         cwh = p[4]
+#         cfr = p[5]
+#         #soil function
+#         fc = p[6]
+#         beta = p[7]
+#         e_corr = p[8]
+#         lp = p[9]
+#         # response function
+#         k = p[10]
+#         k1 = p[11]
+#         k2 = p[12]
+#         uzl = p[13]
+#         perc = p[14]
 
-    elif snow == 0:
-        assert len(p) >= 11, "current version of HBV (without snow) takes 11 parameter you have entered "+str(len(p))
-        tt = 2.0     # very low but it does not matter as temp is 25 so it is greater than 2
-        rfcf = p[0]    # 1.0 #p[16] # all precipitation becomes rainfall
-        sfcf = 0.00001  # there is no snow
-        # snow function
-        cfmax = 0.00001  # as there is no melting  and sp+sf=zero all the time so it doesn't matter the value of cfmax
-        cwh = 0.00001    # as sp is always zero it doesn't matter all wc will go as inf
-        cfr = 0.000001   # as temp > ttm all the time so it doesn't matter the value of cfr but put it zero
-        #soil function
-        fc = p[1]
-        beta = p[2]
-        e_corr = p[3]
-        lp = p[4]
-        # response function
-        k = p[5]
-        k1 = p[6]
-        k2 = p[7]
-        uzl = p[8]
-        perc = p[9]
+#     elif snow == 0:
+#         # assert len(p) >= 11, "current version of HBV (without snow) takes 11 parameter you have entered "+str(len(p))
+#         tt = 2.0     # very low but it does not matter as temp is 25 so it is greater than 2
+#         rfcf = p[0]    # 1.0 #p[16] # all precipitation becomes rainfall
+#         sfcf = 0.00001  # there is no snow
+#         # snow function
+#         cfmax = 0.00001  # as there is no melting  and sp+sf=zero all the time so it doesn't matter the value of cfmax
+#         cwh = 0.00001    # as sp is always zero it doesn't matter all wc will go as inf
+#         cfr = 0.000001   # as temp > ttm all the time so it doesn't matter the value of cfr but put it zero
+#         #soil function
+#         fc = p[1]
+#         beta = p[2]
+#         e_corr = p[3]
+#         lp = p[4]
+#         # response function
+#         k = p[5]
+#         k1 = p[6]
+#         k2 = p[7]
+#         uzl = p[8]
+#         perc = p[9]
+    
+        
+#     ## Parse of Inputs
+#     prec = v[0] # Precipitation [mm]
+#     temp = v[1] # Temperature [C]
+#     ep = v[2] # Long terms (monthly) Evapotranspiration [mm]
+#     tm = v[3] #Long term (monthly) average temperature [C]
 
-    ## Parse of Inputs
-    prec = v[0] # Precipitation [mm]
-    temp = v[1] # Temperature [C]
-    ep = v[2] # Long terms (monthly) Evapotranspiration [mm]
-    tm = v[3] #Long term (monthly) average temperature [C]
+#     ## Parse of states
+#     sp_old = St[0]
+#     sm_old = St[1]
+#     uz_old = St[2]
+#     lz_old = St[3]
+#     wc_old = St[4]
 
-    ## Parse of states
-    sp_old = St[0]
-    sm_old = St[1]
-    uz_old = St[2]
-    lz_old = St[3]
-    wc_old = St[4]
+#     rf, sf = Precipitation(prec, temp, tt, rfcf, sfcf)
 
-    rf, sf = Precipitation(prec, temp, tt, rfcf, sfcf)
+#     inf, wc_new, sp_new = Snow(temp, rf, sf, wc_old, sp_old,
+#                                tt, cfmax, cfr, cwh)
 
-    inf, wc_new, sp_new = Snow(temp, rf, sf, wc_old, sp_old,
-                               tt, cfmax, cfr, cwh)
+#     sm_new, uz_int_1 = Soil(temp, inf, ep, sm_old, uz_old, tm,
+#                             fc, beta, e_corr, lp)
 
-    sm_new, uz_int_1 = Soil(temp, inf, ep, sm_old, uz_old, tm,
-                            fc, beta, e_corr, lp)
+#     q_uz, q_lz, uz_new, lz_new = Response(lz_old, uz_int_1,
+#                                           perc, k, k1, k2, uzl)
 
-    q_uz, q_lz, uz_new, lz_new = Response(lz_old, uz_int_1,
-                                          perc, k, k1, k2, uzl)
-
-    return q_uz, q_lz, [sp_new, sm_new, uz_new, lz_new, wc_new]
+#     return q_uz, q_lz, [sp_new, sm_new, uz_new, lz_new, wc_new]
 
 
-def Simulate(prec, temp, et, par, init_st=None, ll_temp=None,
-             q_init=None, snow=0):
+def Simulate(prec, temp, et, ll_temp, par, init_st=None, q_init=None, snow=0):
     """
     ================================================================
         Simulate(prec, temp, et, par, p2, init_st=None, ll_temp=None, q_init=None, snow=0):
@@ -515,23 +514,16 @@ def Simulate(prec, temp, et, par, init_st=None, ll_temp=None,
     st : array_like [n, 5]
         Model states for the complete time series [mm]
     """
-    ### inputs validation
-    # data type
-    assert len(init_st) == 5, "state variables are 5 and the given initial values are "+str(len(init_st))
-    assert snow == 0 or snow == 1, " snow input defines whether to consider snow subroutine or not it has to be 0 or 1"
-    st = np.zeros([len(prec)+1, 5], dtype=np.float32)#*np.nan
-    q_0 = np.zeros([len(prec)+1], dtype=np.float32)#*np.nan
-    q_1 = np.zeros([len(prec)+1], dtype=np.float32)#*np.nan
-    q_uz = np.zeros([len(prec)+1], dtype=np.float32)#*np.nan
-    q_lz = np.zeros([len(prec)+1], dtype=np.float32)#*np.nan
+    st = np.zeros([len(prec)+1, 5], dtype=np.float32)
+    q_0 = np.zeros([len(prec)+1], dtype=np.float32)
+    q_1 = np.zeros([len(prec)+1], dtype=np.float32)
+    q_uz = np.zeros([len(prec)+1], dtype=np.float32)
+    q_lz = np.zeros([len(prec)+1], dtype=np.float32)
     
     if init_st is None:#   0  1  2  3  4  5
         st[0,:] = DEF_ST  #[sp,sm,uz,lz,wc,LA]        
     else:
         st[0,:] = init_st
-
-    if ll_temp is None:
-        ll_temp = [np.mean(temp), ] * len(prec)
     
     
     ### initial runoff
@@ -557,8 +549,77 @@ def Simulate(prec, temp, et, par, init_st=None, ll_temp=None,
         q_lz[0] = q_init/2
 
 
+    ## Parse of parameters from input vector to model
+    if snow == 1:
+        # assert len(p) == 16, "current version of HBV (with snow) takes 18 parameter you have entered "+str(len(p))
+        tt = par[0]
+        rfcf = par[1]
+        sfcf = par[2]
+        # snow function
+        cfmax = par[3]
+        cwh = par[4]
+        cfr = par[5]
+        #soil function
+        fc = par[6]
+        beta = par[7]
+        e_corr = par[8]
+        lp = par[9]
+        # response function
+        k = par[10]
+        k1 = par[11]
+        k2 = par[12]
+        uzl = par[13]
+        perc = par[14]
+        
+    elif snow == 0:
+        # assert len(par) >= 11, "current version of HBV (without snow) takes 11 parameter you have entered "+str(len(par))
+        tt = 2.0     # very low but it does not matter as temp is 25 so it is greater than 2
+        rfcf = par[0]    # 1.0 #par[16] # all precipitation becomes rainfall
+        sfcf = 0.00001  # there is no snow
+        # snow function
+        cfmax = 0.00001  # as there is no melting  and sp+sf=zero all the time so it doesn't matter the value of cfmax
+        cwh = 0.00001    # as sp is always zero it doesn't matter all wc will go as inf
+        cfr = 0.000001   # as temp > ttm all the time so it doesn't matter the value of cfr but put it zero
+        #soil function
+        fc = par[1]
+        beta = par[2]
+        e_corr = par[3]
+        lp = par[4]
+        # response function
+        k = par[5]
+        k1 = par[6]
+        k2 = par[7]
+        uzl = par[8]
+        perc = par[9]
+        
     for i in range(1,len(prec)):
-        v = [prec[i], temp[i], et[i], ll_temp[i]]
-        q_uz[i], q_lz[i], st[i,:] = StepRun(par, v, st[i-1,:], snow=snow)
+        ## Parse of Inputs
+        preci = prec[i] # Precipitation [mm]
+        tempi = temp[i] # Temperature [C]
+        epi = et[i] # Long terms (monthly) Evapotranspiration [mm]
+        tmi = ll_temp[i] #Long term (monthly) average temperature [C]
+    
+        ## Parse of states
+        sp_old = st[i-1,0]
+        sm_old = st[i-1,1]
+        uz_old = st[i-1,2]
+        lz_old = st[i-1,3]
+        wc_old = st[i-1,4]
+    
+        rf, sf = Precipitation(preci, tempi, tt, rfcf, sfcf)
+    
+        inf, wc_new, sp_new = Snow(tempi, rf, sf, wc_old, sp_old,
+                                   tt, cfmax, cfr, cwh)
+    
+        sm_new, uz_int_1 = Soil(tempi, inf, epi, sm_old, uz_old, tmi,
+                                fc, beta, e_corr, lp)
+    
+        q_uz[i], q_lz[i], uz_new, lz_new = Response(lz_old, uz_int_1,
+                                              perc, k, k1, k2, uzl)
+    
+        st[i,:] = [sp_new, sm_new, uz_new, lz_new, wc_new]
+        
+        # v = [prec[i], temp[i], et[i], ll_temp[i]]
+        # q_uz[i], q_lz[i], st[i,:] = StepRun(par, v, st[i-1,:], snow=snow)
 
     return q_uz, q_lz, st
