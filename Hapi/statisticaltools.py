@@ -212,59 +212,6 @@ class StatisticalTools():
 
         return [i - mean/(std) for i in x]
 
-    @staticmethod
-    def SensitivityAnalysis(Parameter, LB, UB, Function, *args,**kwargs):
-        """
-        ======================================================================
-           SensitivityAnalysis(Parameter, LB, UB, Function,*args,**kwargs)
-        ======================================================================
-
-        Parameters
-        ----------
-        Parameter : [dataframe]
-            parameters dataframe including the parameters values in a column with
-            name 'value' and the parameters name as index.
-        LB : [List]
-            parameters upper bounds.
-        UB : [List]
-            parameters lower bounds.
-        Function : [function]
-            DESCRIPTION.
-        *args : TYPE
-            arguments of the function with the same exact names inside the function.
-        **kwargs : TYPE
-            keyword arguments of the function with the same exact names inside the function.
-
-        Returns
-        -------
-        sen : [Dictionary]
-            DESCRIPTION.
-
-        """
-
-        sen={}
-        for i in range(len(Parameter)):
-            sen[Parameter.index[i]]=[[],[]]
-            # generate 5 random values between the high and low parameter bounds
-            rand_value = np.linspace(LB[i],UB[i],5)
-            # add the value of the calibrated parameter and sort the values
-            rand_value = np.sort(np.append(rand_value,Parameter['value'][i]))
-            # relative values of the parameters
-            sen[Parameter.index[i]][0] = [((h)/Parameter['value'][i]) for h in rand_value]
-
-            Randpar = Parameter['value'].tolist()
-            for j in range(len(rand_value)):
-                Randpar[i]=rand_value[j]
-                # args = list(args)
-                # args.insert(Position,Randpar)
-                metric = Function(Randpar,*args,**kwargs)
-
-                sen[Parameter.index[i]][1].append(metric)
-                print(round(metric,4))
-                print( str(i)+'-'+Parameter.index[i]+' -'+ str(j))
-
-        return sen
-
 
     @staticmethod
     def Weibul(data,option=1):
