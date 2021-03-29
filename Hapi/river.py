@@ -13,12 +13,6 @@ import Hapi.visualizer as V
 # for line styling
 Vis = V.Visualize(1)
 
-FigureDefaultOptions = dict( ylabel = '', xlabel = '',
-                      legend = '', legend_size = 10, figsize = (10,8),
-                      labelsize = 10, fontsize = 10, name = 'hist.tif',
-                      color1 = '#3D59AB', color2 = "#DC143C", linewidth = 3,
-                      Axisfontsize = 15
-                      )
 
 class River():
     """
@@ -138,7 +132,7 @@ class River():
         self.RRMReferenceIndex = pd.DataFrame(index = list(range(1,RRMdays+1)))
         self.RRMReferenceIndex['date'] = Ref_ind[:-1]
         self.NoTimeSteps = len(self.RRMReferenceIndex)
-        self.FigureOptions = FigureDefaultOptions
+        self.FigureOptions = Vis.FigureDefaultOptions
 
     
     def IndexToDate(self,Index):

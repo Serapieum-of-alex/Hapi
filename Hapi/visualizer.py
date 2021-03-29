@@ -26,6 +26,15 @@ linestyles = OrderedDict( [('solid', (0, ())),                              #0
                                ('densely dashdotdotted', (0, (3, 1, 1, 1, 1, 1))),    #12
                                ('densely dashdotdottededited', (0, (6, 1, 1, 1, 1, 1)))])  #13
 
+MarkerStyle = ['--o',':D','-.H','--x',':v','--|','-+','-^','--s','-.*','-.h']
+
+FigureDefaultOptions = dict( ylabel = '', xlabel = '',
+                      legend = '', legend_size = 10, figsize = (10,8),
+                      labelsize = 10, fontsize = 10, name = 'hist.tif',
+                      color1 = '#3D59AB', color2 = "#DC143C", linewidth = 3,
+                      Axisfontsize = 15
+                      )
+
 hours = list(range(1,25))
 
 class Visualize():
