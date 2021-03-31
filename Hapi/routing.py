@@ -21,7 +21,57 @@ class Routing():
 
 
     @staticmethod
-    def muskingum(inflow,Qinitial,k,x,dt):
+    def Muskingum(inflow,Qinitial,k,x,dt):
+        """
+        ===========================================================
+         muskingum(inflow,Qinitial,k,x,dt)
+        ===========================================================
+
+        inputs:
+        ----------
+            1-inflow:
+                [numpy array] time series of inflow hydrograph
+            2-Qinitial:
+                [numeric] initial value for outflow
+            3-k:
+                [numeric] travelling time (hours)
+            4-x:
+                [numeric] surface nonlinearity coefficient (0,0.5)
+            5-dt:
+                [numeric] delta t
+
+        Outputs:
+        ----------
+            1-outflow:
+                [numpy array] time series of routed hydrograph
+
+        Examples:
+        ----------
+        pars[10]=k
+        pars[11]=x
+        p2[0]=1  # hourly time step
+        q_routed = Routing.muskingum(q_uz,q_uz[0],pars[10],pars[11],p2[0])
+       """
+
+        c1 = (dt-2*k*x)/(2*k*(1-x)+dt)
+        c2 = (dt+2*k*x)/(2*k*(1-x)+dt)
+        c3 = (2*k*(1-x)-dt)/(2*k*(1-x)+dt)
+
+    #    if c1+c2+c3!=1:
+    #        raise("sim of c1,c2 & c3 is not 1")
+        
+        outflow = np.zeros_like(inflow)
+        outflow[0] = Qinitial
+
+        for i in range(1,len(inflow)):
+            outflow[i] = c1*inflow[i] + c2*inflow[i-1] + c3*outflow[i-1]
+
+        outflow = np.round(outflow,4)
+        
+        return outflow
+    
+    @staticmethod
+    def Muskingum_V(inflow,Qinitial,k,x,dt):
         """
         ===========================================================
          muskingum(inflow,Qinitial,k,x,dt)
@@ -60,16 +110,17 @@ class Routing():
     #    if c1+c2+c3!=1:
     #        raise("sim of c1,c2 & c3 is not 1")
 
-        outflow = np.ones_like(inflow)*np.nan
-        outflow[0] = Qinitial
-
+        O = np.zeros_like(inflow)
+        O[0] = Qinitial
+        O[1:] = c1 * inflow[1:] + c2 * inflow[0:-1]
+        
         for i in range(1,len(inflow)):
-            outflow[i] = c1*inflow[i]+c2*inflow[i-1]+c3*outflow[i-1]
-
-        outflow = np.round(outflow,4)
-
-        return outflow
-
+            # only if the 
+            if not O[i] + c3 * O[i-1] < 0:
+                O[i] = O[i] + c3 * O[i-1]
+            
+        return O
+    
     @staticmethod
     def Tf(maxbas):
         """
