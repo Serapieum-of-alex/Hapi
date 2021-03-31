@@ -38,6 +38,7 @@ import Hapi.java_functions
 import Hapi.performancecriteria
 import Hapi.routing
 import Hapi.run
+import Hapi.catchment
 import Hapi.statisticaltools
 import Hapi.wrapper
 import Hapi.weirdFn
