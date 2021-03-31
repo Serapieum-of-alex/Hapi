@@ -220,8 +220,6 @@ class Wrapper():
             snow=0
         """
         ### input data validation
-        # data type
-        # assert type(data) == np.ndarray , "meteorological data should be entered in array "
         assert callable(RoutingFn) , "routing function should be of type callable (function that takes arguments)"
 
         # data
@@ -231,10 +229,10 @@ class Wrapper():
         tm = Model.data[:,3]
 
         # from the conceptual model calculate the upper and lower response mm/time step
-        Model.quz, Model.qlz, Model.statevariables = Model.LumpedModel.Simulate(p, t, et, Model.Parameters,
+        Model.quz, Model.qlz, Model.statevariables = Model.LumpedModel.Simulate(p, t, et, tm, 
+                                                     Model.Parameters,
                                                      init_st = Model.InitialCond,
-                                                     ll_temp = tm,
-                                                     q_init = None,
+                                                     q_init = Model.q_init,
                                                      snow = Model.Snow)
         # q mm , area sq km  (1000**2)/1000/f/60/60 = 1/(3.6*f)
         # if daily tfac=24 if hourly tfac=1 if 15 min tfac=0.25
@@ -243,5 +241,8 @@ class Wrapper():
 
         Model.Qsim = Model.quz + Model.qlz
 
-        if Routing != 0 :
+        if Routing != 0 and Model.Maxbas:
             Model.Qsim = RoutingFn(np.array(Model.Qsim[:-1]), Model.Parameters[-1])
+        elif Routing != 0:
+            Model.Qsim = RoutingFn(np.array(Model.Qsim[:-1]), Model.Qsim[0], 
+                                   Model.Parameters[-2], Model.Parameters[-1], Model.Timef)
