@@ -19,7 +19,7 @@ from Hapi.giscatchment import GISCatchment as GC
 class DistParameters():
 
     def __init__(self, raster, no_parameters, no_lumped_par=0, lumped_par_pos=[],
-                 Lake = 0, Snow=0, HRUs=0, Function=1, Kub=1, Klb= 0.5):
+                 Lake = 0, Snow=0, HRUs=0, Function=1, Kub=1, Klb= 0.5, Maskingum=False):
 
         assert type(raster)==gdal.Dataset, "raster should be read using gdal (gdal dataset please read it using gdal library) "
         assert type(no_parameters)==int, " no_parameters should be integer number"
@@ -38,6 +38,7 @@ class DistParameters():
         self.HRUs = HRUs
         self.Kub = Kub
         self.Klb = Klb
+        self.Maskingum = Maskingum
         # read the raster
         self.raster = raster
         self.raster_A = raster.ReadAsArray()
@@ -177,7 +178,7 @@ class DistParameters():
 
         # input values
         if self.no_lumped_par > 0:
-            assert len(par_g) == (self.no_elem*(self.no_parameters))+self.no_lumped_par,"As there is "+str(self.no_lumped_par)+" lumped parameters, length of input parameters should be "+str(self.no_elem)+"*"+"("+str(self.no_parameters)+"-"+str(self.no_lumped_par)+")"+"+"+str(self.no_lumped_par)+"="+str(self.no_elem*(self.no_parameters-self.no_lumped_par)+self.no_lumped_par)+" not "+str(len(par_g))+" probably you have to add the value of the lumped parameter at the end of the list"
+            assert len(par_g) == (self.no_elem*(self.no_parameters))+self.no_lumped_par,"As there is "+str(self.no_lumped_par)+" lumped parameters, length of input parameters should be "+str(self.no_elem)+"*"+"("+str(self.no_parameters + self.no_lumped_par)+"-"+str(self.no_lumped_par)+")"+"+"+str(self.no_lumped_par)+"="+str(self.no_elem*(self.no_parameters-self.no_lumped_par)+self.no_lumped_par)+" not "+str(len(par_g))+" probably you have to add the value of the lumped parameter at the end of the list"
         else:
             # if there is no lumped parameters
             assert len(par_g) == self.no_elem*self.no_parameters,"As there is no lumped parameters length of input parameters should be "+str(self.no_elem)+"*"+str(self.no_parameters)+"="+str(self.no_elem*self.no_parameters)
@@ -292,13 +293,15 @@ class DistParameters():
             3-LB
                 Lower bound for k parameter
         """
-        constraint1 = 0.5*1/(1-x) # k has to be smaller than this constraint
-        constraint2 = 0.5*1/x   # k has to be greater than this constraint
-
-        if constraint2 >= UB : #if constraint is higher than UB take UB
+        # k has to be smaller than this constraint
+        constraint1 = 0.5*1/(1-x) 
+        # k has to be greater than this constraint
+        constraint2 = 0.5*1/x   
+        #if constraint is higher than UB take UB
+        if constraint2 >= UB : 
             constraint2 = UB
-
-        if constraint1 <= LB : #if constraint is lower than LB take UB
+        #if constraint is lower than LB take UB
+        if constraint1 <= LB : 
             constraint1 = LB
 
         generatedK = np.linspace(constraint1,constraint2,101)
@@ -611,13 +614,15 @@ class DistParameters():
         """
         if self.HRUs == 0:
             if self.no_lumped_par > 0:
-                self.ParametersNO = (self.no_elem *( self.no_parameters - self.no_lumped_par)) + self.no_lumped_par
+                # self.ParametersNO = (self.no_elem *( self.no_parameters - self.no_lumped_par)) + self.no_lumped_par
+                self.ParametersNO = (self.no_elem * self.no_parameters) + self.no_lumped_par
             else:
                 # if there is no lumped parameters
                 self.ParametersNO = self.no_elem * self.no_parameters
         else:
             if self.no_lumped_par > 0:
-                self.ParametersNO = (self.no_elem * (self.no_parameters - self.no_lumped_par)) + self.no_lumped_par
+                # self.ParametersNO = (self.no_elem * (self.no_parameters - self.no_lumped_par)) + self.no_lumped_par
+                self.ParametersNO = (self.no_elem * self.no_parameters) + self.no_lumped_par
             else:
                 # if there is no lumped parameters
                 self.ParametersNO = self.no_elem * self.no_parameters
