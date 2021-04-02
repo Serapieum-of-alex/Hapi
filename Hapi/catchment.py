@@ -14,11 +14,12 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as dates
 
 
-from Hapi.raster import Raster as raster
+from Hapi.raster import Raster
 from Hapi.giscatchment import GISCatchment as GC
 import Hapi.performancecriteria as PC
+from Hapi.visualizer import Visualize as Vis
 
-
+    
 class Catchment():
 
     def __init__(self, name, StartDate, EndDate, fmt="%Y-%m-%d", SpatialResolution = 'Lumped',
@@ -74,7 +75,7 @@ class Catchment():
             # check wether the folder has the rasters or not
             assert len(os.listdir(Path)) > 0, Path+" folder you have provided is empty"
             # read data
-            self.Prec = raster.ReadRastersFolder(Path)
+            self.Prec = Raster.ReadRastersFolder(Path)
             self.TS = self.Prec.shape[2] + 1 # no of time steps =length of time series +1
             assert type(self.Prec) == np.ndarray, "array should be of type numpy array"
             print("Rainfall data are read successfully")
@@ -105,7 +106,7 @@ class Catchment():
             # check wether the folder has the rasters or not
             assert len(os.listdir(Path)) > 0, Path+" folder you have provided is empty"
             # read data
-            self.Temp = raster.ReadRastersFolder(Path)
+            self.Temp = Raster.ReadRastersFolder(Path)
             assert type(self.Temp) == np.ndarray, "array should be of type numpy array"
             
             if ll_temp is None:
@@ -143,7 +144,7 @@ class Catchment():
             # check wether the folder has the rasters or not
             assert len(os.listdir(Path)) > 0, Path+" folder you have provided is empty"
             # read data
-            self.ET = raster.ReadRastersFolder(Path)
+            self.ET = Raster.ReadRastersFolder(Path)
             assert type(self.ET) == np.ndarray, "array should be of type numpy array"
             print("Potential Evapotranspiration data are read successfully")
 
@@ -266,7 +267,7 @@ class Catchment():
             # check wether the folder has the rasters or not
             assert len(os.listdir(Path)) > 0, Path+" folder you have provided is empty"
             # parameters
-            self.Parameters = raster.ReadRastersFolder(Path)
+            self.Parameters = Raster.ReadRastersFolder(Path)
         else:
             self.Parameters = pd.read_csv(Path, index_col = 0, header = None)[1].tolist()
             
@@ -408,22 +409,43 @@ class Catchment():
 
     
     def ExtractDischarge(self, CalculateMetrics=True, FW1=False):
+        """
+        =============================================================================
+              ExtractDischarge(CalculateMetrics=True, FW1=False)
+        =============================================================================
+        ExtractDischarge method extracts and sums the discharge from the 
+        Quz_routed and Qlz_translated arrays at the location of the gauges
+        
+        Parameters
+        ----------
+        CalculateMetrics : TYPE, optional
+            DESCRIPTION. The default is True.
+        FW1 : TYPE, optional
+            DESCRIPTION. The default is False.
+
+        Returns
+        -------
+        None.
+
+        """
         
         
         if not FW1:
             self.Qsim = pd.DataFrame(index = self.Index, columns = self.QGauges.columns)
             if CalculateMetrics:
-                index = ['RMSE', 'NSE', 'NSEhf', 'KGE', 'WB','Pearson-CC']
+                index = ['RMSE', 'NSE', 'NSEhf', 'KGE', 'WB','Pearson-CC','R2']
                 self.Metrics = pd.DataFrame(index = index, columns = self.QGauges.columns)
             for i in range(len(self.GaugesTable)):
                 Xind = int(self.GaugesTable.loc[self.GaugesTable.index[i],"cell_row"])
                 Yind = int(self.GaugesTable.loc[self.GaugesTable.index[i],"cell_col"])
                 gaugeid = self.GaugesTable.loc[self.GaugesTable.index[i],"id"]
                 
-                Quz = np.reshape(self.quz_routed[Xind,Yind,:-1],self.TS-1)
-                Qlz = np.reshape(self.qlz_translated[Xind,Yind,:-1],self.TS-1)
-                Qsim = Quz + Qlz
+                # Quz = np.reshape(self.quz_routed[Xind,Yind,:-1],self.TS-1)
+                # Qlz = np.reshape(self.qlz_translated[Xind,Yind,:-1],self.TS-1)
+                # Qsim = Quz + Qlz
+                Qsim = np.reshape(self.Qtot[Xind,Yind,:-1],self.TS-1)
                 self.Qsim.loc[:,gaugeid] = Qsim
+                
                 if CalculateMetrics:
                     Qobs = self.QGauges.loc[:,gaugeid]
                     self.Metrics.loc['RMSE',gaugeid] = round(PC.RMSE(Qobs, Qsim),3)
@@ -431,14 +453,17 @@ class Catchment():
                     self.Metrics.loc['NSEhf',gaugeid] = round(PC.NSEHF(Qobs, Qsim),3)
                     self.Metrics.loc['KGE',gaugeid] = round(PC.KGE(Qobs, Qsim),3)
                     self.Metrics.loc['WB',gaugeid] = round(PC.WB(Qobs, Qsim),3)
-                    self.Metrics.loc['Pearson-CC',gaugeid] = round(PC.PearsonCC(Qobs, Qsim),3)
+                    self.Metrics.loc['Pearson-CC',gaugeid] = round(PC.PearsonCorre(Qobs, Qsim),3)
+                    self.Metrics.loc['R2',gaugeid] = round(PC.R2(Qobs, Qsim),3)
         else:
+            
             self.Qsim = pd.DataFrame(index = self.Index)
             gaugeid = self.GaugesTable.loc[self.GaugesTable.index[-1],"id"]
             Qsim = np.reshape(self.qout,self.TS-1)
             self.Qsim.loc[:,gaugeid] = Qsim
+            
             if CalculateMetrics:
-                index = ['RMSE', 'NSE', 'NSEhf', 'KGE', 'WB']
+                index = ['RMSE', 'NSE', 'NSEhf', 'KGE', 'WB','Pearson-CC', 'R2']
                 self.Metrics = pd.DataFrame(index = index)
             if CalculateMetrics:
                     Qobs = self.QGauges.loc[:,gaugeid]
@@ -447,7 +472,8 @@ class Catchment():
                     self.Metrics.loc['NSEhf',gaugeid] = round(PC.NSEHF(Qobs, Qsim),3)
                     self.Metrics.loc['KGE',gaugeid] = round(PC.KGE(Qobs, Qsim),3)
                     self.Metrics.loc['WB',gaugeid] = round(PC.WB(Qobs, Qsim),3)
-                    self.Metrics.loc['Pearson-CC',gaugeid] = round(PC.PearsonCC(Qobs, Qsim),3)
+                    self.Metrics.loc['Pearson-CC',gaugeid] = round(PC.PearsonCorre(Qobs, Qsim),3)
+                    self.Metrics.loc['R2',gaugeid] = round(PC.R2(Qobs, Qsim),3)
     
     
     def PlotHydrograph(self, plotstart, plotend, gaugei, Hapicolor="#004c99", 
@@ -492,9 +518,130 @@ class Catchment():
         print("NSEhf= " + str(round(self.Metrics.loc['NSEhf',gaugeid],2)))
         print("KGE= " + str(round(self.Metrics.loc['KGE',gaugeid],2)))
         print("WB= " + str(round(self.Metrics.loc['WB',gaugeid],2)))
-        
+        print("Pearson-CC= " + str(round(self.Metrics.loc['Pearson-CC',gaugeid],2)))
+        print("R2= " + str(round(self.Metrics.loc['R2',gaugeid],2)))
         return fig, ax 
+        
 
+    def PlotDistributedQ(self, StartDate, EndDate, fmt="%Y-%m-%d", Option = 1,
+                         TicksSpacing = 2, Figsize=(8,8), PlotNumbers=True,
+                         NumSize=8, Title = 'Total Discharge',titlesize = 15, 
+                         threshold=None, cbarlabel = 'Discharge m3/s', cbarlabelsize = 12, 
+                         Cbarlength = 0.75, Interval = 200, Gauges=False): #
+        
+        
+        StartDate = dt.datetime.strptime(StartDate,fmt)
+        EndDate = dt.datetime.strptime(EndDate,fmt)
+        
+        starti = np.where(self.Index == StartDate)[0][0]
+        endi = np.where(self.Index == EndDate)[0][0]
+        
+        if Option == 1:
+            self.Qtot[self.FlowAccArr == self.NoDataValue,:] = np.nan
+            Arr = self.Qtot[:,:,starti:endi]
+            Title = 'Total Discharge'
+        elif Option == 2:
+            self.quz_routed[self.FlowAccArr == self.NoDataValue,:] = np.nan
+            Arr = self.quz_routed[:,:,starti:endi]
+            Title = 'Surface Flow'
+        elif Option == 3:
+            self.qlz_translated[self.FlowAccArr == self.NoDataValue,:] = np.nan
+            Arr = self.qlz_translated[:,:,starti:endi]
+            Title = 'Ground Water Flow'
+        elif Option == 4:
+            self.statevariables[self.FlowAccArr == self.NoDataValue,:,0] = np.nan
+            Arr = self.statevariables[:,:,starti:endi,0]
+            Title = 'Snow Pack'
+        elif Option == 5:
+            self.statevariables[self.FlowAccArr == self.NoDataValue,:,1] = np.nan
+            Arr = self.statevariables[:,:,starti:endi,1]
+            Title = 'Soil Moisture'
+        elif Option == 6:
+            self.statevariables[self.FlowAccArr == self.NoDataValue,:,2] = np.nan
+            Arr = self.statevariables[:,:,starti:endi,2]
+            Title = 'Upper Zone'
+        elif Option == 7:
+            self.statevariables[self.FlowAccArr == self.NoDataValue,:,3] = np.nan
+            Arr = self.statevariables[:,:,starti:endi,3]
+            Title = 'Lower Zone'
+        elif Option == 8:
+            self.statevariables[self.FlowAccArr == self.NoDataValue,:,4] = np.nan
+            Arr = self.statevariables[:,:,starti:endi,4]
+            Title = 'Water Content'
+        elif Option == 9:
+            self.Prec[self.FlowAccArr == self.NoDataValue,:] = np.nan
+            Arr = self.Prec[:,:,starti:endi]
+            Title = 'Precipitation'
+        elif Option == 10:
+            self.ET[self.FlowAccArr == self.NoDataValue,:] = np.nan
+            Arr = self.ET[:,:,starti:endi]
+            Title = 'ET'
+        elif Option == 11:
+            self.Temp[self.FlowAccArr == self.NoDataValue,:] = np.nan
+            Arr = self.Temp[:,:,starti:endi]
+            Title = 'Temperature'
+            
+        Time = self.Index[starti:endi]
+        
+        if Gauges:
+            kwargs = dict(Points = self.GaugesTable)
+        else:
+            kwargs = dict()
+            
+        anim = Vis.AnimateArray(Arr, Time, self.no_elem, TicksSpacing = TicksSpacing, 
+                                Figsize=Figsize, PlotNumbers=PlotNumbers, NumSize= NumSize,
+                                Title = Title,titlesize = titlesize, threshold=threshold, cbarlabel = cbarlabel, 
+                                cbarlabelsize = cbarlabelsize, Cbarlength = Cbarlength, 
+                                Interval = Interval,**kwargs) #
+        
+        return anim
+    
+    
+    def SaveResults(self, FlowAccPath, Result=1, StartDate='', EndDate='', 
+                    Path='', Prefix='', fmt="%Y-%m-%d"):
+    
+        src = gdal.Open(FlowAccPath)
+        if StartDate == '' :
+            StartDate = self.Index[0]
+        else:
+            StartDate = dt.datetime.strptime(StartDate,fmt)
+            
+        if EndDate == '' :
+            EndDate = self.Index[-1]
+        else:
+            EndDate = dt.datetime.strptime(EndDate,fmt)    
+        
+        if Prefix == '' :
+            Prefix = 'Result_'
+            
+        starti = np.where(self.Index == StartDate)[0][0]
+        endi = np.where(self.Index == EndDate)[0][0]+1
+        
+        # create list of names
+        Path = Path + Prefix 
+        names = [Path + str(i)[:10] for i in self.Index[starti:endi]]
+        names = [i.replace("-","_") for i in names]
+        names = [i.replace(" ","_") for i in names]
+        names = [i+".tif" for i in names]
+        if Result ==1:
+            Raster.RastersLike(src,self.Qtot[:,:,starti:endi],names)
+        elif Result ==2:
+            Raster.RastersLike(src,self.quz_routed[:,:,starti:endi],names)
+        elif Result ==3:
+            Raster.RastersLike(src,self.qlz_translated[:,:,starti:endi],names)
+        elif Result ==4:
+            Raster.RastersLike(src,self.statevariables[:,:,starti:endi,0],names)
+        elif Result ==5:
+            Raster.RastersLike(src,self.statevariables[:,:,starti:endi,1],names)
+        elif Result ==6:
+            Raster.RastersLike(src,self.statevariables[:,:,starti:endi,2],names)
+        elif Result ==7:
+            Raster.RastersLike(src,self.statevariables[:,:,starti:endi,3],names)
+        elif Result ==8:
+            Raster.RastersLike(src,self.statevariables[:,:,starti:endi,4],names)
+            
+            
+            
 class Lake():
 
     def __init__(self, StartDate='', EndDate='', fmt="%Y-%m-%d",
