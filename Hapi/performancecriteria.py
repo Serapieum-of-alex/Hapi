@@ -1,5 +1,6 @@
 import numpy as np
 import numbers
+from sklearn.metrics import r2_score
 
 """
 ====================
@@ -185,14 +186,14 @@ def KGE(Qobs,Qsim):
         1- error values
     """
     # convert Qobs & Qsim into arrays
-    Qobs=np.array(Qobs)
-    Qsim=np.array(Qsim)
+    Qobs = np.array(Qobs)
+    Qsim = np.array(Qsim)
 
-    c= np.corrcoef(Qobs,Qsim)[0][1]
-    alpha=np.std(Qsim)/np.std(Qobs)
-    beta= np.mean(Qsim)/np.mean(Qobs)
+    c = np.corrcoef(Qobs,Qsim)[0][1]
+    alpha = np.std(Qsim)/np.std(Qobs)
+    beta = np.mean(Qsim)/np.mean(Qobs)
 
-    kge=1-np.sqrt(((c-1)**2)+((alpha-1)**2)+((beta-1)**2))
+    kge = 1-np.sqrt(((c-1)**2)+((alpha-1)**2)+((beta-1)**2))
 
     return kge
 
@@ -353,3 +354,30 @@ def MAE (Qobs, Qsim):
     """
     
     return np.abs(np.array(Qobs) - np.array(Qsim)).mean()
+
+def PearsonCorre(Qobs,Qsim):
+	"""
+	Pearson correlation coefficient r2 is independent of the magnitude of the numbers; 
+	it is sensitive to relative changes only.
+	"""
+	return (np.corrcoef(np.array(Qobs),np.array(Qsim))[0][1])**2
+	
+def R2(Qobs,Qsim):
+	"""
+	the coefficient of determination measures how well the predicted 
+	values match (and not just follow) the observed values. 
+	It depends on the distance between the points and the 1:1 line 
+	(and not the best-fit line)
+	Closer the data to the 1:1 line, higher the coefficient of determination.
+	The coefficient of determination is often denoted by R². However, 
+	it is not the square of anything. It can range from any negative number to +1
+	- R² = +1 indicates that the predictions match the observations perfectly
+	- R² = 0 indicates that the predictions are as good as random guesses around 
+		the mean of the observed values
+	- Negative R² indicates that the predictions are worse than random
+	
+	Since R² indicates the distance of points from the 1:1 line, it does depend 
+	on the magnitude of the numbers (unlike r² peason correlation coefficient).
+	"""
+    
+	return  r2_score(np.array(Qobs),np.array(Qsim))
