@@ -7,7 +7,7 @@ python:
   - "3.6" # current default Python on Travis CI
   - "3.7"
   - "3.8"
-env: DEPS= "numpy affine fiona proj pyproj gdal pandas geopandas matplotlib python scipy shapely statsmodels rasterio rasterstats oasis netCDF4"
+env: DEPS= "numpy affine fiona proj pyproj gdal pandas geopandas matplotlib python scipy shapely statsmodels rasterio rasterstats oasis netCDF4 sklearn"
 before_install:
   # Install the latest version of Miniconda
   - wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh
