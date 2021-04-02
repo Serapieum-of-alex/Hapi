@@ -44,3 +44,5 @@ docs/HapiDocs.sublime-project
 docs/HapiDocs.sublime-workspace
 Hapi/saintvenant.py
 Hapi/HM.py
+Hapi/remotesensing.py
+Hapi/HM.py
