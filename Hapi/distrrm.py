@@ -142,7 +142,7 @@ class DistributedRRM():
         in the catchment
         """
         Model.qlz_translated = np.zeros_like(Model.quz)#*np.nan
-
+        Model.Qtot = np.zeros_like(Model.quz)
         # for all cell with 0 flow acc put the quz
         for x in range(Model.rows): # no of rows
             for y in range(Model.cols): # no of columns
@@ -159,9 +159,9 @@ class DistributedRRM():
                         # check from total flow accumulation
                         if Model.FlowAccArr[x, y] != Model.NoDataValue and Model.FlowAccArr[x, y] == Model.acc_val[j]:
                             # for UZ
-                            q_r = np.zeros(Model.TS)
+                            q_uzi = np.zeros(Model.TS)
                             # for lz
-                            q = np.zeros(Model.TS)
+                            qlzi = np.zeros(Model.TS)
                             # iterate to route uz and translate lz
                             for i in range(len(Model.FDT[str(x)+","+str(y)])): #  Model.acc_val[j]
                                 # bring the indexes of the us cell
@@ -169,18 +169,19 @@ class DistributedRRM():
                                 y_ind = Model.FDT[str(x)+","+str(y)][i][1]
                                 # sum the Q of the US cells (already routed for its cell)
                                 # route first with there own k & xthen sum
-                                q_r = q_r + routing.Muskingum_V(Model.quz_routed[x_ind,y_ind,:],Model.quz_routed[x_ind,y_ind,0],Model.Parameters[x_ind,y_ind,10],Model.Parameters[x_ind,y_ind,11],Model.Timef)
-                                q = q + Model.qlz_translated[x_ind,y_ind,:]
+                                q_uzi = q_uzi + routing.Muskingum_V(Model.quz_routed[x_ind,y_ind,:],Model.quz_routed[x_ind,y_ind,0],Model.Parameters[x_ind,y_ind,10],Model.Parameters[x_ind,y_ind,11],Model.Timef)
+                                qlzi = qlzi + Model.qlz_translated[x_ind,y_ind,:]
 
                             # add the routed upstream flows to the current Quz in the cell
-                            Model.quz_routed[x,y,:] = Model.quz[x,y,:] + q_r
-                            Model.qlz_translated[x,y,:] = Model.qlz[x,y,:] + q
+                            Model.quz_routed[x,y,:] = Model.quz[x,y,:] + q_uzi
+                            Model.qlz_translated[x,y,:] = Model.qlz[x,y,:] + qlzi
 
 
         outletx = Model.Outlet[0][0]
         outlety = Model.Outlet[1][0]
-
+        
         Model.qout = Model.qlz_translated[outletx,outlety,:] + Model.quz_routed[outletx,outlety,:]
+        Model.Qtot = Model.qlz_translated + Model.quz_routed
         
     @staticmethod
     def DistMaxbas1(Model):
