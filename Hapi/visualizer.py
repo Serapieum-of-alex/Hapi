@@ -55,7 +55,12 @@ class Visualize():
         else:
             return list(linestyles.items())[Style][1]
             
-            
+    @staticmethod
+    def MarkerStyle(Style):
+        if Style > len(MarkerStyle)-1:
+           Style = Style % len(MarkerStyle)
+        return MarkerStyle[Style]
+    
     def GroundSurface(self, Sub, XSID='', XSbefore = 10, XSafter = 10, FloodPlain = False):
         
         if XSID == '':
@@ -361,7 +366,8 @@ class Visualize():
                         anim.save(Path, writer=writermp4)
                 except FileNotFoundError:
                     print("please visit https://ffmpeg.org/ and download a version of ffmpeg compitable with your operating system, for more details please check the method definition")
-
+        
+        return anim
 
     def CrossSections(self, Sub):
         """
@@ -785,3 +791,192 @@ class Visualize():
         anim = animation.FuncAnimation(fig2, animate_min, init_func=init_min, frames = len(Sub.Qmin.index),
                                        interval = Interval, blit = True)
         
+    
+    def AnimateArray(Arr, Time, NoElem, TicksSpacing = 2, Figsize=(8,8), PlotNumbers=True,
+                     NumSize= 8, Title = 'Total Discharge',titlesize = 15, threshold=None, 
+                     cbarlabel = 'Discharge m3/s', cbarlabelsize = 12, textcolors=("white","black"),
+                     Cbarlength = 0.75, Interval = 200,**kwargs):
+        
+        # Link = https://matplotlib.org/stable/gallery/images_contours_and_fields/image_annotated_heatmap.html
+        fig = plt.figure(60, figsize = Figsize)
+        gs = gridspec.GridSpec(nrows = 2, ncols = 2, figure = fig )
+        ax = fig.add_subplot(gs[:,:])
+        
+        im = ax.matshow(Arr[:,:,0])
+        
+        # Create colorbar    
+        cbar_kw = dict(ticks=np.arange(np.nanmin(Arr), np.nanmax(Arr),TicksSpacing))
+                       #cmap=cmap)
+        cbar = ax.figure.colorbar(im, ax=ax, shrink=Cbarlength, **cbar_kw)
+        cbar.ax.set_ylabel(cbarlabel, rotation=-90, va="bottom")
+        cbar.ax.tick_params(labelsize=10)
+        # cbar.cmap = cmap
+        # fig.colorbar(norm='log', clim=(1e-24, 1e-21), label='Strain ASD')
+        
+        day_text = ax.text(0.1,0.2, 'Begining',fontsize= cbarlabelsize)
+        ax.set_title(Title,fontsize= titlesize)
+        ax.set_xticklabels([])
+        ax.set_yticklabels([])
+        
+        ax.set_xticks([])
+        ax.set_yticks([])
+        Indexlist = list()
+        
+        for x in range(Arr.shape[0]):
+                for y in range(Arr.shape[1]):
+                    if not np.isnan(Arr[x, y,0]):
+                        Indexlist.append([x,y])
+                    
+        Textlist = list()
+        for x in range(NoElem):
+            Textlist.append(ax.text(Indexlist[x][1], Indexlist[x][0],
+                                  round(Arr[Indexlist[x][0], Indexlist[x][1], 0],2), 
+                                  ha="center", va="center", color="w", fontsize=NumSize))
+        Points = list()
+        if 'Points' in kwargs.keys():
+            # plot gauges
+            # for i in range(len(kwargs['Points'])):
+            #     row = int(kwargs['Points'].loc[i,'cell_row'])
+            #     col = int(kwargs['Points'].loc[i,'cell_col'])
+            #     Points.append(ax.scatter(col, row, color='k', s=100))
+            
+            row = kwargs['Points'].loc[:,'cell_row'].tolist()
+            col = kwargs['Points'].loc[:,'cell_col'].tolist()
+            Points = ax.scatter(col, row, color='red', s=100)
+            
+        # Normalize the threshold to the images color range.
+        if threshold is not None:
+            threshold = im.norm(threshold)
+        else:
+            threshold = im.norm(np.nanmax(Arr))/2.
+                    
+            
+        def init() :
+            im.set_data(Arr[:,:,0])
+            day_text.set_text('')
+            
+            output = [im, day_text]
+            
+            if 'Points' in kwargs.keys():
+                # plot gauges
+                # for j in range(len(kwargs['Points'])):
+                row = kwargs['Points'].loc[:,'cell_row'].tolist()
+                col = kwargs['Points'].loc[:,'cell_col'].tolist()
+                # Points[j].set_offsets(col, row)
+                Points.set_offsets(np.c_[col, row])
+                    
+                output.append(Points)
+                    
+            if PlotNumbers:
+                for x in range(NoElem):
+                    val = round(Arr[Indexlist[x][0], Indexlist[x][1], 0],2)
+                    Textlist[x].set_text(val)
+                
+                output = output + Textlist
+            
+            return output
+        
+        
+        def animate(i):
+            im.set_data(Arr[:,:,i])
+            day_text.set_text('Date = '+str(Time[i])[0:10])
+            
+            output = [im, day_text]
+            
+            if 'Points' in kwargs.keys():
+                # plot gauges
+                # for j in range(len(kwargs['Points'])):
+                row = kwargs['Points'].loc[:,'cell_row'].tolist()
+                col = kwargs['Points'].loc[:,'cell_col'].tolist()
+                # Points[j].set_offsets(col, row)
+                Points.set_offsets(np.c_[col, row])
+                output.append(Points)
+                
+            if PlotNumbers:
+                for x in range(NoElem):
+                    val = round(Arr[Indexlist[x][0], Indexlist[x][1], i],2)
+                    kw = dict(color=textcolors[int(im.norm(Arr[Indexlist[x][0], Indexlist[x][1], i]) > threshold)])
+                    Textlist[x].update(kw)
+                    Textlist[x].set_text(val)
+                
+                output = output + Textlist
+                
+            return output
+        
+        plt.tight_layout()
+        # global anim
+        anim = animation.FuncAnimation(fig, animate, init_func=init, frames = np.shape(Arr)[2],
+                                               interval = Interval, blit = True)
+        return anim
+    
+    @staticmethod
+    def rescale(OldValue,OldMin,OldMax,NewMin,NewMax):
+        """
+        ===================================================================
+            rescale(OldValue,OldMin,OldMax,NewMin,NewMax)
+        ===================================================================
+        this function rescale a value between two boundaries to a new value bewteen two
+        other boundaries
+        inputs:
+            1-OldValue:
+                [float] value need to transformed
+            2-OldMin:
+                [float] min old value
+            3-OldMax:
+                [float] max old value
+            4-NewMin:
+                [float] min new value
+            5-NewMax:
+                [float] max new value
+        output:
+            1-NewValue:
+                [float] transformed new value
+
+        """
+        OldRange = (OldMax - OldMin)
+        NewRange = (NewMax - NewMin)
+        NewValue = (((OldValue - OldMin) * NewRange) / OldRange) + NewMin
+
+        return NewValue
+
+    @staticmethod
+    def mycolor(x,min_old,max_old,min_new, max_new):
+        """
+        ===================================================================
+             mycolor(x,min_old,max_old,min_new, max_new)
+        ===================================================================
+        this function transform the value between two normal values to a logarithmic scale
+        between logarithmic value of both boundaries
+        inputs:
+            1-x:
+                [float] new value needed to be transformed to a logarithmic scale
+            2-min_old:
+                [float] min old value in normal scale
+            3-max_old:
+                [float] max old value in normal scale
+            4-min_new:
+                [float] min new value in normal scale
+            5-max_new:
+                [float] max_new max new value
+        output:
+            1-Y:
+                [int] integer number between new max_new and min_new boundaries
+        """
+
+        # get the boundaries of the logarithmic scale
+        if min_old == 0.0:
+            min_old_log = -7
+        else:
+            min_old_log = np.log(min_old)
+
+        max_old_log = np.log(max_old)
+
+        if x == 0:
+            x_log = -7
+        else: 
+            x_log = np.log(x)
+
+        y = int(np.round(Visualize.rescale(x_log,min_old_log,max_old_log,min_new,max_new)))
+
+        return y
+    
