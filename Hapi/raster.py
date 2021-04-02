@@ -1810,21 +1810,21 @@ class Raster():
         # input data validation
         # length of the 3rd dimension of the array
         try:
-            l=np.shape(array)[2]
+            l = np.shape(array)[2]
         except IndexError:
-            assert 5==1, "the array you have entered is 2D you have to use RasterLike function not RastersLike"
+            assert False, "the array you have entered is 2D you have to use RasterLike function not RastersLike"
 
         # check length of the list of names to be equal to 3rd dimension of the array
         if path != None: # paths are given
-            assert len(path)==np.shape(array)[2], "length of list of names should equal the 3d dimension of the array"
+            assert len(path) == np.shape(array)[2], "length of list of names " + str(len(path)) + "should equal the 3d dimension of the array-" + str(np.shape(array)[2])
         else: # paths are not given
             # try to create a folder called results at the current working directory to store resulted rasters
             try:
                 os.makedirs(os.path.join(os.getcwd(),"result_rasters"))
             except WindowsError:
-                assert 5==1 ,"please either to provide your own paths including folder name and rasternames.tif in a list or rename the folder called result_rasters"
+                assert False ,"please either to provide your own paths including folder name and rasternames.tif in a list or rename the folder called result_rasters"
             # careate list of names
-            path=["result_rasters/"+str(i)+".tif" for i in range(l)]
+            path = ["result_rasters/"+str(i)+".tif" for i in range(l)]
 
         for i in range(l):
             Raster.RasterLike(src,array[:,:,i],path[i])
@@ -2474,16 +2474,25 @@ class Raster():
 
         data = nc.variables[Var]
         # nodatavalue
-        NoDataValue = data._FillValue
+        try:
+            NoDataValue = data._FillValue
+        except AttributeError:
+            NoDataValue = data.missing_value
         # data type
-        datatype = data.datatype
+        try:
+            datatype = data.datatype
+        except AttributeError:
+            datatype = data.dtype
 
         size_Y, size_X = np.int_(data.shape[-2:])
         # if there is a stack of layers in the file (3d array)
         if len(data.shape) == 3 and data.shape[0] > 1 :
             size_Z = np.int_(data.shape[0])
             try:
-                Time = nc.variables['time'][:]
+                TimeVar = nc.variables['time']
+                Time = TimeVar[:]
+                # convert  time numbers to dates
+                Time = netCDF4.num2date(Time[:],TimeVar.units)
             except:
                 Time = nc.variables['t'][:]
                 # Time = nc.variables['t'].units[11:]
@@ -2513,7 +2522,10 @@ class Raster():
             try:
                 Geo2 = nc.variables['longitude'].res
             except:
-                Geo2 = nc.variables['lon'].res
+                try:
+                    Geo2 = nc.variables['lon'].res
+                except:
+                    Geo2 = lons[1] - lons[0]
         except:
             assert False, "the netcdf file does not hae a resolution attribute"
 
@@ -2534,7 +2546,7 @@ class Raster():
         return geo, epsg, size_X, size_Y, size_Z, Time, NoDataValue, datatype
 
     @staticmethod
-    def NCtoTiff(input_nc, SaveTo):
+    def NCtoTiff(input_nc, SaveTo, Separator='_'):
         """
         =========================================================
            NCtoTiff(input_nc, SaveTo)
@@ -2545,8 +2557,10 @@ class Raster():
         input_nc : [string/list]
             a path of the netcdf file of a list of the netcdf files' names.
         SaveTo : TYPE
-            DESCRIPTION.
-
+            Path to where you want to save the files.
+        Separator : [string] 
+            separator in the file name that separate the name from the date. 
+            Default is "_"
         Returns
         -------
         None.
@@ -2563,18 +2577,18 @@ class Raster():
         All_Data = nc[Var]
         # get the details of the file
         geo, epsg, size_X, size_Y, size_Z, Time, NoDataValue, datatype = Raster.NCdetails(nc)
-
+        
         # Create output folder if needed
         if not os.path.exists(SaveTo):
             os.mkdir(SaveTo)
-
+        
         for i in range(0,size_Z):
-            if not Time == -9999:
+            if All_Data.shape[0] and All_Data.shape[0] > 1 :#type(Time) == np.ndarray: #not Time == -9999
                 time_one = Time[i]
-                d = dt.date.fromordinal(time_one)
+                # d = dt.date.fromordinal(int(time_one))
                 name = os.path.splitext(os.path.basename(input_nc))[0]
-                nameparts = name.split('_')[0:-2]
-                name_out = os.path.join(SaveTo, '_'.join(nameparts) + '_%d.%02d.%02d.tif' %(d.year, d.month, d.day))
+                nameparts = name.split(Separator)[0] # [0:-2]
+                name_out = os.path.join(SaveTo + "/" + nameparts + '_%d.%02d.%02d.tif' %(time_one.year, time_one.month, time_one.day))
                 data = All_Data[i,:,:]
             else:
                 name=os.path.splitext(os.path.basename(input_nc))[0]
