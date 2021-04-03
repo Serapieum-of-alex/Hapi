@@ -163,13 +163,16 @@ class Inputs():
             list of the upper bound of the parameters.
 
         the parameters are
-            ["tt", "sfcf","cfmax","cwh","cfr","fc","beta",
-             "lp","k0","k1","k2","uzl","perc", "maxbas"]
+            ["tt", rfcf,"sfcf","cfmax","cwh","cfr","fc","beta",'etf'
+             "lp","k0","k1","k2","uzl","perc", "maxbas",'K_muskingum', 
+             'x_muskingum']
         """
         ParametersPath = os.path.dirname(Hapi.__file__)
         ParametersPath = ParametersPath + "/Parameters/" + scenario
-        ParamList = ["Par_tt", "Par_sfcf","Par_cfmax","Par_cwh","Par_cfr","Par_fc","Par_beta", #"rfcf","e_corr",
-                 "Par_lp","Par_k0","Par_k1","Par_k2","Par_uzl","Par_perc", "Par_maxbas"] #,"c_flux"
+        ParamList = ["tt", "rfcf", "sfcf","cfmax","cwh","cfr","fc","beta", "etf"
+                 "lp","k0","k1","k2","uzl","perc", "maxbas", "K_muskingum", 
+                 "x_muskingum"]
+        
         if not AsRaster:
             raster = rasterio.open(ParametersPath + "/" + ParamList[0] + ".tif")
             src = src.to_crs(crs=raster.crs)
@@ -228,6 +231,11 @@ class Inputs():
         -------
         files in the Path are going to have a new name including the order at
         the begining of the name.
+        
+        Examples
+        -------
+        1- "MSWEP_2009010100.tif" the fmt = '%Y%m%d00'
+        2-
 
         """
 

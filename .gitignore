@@ -46,3 +46,5 @@ Hapi/saintvenant.py
 Hapi/HM.py
 Hapi/remotesensing.py
 Hapi/HM.py
+Hapi/data_conversions.py
+Hapi/raster_conversions.py
