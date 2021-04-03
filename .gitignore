@@ -43,8 +43,5 @@ docs/source/HapiDocs.sublime-workspace
 docs/HapiDocs.sublime-project
 docs/HapiDocs.sublime-workspace
 Hapi/saintvenant.py
-Hapi/HM.py
-Hapi/remotesensing.py
-Hapi/HM.py
-Hapi/data_conversions.py
-Hapi/raster_conversions.py
+Hapi/hm.py
+
