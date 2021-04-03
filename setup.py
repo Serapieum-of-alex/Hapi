@@ -28,5 +28,19 @@ setup(
     'Programming Language :: Python :: 3.7',
     'Programming Language :: Python :: 3.8',
     'Topic :: Software Development',
-    ]
+    ],
+	include_package_data=True,
+	package_data={'': [
+		'Parameters/01/*.tif',
+		'Parameters/02/*.tif',
+		'Parameters/03/*.tif',
+		'Parameters/04/*.tif',
+		'Parameters/05/*.tif',
+		'Parameters/06/*.tif',
+		'Parameters/07/*.tif',
+		'Parameters/08/*.tif',
+		'Parameters/09/*.tif',
+		'Parameters/10/*.tif'
+		]
+		},
 	 )
