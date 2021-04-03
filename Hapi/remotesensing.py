@@ -123,7 +123,7 @@ class RemoteSensing():
         # Download data by using the ECMWF API
         
         print('Use API ECMWF to collect the data, please wait')
-        API(Dir, DownloadType, string1, string2, string3, string4, string5, string6, string7, string8, string9, string10)
+        RemoteSensing.API(Dir, DownloadType, string1, string2, string3, string4, string5, string6, string7, string8, string9, string10)
     
         # Open the downloaded data
         NC_filename = os.path.join(Dir,'data_interim.nc')
