@@ -20,9 +20,9 @@ dependencies:
   - rasterstats
   - netCDF4
   - oasis
-  - hapi
+  #- hapi
   - pip:
     - ecmwf-api-client 
     - sklearn
     #- hapi-nile==0.1.0
-    #- git+https://github.com/MAfarrag/HAPI.git
+    - git+https://github.com/MAfarrag/HAPI.git
