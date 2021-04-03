@@ -10,6 +10,8 @@ import numpy as np
 import pandas as pd
 import datetime as dt
 import math
+import matplotlib.colors as colors
+from matplotlib.ticker import LogFormatter 
 from collections import OrderedDict
 linestyles = OrderedDict( [('solid', (0, ())),                              #0
                                ('loosely dotted', (0, (1, 10))),                #1
@@ -790,30 +792,140 @@ class Visualize():
 
         anim = animation.FuncAnimation(fig2, animate_min, init_func=init_min, frames = len(Sub.Qmin.index),
                                        interval = Interval, blit = True)
-        
+        return anim
     
     def AnimateArray(Arr, Time, NoElem, TicksSpacing = 2, Figsize=(8,8), PlotNumbers=True,
-                     NumSize= 8, Title = 'Total Discharge',titlesize = 15, threshold=None, 
+                     NumSize= 8, Title = 'Total Discharge',titlesize = 15, Backgroundcolorthreshold=None, 
                      cbarlabel = 'Discharge m3/s', cbarlabelsize = 12, textcolors=("white","black"),
-                     Cbarlength = 0.75, Interval = 200,**kwargs):
+                     Cbarlength = 0.75, Interval = 200,cmap='coolwarm_r', Textloc=[0.1,0.2],
+                     Gaugecolor='red',Gaugesize=100, ColorScale = 1,gamma=1./2.,linthresh=0.0001,
+                     linscale=0.001, midpoint=0, orientation='vertical', rotation=-90, IDcolor = "blue",
+                     IDsize =10, **kwargs):
+        """
+         =============================================================================
+           AnimateArray(Arr, Time, NoElem, TicksSpacing = 2, Figsize=(8,8), PlotNumbers=True,
+                  NumSize= 8, Title = 'Total Discharge',titlesize = 15, Backgroundcolorthreshold=None, 
+                  cbarlabel = 'Discharge m3/s', cbarlabelsize = 12, textcolors=("white","black"),
+                  Cbarlength = 0.75, Interval = 200,cmap='coolwarm_r', Textloc=[0.1,0.2],
+                  Gaugecolor='red',Gaugesize=100, ColorScale = 1,gamma=1./2.,linthresh=0.0001,
+                  linscale=0.001, midpoint=0, orientation='vertical', rotation=-90,IDcolor = "blue",
+                     IDsize =10, **kwargs)
+        =============================================================================
+        Parameters
+        ----------
+        Arr : [array]
+            the array you want to animate.
+        Time : [dataframe]
+            dataframe contains the date of values.
+        NoElem : [integer]
+            Number of the cells that has values.
+        TicksSpacing : [integer], optional
+            Spacing in the colorbar ticks. The default is 2.
+        Figsize : [tuple], optional
+            figure size. The default is (8,8).
+        PlotNumbers : [bool], optional
+            True to plot the values intop of each cell. The default is True.
+        NumSize : integer, optional
+            size of the numbers plotted intop of each cells. The default is 8.
+        Title : [str], optional
+            title of the plot. The default is 'Total Discharge'.
+        titlesize : [integer], optional
+            title size. The default is 15.
+        Backgroundcolorthreshold : [float/integer], optional
+            threshold value if the value of the cell is greater, the plotted 
+            numbers will be black and if smaller the plotted number will be white
+            if None given the maxvalue/2 will be considered. The default is None.
+        textcolors : TYPE, optional
+            Two colors to be used to plot the values i top of each cell. The default is ("white","black").
+        cbarlabel : str, optional
+            label of the color bar. The default is 'Discharge m3/s'.
+        cbarlabelsize : integer, optional
+            size of the color bar label. The default is 12.
+        Cbarlength : [float], optional
+            ratio to control the height of the colorbar. The default is 0.75.
+        Interval : [integer], optional
+            number to controlthe speed of the animation. The default is 200.
+        cmap : [str], optional
+            color style. The default is 'coolwarm_r'.
+        Textloc : [list], optional
+            location of the date text. The default is [0.1,0.2].
+        Gaugecolor : [str], optional
+            color of the points. The default is 'red'.
+        Gaugesize : [integer], optional
+            size of the points. The default is 100.
+        IDcolor : [str]
+            the ID of the Point.The default is "blue".
+        IDsize : [integer]
+            size of the ID text. The default is 10.
+        ColorScale : integer, optional
+            there are 5 options to change the scale of the colors. The default is 1.
+            1- ColorScale 1 is the normal scale
+            2- ColorScale 2 is the power scale
+            3- ColorScale 3 is the SymLogNorm scale
+            4- ColorScale 4 is the PowerNorm scale
+            5- ColorScale 5 is the BoundaryNorm scale
+            ------------------------------------------------------------------
+            gamma : [float], optional
+                value needed for option 2 . The default is 1./2..
+            linthresh : [float], optional
+                value needed for option 3. The default is 0.0001.
+            linscale : [float], optional
+                value needed for option 3. The default is 0.001.
+            midpoint : [float], optional
+                value needed for option 5. The default is 0.
+            ------------------------------------------------------------------
+        orientation : [string], optional
+            orintation of the colorbar horizontal/vertical. The default is 'vertical'.
+        rotation : [number], optional
+            rotation of the colorbar label. The default is -90.
+        **kwargs : [dict]
+            keys:
+                Points : [dataframe].
+                    dataframe contains two columns 'cell_row', and cell_col to 
+                    plot the point at this location
+
+        Returns
+        -------
+        animation.FuncAnimation.
+
+        """
         
-        # Link = https://matplotlib.org/stable/gallery/images_contours_and_fields/image_annotated_heatmap.html
+        
         fig = plt.figure(60, figsize = Figsize)
         gs = gridspec.GridSpec(nrows = 2, ncols = 2, figure = fig )
         ax = fig.add_subplot(gs[:,:])
+        ticks = np.arange(np.nanmin(Arr), np.nanmax(Arr),TicksSpacing)
         
-        im = ax.matshow(Arr[:,:,0])
-        
-        # Create colorbar    
-        cbar_kw = dict(ticks=np.arange(np.nanmin(Arr), np.nanmax(Arr),TicksSpacing))
-                       #cmap=cmap)
-        cbar = ax.figure.colorbar(im, ax=ax, shrink=Cbarlength, **cbar_kw)
-        cbar.ax.set_ylabel(cbarlabel, rotation=-90, va="bottom")
+        if ColorScale == 1:
+            im = ax.matshow(Arr[:,:,0],cmap=cmap, vmin = np.nanmin(Arr), vmax = np.nanmax(Arr),)
+            cbar_kw = dict(ticks = ticks)
+        elif ColorScale == 2:
+            im = ax.matshow(Arr[:,:,0],cmap=cmap, norm=colors.PowerNorm(gamma=gamma,
+                                vmin = np.nanmin(Arr), vmax = np.nanmax(Arr)))
+            cbar_kw = dict(ticks = ticks)
+        elif ColorScale == 3:
+            linthresh=1
+            linscale=2
+            im = ax.matshow(Arr[:,:,0],cmap=cmap, norm=colors.SymLogNorm(linthresh=linthresh,
+                                    linscale=linscale, base=np.e,vmin = np.nanmin(Arr), vmax = np.nanmax(Arr)))
+            formatter = LogFormatter(10, labelOnlyBase=False) 
+            cbar_kw = dict(ticks = ticks, format=formatter)
+        elif ColorScale == 4:
+            bounds = np.arange(np.nanmin(Arr), np.nanmax(Arr),TicksSpacing)
+            norm = colors.BoundaryNorm(boundaries=bounds, ncolors=256)
+            im = ax.matshow(Arr[:,:,0],cmap=cmap, norm=norm)
+            cbar_kw = dict(ticks = ticks)
+        else:
+            im = ax.matshow(Arr[:,:,0],cmap=cmap, norm=MidpointNormalize(midpoint=midpoint))
+            cbar_kw = dict(ticks = ticks)
+            
+        # Create colorbar
+        cbar = ax.figure.colorbar(im, ax=ax, shrink=Cbarlength, orientation=orientation,**cbar_kw)
+        cbar.ax.set_ylabel(cbarlabel, rotation=rotation, va="bottom")
         cbar.ax.tick_params(labelsize=10)
-        # cbar.cmap = cmap
-        # fig.colorbar(norm='log', clim=(1e-24, 1e-21), label='Strain ASD')
         
-        day_text = ax.text(0.1,0.2, 'Begining',fontsize= cbarlabelsize)
+        
+        day_text = ax.text(Textloc[0],Textloc[1], 'Begining',fontsize= cbarlabelsize)
         ax.set_title(Title,fontsize= titlesize)
         ax.set_xticklabels([])
         ax.set_yticklabels([])
@@ -832,23 +944,23 @@ class Visualize():
             Textlist.append(ax.text(Indexlist[x][1], Indexlist[x][0],
                                   round(Arr[Indexlist[x][0], Indexlist[x][1], 0],2), 
                                   ha="center", va="center", color="w", fontsize=NumSize))
-        Points = list()
+        # Points = list()
+        PoitsID = list()
         if 'Points' in kwargs.keys():
-            # plot gauges
-            # for i in range(len(kwargs['Points'])):
-            #     row = int(kwargs['Points'].loc[i,'cell_row'])
-            #     col = int(kwargs['Points'].loc[i,'cell_col'])
-            #     Points.append(ax.scatter(col, row, color='k', s=100))
-            
             row = kwargs['Points'].loc[:,'cell_row'].tolist()
             col = kwargs['Points'].loc[:,'cell_col'].tolist()
-            Points = ax.scatter(col, row, color='red', s=100)
+            IDs = kwargs['Points'].loc[:,'id'].tolist()
+            Points = ax.scatter(col, row, color=Gaugecolor, s=Gaugesize)
+            
+            for i in range(len(row)):
+                PoitsID.append(ax.text(col[i], row[i], IDs[i], ha="center", 
+                                       va="center", color=IDcolor, fontsize=IDsize))
             
         # Normalize the threshold to the images color range.
-        if threshold is not None:
-            threshold = im.norm(threshold)
+        if Backgroundcolorthreshold is not None:
+            Backgroundcolorthreshold = im.norm(Backgroundcolorthreshold)
         else:
-            threshold = im.norm(np.nanmax(Arr))/2.
+            Backgroundcolorthreshold = im.norm(np.nanmax(Arr))/2.
                     
             
         def init() :
@@ -864,9 +976,13 @@ class Visualize():
                 col = kwargs['Points'].loc[:,'cell_col'].tolist()
                 # Points[j].set_offsets(col, row)
                 Points.set_offsets(np.c_[col, row])
-                    
                 output.append(Points)
-                    
+                
+                for x in range(len(col)):
+                    PoitsID[x].set_text(IDs[x])
+                
+                output = output + PoitsID
+                
             if PlotNumbers:
                 for x in range(NoElem):
                     val = round(Arr[Indexlist[x][0], Indexlist[x][1], 0],2)
@@ -892,10 +1008,15 @@ class Visualize():
                 Points.set_offsets(np.c_[col, row])
                 output.append(Points)
                 
+                for x in range(len(col)):
+                    PoitsID[x].set_text(IDs[x])
+                
+                output = output + PoitsID
+                
             if PlotNumbers:
                 for x in range(NoElem):
                     val = round(Arr[Indexlist[x][0], Indexlist[x][1], i],2)
-                    kw = dict(color=textcolors[int(im.norm(Arr[Indexlist[x][0], Indexlist[x][1], i]) > threshold)])
+                    kw = dict(color=textcolors[int(im.norm(Arr[Indexlist[x][0], Indexlist[x][1], i]) > Backgroundcolorthreshold)])
                     Textlist[x].update(kw)
                     Textlist[x].set_text(val)
                 
@@ -979,4 +1100,16 @@ class Visualize():
         y = int(np.round(Visualize.rescale(x_log,min_old_log,max_old_log,min_new,max_new)))
 
         return y
+
+class MidpointNormalize(colors.Normalize):
     
+    def __init__(self, vmin=None, vmax=None, midpoint=None, clip=False):
+        self.midpoint = midpoint
+        colors.Normalize.__init__(self, vmin, vmax, clip)
+
+    def __call__(self, value, clip=None):
+        # I'm ignoring masked values and all kinds of edge cases to make a
+        # simple example...
+        x, y = [self.vmin, self.midpoint, self.vmax], [0, 0.5, 1]
+        
+        return np.ma.masked_array(np.interp(value, x, y))
