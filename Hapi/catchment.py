@@ -19,20 +19,38 @@ from Hapi.giscatchment import GISCatchment as GC
 import Hapi.performancecriteria as PC
 from Hapi.visualizer import Visualize as Vis
 
-    
-class Catchment():
 
-    def __init__(self, name, StartDate, EndDate, fmt="%Y-%m-%d", SpatialResolution = 'Lumped',
-                 TemporalResolution = "Daily"):
-        """
-        SpatialR : TYPE, optional
-            Spatial Resolution "Distributed" or "Lumped". The default is 'Lumped'.
+class Catchment():
+    """
+    =============================================================================
+        Catchment(name, StartDate, EndDate, fmt="%Y-%m-%d", SpatialResolution = 'Lumped',
+                         TemporalResolution = "Daily")
+
+    =============================================================================
+        Parameters
+        ----------
+        name : [str]
+            Name of the Catchment.
+        StartDate : [str]
+            starting date.
+        EndDate : [str]
+            end date.
+        fmt : [str], optional
+            format of the given date. The default is "%Y-%m-%d".
+        SpatialResolution : TYPE, optional
+            Lumped or 'Distributed' . The default is 'Lumped'.
+        TemporalResolution : TYPE, optional
+            "Hourly" or "Daily". The default is "Daily".
 
         Returns
         -------
         None.
 
         """
+
+    def __init__(self, name, StartDate, EndDate, fmt="%Y-%m-%d", SpatialResolution = 'Lumped',
+                 TemporalResolution = "Daily"):
+
         self.name = name
         self.StartDate = dt.datetime.strptime(StartDate,fmt)
         self.EndDate = dt.datetime.strptime(EndDate,fmt)
@@ -108,16 +126,16 @@ class Catchment():
             # read data
             self.Temp = Raster.ReadRastersFolder(Path)
             assert type(self.Temp) == np.ndarray, "array should be of type numpy array"
-            
+
             if ll_temp is None:
                 self.ll_temp = np.zeros_like(self.Temp,dtype=np.float32)
                 avg = self.Temp.mean(axis=2)
                 for i in range(self.Temp.shape[0]):
                     for j in range(self.Temp.shape[1]):
                         self.ll_temp[i,j,:] = avg[i,j]
-                    
+
             print("Temperature data are read successfully")
-            
+
 
     def ReadET(self,Path):
         """
@@ -165,10 +183,14 @@ class Catchment():
         -------
         FlowAcc : [array attribute]
             array containing the spatial Evapotranspiration values
-        rows:
-        cols:
-        NoDataValue:
-        no_elem:
+        rows: [integer]
+            number of rows in the flow acc array
+        cols:[integer]
+            number of columns in the flow acc array
+        NoDataValue:[numeric]
+            the NoDataValue
+        no_elem : [integer]
+            number of cells in the domain
 
         """
         # data type
@@ -214,6 +236,24 @@ class Catchment():
 
 
     def ReadFlowDir(self, Path):
+        """
+        ================================================================
+            ReadFlowDir(Path)
+        ================================================================
+        ReadFlowDir method reads the flow direction raster
+
+        Parameters
+        ----------
+        Path : [str]
+            Path to the flow direction raster.
+
+        Returns
+        -------
+        FlowDirArr : [array].
+            array of the flow direction raster
+        FDT : [dictionary]
+            flow direction table
+        """
         # data type
         assert type(Path) == str, "PrecPath input should be string type"
         # check wether the path exists or not
@@ -240,25 +280,75 @@ class Catchment():
 
 
     def ReadFlowPathLength(self, Path):
+        """
+        ==============================================================
+            ReadFlowPathLength(Path)
+        ==============================================================
+        ReadFlowPathLength method reads the flow path length
+
+        Parameters
+        ----------
+        Path : [str]
+            Path to the file.
+
+        Returns
+        -------
+        FPLArr : [array]
+            flpw path length array
+        rows : [integer]
+            number of rows in the flow acc array
+        cols : [integer]
+            number of columns in the flow acc array
+        NoDataValue : [numeric]
+            the NoDataValue
+        no_elem : [integer]
+            number of cells in the domain
+        """
         # data type
         assert type(Path) == str, "PrecPath input should be string type"
         # input values
         FPL_ext = Path[-4:]
         assert FPL_ext == ".tif", "please add the extension at the end of the Flow accumulation raster path input"
         # check wether the path exists or not
-        assert os.path.exists(Path), Path + " you have provided does not exist"    
-        
+        assert os.path.exists(Path), Path + " you have provided does not exist"
+
         FPL = gdal.Open(Path)
         [self.rows,self.cols] = FPL.ReadAsArray().shape
         # check flow accumulation input raster
         self.NoDataValue = np.float32(FPL.GetRasterBand(1).GetNoDataValue())
         self.FPLArr = FPL.ReadAsArray()
         self.no_elem = np.size(self.FPLArr[:,:])-np.count_nonzero((self.FPLArr[self.FPLArr==self.NoDataValue]))
-        
+
         print("Flow Path length input is read successfully")
-        
-        
-    def ReadParameters(self, Path, Snow, Maxbas=False):
+
+
+    def ReadParameters(self, Path, Snow=0, Maxbas=False):
+        """
+        ============================================================================
+             ReadParameters(Path, Snow, Maxbas=False)
+        ============================================================================
+        ReadParameters method reads the parameters' raster
+
+        Parameters
+        ----------
+        Path : [str]
+            path to the folder where the raster exist.
+        Snow : [integer]
+            0 if you dont want to run the snow related processes and 1 if there is snow.
+            in case of 1 (simulate snow processes) parameters related to snow simulation
+            has to be provided. The default is 0.
+        Maxbas : [bool], optional
+            True if the routing is Maxbas. The default is False.
+
+        Returns
+        -------
+        Parameters : [array].
+            3d array containing the parameters
+        Snow : [integer]
+            0/1
+        Maxbas : [bool]
+            True/False
+        """
         if self.SpatialResolution == 'Distributed':
             # data type
             assert type(Path) == str, "PrecPath input should be string type"
@@ -270,12 +360,12 @@ class Catchment():
             self.Parameters = Raster.ReadRastersFolder(Path)
         else:
             self.Parameters = pd.read_csv(Path, index_col = 0, header = None)[1].tolist()
-            
+
         assert Snow == 0 or Snow == 1, " snow input defines whether to consider snow subroutine or not it has to be 0 or 1"
-        
+
         self.Snow = Snow
         self.Maxbas = Maxbas
-        
+
         if self.SpatialResolution == 'Distributed':
             if Snow == 1 and Maxbas:
                 assert self.Parameters.shape[2] == 16, "current version of HBV (with snow) takes 16 parameter you have entered "+str(self.Parameters.shape[2])
@@ -294,24 +384,51 @@ class Catchment():
                 assert len(self.Parameters) == 17, "current version of HBV (with snow) takes 17 parameter you have entered "+str(len(self.Parameters))
             elif Snow == 0 and not Maxbas:
                 assert len(self.Parameters) == 12, "current version of HBV (with snow) takes 12 parameter you have entered "+str(len(self.Parameters))
-                
+
         print("Parameters are read successfully")
-    
+
 
     def ReadLumpedModel(self, LumpedModel, CatArea, InitialCond, q_init=None):
-        
+        """
+        =============================================================================
+              ReadLumpedModel(LumpedModel, CatArea, InitialCond, q_init=None)
+        =============================================================================
+
+        Parameters
+        ----------
+        LumpedModel : [module]
+            HBV module.
+        CatArea : [numeric]
+            Catchment area (km2).
+        InitialCond : [list]
+            list of the inial condition [SnowPack,SoilMoisture,Upper Zone,
+                                         Lower Zone, Water Content].
+        q_init : [numeric], optional
+            initial discharge. The default is None.
+
+        Returns
+        -------
+        LumpedModel : [module].
+            the lumped conceptual model.
+        q_init : [numeric]
+            initial discharge.
+        InitialCond : [list]
+            initial conditions.
+
+        """
+
         assert isinstance(LumpedModel,ModuleType) , "ConceptualModel should be a module or a python file contains functions "
         self.LumpedModel = LumpedModel
         self.CatArea = CatArea
-        
+
         assert len(InitialCond) == 5, "state variables are 5 and the given initial values are "+str(len(InitialCond))
-        
+
         self.InitialCond = InitialCond
-        
+
         if q_init != None:
             assert type(q_init) == float, "q_init should be of type float"
         self.q_init = q_init
-            
+
         if self.InitialCond != None:
             assert type(self.InitialCond)==list, "init_st should be of type list"
 
@@ -325,45 +442,104 @@ class Catchment():
         ================================================================
         ReadLumpedInputs method read the meteorological data of lumped mode
         [precipitation, Evapotranspiration, temperature, long term average temperature]
-        
+
         Parameters
         ----------
         Path : [string]
-            Path to the input file.
+            Path to the input file, data has to be in the order of
+            [date, precipitation, ET, Temp].
         ll_temp : [bool], optional
-            DESCRIPTION. The default is None.
+            average long term temperature, if None it is calculated inside the
+            code. The default is None.
 
         Returns
         -------
-        None.
-
+        data : [array].
+            meteorological data.
+        ll_temp : [array]
+            average long term temperature.
         """
         self.data = pd.read_csv(Path,header=0 ,delimiter=',',#"\t", #skiprows=11,
                    index_col=0)
         self.data = self.data.values
-        
+
         if ll_temp is None :
             self.ll_temp = np.zeros(shape=(len(self.data)),dtype=np.float32)
             self.ll_temp = self.data[:,2].mean()
-                        
+
         assert np.shape(self.data)[1] == 3 or np.shape(self.data)[1] == 4," meteorological data should be of length at least 3 (prec, ET, temp) or 4(prec, ET, temp, tm) "
         print("Lumped Model inputs are read successfully")
 
     def ReadGaugeTable(self, Path, FlowaccPath=''):
+        """
+        ==========================================================================
+               ReadGaugeTable(self, Path, FlowaccPath='')
+        ==========================================================================
+        ReadGaugeTable reads the table where the data about the gauges are listed
+        [x coordinate, y coordinate, 'area ratio', 'weight'], the coordinates are
+        mandatory to enter , to locate the gauges and be able to extract the
+        discharge at the coresponding cells.
+
+        Parameters
+        ----------
+        Path : [str]
+            Path to the gauge file.
+        FlowaccPath : [str], optional
+            Path to the Flow acc raster. The default is ''.
+
+        Returns
+        -------
+        GaugesTable : [dataframe]
+            the table of the gauges.
+
+        """
         # read the gauge table
         self.GaugesTable = pd.read_csv(Path)
-        
+
         if FlowaccPath != '':
             # if hasattr(self, 'FlowAcc'):
             FlowAcc = gdal.Open(FlowaccPath)
             # calculate the nearest cell to each station
             self.GaugesTable.loc[:,["cell_row","cell_col"]] = GC.NearestCell(FlowAcc,self.GaugesTable[['id','x','y','weight']][:])
-        
+
         print("Gauge Table is read successfully")
 
 
     def ReadDischargeGauges(self, Path, delimiter=",", column='id',fmt="%Y-%m-%d",
                             Split=False, Date1='', Date2=''):
+        """
+        =========================================================================
+            ReadDischargeGauges(Path, delimiter=",", column='id',fmt="%Y-%m-%d",
+                                 Split=False, Date1='', Date2='')
+        ==========================================================================
+        ReadDischargeGauges method read the gauge discharge data, discharge of
+        each gauge has to be stored separetly in a file, and the name of the file
+        has to be stored in the Gauges table you entered ubing the method "ReadGaugeTable"
+        under the column "id", the file should contains the date at the first column
+
+        Parameters
+        ----------
+        Path : [str]
+            Path the the gauge discharge data.
+        delimiter : [str], optional
+            the delimiter between the date and the discharge column. The default is ",".
+        column : [str], optional
+            the name of the column where you stored the files names. The default is 'id'.
+        fmt : [str], optional
+            date format. The default is "%Y-%m-%d".
+        Split : bool, optional
+            True if you want to split the data between two dates. The default is False.
+        Date1 : [str], optional
+            start date. The default is ''.
+        Date2 : [str], optional
+            end date. The default is ''.
+
+        Returns
+        -------
+        QGauges : [dataframe].
+            dataframe containing the discharge data
+
+        """
 
         if self.TemporalResolution == "Daily":
             ind = pd.date_range(self.StartDate, self.EndDate, freq="D")
@@ -372,15 +548,15 @@ class Catchment():
 
         if self.SpatialResolution == "Distributed":
             assert hasattr(self, 'GaugesTable'), 'please read the gauges table first'
-    
+
             self.QGauges = pd.DataFrame(index=ind, columns = self.GaugesTable[column].tolist())
-    
+
             for i in range(len(self.GaugesTable)):
                 name = self.GaugesTable.loc[i,'id']
                 f = pd.read_csv(Path + str(name) + '.csv', header=0, index_col=0, delimiter=delimiter)# ,#delimiter="\t", skiprows=11,
-    
+
                 f.index = [ dt.datetime.strptime(i,fmt) for i in f.index.tolist()]
-    
+
                 self.QGauges[int(name)] = f.loc[self.StartDate:self.EndDate,f.columns[0]]
         else:
             self.QGauges = pd.DataFrame(index=ind)
@@ -398,38 +574,73 @@ class Catchment():
 
 
     def ReadParametersBounds(self, UB, LB, Snow):
+        """
+        =======================================================================
+            ReadParametersBounds(UB, LB, Snow)
+        =======================================================================
+        ReadParametersBounds method reads the lower and upper boundarys for each
+        parameter
+
+        Parameters
+        ----------
+        UB : [list]
+            upper bound.
+        LB : [list]
+            lower bound.
+        Snow : [integer]
+            0 if you dont want to run the snow related processes and 1 if there is snow.
+            in case of 1 (simulate snow processes) parameters related to snow simulation
+            has to be provided. The default is 0.
+
+        Returns
+        -------
+        UB : [list]
+            upper bound.
+        LB : [list]
+            lower bound.
+        Snow : [integer]
+            Snow
+        """
         assert len(UB)==len(LB), "length of UB should be the same like LB"
         self.UB = np.array(UB)
         self.LB = np.array(LB)
-        
+
         assert Snow == 0 or Snow == 1, " snow input defines whether to consider snow subroutine or not it has to be 0 or 1"
         self.Snow = Snow
-        
+
         print("Parameters bounds are read successfully")
 
-    
-    def ExtractDischarge(self, CalculateMetrics=True, FW1=False, Factor=False):
+
+    def ExtractDischarge(self, CalculateMetrics=True, FW1=False, Factor=None):
         """
         =============================================================================
               ExtractDischarge(CalculateMetrics=True, FW1=False)
         =============================================================================
-        ExtractDischarge method extracts and sums the discharge from the 
+        ExtractDischarge method extracts and sums the discharge from the
         Quz_routed and Qlz_translated arrays at the location of the gauges
-        
+
         Parameters
         ----------
-        CalculateMetrics : TYPE, optional
-            DESCRIPTION. The default is True.
-        FW1 : TYPE, optional
-            DESCRIPTION. The default is False.
-
+        CalculateMetrics : bool, optional
+            True if you want to calculate the performance metrics. The default is True.
+        FW1 : [bool], optional
+            True if the routing function is Maxbas. The default is False.
+        Factor : [list/None]
+            list of factor if you want to multiply the simulated discharge by
+            a factor you have to provide a list of the factor (as many factors
+            as the number of gauges). The default is False.
         Returns
         -------
-        None.
-
+        Qsim : [dataframe]
+            dataframe containing the discharge time series of the cells where
+            the gauges are located.
+        Metrics : [dataframe]
+            data frame containing the followinf metrics ['RMSE', 'NSE',
+            'NSEhf', 'KGE', 'WB','Pearson-CC','R2'] calculated between the simulated
+            hydrographs and the gauge data
         """
-        
-        
+
+
         if not FW1:
             self.Qsim = pd.DataFrame(index = self.Index, columns = self.QGauges.columns)
             if CalculateMetrics:
@@ -439,7 +650,7 @@ class Catchment():
                 Xind = int(self.GaugesTable.loc[self.GaugesTable.index[i],"cell_row"])
                 Yind = int(self.GaugesTable.loc[self.GaugesTable.index[i],"cell_col"])
                 gaugeid = self.GaugesTable.loc[self.GaugesTable.index[i],"id"]
-                
+
                 # Quz = np.reshape(self.quz_routed[Xind,Yind,:-1],self.TS-1)
                 # Qlz = np.reshape(self.qlz_translated[Xind,Yind,:-1],self.TS-1)
                 # Qsim = Quz + Qlz
@@ -448,7 +659,7 @@ class Catchment():
                     self.Qsim.loc[:,gaugeid] = Qsim * Factor[i]
                 else:
                     self.Qsim.loc[:,gaugeid] = Qsim
-                
+
                 if CalculateMetrics:
                     Qobs = self.QGauges.loc[:,gaugeid]
                     self.Metrics.loc['RMSE',gaugeid] = round(PC.RMSE(Qobs, Qsim),3)
@@ -459,12 +670,12 @@ class Catchment():
                     self.Metrics.loc['Pearson-CC',gaugeid] = round(PC.PearsonCorre(Qobs, Qsim),3)
                     self.Metrics.loc['R2',gaugeid] = round(PC.R2(Qobs, Qsim),3)
         else:
-            
+
             self.Qsim = pd.DataFrame(index = self.Index)
             gaugeid = self.GaugesTable.loc[self.GaugesTable.index[-1],"id"]
             Qsim = np.reshape(self.qout,self.TS-1)
             self.Qsim.loc[:,gaugeid] = Qsim
-            
+
             if CalculateMetrics:
                 index = ['RMSE', 'NSE', 'NSEhf', 'KGE', 'WB','Pearson-CC', 'R2']
                 self.Metrics = pd.DataFrame(index = index)
@@ -477,34 +688,78 @@ class Catchment():
                     self.Metrics.loc['WB',gaugeid] = round(PC.WB(Qobs, Qsim),3)
                     self.Metrics.loc['Pearson-CC',gaugeid] = round(PC.PearsonCorre(Qobs, Qsim),3)
                     self.Metrics.loc['R2',gaugeid] = round(PC.R2(Qobs, Qsim),3)
-    
-    
-    def PlotHydrograph(self, plotstart, plotend, gaugei, Hapicolor="#004c99", 
-                       gaugecolor="#DC143C", linewidth = 3, Hapiorder = 1, 
+
+
+    def PlotHydrograph(self, plotstart, plotend, gaugei, Hapicolor="#004c99",
+                       gaugecolor="#DC143C", linewidth = 3, Hapiorder = 1,
                        Gaugeorder = 0, labelfontsize=10, XMajorfmt='%Y-%m-%d',
                        Noxticks=5):
-        
+        """
+        =========================================================================
+        PlotHydrograph(plotstart, plotend, gaugei, Hapicolor="#004c99",
+                       gaugecolor="#DC143C", linewidth = 3, Hapiorder = 1,
+                       Gaugeorder = 0, labelfontsize=10, XMajorfmt='%Y-%m-%d',
+                       Noxticks=5)
+        =========================================================================
+        PlotHydrograph plot the simulated and gauge hydrograph
+
+        Parameters
+        ----------
+        plotstart : [str]
+            starting date.
+        plotend : [str]
+            end date.
+        gaugei : [integer]
+            order if the gauge in the GaugeTable.
+        Hapicolor : [str], optional
+            color of the Simulated hydrograph. The default is "#004c99".
+        gaugecolor : [str], optional
+            color of the gauge. The default is "#DC143C".
+        linewidth : [numeric], optional
+            line width. The default is 3.
+        Hapiorder : [integer], optional
+            the order of the simulated hydrograph to control which hydrograph
+            is in the front . The default is 1.
+        Gaugeorder : TYPE, optional
+            the order of the simulated hydrograph to control which hydrograph
+            is in the front . The default is 0.
+        labelfontsize : numeric, optional
+            label size. The default is 10.
+        XMajorfmt : [str], optional
+            format of the x-axis labels. The default is '%Y-%m-%d'.
+        Noxticks : [integer], optional
+            number of x-axis ticks. The default is 5.
+
+        Returns
+        -------
+        fig : TYPE
+            DESCRIPTION.
+        ax : [matplotlib axes]
+            you can control the figure from the axes.
+
+        """
+
         plotstart = dt.datetime.strptime(plotstart,"%Y-%m-%d")
         plotend = dt.datetime.strptime(plotend,"%Y-%m-%d")
-        
+
         gaugeid = self.GaugesTable.loc[gaugei,'id']
         fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(6, 5))
-        
+
         ax.plot(self.Qsim.loc[plotstart:plotend, gaugeid], '-.',
-                label = str(self.GaugesTable.loc[gaugei,'name']), 
+                label = str(self.GaugesTable.loc[gaugei,'name']),
                 linewidth=linewidth, color=Hapicolor, zorder = Hapiorder)
         ax.plot(self.QGauges.loc[plotstart:plotend,gaugeid],label = 'Gauge',
                       linewidth=linewidth, color = gaugecolor, zorder = Gaugeorder)
-        
+
         ax.tick_params(axis='both', which='major', labelsize=labelfontsize)
         # ax.locator_params(axis="x", nbins=4)
-        
+
         XMajorfmt = dates.DateFormatter(XMajorfmt)
         ax.xaxis.set_major_formatter(XMajorfmt)
         # ax.xaxis.set_minor_locator(dates.WeekdayLocator(byweekday=(1),
                                             # interval=1))
         ax.xaxis.set_minor_formatter(dates.DateFormatter('%d\n%m'))
-        
+
         ax.xaxis.set_major_locator(plt.MaxNLocator(Noxticks))
 
         ax.set_title("Gauge - "+str(self.GaugesTable.loc[gaugei,'name']), fontsize = 20)
@@ -512,7 +767,7 @@ class Catchment():
         ax.set_xlabel("Time", fontsize = 12)
         ax.set_ylabel("Discharge m3/s", fontsize = 12)
         plt.tight_layout()
-        
+
         #print the metrics
         print("----------------------------------")
         print("Gauge - " +str(gaugeid))
@@ -523,8 +778,8 @@ class Catchment():
         print("WB= " + str(round(self.Metrics.loc['WB',gaugeid],2)))
         print("Pearson-CC= " + str(round(self.Metrics.loc['Pearson-CC',gaugeid],2)))
         print("R2= " + str(round(self.Metrics.loc['R2',gaugeid],2)))
-        return fig, ax 
-        
+        return fig, ax
+
 
     def PlotDistributedQ(self, StartDate, EndDate, fmt="%Y-%m-%d", Option = 1,
                          Gauges=False,**kwargs):
@@ -532,13 +787,17 @@ class Catchment():
          =============================================================================
            PlotDistributedQ(StartDate, EndDate, fmt="%Y-%m-%d", Option = 1, Gauges=False,
                Arr, Time, NoElem, TicksSpacing = 2, Figsize=(8,8), PlotNumbers=True,
-                  NumSize= 8, Title = 'Total Discharge',titlesize = 15, Backgroundcolorthreshold=None, 
+                  NumSize= 8, Title = 'Total Discharge',titlesize = 15, Backgroundcolorthreshold=None,
                   cbarlabel = 'Discharge m3/s', cbarlabelsize = 12, textcolors=("white","black"),
                   Cbarlength = 0.75, Interval = 200,cmap='coolwarm_r', Textloc=[0.1,0.2],
                   Gaugecolor='red',Gaugesize=100, ColorScale = 1,gamma=1./2.,linthresh=0.0001,
                   linscale=0.001, midpoint=0, orientation='vertical', rotation=-90,
                   **kwargs):
         =============================================================================
+        PlotDistributedQ animate the time series of the meteorological inputs and
+        the result calculated by the model  like the total discharge, upper zone,
+        and lower zone discharge and the state variables
+
         Parameters
         ----------
         StartDate : [str]
@@ -548,8 +807,8 @@ class Catchment():
         fmt : [str]
             format of the gicen date. The default is "%Y-%m-%d"
         Option : [str]
-            1- Total discharge, 2-Upper zone discharge, 3-ground water, 
-            4-Snowpack state variable, 5-Soil moisture, 6-Upper zone, 
+            1- Total discharge, 2-Upper zone discharge, 3-ground water,
+            4-Snowpack state variable, 5-Soil moisture, 6-Upper zone,
             7-Lower zone, 8-Water content, 9-Precipitation input. 10-ET,
             11-Temperature. The default is 1
         Gauges : [str]
@@ -573,7 +832,7 @@ class Catchment():
         titlesize : [integer], optional
             title size. The default is 15.
         Backgroundcolorthreshold : [float/integer], optional
-            threshold value if the value of the cell is greater, the plotted 
+            threshold value if the value of the cell is greater, the plotted
             numbers will be black and if smaller the plotted number will be white
             if None given the maxvalue/2 will be considered. The default is None.
         textcolors : TYPE, optional
@@ -618,7 +877,7 @@ class Catchment():
         **kwargs : [dict]
             keys:
                 Points : [dataframe].
-                    dataframe contains two columns 'cell_row', and cell_col to 
+                    dataframe contains two columns 'cell_row', and cell_col to
                     plot the point at this location
 
         Returns
@@ -628,10 +887,10 @@ class Catchment():
         """
         StartDate = dt.datetime.strptime(StartDate,fmt)
         EndDate = dt.datetime.strptime(EndDate,fmt)
-        
+
         starti = np.where(self.Index == StartDate)[0][0]
         endi = np.where(self.Index == EndDate)[0][0]
-        
+
         if Option == 1:
             self.Qtot[self.FlowAccArr == self.NoDataValue,:] = np.nan
             Arr = self.Qtot[:,:,starti:endi]
@@ -676,64 +935,71 @@ class Catchment():
             self.Temp[self.FlowAccArr == self.NoDataValue,:] = np.nan
             Arr = self.Temp[:,:,starti:endi]
             Title = 'Temperature'
-            
+
         Time = self.Index[starti:endi]
 
         if Gauges:
             kwargs['Points'] = self.GaugesTable
-            
+
         anim = Vis.AnimateArray(Arr, Time, self.no_elem, Title = Title, **kwargs)
-        
+
         return anim
-    
-    
-    def SaveResults(self, FlowAccPath, Result=1, StartDate='', EndDate='', 
+
+
+    def SaveResults(self, FlowAccPath, Result=1, StartDate='', EndDate='',
                     Path='', Prefix='', fmt="%Y-%m-%d"):
         """
-        
+        =========================================================================
+        SaveResults(FlowAccPath, Result=1, StartDate='', EndDate='',
+                    Path='', Prefix='', fmt="%Y-%m-%d")
+        =========================================================================
+        SaveResults save the results into rasters
 
         Parameters
         ----------
-        FlowAccPath : TYPE
-            DESCRIPTION.
-        Result : TYPE, optional
-            DESCRIPTION. The default is 1.
-        StartDate : TYPE, optional
-            DESCRIPTION. The default is ''.
-        EndDate : TYPE, optional
-            DESCRIPTION. The default is ''.
-        Path : TYPE, optional
-            DESCRIPTION. The default is ''.
-        Prefix : TYPE, optional
-            DESCRIPTION. The default is ''.
-        fmt : TYPE, optional
-            DESCRIPTION. The default is "%Y-%m-%d".
+        FlowAccPath : [path]
+            Path to Flow acc raster.
+        Result : [integer], optional
+            1 for the total discharge, 2 for the upper zone discharge, 3 for
+            the lower zone discharge, 4 for the snow pack, 5 for the soil
+            moisture, 6 upper zone, 7 for the lower zone, 8 for the water content.
+            The default is 1.
+        StartDate : [str], optional
+            start date. The default is ''.
+        EndDate : [str], optional
+            end date. The default is ''.
+        Path : [str], optional
+            PAth to the directory where you want to save the results. The default is ''.
+        Prefix : [str], optional
+            prefix to add to the name of the result files. The default is ''.
+        fmt : [str], optional
+            format of the date. The default is "%Y-%m-%d".
 
         Returns
         -------
         None.
 
         """
-    
+
         src = gdal.Open(FlowAccPath)
         if StartDate == '' :
             StartDate = self.Index[0]
         else:
             StartDate = dt.datetime.strptime(StartDate,fmt)
-            
+
         if EndDate == '' :
             EndDate = self.Index[-1]
         else:
-            EndDate = dt.datetime.strptime(EndDate,fmt)    
-        
+            EndDate = dt.datetime.strptime(EndDate,fmt)
+
         if Prefix == '' :
             Prefix = 'Result_'
-            
+
         starti = np.where(self.Index == StartDate)[0][0]
         endi = np.where(self.Index == EndDate)[0][0]+1
-        
+
         # create list of names
-        Path = Path + Prefix 
+        Path = Path + Prefix
         names = [Path + str(i)[:10] for i in self.Index[starti:endi]]
         names = [i.replace("-","_") for i in names]
         names = [i.replace(" ","_") for i in names]
@@ -754,10 +1020,36 @@ class Catchment():
             Raster.RastersLike(src,self.statevariables[:,:,starti:endi,3],names)
         elif Result ==8:
             Raster.RastersLike(src,self.statevariables[:,:,starti:endi,4],names)
-            
-            
-            
+
+
+
 class Lake():
+    """
+    =========================================================================
+        Lake(StartDate='', EndDate='', fmt="%Y-%m-%d",
+                     TemporalResolution="Daily", Split=False)
+    =========================================================================
+    Lake class for lake simulation
+
+    Parameters
+    ----------
+    StartDate : [str], optional
+        start date. The default is ''.
+    EndDate : [str], optional
+        end date. The default is ''.
+    fmt : [str], optional
+        date format. The default is "%Y-%m-%d".
+    TemporalResolution : [str], optional
+        "Daily" ot "Hourly". The default is "Daily".
+    Split : bool, optional
+        true if you want to split the date between two dates. The default is False.
+
+    Returns
+    -------
+    None.
+
+    """
+
 
     def __init__(self, StartDate='', EndDate='', fmt="%Y-%m-%d",
                  TemporalResolution="Daily", Split=False):
@@ -775,6 +1067,27 @@ class Lake():
         pass
 
     def ReadMeteoData(self, Path, fmt):
+        """
+        =================================================================
+              ReadMeteoData(Path, fmt)
+        =================================================================
+        ReadMeteoData reads the meteorological data for the lake
+        [rainfall, ET, temperature]
+
+        Parameters
+        ----------
+        Path : [str]
+            path to the meteo data file, containing the data in the follwoing
+            order [date, rainfall, ET, temperature].
+        fmt : [str]
+            date format.
+
+        Returns
+        -------
+        MeteoData : [array].
+            array containing the meteorological data
+
+        """
 
         df = pd.read_csv(Path, index_col = 0)
         df.index = [dt.datetime.strptime(date,fmt) for date in df.index]
@@ -786,13 +1099,71 @@ class Lake():
 
         print("Lake Meteo data are read successfully")
 
+
     def ReadParameters(self, Path):
+        """
+        ====================================================================
+             ReadParameters(Path)
+        ====================================================================
+        ReadParameters method reads the lake parameters
+
+        Parameters
+        ----------
+        Path : [str]
+            Path to the parameter file.
+
+        Returns
+        -------
+        Parameters : [array].
+
+        """
         Parameters = np.loadtxt(Path).tolist()
         self.Parameters = Parameters
         print("Lake Parameters are read successfully")
 
+
     def ReadLumpedModel(self, LumpedModel, CatArea, LakeArea, InitialCond,
                         OutflowCell, StageDischargeCurve, Snow):
+        """
+        ==========================================================================
+            ReadLumpedModel(self, LumpedModel, CatArea, LakeArea, InitialCond,
+                             OutflowCell, StageDischargeCurve, Snow)
+        ==========================================================================
+        ReadLumpedModel reads the lumped model module
+
+        Parameters
+        ----------
+        LumpedModel : [module]
+            lumped conceptual model.
+        CatArea : [numeric]
+            catchment area in mk2.
+        LakeArea : [numeric]
+            area of the lake in km2.
+        InitialCond : [list]
+            initial condition [Snow Pack, Soil Moisture, Upper Zone, Lower Zone,
+                               Water Content, Lake volume].
+        OutflowCell : [list]
+            indeces of the cell where the lake hydrograph is going to be added.
+        StageDischargeCurve : [array]
+            volume-outflow curve.
+        Snow : [integer]
+            0 if you dont want to run the snow related processes and 1 if there is snow.
+            in case of 1 (simulate snow processes) parameters related to snow simulation
+            has to be provided. The default is 0.
+
+        Returns
+        -------
+        LumpedModel : [module]
+            HBV module.
+        CatArea : [numeric]
+            Catchment area (km2).
+        InitialCond : [list]
+            list of the inial condition [SnowPack,SoilMoisture,Upper Zone,
+                                         Lower Zone, Water Content].
+        Snow : [integer]
+            0/1
+        StageDischargeCurve : [array]
+        """
         assert isinstance(LumpedModel,ModuleType) , "ConceptualModel should be a module or a python file contains functions "
         self.LumpedModel = LumpedModel
 
