@@ -55,6 +55,9 @@ import Hapi.hmcalibration
 import Hapi.interface
 import Hapi.saintvenant
 import Hapi.sensitivityanalysis
+import Hapi.data_conversions
+import Hapi.raster_conversions
+import Hapi.remotesensing
 # module level doc-string
 __doc__ = """
 Hapi - Hydrological library for Python
