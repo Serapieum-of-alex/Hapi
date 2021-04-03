@@ -12,7 +12,8 @@ import datetime as dt
 import calendar
 from ecmwfapi import ECMWFDataServer
 
-import Hapi.data_conversions as DC
+
+from Hapi.raster import Raster
 import Hapi.weirdFn as weirdFn
 
 class RemoteSensing():
@@ -188,7 +189,7 @@ class RemoteSensing():
             name_out = os.path.join(out_dir, "%s_ECMWF_ERA-Interim_%s_%s_%d.%02d.%02d.tif" %(VarOutputname, Var_unit, TimeCase, year,month,day))
     
             # Create Tiff files
-            DC.Save_as_tiff(name_out, Data_end, Geo_out, "WGS84")
+            Raster.Save_as_tiff(name_out, Data_end, Geo_out, "WGS84")
     
             if Waitbar == 1:
                 amount += 1
