@@ -40,11 +40,11 @@ class RemoteSensing():
         Waitbar -- 1 (Default) will create a waitbar
         """
         for Var in Vars:
-    		# Download data
+            # Download data
             print('\nDownload ECMWF %s data for period %s till %s' %(Var, Startdate, Enddate))
             
             RemoteSensing.DownloadData(Dir, Var, Startdate, Enddate, latlim, lonlim, Waitbar, cores,
-    					 TimeCase='daily', CaseParameters=[SumMean, Min, Max])
+                         TimeCase='daily', CaseParameters=[SumMean, Min, Max])
     
         del_ecmwf_dataset = os.path.join(Dir,'data_interim.nc')
         os.remove(del_ecmwf_dataset)
@@ -202,45 +202,45 @@ class RemoteSensing():
     def API(output_folder, DownloadType, string1, string2, string3, string4, string5, string6, string7, string8, string9, string10):
     
     
-    	server = ECMWFDataServer()
+        server = ECMWFDataServer()
 
-	    if DownloadType == 1 or DownloadType == 2:
-	        server.retrieve({
-	            'stream'    : "%s" %string1,
-	            'levtype'   : "%s" %string2,
-	            'param'     : "%s" %string3,
-	            'dataset'   : "interim",
-	            'step'      : "%s" %string4,
-	            'grid'      : "%s" %string5,
-	            'time'      : "%s" %string6,
-	            'date'      : "%s" %string7,
-	            'type'      : "%s" %string8,     # http://apps.ecmwf.int/codes/grib/format/mars/type/
-	            'class'     : "%s" %string9,     # http://apps.ecmwf.int/codes/grib/format/mars/class/
-	            'area'      : "%s" %string10,   							
-	            'format'    : "netcdf",
-	            'target'    : "data_interim.nc"
-	            })
+        if DownloadType == 1 or DownloadType == 2:
+            server.retrieve({
+                'stream'    : "%s" %string1,
+                'levtype'   : "%s" %string2,
+                'param'     : "%s" %string3,
+                'dataset'   : "interim",
+                'step'      : "%s" %string4,
+                'grid'      : "%s" %string5,
+                'time'      : "%s" %string6,
+                'date'      : "%s" %string7,
+                'type'      : "%s" %string8,     # http://apps.ecmwf.int/codes/grib/format/mars/type/
+                'class'     : "%s" %string9,     # http://apps.ecmwf.int/codes/grib/format/mars/class/
+                'area'      : "%s" %string10,   							
+                'format'    : "netcdf",
+                'target'    : "data_interim.nc"
+                })
 
-	    if DownloadType == 3:
-	        server.retrieve({
-	            'levelist'   : "1000",
-	            'stream'    : "%s" %string1,
-	            'levtype'   : "%s" %string2,
-	            'param'     : "%s" %string3,
-	            'dataset'   : "interim",
-	            'step'      : "%s" %string4,
-	            'grid'      : "%s" %string5,
-	            'time'      : "%s" %string6,
-	            'date'      : "%s" %string7,
-	            'type'      : "%s" %string8,     # http://apps.ecmwf.int/codes/grib/format/mars/type/
-	            'class'     : "%s" %string9,     # http://apps.ecmwf.int/codes/grib/format/mars/class/
-	            'area'      : "%s" %string10,   							
-	            'format'    : "netcdf",
-	            'target'    : "data_interim.nc"
-	            })
-		
-		
-	    return()
+        if DownloadType == 3:
+            server.retrieve({
+                'levelist'   : "1000",
+                'stream'    : "%s" %string1,
+                'levtype'   : "%s" %string2,
+                'param'     : "%s" %string3,
+                'dataset'   : "interim",
+                'step'      : "%s" %string4,
+                'grid'      : "%s" %string5,
+                'time'      : "%s" %string6,
+                'date'      : "%s" %string7,
+                'type'      : "%s" %string8,     # http://apps.ecmwf.int/codes/grib/format/mars/type/
+                'class'     : "%s" %string9,     # http://apps.ecmwf.int/codes/grib/format/mars/class/
+                'area'      : "%s" %string10,   							
+                'format'    : "netcdf",
+                'target'    : "data_interim.nc"
+                })
+        
+        
+        return()
 
 
 class VariablesInfo:
@@ -290,7 +290,7 @@ class VariablesInfo:
                 'AL' : 'al',
                 'HCC': 'hcc'}
 
-	# ECMWF data
+    # ECMWF data
     descriptions = {'T'  : 'Temperature [K]',
                     '2T': '2 meter Temperature [K]',
                     'SRO' : 'Surface Runoff [m]',
