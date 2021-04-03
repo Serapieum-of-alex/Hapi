@@ -296,13 +296,18 @@ class Raster():
         NoDataVal = src.GetRasterBand(1).GetNoDataValue()
         src_array = src.ReadAsArray()
         
-        if src_array.dtype == np.float32:
-            src_array[src_array != np.float32(NoDataVal)] = Val
+        if NoDataVal == None:  
+            NoDataVal = np.nan
+            
+        if  not np.isnan(NoDataVal):
+            if src_array.dtype == np.float32:
+                src_array[src_array != np.float32(NoDataVal)] = Val
+            else:
+                src_array[src_array != np.float64(NoDataVal)] = Val
         else:
-            src_array[src_array != np.float64(NoDataVal)] = Val
-                
+            src_array[~np.isnan(src_array)] = Val
+            
         Raster.RasterLike(src,src_array,SaveTo,pixel_type=1)
-
 
 
     @staticmethod
@@ -2055,16 +2060,20 @@ class Raster():
         """
         # input data validation
         # data type
-        assert type(path)== str, "A_path input should be string type"
+        assert type(path)== str or type(path) == list, "A_path input should be string type"
+        
         # input values
-        # check wether the path exist or not
-        assert os.path.exists(path), "the path you have provided does not exist"
-        # check whether there are files or not inside the folder
-        assert os.listdir(path)!= "","the path you have provided is empty"
-        # get list of all files
-        files=os.listdir(path)
-        if "desktop.ini" in files: files.remove("desktop.ini")
-
+        if type(path)== str:
+            # check wether the path exist or not
+            assert os.path.exists(path), "the path you have provided does not exist"
+            # check whether there are files or not inside the folder
+            assert os.listdir(path)!= "","the path you have provided is empty"
+            # get list of all files
+            files = os.listdir(path)
+            if "desktop.ini" in files: files.remove("desktop.ini")
+        else:
+            files = path[:]
+            
         # to sort the files in the same order as the first number in the name
         if WithOrder == True:
             try:
@@ -2085,19 +2094,28 @@ class Raster():
         assert all(f.endswith(".tif") for f in files), "all files in the given folder should have .tif extension"
         # create a 3d array with the 2d dimension of the first raster and the len
         # of the number of rasters in the folder
-        sample=gdal.Open(path+"/"+files[0])
-        dim=sample.ReadAsArray().shape
-        naval=sample.GetRasterBand(1).GetNoDataValue()
+        if type(path) == list:
+            sample = gdal.Open(files[0])
+        else:
+            sample = gdal.Open(path+"/"+files[0])
+            
+        dim = sample.ReadAsArray().shape
+        naval = sample.GetRasterBand(1).GetNoDataValue()
         # fill the array with noval data
-        # arr_3d=np.ones((dim[0],dim[1],len(files)))*naval
-        arr_3d=np.ones((dim[0],dim[1],len(files)))
+        arr_3d = np.ones((dim[0],dim[1],len(files)))
         arr_3d [:,:,:] = naval
-
-        for i in range(len(files)):
-            # read the tif file
-            f=gdal.Open(path+"/"+files[i])
-            arr_3d[:,:,i]=f.ReadAsArray()
-
+        
+        if type(path) == list:
+            for i in range(len(files)):
+                # read the tif file
+                f = gdal.Open(files[i])
+                arr_3d[:,:,i] = f.ReadAsArray()
+        else:
+            for i in range(len(files)):
+                # read the tif file
+                f = gdal.Open(path+"/"+files[i])
+                arr_3d[:,:,i] = f.ReadAsArray()
+                
         return arr_3d
 
 
