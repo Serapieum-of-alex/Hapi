@@ -15,11 +15,11 @@ import numpy as np
 import datetime as dt
 from Oasis.optimization import Optimization
 from Oasis.hsapi import HSapi
-from Hapi.run import Model
+from Hapi.catchment import Catchment
 from Hapi.wrapper import Wrapper
 
 
-class Calibration(Model):
+class Calibration(Catchment):
 
     def __init__(self, name, StartDate, EndDate, fmt="%Y-%m-%d", SpatialResolution = 'Lumped',
                  TemporalResolution = "Daily"):
@@ -54,7 +54,7 @@ class Calibration(Model):
             args = []
 
         self.OFArgs = args
-    
+
     def ExtractDischarge(self):
         self.Qsim = np.zeros((self.TS-1,len(self.GaugesTable)))
         # error = 0
@@ -62,13 +62,13 @@ class Calibration(Model):
             Xind = int(self.GaugesTable.loc[self.GaugesTable.index[i],"cell_row"])
             Yind = int(self.GaugesTable.loc[self.GaugesTable.index[i],"cell_col"])
             # gaugeid = Coello.GaugesTable.loc[Coello.GaugesTable.index[i],"id"]
-            
+
             Quz = self.quz_routed[Xind,Yind,:-1]
             Qlz = self.qlz_translated[Xind,Yind,:-1]
             self.Qsim[:,i] = Quz + Qlz
             # Qobs = Coello.QGauges.loc[:,gaugeid]
             # error = error + OF(Qobs, Qsim)
-            
+
         # return error
 
     def RunCalibration(self, SpatialVarFun, OptimizationArgs, printError=None):
@@ -209,8 +209,8 @@ class Calibration(Model):
         self.OFvalue = res[0]
 
         return res
-    
-    
+
+
     def FW1Calibration(self, SpatialVarFun, OptimizationArgs, printError=None):
         """
         =======================================================================
@@ -350,7 +350,7 @@ class Calibration(Model):
         self.OFvalue = res[0]
 
         return res
-    
+
 
     def LumpedCalibration(self, Basic_inputs, OptimizationArgs, printError=None):
         """
@@ -469,7 +469,7 @@ class Calibration(Model):
 
         ### define the optimization components
         opt_prob = Optimization('HBV Calibration', opt_fun)
-        
+
         if InitialValues != []:
             for i in range(len(self.LB)):
                 opt_prob.addVar('x{0}'.format(i), type='c', lower=self.LB[i], upper=self.UB[i], value=InitialValues[i])
