@@ -92,12 +92,12 @@ JiboaLake.ReadLumpedModel(HBVLake, LakeCatArea, LakeArea, LakeInitCond,
 #%% Gauges
 Date1 = '14.06.2012 19:00'
 Date2 = '23.12.2013 00:00'
-Jiboa.ReadGaugeTable(GaugesPath+"GaugesTable.csv")
+Jiboa.ReadGaugeTable(GaugesPath+"GaugesTable.csv",FlowAccPath)
 Jiboa.ReadDischargeGauges(GaugesPath, column='id', fmt='%d.%m.%Y %H:%M',
                           Split=True, Date1=Date1, Date2=Date2)
 #%% run the model
-Sim =pd.DataFrame(index = JiboaLake.Index)
-Sim['Q'], q_uz_routed, q_lz_trans = Run.RunHAPIwithLake(Jiboa, JiboaLake)
+# Sim =pd.DataFrame(index = JiboaLake.Index)
+Run.RunHAPIwithLake(Jiboa, JiboaLake)
 #%% calculate some metrics
 Qobs = Jiboa.QGauges[Jiboa.GaugesTable.loc[0,'id']]
 
