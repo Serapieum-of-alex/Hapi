@@ -442,34 +442,34 @@ class GISCatchment():
         """
         # input data validation
         # data type
-        assert type(Raster)==gdal.Dataset, "raster should be read using gdal (gdal dataset please read it using gdal library) "
-        assert type(StCoord)==pd.core.frame.DataFrame, "please check StCoord input it should be pandas dataframe "
+        assert type(Raster) == gdal.Dataset, "raster should be read using gdal (gdal dataset please read it using gdal library) "
+        assert type(StCoord) == pd.core.frame.DataFrame, "please check StCoord input it should be pandas dataframe "
 
         # check if the user has stored the coordinates in the dataframe with the right names or not
         assert "x" in StCoord.columns, "please check the StCoord x coordinates of the stations should be stored in a column name 'x'"
         assert "y" in StCoord.columns, "please check the StCoord y coordinates of the stations should be stored in a column name 'y'"
 
 
-        StCoord['cell_row']=np.nan
-        StCoord['cell_col']=np.nan
+        StCoord['cell_row'] = np.nan
+        StCoord['cell_col'] = np.nan
 
-        rows=Raster.RasterYSize
-        cols=Raster.RasterXSize
+        rows = Raster.RasterYSize
+        cols = Raster.RasterXSize
         geo_trans = Raster.GetGeoTransform() # get the coordinates of the top left corner and cell size [x,dx,y,dy]
         # X_coordinate= upperleft corner x+ index* cell size+celsize/2
-        coox=np.ones((rows,cols))
-        cooy=np.ones((rows,cols))
+        coox = np.ones((rows,cols))
+        cooy = np.ones((rows,cols))
         for i in range(rows): # iteration by row
             for j in range(cols):# iteration by column
-                coox[i,j]=geo_trans[0]+geo_trans[1]/2+j*geo_trans[1] # calculate x
-                cooy[i,j]=geo_trans[3]+geo_trans[5]/2+i*geo_trans[5] # calculate y
+                coox[i,j] = geo_trans[0]+geo_trans[1]/2+j*geo_trans[1] # calculate x
+                cooy[i,j] = geo_trans[3]+geo_trans[5]/2+i*geo_trans[5] # calculate y
 
-        Dist=np.ones((rows,cols))
+        Dist = np.ones((rows,cols))
         for no in range(len(StCoord['x'])):
             # calculate the distance from the station to all cells
             for i in range(rows): # iteration by row
                     for j in range(cols):# iteration by column
-                            Dist[i,j]=np.sqrt(np.power((StCoord.loc[StCoord.index[no],'x']-coox[i,j]),2)
+                            Dist[i,j] = np.sqrt(np.power((StCoord.loc[StCoord.index[no],'x']-coox[i,j]),2)
                                              +np.power((StCoord.loc[StCoord.index[no],'y']-cooy[i,j]),2))
 
             StCoord.loc[no,'cell_row'],StCoord.loc[no,'cell_col']=np.where(Dist==np.min(Dist))
