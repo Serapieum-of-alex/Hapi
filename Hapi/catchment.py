@@ -408,7 +408,7 @@ class Catchment():
         print("Parameters bounds are read successfully")
 
     
-    def ExtractDischarge(self, CalculateMetrics=True, FW1=False):
+    def ExtractDischarge(self, CalculateMetrics=True, FW1=False, Factor=False):
         """
         =============================================================================
               ExtractDischarge(CalculateMetrics=True, FW1=False)
@@ -444,7 +444,10 @@ class Catchment():
                 # Qlz = np.reshape(self.qlz_translated[Xind,Yind,:-1],self.TS-1)
                 # Qsim = Quz + Qlz
                 Qsim = np.reshape(self.Qtot[Xind,Yind,:-1],self.TS-1)
-                self.Qsim.loc[:,gaugeid] = Qsim
+                if Factor != None:
+                    self.Qsim.loc[:,gaugeid] = Qsim * Factor[i]
+                else:
+                    self.Qsim.loc[:,gaugeid] = Qsim
                 
                 if CalculateMetrics:
                     Qobs = self.QGauges.loc[:,gaugeid]
@@ -524,12 +527,105 @@ class Catchment():
         
 
     def PlotDistributedQ(self, StartDate, EndDate, fmt="%Y-%m-%d", Option = 1,
-                         TicksSpacing = 2, Figsize=(8,8), PlotNumbers=True,
-                         NumSize=8, Title = 'Total Discharge',titlesize = 15, 
-                         threshold=None, cbarlabel = 'Discharge m3/s', cbarlabelsize = 12, 
-                         Cbarlength = 0.75, Interval = 200, Gauges=False): #
-        
-        
+                         Gauges=False,**kwargs):
+        """
+         =============================================================================
+           PlotDistributedQ(StartDate, EndDate, fmt="%Y-%m-%d", Option = 1, Gauges=False,
+               Arr, Time, NoElem, TicksSpacing = 2, Figsize=(8,8), PlotNumbers=True,
+                  NumSize= 8, Title = 'Total Discharge',titlesize = 15, Backgroundcolorthreshold=None, 
+                  cbarlabel = 'Discharge m3/s', cbarlabelsize = 12, textcolors=("white","black"),
+                  Cbarlength = 0.75, Interval = 200,cmap='coolwarm_r', Textloc=[0.1,0.2],
+                  Gaugecolor='red',Gaugesize=100, ColorScale = 1,gamma=1./2.,linthresh=0.0001,
+                  linscale=0.001, midpoint=0, orientation='vertical', rotation=-90,
+                  **kwargs):
+        =============================================================================
+        Parameters
+        ----------
+        StartDate : [str]
+            starting date
+        EndDate : [str]
+            end date
+        fmt : [str]
+            format of the gicen date. The default is "%Y-%m-%d"
+        Option : [str]
+            1- Total discharge, 2-Upper zone discharge, 3-ground water, 
+            4-Snowpack state variable, 5-Soil moisture, 6-Upper zone, 
+            7-Lower zone, 8-Water content, 9-Precipitation input. 10-ET,
+            11-Temperature. The default is 1
+        Gauges : [str]
+            . The default is False
+        Arr : [array]
+            the array you want to animate.
+        Time : [dataframe]
+            dataframe contains the date of values.
+        NoElem : [integer]
+            Number of the cells that has values.
+        TicksSpacing : [integer], optional
+            Spacing in the colorbar ticks. The default is 2.
+        Figsize : [tuple], optional
+            figure size. The default is (8,8).
+        PlotNumbers : [bool], optional
+            True to plot the values intop of each cell. The default is True.
+        NumSize : integer, optional
+            size of the numbers plotted intop of each cells. The default is 8.
+        Title : [str], optional
+            title of the plot. The default is 'Total Discharge'.
+        titlesize : [integer], optional
+            title size. The default is 15.
+        Backgroundcolorthreshold : [float/integer], optional
+            threshold value if the value of the cell is greater, the plotted 
+            numbers will be black and if smaller the plotted number will be white
+            if None given the maxvalue/2 will be considered. The default is None.
+        textcolors : TYPE, optional
+            Two colors to be used to plot the values i top of each cell. The default is ("white","black").
+        cbarlabel : str, optional
+            label of the color bar. The default is 'Discharge m3/s'.
+        cbarlabelsize : integer, optional
+            size of the color bar label. The default is 12.
+        Cbarlength : [float], optional
+            ratio to control the height of the colorbar. The default is 0.75.
+        Interval : [integer], optional
+            number to controlthe speed of the animation. The default is 200.
+        cmap : [str], optional
+            color style. The default is 'coolwarm_r'.
+        Textloc : [list], optional
+            location of the date text. The default is [0.1,0.2].
+        Gaugecolor : [str], optional
+            color of the points. The default is 'red'.
+        Gaugesize : [integer], optional
+            size of the points. The default is 100.
+        ColorScale : integer, optional
+            there are 5 options to change the scale of the colors. The default is 1.
+            1- ColorScale 1 is the normal scale
+            2- ColorScale 2 is the power scale
+            3- ColorScale 3 is the SymLogNorm scale
+            4- ColorScale 4 is the PowerNorm scale
+            5- ColorScale 5 is the BoundaryNorm scale
+            ------------------------------------------------------------------
+            gamma : [float], optional
+                value needed for option 2 . The default is 1./2..
+            linthresh : [float], optional
+                value needed for option 3. The default is 0.0001.
+            linscale : [float], optional
+                value needed for option 3. The default is 0.001.
+            midpoint : [float], optional
+                value needed for option 5. The default is 0.
+            ------------------------------------------------------------------
+        orientation : [string], optional
+            orintation of the colorbar horizontal/vertical. The default is 'vertical'.
+        rotation : [number], optional
+            rotation of the colorbar label. The default is -90.
+        **kwargs : [dict]
+            keys:
+                Points : [dataframe].
+                    dataframe contains two columns 'cell_row', and cell_col to 
+                    plot the point at this location
+
+        Returns
+        -------
+        animation.FuncAnimation.
+
+        """
         StartDate = dt.datetime.strptime(StartDate,fmt)
         EndDate = dt.datetime.strptime(EndDate,fmt)
         
@@ -582,23 +678,42 @@ class Catchment():
             Title = 'Temperature'
             
         Time = self.Index[starti:endi]
-        
+
         if Gauges:
-            kwargs = dict(Points = self.GaugesTable)
-        else:
-            kwargs = dict()
+            kwargs['Points'] = self.GaugesTable
             
-        anim = Vis.AnimateArray(Arr, Time, self.no_elem, TicksSpacing = TicksSpacing, 
-                                Figsize=Figsize, PlotNumbers=PlotNumbers, NumSize= NumSize,
-                                Title = Title,titlesize = titlesize, threshold=threshold, cbarlabel = cbarlabel, 
-                                cbarlabelsize = cbarlabelsize, Cbarlength = Cbarlength, 
-                                Interval = Interval,**kwargs) #
+        anim = Vis.AnimateArray(Arr, Time, self.no_elem, Title = Title, **kwargs)
         
         return anim
     
     
     def SaveResults(self, FlowAccPath, Result=1, StartDate='', EndDate='', 
                     Path='', Prefix='', fmt="%Y-%m-%d"):
+        """
+        
+
+        Parameters
+        ----------
+        FlowAccPath : TYPE
+            DESCRIPTION.
+        Result : TYPE, optional
+            DESCRIPTION. The default is 1.
+        StartDate : TYPE, optional
+            DESCRIPTION. The default is ''.
+        EndDate : TYPE, optional
+            DESCRIPTION. The default is ''.
+        Path : TYPE, optional
+            DESCRIPTION. The default is ''.
+        Prefix : TYPE, optional
+            DESCRIPTION. The default is ''.
+        fmt : TYPE, optional
+            DESCRIPTION. The default is "%Y-%m-%d".
+
+        Returns
+        -------
+        None.
+
+        """
     
         src = gdal.Open(FlowAccPath)
         if StartDate == '' :
