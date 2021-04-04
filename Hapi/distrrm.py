@@ -9,7 +9,20 @@ from Hapi.raster import Raster as raster
 from Hapi.routing import Routing as routing
 
 class DistributedRRM():
+    """
+    ================================
+        DistributedRRM
+    ================================
+    DistributedRRM class runs simulation in lumped form for each cell separetly
+    and rout the discharge between the cells following the rivernetwork
 
+    Methods:
+        1-RunLumpedRRM
+        2-SpatialRouting
+        3-DistMaxBas1
+        4-DistMaxBas2
+        5-Dist_HBV2
+    """
     def __init__(self):
         pass
 
@@ -19,8 +32,7 @@ class DistributedRRM():
         ========================================================================
           RunLumpedRRM(Raster,sp_prec,sp_et,sp_temp,sp_pars,p2,init_st,ll_temp,q_init)
         ========================================================================
-
-        this methodn runs the rainfall runoff lumped model (HBV, GR4,...) separately
+        RunLumpedRRM method runs the rainfall runoff lumped model (HBV, GR4,...) separately
         for each cell and return a time series of arrays
 
         Inputs:
@@ -63,7 +75,7 @@ class DistributedRRM():
                 3D array of the lower zone discharge (lumped calculation for each cell separately)
             3-quz : [numpy ndarray]
                 3D array of the upper zone discharge
-        """        
+        """
         Model.statevariables = np.zeros([Model.rows,Model.cols,Model.TS,5], dtype=np.float32)
         # Model.statevariables[:] = np.nan
         Model.quz = np.zeros([Model.rows,Model.cols, Model.TS], dtype=np.float32)
@@ -97,7 +109,8 @@ class DistributedRRM():
         ====================================================================
           SpatialRouting(qlz,quz,flow_acc,flow_direct,sp_pars,p2)
         ====================================================================
-
+        SpatialRouting method routes the discharge from cell to another following
+        the flow direction input raster
 
         Inputs:
         ----------
@@ -152,7 +165,7 @@ class DistributedRRM():
 
         ### remaining cells
         for j in range(1,len(Model.acc_val)):
-            #TODO parallelize 
+            #TODO parallelize
             # all cells with the same acc_val can run at the same time
             for x in range(Model.rows): # no of rows
                 for y in range(Model.cols): # no of columns
@@ -179,37 +192,65 @@ class DistributedRRM():
 
         outletx = Model.Outlet[0][0]
         outlety = Model.Outlet[1][0]
-        
+
         Model.qout = Model.qlz_translated[outletx,outlety,:] + Model.quz_routed[outletx,outlety,:]
         Model.Qtot = Model.qlz_translated + Model.quz_routed
-        
+
     @staticmethod
     def DistMaxbas1(Model):
-        
+        """
+        =========================================================
+              DistMaxbas1(Model)
+        =========================================================
+        DistMaxbas1 method rout the discharge directly to the outlet from each cell
+        using triangular function
+
+        Parameters
+        ----------
+        Model : TYPE
+            DESCRIPTION.
+
+        Returns
+        -------
+        None.
+
+        """
+
         Maxbas = Model.Parameters[:,:,-1]
-        # Model.FPLArr[Model.FPLArr == Model.NoDataValue] = np.nan # replace novalue cells by nan
-
-        # MaxFPL = np.nanmax(Model.FPLArr)
-        # MinFPL = np.nanmin(Model.FPLArr)
-    #    resize_fun = lambda x: np.round(((((x - min_dist)/(max_dist - min_dist))*(1*maxbas - 1)) + 1), 0)
-        # resize_fun = lambda x: ((((x - MinFPL)/(MaxFPL - MinFPL))*(1*MAXBAS - 1)) + 1)
-
-        # NormalizedFPL = resize_fun(Model.FPLArr)
 
         for x in range(Model.rows):
             for y in range(Model.cols):
                 if Model.FlowAccArr [x, y] != Model.NoDataValue:
-                    Model.quz[x,y,:] = routing.TriangularRouting2(Model.quz[x,y,:], Maxbas[x,y])
+                    Model.quz[x,y,:] = routing.TriangularRouting1(Model.quz[x,y,:], Maxbas[x,y])
 
     @staticmethod
     def DistMaxbas2(Model):
-        
+        """
+        =========================================================
+             DistMaxbas2(Model)
+        =========================================================
+        DistMaxbas2 method rout the discharge directly to the outlet from each cell
+        using triangular function, the maxbas parameters are going to be calculated
+        based on the flow path length input
+
+        Parameters
+        ----------
+        Model : TYPE
+            DESCRIPTION.
+
+        Returns
+        -------
+        None.
+
+        """
+
         MAXBAS = np.nanmax(Model.Parameters[:,:,-1])
-        Model.FPLArr[Model.FPLArr == Model.NoDataValue] = np.nan # replace novalue cells by nan
+        # replace novalue cells by nan
+        Model.FPLArr[Model.FPLArr == Model.NoDataValue] = np.nan
 
         MaxFPL = np.nanmax(Model.FPLArr)
         MinFPL = np.nanmin(Model.FPLArr)
-    #    resize_fun = lambda x: np.round(((((x - min_dist)/(max_dist - min_dist))*(1*maxbas - 1)) + 1), 0)
+        #resize_fun = lambda x: np.round(((((x - min_dist)/(max_dist - min_dist))*(1*maxbas - 1)) + 1), 0)
         resize_fun = lambda x: ((((x - MinFPL)/(MaxFPL - MinFPL))*(1*MAXBAS - 1)) + 1)
 
         NormalizedFPL = resize_fun(Model.FPLArr)
@@ -217,17 +258,16 @@ class DistributedRRM():
         for x in range(Model.rows):
             for y in range(Model.cols):
                 if not np.isnan(Model.FPLArr[x,y]):# FPLArray[x,y] != np.nan: #NoDataValue:
-                    Model.quz[x,y,:] = routing.TriangularRouting(Model.quz[x,y,:], NormalizedFPL[x,y])
+                    Model.quz[x,y,:] = routing.TriangularRouting2(Model.quz[x,y,:], NormalizedFPL[x,y])
 
 
 
     @staticmethod
     def Dist_HBV2(ConceptualModel,lakecell,q_lake,DEM,flow_acc,flow_acc_plan, sp_prec, sp_et, sp_temp, sp_pars, p2, init_st=None,
                     ll_temp=None, q_0=None):
-        '''
-        Make spatially distributed HBV in the SM and UZ
-        interacting cells
-        '''
+        """
+        original function
+        """
 
         n_steps = sp_prec.shape[2] + 1 # no of time steps =length of time series +1
         # intiialise vector of nans to fill states
@@ -236,7 +276,8 @@ class DistributedRRM():
 
         # Get the mask
         mask, no_val = raster.get_mask(DEM)
-        x_ext, y_ext = mask.shape # shape of the fpl raster (rows, columns)-------------- rows are x and columns are y
+        # shape of the fpl raster (rows, columns)-------------- rows are x and columns are y
+        x_ext, y_ext = mask.shape
         #    y_ext, x_ext = mask.shape # shape of the fpl raster (rows, columns)------------ should change rows are y and columns are x
 
         # Get deltas of pixel

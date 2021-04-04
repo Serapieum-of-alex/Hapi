@@ -20,6 +20,21 @@ from Hapi.catchment import Catchment
 
 
 class Run(Catchment):
+    """
+    =====================
+        Run
+    =====================
+    Run sub-class validate the spatial data and hand it to the wrapper class, It is
+    a sub-class from the catchment class, so you need to create the Catchment
+    object first to run the model
+
+    Methods:
+        1- RunHapi
+        2- RunHAPIwithLake
+        3- RunFW1
+        4- RunFW1withLake
+        5- RunLumped
+    """
 
     def __init__(self):
         pass
@@ -50,19 +65,19 @@ class Run(Catchment):
 
         Outputs:
         ----------
-            1-statevariables: [numpy attribute] 
+            1-statevariables: [numpy attribute]
                 4D array (rows,cols,time,states) states are [sp,wc,sm,uz,lv]
-            2-qlz: [numpy attribute] 
+            2-qlz: [numpy attribute]
                 3D array of the lower zone discharge
-            3-quz: [numpy attribute] 
+            3-quz: [numpy attribute]
                 3D array of the upper zone discharge
-            4-qout: [numpy attribute] 
+            4-qout: [numpy attribute]
                 1D timeseries of discharge at the outlet of the catchment
                 of unit m3/sec
-            5-quz_routed: [numpy attribute] 
+            5-quz_routed: [numpy attribute]
                 3D array of the upper zone discharge  accumulated and
                 routed at each time step
-            6-qlz_translated: [numpy attribute] 
+            6-qlz_translated: [numpy attribute]
                 3D array of the lower zone discharge translated at each time step
 
         Example:
@@ -95,7 +110,7 @@ class Run(Catchment):
         #run the model
         Wrapper.HapiModel(self)
         # extract gischarge at the gauges
-        
+
 
 
     def RunHAPIwithLake(self, Lake):
@@ -228,10 +243,10 @@ class Run(Catchment):
         assert np.shape(self.Prec)[0] == self.rows and np.shape(self.ET)[0] == self.rows and np.shape(self.Temp)[0] == self.rows and np.shape(self.Parameters)[0] == self.rows, "all input data should have the same number of rows"
         assert np.shape(self.Prec)[1] == self.cols and np.shape(self.ET)[1] == self.cols and np.shape(self.Temp)[1] == self.cols and np.shape(self.Parameters)[1] == self.cols, "all input data should have the same number of columns"
         assert np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2], "all meteorological input data should have the same length"
-        
+
         #run the model
         Wrapper.FW1(self)
-        
+
 
     def RunFW1withLake(self,Lake):
         """
@@ -293,7 +308,7 @@ class Run(Catchment):
 
         assert np.shape(Lake.MeteoData)[0] == np.shape(self.Prec)[2], "Lake meteorological data has to have the same length as the distributed raster data"
         assert np.shape(Lake.MeteoData)[1] >= 3, "Lake Meteo data has to have at least three columns rain, ET, and Temp"
-        
+
         #run the model
         Wrapper.FW1Withlake(self, Lake)
 

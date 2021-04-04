@@ -7,35 +7,63 @@ datafn = lambda x: dt.datetime.strptime(x,"%Y-%m-%d")
 
 class HMCalibration():
     """
+    =====================================
+        HMCalibration
+    =====================================
     Hydraulic model calibration class
-    
+
     """
-    def __init__(self, name, Version = 3, start = "1950-1-1", days = 36890):
+    def __init__(self, name, Version = 3, start = "1950-1-1", days = 36890,
+                 fmt="%Y-%m-%d"):
+        """
+        =============================================================================
+            HMCalibration(self, name, Version = 3, start = "1950-1-1", days = 36890)
+        =============================================================================
+        To instantiate the HMCalibration object you have to provide the following
+        arguments
+
+        Parameters
+        ----------
+        name : [str]
+            name of the catchment.
+        Version : [integer], optional
+            The version of the model. The default is 3.
+        start : [str], optional
+            starting date. The default is "1950-1-1".
+        days : [integer], optional
+            length of the simulation. The default is 36890.
+        fmt : [str]
+            format of the given dates. The default is "%Y-%m-%d"
+        Returns
+        -------
+        None.
+
+        """
         self.name = name
         self.Version = Version
-        
-        self.start = dt.datetime.strptime(start,"%Y-%m-%d")
+
+        self.start = dt.datetime.strptime(start,fmt)
         self.end = self.start + dt.timedelta(days = days)
         self.days = days
-        
+
         Ref_ind = pd.date_range(self.start, self.end, freq='D')
         self.ReferenceIndex = pd.DataFrame(index = list(range(1,days+1)))
         self.ReferenceIndex['date'] = Ref_ind[:-1]
-        
+
 
     def IndexToDate(self,Index):
         """
         =======================================================
            IndexToDate(Index)
         =======================================================
-        IndexToDate takes an integer number and returns the date coresponding 
-        to this date based on a time series starting from the "start" attribute 
+        IndexToDate takes an integer number and returns the date coresponding
+        to this date based on a time series starting from the "start" attribute
         of  River object and for a length of the value of the "days" attribute
-        
+
         Parameters
         ----------
         Index : [Integer]
-            Integer number ranges from 1 and max value of the value of the attribute 
+            Integer number ranges from 1 and max value of the value of the attribute
             "days" of the River object.
 
         Returns
@@ -52,10 +80,10 @@ class HMCalibration():
         ===================================================
              DateToIndex(Date)
         ===================================================
-        DateToIndex takes a date and returns a the order of the days in the 
-        time series. The time series starts from the value of the "start" for 
+        DateToIndex takes a date and returns a the order of the days in the
+        time series. The time series starts from the value of the "start" for
         a length of "days" value
-        
+
         Parameters
         ----------
         Date : [string/date time object]
@@ -72,14 +100,14 @@ class HMCalibration():
         if type(Date) == str:
             Date = dt.datetime.strptime(Date,"%Y-%m-%d")
         return np.where(self.ReferenceIndex['date'] == Date)[0][0]+1
-    
+
     def ReadGaugesTable(self,Path):
         """
         =======================================================
                ReadGaugesTable(Path)
         =======================================================
         ReadGaugesTable reads the table of the gauges
-        
+
         Parameters
         ----------
         Path : [String]
@@ -92,8 +120,8 @@ class HMCalibration():
 
         """
         self.GaugesTable = pd.read_csv(Path)
-        
-        
+
+
     def ReadObservedWL(self, Path, StartDate, EndDate, NoValue, # GaugesTable,
                        column='oid'):
         """
@@ -117,21 +145,21 @@ class HMCalibration():
         Returns
         -------
             1-WLGauges: [dataframe attiribute].
-                dataframe containing the data of the water level gauges and 
+                dataframe containing the data of the water level gauges and
                 the index as the time series from the StartDate till the EndDate
-                and the gaps filled with the NoValue 
+                and the gaps filled with the NoValue
             2-WLGaugesTable:[dataframe attiribute].
-                the input WLGaugesTable dataframe with the index replaced to 
+                the input WLGaugesTable dataframe with the index replaced to
                 be the segment ID
         """
 
         ind = pd.date_range(StartDate, EndDate)
         columns = self.GaugesTable[column].tolist()
-        
+
         WLGauges = pd.DataFrame(index = ind)
         # WLGaugesf.loc[:,:] = NoValue
         WLGauges.loc[:,0] = ind
-        
+
         for i in range(len(columns)):
             if self.GaugesTable.loc[i,'waterlevel'] == 1:
                 name = self.GaugesTable.loc[i,column]
@@ -148,17 +176,17 @@ class HMCalibration():
                 # add datum and convert to meter
                 f.loc[f[1]!= NoValue,1] = (f.loc[f[1]!= NoValue,1] / 100) + self.GaugesTable.loc[i,'datum(m)']
                 f = f.rename(columns={1:columns[i]})
-        
+
                 # assign the values in the dateframe
                 # WLGauges.loc[:,WLGauges.columns[i]].loc[f[0][0]:f[0][len(f)-1]] = f[1].tolist()
                 # use merge as there are some gaps in the middle
                 WLGauges = WLGauges.merge(f, on=0, how='left', sort=False)
-        
+
         WLGauges.replace(to_replace = np.nan, value = NoValue, inplace=True)
         WLGauges.index = ind
         del WLGauges[0]
         self.WLGauges = WLGauges
-        
+
         # GaugesTable.index = GaugesTable['id'].tolist()
         self.GaugesTable['WLstart'] = 0
         self.GaugesTable['WLend'] = 0
@@ -207,7 +235,7 @@ class HMCalibration():
         # for i in range(len(Gauges)):
         #     if Gauges.loc[Gauges['oid']==columns[i],'discharge'] ==1:
         #         name = Gauges.loc[Gauges['oid']==columns[i],column].values[0]
-                
+
         #         GRDC.loc[:,int(Gauges['oid'][i])] = np.loadtxt(Path +
         #                   str(int(Gauges[ID][i])) + '.txt') #,skiprows = 0
         # self.QGauges = GRDC
@@ -223,9 +251,9 @@ class HMCalibration():
         #     # GaugesTable.loc[GaugesTable.loc[:,'SubID'] == Gauges[0][i],'end'] = end1
         #     GaugesTable.loc[Gauges['id'][i],'start'] = st1
         #     GaugesTable.loc[Gauges['id'][i],'end'] = end1
-        
+
         # self.QGaugesTable = GaugesTable
-        
+
         ind = pd.date_range(StartDate, EndDate)
         QGauges = pd.DataFrame(index = ind)
         # ID = Gauges.columns[0]
@@ -239,11 +267,11 @@ class HMCalibration():
                 except:
                     print(str(i) + "-" + Path + str(int(name)) + '.txt')
         self.QGauges = QGauges
-        
+
         # Gauges = pd.DataFrame(index = Gauges['id'])
         self.GaugesTable['Qstart'] = 0
         self.GaugesTable['Qend'] = 0
-        
+
         for i in range(len(self.GaugesTable)):
             if self.GaugesTable.loc[i,'discharge'] == 1:
                 ii = self.GaugesTable.loc[i,column]
@@ -253,7 +281,7 @@ class HMCalibration():
                 self.GaugesTable.loc[i,'Qend'] = end1
 
 
-    def ReadRRM(self, Path, StartDate, EndDate, column='oid'): #Qgauges, 
+    def ReadRRM(self, Path, StartDate, EndDate, column='oid'): #Qgauges,
         """
         ==============================================================
             ReadRRM(Qgauges, Path, StartDate, EndDate)
@@ -281,7 +309,7 @@ class HMCalibration():
         ind = pd.date_range(StartDate,EndDate)
         QSWIM = pd.DataFrame(index = ind)
 
-        
+
         for i in range(len(self.GaugesTable[column])):
             # read SWIM data
             # only at the begining to get the length of the time series
@@ -451,25 +479,25 @@ class HMCalibration():
         """
         hasattr(self,"QGauges"),"Please read the discharge gauges first"
         hasattr(self,"WlGauges"),"Please read the water level gauges first"
-        
+
         if not hasattr(self, "CalibrationQ"):
             indD = pd.date_range(self.start, self.end, freq = "D")[:-1]
             self.CalibrationQ = pd.DataFrame(index = indD)
         if not hasattr(self, "CalibrationWL"):
             indD = pd.date_range(self.start, self.end, freq = "D")[:-1]
             self.CalibrationWL = pd.DataFrame(index = indD)
-        
+
         ind = pd.date_range(self.start, self.end, freq = "H")[:-1]
         q = pd.read_csv(Path + str(SubID) + "_q.txt", header = None, delimiter=r'\s+')
         wl = pd.read_csv(Path + str(SubID) + "_wl.txt", header = None, delimiter=r'\s+')
-        
+
         q.index = ind
         wl.index = ind
-        
+
         self.CalibrationQ[SubID] = q[1].resample('D').mean()
         self.CalibrationWL[SubID] = wl[1].resample('D').mean()
-        
-        
+
+
     def ReturnPeriod(self,Path):
         """
         ==========================================
@@ -742,17 +770,17 @@ class HMCalibration():
             self.AnnualMaxRIMQ = AnnualMax #AnnualMaxRIM
         else:
             self.AnnualMaxRIMWL = AnnualMax
-            
-    
+
+
     def CalculateProfile(self, Segmenti, BedlevelDS, Manning, BC_slope):
         """
         ===========================================================================
             CalculateProfile(Segmenti, BedlevelDS, Manning)
         ===========================================================================
         CalculateProfile method takes the river segment ID and the calibration parameters
-        (last downstream cross-section bed level and the manning coefficient) and 
+        (last downstream cross-section bed level and the manning coefficient) and
         calculates the new profiles
-        
+
         Parameters
         ----------
         Segmenti : [Integer]
@@ -765,44 +793,44 @@ class HMCalibration():
         Returns
         -------
         crosssection:[dataframe attribute]
-            crosssection attribute will be updated with the newly calculated 
+            crosssection attribute will be updated with the newly calculated
             profile for the given segment
         slope:[dataframe attribute]
             slope attribute will be updated with the newly calculated average
             slope for the given segment
         """
-    
+
         levels = pd.DataFrame(columns=['id','bedlevelUS','bedlevelDS'])
-        
+
         # change cross-section
         bedlevel = self.crosssections.loc[self.crosssections["id"]==Segmenti,'gl'].values
         # get the bedlevel of the last cross section in the segment as a calibration parameter
         levels.loc[Segmenti,'bedlevelDS'] = BedlevelDS
         levels.loc[Segmenti,'bedlevelUS'] = bedlevel[0]
-        
+
         NoDistances = len(bedlevel)-1
         # AvgSlope = ((levels.loc[Segmenti,'bedlevelUS'] - levels.loc[Segmenti,'bedlevelDS'] )/ (500 * NoDistances)) *-500
         # change in the bed level of the last XS
         AverageDelta = (levels.loc[Segmenti,'bedlevelDS'] - bedlevel[-1])/ NoDistances
-        
-        # calculate the new bed levels 
+
+        # calculate the new bed levels
         bedlevelNew = np.zeros(len(bedlevel))
         bedlevelNew[len(bedlevel)-1] = levels.loc[Segmenti,'bedlevelDS']
         bedlevelNew[0] = levels.loc[Segmenti,'bedlevelUS']
-        
+
         for i in range(len(bedlevel)-1):
             # bedlevelNew[i] = levels.loc[Segmenti,'bedlevelDS'] + (len(bedlevel) - i -1) * abs(AvgSlope)
             bedlevelNew[i] = bedlevel[i] + i * AverageDelta
-        
+
         self.crosssections.loc[self.crosssections["id"]==Segmenti,'gl'] = bedlevelNew
-        
+
         # change manning
         self.crosssections.loc[self.crosssections["id"]==Segmenti,'m'] = Manning
-        
+
         ## change slope
         # self.slope.loc[self.slope['id']==Segmenti, 'slope'] = AvgSlope
         self.slope.loc[self.slope['id']==Segmenti, 'slope'] = BC_slope
-        
+
     def ReadCrossSections(self,Path):
         """
         ===========================================
@@ -815,15 +843,15 @@ class HMCalibration():
             self.crosssections = pd.read_csv(Path, delimiter = ',', skiprows =1  )
         else:
             self.crosssections = pd.read_csv(Path, delimiter = ',')
-            
+
     def SmoothBedLevel(self, segmenti):
         """
         ================================================
                SmoothXS(segmenti)
         =================================================
-        SmoothBedLevel method smoothes the bed level of a given segment ID by 
+        SmoothBedLevel method smoothes the bed level of a given segment ID by
         calculating the moving average of three cross sections
-        
+
         Parameters
         ----------
         segmenti : [Integer]
@@ -837,7 +865,7 @@ class HMCalibration():
         """
         assert hasattr(self,"crosssections"), "please read the cross section first"
         g = self.crosssections.loc[self.crosssections['id']==segmenti,:].index[0]
-        
+
         segment = self.crosssections.loc[self.crosssections['id']==segmenti,:]
         segment.index = range(len(segment))
         segment['glnew'] = 0
@@ -852,7 +880,7 @@ class HMCalibration():
         segment['dbf'] = segment['dbf'] - segment['diff']
         segment['gl'] = segment['glnew']
         del segment['glnew'], segment['diff']
-        
+
         segment.index = range(g, g + len(segment))
         # copy back the segment to the whole XS df
         self.crosssections.loc[self.crosssections['id']==segmenti,:] = segment
@@ -864,7 +892,7 @@ class HMCalibration():
               SmoothBankLevel(segmenti)
         ========================================================
         SmoothBankLevel method smoothes the bankfull depth for a given segment
-        
+
         Parameters
         ----------
         segmenti : [Integer]
@@ -876,13 +904,13 @@ class HMCalibration():
             the "dbf" column in the crosssections attribute will be smoothed
 
         """
-        
+
         self.crosssections['banklevel'] = self.crosssections['dbf'] + self.crosssections['gl']
 
         # g = 0
-        
-        
-        
+
+
+
         # for i in range(len(segments)):
         # i=30
         g = self.crosssections.loc[self.crosssections['id']==segmenti,:].index[0]
@@ -893,21 +921,21 @@ class HMCalibration():
         segment['banklevelnew'] = 0
         segment.loc[0,'banklevelnew'] = segment.loc[0,'banklevel']
         segment.loc[len(segment)-1,'banklevelnew'] = segment.loc[len(segment)-1,'banklevel']
-        
+
         for j in range(1,len(segment)-1):
             segment.loc[j,'banklevelnew'] = (segment.loc[j-1,'banklevel'] + segment.loc[j,'banklevel'] + segment.loc[j+1,'banklevel'])/3
-        
+
         segment['diff'] = segment['banklevelnew'] - segment['banklevel']
         segment['dbf'] = segment['dbf'] + segment['diff']
-        
+
         del self.crosssections['banklevel']
         segment.index = range(g, g + len(segment))
-        
+
         # copy back the segment to the whole XS df
         self.crosssections.loc[self.crosssections['id']==segmenti,:] = segment
         # g = g + len(segment)
         # end of loop
-        
+
     def SmoothFloodplainHeight(self,segmenti):
         """
         ========================================================
@@ -915,7 +943,7 @@ class HMCalibration():
         ========================================================
         SmoothFloodplainHeight method smoothes the Floodplain Height the point 5 and 6
         in the cross section for a given segment
-        
+
         Parameters
         ----------
         segmenti : [Integer]
@@ -927,45 +955,45 @@ class HMCalibration():
             the "hl" and "hr" column in the crosssections attribute will be smoothed
 
         """
-        
+
         self.crosssections['banklevel'] = self.crosssections['dbf'] + self.crosssections['gl']
         self.crosssections['fpl'] = self.crosssections['hl'] + self.crosssections['banklevel']
         self.crosssections['fpr'] = self.crosssections['hr'] + self.crosssections['banklevel']
-        
+
         # g = 0
-        
+
         # for i in range(len(segments)):
         # i=30
         g = self.crosssections.loc[self.crosssections['id']==segmenti,:].index[0]
         #------
-        
+
         # segmenti = segments[i]
         segment = self.crosssections.loc[self.crosssections['id']==segmenti,:]
         segment.index = range(len(segment))
-        
+
         segment['fplnew'] = 0
         segment['fprnew'] = 0
         segment.loc[0,'fplnew'] = segment.loc[0,'fpl']
         segment.loc[len(segment)-1,'fplnew'] = segment.loc[len(segment)-1,'fpl']
-        
+
         segment.loc[0,'fprnew'] = segment.loc[0,'fpr']
         segment.loc[len(segment)-1,'fprnew'] = segment.loc[len(segment)-1,'fpr']
-        
+
         for j in range(1,len(segment)-1):
             segment.loc[j,'fplnew'] = (segment.loc[j-1,'fpl'] + segment.loc[j,'fpl'] + segment.loc[j+1,'fpl'])/3
             segment.loc[j,'fprnew'] = (segment.loc[j-1,'fpr'] + segment.loc[j,'fpr'] + segment.loc[j+1,'fpr'])/3
-        
+
         segment['diff0'] = segment['fplnew'] - segment['fpl']
         segment['diff1'] = segment['fprnew'] - segment['fpr']
-        
-        
+
+
         segment['hl'] = segment['hl'] + segment['diff0']
         segment['hr'] = segment['hr'] + segment['diff1']
-        
+
         segment.index = range(g, g + len(segment))
         # copy back the segment to the whole XS df
         self.crosssections.loc[self.crosssections['id']==segmenti,:] = segment
-        
+
         del self.crosssections['banklevel'], self.crosssections['fpr'], self.crosssections['fpl']
         # g = g + len(segment)
         # end of loop
@@ -975,9 +1003,9 @@ class HMCalibration():
         ========================================================
               SmoothBedWidth(segmenti)
         ========================================================
-        SmoothBedWidth method smoothes the Bed Width the in the cross section 
+        SmoothBedWidth method smoothes the Bed Width the in the cross section
         for a given segment
-        
+
         Parameters
         ----------
         segmenti : [Integer]
@@ -993,32 +1021,32 @@ class HMCalibration():
         # i=30
         g = self.crosssections.loc[self.crosssections['id']==segmenti,:].index[0]
         #------
-        
+
         # segmenti = segments[i]
         segment = self.crosssections.loc[self.crosssections['id']==segmenti,:]
         segment.index = range(len(segment))
         segment['bnew'] = 0
         segment.loc[0,'bnew'] = segment.loc[0,'b']
         segment.loc[len(segment)-1,'bnew'] = segment.loc[len(segment)-1,'b']
-        
+
         for j in range(1,len(segment)-1):
             segment.loc[j,'bnew'] = (segment.loc[j-1,'b'] + segment.loc[j,'b'] + segment.loc[j+1,'b'])/3
-        
+
         segment['b'] = segment['bnew']
         segment.index = range(g, g + len(segment))
         # copy back the segment to the whole XS df
         self.crosssections.loc[self.crosssections['id']==segmenti,:] = segment
         # g = g + len(segment)
         # end of loop
-    
+
     def DownWardBedLevel(self,segmenti, height):
         """
         ========================================================
               SmoothBedWidth(segmenti)
         ========================================================
-        SmoothBedWidth method smoothes the Bed Width the in the cross section 
+        SmoothBedWidth method smoothes the Bed Width the in the cross section
         for a given segment
-        
+
         Parameters
         ----------
         segmenti : [Integer]
@@ -1031,52 +1059,52 @@ class HMCalibration():
 
         """
         g = self.crosssections.loc[self.crosssections['id']==segmenti,:].index[0]
-        
+
         segment = self.crosssections.loc[self.crosssections['id']==segmenti,:]
         segment.index = range(len(segment))
-        
-        
+
+
         for j in range(1,len(segment)):
             if segment.loc[j-1,'gl'] - segment.loc[j,'gl'] < height:
                 segment.loc[j,'gl'] = segment.loc[j-1,'gl'] - height
-        
+
         segment.index = range(g, g + len(segment))
         # copy back the segment to the whole XS df
         self.crosssections.loc[self.crosssections['id']==segmenti,:] = segment
-        
-        
-        
-    
-    
-    
-    
+
+
+
+
+
+
+
     def SmoothMaxSlope(self,segmenti, SlopePercentThreshold = 1.5):
         """
         ========================================================
               SmoothMaxSlope(segmenti,SlopePercentThreshold = 1.5)
         ========================================================
-        SmoothMaxSlope method smoothes the bed level the in the cross section 
+        SmoothMaxSlope method smoothes the bed level the in the cross section
         for a given segment
-        
-        As now the slope is not very smoothed as it was when using the average slope 
-        everywhere, when the the difference between two consecutive slopes is very high, 
+
+        As now the slope is not very smoothed as it was when using the average slope
+        everywhere, when the the difference between two consecutive slopes is very high,
         the difference is reflected in the calculated discharge from both cross section
-        
+
         Qout is very high
         Qin is smaller compared to Qout3
-        and from the continuity equation the amount of water that stays at the cross-section 
+        and from the continuity equation the amount of water that stays at the cross-section
         is very few water(Qin3-Qout3), less than the minimum depth
-        
-        then the minimum depth is assigned at the cross-section, applying the minimum 
+
+        then the minimum depth is assigned at the cross-section, applying the minimum
         depth in all time steps will make the delta A / delta t equals zero
-        As a result, the integration of delta Q/delta x will give a constant discharge 
+        As a result, the integration of delta Q/delta x will give a constant discharge
         for all the downstream cross-section.
-        
-        To overcome this limitation, a manual check is performed during the calibration 
-        process by visualizing the hydrographs of the first and last cross-section in 
-        the sub-basin and the water surface profile to make sure that the algorithm 
+
+        To overcome this limitation, a manual check is performed during the calibration
+        process by visualizing the hydrographs of the first and last cross-section in
+        the sub-basin and the water surface profile to make sure that the algorithm
         does not give a constant discharge.
-        
+
         Parameters
         ----------
         segmenti : [Integer]
@@ -1094,7 +1122,7 @@ class HMCalibration():
         # segments = list(set(XS['id']))
         # SlopePercentThreshold = 1.5
         # g = 0
-        
+
         # for i in range(len(segments)):
         #-------
         # i=30
@@ -1107,11 +1135,11 @@ class HMCalibration():
         slopes = [(segment.loc[k,'gl']-segment.loc[k+1,'gl'])/500 for k in range(len(segment)-1)]
         # if percent is -ve means second slope is steeper
         precent = [(slopes[k] - slopes[k+1])/ slopes[k] for k in range(len(slopes)-1)]
-        
+
         # at row 1 in precent list is difference between row 1 and row 2 in slopes list
-        # and slope in row 2 is the steep slope, 
-        # slope at row 2 is the difference 
-        # between gl in row 2 and row 3 in the segment dataframe, and gl row 3 is very 
+        # and slope in row 2 is the steep slope,
+        # slope at row 2 is the difference
+        # between gl in row 2 and row 3 in the segment dataframe, and gl row 3 is very
         # and we want to elevate it to reduce the slope
         for j in range(len(precent)):
             if precent[j] < 0 and abs(precent[j]) >= SlopePercentThreshold:
@@ -1122,31 +1150,46 @@ class HMCalibration():
                 # recalculate all the slopes again
                 slopes = [(segment.loc[k,'gl']-segment.loc[k+1,'gl'])/500 for k in range(len(segment)-1)]
                 precent = [(slopes[k] - slopes[k+1])/ slopes[k] for k in range(len(slopes)-1)]
-        
+
         segment.index = range(g, g + len(segment))
         # copy back the segment to the whole XS df
         self.crosssections.loc[self.crosssections['id']==segmenti,:] = segment
         # g = g + len(segment)
-        
+
     def CheckFloodplain(self):
         """
         =================================================
                CheckFloodplain(self)
         =================================================
-        CheckFloodplain method check if the dike levels is higher than the 
-        floodplain height (point 5 and 6 has to be lower than point 7 and 8 
+        CheckFloodplain method check if the dike levels is higher than the
+        floodplain height (point 5 and 6 has to be lower than point 7 and 8
                            in the cross sections)
-        
+
         Returns
         -------
         crosssection : [dataframe attribute]
             the "zl" and "zr" column in the "crosssections" attribute will be updated
         """
         assert hasattr(self, "crosssections"), "please read the cross section first or copy it to the Calibration object"
-        for i in range(len(self.crosssections)):    
+        for i in range(len(self.crosssections)):
             BankLevel = self.crosssections.loc[i,'gl']+ self.crosssections.loc[i,'dbf']
-            
+
             if BankLevel + self.crosssections.loc[i,'hl'] > self.crosssections.loc[i,'zl']:
                 self.crosssections.loc[i,'zl'] = BankLevel + self.crosssections.loc[i,'hl'] + 0.5
             if BankLevel + self.crosssections.loc[i,'hr'] > self.crosssections.loc[i,'zr']:
                 self.crosssections.loc[i,'zr'] = BankLevel + self.crosssections.loc[i,'hr'] + 0.5
+
+    def ListAttributes(self):
+        """
+        Print Attributes List
+        """
+
+        print('\n')
+        print('Attributes List of: ' + repr(self.__dict__['name']) + ' - ' + self.__class__.__name__ + ' Instance\n')
+        self_keys = list(self.__dict__.keys())
+        self_keys.sort()
+        for key in self_keys:
+            if key != 'name':
+                print(str(key) + ' : ' + repr(self.__dict__[key]))
+
+        print('\n')

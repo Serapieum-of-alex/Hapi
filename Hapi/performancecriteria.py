@@ -2,15 +2,7 @@ import numpy as np
 import numbers
 from sklearn.metrics import r2_score
 
-"""
-====================
-WRMSE
-====================
-Weighted root mean square error
-Functions
-        1- rmseHF
-        2- rmseLF
-"""
+
 def RMSE(Qobs,Qsim):
     """
     ===========================================================
@@ -314,7 +306,7 @@ def MBE (Qobs, Qsim):
     ================================================
     MBE (mean bias error)
     MBE = (Qsim - Qobs)/n
-    
+
     Parameters
     ----------
         1-Qobs : [list]
@@ -338,7 +330,7 @@ def MAE (Qobs, Qsim):
     ================================================
     MAE (mean absolute error)
     MAE = |(Qobs - Qsim)|/n
-    
+
     Parameters
     ----------
         1-Qobs : [list]
@@ -352,32 +344,32 @@ def MAE (Qobs, Qsim):
             mean absolute error.
 
     """
-    
+
     return np.abs(np.array(Qobs) - np.array(Qsim)).mean()
 
 def PearsonCorre(Qobs,Qsim):
 	"""
-	Pearson correlation coefficient r2 is independent of the magnitude of the numbers; 
+	Pearson correlation coefficient r2 is independent of the magnitude of the numbers;
 	it is sensitive to relative changes only.
 	"""
 	return (np.corrcoef(np.array(Qobs),np.array(Qsim))[0][1])**2
-	
+
 def R2(Qobs,Qsim):
 	"""
-	the coefficient of determination measures how well the predicted 
-	values match (and not just follow) the observed values. 
-	It depends on the distance between the points and the 1:1 line 
+	the coefficient of determination measures how well the predicted
+	values match (and not just follow) the observed values.
+	It depends on the distance between the points and the 1:1 line
 	(and not the best-fit line)
 	Closer the data to the 1:1 line, higher the coefficient of determination.
-	The coefficient of determination is often denoted by R². However, 
+	The coefficient of determination is often denoted by R². However,
 	it is not the square of anything. It can range from any negative number to +1
 	- R² = +1 indicates that the predictions match the observations perfectly
-	- R² = 0 indicates that the predictions are as good as random guesses around 
+	- R² = 0 indicates that the predictions are as good as random guesses around
 		the mean of the observed values
 	- Negative R² indicates that the predictions are worse than random
-	
-	Since R² indicates the distance of points from the 1:1 line, it does depend 
+
+	Since R² indicates the distance of points from the 1:1 line, it does depend
 	on the magnitude of the numbers (unlike r² peason correlation coefficient).
 	"""
-    
+
 	return  r2_score(np.array(Qobs),np.array(Qsim))

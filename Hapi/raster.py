@@ -8,9 +8,11 @@ based on a source raster, perform any algebric operation on cell's values
 
 #%library
 import os
+import re
 import sys
+import datetime as dt
 import numpy as np
-
+import json
 import gdal
 import osr
 import pandas as pd
@@ -25,25 +27,103 @@ import rasterio.merge
 import rasterio.mask
 import netCDF4
 
-import json
 # import datetime as dt
 import time
 
 from Hapi.vector import Vector
+#import skimage.transform as transform
 
-
-import subprocess
-import tarfile
-import gzip
+# import subprocess
+# import tarfile
+# import gzip
 import scipy.misc as misc
 from osgeo import ogr
-import glob
+# import glob
 import scipy.interpolate
 from pyproj import Proj, transform
 
 
 class Raster():
+    """
+    ==========================================
+         Raster
+    ==========================================
+    Raster class contains methods to deal with rasters and netcdf files,
+    change projection and coordinate systems.
 
+    Methods:
+        1-GetMask
+        2-AddMask
+        3-GetTargets
+        4-SaveRaster
+        5-GetRasterData
+        6-MapAlgebra
+        7-RasterFill
+        8-ResampleRaster
+        9-ProjectRaster
+        10-ReprojectDataset
+        11-RasterLike
+        12-MatchNoDataValue
+        13-ChangeNoDataValue
+        14-MatchRasterAlignment
+        15-NearestNeighbour
+        16-ReadASCII
+        17-StringSpace
+        18-WriteASCII
+        19-ASCIItoRaster
+        20-ClipRasterWithPolygon
+        21-Clip2
+        22-ClipRasterWithRaster
+        23-Mosaic
+        24-ReadASCIIsFolder
+        25-ASCIIFoldertoRaster
+        26-RastersLike
+        27-MatchDataAlignment
+        28-MatchDataNoValuecells
+        29-FolderCalculator
+        30-ReadRastersFolder
+        31-ExtractValues
+        32-OverlayMap
+        33-OverlayMaps
+        34-Normalize
+        35-GetEpsg
+        36-NCdetails
+        37-NCtoTiff
+        38-Convert_nc_to_tiff
+        39-Convert_grb2_to_nc
+        40-Convert_adf_to_tiff
+        41-Convert_bil_to_tiff
+        42-Convert_hdf5_to_tiff
+        43-Save_as_tiff
+        44-Save_as_MEM
+        45-SaveNC
+        46-Create_NC_name
+        47-Create_new_NC_file
+        48-Add_NC_Array_Variable
+        49-Add_NC_Array_Static
+        50-Convert_dict_to_array
+        51-Open_array_info
+        52-Open_tiff_array
+        53-Open_nc_info
+        54-Open_nc_array
+        55-Open_bil_array
+        56-Open_ncs_array
+        57-Open_nc_dict
+        58-Clip_Dataset_GDAL
+        59-clip_data
+        60-reproject_dataset_epsg
+        61-reproject_MODIS
+        62-reproject_dataset_example
+        63-resize_array_example
+        64-Get_epsg
+        65-gap_filling
+        66-Vector_to_Raster
+        67-Moving_average
+        68-Get_ordinal
+        69-ListAttributes
+
+
+    """
     def __init__(self):
         pass
 
@@ -66,7 +146,7 @@ class Raster():
             2- no_val: value stored in novalue cells
         """
         no_val = np.float32(raster.GetRasterBand(1).GetNoDataValue()) # get the value stores in novalue cells
-        mask = raster.ReadAsArray() # read all values
+        mask = raster.ReadAsArray()
         return mask, no_val
 
     @staticmethod
@@ -238,7 +318,7 @@ class Raster():
         """
         # input data validation
         # data type
-        assert type(src)==gdal.Dataset, "src should be read using gdal (gdal dataset please read it using gdal library) "
+        assert type(src) == gdal.Dataset, "src should be read using gdal (gdal dataset please read it using gdal library) "
         assert callable(fun) , "second argument should be a function"
 
         src_gt = src.GetGeoTransform()
@@ -1425,7 +1505,7 @@ class Raster():
 
         def getFeatures(gdf):
             """Function to parse features from GeoDataFrame in such a manner that rasterio wants them"""
-            import json
+
             return [json.loads(gdf.to_json())['features'][0]['geometry']]
 
         # Get the geometry coordinates by using the function.
@@ -2694,10 +2774,8 @@ class Raster():
         input_nc -- name, name of the adf file
         output_folder -- Name of the output tiff file
         """
-        from datetime import date
-        import watools.General.raster_conversions as RC
 
-        #All_Data = RC.Open_nc_array(input_nc)
+        #All_Data = Raster.Open_nc_array(input_nc)
 
         if type(input_nc) == str:
             nc = netCDF4.Dataset(input_nc)
@@ -2707,7 +2785,7 @@ class Raster():
         Var = nc.variables.keys()[-1]
         All_Data = nc[Var]
 
-        geo_out, epsg, size_X, size_Y, size_Z, Time = RC.Open_nc_info(input_nc)
+        geo_out, epsg, size_X, size_Y, size_Z, Time = Raster.Open_nc_info(input_nc)
 
         if epsg == 4326:
             epsg = 'WGS84'
@@ -2719,7 +2797,7 @@ class Raster():
         for i in range(0,size_Z):
             if not Time == -9999:
                 time_one = Time[i]
-                d = date.fromordinal(time_one)
+                d = dt.fromordinal(time_one)
                 name = os.path.splitext(os.path.basename(input_nc))[0]
                 nameparts = name.split('_')[0:-2]
                 name_out = os.path.join(output_folder, '_'.join(nameparts) + '_%d.%02d.%02d.tif' %(d.year, d.month, d.day))
@@ -2735,7 +2813,7 @@ class Raster():
 
     def Convert_grb2_to_nc(input_wgrib, output_nc, band):
 
-        import watools.General.raster_conversions as RC
+
 
         # Get environmental variable
         WA_env_paths = os.environ["WA_PATHS"].split(';')
@@ -2745,7 +2823,7 @@ class Raster():
         # Create command
         fullCmd = ' '.join(['"%s" -of netcdf -b %d' %(GDAL_TRANSLATE_PATH, band), input_wgrib, output_nc])  # -r {nearest}
 
-        RC.Run_command_window(fullCmd)
+        Raster.Run_command_window(fullCmd)
 
         return()
 
@@ -2757,7 +2835,6 @@ class Raster():
         input_adf -- name, name of the adf file
         output_tiff -- Name of the output tiff file
         """
-        import watools.General.raster_conversions as RC
 
         # Get environmental variable
         WA_env_paths = os.environ["WA_PATHS"].split(';')
@@ -2768,7 +2845,7 @@ class Raster():
         fullCmd = ('"%s" -co COMPRESS=DEFLATE -co PREDICTOR=1 -co '
                        'ZLEVEL=1 -of GTiff %s %s') % (GDAL_TRANSLATE_PATH, input_adf, output_tiff)
 
-        RC.Run_command_window(fullCmd)
+        Raster.Run_command_window(fullCmd)
 
         return(output_tiff)
 
@@ -2780,7 +2857,7 @@ class Raster():
         input_bil -- name, name of the bil file
         output_tiff -- Name of the output tiff file
         """
-        import gdalconst
+
 
         gdal.GetDriverByName('EHdr').Register()
         dest = gdal.Open(input_bil, gdalconst.GA_ReadOnly)
@@ -2803,7 +2880,6 @@ class Raster():
         geo -- [minimum lon, pixelsize, rotation, maximum lat, rotation,
                 pixelsize], (geospatial dataset)
         """
-        import watools.General.raster_conversions as RC
 
         # Open the hdf file
         g = gdal.Open(inputname_hdf, gdal.GA_ReadOnly)
@@ -2818,7 +2894,7 @@ class Raster():
 
         # run gdal translate command
         FullCmd = '%s -of GTiff %s %s' %(GDAL_TRANSLATE, name_in, Filename_tiff_end)
-        RC.Run_command_window(FullCmd)
+        Raster.Run_command_window(FullCmd)
 
         # Get the data array
         dest = gdal.Open(Filename_tiff_end)
@@ -2833,52 +2909,52 @@ class Raster():
 
         return()
 
-    def Extract_Data(input_file, output_folder):
-        """
-        This function extract the zip files
+    # def Extract_Data(input_file, output_folder):
+    #     """
+    #     This function extract the zip files
 
-        Keyword Arguments:
-        output_file -- name, name of the file that must be unzipped
-        output_folder -- Dir, directory where the unzipped data must be
-                               stored
-        """
-        # extract the data
-        z = zipfile.ZipFile(input_file, 'r')
-        z.extractall(output_folder)
-        z.close()
+    #     Keyword Arguments:
+    #     output_file -- name, name of the file that must be unzipped
+    #     output_folder -- Dir, directory where the unzipped data must be
+    #                            stored
+    #     """
+    #     # extract the data
+    #     z = zipfile.ZipFile(input_file, 'r')
+    #     z.extractall(output_folder)
+    #     z.close()
 
-    def Extract_Data_gz(zip_filename, outfilename):
-        """
-        This function extract the zip files
+    # def Extract_Data_gz(zip_filename, outfilename):
+    #     """
+    #     This function extract the zip files
 
-        Keyword Arguments:
-        zip_filename -- name, name of the file that must be unzipped
-        outfilename -- Dir, directory where the unzipped data must be
-                               stored
-        """
+    #     Keyword Arguments:
+    #     zip_filename -- name, name of the file that must be unzipped
+    #     outfilename -- Dir, directory where the unzipped data must be
+    #                            stored
+    #     """
 
-        with gzip.GzipFile(zip_filename, 'rb') as zf:
-            file_content = zf.read()
-            save_file_content = open(outfilename, 'wb')
-            save_file_content.write(file_content)
-        save_file_content.close()
-        zf.close()
-        os.remove(zip_filename)
+    #     with gzip.GzipFile(zip_filename, 'rb') as zf:
+    #         file_content = zf.read()
+    #         save_file_content = open(outfilename, 'wb')
+    #         save_file_content.write(file_content)
+    #     save_file_content.close()
+    #     zf.close()
+    #     os.remove(zip_filename)
 
-    def Extract_Data_tar_gz(zip_filename, output_folder):
-        """
-        This function extract the tar.gz files
+    # def Extract_Data_tar_gz(zip_filename, output_folder):
+    #     """
+    #     This function extract the tar.gz files
 
-        Keyword Arguments:
-        zip_filename -- name, name of the file that must be unzipped
-        output_folder -- Dir, directory where the unzipped data must be
-                               stored
-        """
+    #     Keyword Arguments:
+    #     zip_filename -- name, name of the file that must be unzipped
+    #     output_folder -- Dir, directory where the unzipped data must be
+    #                            stored
+    #     """
 
-        os.chdir(output_folder)
-        tar = tarfile.open(zip_filename, "r:gz")
-        tar.extractall()
-        tar.close()
+    #     os.chdir(output_folder)
+    #     tar = tarfile.open(zip_filename, "r:gz")
+    #     tar.extractall()
+    #     tar.close()
 
 
     def Save_as_tiff(name='', data='', geo='', projection=''):
@@ -2947,35 +3023,54 @@ class Raster():
         dst_ds.GetRasterBand(1).WriteArray(data)
         return(dst_ds)
 
-    def Save_as_NC(namenc, DataCube, Var, Reference_filename,  Startdate = '', Enddate = '', Time_steps = '', Scaling_factor = 1):
+    def SaveNC(namenc, DataCube, Var, Reference_filename,  Startdate = '', Enddate = '', Time_steps = '', Scaling_factor = 1):
         """
-        This function save the array as a netcdf file
+        Save_as_NC(namenc, DataCube, Var, Reference_filename,  Startdate = '',
+                   Enddate = '', Time_steps = '', Scaling_factor = 1)
 
-        Keyword arguments:
-        namenc -- string, complete path of the output file with .nc extension
-        DataCube -- [array], dataset of the nc file, can be a 2D or 3D array [time, lat, lon], must be same size as reference data
-        Var -- string, the name of the variable
-        Reference_filename -- string, complete path to the reference file name
-        Startdate -- 'YYYY-mm-dd', needs to be filled when you want to save a 3D array,  defines the Start datum of the dataset
-        Enddate -- 'YYYY-mm-dd', needs to be filled when you want to save a 3D array, defines the End datum of the dataset
-        Time_steps -- 'monthly' or 'daily', needs to be filled when you want to save a 3D array, defines the timestep of the dataset
-        Scaling_factor -- number, scaling_factor of the dataset, default = 1
+
+
+
+        Parameters
+        ----------
+        namenc : [str]
+            complete path of the output file with .nc extension.
+        DataCube : [array]
+            dataset of the nc file, can be a 2D or 3D array [time, lat, lon],
+            must be same size as reference data.
+        Var : [str]
+            the name of the variable.
+        Reference_filename : [str]
+            complete path to the reference file name.
+        Startdate : str, optional
+            needs to be filled when you want to save a 3D array,'YYYY-mm-dd'
+            defines the Start datum of the dataset. The default is ''.
+        Enddate : str, optional
+            needs to be filled when you want to save a 3D array, 'YYYY-mm-dd'
+            defines the End datum of the dataset. The default is ''.
+        Time_steps : str, optional
+            'monthly' or 'daily', needs to be filled when you want to save a
+            3D array, defines the timestep of the dataset. The default is ''.
+        Scaling_factor : TYPE, optional
+            number, scaling_factor of the dataset. The default is 1.
+
+        Returns
+        -------
+        None.
+
         """
-        # Import modules
-        import watools.General.raster_conversions as RC
-        from netCDF4 import Dataset
 
         if not os.path.exists(namenc):
 
             # Get raster information
-            geo_out, proj, size_X, size_Y = RC.Open_array_info(Reference_filename)
+            geo_out, proj, size_X, size_Y = Raster.Open_array_info(Reference_filename)
 
             # Create the lat/lon rasters
             lon = np.arange(size_X)*geo_out[1]+geo_out[0] - 0.5 * geo_out[1]
             lat = np.arange(size_Y)*geo_out[5]+geo_out[3] - 0.5 * geo_out[5]
 
             # Create the nc file
-            nco = Dataset(namenc, 'w', format='NETCDF4_CLASSIC')
+            nco = netCDF4.Dataset(namenc, 'w', format='NETCDF4_CLASSIC')
             nco.description = '%s data' %Var
 
             # Create dimensions, variables and attributes:
@@ -3205,16 +3300,13 @@ class Raster():
 
     def Convert_dict_to_array(River_dict, Array_dict, Reference_data):
 
-        import numpy as np
-        import os
-        import watools.General.raster_conversions as RC
 
         if os.path.splitext(Reference_data)[-1] == '.nc':
             # Get raster information
-            geo_out, proj, size_X, size_Y, size_Z, Time = RC.Open_nc_info(Reference_data)
+            geo_out, proj, size_X, size_Y, size_Z, Time = Raster.Open_nc_info(Reference_data)
         else:
             # Get raster information
-            geo_out, proj, size_X, size_Y = RC.Open_array_info(Reference_data)
+            geo_out, proj, size_X, size_Y = Raster.Open_array_info(Reference_data)
 
         # Create ID Matrix
         y,x = np.indices((size_Y, size_X))
@@ -3235,25 +3327,25 @@ class Raster():
 
         return(DataCube)
 
-    def Run_command_window(argument):
-        """
-        This function runs the argument in the command window without showing cmd window
+    # def Run_command_window(argument):
+    #     """
+    #     This function runs the argument in the command window without showing cmd window
 
-        Keyword Arguments:
-        argument -- string, name of the adf file
-        """
-        if os.name == 'posix':
-            argument = argument.replace(".exe","")
-            os.system(argument)
+    #     Keyword Arguments:
+    #     argument -- string, name of the adf file
+    #     """
+    #     if os.name == 'posix':
+    #         argument = argument.replace(".exe","")
+    #         os.system(argument)
 
-        else:
-            startupinfo = subprocess.STARTUPINFO()
-            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+    #     else:
+    #         startupinfo = subprocess.STARTUPINFO()
+    #         startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
 
-            process = subprocess.Popen(argument, startupinfo=startupinfo, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
-            process.wait()
+    #         process = subprocess.Popen(argument, startupinfo=startupinfo, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+    #         process.wait()
 
-        return()
+    #     return()
 
     def Open_array_info(filename=''):
         """
@@ -3303,9 +3395,8 @@ class Raster():
             string that defines the input nc file
 
         """
-        from netCDF4 import Dataset
 
-        fh = Dataset(NC_filename, mode='r')
+        fh = netCDF4.Dataset(NC_filename, mode='r')
 
         if Var is None:
             Var = list(fh.variables.keys())[-1]
@@ -3349,9 +3440,8 @@ class Raster():
         Enddate -- "yyyy-mm-dd"
             Defines the enddate (default is from end of array)
         """
-        from netCDF4 import Dataset
 
-        fh = Dataset(NC_filename, mode='r')
+        fh = netCDF4.Dataset(NC_filename, mode='r')
         if Var == None:
             Var = fh.variables.keys()[-1]
 
@@ -3469,9 +3559,6 @@ class Raster():
         Enddate -- "yyyy-mm-dd"
             Defines the enddate (default is from end of array)
         """
-        from netCDF4 import Dataset
-        import re
-
         # sort out if the dataset is static or dynamic (written in group_name)
         kind_of_data = group_name.split('_')[-1]
 
@@ -3481,7 +3568,7 @@ class Raster():
             Amount_months = len(time_dates)
 
         # Open the input netcdf and the wanted group name
-        in_nc = Dataset(input_netcdf)
+        in_nc = netCDF4.Dataset(input_netcdf)
         data = in_nc.groups[group_name]
 
         # Convert the string into a string that can be retransformed into a dictionary
@@ -3847,7 +3934,7 @@ class Raster():
 
                 if sys.version_info[0] == 2:
 
-                    Array_out_slice= misc.imresize(np.float_(Array_in_slice), size, interp=interpolation_method, mode='F')
+                    Array_out_slice = misc.imresize(np.float_(Array_in_slice), size, interp=interpolation_method, mode='F')
                 if sys.version_info[0] == 3:
                     import skimage.transform as transform
                     Array_out_slice= transform.resize(np.float_(Array_in_slice), size, order=interpolation_number)
@@ -3945,95 +4032,95 @@ class Raster():
 
         return (EndProduct)
 
-    def Get3Darray_time_series_monthly(Data_Path, Startdate, Enddate, Example_data = None):
-        """
-        This function creates a datacube
+    # def Get3Darray_time_series_monthly(Data_Path, Startdate, Enddate, Example_data = None):
+    #     """
+    #     This function creates a datacube
 
-        Keyword arguments:
-        Data_Path -- 'product/monthly'
-            str: Path to the dataset
-        Startdate -- 'YYYY-mm-dd'
-            str: startdate of the 3D array
-        Enddate -- 'YYYY-mm-dd'
-            str: enddate of the 3D array
-        Example_data: -- 'C:/....../.tif'
-            str: Path to an example tiff file (all arrays will be reprojected to this example)
-        """
+    #     Keyword arguments:
+    #     Data_Path -- 'product/monthly'
+    #         str: Path to the dataset
+    #     Startdate -- 'YYYY-mm-dd'
+    #         str: startdate of the 3D array
+    #     Enddate -- 'YYYY-mm-dd'
+    #         str: enddate of the 3D array
+    #     Example_data: -- 'C:/....../.tif'
+    #         str: Path to an example tiff file (all arrays will be reprojected to this example)
+    #     """
 
-        # Get a list of dates that needs to be reprojected
-        Dates = pd.date_range(Startdate, Enddate, freq = 'MS')
+    #     # Get a list of dates that needs to be reprojected
+    #     Dates = pd.date_range(Startdate, Enddate, freq = 'MS')
 
-        # Change Working directory
-        os.chdir(Data_Path)
-        i = 0
+    #     # Change Working directory
+    #     os.chdir(Data_Path)
+    #     i = 0
 
-        # Loop over the months
-        for Date in Dates:
+    #     # Loop over the months
+    #     for Date in Dates:
 
-            # Create the end monthly file name
-            End_tiff_file_name = 'monthly_%d.%02d.01.tif' %(Date.year, Date.month)
+    #         # Create the end monthly file name
+    #         End_tiff_file_name = 'monthly_%d.%02d.01.tif' %(Date.year, Date.month)
 
-            # Search for this file in directory
-            file_name = glob.glob('*%s' %End_tiff_file_name)
+    #         # Search for this file in directory
+    #         file_name = glob.glob('*%s' %End_tiff_file_name)
 
-            # Select the first file that is found
-            file_name_path = os.path.join(Data_Path, file_name[0])
+    #         # Select the first file that is found
+    #         file_name_path = os.path.join(Data_Path, file_name[0])
 
-            # Check if an example file is selected
-            if Example_data != None:
+    #         # Check if an example file is selected
+    #         if Example_data != None:
 
-                # If it is the first day set the example gland file
-                if Date == Dates[0]:
+    #             # If it is the first day set the example gland file
+    #             if Date == Dates[0]:
 
-                    # Check the format to read general info
+    #                 # Check the format to read general info
 
-                    # if Tiff
-                    if os.path.splitext(Example_data)[-1] == '.tif':
-                        geo_out, proj, size_X, size_Y = Raster.Open_array_info(Example_data)
-                        dataTot=np.zeros([len(Dates),size_Y,size_X])
+    #                 # if Tiff
+    #                 if os.path.splitext(Example_data)[-1] == '.tif':
+    #                     geo_out, proj, size_X, size_Y = Raster.Open_array_info(Example_data)
+    #                     dataTot=np.zeros([len(Dates),size_Y,size_X])
 
-                    # if netCDF
-                    if os.path.splitext(Example_data)[-1] == '.nc':
-                        geo_out, projection, size_X, size_Y, size_Z, Time = Raster.Open_nc_info(Example_data)
-                        dataTot=np.zeros([len(Dates),size_Y,size_X])
+    #                 # if netCDF
+    #                 if os.path.splitext(Example_data)[-1] == '.nc':
+    #                     geo_out, projection, size_X, size_Y, size_Z, Time = Raster.Open_nc_info(Example_data)
+    #                     dataTot=np.zeros([len(Dates),size_Y,size_X])
 
-                        # Create memory file for reprojection
-                        data = Raster.Open_nc_array(Example_data, "Landuse")
-                        driver = gdal.GetDriverByName("MEM")
-                        gland = driver.Create('', int(size_X), int(size_Y), 1,
-                                               gdal.GDT_Float32)
-                        srse = osr.SpatialReference()
-                        if projection == '' or projection == 4326:
-                            srse.SetWellKnownGeogCS("WGS84")
-                        else:
-                            srse.SetWellKnownGeogCS(projection)
-                        gland.SetProjection(srse.ExportToWkt())
-                        gland.GetRasterBand(1).SetNoDataValue(-9999)
-                        gland.SetGeoTransform(geo_out)
-                        gland.GetRasterBand(1).WriteArray(data)
+    #                     # Create memory file for reprojection
+    #                     data = Raster.Open_nc_array(Example_data, "Landuse")
+    #                     driver = gdal.GetDriverByName("MEM")
+    #                     gland = driver.Create('', int(size_X), int(size_Y), 1,
+    #                                            gdal.GDT_Float32)
+    #                     srse = osr.SpatialReference()
+    #                     if projection == '' or projection == 4326:
+    #                         srse.SetWellKnownGeogCS("WGS84")
+    #                     else:
+    #                         srse.SetWellKnownGeogCS(projection)
+    #                     gland.SetProjection(srse.ExportToWkt())
+    #                     gland.GetRasterBand(1).SetNoDataValue(-9999)
+    #                     gland.SetGeoTransform(geo_out)
+    #                     gland.GetRasterBand(1).WriteArray(data)
 
-                    # use the input parameter as it is already an example file
-                    else:
-                        gland = Example_data
+    #                 # use the input parameter as it is already an example file
+    #                 else:
+    #                     gland = Example_data
 
-                # reproject dataset
-                dest = Raster.reproject_dataset_example(file_name_path, gland, method = 4)
-                Array_one_date = dest.GetRasterBand(1).ReadAsArray()
+    #             # reproject dataset
+    #             dest = Raster.reproject_dataset_example(file_name_path, gland, method = 4)
+    #             Array_one_date = dest.GetRasterBand(1).ReadAsArray()
 
-            # if there is no example dataset defined
-            else:
+    #         # if there is no example dataset defined
+    #         else:
 
-                # Get the properties from the first file
-                if Date is Dates[0]:
-                        geo_out, proj, size_X, size_Y = Raster.Open_array_info(file_name_path)
-                        dataTot=np.zeros([len(Dates),size_Y,size_X])
-                Array_one_date = Raster.Open_tiff_array(file_name_path)
+    #             # Get the properties from the first file
+    #             if Date is Dates[0]:
+    #                     geo_out, proj, size_X, size_Y = Raster.Open_array_info(file_name_path)
+    #                     dataTot=np.zeros([len(Dates),size_Y,size_X])
+    #             Array_one_date = Raster.Open_tiff_array(file_name_path)
 
-            # Create the 3D array
-            dataTot[i,:,:] = Array_one_date
-            i += 1
+    #         # Create the 3D array
+    #         dataTot[i,:,:] = Array_one_date
+    #         i += 1
 
-        return(dataTot)
+    #     return(dataTot)
 
     def Vector_to_Raster(Dir, shapefile_name, reference_raster_data_name):
         """
@@ -4120,48 +4207,63 @@ class Raster():
         freq -- Time frequencies between start and enddate
         """
 
-        import datetime
+
         Dates = pd.date_range(Startdate, Enddate, freq = freq)
         i = 0
         ordinal = np.zeros([len(Dates)])
         for date in Dates:
 
-            p = datetime.date(date.year, date.month, date.day).toordinal()
+            p = dt.date(date.year, date.month, date.day).toordinal()
             ordinal[i]=p
             i += 1
 
         return(ordinal)
 
-    def Create_Buffer(Data_In, Buffer_area):
+    # def Create_Buffer(Data_In, Buffer_area):
 
-       '''
-       This function creates a 3D array which is used to apply the moving window
-       '''
+    #    '''
+    #    This function creates a 3D array which is used to apply the moving window
+    #    '''
 
-       # Buffer_area = 2 # A block of 2 times Buffer_area + 1 will be 1 if there is the pixel in the middle is 1
-       Data_Out=np.empty((len(Data_In),len(Data_In[1])))
-       Data_Out[:,:] = Data_In
-       for ypixel in range(0,Buffer_area + 1):
+    #    # Buffer_area = 2 # A block of 2 times Buffer_area + 1 will be 1 if there is the pixel in the middle is 1
+    #    Data_Out=np.empty((len(Data_In),len(Data_In[1])))
+    #    Data_Out[:,:] = Data_In
+    #    for ypixel in range(0,Buffer_area + 1):
 
-            for xpixel in range(1,Buffer_area + 1):
+    #         for xpixel in range(1,Buffer_area + 1):
 
-               if ypixel==0:
-                    for xpixel in range(1,Buffer_area + 1):
-                        Data_Out[:,0:-xpixel] += Data_In[:,xpixel:]
-                        Data_Out[:,xpixel:] += Data_In[:,:-xpixel]
+    #            if ypixel==0:
+    #                 for xpixel in range(1,Buffer_area + 1):
+    #                     Data_Out[:,0:-xpixel] += Data_In[:,xpixel:]
+    #                     Data_Out[:,xpixel:] += Data_In[:,:-xpixel]
 
-                    for ypixel in range(1,Buffer_area + 1):
+    #                 for ypixel in range(1,Buffer_area + 1):
 
-                        Data_Out[ypixel:,:] += Data_In[:-ypixel,:]
-                        Data_Out[0:-ypixel,:] += Data_In[ypixel:,:]
+    #                     Data_Out[ypixel:,:] += Data_In[:-ypixel,:]
+    #                     Data_Out[0:-ypixel,:] += Data_In[ypixel:,:]
 
-               else:
-                   Data_Out[0:-xpixel,ypixel:] += Data_In[xpixel:,:-ypixel]
-                   Data_Out[xpixel:,ypixel:] += Data_In[:-xpixel,:-ypixel]
-                   Data_Out[0:-xpixel,0:-ypixel] += Data_In[xpixel:,ypixel:]
-                   Data_Out[xpixel:,0:-ypixel] += Data_In[:-xpixel,ypixel:]
+    #            else:
+    #                Data_Out[0:-xpixel,ypixel:] += Data_In[xpixel:,:-ypixel]
+    #                Data_Out[xpixel:,ypixel:] += Data_In[:-xpixel,:-ypixel]
+    #                Data_Out[0:-xpixel,0:-ypixel] += Data_In[xpixel:,ypixel:]
+    #                Data_Out[xpixel:,0:-ypixel] += Data_In[:-xpixel,ypixel:]
 
-       Data_Out[Data_Out>0.1] = 1
-       Data_Out[Data_Out<=0.1] = 0
+    #    Data_Out[Data_Out>0.1] = 1
+    #    Data_Out[Data_Out<=0.1] = 0
 
-       return(Data_Out)
+    #    return(Data_Out)
+
+    def ListAttributes(self):
+        """
+        Print Attributes List
+        """
+
+        print('\n')
+        print('Attributes List of: ' + repr(self.__dict__['name']) + ' - ' + self.__class__.__name__ + ' Instance\n')
+        self_keys = list(self.__dict__.keys())
+        self_keys.sort()
+        for key in self_keys:
+            if key != 'name':
+                print(str(key) + ' : ' + repr(self.__dict__[key]))
+
+        print('\n')

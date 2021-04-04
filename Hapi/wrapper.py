@@ -10,7 +10,20 @@ from Hapi.distrrm import DistributedRRM as distrrm
 from Hapi.routing import Routing as routing
 
 class Wrapper():
+    """
+    ==================
+        Wrapper
+    ==================
+    Wrapper class connect different commponent together (lumped run of the
+    distributed with the spatial routing) for Hapi and for FW1
 
+    Methods:
+        1- HapiModel
+        2- HapiWithlake
+        3- FW1
+        4- FW1Withlake
+        5- Lumped
+    """
     def __init__(self):
         pass
 
@@ -20,9 +33,9 @@ class Wrapper():
         =======================================================================
           Dist_model(DEM,flow_acc,flow_direct,sp_prec,sp_et,sp_temp,sp_par,p2,kub,klb,init_st,ll_temp,q_0)
         =======================================================================
-        this wrapper function connects all components of the model:
-            1- rainfall runoff model runs separately for each cell
-            2- GIS routing scheme (routing is following river network)
+            HapiModel connect two modules :
+            1- The distributed rainfall runoff: model runs separately for each cell
+            2- The Spatial routing scheme (routing is following river network)
 
         Inputs:
         ----------
@@ -86,9 +99,32 @@ class Wrapper():
         Model.qout = Model.qout[:-1]
 
 
-    
+
     @staticmethod
     def HapiWithlake(Model, Lake,ll_temp=None, q_0=None):
+        """
+        ============================================================
+            HapiWithlake(Model, Lake,ll_temp=None, q_0=None)
+        ============================================================
+        HapiWithlake connects three modules the lake, the distributed
+        ranfall-runoff module and spatial routing module
+
+        Parameters
+        ----------
+        Model : [Catchment object]
+            DESCRIPTION.
+        Lake : TYPE
+            DESCRIPTION.
+        ll_temp : TYPE, optional
+            DESCRIPTION. The default is None.
+        q_0 : TYPE, optional
+            DESCRIPTION. The default is None.
+
+        Returns
+        -------
+        None.
+
+        """
 
         plake = Lake.MeteoData[:,0]
         et = Lake.MeteoData[:,1]
@@ -125,25 +161,72 @@ class Wrapper():
 
         Model.q_out = Model.q_out[:-1]
 
-    
+
     @staticmethod
-    def FW1(Model,ll_temp=None, q_0=None):        
+    def FW1(Model,ll_temp=None, q_0=None):
+        """
+        ====================================================
+            FW1(Model,ll_temp=None, q_0=None)
+        ====================================================
+        FW1 connects two module :
+            1- The distributed rainfall-runoff module
+            2- Triangular function-1 routing method
+        Parameters
+        ----------
+        Model : TYPE
+            DESCRIPTION.
+        ll_temp : TYPE, optional
+            DESCRIPTION. The default is None.
+        q_0 : TYPE, optional
+            DESCRIPTION. The default is None.
+
+        Returns
+        -------
+        None.
+
+        """
 
         # subcatchment
         distrrm.RunLumpedRRM(Model)
 
         distrrm.DistMaxbas1(Model)
-        
+
         qlz1 = np.array([np.nansum(Model.qlz[:,:,i]) for i in range(Model.TS)]) # average of all cells (not routed mm/timestep)
         quz1 = np.array([np.nansum(Model.quz[:,:,i]) for i in range(Model.TS)]) # average of all cells (routed mm/timestep)
-        
+
         Model.qout = qlz1 + quz1
 
         Model.qout = Model.qout[:-1]
-        
+
 
     @staticmethod
     def FW1Withlake(Model, Lake,ll_temp=None, q_0=None):
+        """
+        ==============================================================
+               FW1Withlake(Model, Lake,ll_temp=None, q_0=None)
+        ==============================================================
+
+        FW1 connects two module :
+            1- The distributed rainfall-runoff module
+            2- Triangular function-1 routing method
+            3- Lake module
+
+        Parameters
+        ----------
+        Model : TYPE
+            DESCRIPTION.
+        Lake : TYPE
+            DESCRIPTION.
+        ll_temp : TYPE, optional
+            DESCRIPTION. The default is None.
+        q_0 : TYPE, optional
+            DESCRIPTION. The default is None.
+
+        Returns
+        -------
+        None.
+
+        """
 
         plake = Lake.MeteoData[:,0]
         et = Lake.MeteoData[:,1]
@@ -156,7 +239,7 @@ class Wrapper():
                                       Lake.StageDischargeCurve, 0,
                                       init_st=Lake.InitialCond,
                                       ll_temp=tm, lake_sim=True)
-        
+
         # qlake is in m3/sec
         # lake routing
         Lake.QlakeR = routing.muskingum(Lake.Qlake, Lake.Qlake[0], Lake.Parameters[11],
@@ -166,12 +249,12 @@ class Wrapper():
         distrrm.RunLumpedRRM(Model)
 
         distrrm.DistMAXBAS(Model)
-        
+
         qlz1 = np.array([np.nansum(Model.qlz[:,:,i]) for i in range(Model.Parameters.shape[2]+1)]) # average of all cells (not routed mm/timestep)
         quz1 = np.array([np.nansum(Model.quz[:,:,i]) for i in range(Model.Parameters.shape[2]+1)]) # average of all cells (routed mm/timestep)
-        
+
         qout = qlz1 + quz1
-        
+
         # qout = (qlz1 + quz1) * Model.CatArea / (Model.Timef* 3.6)
 
         Model.qout = qout[:-1] + Lake.QlakeR
@@ -229,7 +312,7 @@ class Wrapper():
         tm = Model.data[:,3]
 
         # from the conceptual model calculate the upper and lower response mm/time step
-        Model.quz, Model.qlz, Model.statevariables = Model.LumpedModel.Simulate(p, t, et, tm, 
+        Model.quz, Model.qlz, Model.statevariables = Model.LumpedModel.Simulate(p, t, et, tm,
                                                      Model.Parameters,
                                                      init_st = Model.InitialCond,
                                                      q_init = Model.q_init,
@@ -244,5 +327,5 @@ class Wrapper():
         if Routing != 0 and Model.Maxbas:
             Model.Qsim = RoutingFn(np.array(Model.Qsim[:-1]), Model.Parameters[-1])
         elif Routing != 0:
-            Model.Qsim = RoutingFn(np.array(Model.Qsim[:-1]), Model.Qsim[0], 
+            Model.Qsim = RoutingFn(np.array(Model.Qsim[:-1]), Model.Qsim[0],
                                    Model.Parameters[-2], Model.Parameters[-1], Model.Timef)

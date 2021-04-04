@@ -11,7 +11,7 @@ import pandas as pd
 import datetime as dt
 import math
 import matplotlib.colors as colors
-from matplotlib.ticker import LogFormatter 
+from matplotlib.ticker import LogFormatter
 from collections import OrderedDict
 linestyles = OrderedDict( [('solid', (0, ())),                              #0
                                ('loosely dotted', (0, (1, 10))),                #1
@@ -22,7 +22,7 @@ linestyles = OrderedDict( [('solid', (0, ())),                              #0
                                ('densely dashed', (0, (5, 1))),                 #6
                                ('loosely dashdotted', (0, (3, 10, 1, 10))),     #7
                                ('dashdotted', (0, (3, 5, 1, 5))),               #8
-                               ('densely dashdotted',  (0, (3, 1, 1, 1))),      #9                                      
+                               ('densely dashdotted',  (0, (3, 1, 1, 1))),      #9
                                ('loosely dashdotdotted', (0, (3, 10, 1, 10, 1, 10))), #10
                                ('dashdotdotted', (0, (3, 5, 1, 5, 1, 5))),            #11
                                ('densely dashdotdotted', (0, (3, 1, 1, 1, 1, 1))),    #12
@@ -30,24 +30,39 @@ linestyles = OrderedDict( [('solid', (0, ())),                              #0
 
 MarkerStyle = ['--o',':D','-.H','--x',':v','--|','-+','-^','--s','-.*','-.h']
 
-FigureDefaultOptions = dict( ylabel = '', xlabel = '',
+
+
+hours = list(range(1,25))
+
+class Visualize():
+    """
+    ==================
+        Visualize
+    ==================
+    Visualize class contains different method to animate water surface profile
+    spatial data change over time, styling methods for plotting
+
+    Methods:
+        1- AnimateArray
+        2- CrossSections
+        3- WaterSurfaceProfile
+        4- CrossSections
+    """
+
+    FigureDefaultOptions = dict( ylabel = '', xlabel = '',
                       legend = '', legend_size = 10, figsize = (10,8),
                       labelsize = 10, fontsize = 10, name = 'hist.tif',
                       color1 = '#3D59AB', color2 = "#DC143C", linewidth = 3,
                       Axisfontsize = 15
                       )
 
-hours = list(range(1,25))
-
-class Visualize():
-
-    def __init__(self, Sub, resolution = "Hourly"):
+    def __init__(self, resolution = "Hourly"):
         self.resolution = "Hourly"
         # self.XSname = Sub.crosssections['xsid'].tolist()
-    
+
     @staticmethod
     def LineStyle(Style = 'loosely dotted'):
-                
+
         if type(Style) == str:
             try:
                 return linestyles[Style]
@@ -56,20 +71,20 @@ class Visualize():
                 print(list(linestyles))
         else:
             return list(linestyles.items())[Style][1]
-            
+
     @staticmethod
     def MarkerStyle(Style):
         if Style > len(MarkerStyle)-1:
            Style = Style % len(MarkerStyle)
         return MarkerStyle[Style]
-    
+
     def GroundSurface(self, Sub, XSID='', XSbefore = 10, XSafter = 10, FloodPlain = False):
-        
+
         if XSID == '':
             XS = 0
         else:
             XS = np.where(Sub.crosssections['xsid'] == XSID )[0][0]
-        
+
         GroundSurfacefig = plt.figure(70, figsize = (20,10) )
         gs = gridspec.GridSpec(nrows = 2, ncols = 6, figure = GroundSurfacefig )
         axGS = GroundSurfacefig.add_subplot(gs[0:2,0:6])
@@ -94,13 +109,13 @@ class Visualize():
         # plot dikes
         axGS.plot(Sub.XSname, Sub.crosssections['zl'],'k--', dashes = (5,1), linewidth = 2, label = 'Left Dike')
         axGS.plot(Sub.XSname, Sub.crosssections['zr'],'k.-', linewidth = 2, label = 'Right Dike')
-        
+
         if FloodPlain:
             fpl = Sub.crosssections['gl'] + Sub.crosssections['dbf'] + Sub.crosssections['hl']
             fpr = Sub.crosssections['gl'] + Sub.crosssections['dbf'] + Sub.crosssections['hr']
             axGS.plot(Sub.XSname, fpl,'b-.',linewidth = 2, label = 'Floodplain left')
             axGS.plot(Sub.XSname, fpr,'r-.',linewidth = 2, label = 'Floodplain right')
-        
+
         # plot the bedlevel/baklevel
         if Sub.Version == 1:
             axGS.plot(Sub.XSname, Sub.crosssections['gl'],'k-', linewidth = 5, label = 'Bankful level')
@@ -287,7 +302,7 @@ class Visualize():
         gs.update(wspace = 0.2, hspace = 0.2, top= 0.96, bottom = 0.1, left = 0.05, right = 0.96)
         # animation
         plt.show()
-        
+
         def init_q() :
             Qline.set_data([],[])
             WLline.set_data([],[])
@@ -348,11 +363,11 @@ class Visualize():
             return Qline, WLline, hLline, day_text, BC_q_line, BC_h_line, ax2.scatter(x, Sub.QBC[x][y],s=300),ax3.scatter(x, Sub.HBC[x][y],s=300)
         # plt.tight_layout()
 
-        
-        
+
+
         anim = animation.FuncAnimation(fig, animate_q, init_func=init_q, frames = np.shape(counter)[0],
                                        interval = Interval, blit = True)
-        
+
         if Save != False:
             if Save == "gif":
                 assert len(Path) >= 1 and Path.endswith(".gif"), "please enter a valid path to save the animation"
@@ -368,7 +383,7 @@ class Visualize():
                         anim.save(Path, writer=writermp4)
                 except FileNotFoundError:
                     print("please visit https://ffmpeg.org/ and download a version of ffmpeg compitable with your operating system, for more details please check the method definition")
-        
+
         return anim
 
     def CrossSections(self, Sub):
@@ -414,7 +429,7 @@ class Visualize():
 
             zl = Sub.crosssections['zl'].loc[Sub.crosssections.index == Sub.crosssections.index[i]].values[0]
             zr = Sub.crosssections['zr'].loc[Sub.crosssections.index == Sub.crosssections.index[i]].values[0]
-            
+
             if Sub.Version > 1:
                 dbf = Sub.crosssections['dbf'].loc[Sub.crosssections.index == Sub.crosssections.index[i]].values[0]
 
@@ -793,9 +808,9 @@ class Visualize():
         anim = animation.FuncAnimation(fig2, animate_min, init_func=init_min, frames = len(Sub.Qmin.index),
                                        interval = Interval, blit = True)
         return anim
-    
+
     def AnimateArray(Arr, Time, NoElem, TicksSpacing = 2, Figsize=(8,8), PlotNumbers=True,
-                     NumSize= 8, Title = 'Total Discharge',titlesize = 15, Backgroundcolorthreshold=None, 
+                     NumSize= 8, Title = 'Total Discharge',titlesize = 15, Backgroundcolorthreshold=None,
                      cbarlabel = 'Discharge m3/s', cbarlabelsize = 12, textcolors=("white","black"),
                      Cbarlength = 0.75, Interval = 200,cmap='coolwarm_r', Textloc=[0.1,0.2],
                      Gaugecolor='red',Gaugesize=100, ColorScale = 1,gamma=1./2.,linthresh=0.0001,
@@ -804,7 +819,7 @@ class Visualize():
         """
          =============================================================================
            AnimateArray(Arr, Time, NoElem, TicksSpacing = 2, Figsize=(8,8), PlotNumbers=True,
-                  NumSize= 8, Title = 'Total Discharge',titlesize = 15, Backgroundcolorthreshold=None, 
+                  NumSize= 8, Title = 'Total Discharge',titlesize = 15, Backgroundcolorthreshold=None,
                   cbarlabel = 'Discharge m3/s', cbarlabelsize = 12, textcolors=("white","black"),
                   Cbarlength = 0.75, Interval = 200,cmap='coolwarm_r', Textloc=[0.1,0.2],
                   Gaugecolor='red',Gaugesize=100, ColorScale = 1,gamma=1./2.,linthresh=0.0001,
@@ -832,7 +847,7 @@ class Visualize():
         titlesize : [integer], optional
             title size. The default is 15.
         Backgroundcolorthreshold : [float/integer], optional
-            threshold value if the value of the cell is greater, the plotted 
+            threshold value if the value of the cell is greater, the plotted
             numbers will be black and if smaller the plotted number will be white
             if None given the maxvalue/2 will be considered. The default is None.
         textcolors : TYPE, optional
@@ -881,7 +896,7 @@ class Visualize():
         **kwargs : [dict]
             keys:
                 Points : [dataframe].
-                    dataframe contains two columns 'cell_row', and cell_col to 
+                    dataframe contains two columns 'cell_row', and cell_col to
                     plot the point at this location
 
         Returns
@@ -889,13 +904,13 @@ class Visualize():
         animation.FuncAnimation.
 
         """
-        
-        
+
+
         fig = plt.figure(60, figsize = Figsize)
         gs = gridspec.GridSpec(nrows = 2, ncols = 2, figure = fig )
         ax = fig.add_subplot(gs[:,:])
         ticks = np.arange(np.nanmin(Arr), np.nanmax(Arr),TicksSpacing)
-        
+
         if ColorScale == 1:
             im = ax.matshow(Arr[:,:,0],cmap=cmap, vmin = np.nanmin(Arr), vmax = np.nanmax(Arr),)
             cbar_kw = dict(ticks = ticks)
@@ -908,7 +923,7 @@ class Visualize():
             linscale=2
             im = ax.matshow(Arr[:,:,0],cmap=cmap, norm=colors.SymLogNorm(linthresh=linthresh,
                                     linscale=linscale, base=np.e,vmin = np.nanmin(Arr), vmax = np.nanmax(Arr)))
-            formatter = LogFormatter(10, labelOnlyBase=False) 
+            formatter = LogFormatter(10, labelOnlyBase=False)
             cbar_kw = dict(ticks = ticks, format=formatter)
         elif ColorScale == 4:
             bounds = np.arange(np.nanmin(Arr), np.nanmax(Arr),TicksSpacing)
@@ -918,31 +933,31 @@ class Visualize():
         else:
             im = ax.matshow(Arr[:,:,0],cmap=cmap, norm=MidpointNormalize(midpoint=midpoint))
             cbar_kw = dict(ticks = ticks)
-            
+
         # Create colorbar
         cbar = ax.figure.colorbar(im, ax=ax, shrink=Cbarlength, orientation=orientation,**cbar_kw)
         cbar.ax.set_ylabel(cbarlabel, rotation=rotation, va="bottom")
         cbar.ax.tick_params(labelsize=10)
-        
-        
+
+
         day_text = ax.text(Textloc[0],Textloc[1], 'Begining',fontsize= cbarlabelsize)
         ax.set_title(Title,fontsize= titlesize)
         ax.set_xticklabels([])
         ax.set_yticklabels([])
-        
+
         ax.set_xticks([])
         ax.set_yticks([])
         Indexlist = list()
-        
+
         for x in range(Arr.shape[0]):
                 for y in range(Arr.shape[1]):
                     if not np.isnan(Arr[x, y,0]):
                         Indexlist.append([x,y])
-                    
+
         Textlist = list()
         for x in range(NoElem):
             Textlist.append(ax.text(Indexlist[x][1], Indexlist[x][0],
-                                  round(Arr[Indexlist[x][0], Indexlist[x][1], 0],2), 
+                                  round(Arr[Indexlist[x][0], Indexlist[x][1], 0],2),
                                   ha="center", va="center", color="w", fontsize=NumSize))
         # Points = list()
         PoitsID = list()
@@ -951,24 +966,24 @@ class Visualize():
             col = kwargs['Points'].loc[:,'cell_col'].tolist()
             IDs = kwargs['Points'].loc[:,'id'].tolist()
             Points = ax.scatter(col, row, color=Gaugecolor, s=Gaugesize)
-            
+
             for i in range(len(row)):
-                PoitsID.append(ax.text(col[i], row[i], IDs[i], ha="center", 
+                PoitsID.append(ax.text(col[i], row[i], IDs[i], ha="center",
                                        va="center", color=IDcolor, fontsize=IDsize))
-            
+
         # Normalize the threshold to the images color range.
         if Backgroundcolorthreshold is not None:
             Backgroundcolorthreshold = im.norm(Backgroundcolorthreshold)
         else:
             Backgroundcolorthreshold = im.norm(np.nanmax(Arr))/2.
-                    
-            
+
+
         def init() :
             im.set_data(Arr[:,:,0])
             day_text.set_text('')
-            
+
             output = [im, day_text]
-            
+
             if 'Points' in kwargs.keys():
                 # plot gauges
                 # for j in range(len(kwargs['Points'])):
@@ -977,28 +992,28 @@ class Visualize():
                 # Points[j].set_offsets(col, row)
                 Points.set_offsets(np.c_[col, row])
                 output.append(Points)
-                
+
                 for x in range(len(col)):
                     PoitsID[x].set_text(IDs[x])
-                
+
                 output = output + PoitsID
-                
+
             if PlotNumbers:
                 for x in range(NoElem):
                     val = round(Arr[Indexlist[x][0], Indexlist[x][1], 0],2)
                     Textlist[x].set_text(val)
-                
+
                 output = output + Textlist
-            
+
             return output
-        
-        
+
+
         def animate(i):
             im.set_data(Arr[:,:,i])
             day_text.set_text('Date = '+str(Time[i])[0:10])
-            
+
             output = [im, day_text]
-            
+
             if 'Points' in kwargs.keys():
                 # plot gauges
                 # for j in range(len(kwargs['Points'])):
@@ -1007,29 +1022,29 @@ class Visualize():
                 # Points[j].set_offsets(col, row)
                 Points.set_offsets(np.c_[col, row])
                 output.append(Points)
-                
+
                 for x in range(len(col)):
                     PoitsID[x].set_text(IDs[x])
-                
+
                 output = output + PoitsID
-                
+
             if PlotNumbers:
                 for x in range(NoElem):
                     val = round(Arr[Indexlist[x][0], Indexlist[x][1], i],2)
                     kw = dict(color=textcolors[int(im.norm(Arr[Indexlist[x][0], Indexlist[x][1], i]) > Backgroundcolorthreshold)])
                     Textlist[x].update(kw)
                     Textlist[x].set_text(val)
-                
+
                 output = output + Textlist
-                
+
             return output
-        
+
         plt.tight_layout()
         # global anim
         anim = animation.FuncAnimation(fig, animate, init_func=init, frames = np.shape(Arr)[2],
                                                interval = Interval, blit = True)
         return anim
-    
+
     @staticmethod
     def rescale(OldValue,OldMin,OldMax,NewMin,NewMax):
         """
@@ -1094,15 +1109,30 @@ class Visualize():
 
         if x == 0:
             x_log = -7
-        else: 
+        else:
             x_log = np.log(x)
 
         y = int(np.round(Visualize.rescale(x_log,min_old_log,max_old_log,min_new,max_new)))
 
         return y
 
+    def ListAttributes(self):
+        """
+        Print Attributes List
+        """
+
+        print('\n')
+        print('Attributes List of: ' + repr(self.__dict__['name']) + ' - ' + self.__class__.__name__ + ' Instance\n')
+        self_keys = list(self.__dict__.keys())
+        self_keys.sort()
+        for key in self_keys:
+            if key != 'name':
+                print(str(key) + ' : ' + repr(self.__dict__[key]))
+
+        print('\n')
+
 class MidpointNormalize(colors.Normalize):
-    
+
     def __init__(self, vmin=None, vmax=None, midpoint=None, clip=False):
         self.midpoint = midpoint
         colors.Normalize.__init__(self, vmin, vmax, clip)
@@ -1111,5 +1141,5 @@ class MidpointNormalize(colors.Normalize):
         # I'm ignoring masked values and all kinds of edge cases to make a
         # simple example...
         x, y = [self.vmin, self.midpoint, self.vmax], [0, 0.5, 1]
-        
+
         return np.ma.masked_array(np.interp(value, x, y))

@@ -15,7 +15,7 @@ import ogr
 #from shapely.geometry.polygon import Polygon
 from shapely.geometry import Point, Polygon
 from pyproj import Proj, transform
-from osgeo import ogr
+# from osgeo import ogr
 from osgeo import osr
 
 from fiona.crs import from_epsg
@@ -26,7 +26,32 @@ import warnings
 # functions
 
 class Vector():
+    """
+    ================
+        Vector
+    ================
+    Vector class contains different methods to deal with shapefiles
 
+    Methods:
+        1- GetXYCoords
+        2- GetPointCoords
+        3- GetLineCoords
+        4- GetPolyCoords
+        5- Explode
+        6- MultiGeomHandler
+        7- GetCoords
+        8- XY
+        9- CreatePolygon
+        10- CreatePoint
+        11- CombineGeometrics
+        12- GCSDistance
+        13- ReprojectPoints
+        14- ReprojectPoints_2
+        15- AddSpatialReference
+        16- PolygonCenterPoint
+        17- WriteShapefile
+
+    """
     def __init__(self):
         pass
 
@@ -52,6 +77,8 @@ class Vector():
             return geometry.coords.xy[0]
         elif coord_type=="y":
             return geometry.coords.xy[1]
+
+
     @staticmethod
     def GetPointCoords(geometry,coord_type):
         """
@@ -72,6 +99,7 @@ class Vector():
             return geometry.x
         if coord_type=="y":
             return geometry.y
+
 
     @staticmethod
     def GetLineCoords(geometry,coord_type):
@@ -113,6 +141,7 @@ class Vector():
 
         return Vector.GetXYCoords(ext,coord_type)
 
+
     @staticmethod
     def Explode(dataframe_row):
         """
@@ -140,6 +169,7 @@ class Vector():
         for geom in range(recs):
             multdf.loc[geom,'geometry'] = row.geometry[geom]
         outdf = outdf.append(multdf,ignore_index=True)
+
 
     @staticmethod
     def MultiGeomHandler(multi_geometry, coord_type, geom_type):
@@ -753,3 +783,18 @@ class Vector():
 
         # Save and close everything
         ds = layer = feat = geom = None
+
+    def ListAttributes(self):
+        """
+        Print Attributes List
+        """
+
+        print('\n')
+        print('Attributes List of: ' + repr(self.__dict__['name']) + ' - ' + self.__class__.__name__ + ' Instance\n')
+        self_keys = list(self.__dict__.keys())
+        self_keys.sort()
+        for key in self_keys:
+            if key != 'name':
+                print(str(key) + ' : ' + repr(self.__dict__[key]))
+
+        print('\n')

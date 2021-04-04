@@ -10,9 +10,19 @@ from Hapi.river import River
 
 class Interface(River):
     """
+    ==================================
+        Interface(River)
+    ==================================
     Interface between the Rainfall runoff model and the Hydraulic model
+
+    Methods:
+        1- ReadLateralsTable
+        2- ReadLaterals
+        3- ReadBoundaryConditionsTable
+        4- ReadBoundaryConditions
+        5- ListAttributes
     """
-    
+
     def __init__(self, name, Version=3, start = "1952-1-1", days =36890,):
         self.name = name
         self.Version = Version
@@ -22,19 +32,19 @@ class Interface(River):
         self.ReferenceIndex = pd.DataFrame(index = list(range(1,days+1)))
         self.ReferenceIndex['date'] = Ref_ind[:-1]
         pass
-    
+
     def ReadLateralsTable(self, Path):
         """
         ===============================================================
                ReadLateralsTable(Path)
         ===============================================================
-        ReadLateralsTable method reads the laterals file 
-            laterals file : file contains the xsid of the cross-sections that 
+        ReadLateralsTable method reads the laterals file
+            laterals file : file contains the xsid of the cross-sections that
             has laterals
-        if the user has already read te cross section file, the methos is going 
+        if the user has already read te cross section file, the methos is going
         to add column to the crosssection dataframe attribute and is going to add
         a value of 1 to the xs that has laterals
-        
+
         Parameters
         ----------
         Path : [String], optional
@@ -47,16 +57,16 @@ class Interface(River):
         """
         self.LateralsTable = pd.read_csv(Path, skiprows=[0], header=None)
         self.LateralsTable.columns = ["xsid"]
-        
+
         if hasattr(self, "crosssections"):
             self.crosssections['lateral'] = 0
             for i in range(len(self.crosssections)):
-                if self.crosssections.loc[i,'xsid'] in self.LateralsTable['xsid'].tolist(): 
+                if self.crosssections.loc[i,'xsid'] in self.LateralsTable['xsid'].tolist():
                     self.crosssections.loc[i,'lateral'] = 1
         else:
             assert False, "Please read the cross section file first using the method 'ReadCrossSections'"
-    
-    
+
+
     def ReadLaterals(self, FromDay = '', ToDay = '', Path = '',
                           date_format="'%Y-%m-%d'"):
         """
@@ -80,47 +90,47 @@ class Interface(River):
         -------
         1-USHydrographs : [dataframe attribute].
             dataframe contains the hydrograph of each of the upstream segments
-            with segment id as a column name and a column 'total' contains the 
+            with segment id as a column name and a column 'total' contains the
             sum of all the hydrographs.
-        """        
+        """
         assert hasattr(self, 'LateralsTable'), "Please read the lateras table first using the 'ReadLateralsTable' method"
-        
+
         # if Path == '':
             # Path = self.CustomizedRunsPath
-        
+
         self.Laterals = pd.DataFrame()
-        
+
         for i in range(len(self.LateralsTable)):
             NodeID = self.LateralsTable.loc[i,'xsid']
             fname = "LF_xsid" + str(NodeID)
-            self.Laterals[NodeID]  = self.ReadRRMResults(self.Version, self.ReferenceIndex, 
+            self.Laterals[NodeID]  = self.ReadRRMResults(self.Version, self.ReferenceIndex,
                                                             Path, fname, FromDay, ToDay,
                                                             date_format)[fname].tolist()
-            
-            
+
+
         self.Laterals['total'] = self.Laterals.sum(axis=1)
         if FromDay == '':
             FromDay = 1
         if ToDay == '':
             ToDay = len(self.Laterals[NodeID])
-    
+
         start = self.ReferenceIndex.loc[FromDay,'date']
         end = self.ReferenceIndex.loc[ToDay,'date']
-    
+
         self.Laterals.index = pd.date_range(start, end, freq = 'D')
-    
+
     def ReadBoundaryConditionsTable(self, Path):
         """
         ===============================================================
                ReadLateralsTable(Path)
         ===============================================================
-        ReadLateralsTable method reads the laterals file 
-            laterals file : file contains the xsid of the cross-sections that 
+        ReadLateralsTable method reads the laterals file
+            laterals file : file contains the xsid of the cross-sections that
             has laterals
-        if the user has already read te cross section file, the methos is going 
+        if the user has already read te cross section file, the methos is going
         to add column to the crosssection dataframe attribute and is going to add
         a value of 1 to the xs that has laterals
-        
+
         Parameters
         ----------
         Path : [String], optional
@@ -134,8 +144,8 @@ class Interface(River):
         self.BCTable = pd.read_csv(Path, skiprows=[0], header=None)
         self.BCTable.columns = ["id"]
         self.BCTable['id'] = [int(i[3:]) for i in self.BCTable['id'].tolist()]
-        
-    
+
+
     def ReadBoundaryConditions(self, FromDay = '', ToDay = '', Path = '',
                           date_format="'%Y-%m-%d'"):
         """
@@ -159,35 +169,48 @@ class Interface(River):
         -------
         1-USHydrographs : [dataframe attribute].
             dataframe contains the hydrograph of each of the upstream segments
-            with segment id as a column name and a column 'total' contains the 
+            with segment id as a column name and a column 'total' contains the
             sum of all the hydrographs.
-        """        
+        """
         assert hasattr(self, 'BCTable'), "Please read the lateras table first using the 'ReadLateralsTable' method"
-        
+
         # if Path == '':
             # Path = self.CustomizedRunsPath
-        
+
         self.BC = pd.DataFrame()
-        
+
         for i in range(len(self.BCTable)):
             NodeID = self.BCTable.loc[i,'id']
             fname = "BC_" + str(NodeID)
-            self.BC[NodeID] = self.ReadRRMResults(self.Version, self.ReferenceIndex, 
+            self.BC[NodeID] = self.ReadRRMResults(self.Version, self.ReferenceIndex,
                                                             Path, fname, FromDay, ToDay,
                                                             date_format)[fname].tolist()
-            
-            
+
+
         self.BC['total'] = self.BC.sum(axis=1)
         if FromDay == '':
             FromDay = 1
         if ToDay == '':
             ToDay = len(self.BC[NodeID])
-    
+
         start = self.ReferenceIndex.loc[FromDay,'date']
         end = self.ReferenceIndex.loc[ToDay,'date']
-    
+
         self.BC.index = pd.date_range(start, end, freq = 'D')
-            
-        
-    
-        
+
+
+
+    def ListAttributes(self):
+        """
+        Print Attributes List
+        """
+
+        print('\n')
+        print('Attributes List of: ' + repr(self.__dict__['name']) + ' - ' + self.__class__.__name__ + ' Instance\n')
+        self_keys = list(self.__dict__.keys())
+        self_keys.sort()
+        for key in self_keys:
+            if key != 'name':
+                print(str(key) + ' : ' + repr(self.__dict__[key]))
+
+        print('\n')

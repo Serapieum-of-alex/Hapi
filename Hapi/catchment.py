@@ -22,11 +22,41 @@ from Hapi.visualizer import Visualize as Vis
 
 class Catchment():
     """
-    =============================================================================
-        Catchment(name, StartDate, EndDate, fmt="%Y-%m-%d", SpatialResolution = 'Lumped',
-                         TemporalResolution = "Daily")
+    ================================
+        Catchment
+    ================================
+    Catchment class include methods to read the meteorological and Spatial inputs
+    of the distributed hydrological model. Catchment class also reads the data
+    of the gauges, it is a super class that has the run subclass, so you
+    need to build the catchment object and hand it as an inpit to the Run class
+    to run the model
 
-    =============================================================================
+    methods:
+        1-ReadRainfall
+        2-ReadTemperature
+        3-ReadET
+        4-ReadFlowAcc
+        5-ReadFlowDir
+        6-ReadFlowPathLength
+        7-ReadParameters
+        8-ReadLumpedModel
+        9-ReadLumpedInputs
+        10-ReadGaugeTable
+        11-ReadDischargeGauges
+        12-ReadParametersBounds
+        13-ExtractDischarge
+        14-PlotHydrograph
+        15-PlotDistributedQ
+        16-SaveResults
+    """
+
+    def __init__(self, name, StartDate, EndDate, fmt="%Y-%m-%d", SpatialResolution = 'Lumped',
+                 TemporalResolution = "Daily"):
+        """
+        =============================================================================
+            Catchment(name, StartDate, EndDate, fmt="%Y-%m-%d", SpatialResolution = 'Lumped',
+                             TemporalResolution = "Daily")
+        =============================================================================
         Parameters
         ----------
         name : [str]
@@ -47,9 +77,6 @@ class Catchment():
         None.
 
         """
-
-    def __init__(self, name, StartDate, EndDate, fmt="%Y-%m-%d", SpatialResolution = 'Lumped',
-                 TemporalResolution = "Daily"):
 
         self.name = name
         self.StartDate = dt.datetime.strptime(StartDate,fmt)
@@ -646,6 +673,7 @@ class Catchment():
             if CalculateMetrics:
                 index = ['RMSE', 'NSE', 'NSEhf', 'KGE', 'WB','Pearson-CC','R2']
                 self.Metrics = pd.DataFrame(index = index, columns = self.QGauges.columns)
+
             for i in range(len(self.GaugesTable)):
                 Xind = int(self.GaugesTable.loc[self.GaugesTable.index[i],"cell_row"])
                 Yind = int(self.GaugesTable.loc[self.GaugesTable.index[i],"cell_col"])
@@ -654,6 +682,7 @@ class Catchment():
                 # Quz = np.reshape(self.quz_routed[Xind,Yind,:-1],self.TS-1)
                 # Qlz = np.reshape(self.qlz_translated[Xind,Yind,:-1],self.TS-1)
                 # Qsim = Quz + Qlz
+
                 Qsim = np.reshape(self.Qtot[Xind,Yind,:-1],self.TS-1)
                 if Factor != None:
                     self.Qsim.loc[:,gaugeid] = Qsim * Factor[i]
@@ -781,7 +810,7 @@ class Catchment():
         return fig, ax
 
 
-    def PlotDistributedQ(self, StartDate, EndDate, fmt="%Y-%m-%d", Option = 1,
+    def PlotDistributedResults(self, StartDate, EndDate, fmt="%Y-%m-%d", Option = 1,
                          Gauges=False,**kwargs):
         """
          =============================================================================
@@ -1021,38 +1050,66 @@ class Catchment():
         elif Result ==8:
             Raster.RastersLike(src,self.statevariables[:,:,starti:endi,4],names)
 
+    def ListAttributes(self):
+        """
+        Print Attributes List
+        """
+
+        print('\n')
+        print('Attributes List of: ' + repr(self.__dict__['name']) + ' - ' + self.__class__.__name__ + ' Instance\n')
+        self_keys = list(self.__dict__.keys())
+        self_keys.sort()
+        for key in self_keys:
+            if key != 'name':
+                print(str(key) + ' : ' + repr(self.__dict__[key]))
+
+        print('\n')
 
 
 class Lake():
     """
-    =========================================================================
-        Lake(StartDate='', EndDate='', fmt="%Y-%m-%d",
-                     TemporalResolution="Daily", Split=False)
-    =========================================================================
-    Lake class for lake simulation
+    ================================
+        Lake class
+    ================================
+    Lake class reads the meteorological inputs, and the module to simulate a lake
+    as a lumped model, using a rating curve, the lake and the upstream sub-catchments
+    are going to be considered as one lumped model than result in a discharge input
+    to the lake, the discharge input is going to change the volume of the water
+    in the lake, and from the volume-outflow curve the outflow can be obtained.
 
-    Parameters
-    ----------
-    StartDate : [str], optional
-        start date. The default is ''.
-    EndDate : [str], optional
-        end date. The default is ''.
-    fmt : [str], optional
-        date format. The default is "%Y-%m-%d".
-    TemporalResolution : [str], optional
-        "Daily" ot "Hourly". The default is "Daily".
-    Split : bool, optional
-        true if you want to split the date between two dates. The default is False.
-
-    Returns
-    -------
-    None.
-
+    methods:
+        1- ReadMeteoData
+        2- ReadParameters
+        3- ReadLumpedModel
     """
-
 
     def __init__(self, StartDate='', EndDate='', fmt="%Y-%m-%d",
                  TemporalResolution="Daily", Split=False):
+        """
+        =========================================================================
+            Lake(StartDate='', EndDate='', fmt="%Y-%m-%d",
+                         TemporalResolution="Daily", Split=False)
+        =========================================================================
+        Lake class for lake simulation
+
+        Parameters
+        ----------
+        StartDate : [str], optional
+            start date. The default is ''.
+        EndDate : [str], optional
+            end date. The default is ''.
+        fmt : [str], optional
+            date format. The default is "%Y-%m-%d".
+        TemporalResolution : [str], optional
+            "Daily" ot "Hourly". The default is "Daily".
+        Split : bool, optional
+            true if you want to split the date between two dates. The default is False.
+
+        Returns
+        -------
+        None.
+
+        """
 
         self.Split = Split
         self.StartDate = dt.datetime.strptime(StartDate,fmt)

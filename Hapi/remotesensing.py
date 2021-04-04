@@ -17,16 +17,28 @@ from Hapi.raster import Raster
 import Hapi.weirdFn as weirdFn
 
 class RemoteSensing():
-    
+    """
+    =====================================================
+        RemoteSensing
+    =====================================================
+    RemoteSensing class contains methods to download ECMWF data
+
+    Methods:
+        1- main
+        2- DownloadData
+        3- API
+        4- ListAttributes
+    """
+
     def __init__():
         pass
-    
+
     def main(Dir, Vars, Startdate, Enddate, latlim, lonlim, cores=False,
              SumMean=1, Min=0, Max=0, Waitbar = 1):
         """
         This function downloads ECMWF daily data for a given variable, time
         interval, and spatial extent.
-    
+
         Keyword arguments:
         Dir -- 'C:/file/to/path/'
         Var -- Variable code: VariablesInfo('day').descriptions.keys()
@@ -43,166 +55,166 @@ class RemoteSensing():
         for Var in Vars:
             # Download data
             print('\nDownload ECMWF %s data for period %s till %s' %(Var, Startdate, Enddate))
-            
+
             RemoteSensing.DownloadData(Dir, Var, Startdate, Enddate, latlim, lonlim, Waitbar, cores,
                          TimeCase='daily', CaseParameters=[SumMean, Min, Max])
-    
+
         del_ecmwf_dataset = os.path.join(Dir,'data_interim.nc')
         os.remove(del_ecmwf_dataset)
-    
-    
+
+
     def DownloadData(Dir, Var, Startdate, Enddate, latlim, lonlim, Waitbar, cores,
                      TimeCase, CaseParameters):
         """
         This function downloads ECMWF six-hourly, daily or monthly data
-    
+
         Keyword arguments:
-    
+
         """
-    
+
         # correct latitude and longitude limits
         latlim_corr_one = np.floor(latlim[0]/0.125) * 0.125
         latlim_corr_two = np.ceil(latlim[1]/0.125) * 0.125
         latlim_corr = [latlim_corr_one, latlim_corr_two]
-    
+
         # correct latitude and longitude limits
         lonlim_corr_one = np.floor(lonlim[0]/0.125) * 0.125
         lonlim_corr_two = np.ceil(lonlim[1]/0.125) * 0.125
         lonlim_corr = [lonlim_corr_one, lonlim_corr_two]
-    
+
         # Load factors / unit / type of variables / accounts
         VarInfo = VariablesInfo(TimeCase)
         Varname_dir = VarInfo.file_name[Var]
-    
+
         # Create Out directory
         out_dir = os.path.join(Dir, "Weather_Data", "Model", "ECMWF", TimeCase, Varname_dir, "mean")
         if not os.path.exists(out_dir):
               os.makedirs(out_dir)
-    
+
         DownloadType = VarInfo.DownloadType[Var]
-    
+
         # Set required data for the three hourly option
         if TimeCase == 'six_hourly':
             string1 = 'oper'
-    
+
         # Set required data for the daily option
         elif TimeCase == 'daily':
             Dates = pd.date_range(Startdate,  Enddate, freq='D')
         elif TimeCase == 'monthly':
             Dates = pd.date_range(Startdate,  Enddate, freq='MS')
-    
+
         if DownloadType == 1:
             string1 = 'oper'
             string4 = "0"
             string6 = "00:00:00/06:00:00/12:00:00/18:00:00"
             string2 = 'sfc'
             string8 = 'an'
-    
+
         if DownloadType == 2:
             string1 = 'oper'
             string4 = "12"
             string6 = "00:00:00/12:00:00"
             string2 = 'sfc'
             string8 = 'fc'
-    
+
         if DownloadType == 3:
             string1 = 'oper'
             string4 = "0"
             string6 = "00:00:00/06:00:00/12:00:00/18:00:00"
             string2 = 'pl'
             string8 = 'an'
-    
+
         string7 = '%s/to/%s'  %(Startdate, Enddate)
-    
+
         parameter_number = VarInfo.number_para[Var]
         string3 = '%03d.128' %(parameter_number)
         string5 = '0.125/0.125'
         string9 = 'ei'
         string10 = '%s/%s/%s/%s' %(latlim_corr[1], lonlim_corr[0], latlim_corr[0], lonlim_corr[1])   #N, W, S, E
-    
-    
+
+
         # Download data by using the ECMWF API
-        
+
         print('Use API ECMWF to collect the data, please wait')
         RemoteSensing.API(Dir, DownloadType, string1, string2, string3, string4, string5, string6, string7, string8, string9, string10)
-    
+
         # Open the downloaded data
         NC_filename = os.path.join(Dir,'data_interim.nc')
         fh = Dataset(NC_filename, mode='r')
-    
+
         # Get the NC variable parameter
         parameter_var = VarInfo.var_name[Var]
         Var_unit = VarInfo.units[Var]
         factors_add = VarInfo.factors_add[Var]
         factors_mul = VarInfo.factors_mul[Var]
-    
+
         # Open the NC data
         Data = fh.variables[parameter_var][:]
         Data_time = fh.variables['time'][:]
         lons = fh.variables['longitude'][:]
         lats = fh.variables['latitude'][:]
-    
+
         # Define the georeference information
         Geo_four = np.nanmax(lats)
         Geo_one = np.nanmin(lons)
         Geo_out = tuple([Geo_one, 0.125, 0.0, Geo_four, 0.0, -0.125])
-    
+
         # Create Waitbar
         if Waitbar == 1:
             total_amount = len(Dates)
             amount = 0
             weirdFn.printWaitBar(amount, total_amount, prefix = 'Progress:', suffix = 'Complete', length = 50)
-    
+
         for date in Dates:
-    
+
             # Define the year, month and day
             year =  date.year
             month =  date.month
             day =  date.day
-    
+
             # Hours since 1900-01-01
             start = dt.datetime(year=1900, month=1, day=1)
             end = dt.datetime(year, month, day)
             diff = end - start
             hours_from_start_begin = diff.total_seconds()/60/60
-    
+
             Date_good = np.zeros(len(Data_time))
             if TimeCase == 'daily':
                  days_later = 1
             if TimeCase == 'monthly':
                  days_later = calendar.monthrange(year,month)[1]
-    
+
             Date_good[np.logical_and(Data_time>=hours_from_start_begin, Data_time<(hours_from_start_begin + 24 * days_later))] = 1
-    
+
             Data_one = np.zeros([int(np.sum(Date_good)),int(np.size(Data,1)),int(np.size(Data,2))])
             Data_one = Data[np.int_(Date_good) == 1, :, :]
-    
+
             # Calculate the average temperature in celcius degrees
             Data_end = factors_mul * np.nanmean(Data_one,0) + factors_add
-    
+
             if VarInfo.types[Var] == 'flux':
                 Data_end = Data_end * days_later
-    
+
             VarOutputname = VarInfo.file_name[Var]
-    
+
             # Define the out name
             name_out = os.path.join(out_dir, "%s_ECMWF_ERA-Interim_%s_%s_%d.%02d.%02d.tif" %(VarOutputname, Var_unit, TimeCase, year,month,day))
-    
+
             # Create Tiff files
             Raster.Save_as_tiff(name_out, Data_end, Geo_out, "WGS84")
-    
+
             if Waitbar == 1:
                 amount += 1
                 weirdFn.printWaitBar(amount, total_amount, prefix = 'Progress:', suffix = 'Complete', length = 50)
-    
-    
+
+
         fh.close()
-    
+
         return()
-    
+
     def API(output_folder, DownloadType, string1, string2, string3, string4, string5, string6, string7, string8, string9, string10):
-    
-    
+
+
         server = ECMWFDataServer()
 
         if DownloadType == 1 or DownloadType == 2:
@@ -217,7 +229,7 @@ class RemoteSensing():
                 'date'      : "%s" %string7,
                 'type'      : "%s" %string8,     # http://apps.ecmwf.int/codes/grib/format/mars/type/
                 'class'     : "%s" %string9,     # http://apps.ecmwf.int/codes/grib/format/mars/class/
-                'area'      : "%s" %string10,   							
+                'area'      : "%s" %string10,
                 'format'    : "netcdf",
                 'target'    : "data_interim.nc"
                 })
@@ -235,13 +247,28 @@ class RemoteSensing():
                 'date'      : "%s" %string7,
                 'type'      : "%s" %string8,     # http://apps.ecmwf.int/codes/grib/format/mars/type/
                 'class'     : "%s" %string9,     # http://apps.ecmwf.int/codes/grib/format/mars/class/
-                'area'      : "%s" %string10,   							
+                'area'      : "%s" %string10,
                 'format'    : "netcdf",
                 'target'    : "data_interim.nc"
                 })
-        
-        
+
+
         return()
+
+    def ListAttributes(self):
+        """
+        Print Attributes List
+        """
+
+        print('\n')
+        print('Attributes List of: ' + repr(self.__dict__['name']) + ' - ' + self.__class__.__name__ + ' Instance\n')
+        self_keys = list(self.__dict__.keys())
+        self_keys.sort()
+        for key in self_keys:
+            if key != 'name':
+                print(str(key) + ' : ' + repr(self.__dict__[key]))
+
+        print('\n')
 
 
 class VariablesInfo:
@@ -494,3 +521,18 @@ class VariablesInfo:
 
         else:
             raise KeyError("The input time step is not supported")
+
+    def ListAttributes(self):
+        """
+        Print Attributes List
+        """
+
+        print('\n')
+        print('Attributes List of: ' + repr(self.__dict__['name']) + ' - ' + self.__class__.__name__ + ' Instance\n')
+        self_keys = list(self.__dict__.keys())
+        self_keys.sort()
+        for key in self_keys:
+            if key != 'name':
+                print(str(key) + ' : ' + repr(self.__dict__[key]))
+
+        print('\n')

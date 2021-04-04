@@ -5,7 +5,7 @@ Created on Sat May 26 04:52:15 2018
 @author: Mostafa
 """
 # library
-import os
+# import os
 import numpy as np
 import pandas as pd
 import gdal
@@ -15,17 +15,34 @@ from Hapi.raster import Raster as raster
 #import osr
 
 class GISCatchment():
+    """
+    =============================================================
+        GISCatchment
+    =============================================================
+    GISCatchment class contains methods to deal with the MED and generate the
+    flow direction based on the D8 method and process the DEM
 
+    Methods:
+        1- D8
+        2- FlowDirectIndex
+        3- FlowDirecTable
+        4- DeleteBasins
+        5- NearestCell
+        6- GroupNeighbours
+        7- Cluster
+        8- ListAttributes
+    """
     def __init__(self):
         pass
 
+
     @staticmethod
-    def FD_from_DEM(DEM):
+    def D8(DEM):
         """
         ===========================================================
-           FD_from_DEM(Raster)
+           D8(Raster)
         ===========================================================
-        this function generate flow direction raster from DEM and fill sinks
+        D8 method generate flow direction raster from DEM and fill sinks
 
         inputs:
         ----------
@@ -42,27 +59,27 @@ class GISCatchment():
         """
     #        DEM=self.DEM
 
-        gt=DEM.GetGeoTransform()
-        cellsize=gt[1]
-        dist2=cellsize*np.sqrt(2)
-        no_columns=DEM.RasterXSize
-        no_rows=DEM.RasterYSize
+        gt = DEM.GetGeoTransform()
+        cellsize = gt[1]
+        dist2 = cellsize*np.sqrt(2)
+        no_columns = DEM.RasterXSize
+        no_rows = DEM.RasterYSize
 
 
-        elev=DEM.ReadAsArray()
+        elev = DEM.ReadAsArray()
         # get the value stores in novalue cells
         dem_no_val = np.float32(DEM.GetRasterBand(1).GetNoDataValue())
-        elev[elev==dem_no_val]=np.nan
+        elev[elev==dem_no_val] = np.nan
 
-        slopes=np.ones((no_rows,no_columns,9))*np.nan
-        distances=[cellsize,dist2,cellsize,dist2,cellsize,dist2,cellsize,dist2]
+        slopes = np.ones((no_rows,no_columns,9))*np.nan
+        distances = [cellsize,dist2,cellsize,dist2,cellsize,dist2,cellsize,dist2]
 
         # filling sinks
-        elev_sinkless=elev
+        elev_sinkless = elev
         for i in range(1,no_rows-1):
             for j in range(1,no_columns-1):
                 # get elevation of surrounding cells
-                f=[elev[i-1,j],elev[i-1,j-1],elev[i,j-1],elev[i+1,j-1],elev[i+1,j],elev[i+1,j+1],elev[i,j+1],elev[i-1,j+1]]
+                f = [elev[i-1,j],elev[i-1,j-1],elev[i,j-1],elev[i+1,j-1],elev[i+1,j],elev[i+1,j+1],elev[i,j+1],elev[i-1,j+1]]
                 if elev[i,j]< min(f):
                     elev_sinkless[i,j]=min(f)+0.1
 
@@ -74,14 +91,22 @@ class GISCatchment():
                 # calculate only if cell in elev is not nan
                 if not np.isnan(elev[i,j]) :
                     # calculate slope
-                    slopes[i,j,0]=(elev_sinkless[i,j]-elev_sinkless[i,j+1])/distances[0] # slope with cell to the right
-                    slopes[i,j,1]=(elev_sinkless[i,j]-elev_sinkless[i-1,j+1])/distances[1]# slope with cell to the top right
-                    slopes[i,j,2]=(elev_sinkless[i,j]-elev_sinkless[i-1,j])/distances[2] # slope with cell to the top
-                    slopes[i,j,3]=(elev_sinkless[i,j]-elev_sinkless[i-1,j-1])/distances[3] # slope with cell to the top left
-                    slopes[i,j,4]=(elev_sinkless[i,j]-elev_sinkless[i,j-1])/distances[4] # slope with cell to the left
-                    slopes[i,j,5]=(elev_sinkless[i,j]-elev_sinkless[i+1,j-1])/distances[5] # slope with cell to the bottom left
-                    slopes[i,j,6]=(elev_sinkless[i,j]-elev_sinkless[i+1,j])/distances[6] # slope with cell to the bottom
-                    slopes[i,j,7]=(elev_sinkless[i,j]-elev_sinkless[i+1,j+1])/distances[7] # slope with cell to the bottom right
+                    # slope with cell to the right
+                    slopes[i,j,0] = (elev_sinkless[i,j]-elev_sinkless[i,j+1])/distances[0]
+                    # slope with cell to the top right
+                    slopes[i,j,1] = (elev_sinkless[i,j]-elev_sinkless[i-1,j+1])/distances[1]
+                    # slope with cell to the top
+                    slopes[i,j,2] = (elev_sinkless[i,j]-elev_sinkless[i-1,j])/distances[2]
+                    # slope with cell to the top left
+                    slopes[i,j,3] = (elev_sinkless[i,j]-elev_sinkless[i-1,j-1])/distances[3]
+                    # slope with cell to the left
+                    slopes[i,j,4] = (elev_sinkless[i,j]-elev_sinkless[i,j-1])/distances[4]
+                    # slope with cell to the bottom left
+                    slopes[i,j,5] = (elev_sinkless[i,j]-elev_sinkless[i+1,j-1])/distances[5]
+                    # slope with cell to the bottom
+                    slopes[i,j,6] = (elev_sinkless[i,j]-elev_sinkless[i+1,j])/distances[6]
+                    # slope with cell to the bottom right
+                    slopes[i,j,7] = (elev_sinkless[i,j]-elev_sinkless[i+1,j+1])/distances[7]
                     # get the flow direction index
                     flow_direction[i,j]=np.where(slopes[i,j,:]==np.nanmax(slopes[i,j,:]))[0][0]
                     slopes[i,j,8]=np.nanmax(slopes[i,j,:])
@@ -90,71 +115,90 @@ class GISCatchment():
         for i in [0]:
             for j in range(1,no_columns-1): # all columns
                 if not np.isnan(elev[i,j]) :
-                    slopes[i,j,0]=(elev_sinkless[i,j]-elev_sinkless[i,j+1])/distances[0] # slope with cell to the right
-                    slopes[i,j,4]=(elev_sinkless[i,j]-elev_sinkless[i,j-1])/distances[4] # slope with cell to the left
-                    slopes[i,j,5]=(elev_sinkless[i,j]-elev_sinkless[i+1,j-1])/distances[5] # slope with cell to the bottom left
-                    slopes[i,j,6]=(elev_sinkless[i,j]-elev_sinkless[i+1,j])/distances[6] # slope with cell to the bottom
-                    slopes[i,j,7]=(elev_sinkless[i,j]-elev_sinkless[i+1,j+1])/distances[7] # slope with cell to the bottom right
+                    # slope with cell to the right
+                    slopes[i,j,0] = (elev_sinkless[i,j]-elev_sinkless[i,j+1])/distances[0]
+                    # slope with cell to the left
+                    slopes[i,j,4] = (elev_sinkless[i,j]-elev_sinkless[i,j-1])/distances[4]
+                    # slope with cell to the bottom left
+                    slopes[i,j,5] = (elev_sinkless[i,j]-elev_sinkless[i+1,j-1])/distances[5]
+                    # slope with cell to the bottom
+                    slopes[i,j,6] = (elev_sinkless[i,j]-elev_sinkless[i+1,j])/distances[6]
+                    # slope with cell to the bottom right
+                    slopes[i,j,7] = (elev_sinkless[i,j]-elev_sinkless[i+1,j+1])/distances[7]
 
-                    flow_direction[i,j]=np.where(slopes[i,j,:]==np.nanmax(slopes[i,j,:]))[0][0]
-                    slopes[i,j,8]=np.nanmax(slopes[i,j,:])
+                    flow_direction[i,j] = np.where(slopes[i,j,:]==np.nanmax(slopes[i,j,:]))[0][0]
+                    slopes[i,j,8] = np.nanmax(slopes[i,j,:])
 
         # last row without corners
         for i in [no_rows-1]:
             for j in range(1,no_columns-1): # all columns
                 if not np.isnan(elev[i,j]) :
-                    slopes[i,j,0]=(elev_sinkless[i,j]-elev_sinkless[i,j+1])/distances[0] # slope with cell to the right
-                    slopes[i,j,1]=(elev_sinkless[i,j]-elev_sinkless[i-1,j+1])/distances[1]# slope with cell to the top right
-                    slopes[i,j,2]=(elev_sinkless[i,j]-elev_sinkless[i-1,j])/distances[2] # slope with cell to the top
-                    slopes[i,j,3]=(elev_sinkless[i,j]-elev_sinkless[i-1,j-1])/distances[3] # slope with cell to the top left
-                    slopes[i,j,4]=(elev_sinkless[i,j]-elev_sinkless[i,j-1])/distances[4] # slope with cell to the left
+                    # slope with cell to the right
+                    slopes[i,j,0] = (elev_sinkless[i,j]-elev_sinkless[i,j+1])/distances[0]
+                    # slope with cell to the top right
+                    slopes[i,j,1] = (elev_sinkless[i,j]-elev_sinkless[i-1,j+1])/distances[1]
+                    # slope with cell to the top
+                    slopes[i,j,2] = (elev_sinkless[i,j]-elev_sinkless[i-1,j])/distances[2]
+                    # slope with cell to the top left
+                    slopes[i,j,3] = (elev_sinkless[i,j]-elev_sinkless[i-1,j-1])/distances[3]
+                    # slope with cell to the left
+                    slopes[i,j,4] = (elev_sinkless[i,j]-elev_sinkless[i,j-1])/distances[4]
 
-                    flow_direction[i,j]=np.where(slopes[i,j,:]==np.nanmax(slopes[i,j,:]))[0][0]
-                    slopes[i,j,8]=np.nanmax(slopes[i,j,:])
+                    flow_direction[i,j] = np.where(slopes[i,j,:]==np.nanmax(slopes[i,j,:]))[0][0]
+                    slopes[i,j,8] = np.nanmax(slopes[i,j,:])
 
         # top left corner
         i=0
         j=0
         if not np.isnan(elev[i,j]) :
-            slopes[i,j,0]=(elev_sinkless[i,j]-elev_sinkless[i,j+1])/distances[0] # slope with cell to the left
-            slopes[i,j,6]=(elev_sinkless[i,j]-elev_sinkless[i+1,j])/distances[6] # slope with cell to the bottom
-            slopes[i,j,7]=(elev_sinkless[i,j]-elev_sinkless[i+1,j+1])/distances[7] # slope with cell to the bottom right
+            # slope with cell to the left
+            slopes[i,j,0] = (elev_sinkless[i,j]-elev_sinkless[i,j+1])/distances[0]
+            # slope with cell to the bottom
+            slopes[i,j,6] = (elev_sinkless[i,j]-elev_sinkless[i+1,j])/distances[6]
+            # slope with cell to the bottom right
+            slopes[i,j,7] = (elev_sinkless[i,j]-elev_sinkless[i+1,j+1])/distances[7]
 
-            flow_direction[i,j]=np.where(slopes[i,j,:]==np.nanmax(slopes[i,j,:]))[0][0]
-            slopes[i,j,8]=np.nanmax(slopes[i,j,:])
+            flow_direction[i,j] = np.where(slopes[i,j,:]==np.nanmax(slopes[i,j,:]))[0][0]
+            slopes[i,j,8] = np.nanmax(slopes[i,j,:])
 
         # top right corner
         i=0
         j=no_columns-1
         if not np.isnan(elev[i,j]) :
-            slopes[i,j,4]=(elev_sinkless[i,j]-elev_sinkless[i,j-1])/distances[4] # slope with cell to the left
-            slopes[i,j,5]=(elev_sinkless[i,j]-elev_sinkless[i+1,j-1])/distances[5] # slope with cell to the bottom left
-            slopes[i,j,6]=(elev_sinkless[i,j]-elev_sinkless[i+1,j])/distances[6] # slope with cell to the bott
+            # slope with cell to the left
+            slopes[i,j,4] = (elev_sinkless[i,j]-elev_sinkless[i,j-1])/distances[4]
+            # slope with cell to the bottom left
+            slopes[i,j,5] = (elev_sinkless[i,j]-elev_sinkless[i+1,j-1])/distances[5]
+            # slope with cell to the bott
+            slopes[i,j,6] = (elev_sinkless[i,j]-elev_sinkless[i+1,j])/distances[6]
 
-            flow_direction[i,j]=np.where(slopes[i,j,:]==np.nanmax(slopes[i,j,:]))[0][0]
-            slopes[i,j,8]=np.nanmax(slopes[i,j,:])
+            flow_direction[i,j] = np.where(slopes[i,j,:]==np.nanmax(slopes[i,j,:]))[0][0]
+            slopes[i,j,8] = np.nanmax(slopes[i,j,:])
 
         # bottom left corner
         i=no_rows-1
         j=0
         if not np.isnan(elev[i,j]) :
-            slopes[i,j,0]=(elev_sinkless[i,j]-elev_sinkless[i,j+1])/distances[0] # slope with cell to the right
-            slopes[i,j,1]=(elev_sinkless[i,j]-elev_sinkless[i-1,j+1])/distances[1]# slope with cell to the top right
-            slopes[i,j,2]=(elev_sinkless[i,j]-elev_sinkless[i-1,j])/distances[2] # slope with cell to the top
+            # slope with cell to the right
+            slopes[i,j,0] = (elev_sinkless[i,j]-elev_sinkless[i,j+1])/distances[0]
+            # slope with cell to the top right
+            slopes[i,j,1] = (elev_sinkless[i,j]-elev_sinkless[i-1,j+1])/distances[1]
+            # slope with cell to the top
+            slopes[i,j,2] = (elev_sinkless[i,j]-elev_sinkless[i-1,j])/distances[2]
 
-            flow_direction[i,j]=np.where(slopes[i,j,:]==np.nanmax(slopes[i,j,:]))[0][0]
-            slopes[i,j,8]=np.nanmax(slopes[i,j,:])
+            flow_direction[i,j] = np.where(slopes[i,j,:]==np.nanmax(slopes[i,j,:]))[0][0]
+            slopes[i,j,8] = np.nanmax(slopes[i,j,:])
 
         # bottom right
         i=no_rows-1
         j=no_columns-1
         if not np.isnan(elev[i,j]) :
-            slopes[i,j,2]=(elev_sinkless[i,j]-elev_sinkless[i-1,j])/distances[2] # slope with cell to the top
-            slopes[i,j,3]=(elev_sinkless[i,j]-elev_sinkless[i-1,j-1])/distances[3] # slope with cell to the top left
-            slopes[i,j,4]=(elev_sinkless[i,j]-elev_sinkless[i,j-1])/distances[4] # slope with cell to the left
+            slopes[i,j,2] = (elev_sinkless[i,j]-elev_sinkless[i-1,j])/distances[2] # slope with cell to the top
+            slopes[i,j,3] = (elev_sinkless[i,j]-elev_sinkless[i-1,j-1])/distances[3] # slope with cell to the top left
+            slopes[i,j,4] = (elev_sinkless[i,j]-elev_sinkless[i,j-1])/distances[4] # slope with cell to the left
 
-            flow_direction[i,j]=np.where(slopes[i,j,:]==np.nanmax(slopes[i,j,:]))[0][0]
-            slopes[i,j,8]=np.nanmax(slopes[i,j,:])
+            flow_direction[i,j] = np.where(slopes[i,j,:]==np.nanmax(slopes[i,j,:]))[0][0]
+            slopes[i,j,8] = np.nanmax(slopes[i,j,:])
 
         # first column
         for i in range(1,no_rows-1):
@@ -530,6 +574,34 @@ class GISCatchment():
 
     @staticmethod
     def Cluster(Data, LowerValue, UpperValue):
+        """
+        ==============================================================
+            Cluster(Data, LowerValue, UpperValue)
+        ==============================================================
+        Cluster method group all the connected values between two numbers in
+        a raster in clusters
+
+        Parameters
+        ----------
+        Data : [array]
+            numpt array of the daya in the raster.
+        LowerValue : [numeric]
+            lower bound of the cluster.
+        UpperValue : [numeric]
+            upper bound of the cluster.
+
+        Returns
+        -------
+        cluster : [array]
+            array contains integer numbers representing the number of the cluster.
+        count : [integer]
+            number of the clusters in the array.
+        position : [list]
+            list contains two indeces [x,y] for the position of each value .
+        values : [numeric]
+            the values stored in each cell in the cluster .
+
+        """
         position = []
         values = []
         count = 1
@@ -547,3 +619,19 @@ class GISCatchment():
         			count = count + 1
 
         return cluster,count, position, values
+
+
+    def ListAttributes(self):
+        """
+        Print Attributes List
+        """
+
+        print('\n')
+        print('Attributes List of: ' + repr(self.__dict__['name']) + ' - ' + self.__class__.__name__ + ' Instance\n')
+        self_keys = list(self.__dict__.keys())
+        self_keys.sort()
+        for key in self_keys:
+            if key != 'name':
+                print(str(key) + ' : ' + repr(self.__dict__[key]))
+
+        print('\n')

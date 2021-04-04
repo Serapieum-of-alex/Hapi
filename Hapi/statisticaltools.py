@@ -13,7 +13,13 @@ import scipy.optimize as so
 from scipy.stats import gumbel_r, norm, genextreme
 
 class StatisticalTools():
+    """
+    ==============================
+        StatisticalTools
+    ==============================
+    StatisticalTools different statistical and interpolation tools
 
+    """
     def __init__(self):
         pass
 
@@ -23,7 +29,7 @@ class StatisticalTools():
         =======================================================================
          IDW(flp,coordinates,prec_data):
         =======================================================================
-        this function generates distributred values from reading at stations 
+        this function generates distributred values from reading at stations
         using inverse distance weighting method
 
         inputs:
@@ -245,6 +251,7 @@ class StatisticalTools():
             return T
 
 
+
 class Gumbel():
 
     def __init__(self):
@@ -378,6 +385,7 @@ class Gumbel():
         Qlower = [Qth[j] - v * StdError[j] for j in range(len(data))]
 
         return Qth, Qupper, Qlower
+
 
 class GEV():
 

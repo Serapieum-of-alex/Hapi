@@ -17,10 +17,68 @@ from Hapi.giscatchment import GISCatchment as GC
 
 
 class DistParameters():
+    """
+    ==============================================================
+        DistParameters
+    ==============================================================
+    Distripute parameter class is used to distribute the values of the parameter
+    vector in the calibration process into the 3D array, considering if some
+    of the parameters are lumped parameters, if you want to distribute the
+    parameters in HRUs
+
+    the method included are
+    1- par3d
+    2- par3dLumped
+    3- par2dLumpedK1_lake
+    4- HRU
+    5- HRU_HAND
+    6- ParametersNumber
+    7- SaveParameters
+    """
 
     def __init__(self, raster, no_parameters, no_lumped_par=0, lumped_par_pos=[],
                  Lake = 0, Snow=0, HRUs=0, Function=1, Kub=1, Klb= 0.5, Maskingum=False):
+        """
+        =============================================================================
+             DistParameters(self, raster, no_parameters, no_lumped_par=0, lumped_par_pos=[],
+                         Lake = 0, Snow=0, HRUs=0, Function=1, Kub=1, Klb= 0.5, Maskingum=False):
+        =============================================================================
+        To initiate the DistParameters class you have to provide the Flow Acc
+        raster
 
+        Parameters
+        ----------
+        raster : [gdal.dataset]
+            raster to get the spatial information of the catchment
+            (DEM, flow accumulation or flow direction raster)
+        no_parameters : [integer]
+            Number of parameters in the HBV model.
+        no_lumped_par : [integer], optional
+            Number lumped parameters. The default is 0.
+        lumped_par_pos : [integer], optional
+            the order of the lumped parameters (order starts wti zero). The default is [].
+        Lake : [integer], optional
+            0 if there is no lake and 1 if there is a lake. The default is 0.
+        Snow : [integer]
+            0 if you dont want to run the snow related processes and 1 if there is snow.
+            in case of 1 (simulate snow processes) parameters related to snow simulation
+            has to be provided. The default is 0.
+        HRUs : [integer], optional
+            if the will consider using HRUs. The default is 0.
+        Function : [integer], optional
+            function you use to distribute parameters. The default is 1.
+        Kub : [numeric], optional
+            upper bound for the k-muskingum parameter. The default is 1.
+        Klb : [numeric], optional
+            lower bound for the k-muskingum parameter. The default is 0.5.
+        Maskingum : [bool], optional
+            if the routing function is muskingum. The default is False.
+
+        Returns
+        -------
+        None.
+
+        """
         assert type(raster)==gdal.Dataset, "raster should be read using gdal (gdal dataset please read it using gdal library) "
         assert type(no_parameters)==int, " no_parameters should be integer number"
         assert type(no_lumped_par)== int, "no of lumped parameters should be integer"
@@ -100,39 +158,41 @@ class DistParameters():
         ===========================================================
           par3d(par_g,raster, no_parameters, no_lumped_par, lumped_par_pos, kub, klb)
         ===========================================================
-        this function takes a list of parameters [saved as one column or generated
+        par3d method takes a list of parameters [saved as one column or generated
         as 1D list from optimization algorithm] and distribute them horizontally on
         number of cells given by a raster
 
         Inputs :
         ----------
-            1- par_g:
-                [list] list of parameters
-            2- raster:
-                [gdal.dataset] raster to get the spatial information of the catchment
+            1- par_g : [list]
+                list of parameters
+            2- raster : [gdal.dataset]
+                raster to get the spatial information of the catchment
                 (DEM, flow accumulation or flow direction raster)
-            3- no_parameters
-                [int] no of parameters of the cell according to the rainfall runoff model
-            4-no_lumped_par:
-                [int] nomber of lumped parameters, you have to enter the value of
+            3- no_parameters : [integer]
+                no of parameters of the cell according to the rainfall runoff model
+            4-no_lumped_par : [integer]
+                nomber of lumped parameters, you have to enter the value of
                 the lumped parameter at the end of the list, default is 0 (no lumped parameters)
-            5-lumped_par_pos:
-                [List] list of order or position of the lumped parameter among all
+            5-lumped_par_pos : [List]
+                list of order or position of the lumped parameter among all
                 the parameters of the lumped model (order starts from 0 to the length
                 of the model parameters), default is [] (empty), the following order
                 of parameters is used for the lumped HBV model used
                 [ltt, utt, rfcf, sfcf, ttm, cfmax, cwh, cfr, fc, beta, e_corr, etf, lp,
                 c_flux, k, k1, alpha, perc, pcorr, Kmuskingum, Xmuskingum]
-            6- kub:
-                [float] upper bound of K value (traveling time in muskingum routing method)
+            6- kub : [float]
+                upper bound of K value (traveling time in muskingum routing method)
                 default is 1 hour
-            7- klb:
-                [float] Lower bound of K value (traveling time in muskingum routing method)
+            7- klb : [float]
+                Lower bound of K value (traveling time in muskingum routing method)
                 default is 0.5 hour (30 min)
-
+            8- Maskingum : [bool], optional
+            if the routing function is muskingum. The default is False.
         Output:
         ----------
-            1- par_3d: 3D array of the parameters distributed horizontally on the cells
+            1- par_3d : [3d array]
+                3D array of the parameters distributed horizontally on the cells
 
         Example:
         ----------
@@ -182,7 +242,7 @@ class DistParameters():
         else:
             # if there is no lumped parameters
             assert len(par_g) == self.no_elem*self.no_parameters,"As there is no lumped parameters length of input parameters should be "+str(self.no_elem)+"*"+str(self.no_parameters)+"="+str(self.no_elem*self.no_parameters)
-        
+
         # parameters in array
         # create a 2d array [no_parameters, no_cells]
         self.Par2d = np.ones((self.no_parameters,self.no_elem))
@@ -218,24 +278,27 @@ class DistParameters():
         ===========================================================
           par3dLumped(par_g,raster, no_parameters, kub, klb)
         ===========================================================
-        this function takes a list of parameters [saved as one column or generated
+        par3dLumped method takes a list of parameters [saved as one column or generated
         as 1D list from optimization algorithm] and distribute them horizontally on
         number of cells given by a raster
 
         Inputs :
         ----------
-            1- par_g:
-                [list] list of parameters
-            4- kub:
-                [float] upper bound of K value (traveling time in muskingum routing method)
+            1- par_g : [list]
+                list of parameters
+            2- kub : [float]
+                upper bound of K value (traveling time in muskingum routing method)
                 default is 1 hour
-            5- klb:
-                [float] Lower bound of K value (traveling time in muskingum routing method)
+            3- klb : [float]
+                Lower bound of K value (traveling time in muskingum routing method)
                 default is 0.5 hour (30 min)
+            4- Maskingum : [bool], optional
+            if the routing function is muskingum. The default is False.
 
         Output:
         ----------
-            1- par_3d: 3D array of the parameters distributed horizontally on the cells
+            1- par_3d: [3d array]
+                3D array of the parameters distributed horizontally on the cells
 
         Example:
         ----------
@@ -278,30 +341,31 @@ class DistParameters():
         ===================================================
             calculateK(x,position,UB,LB):
         ===================================================
-
-        this function takes value of x parameter and generate 100 random value of k parameters between
-        upper & lower constraint then the output will be the value coresponding to the giving position
+        calculateK method takes value of x parameter and generate 100 random
+        value of k parameters between upper & lower constraint then the output
+        will be the value coresponding to the giving position
 
         Inputs:
         ----------
-            1- x weighting coefficient to determine the linearity of the water surface
+            1- x : [numeric]
+                weighting coefficient to determine the linearity of the water surface
                 (one of the parameters of muskingum routing method)
-            2- position
+            2- position : [integer]
                 random position between upper and lower bounds of the k parameter
-            3-UB
+            3-UB : [numeric]
                 upper bound for k parameter
-            3-LB
+            3-LB : [numeric]
                 Lower bound for k parameter
         """
         # k has to be smaller than this constraint
-        constraint1 = 0.5*1/(1-x) 
+        constraint1 = 0.5*1/(1-x)
         # k has to be greater than this constraint
-        constraint2 = 0.5*1/x   
+        constraint2 = 0.5*1/x
         #if constraint is higher than UB take UB
-        if constraint2 >= UB : 
+        if constraint2 >= UB :
             constraint2 = UB
         #if constraint is lower than LB take UB
-        if constraint1 <= LB : 
+        if constraint1 <= LB :
             constraint1 = LB
 
         generatedK = np.linspace(constraint1,constraint2,101)
@@ -314,28 +378,33 @@ class DistParameters():
         ===========================================================
           par2d_lumpedK1_lake(par_g,raster,no_parameters,no_par_lake,kub,klb)
         ===========================================================
-        this function takes a list of parameters and distribute them horizontally on number of cells
-        given by a raster
+        par2d_lumpedK1_lake method takes a list of parameters and distribute
+        them horizontally on number of cells given by a raster
 
         Inputs :
         ----------
-            1- par_g
+            1- par_g : [list]
                 list of parameters
-            2- raster
-                raster of the catchment (DEM)
-            3- no_parameters
+            2- raster : [gdal.dataset]
+                raster to get the spatial information of the catchment
+                (DEM, flow accumulation or flow direction raster)
+            3- no_parameters :[integer]
                 no of parameters of the cell
-            4- no_parameters_lake
+            4- no_parameters_lake : [integer]
                 no of lake parameters
-            5- kub
+            5- kub : [float]
                 upper bound of K value (traveling time in muskingum routing method)
-            6- klb
+                default is 1 hour
+            6- klb : [float]
                 Lower bound of K value (traveling time in muskingum routing method)
+                default is 0.5 hour (30 min)
 
         Output:
         ----------
-            1- Par3d: 3D array of the parameters distributed horizontally on the cells
-            2- lake_par: list of the lake parameters.
+            1- Par3d: [3d array]
+                3D array of the parameters distributed horizontally on the cells
+            2- lake_par: [list]
+                list of the lake parameters.
 
         Example:
         ----------
@@ -387,7 +456,7 @@ class DistParameters():
         ===========================================================
            HRU(par_g, raster, no_parameters, no_lumped_par=0, lumped_par_pos=[], kub=1, klb=0.5)
         ===========================================================
-        this function takes a list of parameters [saved as one column or generated
+        HRU method takes a list of parameters [saved as one column or generated
         as 1D list from optimization algorithm] and distribute them horizontally on
         number of cells given by a raster
         the input raster should be classified raster (by numbers) into class to be used
@@ -501,14 +570,15 @@ class DistParameters():
 
         Inputs:
         ----------
-            1- DEM:
-
-            2-FD:
-
-            3-FPL:
-
-            4-River:
-
+            1- DEM :
+                raster to get the spatial information of the catchment
+                (DEM raster)
+            2-FD : [gdal.dataset]
+                flow direction  raster to get the spatial information of the catchment
+            3-FPL : [gdal.dataset]
+                raster to get the spatial information of the catchment
+            4-River : [gdal.dataset]
+                raster to get the spatial information of the catchment
 
 
         Outputs:
@@ -520,55 +590,54 @@ class DistParameters():
                 [numpy ndarray] Distance to nearest drainage
 
         """
-
         # Use DEM raster information to run all loops
-        dem_A=DEM.ReadAsArray()
-        no_val=np.float32(DEM.GetRasterBand(1).GetNoDataValue())
-        rows=DEM.RasterYSize
-        cols=DEM.RasterXSize
+        dem_A = DEM.ReadAsArray()
+        no_val = np.float32(DEM.GetRasterBand(1).GetNoDataValue())
+        rows = DEM.RasterYSize
+        cols = DEM.RasterXSize
 
         # get the indices of the flow direction path
-        fd_index=GC.FlowDirectIndex(FD)
+        fd_index = GC.FlowDirectIndex(FD)
 
         # read the river location raster
-        river_A=River.ReadAsArray()
+        river_A = River.ReadAsArray()
 
         # read the flow path length raster
-        fpl_A=FPL.ReadAsArray()
+        fpl_A = FPL.ReadAsArray()
 
         # trace the flow direction to the nearest river reach and store the location
         # of that nearst reach
-        nearest_network=np.ones((rows,cols,2))*np.nan
+        nearest_network = np.ones((rows,cols,2))*np.nan
         try:
             for i in range(rows):
                 for j in range(cols):
                     if dem_A[i,j] != no_val:
-                        f=river_A[i,j]
-                        old_row=i
-                        old_cols=j
+                        f = river_A[i,j]
+                        old_row = i
+                        old_cols = j
 
                         while f != 1:
                             # did not reached to the river yet then go to the next down stream cell
                             # get the down stream cell (furure position)
-                            new_row=int(fd_index[old_row,old_cols,0])
-                            new_cols=int(fd_index[old_row,old_cols,1])
+                            new_row = int(fd_index[old_row,old_cols,0])
+                            new_cols = int(fd_index[old_row,old_cols,1])
                             # print(str(new_row)+","+str(new_cols))
                             # go to the downstream cell
-                            f=river_A[new_row,new_cols]
+                            f = river_A[new_row,new_cols]
                             # down stream cell becomes the current position (old position)
-                            old_row=new_row
-                            old_cols=new_cols
+                            old_row = new_row
+                            old_cols = new_cols
                             # at this moment old and new stored position are the same (current position)
                         # store the position in the array
-                        nearest_network[i,j,0]=new_row
-                        nearest_network[i,j,1]=new_cols
+                        nearest_network[i,j,0] = new_row
+                        nearest_network[i,j,1] = new_cols
 
         except:
-            assert 1==5, "please check the boundaries of your catchment after cropping the catchment using the a polygon it creates anomalies athe boundary "
+            assert False, "please check the boundaries of your catchment after cropping the catchment using the a polygon it creates anomalies athe boundary "
 
         # calculate the elevation difference between the cell and the nearest drainage cell
         # or height avove nearst drainage
-        HAND=np.ones((rows,cols))*np.nan
+        HAND = np.ones((rows,cols))*np.nan
 
         for i in range(rows):
             for j in range(cols):
@@ -577,7 +646,7 @@ class DistParameters():
 
         # calculate the distance to the nearest drainage cell using flow path length
         # or distance to nearest drainage
-        DTND=np.ones((rows,cols))*np.nan
+        DTND = np.ones((rows,cols))*np.nan
 
         for i in range(rows):
             for j in range(cols):
@@ -592,25 +661,24 @@ class DistParameters():
         ==================================================================
              ParametersNO(raster,no_parameters,no_lumped_par,HRUs=0)
         ==================================================================
-        this function calculates the nomber of parameters that the optimization
+        ParametersNO method calculates the nomber of parameters that the optimization
         algorithm is going top search for, use it only in case of totally distributed
         catchment parameters (in case of lumped parameters no of parameters are the same
         as the no of parameters of the conceptual model)
 
         Inputs:
         ----------
-            1- raster:
-                [gdal.dataset] raster to get the spatial information of the catchment
+            1- raster : [gdal.dataset]
+                raster to get the spatial information of the catchment
                 (DEM, flow accumulation or flow direction raster)
-            2- no_parameters
-                [int] no of parameters of the cell according to the rainfall runoff model
-            3-no_lumped_par:
-                [int] nomber of lumped parameters, you have to enter the value of
+            2- no_parameters : [integer]
+                no of parameters of the cell according to the rainfall runoff model
+            3-no_lumped_par : [integer]
+                nomber of lumped parameters, you have to enter the value of
                 the lumped parameter at the end of the list, default is 0 (no lumped parameters)
-            4-HRUs:
-                [0 or 1] 0 to define that no hydrologic response units (HRUs), 1 to define that
+            4-HRUs : [0 or 1]
+                0 to define that no hydrologic response units (HRUs), 1 to define that
                 HRUs are used
-
         """
         if self.HRUs == 0:
             if self.no_lumped_par > 0:
@@ -633,7 +701,7 @@ class DistParameters():
         ============================================================
             SaveParameters(DistParFn, raster, Par, No_parameters, snow, kub, klb, Path=None)
         ============================================================
-        this function takes generated parameters by the calibration algorithm,
+        SaveParameters method takes generated parameters by the calibration algorithm,
         distributed them with a given function and save them as a rasters
 
         Inputs:
@@ -695,3 +763,19 @@ class DistParameters():
 
         for i in range(np.shape(self.Par3d)[2]):
             Raster.RasterLike(self.raster,self.Par3d[:,:,i],pnme[i])
+
+
+    def ListAttributes(self):
+        """
+        Print Attributes List
+        """
+
+        print('\n')
+        print('Attributes List of: ' + repr(self.__dict__['name']) + ' - ' + self.__class__.__name__ + ' Instance\n')
+        self_keys = list(self.__dict__.keys())
+        self_keys.sort()
+        for key in self_keys:
+            if key != 'name':
+                print(str(key) + ' : ' + repr(self.__dict__[key]))
+
+        print('\n')

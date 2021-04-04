@@ -7,7 +7,7 @@ package:
 
 source:
   #git_url: {{ environ.get('FEEDSTOCK_ROOT', '..') }}
-  path: F:\01Algorithms\HAPI
+  path: F:\01Algorithms\Hydrology\HAPI
 
 build:
   # Uncomment the following line if the package is pure Python and the recipe

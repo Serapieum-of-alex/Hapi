@@ -11,7 +11,6 @@ import numpy as np
 import shutil
 import pandas as pd
 from datetime import datetime
-# import pkg_resources
 # import geopandas as gpd
 from rasterstats import zonal_stats
 import rasterio
@@ -22,6 +21,23 @@ from Hapi.raster import Raster as raster
 
 class Inputs():
 
+    """
+    ========================
+        Inputs
+    ========================
+    Inputs class contains methods to prepare the inputs for the distributed
+    hydrological model
+
+    Methods:
+        1- PrepareInputs
+        2- ExtractParametersBoundaries
+        3- ExtractParameters
+        4- CreateLumpedInputs
+        5- RenameFiles
+        6- changetext2time
+        7- ReadExcelData
+        8- ListAttributes
+    """
     def __init__(self):
         pass
 
@@ -164,15 +180,15 @@ class Inputs():
 
         the parameters are
             ["tt", rfcf,"sfcf","cfmax","cwh","cfr","fc","beta",'etf'
-             "lp","k0","k1","k2","uzl","perc", "maxbas",'K_muskingum', 
+             "lp","k0","k1","k2","uzl","perc", "maxbas",'K_muskingum',
              'x_muskingum']
         """
         ParametersPath = os.path.dirname(Hapi.__file__)
         ParametersPath = ParametersPath + "/Parameters/" + scenario
         ParamList = ["tt", "rfcf", "sfcf","cfmax","cwh","cfr","fc","beta", "etf"
-                 "lp","k0","k1","k2","uzl","perc", "maxbas", "K_muskingum", 
+                 "lp","k0","k1","k2","uzl","perc", "maxbas", "K_muskingum",
                  "x_muskingum"]
-        
+
         if not AsRaster:
             raster = rasterio.open(ParametersPath + "/" + ParamList[0] + ".tif")
             src = src.to_crs(crs=raster.crs)
@@ -183,9 +199,9 @@ class Inputs():
                 array = raster.read(1)
                 affine = raster.transform
                 Par.append(zonal_stats(src, array, affine=affine, stats=['max'])[0]['max']) #stats=['min', 'max', 'mean', 'median', 'majority']
-    
+
             # plot the given basin with the parameters raster
-    
+
             # Plot DEM
             ax = show((raster, 1), with_bounds=True)
             src.plot(facecolor='None', edgecolor='blue', linewidth=2, ax=ax)
@@ -198,6 +214,23 @@ class Inputs():
 
     @staticmethod
     def CreateLumpedInputs(Path):
+        """
+        =========================================================
+             CreateLumpedInputs(Path)
+        =========================================================
+        CreateLumpedInputs method generate a lumped parameters from
+        distributed parameters by taking the average
+        Parameters
+        ----------
+        Path : [str]
+            path to folder that contains the parameter rasters.
+
+        Returns
+        -------
+        data : [array]
+            array contains the average values of the distributed parameters.
+
+        """
         # data type
         assert type(Path) == str, "PrecPath input should be string type"
         # check wether the path exists or not
@@ -231,7 +264,7 @@ class Inputs():
         -------
         files in the Path are going to have a new name including the order at
         the begining of the name.
-        
+
         Examples
         -------
         1- "MSWEP_2009010100.tif" the fmt = '%Y%m%d00'
@@ -260,7 +293,7 @@ class Inputs():
             os.rename(Path + "/" + df.loc[i,'files'], Path + "/" + df.loc[i,'new_names'])
 
     # def LoadParameters():
-        
+
     @staticmethod
     def changetext2time(string):
         """
@@ -319,3 +352,18 @@ class Inputs():
 
         return Q
 
+
+    def ListAttributes(self):
+        """
+        Print Attributes List
+        """
+
+        print('\n')
+        print('Attributes List of: ' + repr(self.__dict__['name']) + ' - ' + self.__class__.__name__ + ' Instance\n')
+        self_keys = list(self.__dict__.keys())
+        self_keys.sort()
+        for key in self_keys:
+            if key != 'name':
+                print(str(key) + ' : ' + repr(self.__dict__[key]))
+
+        print('\n')

@@ -15,7 +15,22 @@ import numpy as np
 
 
 class Routing():
+    """
+    ==============================================================
+        Routing
+    ==============================================================
+    Routing class contains routing method
 
+    Methods
+    1- Muskingum
+    2- Muskingum_V
+    3- TriangularRouting1
+        functions :
+        1- CalculateWeights
+    4- TriangularRouting2
+        functions
+        1- Tf
+    """
     def __init__(self):
         pass
 
@@ -59,7 +74,7 @@ class Routing():
 
     #    if c1+c2+c3!=1:
     #        raise("sim of c1,c2 & c3 is not 1")
-        
+
         outflow = np.zeros_like(inflow)
         outflow[0] = Qinitial
 
@@ -67,15 +82,16 @@ class Routing():
             outflow[i] = c1*inflow[i] + c2*inflow[i-1] + c3*outflow[i-1]
 
         outflow = np.round(outflow,4)
-        
+
         return outflow
-    
+
     @staticmethod
     def Muskingum_V(inflow,Qinitial,k,x,dt):
         """
         ===========================================================
-         muskingum(inflow,Qinitial,k,x,dt)
+         Muskingum_V(inflow,Qinitial,k,x,dt)
         ===========================================================
+        Vectorized version of Muskingum
 
         inputs:
         ----------
@@ -113,14 +129,14 @@ class Routing():
         O = np.zeros_like(inflow)
         O[0] = Qinitial
         O[1:] = c1 * inflow[1:] + c2 * inflow[0:-1]
-        
+
         for i in range(1,len(inflow)):
-            # only if the 
+            # only if the
             if not O[i] + c3 * O[i-1] < 0:
                 O[i] = O[i] + c3 * O[i-1]
-            
+
         return O
-    
+
     @staticmethod
     def Tf(maxbas):
         """
@@ -160,13 +176,13 @@ class Routing():
         return wi
 
     @staticmethod
-    def TriangularRouting1(q, maxbas=1):
+    def TriangularRouting2(q, maxbas=1):
         """
         ==========================================================
              TriangularRouting(q, maxbas=1)
         ==========================================================
-        This function implements the transfer function using a triangular
-        function
+        TriangularRouting implements the transfer function using a triangular
+        function (considers only integer values of Maxbas parameter)
 
         Inputs:
         ----------
@@ -211,7 +227,7 @@ class Routing():
         ======================================================
             CalculateMaxBas(MAXBAS)
         ======================================================
-        This function calculate the MAXBAS Weights based on a MAXBAX number
+        CalculateMaxBas calculate the MAXBAS Weights based on a MAXBAX number
         The MAXBAS is a HBV parameter that controls the routing
 
         Inputs:
@@ -256,7 +272,7 @@ class Routing():
                 #Integral of  x dx with slope of 60 degree Equilateral triangle
                 ynow = np.tan(np.pi/3) * (x+1)
                 # ' Area / Total Area
-                maxbasW[x] = ((ynow + yant) / 2) / TotalA 
+                maxbasW[x] = ((ynow + yant) / 2) / TotalA
 
             else:     #The area here is calculated by the formlua of a trapezoidal (B1+B2)*h /2
                 if flag == 1 :
@@ -300,13 +316,14 @@ class Routing():
 
 
     @staticmethod
-    def TriangularRouting2(Q,MAXBAS):
+    def TriangularRouting1(Q,MAXBAS):
         """
         ====================================================
-             RoutingMAXBAS(Q,MAXBAS)
+             TriangularRouting1(Q,MAXBAS)
         ====================================================
-        This function calculate the routing from a input hydrograph using
-        the MAXBAS parameter from the HBV model.
+        TriangularRouting1 calculate the routing from a input hydrograph using
+        the MAXBAS parameter from the HBV model (considers float values of Maxbas
+                                                 parameter).
 
         EXAMPLE:
         ----------

@@ -13,14 +13,76 @@ import matplotlib.pyplot as plt
 
 class Event():
     # class attributes
+    """
+    =========================================
+        Event
+    =========================================
+    The Event class reads all the results of the Hydraulic model to preform all
+    kind of analysis on flood event basis and the overtopping.
 
+    Methods:
+        1- IndexToDate
+        2- CreateEventIndex
+        3- GetAllEvents
+        4- Overtopping
+        5- VolumeError
+        6- OverlayMaps
+        7- ReadEventIndex
+        8- Histogram
+        9- Drop
+        10- Save
+        11- GetEventBeginning
+        12- GetEventEnd
+        13- PrepareForPlotting
+        14- ListAttributes
+    """
 
-    ### constructor
     def __init__(self, name, start = "1950-1-1", days = 36890,
                  leftOvertopping_Suffix = "_left.txt",
                  RightOvertopping_Suffix = "_right.txt", DepthPrefix = "DepthMax",
                  DurationPrefix = "Duration", ReturnPeriodPrefix = "ReturnPeriod" ,
                  Compressed = True):
+        """
+        =============================================================================
+            Event(self, name, start = "1950-1-1", days = 36890,
+                  leftOvertopping_Suffix = "_left.txt",
+                  RightOvertopping_Suffix = "_right.txt", DepthPrefix = "DepthMax",
+                  DurationPrefix = "Duration", ReturnPeriodPrefix = "ReturnPeriod" ,
+                  Compressed = True)
+        =============================================================================
+        To instantiate the Event class you need to provide the following arguments
+
+        Parameters
+        ----------
+        name : [str]
+            DESCRIPTION.
+        start : [str], optional
+            start date. The default is "1950-1-1".
+        days : integer, optional
+            length of the simulation . The default is 36890.
+        leftOvertopping_Suffix : [str], optional
+            the prefix you used to name the overtopping form the left bank files.
+            The default is "_left.txt".
+        RightOvertopping_Suffix : TYPE, optional
+            the prefix you used to name the overtopping form the right bank files.
+            The default is "_right.txt".
+        DepthPrefix : [str], optional
+            the prefix you used to name the Max depth raster result maps.
+            The default is "DepthMax".
+        DurationPrefix : [str], optional
+            the prefix you used to name the inundation duration raster result maps.
+            The default is "Duration".
+        ReturnPeriodPrefix : [str], optional
+            the prefix you used to name the Return Period raster result maps.
+            The default is "ReturnPeriod".
+        Compressed : [bool], optional
+            True if the result raster/ascii files are compressed. The default is True.
+
+        Returns
+        -------
+        None.
+
+        """
         # instance attribute
         self.name = name
         self.start = dt.datetime.strptime(start,"%Y-%m-%d")
@@ -56,7 +118,7 @@ class Event():
     def CreateEventIndex(self, IndexPath):
         """
         ========================================================
-         CreateEventIndex(IndexPath)
+             CreateEventIndex(IndexPath)
         ========================================================
         CreateEventIndex takes the path to the index file result from the 2D model
         and creates a data frame to start adding the components of the EventIndex
@@ -74,9 +136,9 @@ class Event():
         #FIXME
         # if the flood event does not have overtopping for 1 day then continues to
         # overtop after the method considers it as two separate events however
-        # it is the same event (if the gap is less than 10 days it is still 
+        # it is the same event (if the gap is less than 10 days it is still
         # considered the same event)
-        
+
         # read the index file (containing the id of the days where flood happens (2D
         # algorithm works))
         EventDays = pd.read_csv(IndexPath,header = None)
@@ -149,7 +211,7 @@ class Event():
         #FIXME
         # if the flood event does not have overtopping for 1 day then continues to
         # overtop after the method considers it as two separate events however
-        # it is the same event (if the gap is less than 10 days it is still 
+        # it is the same event (if the gap is less than 10 days it is still
         # considered the same event)
         if not hasattr(self,"EventIndex"):
             # create the dataframe if the user did not use the CreateEventIndex method to
@@ -191,8 +253,8 @@ class Event():
         # the volume of water is m3/s for hourly stored and acumulated values
         # volume = overtopping * 60 *60 = m3
         self.EventIndex.loc[:,'Volume'] = self.EventIndex.loc[:,'OvertoppingCum'] * 60*60
-    
-    
+
+
     def VolumeError(self, Path):
         """
         ===========================================
@@ -289,11 +351,27 @@ class Event():
 
 
     def ReadEventIndex(self,Path):
+        """
+        ===============================================================
+             ReadEventIndex(Path)
+        ===============================================================
+        ReadEventIndex method reads the EventIndex table created using the
+        "CreateEventIndex" or "Overtopping" methods
+        Parameters
+        ----------
+        Path : [str]
+            Path to the EventIndex file.
+
+        Returns
+        -------
+        EventIndex : [dataframe].
+            dataframe of the EventIndex table
+        """
         EventIndex = pd.read_csv(Path)
         self.EventIndex = EventIndex
         self.IndexToDate()
 
-    
+
     def Histogram(self, Day, ExcludeValue, OccupiedCellsOnly, Map = 1, filter1 = 0.2,
                   filter2 = 15):
         """
@@ -312,7 +390,7 @@ class Event():
             3-OccupiedCellsOnly : TYPE
                 DESCRIPTION.
             4-Map : [integer], optional
-                1 for the max depth maps, 2 for the duration map, 3 for the 
+                1 for the max depth maps, 2 for the duration map, 3 for the
                 return period maps. The default is 1.
 
         Returns
@@ -358,8 +436,8 @@ class Event():
         # plt.title('Normal Distribution Histogram matplotlib',fontsize=15)
         plt.show()
         return n, bins , patches
-    
-    
+
+
     def Drop(self, DropList):
         """
         ======================================================
@@ -387,6 +465,22 @@ class Event():
 
 
     def Save(self,Path):
+        """
+        ==========================================================
+            Save(self,Path)
+        ==========================================================
+        Save method saves the EventIndex table
+
+        Parameters
+        ----------
+        Path : [str]
+            Path to where you want to save the table.
+
+        Returns
+        -------
+        None.
+
+        """
         self.EventIndex.to_csv(Path,header=True,index = None) #index_label = "Index"
 
 

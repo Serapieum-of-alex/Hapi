@@ -21,11 +21,46 @@ from Hapi.wrapper import Wrapper
 
 class Calibration(Catchment):
 
+    """
+    =========================================================================
+          Calibration
+    =========================================================================
+
+    Calibration class contains to connect the parameter spatial distribution
+    function with the with both component of the spatial representation of the
+    hydrological process (conceptual model & spatial routing) to calculate the
+    performance of predicted runoff at known locations based on given
+    performance function
+
+    The calibration class is sub-class from the Catchment super class so you
+    need to create the Catchment object first to be able to run the calibration
+
+    """
+
     def __init__(self, name, StartDate, EndDate, fmt="%Y-%m-%d", SpatialResolution = 'Lumped',
                  TemporalResolution = "Daily"):
         """
-        SpatialR : TYPE, optional
-            Spatial Resolution "Distributed" or "Lumped". The default is 'Lumped'.
+        =============================================================================
+         Calibration(name, StartDate, EndDate, fmt="%Y-%m-%d", SpatialResolution = 'Lumped',
+                          TemporalResolution = "Daily")
+        =============================================================================
+        to instantiate the Calibration object you need to provide the following
+        arguments
+
+        Parameters
+        ----------
+        name : [str]
+            Name of the Catchment.
+        StartDate : [str]
+            starting date.
+        EndDate : [str]
+            end date.
+        fmt : [str], optional
+            format of the given date. The default is "%Y-%m-%d".
+        SpatialResolution : [str], optional
+            Lumped or 'Distributed' . The default is 'Lumped'.
+        TemporalResolution : [str], optional
+            "Hourly" or "Daily". The default is "Daily".
 
         Returns
         -------
@@ -46,6 +81,26 @@ class Calibration(Catchment):
 
 
     def ReadObjectiveFn(self,OF,args):
+        """
+        ==============================================================
+            ReadObjectiveFn(OF,args)
+        ==============================================================
+        ReadObjectiveFn method takes the objective function and and any arguments
+        that are needed to be passed to the objective function.
+
+        Parameters
+        ----------
+        OF : [function]
+            callable function to calculate any kind of metric to be used in the
+            calibration.
+        args : [positional/keyword arguments]
+            any kind of argument you want to pass to your objective function.
+
+        Returns
+        -------
+        None.
+
+        """
         # check objective_function
         assert callable(OF) , "The Objective function should be a function"
         self.OF = OF
@@ -55,17 +110,44 @@ class Calibration(Catchment):
 
         self.OFArgs = args
 
-    def ExtractDischarge(self):
+    def ExtractDischarge(self, Factor=None):
+        """
+        ================================================================
+                ExtractDischarge(self)
+        ================================================================
+        ExtractDischarge method extracts the discharge hydrograph in the
+        Q
+
+        Parameters
+        ----------
+        Factor : [list/None]
+            list of factor if you want to multiply the simulated discharge by
+            a factor you have to provide a list of the factor (as many factors
+            as the number of gauges). The default is False.
+
+        Returns
+        -------
+        None.
+
+        """
         self.Qsim = np.zeros((self.TS-1,len(self.GaugesTable)))
         # error = 0
         for i in range(len(self.GaugesTable)):
             Xind = int(self.GaugesTable.loc[self.GaugesTable.index[i],"cell_row"])
             Yind = int(self.GaugesTable.loc[self.GaugesTable.index[i],"cell_col"])
-            # gaugeid = Coello.GaugesTable.loc[Coello.GaugesTable.index[i],"id"]
+            # gaugeid = self.GaugesTable.loc[self.GaugesTable.index[i],"id"]
 
-            Quz = self.quz_routed[Xind,Yind,:-1]
-            Qlz = self.qlz_translated[Xind,Yind,:-1]
-            self.Qsim[:,i] = Quz + Qlz
+            # Quz = self.quz_routed[Xind,Yind,:-1]
+            # Qlz = self.qlz_translated[Xind,Yind,:-1]
+            # self.Qsim[:,i] = Quz + Qlz
+
+            Qsim = np.reshape(self.Qtot[Xind,Yind,:-1],self.TS-1)
+
+            if Factor != None:
+                self.Qsim[:,i] = Qsim * Factor[i]
+            else:
+                self.Qsim[:,i] = Qsim
+
             # Qobs = Coello.QGauges.loc[:,gaugeid]
             # error = error + OF(Qobs, Qsim)
 
@@ -74,7 +156,9 @@ class Calibration(Catchment):
     def RunCalibration(self, SpatialVarFun, OptimizationArgs, printError=None):
         """
         =======================================================================
-            RunCalibration(ConceptualModel, Paths, p2, Q_obs, UB, LB, SpatialVarFun, lumpedParNo, lumpedParPos, objective_function, printError=None, *args):
+            RunCalibration(ConceptualModel, Paths, p2, Q_obs, UB, LB,
+                           SpatialVarFun, lumpedParNo, lumpedParPos,
+                           objective_function, printError=None, *args):
         =======================================================================
         this function runs the calibration algorithm for the conceptual distributed
         hydrological model
@@ -502,3 +586,18 @@ class Calibration(Catchment):
         self.OFvalue = res[0]
 
         return res
+
+    def ListAttributes(self):
+        """
+        Print Attributes List
+        """
+
+        print('\n')
+        print('Attributes List of: ' + repr(self.__dict__['name']) + ' - ' + self.__class__.__name__ + ' Instance\n')
+        self_keys = list(self.__dict__.keys())
+        self_keys.sort()
+        for key in self_keys:
+            if key != 'name':
+                print(str(key) + ' : ' + repr(self.__dict__[key]))
+
+        print('\n')
