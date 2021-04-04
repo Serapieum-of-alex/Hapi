@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: HAPI-Nile
-Version: 0.3.0
+Version: 1.0.0
 Summary: Distributed Hydrological model
 Home-page: https://github.com/MAfarrag/HAPI
 Author: Mostafa Farrag
@@ -11,8 +11,12 @@ Description: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3819624.svg)](h
         [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/MAfarrag/HAPI/master)
         [![conda](https://anaconda.org/mafarrag/hapi/badges/version.svg)](https://anaconda.org/MAfarrag/hapi)
         [![Build Status](https://travis-ci.org/MAfarrag/Hapi.svg?branch=master)](https://travis-ci.org/MAfarrag/Hapi)
-        [![PyPI pyversions](https://img.shields.io/pypi/pyversions/ansicolortags.svg)](https://pypi.python.org/pypi/ansicolortags/)
+        [![Python Versions](https://img.shields.io/pypi/pyversions/HAPI-Nile.png)](https://img.shields.io/pypi/pyversions/HAPI-Nile)
         [![Documentation Status](https://readthedocs.org/projects/hapi-hm/badge/?version=latest)](https://hapi-hm.readthedocs.io/en/latest/?badge=latest)
+        [![Downloads](https://pepy.tech/badge/hapi-nile)](https://pepy.tech/project/hapi-nile)
+        [![Downloads](https://pepy.tech/badge/hapi-nile/month)](https://pepy.tech/project/hapi-nile)
+        [![Downloads](https://pepy.tech/badge/hapi-nile/week)](https://pepy.tech/project/hapi-nile)
+        [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
         
         
         Hapi - Hydrological library for Python 
