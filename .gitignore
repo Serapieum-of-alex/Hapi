@@ -21,7 +21,6 @@ HapiSpyder/
 *.txt
 *.npy
 *.pkl
-*.ipynb
 # conda smithy ci-skeleton start
 *.pyc
 
