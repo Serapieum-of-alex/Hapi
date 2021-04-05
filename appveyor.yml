@@ -26,6 +26,8 @@ environment:
   - TOXENV: py35
   - TOXENV: py36
   - TOXENV: py37
+  - TOXENV: py38
+  - TOXENV: py39
 
 # Do not build on tags (GitHub, Bitbucket, GitLab, Gitea)
 #skip_tags: true
@@ -75,7 +77,7 @@ install:
   - cmd: python setup.py build_ext --inplace
   - cmd: python setup.py install
   - cmd: cd ..
-  #- cmd: pip install tox
+  - cmd: pip install tox
 
 build: off
 # build Configuration, i.e. Debug, Release, etc.

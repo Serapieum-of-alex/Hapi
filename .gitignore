@@ -7,7 +7,6 @@ Examples/data/Hapi.sublime-workspace
 HapiSpyder/
 *.pyc
 *.zip
-*.ini
 *.drawio
 *.dbf
 *.prj
