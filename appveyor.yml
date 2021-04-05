@@ -57,25 +57,25 @@ init:
 
 install:
   # Clone simply to get the script for setting up Windows build environment.
-   - cmd: git clone https://github.com/MAfarrag/Hapi.git
+   #- cmd: git clone https://github.com/MAfarrag/Hapi.git
   # for python 3.4 as it does not exist in conda channels
   # conda config --set restore_free_channel True
   # Create a new environment
-  #- conda create -q -n Hapi-env python=${TRAVIS_PYTHON_VERSION} --yes
-  - source activate Hapi-env
+  - cmd: conda create -q -n Hapi-env python=${TRAVIS_PYTHON_VERSION} --yes
+  - cmd: source activate Hapi-env
   # Install various dependencies
-  - conda install --yes $DEPS pip
-  - git checkout git@github.com:MAfarrag/Hapi.git
+  - cmd: conda install --yes $DEPS pip
+  - cmd: git checkout git@github.com:MAfarrag/Hapi.git
   # You can add any CONDA channels you may need here. CONDA supports
   # both the commands add and append. The only difference is that 
   # the add command places the channel at the front of the priority 
   # list, while append does the opposite.
-  - conda config --add channels conda-forge
-  - python -V
-  - python setup.py build_ext --inplace
-  - python setup.py install
-  - cd ..
-  - pip install tox
+  - cmd: conda config --add channels conda-forge
+  - cmd: python -V
+  - cmd: python setup.py build_ext --inplace
+  - cmd: python setup.py install
+  - cmd: cd ..
+  - cmd: pip install tox
 # build Configuration, i.e. Debug, Release, etc.
 # to add several configurations to build matrix:
 configuration:
