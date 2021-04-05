@@ -12,10 +12,15 @@ branches:
   except:
     - gh-pages
 
+platform:
+  - x86
+  - x64
+
 environment:
   # Appveyor machines come with miniconda already installed.
   CONDA_INSTALL_LOCN: "C:\\Miniconda-x64"
-  
+  CONDA_VERSION: 3
+
   matrix:
   - TOXENV: py27
   - TOXENV: py35
@@ -23,7 +28,7 @@ environment:
   - TOXENV: py37
 
 # Do not build on tags (GitHub, Bitbucket, GitLab, Gitea)
-skip_tags: true
+#skip_tags: true
 
 # Skipping commits with particular message or from specific user
 skip_commits:
@@ -49,16 +54,10 @@ init:
 # clone directory
 #clone_folder: git@github.com:MAfarrag/Hapi.git
 #clone_folder: https://github.com/MAfarrag/Hapi.git
-before_build:
-  # Install the latest version of Miniconda
-  - wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh
-  - chmod +x miniconda.sh
-  - ./miniconda.sh -b
-  - export PATH=/home/appveyor/miniconda2/bin:$PATH
-  - conda update --yes conda
-  - conda info -a
 
 install:
+  # Clone simply to get the script for setting up Windows build environment.
+   - cmd: git clone https://github.com/MAfarrag/Hapi.git
   # for python 3.4 as it does not exist in conda channels
   # conda config --set restore_free_channel True
   # Create a new environment
