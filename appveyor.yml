@@ -61,7 +61,7 @@ install:
   # for python 3.4 as it does not exist in conda channels
   # conda config --set restore_free_channel True
   # Create a new environment
-  - conda create -q -n Hapi-env python=${TRAVIS_PYTHON_VERSION} --yes
+  #- conda create -q -n Hapi-env python=${TRAVIS_PYTHON_VERSION} --yes
   - source activate Hapi-env
   # Install various dependencies
   - conda install --yes $DEPS pip
