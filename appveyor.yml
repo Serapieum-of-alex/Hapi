@@ -88,5 +88,5 @@ configuration:
 #  - cd ./Hapi/Examples
 
 
-test_script:
-- tox
+#test_script:
+#- tox
