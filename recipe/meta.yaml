@@ -8,7 +8,10 @@ package:
 
 source:
   #git_url: {{ environ.get('FEEDSTOCK_ROOT', '..') }}
+  #   url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
+  # url: https://github.com/MAfarrag/Hapi/archive/v{{version}}.tar.gz
   path: F:\01Algorithms\Hydrology\HAPI
+  sha256: 05499e69186ff7d286fb9b4f4183517f59922bef51059289ddd25db8c752b060  
 
 build:
   # Uncomment the following line if the package is pure Python and the recipe
