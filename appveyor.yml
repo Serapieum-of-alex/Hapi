@@ -91,6 +91,4 @@ configuration:
 
 
 test_script:
-#- tox
-  imports:
-      - Hapi
+- tox
