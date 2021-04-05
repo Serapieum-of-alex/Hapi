@@ -76,7 +76,7 @@ install:
   - cmd: python -V
   - cmd: python setup.py build_ext --inplace
   - cmd: python setup.py install
-  - cmd: cd ..
+  #- cmd: cd ..
   - cmd: pip install tox
 
 build: off
