@@ -1,0 +1,67 @@
+# version format
+version: 1.0.{build}
+# you can use {branch} name in version format too
+# version: 1.0.{build}-{branch}
+
+# branches to build
+branches:
+  # whitelist
+  only:
+    - master
+  # blacklist
+  except:
+    - gh-pages
+
+# Do not build on tags (GitHub, Bitbucket, GitLab, Gitea)
+skip_tags: true
+
+# Skipping commits with particular message or from specific user
+skip_commits:
+  message: /Created.*\.(png|jpg|jpeg|bmp|gif)/      # Regex for matching commit message
+#  author: John                                      # Commit author's
+
+# Including commits with particular message or from specific user
+only_commits:
+  message: /build/                # Start a new build if message contains 'build'
+#  author: jack@company.com        # Start a new build for commit of user with email jack@company.com
+
+#---------------------------------#
+#    environment configuration    #
+#---------------------------------#
+
+# Build worker image (VM template)
+image: Visual Studio 2015
+
+# scripts that are called at very beginning, before repo cloning
+init:
+  - git config --global core.autocrlf input
+
+# clone directory
+clone_folder: F:\01Algorithms\Hydrology\HAPI
+
+install:
+  # for python 3.4 as it does not exist in conda channels
+  # conda config --set restore_free_channel True
+  # Create a new environment
+  - conda create -q -n Hapi-env python=${TRAVIS_PYTHON_VERSION} --yes
+  - source activate Hapi-env
+  # Install various dependencies
+  - conda install --yes $DEPS pip
+  # You can add any CONDA channels you may need here. CONDA supports
+  # both the commands add and append. The only difference is that 
+  # the add command places the channel at the front of the priority 
+  # list, while append does the opposite.
+  - conda config --add channels conda-forge
+  - python -V
+  - python setup.py build_ext --inplace
+  - python setup.py install
+  - cd ..
+
+# build Configuration, i.e. Debug, Release, etc.
+# to add several configurations to build matrix:
+configuration:
+  - Debug
+  - Release
+
+script:
+  - cd ./Hapi/Examples
