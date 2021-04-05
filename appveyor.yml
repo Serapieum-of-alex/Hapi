@@ -28,8 +28,8 @@ skip_commits:
 #  author: John                                      # Commit author's
 
 # Including commits with particular message or from specific user
-only_commits:
-  message: /build/                # Start a new build if message contains 'build'
+#only_commits:
+#  message: /build/                # Start a new build if message contains 'build'
 #  author: jack@company.com        # Start a new build for commit of user with email jack@company.com
 
 #---------------------------------#
@@ -63,7 +63,7 @@ install:
   - python setup.py build_ext --inplace
   - python setup.py install
   - cd ..
-
+  - pip install tox
 # build Configuration, i.e. Debug, Release, etc.
 # to add several configurations to build matrix:
 configuration:
@@ -72,3 +72,7 @@ configuration:
 
 #script:
 #  - cd ./Hapi/Examples
+
+
+test_script:
+- tox
