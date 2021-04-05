@@ -12,7 +12,7 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/rys2u0l1nbmfjuww?svg=true)](https://ci.appveyor.com/project/MAfarrag/hapi)
 
 
-
+![MaxBas](../img/Hapi.jpg)
 
 
 Hapi - Hydrological library for Python 
