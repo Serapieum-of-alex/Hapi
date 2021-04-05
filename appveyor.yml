@@ -60,11 +60,13 @@ install:
    #- cmd: git clone https://github.com/MAfarrag/Hapi.git
   # for python 3.4 as it does not exist in conda channels
   # conda config --set restore_free_channel True
+  # No need to install miniconda because appveyor comes with it.
+  - cmd: SET PATH=%CONDA_INSTALL_LOCN%;%CONDA_INSTALL_LOCN%\Scripts;%PATH%
   # Create a new environment
-  - cmd: conda create -q -n Hapi-env python=${TRAVIS_PYTHON_VERSION} --yes
-  - cmd: source activate Hapi-env
+  #- cmd: conda create -q -n Hapi-env python=${TRAVIS_PYTHON_VERSION} --yes
+  #- cmd: source activate Hapi-env
   # Install various dependencies
-  - cmd: conda install --yes $DEPS pip
+  #- cmd: conda install --yes $DEPS pip
   - cmd: git checkout git@github.com:MAfarrag/Hapi.git
   # You can add any CONDA channels you may need here. CONDA supports
   # both the commands add and append. The only difference is that 
