@@ -44,7 +44,8 @@ init:
   - git config --global core.autocrlf input
 
 # clone directory
-clone_folder: git@github.com:MAfarrag/Hapi.git
+#clone_folder: git@github.com:MAfarrag/Hapi.git
+#clone_folder: https://github.com/MAfarrag/Hapi.git
 
 install:
   # for python 3.4 as it does not exist in conda channels
@@ -54,6 +55,7 @@ install:
   - source activate Hapi-env
   # Install various dependencies
   - conda install --yes $DEPS pip
+  - git checkout git@github.com:MAfarrag/Hapi.git
   # You can add any CONDA channels you may need here. CONDA supports
   # both the commands add and append. The only difference is that 
   # the add command places the channel at the front of the priority 

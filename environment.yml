@@ -18,11 +18,13 @@ dependencies:
   - statsmodels
   - rasterio
   - rasterstats
-  - netCDF4
   - oasis
+  - netCDF4
+  - scikit-learn
+  - scikit-image
+  - ecmwf-api-client
   #- hapi
   - pip:
     - ecmwf-api-client 
-    - sklearn
     #- hapi-nile==0.1.0
     - git+https://github.com/MAfarrag/HAPI.git
