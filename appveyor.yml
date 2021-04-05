@@ -46,7 +46,15 @@ init:
 # clone directory
 #clone_folder: git@github.com:MAfarrag/Hapi.git
 #clone_folder: https://github.com/MAfarrag/Hapi.git
-
+before_install:
+  # Install the latest version of Miniconda
+  - wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh
+  - chmod +x miniconda.sh
+  - ./miniconda.sh -b
+  - export PATH=/home/appveyor/miniconda2/bin:$PATH
+  - conda update --yes conda
+  - conda info -a
+  
 install:
   # for python 3.4 as it does not exist in conda channels
   # conda config --set restore_free_channel True
