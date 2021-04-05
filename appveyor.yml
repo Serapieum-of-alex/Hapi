@@ -76,6 +76,8 @@ install:
   - cmd: python setup.py install
   - cmd: cd ..
   - cmd: pip install tox
+  
+build: off
 # build Configuration, i.e. Debug, Release, etc.
 # to add several configurations to build matrix:
 configuration:
