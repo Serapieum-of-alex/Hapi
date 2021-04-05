@@ -12,6 +12,13 @@ branches:
   except:
     - gh-pages
 
+environment:
+  matrix:
+  - TOXENV: py27
+  - TOXENV: py35
+  - TOXENV: py36
+  - TOXENV: py37
+
 # Do not build on tags (GitHub, Bitbucket, GitLab, Gitea)
 skip_tags: true
 
@@ -63,5 +70,5 @@ configuration:
   - Debug
   - Release
 
-script:
-  - cd ./Hapi/Examples
+#script:
+#  - cd ./Hapi/Examples
