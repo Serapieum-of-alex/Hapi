@@ -600,7 +600,7 @@ class Catchment():
         print("Gauges data are read successfully")
 
 
-    def ReadParametersBounds(self, UB, LB, Snow):
+    def ReadParametersBounds(self, UB, LB, Snow, Maxbas=False):
         """
         =======================================================================
             ReadParametersBounds(UB, LB, Snow)
@@ -634,6 +634,7 @@ class Catchment():
 
         assert Snow == 0 or Snow == 1, " snow input defines whether to consider snow subroutine or not it has to be 0 or 1"
         self.Snow = Snow
+        self.Maxbas = Maxbas
 
         print("Parameters bounds are read successfully")
 
