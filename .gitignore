@@ -18,7 +18,6 @@ HapiSpyder/
 *.ovr
 *.jpg
 *.shp
-*.txt
 *.npy
 *.pkl
 # conda smithy ci-skeleton start
@@ -26,17 +25,6 @@ HapiSpyder/
 
 build_artifacts
 # conda smithy ci-skeleton end
-.azure-pipelines/
-.ci_support/
-.circleci/
-.github/
-.scripts/
-.ci_support/README
-.circleci/config.yml
-.scripts/run_docker_build.sh
-.scripts/build_steps.sh
-.github/workflows/webservices.yml
-.github/workflows/automerge.yml
 docs/source/HapiDocs.sublime-project
 docs/source/HapiDocs.sublime-workspace
 docs/HapiDocs.sublime-project

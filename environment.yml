@@ -3,11 +3,9 @@ channels:
   - mafarrag
 dependencies:
   - pip
-  - numpy
   - affine
   - fiona
   - proj
-  - pyproj
   - gdal
   - pandas
   - geopandas
@@ -25,6 +23,8 @@ dependencies:
   - ecmwf-api-client
   #- hapi
   - pip:
+    - numpy
+    - pyproj
     - ecmwf-api-client 
-    #- hapi-nile==0.1.0
-    - git+https://github.com/MAfarrag/HAPI.git
+    - hapi-nile==0.1.0
+    #- git+https://github.com/MAfarrag/HAPI.git
