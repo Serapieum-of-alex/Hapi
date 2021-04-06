@@ -3,6 +3,8 @@ Created on Sat Mar 14 16:36:01 2020
 
 @author: mofarrag
 """
+import os
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
 from matplotlib import animation
@@ -809,6 +811,7 @@ class Visualize():
                                        interval = Interval, blit = True)
         return anim
 
+
     def AnimateArray(Arr, Time, NoElem, TicksSpacing = 2, Figsize=(8,8), PlotNumbers=True,
                      NumSize= 8, Title = 'Total Discharge',titlesize = 15, Backgroundcolorthreshold=None,
                      cbarlabel = 'Discharge m3/s', cbarlabelsize = 12, textcolors=("white","black"),
@@ -940,7 +943,7 @@ class Visualize():
         cbar.ax.tick_params(labelsize=10)
 
 
-        day_text = ax.text(Textloc[0],Textloc[1], 'Begining',fontsize= cbarlabelsize)
+        day_text = ax.text(Textloc[0],Textloc[1], ' ',fontsize= cbarlabelsize)
         ax.set_title(Title,fontsize= titlesize)
         ax.set_xticklabels([])
         ax.set_yticklabels([])
@@ -1043,7 +1046,64 @@ class Visualize():
         # global anim
         anim = animation.FuncAnimation(fig, animate, init_func=init, frames = np.shape(Arr)[2],
                                                interval = Interval, blit = True)
+
         return anim
+
+
+    def SaveAnimation(anim, VideoFormat="gif",Path='',SaveFrames=20):
+        """
+
+
+        Parameters
+        ----------
+        anim : TYPE
+            DESCRIPTION.
+        VideoFormat : TYPE, optional
+            DESCRIPTION. The default is "gif".
+        Path : TYPE, optional
+            DESCRIPTION. The default is ''.
+        SaveFrames : TYPE, optional
+            DESCRIPTION. The default is 20.
+
+        in order to save a video using matplotlib you have to download ffmpeg from
+        https://ffmpeg.org/ and define this path to matplotlib
+
+        import matplotlib as mpl
+        mpl.rcParams['animation.ffmpeg_path'] = "path where you saved the ffmpeg.exe/ffmpeg.exe"
+
+        Returns
+        -------
+        None.
+
+        """
+
+        ffmpegPath = os.getenv("HOME") + "/.matplotlib/ffmpeg-static/bin/ffmpeg.exe"
+
+        message = """
+        please visit https://ffmpeg.org/ and download a version of ffmpeg compitable
+        with your operating system, and copy the content of the folder and paste it
+        in the "user/.matplotlib/ffmpeg-static/"
+        ffmpeg-static
+        """
+        assert os.path.exists(ffmpegPath), message
+
+        mpl.rcParams['animation.ffmpeg_path'] = ffmpegPath
+
+        if VideoFormat == "gif":
+            # assert len(Path) >= 1 and Path.endswith(".gif"), "please enter a valid path to save the animation"
+            writergif = animation.PillowWriter(fps=SaveFrames)
+            anim.save(Path, writer=writergif)
+        else:
+            try:
+                if VideoFormat == 'avi' or VideoFormat == 'mov':
+                    writervideo = animation.FFMpegWriter(fps=SaveFrames,bitrate=1800)
+                    anim.save(Path, writer = writervideo)
+                elif VideoFormat == 'mp4':
+                    writermp4 = animation.FFMpegWriter(fps=SaveFrames,bitrate=1800)
+                    anim.save(Path, writer=writermp4)
+            except FileNotFoundError:
+                print("please visit https://ffmpeg.org/ and download a version of ffmpeg compitable with your operating system, for more details please check the method definition")
+
 
     @staticmethod
     def rescale(OldValue,OldMin,OldMax,NewMin,NewMax):

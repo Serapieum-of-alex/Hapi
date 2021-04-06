@@ -109,7 +109,8 @@ class Run(Catchment):
 
         #run the model
         Wrapper.HapiModel(self)
-        # extract gischarge at the gauges
+
+        print("Model Run has finished")
 
 
 
@@ -184,6 +185,7 @@ class Run(Catchment):
 
         #run the model
         Wrapper.HapiWithlake(self, Lake)
+        print("Model Run has finished")
 
 
     def RunFW1(self):
@@ -246,6 +248,8 @@ class Run(Catchment):
 
         #run the model
         Wrapper.FW1(self)
+
+        print("Model Run has finished")
 
 
     def RunFW1withLake(self,Lake):
@@ -367,3 +371,4 @@ class Run(Catchment):
         Qsim['q'] = self.Qsim
         self.Qsim = Qsim[:]
 
+        print("Model Run has finished")
