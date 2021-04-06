@@ -722,7 +722,7 @@ class Catchment():
     def PlotHydrograph(self, plotstart, plotend, gaugei, Hapicolor="#004c99",
                        gaugecolor="#DC143C", linewidth = 3, Hapiorder = 1,
                        Gaugeorder = 0, labelfontsize=10, XMajorfmt='%Y-%m-%d',
-                       Noxticks=5):
+                       Noxticks=5, Title='', Xaxis_fmt = '%d\n%m', label=''):
         """
         =========================================================================
         PlotHydrograph(plotstart, plotend, gaugei, Hapicolor="#004c99",
@@ -771,12 +771,33 @@ class Catchment():
         plotstart = dt.datetime.strptime(plotstart,"%Y-%m-%d")
         plotend = dt.datetime.strptime(plotend,"%Y-%m-%d")
 
-        gaugeid = self.GaugesTable.loc[gaugei,'id']
         fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(6, 5))
 
-        ax.plot(self.Qsim.loc[plotstart:plotend, gaugeid], '-.',
-                label = str(self.GaugesTable.loc[gaugei,'name']),
+        if self.SpatialResolution == "Distributed":
+            gaugeid = self.GaugesTable.loc[gaugei,'id']
+
+            if Title == '':
+                Title = "Gauge - "+str(self.GaugesTable.loc[gaugei,'name'])
+
+            if label == '':
+                label = str(self.GaugesTable.loc[gaugei,'name'])
+
+            ax.plot(self.Qsim.loc[plotstart:plotend, gaugeid], '-.',
+                label = label,
                 linewidth=linewidth, color=Hapicolor, zorder = Hapiorder)
+            ax.set_title(Title, fontsize = 20)
+        else:
+            gaugeid = self.QGauges.columns[0]
+            if Title == '':
+                Title = "Gauge - "+str(gaugeid)
+            if label == '':
+                label = str(gaugeid)
+
+            ax.plot(self.Qsim.loc[plotstart:plotend, gaugeid], '-.',
+                label = Title,
+                linewidth=linewidth, color=Hapicolor, zorder = Hapiorder)
+            ax.set_title(Title, fontsize = 20)
+
         ax.plot(self.QGauges.loc[plotstart:plotend,gaugeid],label = 'Gauge',
                       linewidth=linewidth, color = gaugecolor, zorder = Gaugeorder)
 
@@ -787,26 +808,29 @@ class Catchment():
         ax.xaxis.set_major_formatter(XMajorfmt)
         # ax.xaxis.set_minor_locator(dates.WeekdayLocator(byweekday=(1),
                                             # interval=1))
-        ax.xaxis.set_minor_formatter(dates.DateFormatter('%d\n%m'))
+
+        ax.xaxis.set_minor_formatter(dates.DateFormatter(Xaxis_fmt))
 
         ax.xaxis.set_major_locator(plt.MaxNLocator(Noxticks))
 
-        ax.set_title("Gauge - "+str(self.GaugesTable.loc[gaugei,'name']), fontsize = 20)
+
         ax.legend(fontsize = 12)
         ax.set_xlabel("Time", fontsize = 12)
         ax.set_ylabel("Discharge m3/s", fontsize = 12)
         plt.tight_layout()
 
-        #print the metrics
-        print("----------------------------------")
-        print("Gauge - " +str(gaugeid))
-        print("RMSE= " + str(round(self.Metrics.loc['RMSE',gaugeid],2)))
-        print("NSE= " + str(round(self.Metrics.loc['NSE',gaugeid],2)))
-        print("NSEhf= " + str(round(self.Metrics.loc['NSEhf',gaugeid],2)))
-        print("KGE= " + str(round(self.Metrics.loc['KGE',gaugeid],2)))
-        print("WB= " + str(round(self.Metrics.loc['WB',gaugeid],2)))
-        print("Pearson-CC= " + str(round(self.Metrics.loc['Pearson-CC',gaugeid],2)))
-        print("R2= " + str(round(self.Metrics.loc['R2',gaugeid],2)))
+        if hasattr(self, "Metrics") :
+            #print the metrics
+            print("----------------------------------")
+            print("Gauge - " +str(gaugeid))
+            print("RMSE= " + str(round(self.Metrics.loc['RMSE',gaugeid],2)))
+            print("NSE= " + str(round(self.Metrics.loc['NSE',gaugeid],2)))
+            print("NSEhf= " + str(round(self.Metrics.loc['NSEhf',gaugeid],2)))
+            print("KGE= " + str(round(self.Metrics.loc['KGE',gaugeid],2)))
+            print("WB= " + str(round(self.Metrics.loc['WB',gaugeid],2)))
+            print("Pearson-CC= " + str(round(self.Metrics.loc['Pearson-CC',gaugeid],2)))
+            print("R2= " + str(round(self.Metrics.loc['R2',gaugeid],2)))
+
         return fig, ax
 
 
@@ -972,10 +996,35 @@ class Catchment():
 
         anim = Vis.AnimateArray(Arr, Time, self.no_elem, Title = Title, **kwargs)
 
+        self.anim = anim
+
         return anim
 
 
-    def SaveResults(self, FlowAccPath, Result=1, StartDate='', EndDate='',
+    def SaveAnimation(self, VideoFormat="gif",Path='',SaveFrames=20):
+        """
+        =====================================================================
+            SaveAnimation(VideoFormat="gif",Path='',SaveFrames=20)
+        =====================================================================
+
+        Parameters
+        ----------
+        VideoFormat : [str], optional
+            possible formats ['mp4','mov', 'avi', 'gif']. The default is "gif".
+        Path : [str], optional
+            path inclusinf the video format. The default is ''.
+        SaveFrames : [integer], optional
+            speed of the video. The default is 20.
+
+        Returns
+        -------
+        None.
+
+        """
+        Vis.SaveAnimation(self.anim, VideoFormat=VideoFormat,Path=Path,SaveFrames=SaveFrames)
+
+
+    def SaveResults(self, FlowAccPath='', Result=1, StartDate='', EndDate='',
                     Path='', Prefix='', fmt="%Y-%m-%d"):
         """
         =========================================================================
@@ -1009,8 +1058,6 @@ class Catchment():
         None.
 
         """
-
-        src = gdal.Open(FlowAccPath)
         if StartDate == '' :
             StartDate = self.Index[0]
         else:
@@ -1021,34 +1068,61 @@ class Catchment():
         else:
             EndDate = dt.datetime.strptime(EndDate,fmt)
 
-        if Prefix == '' :
-            Prefix = 'Result_'
-
         starti = np.where(self.Index == StartDate)[0][0]
         endi = np.where(self.Index == EndDate)[0][0]+1
 
-        # create list of names
-        Path = Path + Prefix
-        names = [Path + str(i)[:10] for i in self.Index[starti:endi]]
-        names = [i.replace("-","_") for i in names]
-        names = [i.replace(" ","_") for i in names]
-        names = [i+".tif" for i in names]
-        if Result ==1:
-            Raster.RastersLike(src,self.Qtot[:,:,starti:endi],names)
-        elif Result ==2:
-            Raster.RastersLike(src,self.quz_routed[:,:,starti:endi],names)
-        elif Result ==3:
-            Raster.RastersLike(src,self.qlz_translated[:,:,starti:endi],names)
-        elif Result ==4:
-            Raster.RastersLike(src,self.statevariables[:,:,starti:endi,0],names)
-        elif Result ==5:
-            Raster.RastersLike(src,self.statevariables[:,:,starti:endi,1],names)
-        elif Result ==6:
-            Raster.RastersLike(src,self.statevariables[:,:,starti:endi,2],names)
-        elif Result ==7:
-            Raster.RastersLike(src,self.statevariables[:,:,starti:endi,3],names)
-        elif Result ==8:
-            Raster.RastersLike(src,self.statevariables[:,:,starti:endi,4],names)
+        if self.SpatialResolution == "Distributed":
+            src = gdal.Open(FlowAccPath)
+
+            if Prefix == '' :
+                Prefix = 'Result_'
+
+            # create list of names
+            Path = Path + Prefix
+            names = [Path + str(i)[:10] for i in self.Index[starti:endi]]
+            names = [i.replace("-","_") for i in names]
+            names = [i.replace(" ","_") for i in names]
+            names = [i+".tif" for i in names]
+            if Result ==1:
+                Raster.RastersLike(src,self.Qtot[:,:,starti:endi],names)
+            elif Result ==2:
+                Raster.RastersLike(src,self.quz_routed[:,:,starti:endi],names)
+            elif Result ==3:
+                Raster.RastersLike(src,self.qlz_translated[:,:,starti:endi],names)
+            elif Result ==4:
+                Raster.RastersLike(src,self.statevariables[:,:,starti:endi,0],names)
+            elif Result ==5:
+                Raster.RastersLike(src,self.statevariables[:,:,starti:endi,1],names)
+            elif Result ==6:
+                Raster.RastersLike(src,self.statevariables[:,:,starti:endi,2],names)
+            elif Result ==7:
+                Raster.RastersLike(src,self.statevariables[:,:,starti:endi,3],names)
+            elif Result ==8:
+                Raster.RastersLike(src,self.statevariables[:,:,starti:endi,4],names)
+        else:
+            ind = pd.date_range(StartDate,EndDate,freq='D')
+            data = pd.DataFrame(index = ind)
+
+            data['date'] = ["'" + str(i)[:10] + "'" for i in data.index]
+
+            if Result ==1:
+                data['Qsim'] = self.Qsim[starti:endi]
+                data.to_csv(Path, index = False, float_format="%.3f")
+            elif Result ==2:
+                data['Quz'] = self.quz[starti:endi]
+                data.to_csv(Path, index = False, float_format="%.3f")
+            elif Result ==3:
+                data['Qlz'] = self.qlz[starti:endi]
+                data.to_csv(Path, index = False, float_format="%.3f")
+            elif Result ==4:
+                data[['SP','SM','UZ','LZ','WC']] = self.statevariables[starti:endi,:]
+                data.to_csv(Path, index = False, float_format="%.3f")
+            elif Result ==5:
+                data['Qsim'] = self.Qsim[starti:endi]
+                data['Quz'] = self.quz[starti:endi]
+                data['Qlz'] = self.qlz[starti:endi]
+                data[['SP','SM','UZ','LZ','WC']] = self.statevariables[starti:endi,:]
+                data.to_csv(Path, index = False, float_format="%.3f")
 
     def ListAttributes(self):
         """
