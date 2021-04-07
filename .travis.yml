@@ -1,7 +1,7 @@
 language: python
 # operating system, default is Xenial Linux
 os: 
-  - windows
+#  - windows # python is not supported
   - linux
   - osx           # Windows 10.0.17134 N/A Build 17134
 python:
@@ -35,25 +35,17 @@ install:
   # list, while append does the opposite.
   - conda config --add channels conda-forge
   - conda config --add channels mafarrag
-  #- conda config --add channels asmeurer
-  #- conda config --add channels cgat
-  #- conda clean --index-cache
-  #- conda clean --lock
   - conda clean --tarballs -y
   - conda clean --packages -y
-  #- install-1/bin/conda clean --index-cache
-  #- free > memory-after-conda-clean
-  #- rm -rf install-1/
-  #- free > memory-after-conda-rm
   # Install various dependencies  
   
   #- conda install --yes $DEPS pip
-  - conda install --yes --file requirement.txt
+  #- conda install --yes --file requirement.txt
   - while read requirement; do conda install --yes $requirement; done < requirements.txt
-  - conda update --all --yes
   - python -V
   - python setup.py build_ext --inplace
   - python setup.py install
+  - conda update --all --yes
   - 
  # - cd ..
 # command to run tests
