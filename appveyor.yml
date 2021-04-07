@@ -22,12 +22,12 @@ environment:
   CONDA_VERSION: 3
 
   matrix:
-  - TOXENV: py27
-  - TOXENV: py35
   - TOXENV: py36
   - TOXENV: py37
   - TOXENV: py38
   - TOXENV: py39
+  - TOXENV: py35
+  - TOXENV: py27
 
 # Do not build on tags (GitHub, Bitbucket, GitLab, Gitea)
 #skip_tags: true

@@ -2,12 +2,12 @@ language: python
 # operating system, default is Xenial Linux
 #os: windows           # Windows 10.0.17134 N/A Build 17134
 python:
-  - "2.7"
-  - "3.5"
   - "3.6" # current default Python on Travis CI
   - "3.7"
   - "3.8"
   - "3.9"
+  - "3.5"  
+  - "2.7"
 env: DEPS= " affine numpy fiona proj pyproj gdal pandas geopandas matplotlib python scipy shapely statsmodels rasterio rasterstats oasis netCDF4 sklearn ecmwf-api-client "
 before_install:
   # Install the latest version of Miniconda
@@ -24,6 +24,7 @@ install:
   # Create a new environment
   - conda create -q -n Hapi-env python=${TRAVIS_PYTHON_VERSION} --yes
   - source activate Hapi-env
+  - conda update --all --yes
   # You can add any CONDA channels you may need here. CONDA supports
   # both the commands add and append. The only difference is that 
   # the add command places the channel at the front of the priority 
