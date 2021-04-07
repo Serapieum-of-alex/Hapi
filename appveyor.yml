@@ -61,21 +61,21 @@ install:
   # conda config --set restore_free_channel True
   # No need to install miniconda because appveyor comes with it.
   - cmd: SET PATH=%CONDA_INSTALL_LOCN%;%CONDA_INSTALL_LOCN%\Scripts;%PATH%
+  - cmd: SET PATH=%MINICONDA%;%MINICONDA%\\Scripts;%PATH%
+  - cmd: conda config --set always_yes yes --set changeps1 no
+  - cmd: conda update -q conda
+  - cmd: conda info -a
   # Create a new environment
-  #- cmd: conda create -q -n Hapi-env python=${TRAVIS_PYTHON_VERSION} --yes
-  #- cmd: source activate Hapi-env
-  # Install various dependencies
-  #- cmd: conda install --yes $DEPS pip
-  #- cmd: git clone https://github.com/MAfarrag/Hapi.git
-  #- cmd: git checkout git@github.com:MAfarrag/Hapi.git
-  # You can add any CONDA channels you may need here. CONDA supports
-  # both the commands add and append. The only difference is that 
-  # the add command places the channel at the front of the priority 
-  # list, while append does the opposite.
-  - cmd: CALL %CONDA_INSTALL_LOCN%\Scripts\activate.bat base
+  - cmd: conda create -q -n Hapi-env python=%PYTHON_VERSION% --yes
+  - cmd: source activate Hapi-env
   - cmd: conda config --add channels conda-forge
   - cmd: conda config --add channels mafarrag
-  #- cmd: conda install --yes --file requirement.txt
+  - cmd: conda clean --tarballs -y
+  - cmd: conda clean --packages -y
+  
+  # Install various dependencies
+  - cmd: conda config --add channels conda-forge
+  - cmd: conda config --add channels mafarrag
   - cmd: while read requirement; do conda install --yes $requirement; done < requirements.txt
   - cmd: python -V
   - cmd: python setup.py build_ext --inplace
