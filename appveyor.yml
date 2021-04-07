@@ -81,7 +81,6 @@ install:
   - cmd: python -V
   - cmd: python setup.py build_ext --inplace
   - cmd: python setup.py install
-  - cmd: conda update conda --yes
   - cmd: conda install numpy --yes
   #- cmd: cd ..
 
