@@ -31,7 +31,7 @@ install:
   - conda config --add channels conda-forge
   # Install various dependencies
   - conda install --yes $DEPS pip
-  - conda update --all
+  - conda update --all --yes
   - python -V
   - python setup.py build_ext --inplace
   - python setup.py install
