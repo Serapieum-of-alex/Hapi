@@ -30,7 +30,8 @@ install:
   # list, while append does the opposite.
   - conda config --add channels conda-forge
   # Install various dependencies  
-  - conda install --yes $DEPS pip
+  #- conda install --yes $DEPS pip
+  - conda env update -n Hapi-env --file environment.yml  --prune
   - conda update --all --yes
   - python -V
   - python setup.py build_ext --inplace
