@@ -92,7 +92,7 @@ test:
     - pytest
   # declare any test-only requirements here
   requires:
-    - pytest
+     - pytest
   # copy over any needed test files here
   source_files:
     - tests/

@@ -1,0 +1,97 @@
+# version format
+version: 1.0.{build}
+# you can use {branch} name in version format too
+# version: 1.0.{build}-{branch}
+
+# branches to build
+branches:
+  # whitelist
+  only:
+    - master
+  # blacklist
+  except:
+    - gh-pages
+
+platform:
+  - x86
+  - x64
+
+environment:
+  # Appveyor machines come with miniconda already installed.
+  CONDA_INSTALL_LOCN: "C:\\Miniconda-x64"
+  CONDA_VERSION: 3
+
+  matrix:
+  - TOXENV: py36
+  - TOXENV: py37
+  - TOXENV: py38
+  - TOXENV: py39
+  - TOXENV: py35
+  - TOXENV: py27
+
+# Do not build on tags (GitHub, Bitbucket, GitLab, Gitea)
+#skip_tags: true
+
+# Skipping commits with particular message or from specific user
+skip_commits:
+  message: /Created.*\.(png|jpg|jpeg|bmp|gif)/      # Regex for matching commit message
+#  author: John                                      # Commit author's
+
+# Including commits with particular message or from specific user
+#only_commits:
+#  message: /build/                # Start a new build if message contains 'build'
+#  author: jack@company.com        # Start a new build for commit of user with email jack@company.com
+
+#---------------------------------#
+#    environment configuration    #
+#---------------------------------#
+
+# scripts that are called at very beginning, before repo cloning
+init:
+  - git config --global core.autocrlf input
+
+# clone directory
+#clone_folder: git@github.com:MAfarrag/Hapi.git
+#clone_folder: https://github.com/MAfarrag/Hapi.git
+
+install:
+  # Clone simply to get the script for setting up Windows build environment.
+   
+  # for python 3.4 as it does not exist in conda channels
+  # conda config --set restore_free_channel True
+  # No need to install miniconda because appveyor comes with it.
+  - cmd: SET PATH=%CONDA_INSTALL_LOCN%;%CONDA_INSTALL_LOCN%\Scripts;%PATH%
+  - cmd: SET PATH=%MINICONDA%;%MINICONDA%\\Scripts;%PATH%
+  - cmd: conda config --set always_yes yes --set changeps1 no
+  - cmd: conda update -q conda
+  - cmd: conda info -a
+  # Create a new environment
+  - cmd: conda create -q -n Hapi-env python=%PYTHON_VERSION% --yes
+  - cmd: activate Hapi-env
+  - cmd: conda config --add channels conda-forge
+  - cmd: conda config --add channels mafarrag
+  - cmd: conda clean --tarballs -y
+  - cmd: conda clean --packages -y
+  
+  # Install various dependencies
+  - cmd: conda config --add channels conda-forge
+  - cmd: conda config --add channels mafarrag
+  - cmd: while read requirement; do conda install --yes $requirement; done < requirements.txt
+  - cmd: pip install ecmwf-api-client
+  - cmd: python -V
+  - cmd: python setup.py build_ext --inplace
+  - cmd: python setup.py install
+  - cmd: conda install numpy --yes
+  #- cmd: cd ..
+
+build: off
+# build Configuration, i.e. Debug, Release, etc.
+# to add several configurations to build matrix:
+configuration:
+  - Debug
+  - Release
+
+test_script:
+#- tox
+- cmd: cd tests/
+- cmd: python test.py
