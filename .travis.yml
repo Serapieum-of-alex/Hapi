@@ -1,10 +1,10 @@
-#python # make it generic to go around the windows and mac does not support python
-language: generic 
+# make it generic to go around the windows and mac does not support python
+language: python
 # operating system, default is Xenial Linux
 os: 
-  - windows # python is not supported
+#  - windows # python is not supported
   - linux
-  - osx           # Windows 10.0.17134 N/A Build 17134
+#  - osx           # Windows 10.0.17134 N/A Build 17134
 python:
   - "3.6" # current default Python on Travis CI
   - "3.7"
