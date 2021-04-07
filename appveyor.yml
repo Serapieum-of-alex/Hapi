@@ -72,6 +72,7 @@ install:
   # both the commands add and append. The only difference is that 
   # the add command places the channel at the front of the priority 
   # list, while append does the opposite.
+  - cmd: CALL %PYTHON%\\Scripts\\activate.bat base
   - cmd: conda config --add channels conda-forge
   - cmd: conda config --add channels mafarrag
   #- cmd: conda install --yes --file requirement.txt
