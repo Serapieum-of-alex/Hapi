@@ -1,57 +1,20 @@
-# make it generic to go around the windows and mac does not support python
-language: python
-# operating system, default is Xenial Linux
-os: 
-#  - windows # python is not supported
-  - linux
-#  - osx           # Windows 10.0.17134 N/A Build 17134
-python:
-  - "3.6" # current default Python on Travis CI
-  - "3.7"
-  - "3.8"
-  - "3.9"
-  - "3.5"  
-  - "2.7"
-#env: DEPS= " affine numpy fiona proj pyproj gdal pandas geopandas matplotlib python scipy shapely statsmodels rasterio rasterstats oasis netCDF4 sklearn ecmwf-api-client "
+# This file was generated automatically from conda-smithy. To update this configuration,
+# update the conda-forge.yml and/or the recipe/meta.yaml.
 
-before_install:
-  # Install the latest version of Miniconda
-  - wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh
-  - chmod +x miniconda.sh
-  - ./miniconda.sh -b
-  - export PATH=/home/travis/miniconda2/bin:$PATH
-  - conda update --yes conda
-  - conda info -a
-# command to install dependencies
-install:
-  # for python 3.4 as it does not exist in conda channels
-  # conda config --set restore_free_channel True
-  # Create a new environment
-  - conda create -q -n Hapi-env python=${TRAVIS_PYTHON_VERSION} --yes
-  - source activate Hapi-env
-  - conda update --all --yes
-  # You can add any CONDA channels you may need here. CONDA supports
-  # both the commands add and append. The only difference is that 
-  # the add command places the channel at the front of the priority 
-  # list, while append does the opposite.
-  - conda config --add channels conda-forge
-  - conda config --add channels mafarrag
-  - conda clean --tarballs -y
-  - conda clean --packages -y
-  # Install various dependencies  
-  #- conda install --yes $DEPS pip
-  #- conda install --yes --file requirement.txt
-  - while read requirement; do conda install --yes $requirement; done < requirement.txt
-  # 
-  - pip install ecmwf-api-client
-  - python -V
-  - python setup.py build_ext --inplace
-  - python setup.py install
-  - conda update --all --yes
-  - 
- # - cd ..
-# command to run tests
+language: generic
+
+
+
+matrix:
+  include:
+    - env: CONFIG=linux_64_ UPLOAD_PACKAGES=True PLATFORM=linux-64 DOCKER_IMAGE=quay.io/condaforge/linux-anvil-comp7
+      os: linux
+      arch: amd64
+
 script:
-  #- cd ./Hapi/Examples
-  - cd ./tests
-  - python test.py
+  - export CI=travis
+  - export GIT_BRANCH="$TRAVIS_BRANCH"
+  - export FEEDSTOCK_NAME=$(basename ${TRAVIS_REPO_SLUG})
+
+
+  - if [[ ${PLATFORM} =~ .*linux.* ]]; then ./.scripts/run_docker_build.sh; fi
