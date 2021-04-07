@@ -20,7 +20,6 @@ Hapi - Hydrological library for Python
 model & Muskingum routing method at a catchment scale, Hapi gives a high degree of flexibility to all components of the model 
 (spatial discretization - cell size, temporal resolution, parameterization approaches and calibration).
 
-(all function has been tested and validated during a Master thesis at IHE-Delft April 2018 and the library is still under development)
 
 Hapi 
 
