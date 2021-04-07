@@ -67,7 +67,7 @@ install:
   - cmd: conda info -a
   # Create a new environment
   - cmd: conda create -q -n Hapi-env python=%PYTHON_VERSION% --yes
-  - cmd: source activate Hapi-env
+  - cmd: activate Hapi-env
   - cmd: conda config --add channels conda-forge
   - cmd: conda config --add channels mafarrag
   - cmd: conda clean --tarballs -y
