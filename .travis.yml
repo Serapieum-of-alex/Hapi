@@ -1,7 +1,8 @@
-language: python
+#python # make it generic to go around the windows and mac does not support python
+language: generic 
 # operating system, default is Xenial Linux
 os: 
-#  - windows # python is not supported
+  - windows # python is not supported
   - linux
   - osx           # Windows 10.0.17134 N/A Build 17134
 python:
@@ -38,10 +39,10 @@ install:
   - conda clean --tarballs -y
   - conda clean --packages -y
   # Install various dependencies  
-  
   #- conda install --yes $DEPS pip
   #- conda install --yes --file requirement.txt
   - while read requirement; do conda install --yes $requirement; done < requirement.txt
+  # 
   - pip install ecmwf-api-client
   - python -V
   - python setup.py build_ext --inplace
