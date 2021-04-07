@@ -92,4 +92,5 @@ configuration:
 
 test_script:
 #- tox
-- tests/test.py
+- cmd: cd tests/
+- test.py

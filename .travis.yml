@@ -33,8 +33,9 @@ install:
   - python -V
   - python setup.py build_ext --inplace
   - python setup.py install
-  - cd ..
+ # - cd ..
 # command to run tests
 script:
   #- cd ./Hapi/Examples
-  - tests/test.py
+  - cd ./Hapi/tests
+  - test.py
