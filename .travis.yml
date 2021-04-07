@@ -1,6 +1,9 @@
 language: python
 # operating system, default is Xenial Linux
-#os: windows           # Windows 10.0.17134 N/A Build 17134
+os: 
+  - windows
+  - linux
+  - osx           # Windows 10.0.17134 N/A Build 17134
 python:
   - "3.6" # current default Python on Travis CI
   - "3.7"
@@ -9,6 +12,7 @@ python:
   - "3.5"  
   - "2.7"
 env: DEPS= " affine numpy fiona proj pyproj gdal pandas geopandas matplotlib python scipy shapely statsmodels rasterio rasterstats oasis netCDF4 sklearn ecmwf-api-client "
+
 before_install:
   # Install the latest version of Miniconda
   - wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh
@@ -44,8 +48,8 @@ install:
   # Install various dependencies  
   
   #- conda install --yes $DEPS pip
-  #- conda env update -n Hapi-env --file environment.yml  --prune
   - conda install --yes --file requirement.txt
+  - while read requirement; do conda install --yes $requirement; done < requirements.txt
   - conda update --all --yes
   - python -V
   - python setup.py build_ext --inplace

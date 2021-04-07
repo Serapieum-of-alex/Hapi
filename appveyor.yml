@@ -75,7 +75,8 @@ install:
   - cmd: conda config --add channels conda-forge
   - cmd: conda config --add channels mafarrag
   - cmd: conda update --all --yes
-  - cmd: conda install --yes --file requirement.txt
+  #- cmd: conda install --yes --file requirement.txt
+  - cmd: while read requirement; do conda install --yes $requirement; done < requirements.txt
   - cmd: python -V
   - cmd: python setup.py build_ext --inplace
   - cmd: python setup.py install
