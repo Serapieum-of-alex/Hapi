@@ -42,7 +42,8 @@ install:
   # Install various dependencies  
   
   #- conda install --yes $DEPS pip
-  - conda env update -n Hapi-env --file environment.yml  --prune
+  #- conda env update -n Hapi-env --file environment.yml  --prune
+  - conda install --yes --file requirement.txt
   - conda update --all --yes
   - python -V
   - python setup.py build_ext --inplace
