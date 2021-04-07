@@ -91,4 +91,5 @@ configuration:
 
 
 test_script:
-- tox
+#- tox
+- tests/test.py
