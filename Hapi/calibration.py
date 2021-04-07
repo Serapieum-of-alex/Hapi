@@ -110,6 +110,9 @@ class Calibration(Catchment):
 
         self.OFArgs = args
 
+        print("Objective function is read successfully")
+
+
     def ExtractDischarge(self, Factor=None):
         """
         ================================================================
@@ -561,7 +564,7 @@ class Calibration(Catchment):
             for i in range(len(self.LB)):
                 opt_prob.addVar('x{0}'.format(i), type='c', lower=self.LB[i], upper=self.UB[i])
 
-        print(opt_prob)
+        # print(opt_prob)
 
 
         opt_engine = HSapi(pll_type=pll_type , options=ApiObjArgs)
