@@ -31,12 +31,16 @@ install:
   - conda config --add channels conda-forge
   - conda config --add channels https://conda.binstar.org/asmeurer
   - conda config --add channels https://conda.binstar.org/cgat
-  - free > memory-after-conda-install
-  - install-1/bin/conda clean --index-cache
-  - free > memory-after-conda-clean
-  - rm -rf install-1/
-  - free > memory-after-conda-rm
+  - conda clean --index-cache
+  - conda clean --lock
+  - conda clean --tarballs -y
+  - conda clean --packages -y
+  #- install-1/bin/conda clean --index-cache
+  #- free > memory-after-conda-clean
+  #- rm -rf install-1/
+  #- free > memory-after-conda-rm
   # Install various dependencies  
+  
   #- conda install --yes $DEPS pip
   - conda env update -n Hapi-env --file environment.yml  --prune
   - conda update --all --yes

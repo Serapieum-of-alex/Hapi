@@ -74,6 +74,7 @@ install:
   # list, while append does the opposite.
   - cmd: conda config --add channels conda-forge
   - cmd: conda update --all --yes
+  - cmd: pip install -r requirement.txt
   - cmd: python -V
   - cmd: python setup.py build_ext --inplace
   - cmd: python setup.py install
