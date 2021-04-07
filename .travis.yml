@@ -32,7 +32,7 @@ install:
   - conda config --add channels https://conda.binstar.org/asmeurer
   - conda config --add channels https://conda.binstar.org/cgat
   - conda clean --index-cache
-  - conda clean --lock
+  #- conda clean --lock
   - conda clean --tarballs -y
   - conda clean --packages -y
   #- install-1/bin/conda clean --index-cache
