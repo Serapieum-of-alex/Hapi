@@ -1,6 +1,5 @@
 channels:
   - conda-forge
-  - mafarrag
 dependencies:
   - pip
   - affine
@@ -21,6 +20,8 @@ dependencies:
   - scikit-learn
   - scikit-image
   - ecmwf-api-client
+  - ftplib
+  - joblib
   #- hapi
   - pip:
     - numpy

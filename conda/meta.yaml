@@ -39,6 +39,8 @@ requirements:
   - scikit-learn
   - scikit-image
   - ecmwf-api-client
+  - ftplib
+  - joblib
   run:
     - pip
     - numpy
@@ -61,7 +63,8 @@ requirements:
     - scikit-learn
     - scikit-image
     - ecmwf-api-client
-
+    - ftplib
+    - joblib
 test:
   imports:
     - Hapi
