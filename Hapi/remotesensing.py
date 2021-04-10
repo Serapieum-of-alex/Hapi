@@ -92,7 +92,7 @@ class RemoteSensing():
     def ECMWF(self, Waitbar=1): #SumMean=1, Min=0, Max=0,
         """
         =============================================================
-            ECMWF(self, SumMean=1, Min=0, Max=0, Waitbar=1)
+            ECMWF(self, Waitbar=1)
         =============================================================
 
         ECMWF method downloads ECMWF daily data for a given variable, time
@@ -249,7 +249,8 @@ class RemoteSensing():
             name_out = os.path.join(out_dir, "%s_ECMWF_ERA-Interim_%s_%s_%d.%02d.%02d.tif" %(VarOutputname, Var_unit, self.Time, year,month,day))
 
             # Create Tiff files
-            Raster.Save_as_tiff(name_out, Data_end, Geo_out, "WGS84")
+            # Raster.Save_as_tiff(name_out, Data_end, Geo_out, "WGS84")
+            Raster.CreateRaster(Path=name_out, data=Data_end, geo=Geo_out, EPSG="WGS84")
 
             if Waitbar == 1:
                 amount = amount + 1
@@ -634,7 +635,7 @@ class CHIRPS():
                                  np.ceil((lonlim[1] + 180)*20)]))
 
 
-    def Download(self, Waitbar, cores):
+    def Download(self, Waitbar=1, cores=None):
         """
         This function downloads CHIRPS daily or monthly data
 
