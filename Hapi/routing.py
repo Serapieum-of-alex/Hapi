@@ -128,7 +128,7 @@ class Routing():
 
         O = np.zeros_like(inflow)
         O[0] = Qinitial
-        O[1:] = c1 * inflow[1:] + c2 * inflow[0:-1]
+        O[1:] = c1 * np.asarray(inflow[1:]) + c2 * np.asarray(inflow[0:-1])
 
         for i in range(1,len(inflow)):
             # only if the

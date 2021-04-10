@@ -139,7 +139,7 @@ class Wrapper():
                                       ll_temp=tm, lake_sim=True)
         # qlake is in m3/sec
         # lake routing
-        Lake.QlakeR = routing.muskingum(Lake.Qlake, Lake.Qlake[0], Lake.Parameters[11],
+        Lake.QlakeR = routing.Muskingum_V(Lake.Qlake, Lake.Qlake[0], Lake.Parameters[11],
                                   Lake.Parameters[12], Model.Timef)
 
         # subcatchment
@@ -147,19 +147,19 @@ class Wrapper():
         distrrm.RunLumpedRRM(Model)
 
         # routing lake discharge with DS cell k & x and adding to cell Q
-        q_lake = routing.muskingum(Lake.QlakeR,Lake.QlakeR[0],
+        qlake = routing.Muskingum_V(Lake.QlakeR,Lake.QlakeR[0],
                                    Model.Parameters[Lake.OutflowCell[0],Lake.OutflowCell[1],10],
                                    Model.Parameters[Lake.OutflowCell[0],Lake.OutflowCell[1],11],
                                    Model.Timef)
 
-        q_lake = np.append(q_lake,q_lake[-1])
+        qlake = np.append(qlake,qlake[-1])
         # both lake & Quz are in m3/s
-        Model.q_uz[Lake.OutflowCell[0],Lake.OutflowCell[1],:] = Model.q_uz[Lake.OutflowCell[0],Lake.OutflowCell[1],:] + q_lake
+        Model.quz[Lake.OutflowCell[0],Lake.OutflowCell[1],:] = Model.quz[Lake.OutflowCell[0],Lake.OutflowCell[1],:] + qlake
 
         # run the GIS part to rout from cell to another
         distrrm.SpatialRouting(Model)
 
-        Model.q_out = Model.q_out[:-1]
+        Model.qout = Model.qout[:-1]
 
 
     @staticmethod
