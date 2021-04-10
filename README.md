@@ -128,11 +128,12 @@ conda env create --name Hapi_env -f environment.yml
 Quick start
 ===========
 
-.. code-block:: python
+```
 
   >>> from Hapi.run import Run
   >>> from Hapi.catchment import Catchment
   >>> import Hapi.hbv_bergestrom92 as HBV
+```
+[other code samples](https://hapi-hm.readthedocs.io/en/latest/?badge=latest)
 
-`other code samples <https://hapi-hm.readthedocs.io/en/latest/?badge=latest>`__
 
