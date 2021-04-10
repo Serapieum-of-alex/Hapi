@@ -39,7 +39,6 @@ requirements:
   - scikit-learn
   - scikit-image
   - ecmwf-api-client
-  - ftplib
   - joblib
   run:
     - pip
@@ -63,7 +62,6 @@ requirements:
     - scikit-learn
     - scikit-image
     - ecmwf-api-client
-    - ftplib
     - joblib
 test:
   imports:

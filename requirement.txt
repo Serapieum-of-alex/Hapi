@@ -19,5 +19,4 @@ netCDF4
 scikit-learn
 scikit-image
 ecmwf-api-client
-ftplib
 joblib
