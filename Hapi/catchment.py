@@ -522,8 +522,8 @@ class Catchment():
         """
         # read the gauge table
         self.GaugesTable = pd.read_csv(Path)
-
-        if FlowaccPath != '':
+        col_list = self.GaugesTable.columns.tolist()
+        if FlowaccPath != '' and 'cell_row' not in col_list:
             # if hasattr(self, 'FlowAcc'):
             FlowAcc = gdal.Open(FlowaccPath)
             # calculate the nearest cell to each station
