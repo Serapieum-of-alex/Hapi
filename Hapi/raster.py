@@ -35,7 +35,7 @@ from Hapi.vector import Vector
 
 # import subprocess
 # import tarfile
-# import gzip
+import gzip
 import scipy.misc as misc
 from osgeo import ogr
 # import glob
@@ -94,8 +94,6 @@ class Raster():
         40-Convert_adf_to_tiff
         41-Convert_bil_to_tiff
         42-Convert_hdf5_to_tiff
-        43-Save_as_tiff
-        44-Save_as_MEM
         45-SaveNC
         46-Create_NC_name
         47-Create_new_NC_file
@@ -103,7 +101,6 @@ class Raster():
         49-Add_NC_Array_Static
         50-Convert_dict_to_array
         51-Open_array_info
-        52-Open_tiff_array
         53-Open_nc_info
         54-Open_nc_array
         55-Open_bil_array
@@ -269,7 +266,7 @@ class Raster():
         dst_ds = None # Flush the dataset to disk
 
     @staticmethod
-    def GetRasterData(Raster):
+    def GetRasterData(Input, band=''):
         """
         =====================================================
             GetRasterData(Raster)
@@ -278,17 +275,104 @@ class Raster():
 
         Inputs:
         ----------
-            1- flow path lenth raster
-
+            Input: [str/gdal.Dataset]
+                path to the raster file or a gdal.Dataset
+            band : [integer]
+                the band you want to get its data. Default is 1
         Outputs:
         ----------
             1- mask:array with all the values in the flow path length raster
             2- no_val: value stored in novalue cells
         """
 
-        no_val = np.float32(Raster.GetRasterBand(1).GetNoDataValue()) # get the value stores in novalue cells
-        mask = Raster.ReadAsArray() # read all values
-        return mask, no_val
+        if band == '':
+            band = 1
+
+        if Input == gdal.Dataset:
+            src = Input
+        else:
+            # if a path is given
+            try:
+                src = gdal.Open(Input)
+            except:
+                assert Input != None, Input + ' does not exists'
+
+        # get the value stores in novalue cells
+        NoDataValue = np.float32(src.GetRasterBand(band).GetNoDataValue())
+
+        Data = src.GetRasterBand(band).ReadAsArray()
+
+        return Data, NoDataValue
+
+    @staticmethod
+    def CreateRaster(Path='', data='', geo='', EPSG='',NoDataValue=-9999):
+        """
+        =============================================================================
+            CreateRaster(Path='', data='', geo='', projection='',NoDataValue=-9999)
+        =============================================================================
+        CreateRaster method creates a raster from a given array and geotransform data
+        and save the figg file if a Path is given or it will return the gdal.Dataset
+
+        Parameters
+        ----------
+        Path : [str], optional
+            Path to save the Raster, if '' is given a memory raster will be returned. The default is ''.
+        data : [array], optional
+            numpy array. The default is ''.
+        geo : [list], optional
+            geotransform list [minimum lon, pixelsize, rotation, maximum lat, rotation,
+                pixelsize]. The default is ''.
+        projection : TYPE, optional
+            DESCRIPTION. The default is ''.
+        NoDataValue : TYPE, optional
+            DESCRIPTION. The default is -9999.
+
+        Returns
+        -------
+        None.
+
+        """
+        if np.isnan(NoDataValue):
+            NoDataValue = -9999
+
+        if Path == '':
+            driver = gdal.GetDriverByName("MEM")
+            dst_ds = driver.Create('', int(data.shape[1]), int(data.shape[0]), 1,
+                               gdal.GDT_Float32, ['COMPRESS=LZW'])
+        else:
+            driver = gdal.GetDriverByName("GTiff")
+            dst_ds = driver.Create(Path, int(data.shape[1]), int(data.shape[0]), 1,
+                                gdal.GDT_Float32, ['COMPRESS=LZW'])
+
+        srse = osr.SpatialReference()
+
+        if EPSG == '':
+            srse.SetWellKnownGeogCS("WGS84")
+        else:
+            try:
+                if not srse.SetWellKnownGeogCS(EPSG) == 6:
+                    srse.SetWellKnownGeogCS(EPSG)
+                else:
+                    try:
+                        srse.ImportFromEPSG(int(EPSG))
+                    except:
+                        srse.ImportFromWkt(EPSG)
+            except:
+                try:
+                    srse.ImportFromEPSG(int(EPSG))
+                except:
+                    srse.ImportFromWkt(EPSG)
+
+        dst_ds.SetProjection(srse.ExportToWkt())
+        dst_ds.GetRasterBand(1).SetNoDataValue(NoDataValue)
+        dst_ds.SetGeoTransform(geo)
+        dst_ds.GetRasterBand(1).WriteArray(data)
+
+        if Path == '':
+            return dst_ds
+        else:
+            dst_ds = None
+            return
 
     @staticmethod
     def MapAlgebra(src, fun):
@@ -1034,8 +1118,6 @@ class Raster():
     #    gt_src_epsg.GetAttrValue('AUTHORITY',1)
 
         # unite the crs
-        # TODO https://github.com/MAfarrag/Hapi/issues/33
-
         data_src = Raster.ProjectRaster(RasterB,int(gt_src_epsg.GetAttrValue('AUTHORITY',1)))
 
         # create a new raster
@@ -2807,9 +2889,10 @@ class Raster():
                 name_out = os.path.join(output_folder, name + '.tif')
                 Data_one = All_Data[:,:]
 
-            Raster.Save_as_tiff(name_out, Data_one, geo_out, epsg)
+            Raster.CreateRaster(name_out, Data_one, geo_out, epsg)
 
         return()
+
 
     def Convert_grb2_to_nc(input_wgrib, output_nc, band):
 
@@ -2863,7 +2946,7 @@ class Raster():
         dest = gdal.Open(input_bil, gdalconst.GA_ReadOnly)
         Array = dest.GetRasterBand(1).ReadAsArray()
         geo_out = dest.GetGeoTransform()
-        Raster.Save_as_tiff(output_tiff, Array, geo_out, "WGS84")
+        Raster.CreateRaster(output_tiff, Array, geo_out, "WGS84")
 
         return(output_tiff)
 
@@ -2905,7 +2988,7 @@ class Raster():
         Data_scaled = Data * scaling_factor
 
         # Save the PROBA-V as a tif file
-        Raster.Save_as_tiff(Filename_tiff_end, Data_scaled, geo_out, "WGS84")
+        Raster.CreateRaster(Filename_tiff_end, Data_scaled, geo_out, "WGS84")
 
         return()
 
@@ -2923,23 +3006,40 @@ class Raster():
     #     z.extractall(output_folder)
     #     z.close()
 
-    # def Extract_Data_gz(zip_filename, outfilename):
-    #     """
-    #     This function extract the zip files
+    @staticmethod
+    def ExtractFromGZ(InputFile, OutputFile, delete=False):
+        """
+        ============================================================
+             ExtractFromGZ(zip_filename, outfilename)
+        ============================================================
 
-    #     Keyword Arguments:
-    #     zip_filename -- name, name of the file that must be unzipped
-    #     outfilename -- Dir, directory where the unzipped data must be
-    #                            stored
-    #     """
+        ExtractFromGZ method extract data from the zip/.gz files,
+        save the data
 
-    #     with gzip.GzipFile(zip_filename, 'rb') as zf:
-    #         file_content = zf.read()
-    #         save_file_content = open(outfilename, 'wb')
-    #         save_file_content.write(file_content)
-    #     save_file_content.close()
-    #     zf.close()
-    #     os.remove(zip_filename)
+        Parameters
+        ----------
+        zip_filename : [str]
+            zipped file name .
+        outfilename : [str]
+            directory where the unzipped data must be
+                                stored.
+        delete : [bool]
+            True if you want to delete the zipped file after the extracting the data
+        Returns
+        -------
+        None.
+
+        """
+        with gzip.GzipFile(InputFile, 'rb') as zf:
+            content = zf.read()
+            save_file_content = open(OutputFile, 'wb')
+            save_file_content.write(content)
+
+        save_file_content.close()
+        zf.close()
+
+        if delete:
+            os.remove(InputFile)
 
     # def Extract_Data_tar_gz(zip_filename, output_folder):
     #     """
@@ -2956,72 +3056,6 @@ class Raster():
     #     tar.extractall()
     #     tar.close()
 
-
-    def Save_as_tiff(name='', data='', geo='', projection=''):
-        """
-        This function save the array as a geotiff
-
-        Keyword arguments:
-        name -- string, directory name
-        data -- [array], dataset of the geotiff
-        geo -- [minimum lon, pixelsize, rotation, maximum lat, rotation,
-                pixelsize], (geospatial dataset)
-        projection -- integer, the EPSG code
-        """
-        # save as a geotiff
-        driver = gdal.GetDriverByName("GTiff")
-        dst_ds = driver.Create(name, int(data.shape[1]), int(data.shape[0]), 1,
-                               gdal.GDT_Float32, ['COMPRESS=LZW'])
-        srse = osr.SpatialReference()
-        if projection == '':
-            srse.SetWellKnownGeogCS("WGS84")
-
-        else:
-            try:
-                if not srse.SetWellKnownGeogCS(projection) == 6:
-                    srse.SetWellKnownGeogCS(projection)
-                else:
-                    try:
-                        srse.ImportFromEPSG(int(projection))
-                    except:
-                        srse.ImportFromWkt(projection)
-            except:
-                try:
-                    srse.ImportFromEPSG(int(projection))
-                except:
-                    srse.ImportFromWkt(projection)
-
-        dst_ds.SetProjection(srse.ExportToWkt())
-        dst_ds.GetRasterBand(1).SetNoDataValue(-9999)
-        dst_ds.SetGeoTransform(geo)
-        dst_ds.GetRasterBand(1).WriteArray(data)
-        dst_ds = None
-        return()
-
-    def Save_as_MEM(data='', geo='', projection=''):
-        """
-        This function save the array as a memory file
-
-        Keyword arguments:
-        data -- [array], dataset of the geotiff
-        geo -- [minimum lon, pixelsize, rotation, maximum lat, rotation,
-                pixelsize], (geospatial dataset)
-        projection -- interger, the EPSG code
-        """
-        # save as a geotiff
-        driver = gdal.GetDriverByName("MEM")
-        dst_ds = driver.Create('', int(data.shape[1]), int(data.shape[0]), 1,
-                               gdal.GDT_Float32)
-        srse = osr.SpatialReference()
-        if projection == '':
-            srse.SetWellKnownGeogCS("WGS84")
-        else:
-            srse.SetWellKnownGeogCS(projection)
-        dst_ds.SetProjection(srse.ExportToWkt())
-        dst_ds.GetRasterBand(1).SetNoDataValue(-9999)
-        dst_ds.SetGeoTransform(geo)
-        dst_ds.GetRasterBand(1).WriteArray(data)
-        return(dst_ds)
 
     def SaveNC(namenc, DataCube, Var, Reference_filename,  Startdate = '', Enddate = '', Time_steps = '', Scaling_factor = 1):
         """
@@ -3367,24 +3401,7 @@ class Raster():
             f = None
         return(geo_out, proj, size_X, size_Y)
 
-    def Open_tiff_array(filename='', band=''):
-        """
-        Opening a tiff array.
 
-        Keyword Arguments:
-        filename -- 'C:/file/to/path/file.tif' or a gdal file (gdal.Open(filename))
-            string that defines the input tiff file or gdal file
-        band -- integer
-            Defines the band of the tiff that must be opened.
-        """
-        f = gdal.Open(filename)
-        if f is None:
-            print('%s does not exists' %filename)
-        else:
-            if band == '':
-                band = 1
-            Data = f.GetRasterBand(band).ReadAsArray()
-        return(Data)
 
     def Open_nc_info(NC_filename, Var = None):
         """
@@ -3856,7 +3873,7 @@ class Raster():
 
                 geo_out, epsg_to, size_X, size_Y, size_Z, Time = Raster.Open_nc_info(dataset_example)
                 data = np.zeros([size_Y, size_X])
-                gland = Raster.Save_as_MEM(data, geo_out, str(epsg_to))
+                gland = Raster.CreateRaster(data, geo_out, str(epsg_to))
             else:
                 gland = dataset_example
                 epsg_to = Raster.Get_epsg(gland)
@@ -3992,7 +4009,7 @@ class Raster():
         try:
             if dataset.split('.')[-1] == 'tif':
                 # Open the numpy array
-                data = Raster.Open_tiff_array(dataset)
+                data = Raster.GetRasterData(dataset)
                 Save_as_tiff = 1
             else:
                 data = dataset
@@ -4025,7 +4042,7 @@ class Raster():
             geo_out, proj, size_X, size_Y = Raster.Open_array_info(dataset)
 
             # Save the filled array as geotiff
-            Raster.Save_as_tiff(name=EndProduct, data=data_end, geo=geo_out, projection=proj)
+            Raster.CreateRaster(name=EndProduct, data=data_end, geo=geo_out, projection=proj)
 
         else:
             EndProduct = data_end
@@ -4114,7 +4131,7 @@ class Raster():
     #             if Date is Dates[0]:
     #                     geo_out, proj, size_X, size_Y = Raster.Open_array_info(file_name_path)
     #                     dataTot=np.zeros([len(Dates),size_Y,size_X])
-    #             Array_one_date = Raster.Open_tiff_array(file_name_path)
+    #             Array_one_date = Raster.GetRasterData(file_name_path)
 
     #         # Create the 3D array
     #         dataTot[i,:,:] = Array_one_date
@@ -4176,7 +4193,7 @@ class Raster():
         target_ds = None
 
         # Open array
-        Raster_Basin = Raster.Open_tiff_array(Dir_Raster_end)
+        Raster_Basin = Raster.GetRasterData(Dir_Raster_end)
 
         return(Raster_Basin)
 

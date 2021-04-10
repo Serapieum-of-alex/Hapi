@@ -13,6 +13,9 @@ import calendar
 from ecmwfapi import ECMWFDataServer
 
 
+from ftplib import FTP
+from joblib import Parallel, delayed
+
 from Hapi.raster import Raster
 import Hapi.weirdFn as weirdFn
 
@@ -29,42 +32,103 @@ class RemoteSensing():
         3- API
         4- ListAttributes
     """
-
-    def __init__():
-        pass
-
-    def main(Dir, Vars, Startdate, Enddate, latlim, lonlim, cores=False,
-             SumMean=1, Min=0, Max=0, Waitbar = 1):
+    def __init__(self, Time='daily', StartDate='', EndDate='',Path='',
+                 Vars=[], latlim=[], lonlim=[], fmt="%Y-%m-%d"):
         """
-        This function downloads ECMWF daily data for a given variable, time
+        =============================================================================
+            RemoteSensing(self, Time='daily', StartDate='', EndDate='',Path='',
+                          Vars=[], latlim=[], lonlim=[], fmt="%Y-%m-%d")
+        =============================================================================
+
+        Parameters:
+            Time (str, optional):
+                [description]. Defaults to 'daily'.
+            StartDate (str, optional):
+                [description]. Defaults to ''.
+            EndDate (str, optional):
+                [description]. Defaults to ''.
+            Path (str, optional):
+                Path where you want to save the downloaded data. Defaults to ''.
+            Vars (list, optional):
+                Variable code: VariablesInfo('day').descriptions.keys(). Defaults to [].
+            latlim (list, optional):
+                [ymin, ymax]. Defaults to [].
+            lonlim (list, optional):
+                [xmin, xmax]. Defaults to [].
+            fmt (str, optional):
+                [description]. Defaults to "%Y-%m-%d".
+        """
+        self.StartDate = dt.datetime.strptime(StartDate,fmt)
+        self.EndDate = dt.datetime.strptime(EndDate,fmt)
+
+        if Time == 'six_hourly':
+            # Set required data for the three hourly option
+            self.string1 = 'oper'
+        # Set required data for the daily option
+        elif Time == 'daily':
+            self.Dates = pd.date_range(self.StartDate, self.EndDate, freq='D')
+        elif Time == 'monthly':
+            self.Dates = pd.date_range(self.StartDate, self.EndDate, freq='MS')
+
+        self.Time = Time
+        self.Path = Path
+        self.Vars = Vars
+
+        # correct latitude and longitude limits
+        latlim_corr_one = np.floor(latlim[0]/0.125) * 0.125
+        latlim_corr_two = np.ceil(latlim[1]/0.125) * 0.125
+        self.latlim_corr = [latlim_corr_one, latlim_corr_two]
+
+        # correct latitude and longitude limits
+        lonlim_corr_one = np.floor(lonlim[0]/0.125) * 0.125
+        lonlim_corr_two = np.ceil(lonlim[1]/0.125) * 0.125
+        self.lonlim_corr = [lonlim_corr_one, lonlim_corr_two]
+        # TODO move it to the ECMWF method later
+        # for ECMWF only
+        self.string7 = '%s/to/%s'  %(self.StartDate, self.EndDate)
+
+
+
+    def ECMWF(self, Waitbar=1): #SumMean=1, Min=0, Max=0,
+        """
+        =============================================================
+            ECMWF(self, SumMean=1, Min=0, Max=0, Waitbar=1)
+        =============================================================
+
+        ECMWF method downloads ECMWF daily data for a given variable, time
         interval, and spatial extent.
 
-        Keyword arguments:
-        Dir -- 'C:/file/to/path/'
-        Var -- Variable code: VariablesInfo('day').descriptions.keys()
-        Startdate -- 'yyyy-mm-dd'
-        Enddate -- 'yyyy-mm-dd'
-        latlim -- [ymin, ymax]
-        lonlim -- [xmin, xmax]
-        SumMean -- 0 or 1. Indicates if the output values are the daily mean for
-                   instantaneous values or sum for fluxes
-        Min -- 0 or 1. Indicates if the output values are the daily minimum
-        Max -- 0 or 1. Indicates if the output values are the daily maximum
-        Waitbar -- 1 (Default) will create a waitbar
+
+        Parameters
+        ----------
+        SumMean : TYPE, optional
+            0 or 1. Indicates if the output values are the daily mean for
+            instantaneous values or sum for fluxes. The default is 1.
+        Min : TYPE, optional
+            0 or 1. Indicates if the output values are the daily minimum.
+            The default is 0.
+        Max : TYPE, optional
+            0 or 1. Indicates if the output values are the daily maximum.
+            The default is 0.
+        Waitbar : TYPE, optional
+            1 (Default) will create a waitbar. The default is 1.
+
+        Returns
+        -------
+        None.
+
         """
-        for Var in Vars:
+        for var in self.Vars:
             # Download data
-            print('\nDownload ECMWF %s data for period %s till %s' %(Var, Startdate, Enddate))
+            print('\nDownload ECMWF %s data for period %s till %s' %(var, self.StartDate, self.EndDate))
 
-            RemoteSensing.DownloadData(Dir, Var, Startdate, Enddate, latlim, lonlim, Waitbar, cores,
-                         TimeCase='daily', CaseParameters=[SumMean, Min, Max])
-
-        del_ecmwf_dataset = os.path.join(Dir,'data_interim.nc')
+            self.DownloadData(var, Waitbar) #CaseParameters=[SumMean, Min, Max]
+        # delete the downloaded netcdf
+        del_ecmwf_dataset = os.path.join(self.Path,'data_interim.nc')
         os.remove(del_ecmwf_dataset)
 
 
-    def DownloadData(Dir, Var, Startdate, Enddate, latlim, lonlim, Waitbar, cores,
-                     TimeCase, CaseParameters):
+    def DownloadData(self, Var, Waitbar):
         """
         This function downloads ECMWF six-hourly, daily or monthly data
 
@@ -72,36 +136,18 @@ class RemoteSensing():
 
         """
 
-        # correct latitude and longitude limits
-        latlim_corr_one = np.floor(latlim[0]/0.125) * 0.125
-        latlim_corr_two = np.ceil(latlim[1]/0.125) * 0.125
-        latlim_corr = [latlim_corr_one, latlim_corr_two]
-
-        # correct latitude and longitude limits
-        lonlim_corr_one = np.floor(lonlim[0]/0.125) * 0.125
-        lonlim_corr_two = np.ceil(lonlim[1]/0.125) * 0.125
-        lonlim_corr = [lonlim_corr_one, lonlim_corr_two]
-
         # Load factors / unit / type of variables / accounts
-        VarInfo = VariablesInfo(TimeCase)
+        VarInfo = Variables(self.Time)
         Varname_dir = VarInfo.file_name[Var]
 
         # Create Out directory
-        out_dir = os.path.join(Dir, "Weather_Data", "Model", "ECMWF", TimeCase, Varname_dir, "mean")
+        out_dir = os.path.join(self.Path, self.Time, Varname_dir)
+
         if not os.path.exists(out_dir):
               os.makedirs(out_dir)
 
         DownloadType = VarInfo.DownloadType[Var]
 
-        # Set required data for the three hourly option
-        if TimeCase == 'six_hourly':
-            string1 = 'oper'
-
-        # Set required data for the daily option
-        elif TimeCase == 'daily':
-            Dates = pd.date_range(Startdate,  Enddate, freq='D')
-        elif TimeCase == 'monthly':
-            Dates = pd.date_range(Startdate,  Enddate, freq='MS')
 
         if DownloadType == 1:
             string1 = 'oper'
@@ -124,22 +170,23 @@ class RemoteSensing():
             string2 = 'pl'
             string8 = 'an'
 
-        string7 = '%s/to/%s'  %(Startdate, Enddate)
-
         parameter_number = VarInfo.number_para[Var]
+
         string3 = '%03d.128' %(parameter_number)
         string5 = '0.125/0.125'
         string9 = 'ei'
-        string10 = '%s/%s/%s/%s' %(latlim_corr[1], lonlim_corr[0], latlim_corr[0], lonlim_corr[1])   #N, W, S, E
+        string10 = '%s/%s/%s/%s' %(self.latlim_corr[1], self.lonlim_corr[0],
+                                   self.latlim_corr[0], self.lonlim_corr[1])   #N, W, S, E
 
 
         # Download data by using the ECMWF API
-
         print('Use API ECMWF to collect the data, please wait')
-        RemoteSensing.API(Dir, DownloadType, string1, string2, string3, string4, string5, string6, string7, string8, string9, string10)
+        RemoteSensing.API(self.Path, DownloadType, string1, string2, string3, string4,
+                          string5, string6, self.string7, string8, string9, string10)
+
 
         # Open the downloaded data
-        NC_filename = os.path.join(Dir,'data_interim.nc')
+        NC_filename = os.path.join(self.Path,'data_interim.nc')
         fh = Dataset(NC_filename, mode='r')
 
         # Get the NC variable parameter
@@ -161,11 +208,11 @@ class RemoteSensing():
 
         # Create Waitbar
         if Waitbar == 1:
-            total_amount = len(Dates)
+            total_amount = len(self.Dates)
             amount = 0
             weirdFn.printWaitBar(amount, total_amount, prefix = 'Progress:', suffix = 'Complete', length = 50)
 
-        for date in Dates:
+        for date in self.Dates:
 
             # Define the year, month and day
             year =  date.year
@@ -179,9 +226,10 @@ class RemoteSensing():
             hours_from_start_begin = diff.total_seconds()/60/60
 
             Date_good = np.zeros(len(Data_time))
-            if TimeCase == 'daily':
+
+            if self.Time == 'daily':
                  days_later = 1
-            if TimeCase == 'monthly':
+            if self.Time == 'monthly':
                  days_later = calendar.monthrange(year,month)[1]
 
             Date_good[np.logical_and(Data_time>=hours_from_start_begin, Data_time<(hours_from_start_begin + 24 * days_later))] = 1
@@ -198,13 +246,13 @@ class RemoteSensing():
             VarOutputname = VarInfo.file_name[Var]
 
             # Define the out name
-            name_out = os.path.join(out_dir, "%s_ECMWF_ERA-Interim_%s_%s_%d.%02d.%02d.tif" %(VarOutputname, Var_unit, TimeCase, year,month,day))
+            name_out = os.path.join(out_dir, "%s_ECMWF_ERA-Interim_%s_%s_%d.%02d.%02d.tif" %(VarOutputname, Var_unit, self.Time, year,month,day))
 
             # Create Tiff files
             Raster.Save_as_tiff(name_out, Data_end, Geo_out, "WGS84")
 
             if Waitbar == 1:
-                amount += 1
+                amount = amount + 1
                 weirdFn.printWaitBar(amount, total_amount, prefix = 'Progress:', suffix = 'Complete', length = 50)
 
 
@@ -212,9 +260,11 @@ class RemoteSensing():
 
         return()
 
+
+    @staticmethod
     def API(output_folder, DownloadType, string1, string2, string3, string4, string5, string6, string7, string8, string9, string10):
 
-
+        os.chdir(output_folder)
         server = ECMWFDataServer()
 
         if DownloadType == 1 or DownloadType == 2:
@@ -255,23 +305,7 @@ class RemoteSensing():
 
         return()
 
-    def ListAttributes(self):
-        """
-        Print Attributes List
-        """
-
-        print('\n')
-        print('Attributes List of: ' + repr(self.__dict__['name']) + ' - ' + self.__class__.__name__ + ' Instance\n')
-        self_keys = list(self.__dict__.keys())
-        self_keys.sort()
-        for key in self_keys:
-            if key != 'name':
-                print(str(key) + ' : ' + repr(self.__dict__[key]))
-
-        print('\n')
-
-
-class VariablesInfo:
+class Variables():
     """
     This class contains the information about the ECMWF variables
     http://rda.ucar.edu/cgi-bin/transform?xml=/metadata/ParameterTables/WMO_GRIB1.98-0.128.xml&view=gribdoc
@@ -451,7 +485,7 @@ class VariablesInfo:
 
     def __init__(self, step):
 
-        # output units after applying factor
+    # output units after applying factor
         if step == 'six_hourly':
             self.units = {'T': 'C',
                           '2T': 'C',
@@ -473,7 +507,7 @@ class VariablesInfo:
                           'SR' : 'm',
                           'AL' : '-',
                           'HCC': '-'
-                 }
+                          }
 
         elif step == 'daily':
             self.units = {'T': 'C',
@@ -522,6 +556,11 @@ class VariablesInfo:
         else:
             raise KeyError("The input time step is not supported")
 
+    def __str__(self):
+
+        return print("Variable name:" + "\n" + str(self.var_name) + "\n" + "Descriptions"+ "\n"  +  str(self.descriptions) + "\n" + "Units : " + "\n"  + str(self.units) )
+
+
     def ListAttributes(self):
         """
         Print Attributes List
@@ -536,3 +575,189 @@ class VariablesInfo:
                 print(str(key) + ' : ' + repr(self.__dict__[key]))
 
         print('\n')
+
+
+class CHIRPS():
+
+    def __init__(self, StartDate='', EndDate='', latlim=[], lonlim=[], Time='daily',
+                Path='', fmt="%Y-%m-%d"):
+        # latlim -- [ymin, ymax] (values must be between -50 and 50)
+        # lonlim -- [xmin, xmax] (values must be between -180 and 180)
+        # TimeCase -- String equal to 'daily' or 'monthly'
+
+        # Define timestep for the timedates
+        if Time == 'daily':
+            self.TimeFreq = 'D'
+            self.output_folder = os.path.join(Path, 'Precipitation', 'CHIRPS', 'Daily')
+        elif Time == 'monthly':
+            self.TimeFreq = 'MS'
+            self.output_folder = os.path.join(Path, 'Precipitation', 'CHIRPS', 'Monthly')
+        else:
+            raise KeyError("The input time interval is not supported")
+        self.Time = Time
+
+        # make directory if it not exists
+        if not os.path.exists(self.output_folder):
+            os.makedirs(self.output_folder)
+
+    	# check time variables
+        if StartDate == '':
+            StartDate = pd.Timestamp('1981-01-01')
+        else:
+            self.StartDate = dt.datetime.strptime(StartDate,fmt)
+
+        if EndDate == '':
+            EndDate = pd.Timestamp('Now')
+        else:
+            self.EndDate = dt.datetime.strptime(EndDate,fmt)
+        # Create days
+        self.Dates = pd.date_range(self.StartDate, self.EndDate, freq=self.TimeFreq)
+
+        # Check space variables
+        if latlim[0] < -50 or latlim[1] > 50:
+            print('Latitude above 50N or below 50S is not possible.'
+                   ' Value set to maximum')
+            self.latlim[0] = np.max(latlim[0], -50)
+            self.latlim[1] = np.min(lonlim[1], 50)
+        if lonlim[0] < -180 or lonlim[1] > 180:
+            print('Longitude must be between 180E and 180W.'
+                   ' Now value is set to maximum')
+            self.lonlim[0] = np.max(latlim[0], -180)
+            self.lonlim[1] = np.min(lonlim[1], 180)
+        else:
+            self.latlim = latlim
+            self.lonlim = lonlim
+        # Define IDs
+        self.yID = 2000 - np.int16(np.array([np.ceil((latlim[1] + 50)*20),
+                                        np.floor((latlim[0] + 50)*20)]))
+        self.xID = np.int16(np.array([np.floor((lonlim[0] + 180)*20),
+                                 np.ceil((lonlim[1] + 180)*20)]))
+
+
+    def Download(self, Waitbar, cores):
+        """
+        This function downloads CHIRPS daily or monthly data
+
+        Keyword arguments:
+
+        Waitbar -- 1 (Default) will print a waitbar
+        cores -- The number of cores used to run the routine. It can be 'False'
+                 to avoid using parallel computing routines.
+        """
+
+        # Pass variables to parallel function and run
+        args = [self.output_folder, self.Time, self.xID, self.yID, self.lonlim, self.latlim]
+
+        if not cores:
+            # Create Waitbar
+            if Waitbar == 1:
+                total_amount = len(self.Dates)
+                amount = 0
+                weirdFn.printWaitBar(amount, total_amount, prefix = 'Progress:', suffix = 'Complete', length = 50)
+
+            for Date in self.Dates:
+                CHIRPS.RetrieveData(Date, args)
+                if Waitbar == 1:
+                    amount = amount + 1
+                    weirdFn.printWaitBar(amount, total_amount, prefix = 'Progress:', suffix = 'Complete', length = 50)
+            results = True
+        else:
+            results = Parallel(n_jobs=cores)(delayed(CHIRPS.RetrieveData)(Date, args)
+                                             for Date in self.Dates)
+        return results
+
+
+    def RetrieveData(Date, args):
+        """
+        This function retrieves CHIRPS data for a given date from the
+        ftp://chg-ftpout.geog.ucsb.edu server.
+        https://data.chc.ucsb.edu/
+        Keyword arguments:
+        Date -- 'yyyy-mm-dd'
+        args -- A list of parameters defined in the DownloadData function.
+        """
+        # Argument
+        [output_folder, TimeCase, xID, yID, lonlim, latlim] = args
+
+        # open ftp server
+        # ftp = FTP("chg-ftpout.geog.ucsb.edu", "", "")
+        ftp = FTP("data.chc.ucsb.edu")
+        ftp.login()
+
+    	# Define FTP path to directory
+        if TimeCase == 'daily':
+            pathFTP = 'pub/org/chg/products/CHIRPS-2.0/global_daily/tifs/p05/%s/' %Date.strftime('%Y')
+        elif TimeCase == 'monthly':
+            pathFTP = 'pub/org/chg/products/CHIRPS-2.0/global_monthly/tifs/'
+        else:
+            raise KeyError("The input time interval is not supported")
+
+        # find the document name in this directory
+        ftp.cwd(pathFTP)
+        listing = []
+
+    	# read all the file names in the directory
+        ftp.retrlines("LIST", listing.append)
+
+    	# create all the input name (filename) and output (outfilename, filetif, DiFileEnd) names
+        if TimeCase == 'daily':
+            filename = 'chirps-v2.0.%s.%02s.%02s.tif.gz' %(Date.strftime('%Y'), Date.strftime('%m'), Date.strftime('%d'))
+            outfilename = os.path.join(output_folder,'chirps-v2.0.%s.%02s.%02s.tif' %(Date.strftime('%Y'), Date.strftime('%m'), Date.strftime('%d')))
+            DirFileEnd = os.path.join(output_folder,'P_CHIRPS.v2.0_mm-day-1_daily_%s.%02s.%02s.tif' %(Date.strftime('%Y'), Date.strftime('%m'), Date.strftime('%d')))
+        elif TimeCase == 'monthly':
+            filename = 'chirps-v2.0.%s.%02s.tif.gz' %(Date.strftime('%Y'), Date.strftime('%m'))
+            outfilename = os.path.join(output_folder,'chirps-v2.0.%s.%02s.tif' %(Date.strftime('%Y'), Date.strftime('%m')))
+            DirFileEnd = os.path.join(output_folder,'P_CHIRPS.v2.0_mm-month-1_monthly_%s.%02s.%02s.tif' %(Date.strftime('%Y'), Date.strftime('%m'), Date.strftime('%d')))
+        else:
+            raise KeyError("The input time interval is not supported")
+
+        # download the global rainfall file
+        try:
+            local_filename = os.path.join(output_folder, filename)
+            lf = open(local_filename, "wb")
+            ftp.retrbinary("RETR " + filename, lf.write, 8192)
+            lf.close()
+
+            # unzip the file
+            zip_filename = os.path.join(output_folder, filename)
+            Raster.ExtractFromGZ(zip_filename, outfilename, delete=True)
+
+            # open tiff file
+            dataset,NoDataValue = Raster.GetRasterData(outfilename)
+
+            # clip dataset to the given extent
+            data = dataset[yID[0]:yID[1], xID[0]:xID[1]]
+            # replace -ve values with -9999
+            data[data < 0] = -9999
+
+            # save dataset as geotiff file
+            geo = [lonlim[0], 0.05, 0, latlim[1], 0, -0.05]
+            Raster.CreateRaster(Path=DirFileEnd, data=data, geo=geo, EPSG="WGS84",NoDataValue = NoDataValue)
+
+            # delete old tif file
+            os.remove(outfilename)
+
+        except:
+            print("file not exists")
+        return True
+
+
+
+    def ListAttributes(self):
+            """
+            Print Attributes List
+            """
+
+            print('\n')
+            print('Attributes List of: ' + repr(self.__dict__['name']) + ' - ' + self.__class__.__name__ + ' Instance\n')
+            self_keys = list(self.__dict__.keys())
+            self_keys.sort()
+            for key in self_keys:
+                if key != 'name':
+                    print(str(key) + ' : ' + repr(self.__dict__[key]))
+
+            print('\n')
+
+
+# class MSWEP():
+"http://www.gloh2o.org/mswx/"
