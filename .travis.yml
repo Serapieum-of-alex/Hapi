@@ -11,7 +11,7 @@ python:
   - "3.8"
   - "3.9"
 #  - "3.5"  
-  - "2.7"
+#  - "2.7"
 #env: DEPS= " affine numpy fiona proj pyproj gdal pandas geopandas matplotlib python scipy shapely statsmodels rasterio rasterstats oasis netCDF4 sklearn ecmwf-api-client "
 
 before_install:
