@@ -15,6 +15,29 @@
 ![Hapi](/docs/img/Hapi4.png) ![Hapi](/docs/img/name.png)
 
 
+Current build status
+====================
+
+
+<table><tr><td>All platforms:</td>
+    <td>
+      <a href="https://dev.azure.com/conda-forge/feedstock-builds/_build/latest?definitionId=12419&branchName=master">
+        <img src="https://dev.azure.com/conda-forge/feedstock-builds/_apis/build/status/hapi-feedstock?branchName=master">
+      </a>
+    </td>
+  </tr>
+</table>
+
+
+Current release info
+====================
+
+| Name | Downloads | Version | Platforms |
+| --- | --- | --- | --- |
+| [![Conda Recipe](https://img.shields.io/badge/recipe-hapi-green.svg)](https://anaconda.org/conda-forge/hapi) | [![Conda Downloads](https://img.shields.io/conda/dn/conda-forge/hapi.svg)](https://anaconda.org/conda-forge/hapi) | [![Conda Version](https://img.shields.io/conda/vn/conda-forge/hapi.svg)](https://anaconda.org/conda-forge/hapi) | [![Conda Platforms](https://img.shields.io/conda/pn/conda-forge/hapi.svg)](https://anaconda.org/conda-forge/hapi) |
+
+
+
 Hapi - Hydrological library for Python 
 =====================================================================
 **Hapi** is an open-source Python Framework for building raster-based conceptual distributed hydrological models using HBV96 lumped 
