@@ -57,5 +57,5 @@ script:
   - python test.py
  - "sbt clean coverage test"
 
-#after_success: 
+after_success: 
   - "sbt coveralls"
