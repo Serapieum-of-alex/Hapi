@@ -1,5 +1,5 @@
 {% set name = "Hapi" %}
-{% set version = "1.0.2" %}
+{% set version = "1.0.3" %}
 
 package:
   name: {{ name|lower }}
@@ -39,6 +39,7 @@ requirements:
     - scikit-image
     - ecmwf-api-client
     - oasis
+    - joblib
   run:
     - python >=2.7
     - pip
@@ -62,6 +63,7 @@ requirements:
     - scikit-image
     - ecmwf-api-client
     - oasis
+    - joblib
 
 test:
   imports:
