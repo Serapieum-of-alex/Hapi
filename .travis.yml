@@ -55,7 +55,7 @@ script:
   #- cd ./Hapi/Examples
   - cd ./tests
   - python test.py
-# - "sbt clean coverage test"
+ - "sbt clean coverage test"
 
 #after_success: 
-#  - "sbt coveralls"
+  - "sbt coveralls"
