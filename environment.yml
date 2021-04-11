@@ -26,5 +26,5 @@ dependencies:
     - numpy
     - pyproj
     - ecmwf-api-client 
-    - hapi-nile==0.1.0
+    - hapi-nile
     #- git+https://github.com/MAfarrag/HAPI.git

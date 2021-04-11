@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='HAPI-Nile',
-    version='1.0.2',
+    version='1.0.3',
     description='Distributed Hydrological model',
     author='Mostafa Farrag',
     author_email='moah.farag@gmail.come',
