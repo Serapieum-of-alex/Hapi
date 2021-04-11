@@ -22,9 +22,9 @@ from Hapi.wrapper import Wrapper
 class Calibration(Catchment):
 
     """
-    =========================================================================
+    ================================
           Calibration
-    =========================================================================
+    ================================
 
     Calibration class contains to connect the parameter spatial distribution
     function with the with both component of the spatial representation of the
