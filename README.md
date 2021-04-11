@@ -84,17 +84,10 @@ Rusli, S. R., Yudianto, D. & Liu, J. tao. (2015) Effects of temporal variability
 Installing hapi
 ===============
 
-Installing `hapi` from the `conda-forge` channel can be achieved by adding `conda-forge` to your channels with:
+Installing `hapi` from the `conda-forge` channel can be achieved by:
 
 ```
-conda config --add channels conda-forge
-conda config --set channel_priority strict
-```
-
-Once the `conda-forge` channel has been enabled, `hapi` can be installed with:
-
-```
-conda install hapi
+conda install -c conda-forge hapi
 ```
 
 It is possible to list all of the versions of `hapi` available on your platform with:
