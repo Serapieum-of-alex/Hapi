@@ -12,8 +12,6 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 
-![Hapi](/docs/img/Hapi4.png) ![Hapi](/docs/img/name.png)
-
 
 Current build status
 ====================
@@ -36,6 +34,8 @@ Current release info
 | --- | --- | --- | --- |
 | [![Conda Recipe](https://img.shields.io/badge/recipe-hapi-green.svg)](https://anaconda.org/conda-forge/hapi) | [![Conda Downloads](https://img.shields.io/conda/dn/conda-forge/hapi.svg)](https://anaconda.org/conda-forge/hapi) | [![Conda Version](https://img.shields.io/conda/vn/conda-forge/hapi.svg)](https://anaconda.org/conda-forge/hapi) | [![Conda Platforms](https://img.shields.io/conda/pn/conda-forge/hapi.svg)](https://anaconda.org/conda-forge/hapi) |
 
+
+![Hapi](/docs/img/Hapi4.png) ![Hapi](/docs/img/name.png)
 
 
 Hapi - Hydrological library for Python 
