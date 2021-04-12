@@ -13,7 +13,7 @@ os.chdir("F:/02Case studies/El Salvador")
 
 import gdal
 import numpy as np
-
+import datetime as dt
 from Hapi.run import Run
 from Hapi.catchment import Catchment, Lake
 import Hapi.hbv as HBV
@@ -21,7 +21,7 @@ import Hapi.hbv_lake as HBVLake
 import Hapi.performancecriteria as Pf
 from Hapi.raster import Raster
 #%% Paths
-res = 500
+res = 4000
 """
 paths to meteorological data
 """
@@ -35,7 +35,7 @@ ParPath = "inputs/Hapi/meteodata/"+str(res)+"/parameters/"
 LakeMeteoPath = "inputs/Hapi/meteodata/lakedata.csv"
 LakeParametersPath = "inputs/Hapi/meteodata/"+str(res)+"/Lakeparameters.txt"
 GaugesPath = "inputs/Hapi/meteodata/Gauges/"
-SaveTo = ""
+SaveTo = "results/"
 #%% Distributed Model Object
 
 AreaCoeff = 227.31
@@ -95,10 +95,9 @@ Jiboa.ReadGaugeTable(GaugesPath+"GaugesTable.csv",FlowAccPath)
 Jiboa.ReadDischargeGauges(GaugesPath, column='id', fmt='%d.%m.%Y %H:%M',
                           Split=True, Date1=Date1, Date2=Date2)
 #%% run the model
-# Sim =pd.DataFrame(index = JiboaLake.Index)
 Run.RunHAPIwithLake(Jiboa, JiboaLake)
 #%% calculate some metrics
-Jiboa.ExtractDischarge()
+Jiboa.ExtractDischarge(OnlyOutlet=True)
 
 for i in range(len(Jiboa.GaugesTable)):
     gaugeid = Jiboa.GaugesTable.loc[i,'id']
@@ -228,12 +227,19 @@ animation.FuncAnimation.
 plotstart = "2012-07-20"
 plotend = "2012-08-20"
 
-Anim = Jiboa.PlotDistributedResults(plotstart, plotend, Figsize=(8,8), Option = 1,threshold=160, PlotNumbers=False,
-                                TicksSpacing = 1,Interval = 10, Gauges=False, cmap='inferno', Textloc=[0.6,0.8],
-                                Gaugecolor='red',ColorScale = 2, IDcolor='blue', IDsize=25,gamma=0.08)
+Anim = Jiboa.PlotDistributedResults(plotstart, plotend, Figsize=(8,8), Option = 6,threshold=160, PlotNumbers=False,
+                                TicksSpacing = 10,Interval = 10, Gauges=False, cmap='inferno', Textloc=[0.6,0.8],
+                                Gaugecolor='red', ColorScale = 2, IDcolor='blue', IDsize=25,gamma=0.08)
 #%%
 Path = SaveTo + "anim.mov"
 Jiboa.SaveAnimation(VideoFormat="mov",Path=Path,SaveFrames=3)
+#%% Save Results
+StartDate = "2012-07-20"
+EndDate = "2012-08-20"
+
+Path = SaveTo + "Results-Lumped-Model" + str(dt.datetime.now())[0:10] + ".txt"
+Jiboa.SaveResults(Result=1, StartDate=StartDate, EndDate=EndDate, Path=Path)
+
 #%% store the result into rasters
 # create list of names
 src=gdal.Open(FlowAccPath)
