@@ -10,8 +10,6 @@ wher the catchment is consisted os a ustream lake and a volcanic area
 import os
 os.chdir("F:/02Case studies/El Salvador")
 
-
-import gdal
 import numpy as np
 import datetime as dt
 from Hapi.run import Run
@@ -19,7 +17,6 @@ from Hapi.catchment import Catchment, Lake
 import Hapi.hbv as HBV
 import Hapi.hbv_lake as HBVLake
 import Hapi.performancecriteria as Pf
-from Hapi.raster import Raster
 #%% Paths
 res = 4000
 """
@@ -137,22 +134,34 @@ Jiboa.PlotHydrograph(plotstart, plotend, gaugei)
 #%%
 """
 =============================================================================
-AnimateArray(Arr, Time, NoElem, TicksSpacing = 2, Figsize=(8,8), PlotNumbers=True,
-       NumSize= 8, Title = 'Total Discharge',titlesize = 15, Backgroundcolorthreshold=None,
-       cbarlabel = 'Discharge m3/s', cbarlabelsize = 12, textcolors=("white","black"),
-       Cbarlength = 0.75, Interval = 200,cmap='coolwarm_r', Textloc=[0.1,0.2],
-       Gaugecolor='red',Gaugesize=100, ColorScale = 1,gamma=1./2.,linthresh=0.0001,
-       linscale=0.001, midpoint=0, orientation='vertical', rotation=-90,IDcolor = "blue",
-          IDsize =10, **kwargs)
+PlotDistributedResults(StartDate, EndDate, fmt="%Y-%m-%d", Option = 1, Gauges=False,
+                    TicksSpacing = 2, Figsize=(8,8), PlotNumbers=True,
+                    NumSize= 8, Title = 'Total Discharge',titlesize = 15, Backgroundcolorthreshold=None,
+                    cbarlabel = 'Discharge m3/s', cbarlabelsize = 12, textcolors=("white","black"),
+                    Cbarlength = 0.75, Interval = 200,cmap='coolwarm_r', Textloc=[0.1,0.2],
+                    Gaugecolor='red',Gaugesize=100, ColorScale = 1,gamma=1./2.,linthresh=0.0001,
+                    linscale=0.001, midpoint=0, orientation='vertical', rotation=-90,
+                    **kwargs):
 =============================================================================
+PlotDistributedResults animate the time series of the meteorological inputs and
+the result calculated by the model  like the total discharge, upper zone,
+and lower zone discharge and the state variables
+
 Parameters
 ----------
-Arr : [array]
-    the array you want to animate.
-Time : [dataframe]
-    dataframe contains the date of values.
-NoElem : [integer]
-    Number of the cells that has values.
+StartDate : [str]
+    starting date
+EndDate : [str]
+    end date
+fmt : [str]
+    format of the gicen date. The default is "%Y-%m-%d"
+Option : [str]
+    1- Total discharge, 2-Upper zone discharge, 3-ground water,
+    4-Snowpack state variable, 5-Soil moisture, 6-Upper zone,
+    7-Lower zone, 8-Water content, 9-Precipitation input. 10-ET,
+    11-Temperature. The default is 1
+Gauges : [str]
+    . The default is False
 TicksSpacing : [integer], optional
     Spacing in the colorbar ticks. The default is 2.
 Figsize : [tuple], optional
@@ -187,10 +196,6 @@ Gaugecolor : [str], optional
     color of the points. The default is 'red'.
 Gaugesize : [integer], optional
     size of the points. The default is 100.
-IDcolor : [str]
-    the ID of the Point.The default is "blue".
-IDsize : [integer]
-    size of the ID text. The default is 10.
 ColorScale : integer, optional
     there are 5 options to change the scale of the colors. The default is 1.
     1- ColorScale 1 is the normal scale
