@@ -559,7 +559,7 @@ class Variables():
 
     def __str__(self):
 
-        print("Variable name:" + "\n" + str(self.var_name) + "\n" + "Descriptions"+ "\n"  +  str(self.descriptions) + "\n" + "Units : " + "\n"  + str(self.units) )
+        return print("Variable name:" + "\n" + str(self.var_name) + "\n" + "Descriptions"+ "\n"  +  str(self.descriptions) + "\n" + "Units : " + "\n"  + str(self.units) )
 
 
     def ListAttributes(self):
