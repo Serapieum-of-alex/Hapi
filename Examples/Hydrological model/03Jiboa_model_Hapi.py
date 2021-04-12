@@ -237,23 +237,6 @@ Jiboa.SaveAnimation(VideoFormat="mov",Path=Path,SaveFrames=3)
 StartDate = "2012-07-20"
 EndDate = "2012-08-20"
 
-Path = SaveTo + "Results-Lumped-Model" + str(dt.datetime.now())[0:10] + ".txt"
-Jiboa.SaveResults(Result=1, StartDate=StartDate, EndDate=EndDate, Path=Path)
+Path = SaveTo + "Lumped_Parameters_" + str(dt.datetime.now())[0:10] + "_"
+Jiboa.SaveResults(Result=1, StartDate=StartDate, EndDate=EndDate, Path=Path, FlowAccPath = FlowAccPath)
 
-#%% store the result into rasters
-# create list of names
-src=gdal.Open(FlowAccPath)
-
-# index=pd.date_range(Jiboa.StartDate,Jiboa.EndDate,freq="1H")
-
-resultspath="results/upper_zone_discharge/4000/"
-names=[resultspath+str(i)[:-6] for i in Jiboa.Index]
-names=[i.replace("-","_") for i in names]
-names=[i.replace(" ","_") for i in names]
-names=[i+".tif" for i in names]
-
-"""
-to save the upper zone discharge distributerd discharge in a raster forms
-uncomment the next line
-"""
-Raster.RastersLike(src,q_uz_routed[:,:,:-1],names)
