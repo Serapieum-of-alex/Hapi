@@ -83,6 +83,7 @@ class Catchment():
         self.EndDate = dt.datetime.strptime(EndDate,fmt)
         self.SpatialResolution = SpatialResolution
         self.TemporalResolution = TemporalResolution
+
         if TemporalResolution == "Daily":
             self.Timef = 24
             self.Index = pd.date_range(self.StartDate, self.EndDate, freq = "D" )
@@ -94,6 +95,7 @@ class Catchment():
             # q mm , area sq km  (1000**2)/1000/f/60/60 = 1/(3.6*f)
             # if daily tfac=24 if hourly tfac=1 if 15 min tfac=0.25
             self.Tfactor = 24
+
         pass
 
     def ReadRainfall(self,Path):
@@ -639,7 +641,8 @@ class Catchment():
         print("Parameters bounds are read successfully")
 
 
-    def ExtractDischarge(self, CalculateMetrics=True, FW1=False, Factor=None):
+    def ExtractDischarge(self, CalculateMetrics=True, FW1=False, Factor=None,
+                         OnlyOutlet=False):
         """
         =============================================================================
               ExtractDischarge(CalculateMetrics=True, FW1=False)
@@ -667,7 +670,6 @@ class Catchment():
             'NSEhf', 'KGE', 'WB','Pearson-CC','R2'] calculated between the simulated
             hydrographs and the gauge data
         """
-
 
         if not FW1:
             self.Qsim = pd.DataFrame(index = self.Index, columns = self.QGauges.columns)
@@ -699,8 +701,7 @@ class Catchment():
                     self.Metrics.loc['WB',gaugeid] = round(PC.WB(Qobs, Qsim),3)
                     self.Metrics.loc['Pearson-CC',gaugeid] = round(PC.PearsonCorre(Qobs, Qsim),3)
                     self.Metrics.loc['R2',gaugeid] = round(PC.R2(Qobs, Qsim),3)
-        else:
-
+        elif FW1 or OnlyOutlet:
             self.Qsim = pd.DataFrame(index = self.Index)
             gaugeid = self.GaugesTable.loc[self.GaugesTable.index[-1],"id"]
             Qsim = np.reshape(self.qout,self.TS-1)
@@ -1124,6 +1125,9 @@ class Catchment():
                 data['Qlz'] = self.qlz[starti:endi]
                 data[['SP','SM','UZ','LZ','WC']] = self.statevariables[starti:endi,:]
                 data.to_csv(Path, index = False, float_format="%.3f")
+
+        print("Data is saved successfully")
+
 
     def ListAttributes(self):
         """
