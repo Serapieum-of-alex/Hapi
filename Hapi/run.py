@@ -165,13 +165,7 @@ class Run(Catchment):
             st, q_out, q_uz_routed = RunModel(PrecPath,Evap_Path,TempPath,DemPath,
                                               FlowAccPath,FlowDPath,ParPath,p2)
         """
-        ### input data validation
-        # data type
-        # assert type(self.FlowAcc)==gdal.Dataset, "flow_acc should be read using gdal (gdal dataset please read it using gdal library) "
-        # assert type(self.FlowDir)==gdal.Dataset, "flow_direct should be read using gdal (gdal dataset please read it using gdal library) "
-
         # input dimensions
-        # [rows,cols] = self.FlowAcc.ReadAsArray().shape
         [fd_rows,fd_cols] = self.FlowDirArr.shape
         assert fd_rows == self.rows and fd_cols == self.cols, "all input data should have the same number of rows"
 
@@ -185,6 +179,7 @@ class Run(Catchment):
 
         #run the model
         Wrapper.HapiWithlake(self, Lake)
+
         print("Model Run has finished")
 
 

@@ -143,7 +143,6 @@ class Wrapper():
                                   Lake.Parameters[12], Model.Timef)
 
         # subcatchment
-        # st, q_lz, q_uz = distrrm.RunLumpedRRM(Model)
         distrrm.RunLumpedRRM(Model)
 
         # routing lake discharge with DS cell k & x and adding to cell Q
