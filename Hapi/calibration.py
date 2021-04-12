@@ -12,6 +12,7 @@ runoff at known locations based on given performance function
 
 """
 import numpy as np
+import pandas as pd
 import datetime as dt
 from Oasis.optimization import Optimization
 from Oasis.hsapi import HSapi
@@ -72,11 +73,19 @@ class Calibration(Catchment):
         self.EndDate = dt.datetime.strptime(EndDate,fmt)
         self.SpatialResolution = SpatialResolution
         self.TemporalResolution = TemporalResolution
+
         if TemporalResolution == "Daily":
             self.Timef = 24
+            self.Index = pd.date_range(self.StartDate, self.EndDate, freq = "D" )
+        elif TemporalResolution == "Hourly":
+            self.Timef = 1
+            self.Index = pd.date_range(self.StartDate, self.EndDate, freq = "H" )
         else:
-            #TODO calculate the temporal resolution factor
+            #TODO calculate the teporal resolution factor
+            # q mm , area sq km  (1000**2)/1000/f/60/60 = 1/(3.6*f)
+            # if daily tfac=24 if hourly tfac=1 if 15 min tfac=0.25
             self.Tfactor = 24
+
         pass
 
 
@@ -585,8 +594,8 @@ class Calibration(Catchment):
         res = opt_engine(opt_prob, store_sol=store_sol, display_opts=display_opts,
                          store_hst=store_hst, hot_start=hot_start)
 
-        self.Parameters = res[1]
         self.OFvalue = res[0]
+        self.Parameters = res[1]
 
         return res
 
