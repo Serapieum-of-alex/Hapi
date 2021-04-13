@@ -124,27 +124,27 @@ class Raster():
     def __init__(self):
         pass
 
-    @staticmethod
-    def GetMask(raster):
-        """
-        =======================================================================
-           get_mask(dem)
-        =======================================================================
+    # @staticmethod
+    # def GetMask(raster):
+    #     """
+    #     =======================================================================
+    #        get_mask(dem)
+    #     =======================================================================
 
-        to create a mask by knowing the stored value inside novalue cells
+    #     to create a mask by knowing the stored value inside novalue cells
 
-        Inputs:
-        ----------
-            1- flow path lenth raster
+    #     Inputs:
+    #     ----------
+    #         1- flow path lenth raster
 
-        Outputs:
-        ----------
-            1- mask:array with all the values in the flow path length raster
-            2- no_val: value stored in novalue cells
-        """
-        no_val = np.float32(raster.GetRasterBand(1).GetNoDataValue()) # get the value stores in novalue cells
-        mask = raster.ReadAsArray()
-        return mask, no_val
+    #     Outputs:
+    #     ----------
+    #         1- mask:array with all the values in the flow path length raster
+    #         2- no_val: value stored in novalue cells
+    #     """
+    #     no_val = np.float32(raster.GetRasterBand(1).GetNoDataValue()) # get the value stores in novalue cells
+    #     mask = raster.ReadAsArray()
+    #     return mask, no_val
 
     @staticmethod
     def AddMask(var, dem=None, mask=None, no_val=None):
@@ -173,7 +173,7 @@ class Raster():
         """
 
         if dem != None:
-            mask, no_val = Raster.GetMask(dem)
+            mask, no_val = Raster.GetRasterData(dem)
 
         # Replace the no_data value
         assert var.shape == mask.shape, 'Mask and data do not have the same shape'
