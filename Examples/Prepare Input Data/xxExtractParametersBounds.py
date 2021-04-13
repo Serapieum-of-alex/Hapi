@@ -4,12 +4,12 @@ Created on Tue Jun  9 22:15:47 2020
 
 @author: mofarrag
 """
-from IPython import get_ipython
-get_ipython().magic("reset -f")
+# from IPython import get_ipython
+# get_ipython().magic("reset -f")
 # import os
 # os.chdir("")
 import geopandas as gpd
-import numpy as np
+# import numpy as np
 import pandas as pd
 import Hapi.inputs as IN
 
