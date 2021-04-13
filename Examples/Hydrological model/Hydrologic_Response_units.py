@@ -10,11 +10,10 @@ algorithm into a defined HRUs by a classified raster
 #%library
 import numpy as np
 import gdal
-from Hapi import distparameters as Dp
+from Hapi.distparameters import DistParameters as DP
 
 # data path
-path="data/"
-
+path="/data/"
 #%% Two Lumped Parameter [K1, Perc]
 # number of parameters in the rainfall runoff model
 no_parameters=12
@@ -37,7 +36,7 @@ par_g=np.append(par_g,55)
 par_g=np.append(par_g,66)
 
 
-par_2lumped=DP.HRU(par_g,soil_type,no_parameters,no_lumped_par,lumped_par_pos,kub=1,klb=0.5)
+par_2lumped = DP.HRU(par_g,soil_type,no_parameters,no_lumped_par,lumped_par_pos,kub=1,klb=0.5)
 
 #%% One Lumped Parameter [K1]
 
