@@ -239,8 +239,13 @@ class Inputs():
         assert len(os.listdir(Path)) > 0, Path+" folder you have provided is empty"
         # read data
         data = raster.ReadRastersFolder(Path)
-        data = data.mean(axis = 0)
+        # get the No data value from the first raster in the folder
+        _, NoDataValue = raster.GetRasterData(Input=Path + "/" + os.listdir(Path)[0])
+        data[data == NoDataValue ] = np.nan
+
+        data = np.nanmean(data,axis=0)
         data = data.mean(0)
+
         return data
 
     @staticmethod
