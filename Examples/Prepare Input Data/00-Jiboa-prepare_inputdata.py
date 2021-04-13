@@ -23,7 +23,7 @@ dem_path="Data/GIS/4000/acc4000.tif"
 outputpath="Data/meteodata_prepared/"
 # prec
 prec_in_path="Data/meteodata/4000/complete_dataset/prec/"
-# inputs.PrepareInputs(dem_path,prec_in_path,outputpath+"prec")
+inputs.PrepareInputs(dem_path,prec_in_path,outputpath+"prec")
 
 # evap
 evap_in_path="Data/meteodata/4000/complete_dataset/evap/"
