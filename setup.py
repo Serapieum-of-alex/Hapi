@@ -27,6 +27,7 @@ setup(
     'Programming Language :: Python :: 3.6',
     'Programming Language :: Python :: 3.7',
     'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
     'Topic :: Software Development',
     ],
 	include_package_data=True,
@@ -40,7 +41,10 @@ setup(
 		'Parameters/07/*.tif',
 		'Parameters/08/*.tif',
 		'Parameters/09/*.tif',
-		'Parameters/10/*.tif'
+		'Parameters/10/*.tif',
+        'Parameters/avg/*.tif',
+        'Parameters/min/*.tif',
+        'Parameters/max/*.tif'
 		]
 		},
 	 )
