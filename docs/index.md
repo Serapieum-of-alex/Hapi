@@ -19,11 +19,11 @@ their own model, it contains two routing functions muskingum cunge, and MAXBAS t
 (all function has been tested and validated during a Master thesis at IHE-Delft April 2018 and the library is still under development)
 
 
-![model](../img/model.png)
+![model](../img/model_structure.png)
 
 
 
-![case_study](../img/case_study.png) 
+![case_study](../img/casestudy.png) 
 
 Main Features
 -------------
