@@ -36,28 +36,28 @@ CHRIPS data are uploaded into a ftp server therefore and can be downloaded throu
 	from Hapi.remotesensing import CHIRPS
 	```
 
+
 - Create the object with the following information
 	- Period of time (start and end date)
 	- Temporal resolution (daily/monthy)
 	- Extend (Longitude/Latitude)
 	- Path (directory to save the downloaded data)
 
-	```
-	StartDate = '2009-01-01'
-	EndDate = '2009-01-10'
-	Time = 'daily'
-	lat = [4.190755,4.643963]
-	lon = [-75.649243,-74.727286]
-	Path = "directory to save the data"
-	Coello = CHIRPS(StartDate=StartDate, EndDate=EndDate, Time=Time,
-            	latlim=lat , lonlim=lon, Path=Path)
-	```
+	
+		StartDate = '2009-01-01'
+		EndDate = '2009-01-10'
+		Time = 'daily'
+		lat = [4.190755,4.643963]
+		lon = [-75.649243,-74.727286]
+		Path = "directory to save the data"
+		Coello = CHIRPS(StartDate=StartDate, EndDate=EndDate, Time=Time,
+        	    	latlim=lat , lonlim=lon, Path=Path)
+	
 
 - Call the `Download` method 
 
-	```
-	Coello.Download()
-	```
+		Coello.Download()
+	
 - A Progress bar will appear and be updated with percent of the download
 
 	![process](../img/progressbar.png)
@@ -85,6 +85,18 @@ The ERA-Interim data assimilation and forecast suite produces:
 so inorder to be able to use the following code to download ECMWF data you need to 
 - register and setup your account in the ECMWF website (https://apps.ecmwf.int/registration/)
 -  Install ECMWF key (instruction are here https://confluence.ecmwf.int/display/WEBAPI/Access+ECMWF+Public+Datasets#AccessECMWFPublicDatasets-key)
+
+- ERA-Interim data set has a lot of meteorological variables which you can download
+- You need to provide the name of the variable using the `Variables` object 
+- `Variables` contains the tame of the variable you need to give to the `ECMWF` object to get and the unit and description
+
+		from Hapi.remotesensing import Variables
+		Vars = Variables('daily')
+		Vars.__str__()
+
+	![process](../img/ECMWF_Variable.png)
+
+For the information about the ECMWF data https://apps.ecmwf.int/codes/grib/param-db/
 
 ## Parameters
 
