@@ -12,7 +12,7 @@ theme:
 nav:
     - Home: index.md
     - Available Models:
-        - HBV Bergström, 1992: HBV.md
+        - HBV Bergström 1992: HBV.md
     - Tutorial:
         - Inputs: Inputs.md
         - Lumped Hydrological Model: Lumped_HBV.md

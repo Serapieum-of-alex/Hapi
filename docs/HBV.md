@@ -1,4 +1,15 @@
 # HBV Lumped conceptual model
+
+The Hydrologiska Byrans Vattenbalansavdelning (HBV) model was introduced back in 1972 by the Swedisch Meteological and Hydrological Institute (SMHI). The HBV model is mainly used for runoff simulation and hydrological forecasting. 
+
+The model is based on the HBV [Bergström, 1992] model. However, the hydrological routing represent in HBV by a triangular function controlled by the MAXBAS parameter has been removed. Instead, Muskingum routing model is used 
+to route the water downstream
+
+The HBV model consists of three reserviors
+	- [Snow Subroutine](HBV#Snow)
+	- [Soil Moisture](HBV#Soil_moisture)
+	- [Runoff response](HBV#Runoff_response)
+
 The HBV model [Bergström, 1992] is usually run with daily time steps, but higher resolution (hourly) can be used if data are available. Input data are precipitation, air temperature and potential evapotranspiration.
 
 HBV model consists of three main components:
