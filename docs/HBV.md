@@ -3,20 +3,24 @@
 The Hydrologiska Byrans Vattenbalansavdelning (HBV) model was introduced back in 1972 by the Swedisch Meteological and Hydrological Institute (SMHI). The HBV model is mainly used for runoff simulation and hydrological forecasting. 
 
 The model is based on the HBV [Bergström, 1992] model. However, the hydrological routing represent in HBV by a triangular function controlled by the MAXBAS parameter has been removed. Instead, Muskingum routing model is used 
-to route the water downstream
+to route the water downstream, All runoff that is generated in a cell in one of the HBV reservoirs is added to the routed using Muskingum routing method at the end of a timestep. There is no connection between the different HBV cells within the model. 
 
-The HBV model consists of three reserviors
-	- [Snow Subroutine](HBV#Snow)
-	- [Soil Moisture](HBV#Soil_moisture)
-	- [Runoff response](HBV#Runoff_response)
+A catchment is divided into a number of grid cells. For each of the cells individually, daily/hourly runoff is computed through application of the lumped HBV. The use of the grid cells offers the possibility to turn the HBV modelling concept, which is originally lumped, into a distributed model.
 
 The HBV model [Bergström, 1992] is usually run with daily time steps, but higher resolution (hourly) can be used if data are available. Input data are precipitation, air temperature and potential evapotranspiration.
 
 HBV model consists of three main components:
-snow accumulation and melt, soil moisture accounting, response and river routing subroutines
+- [Snow Subroutine](HBV#Snow)
+- [Soil Moisture](HBV#Soil_moisture)
+- [Runoff response](HBV#Runoff_response)
+
 
 ![HBV Component](../img/water_cycle.png)
 [Bergström, 1992]
+
+snow accumulation and melt, soil moisture accounting, response and river routing subroutines
+
+
 
 The model has number of free parameters, values of which are found by calibration, There are also parameters describing the characteristics of the basin and its climate
 
@@ -32,18 +36,28 @@ another two parameters are added for the correction of the rainfall values `rfcf
 
 ![HBV Component](../img/HBV_buckets.png)
 [Bergström, 1992]
+
+
 ## Snow
-The snow routine controls snow accumulation and melt. The precipitation accumulates as snow when the air temperature drops below a threshold value (TT). snow accumulation is adjusted by a free parameter, Sfcf, the snowfall correction factor.
-Melt starts with temperatures above the threshold, TT, according to a simple degree-day
+The snow routine controls snow accumulation and melt. The precipitation accumulates as snow when the air temperature drops below a temperature threshold value (TT). snow accumulation is adjusted by a free parameter, Sfcf, the snowfall correction factor.
+
+If temperature is TT, precipitation occurs as snowfall, and is added to the dry snow component within the snow pack. Otherwise it ends up in the free water reservoir, which represents the liquid water content of the snow pack. Between the two components of the snow pack, interactions take place, either through snow melt (if temperatures are above a threshold TT) or through snow refreezing (if temperatures are below threshold TT). 
+
+Melting starts with temperatures above the threshold, TT, according to a simple degree-day
 ```
-MELT = Cfmax * (T - TT)
-where: MELT = snowmelt (mm/day)
+Snow MELT = Cfmax * (T - TT) ; temp > TT
+Snow Refreezing = Cfr * Cfmax * (TT - T ) ; temp < TT
+
+where: Snow MELT & Snow Refreezing are in (mm/day)
 Cfmax = degree-day factor (mm/°C · day)
 TT = temperature threshold (C).
 ```
-The liquid water holding capacity of snow has to be exceeded before any runoff is generated. A refreezing coefficient, which is used to refreeze free water in the snow if snowmelt is interrupted.
+The maximum capacity of liquid water the snow can hold (holding water capacity WHC) has to be exceeded before any runoff is generated. A refreezing coefficient, which is used to refreeze free water in the snow if snowmelt is interrupted.
 
 The snow routine of the HBV model has primarily four free parameters that have to be estimated by calibration: TT, Cfmax, cfr, cwh· 
+
+.. digraph:: Linking
+	Muskingum Routing -> Muskingum.md
 
 ## Soil moisture
 The soil moisture accounting routine computes an index of the wetness of the entire basin and integrates interception and soil moisture storage. Soil moisture subroutine is controlled by three free parameters, FC, BETA and LP. FC (Field capacity) is the maximum soil moisture storage in the basin and BETA determines the relative contribution to runoff from a millimeter of rain or snowmelt at a given soil moisture deficit. 
