@@ -48,9 +48,9 @@ their own model, it contains two routing functions muskingum cunge, and MAXBAS t
 
 
 
-![1](../img/Picture1.png)
+![1](/docs/img/Picture1.png)
 
-![2](../img/Picture2.png)
+![2](/docs/img/Picture2.png)
 
 Main Features
 -------------
