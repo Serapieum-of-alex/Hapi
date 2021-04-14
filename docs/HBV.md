@@ -45,13 +45,13 @@ If temperature is TT, precipitation occurs as snowfall, and is added to the dry 
 
 Melting starts with temperatures above the threshold, TT, according to a simple degree-day
 
-```
 $$
-
 Snow MELT = Cfmax * (T - TT) ; temp > TT
 Snow Refreezing = Cfr * Cfmax * (TT - T ) ; temp < TT
-
 $$
+
+```
+
 where: Snow MELT & Snow Refreezing are in (mm/day)
 Cfmax = degree-day factor (mm/°C · day)
 TT = temperature threshold (C).
