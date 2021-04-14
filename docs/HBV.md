@@ -10,13 +10,14 @@ A catchment is divided into a number of grid cells. For each of the cells indivi
 The HBV model [Bergström, 1992] is usually run with daily time steps, but higher resolution (hourly) can be used if data are available. Input data are precipitation, air temperature and potential evapotranspiration.
 
 HBV model consists of three main components:
-- [Snow Subroutine](HBV/#snow)
 
-- [Soil Moisture](HBV#Soil_moisture)
+- [Snow Subroutine](#snow)
 
-- [Runoff response](HBV/#runoff-response)
+- [Soil Moisture](#Soil_moisture)
 
-- [Lake](HBV/#lake)
+- [Runoff response](#runoff-response)
+
+- [Lake](#lake)
 
 ![HBV Component](../img/water_cycle.png)
 [Bergström, 1992]
@@ -45,9 +46,12 @@ If temperature is TT, precipitation occurs as snowfall, and is added to the dry 
 Melting starts with temperatures above the threshold, TT, according to a simple degree-day
 
 ```
+$$
+
 Snow MELT = Cfmax * (T - TT) ; temp > TT
 Snow Refreezing = Cfr * Cfmax * (TT - T ) ; temp < TT
 
+$$
 where: Snow MELT & Snow Refreezing are in (mm/day)
 Cfmax = degree-day factor (mm/°C · day)
 TT = temperature threshold (C).
