@@ -93,20 +93,6 @@ Lakes have a significant impact on the dynamics of runoff process and the routin
 
 ![MaxBas](../img/lake.png)
 
-Bergström, Sten. 1992. “The HBV Model - Its Structure and Applications.” Smhi Rh 4(4): 35.
 
+		Bergström, Sten. 1992. “The HBV Model - Its Structure and Applications.” Smhi Rh 4(4): 35.
 
-
-
-       # Masswasting of snow
-       # 5.67 = tan 80 graden
-       SnowFluxFrac = min(0.5,self.Slope/5.67) * min(1.0,self.DrySnow/MaxSnowPack)
-       MaxFlux = SnowFluxFrac * self.DrySnow
-       self.DrySnow = accucapacitystate(self.TopoLdd,self.DrySnow, MaxFlux)
-       self.FreeWater = accucapacitystate(self.TopoLdd,self.FreeWater,SnowFluxFrac * self.FreeWater )
-
-
-.. note::
-
-	Note that the HBV-96 manual mentions that for a recession rate larger
-	than 1 the timestap in the model will be adjusted.
