@@ -12,11 +12,12 @@ theme:
 nav:
     - Home: index.md
     - Available Models:
-        - HBV Bergström 1992: HBV.md
+      - HBV Bergström 1992: HBV.md
+      - Muskingum Routing: Muskingum.md
     - Tutorial:
-        - Inputs: Inputs.md
-        - Lumped Hydrological Model: Lumped_HBV.md
-        - Sensitivity Analysis: Sensitivity_Analysis.md
+      - Inputs: Inputs.md
+      - Lumped Hydrological Model: Lumped_HBV.md
+      - Sensitivity Analysis: Sensitivity_Analysis.md
     - GIS: GIS.md
     - License: license.md
 
