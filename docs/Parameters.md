@@ -1,4 +1,6 @@
 # Parameters
+the 15 free parameters used by the HBV model for each cell can be obtained through calibration, However
+it it an extremely difficult task to keep the model simple and minimize uncertainty with such large number of parameters, Therefore in Hapi 1.0.0 we integrate the global hydrological parameters obtained by Beck et al., (2016), to reduce model complexity and uncertainty of parameters and to help obtain the best set of parameter during the calibration.
 
 You will find the following example in the `ExtractParametersBounds.py` file under the folder `/Examples/Create Inputs`. There is no need for copy paste work.
 
