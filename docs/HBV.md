@@ -64,6 +64,16 @@ The maximum capacity of liquid water the snow can hold (holding water capacity W
 The snow routine of the HBV model has primarily four free parameters that have to be estimated by calibration: TT, Cfmax, cfr, cwh· 
 
 
+::
+
+       # Masswasting of snow
+       # 5.67 = tan 80 graden
+       SnowFluxFrac = min(0.5,self.Slope/5.67) * min(1.0,self.DrySnow/MaxSnowPack)
+       MaxFlux = SnowFluxFrac * self.DrySnow
+       self.DrySnow = accucapacitystate(self.TopoLdd,self.DrySnow, MaxFlux)
+       self.FreeWater = accucapacitystate(self.TopoLdd,self.FreeWater,SnowFluxFrac * self.FreeWater )
+
+ 
 ## Soil moisture
 The soil moisture accounting routine computes an index of the wetness of the entire basin and integrates interception and soil moisture storage. Soil moisture subroutine is controlled by three free parameters, FC, BETA and LP. FC (Field capacity) is the maximum soil moisture storage in the basin and BETA determines the relative contribution to runoff from a millimeter of rain or snowmelt at a given soil moisture deficit. 
 
