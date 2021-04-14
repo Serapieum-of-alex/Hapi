@@ -303,3 +303,35 @@ Outputs:
   </video>
 </figure>
 <!-- blank line -->
+
+- to save the animation
+
+	- Please visit https://ffmpeg.org/ and download a version of ffmpeg compitable with your operating system 
+	- Copy the content of the folder and paste it in the "c:/user/.matplotlib/ffmpeg-static/"
+	or
+
+	- define the path where the downloaded folder "ffmpeg-static" exist to matplotlib using the following lines 
+
+	``` 
+	import matplotlib as mpl
+	mpl.rcParams['animation.ffmpeg_path'] = "path where you saved the ffmpeg.exe/ffmpeg.exe" 
+	```
+
+```
+			Path = SaveTo + "anim.gif"
+			Coello.SaveAnimation(VideoFormat="gif",Path=Path,SaveFrames=3)
+```
+
+
+### 7-Save the result into rasters
+
+- To save the results as rasters provide the period and the path 
+
+```
+		StartDate = "2009-01-01"
+		EndDate = "2010-04-20"
+		Prefix = 'Qtot_'
+
+		Coello.SaveResults(FlowAccPath, Result=1, StartDate=StartDate, EndDate=EndDate,
+		                    Path="F:/02Case studies/Coello/Hapi/Model/results/", Prefix=Prefix)
+```
