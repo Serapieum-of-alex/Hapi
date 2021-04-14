@@ -96,7 +96,7 @@ Lakes have a significant impact on the dynamics of runoff process and the routin
 Bergström, Sten. 1992. “The HBV Model - Its Structure and Applications.” Smhi Rh 4(4): 35.
 
 
-::
+
 
        # Masswasting of snow
        # 5.67 = tan 80 graden
@@ -107,6 +107,6 @@ Bergström, Sten. 1992. “The HBV Model - Its Structure and Applications.” Sm
 
 
 .. note::
+
 	Note that the HBV-96 manual mentions that for a recession rate larger
 	than 1 the timestap in the model will be adjusted.
-	
