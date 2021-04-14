@@ -2,6 +2,7 @@
 
 After preparing all the meteorological, GIS inputs required for the model, and Extracting the parameters for the catchment 
 
+## 1- Catchment Object
 - Import the Catchment object which is the main object in the distributed model, to read and check the input data,  and when the model finish the simulation it stores the results and do the visualization
 
 
@@ -61,6 +62,8 @@ After preparing all the meteorological, GIS inputs required for the model, and E
 - To instantiate the object you need to provide the `name`, `statedate`, `enddate`, and the `SpatialResolution`
 
 ```
+		from Hapi.catchment import Catchment
+
 		start = "2009-01-01"
 		end = "2011-12-31"
 		name = "Coello"
@@ -88,9 +91,63 @@ After preparing all the meteorological, GIS inputs required for the model, and E
 			Coello.ReadRainfall(PrecPath)
 			Coello.ReadTemperature(TempPath)
 			Coello.ReadET(Evap_Path)
-
 			Coello.ReadFlowAcc(FlowAccPath)
 			Coello.ReadFlowDir(FlowDPath)
-			Coello.ReadParameters(ParPathRun, Snow)
+```
+
+- To read the parameters you need to provide whether you need to consider the snow subroutine or not
 
 ```
+			Snow = 0
+			Coello.ReadParameters(ParPathRun, Snow)
+```
+
+### 2- Lumped Model
+- Get the Lumpde conceptual model you want to couple it with the distributed routing module which in our case HBV 
+	and define the initial condition, and catchment area.
+```
+			import Hapi.hbv_bergestrom92 as HBV
+
+			CatchmentArea = 1530
+			InitialCond = [0,5,5,5,0]
+			Coello.ReadLumpedModel(HBV, CatchmentArea, InitialCond)
+```
+- If the Inpus are consistent in dimensions you will get a the following message
+
+![check_inputs](../img/check_inputs.png)
+
+- to check the performance of the model we need to read the gauge hydrographs
+
+```
+Coello.ReadGaugeTable("Hapi/Data/00inputs/Discharge/stations/gauges.csv", FlowAccPath)
+GaugesPath = "Hapi/Data/00inputs/Discharge/stations/"
+Coello.ReadDischargeGauges(GaugesPath, column='id', fmt="%Y-%m-%d")
+```
+
+### Run Object
+
+- The `Run` object connects all the components of the simulation together, the `Catchment` object, the `Lake` object and the `distributedrouting` object
+- import the Run object and use the `Catchment` object as a parameter to the `Run` object, then call the RunHapi method to start the simulation
+
+```
+			from Hapi.run import Run
+			Run.RunHapi(Coello)
+```
+
+
+Outputs:
+----------
+    1-statevariables: [numpy attribute]
+        4D array (rows,cols,time,states) states are [sp,wc,sm,uz,lv]
+    2-qlz: [numpy attribute]
+        3D array of the lower zone discharge
+    3-quz: [numpy attribute]
+        3D array of the upper zone discharge
+    4-qout: [numpy attribute]
+        1D timeseries of discharge at the outlet of the catchment
+        of unit m3/sec
+    5-quz_routed: [numpy attribute]
+        3D array of the upper zone discharge  accumulated and
+        routed at each time step
+    6-qlz_translated: [numpy attribute]
+        3D array of the lower zone discharge translated at each time step
