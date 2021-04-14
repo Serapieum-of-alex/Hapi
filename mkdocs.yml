@@ -18,7 +18,7 @@ nav:
         - GIS Inputs: GIS_inputs.md
         - Parameters: Parameters.md
     - Tutorial:
-        - build Distributed Model: build_model.md
+        - Build Distributed Model: build_model.md
         #- Inputs: CreateInputs.md
         - Lumped Hydrological Model: Lumped_HBV.md
         - Sensitivity Analysis: Sensitivity_Analysis.md
