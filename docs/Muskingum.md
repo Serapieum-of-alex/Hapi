@@ -10,5 +10,6 @@ Muskingum is a hydrologic-routing method which employs the equation of continuit
 
 channel routing functions of inflow, outflow and storage where storage can be considered as two parts, prism & wedge storage.
 
-
+```
 S=K\ast\left[x\ast I^m+\left(1-x\right)\ast Q^m\right]
+```
