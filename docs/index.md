@@ -34,7 +34,7 @@ Current release info
 | [![Conda Recipe](https://img.shields.io/badge/recipe-hapi-green.svg)](https://anaconda.org/conda-forge/hapi) | [![Conda Downloads](https://img.shields.io/conda/dn/conda-forge/hapi.svg)](https://anaconda.org/conda-forge/hapi) | [![Conda Version](https://img.shields.io/conda/vn/conda-forge/hapi.svg)](https://anaconda.org/conda-forge/hapi) | [![Conda Platforms](https://img.shields.io/conda/pn/conda-forge/hapi.svg)](https://anaconda.org/conda-forge/hapi) [![Join the chat at https://gitter.im/Hapi-Nile/Hapi](https://badges.gitter.im/Hapi-Nile/Hapi.svg)](https://gitter.im/Hapi-Nile/Hapi?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) |
 
 
-![Hapi](/docs/img/Hapi4.png) ![Hapi](/docs/img/name.png)
+![Hapi](/docs/img/Hapi4.png)     ![Hapi](/docs/img/name.png)
 
 
 
@@ -49,6 +49,7 @@ their own model, it contains two routing functions muskingum cunge, and MAXBAS t
 
 
 ![1](../img/Picture1.png)
+
 ![2](../img/Picture2.png)
 
 Main Features
