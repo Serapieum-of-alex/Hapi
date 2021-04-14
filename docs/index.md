@@ -18,10 +18,11 @@ The package is very flexible to an extent that it allows developers to change th
 their own model, it contains two routing functions muskingum cunge, and MAXBAS triangular function.
 
 
-![model](../img/model_structure.png)
 
 
-![case_study](../img/casestudy.png) 
+
+![1](../img/Picture1.png)
+![2](../img/Picture2.png)
 
 Main Features
 -------------
