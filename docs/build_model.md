@@ -287,10 +287,21 @@ Outputs:
 
 - choose the period of time you want to animate and the result (total discharge, upper zone discharge, soil moisture,...)
 
-
+```
 			plotstart = "2009-01-01"
 			plotend = "2009-02-01"
 
 			Anim = Coello.PlotDistributedResults(plotstart, plotend, Figsize=(9,9), Option = 1,threshold=160, PlotNumbers=True,
 			                                TicksSpacing = 5,Interval = 200, Gauges=True, cmap='inferno', Textloc=[0.1,0.2],
 			                                Gaugecolor='red',ColorScale = 1, IDcolor='blue', IDsize=25)
+```
+
+<!-- blank line -->
+<figure class="video_container">
+  <video controls="true" allowfullscreen="true" poster="../img/hydrograph.png">
+    <source src="path/to/video.mp4" type="video/mp4">
+    <source src="path/to/video.ogg" type="video/ogg">
+    <source src="path/to/video.webm" type="video/webm">
+  </video>
+</figure>
+<!-- blank line -->
