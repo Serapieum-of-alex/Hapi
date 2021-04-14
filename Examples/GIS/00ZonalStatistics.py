@@ -3,16 +3,18 @@
 Created on Thu Jul  2 14:06:03 2020
 
 @author: mofarrag
-"""
-from IPython import get_ipython
-get_ipython().magic("reset -f")
-import os
-import numpy as np
-import Hapi.raster as R
 
-Path = "F:/02Case studies/El Salvador/Hapi Examples/"
-SavePath  = Path + "results/ZonalStatistics"
-BaseMapF = Path + "data/Polygons.tif"
+Make sure the working directory is set to the examples folder in the Hapi repo"
+currunt_work_directory = Hapi/Example
+
+"""
+# import os
+import numpy as np
+from Hapi.raster import Raster as R
+
+Path = "data/GIS/ZonalStatistics/"
+SavePath  = Path
+BaseMapF = Path + "Polygons.tif"
 
 
 ExcludedValue = 0

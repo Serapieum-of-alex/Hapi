@@ -128,15 +128,17 @@ class Inputs():
         """
         ParametersPath = os.path.dirname(Hapi.__file__)
         ParametersPath = ParametersPath + "/Parameters"
-        ParamList = ["tt", "sfcf","cfmax","cwh","cfr","fc","beta", #"rfcf","e_corr",
-                 "lp","k0","k1","k2","uzl","perc", "maxbas"] #,"c_flux"
+        ParamList = ["01_tt", "02_rfcf","03_sfcf","04_cfmax","05_cwh","06_cfr",
+                     "07_fc","08_beta","09_etf","10_lp","11_k0","12_k1","13_k2",
+                     "14_uzl","15_perc", "16_maxbas","17_K_muskingum",
+                     "18_x_muskingum"]
 
-        raster = rasterio.open(ParametersPath + "/max/" + ParamList[0] + "-Max.tif")
+        raster = rasterio.open(ParametersPath + "/max/" + ParamList[0] + ".tif")
         Basin = Basin.to_crs(crs=raster.crs)
         # max values
         UB = list()
         for i in range(len(ParamList)):
-            raster = rasterio.open(ParametersPath + "/max/" + ParamList[i] + "-Max.tif")
+            raster = rasterio.open(ParametersPath + "/max/" + ParamList[i] + ".tif")
             array = raster.read(1)
             affine = raster.transform
             UB.append(zonal_stats(Basin, array, affine=affine, stats=['max'])[0]['max']) #stats=['min', 'max', 'mean', 'median', 'majority']
@@ -144,20 +146,22 @@ class Inputs():
         # min values
         LB = list()
         for i in range(len(ParamList)):
-            raster = rasterio.open(ParametersPath + "/min/" + ParamList[i] + "-Min.tif")
+            raster = rasterio.open(ParametersPath + "/min/" + ParamList[i] + ".tif")
             array = raster.read(1)
             affine = raster.transform
             LB.append(zonal_stats(Basin, array, affine=affine, stats=['min'])[0]['min'])
 
-        # plot the given basin with the parameters raster
+        Par = pd.DataFrame(index = ParamList)
 
-        # Plot DEM
+        Par['UB'] = UB
+        Par['LB'] = LB
+        # plot the given basin with the parameters raster
         ax = show((raster, 1), with_bounds=True)
         Basin.plot(facecolor='None', edgecolor='blue', linewidth=2, ax=ax)
         # ax.set_xbound([Basin.bounds.loc[0,'minx']-10,Basin.bounds.loc[0,'maxx']+10])
         # ax.set_ybound([Basin.bounds.loc[0,'miny']-1, Basin.bounds.loc[0,'maxy']+1])
 
-        return UB, LB
+        return Par
 
 
     @staticmethod
@@ -166,6 +170,15 @@ class Inputs():
         =====================================================
             ExtractParameters(Basin)
         =====================================================
+        ExtractParameters method extracts the parameter rasters at the location
+        of the source raster, there are 12 set of parameters 10 sets of parameters
+        (Beck et al., (2016)) and the max, min and average of all sets
+
+
+        Beck, H. E., Dijk, A. I. J. M. van, Ad de Roo, Diego G. Miralles,
+        T. R. M. & Jaap Schellekens, and L. A. B. (2016) Global-scale
+        regionalization of hydrologic model parameters-Supporting materials
+        3599–3622. doi:10.1002/2015WR018247.Received
 
         Parameters
         ----------
@@ -178,6 +191,10 @@ class Inputs():
         Parameters : [list]
             list of the upper bound of the parameters.
 
+        scenario : [str]
+            name of the parameter set, there are 12 sets of parameters
+            ["1","2","3","4","5","6","7","8","9","10","avg","max","min"]
+
         the parameters are
             ["tt", rfcf,"sfcf","cfmax","cwh","cfr","fc","beta",'etf'
              "lp","k0","k1","k2","uzl","perc", "maxbas",'K_muskingum',
@@ -185,9 +202,10 @@ class Inputs():
         """
         ParametersPath = os.path.dirname(Hapi.__file__)
         ParametersPath = ParametersPath + "/Parameters/" + scenario
-        ParamList = ["tt", "rfcf", "sfcf","cfmax","cwh","cfr","fc","beta", "etf"
-                 "lp","k0","k1","k2","uzl","perc", "maxbas", "K_muskingum",
-                 "x_muskingum"]
+        ParamList = ["01_tt", "02_rfcf","03_sfcf","04_cfmax","05_cwh","06_cfr",
+                     "07_fc","08_beta","09_etf","10_lp","11_k0","12_k1","13_k2",
+                     "14_uzl","15_perc", "16_maxbas","17_K_muskingum",
+                     "18_x_muskingum"]
 
         if not AsRaster:
             raster = rasterio.open(ParametersPath + "/" + ParamList[0] + ".tif")

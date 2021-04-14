@@ -6,11 +6,10 @@ Created on Sat May 16 00:02:08 2020
 """
 from IPython import get_ipython
 get_ipython().magic("reset -f")
-import os
+# import os
 # os.chdir("")
 import Hapi.raster as Raster
 import geopandas as gpd
-
 
 
 Raster_path = "F:/02Case studies/Rhine/base_data/GIS/Layers/DEM/srtm/DEM_Germany.tif"
