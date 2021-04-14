@@ -16,6 +16,7 @@ nav:
     - Inputs:
         - Meteorological Inputs: Meteo_Inputs.md
         - GIS Inputs: GIS_inputs.md
+        - Parameters: Parameters.md
     - Tutorial:
         #- Inputs: CreateInputs.md
         - Lumped Hydrological Model: Lumped_HBV.md

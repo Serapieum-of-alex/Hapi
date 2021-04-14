@@ -19,6 +19,8 @@ their own model, it contains two routing functions muskingum cunge, and MAXBAS t
 (all function has been tested and validated during a Master thesis at IHE-Delft April 2018 and the library is still under development)
 
 
+![flowdirection](../img/case_study.png) 
+
 Main Features
 -------------
   - Modified version of HBV96 hydrological model (Bergström, 1992) with 15 parameters in case of considering
