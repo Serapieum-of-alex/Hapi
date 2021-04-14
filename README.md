@@ -44,7 +44,7 @@ model & Muskingum routing method at a catchment scale, Hapi gives a high degree 
 (spatial discretization - cell size, temporal resolution, parameterization approaches and calibration).
 
 
-![1](../img/Picture1.png)  ![2](../img/Picture2.png)
+![1](/docs/img/Picture1.png)  ![2](/docs/img/Picture2.png)
 
 Hapi 
 
