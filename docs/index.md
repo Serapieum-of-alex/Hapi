@@ -18,8 +18,9 @@ The package is very flexible to an extent that it allows developers to change th
 their own model, it contains two routing functions muskingum cunge, and MAXBAS triangular function.
 (all function has been tested and validated during a Master thesis at IHE-Delft April 2018 and the library is still under development)
 
+![model](../img/model.png) 
 
-![flowdirection](../img/case_study.png) 
+![case_study](../img/case_study.png) 
 
 Main Features
 -------------
