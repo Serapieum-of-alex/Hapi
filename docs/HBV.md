@@ -13,7 +13,7 @@ HBV model consists of three main components:
 
 - [Snow Subroutine](#snow)
 
-- [Soil Moisture](#Soil_moisture)
+- [Soil Moisture](#soil-moisture)
 
 - [Runoff response](#runoff-response)
 
@@ -45,12 +45,9 @@ If temperature is TT, precipitation occurs as snowfall, and is added to the dry 
 
 Melting starts with temperatures above the threshold, TT, according to a simple degree-day
 
-$$
+```
 Snow MELT = Cfmax * (T - TT) ; temp > TT
 Snow Refreezing = Cfr * Cfmax * (TT - T ) ; temp < TT
-$$
-
-```
 
 where: Snow MELT & Snow Refreezing are in (mm/day)
 Cfmax = degree-day factor (mm/°C · day)
@@ -84,11 +81,8 @@ Ep is monthly long term average potential evapotranspiration
 ![Beta](../img/Evapotranspiration.png)
 
 ## Runoff response
-The runoff response routine transforms excess water from the soil moisture routine to discharge. The routine consists of two reservoirs with three free parameters: three recession coefficients, K0, K1 and :K2, a threshold UZL, and a constant percolation rate, PERC. 
+The runoff response routine transforms excess water from the soil moisture routine to discharge. The routine consists of two reservoirs with three free parameters: three recession coefficients, `K0`, `K1` and `K2`, a threshold `UZL`, and a constant percolation rate, `PERC`. 
 
-Finally there is a filter for smoothing of the generated flow. This filter consists of a triangular weighting function with one free parameter, MAXBAS. There is also a Muskingum routing procedure available for flood routing.
-
-![MaxBas](../img/maxbas.png)
 
 ## Lake
 
@@ -111,3 +105,8 @@ Bergström, Sten. 1992. “The HBV Model - Its Structure and Applications.” Sm
        self.DrySnow = accucapacitystate(self.TopoLdd,self.DrySnow, MaxFlux)
        self.FreeWater = accucapacitystate(self.TopoLdd,self.FreeWater,SnowFluxFrac * self.FreeWater )
 
+
+.. note::
+	Note that the HBV-96 manual mentions that for a recession rate larger
+	than 1 the timestap in the model will be adjusted.
+	
