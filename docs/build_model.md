@@ -124,7 +124,7 @@ GaugesPath = "Hapi/Data/00inputs/Discharge/stations/"
 Coello.ReadDischargeGauges(GaugesPath, column='id', fmt="%Y-%m-%d")
 ```
 
-### Run Object
+### 3-Run Object
 
 - The `Run` object connects all the components of the simulation together, the `Catchment` object, the `Lake` object and the `distributedrouting` object
 - import the Run object and use the `Catchment` object as a parameter to the `Run` object, then call the RunHapi method to start the simulation
@@ -134,9 +134,9 @@ Coello.ReadDischargeGauges(GaugesPath, column='id', fmt="%Y-%m-%d")
 			Run.RunHapi(Coello)
 ```
 
+- the result of the simulation will be stored as attributes in the Catchment object as follow
 
 Outputs:
-----------
     1-statevariables: [numpy attribute]
         4D array (rows,cols,time,states) states are [sp,wc,sm,uz,lv]
     2-qlz: [numpy attribute]
@@ -151,3 +151,43 @@ Outputs:
         routed at each time step
     6-qlz_translated: [numpy attribute]
         3D array of the lower zone discharge translated at each time step
+
+### 4-Extract Hydrographs
+
+- The final step is to extract the simulated Hydrograph from the cells at the location of the gauges to compare
+- The `ExtractDischarge` method extracts the hydrographs, however you have to provide in the gauge file the coordinates of the gauges with the same coordinate system of the `FlowAcc` raster
+
+```
+			Coello.ExtractDischarge(Factor=Coello.GaugesTable['area ratio'].tolist())
+
+			for i in range(len(Coello.GaugesTable)):
+			    gaugeid = Coello.GaugesTable.loc[i,'id']
+			    print("----------------------------------")
+			    print("Gauge - " +str(gaugeid))
+			    print("RMSE= " + str(round(Coello.Metrics.loc['RMSE',gaugeid],2)))
+			    print("NSE= " + str(round(Coello.Metrics.loc['NSE',gaugeid],2)))
+			    print("NSEhf= " + str(round(Coello.Metrics.loc['NSEhf',gaugeid],2)))
+			    print("KGE= " + str(round(Coello.Metrics.loc['KGE',gaugeid],2)))
+			    print("WB= " + str(round(Coello.Metrics.loc['WB',gaugeid],2)))
+			    print("Pearson CC= " + str(round(Coello.Metrics.loc['Pearson-CC',gaugeid],2)))
+			    print("R2 = " + str(round(Coello.Metrics.loc['R2',gaugeid],2)))
+```
+
+- The `ExtractDischarge` will print the performance metics
+
+
+### 5-Visualization
+
+- Firts type of visualization we can do with the results is to compare the gauge hydrograph with the simulatied hydrographs 
+- Call the `PlotHydrograph` method and provide the period you want to visualize with the order of the gauge
+
+```
+		gaugei = 5
+		plotstart = "2009-01-01"
+		plotend = "2011-12-31"
+
+		Coello.PlotHydrograph(plotstart, plotend, gaugei)
+```
+
+![hydrograph](../img/hydrograph.png) 
+
