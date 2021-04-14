@@ -1,5 +1,4 @@
 site_name: Hapi
-#site_url: 
 site_description: The documentation of Hapi Hydrological Model
 site_author: Mostafa Farrag
 
@@ -14,8 +13,11 @@ nav:
     - Available Models:
         - HBV Bergström 1992: HBV.md
         - Muskingum Routing: Muskingum.md
+    - Inputs:
+        - Meteorological Inputs: Meteo_Inputs.md
+        - GIS Inputs: GIS_inputs.md
     - Tutorial:
-        - Inputs: Inputs.md
+        #- Inputs: CreateInputs.md
         - Lumped Hydrological Model: Lumped_HBV.md
         - Sensitivity Analysis: Sensitivity_Analysis.md
     - GIS: GIS.md
