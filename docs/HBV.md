@@ -19,6 +19,8 @@ HBV model consists of three main components:
 
 - [Lake](#lake)
 
+- [References](#references)
+
 ![HBV Component](../img/water_cycle.png)
 [Bergström, 1992]
 
@@ -93,6 +95,7 @@ Lakes have a significant impact on the dynamics of runoff process and the routin
 
 ![MaxBas](../img/lake.png)
 
+## References
 
 		Bergström, Sten. 1992. “The HBV Model - Its Structure and Applications.” Smhi Rh 4(4): 35.
 

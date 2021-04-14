@@ -13,7 +13,7 @@ nav:
     - Home: index.md
     - Available Models:
         - HBV Bergström 1992: HBV.md
-      #- Muskingum Routing: Muskingum.md
+        - Muskingum Routing: Muskingum.md
     - Tutorial:
         - Inputs: Inputs.md
         - Lumped Hydrological Model: Lumped_HBV.md
