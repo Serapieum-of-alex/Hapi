@@ -60,7 +60,7 @@ CHRIPS data are uploaded into a ftp server therefore and can be downloaded throu
 	
 - A Progress bar will appear and be updated with percent of the download
 
-	![process](../img/progressbar.png)
+	![progressbar](../img/progressbar.png)
 	
 
 - If the period is long and the Download method can run in parallel, to activate the parallel mode enter the number of cores with the keyword argument `cores`
@@ -94,7 +94,7 @@ so inorder to be able to use the following code to download ECMWF data you need 
 		Vars = Variables('daily')
 		Vars.__str__()
 
-	![process](../img/ECMWF_Variable.png)
+	![ECMWF_Variable](../img/ECMWF_Variable.png)
 
 For the information about the ECMWF data https://apps.ecmwf.int/codes/grib/param-db/
 
