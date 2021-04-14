@@ -1,13 +1,13 @@
 pip
 numpy
+gdal
 affine
 fiona
 proj
 pyproj
-gdal
 pandas
 geopandas
-matplotlib
+matplotlib-base
 python
 scipy
 shapely
