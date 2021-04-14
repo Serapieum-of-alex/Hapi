@@ -30,17 +30,17 @@ There are two main data sets. The first is quasi-global and covers the whole wor
 
 CHRIPS data are uploaded into a ftp server therefore and can be downloaded through the `CHRIPS` class in the `remotesensing` module
 
-	- First import the class from the remotesensing module
+- First import the class from the remotesensing module
 
 	```
 	from Hapi.remotesensing import CHIRPS
 	```
 
-	- Create the object with the following information
-		- Period of time (start and end date)
-		- Temporal resolution (daily/monthy)
-		- Extend (Longitude/Latitude)
-		- Path (directory to save the downloaded data)
+- Create the object with the following information
+	- Period of time (start and end date)
+	- Temporal resolution (daily/monthy)
+	- Extend (Longitude/Latitude)
+	- Path (directory to save the downloaded data)
 
 	```
 	StartDate = '2009-01-01'
@@ -49,17 +49,42 @@ CHRIPS data are uploaded into a ftp server therefore and can be downloaded throu
 	lat = [4.190755,4.643963]
 	lon = [-75.649243,-74.727286]
 	Path = "directory to save the data"
-	
 	Coello = CHIRPS(StartDate=StartDate, EndDate=EndDate, Time=Time,
             	latlim=lat , lonlim=lon, Path=Path)
-
 	```
 
-	- Call the `Download` method 
-	
+- Call the `Download` method 
+
 	```
 	Coello.Download()
 	```
+- A Progress bar will appear and be updated with percent of the download
+
+	![process](../img/progressbar.png)
+	
+
+- If the period is long and the Download method can run in parallel, to activate the parallel mode enter the number of cores with the keyword argument `cores`
+
+	```
+	Coello.Download(cores=4)
+	```
+
+### ECMWF
+
+ERA-Interim data set is a global atmospheric reanalysis that is available from 1 January 1979 to 31 August 2019
+
+The ERA-Interim data assimilation and forecast suite produces:
+• four analyses per day, at 00, 06, 12 and 18 UTC;
+• two 10-day forecasts per day, initialized from analyses at 00 and 12 UTC
+
+- Most archived ERA-Interim data can be downloaded from the ECMWF Data Server at http://data.ecmwf.int/data.
+- The ERA-Interim Archive is part of ECMWF’s Meteorological Archive and Retrieval System (MARS), which is accessible to registered users
+- The RemoteSensing and the ECMWF classes can retrieve  the data from the ECMWF servers, if you are registered and setup the API Key in your machine
+
+
+so inorder to be able to use the following code to download ECMWF data you need to 
+- register and setup your account in the ECMWF website (https://apps.ecmwf.int/registration/)
+-  Install ECMWF key (instruction are here https://confluence.ecmwf.int/display/WEBAPI/Access+ECMWF+Public+Datasets#AccessECMWFPublicDatasets-key)
 
 ## Parameters
 
