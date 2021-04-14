@@ -30,25 +30,37 @@ There are two main data sets. The first is quasi-global and covers the whole wor
 
 CHRIPS data are uploaded into a ftp server therefore and can be downloaded through the `CHRIPS` class in the `remotesensing` module
 
-	- First import the class from the mremotesensing module
+	- First import the class from the remotesensing module
 
 	```
 	from Hapi.remotesensing import CHIRPS
 	```
+
 	- Create the object with the following information
 		- Period of time (start and end date)
 		- Temporal resolution (daily/monthy)
 		- Extend (Longitude/Latitude)
 		- Path (directory to save the downloaded data)
 
-```
+	```
 	StartDate = '2009-01-01'
-	EndDate = '2009-02-01'
+	EndDate = '2009-01-10'
 	Time = 'daily'
 	lat = [4.190755,4.643963]
 	lon = [-75.649243,-74.727286]
 	Path = "directory to save the data"
-```
+	
+	Coello = CHIRPS(StartDate=StartDate, EndDate=EndDate, Time=Time,
+            	latlim=lat , lonlim=lon, Path=Path)
+
+	```
+
+	- Call the `Download` method 
+	
+	```
+	Coello.Download()
+	```
+
 ## Parameters
 
 You will find the following example in the `ExtractParametersBounds.py` file under the folder `/Examples/Create Inputs`. There is no need for copy paste work.
