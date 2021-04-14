@@ -11,8 +11,11 @@ The HBV model [Bergström, 1992] is usually run with daily time steps, but highe
 
 HBV model consists of three main components:
 - [Snow Subroutine](HBV/#snow)
+
 - [Soil Moisture](HBV#Soil_moisture)
+
 - [Runoff response](HBV/#runoff-response)
+
 - [Lake](HBV/#lake)
 
 ![HBV Component](../img/water_cycle.png)
@@ -22,16 +25,12 @@ snow accumulation and melt, soil moisture accounting, response and river routing
 
 
 
-The model has number of free parameters, values of which are found by calibration, There are also parameters describing the characteristics of the basin and its climate
-
-The soil moisture accounting calculations require data on the potential evapotranspiration.Normally monthly mean standard values are sufficient, but more detailed data can also
+The soil moisture accounting calculations require data on the potential evapotranspiration. Normally monthly mean standard values are sufficient, but more detailed data can also
 be used. The source of these data may either be calculations according to the Penman formula or similar, or measurements by evaporimeters. In the latter case it is important
 to correct for systematic errors before entering the model.
 
-where 14 parameters [`tt`,`sfcf`,`cfmax`,`cwh`,`cfr`,`fc`,`beta`,`lp`,`k0`,`k1`,`k2`,`uzl`,`perc`,`maxbas`]
-
-another two parameters are added for the correction of the rainfall values `rfcf` and for the correction of the calculated evapotranspiration values `E_corr`, therefore the HBV version used inside Hapi uses 16 parameter with the following order 
-[`tt`,`sfcf`,`cfmax`,`cwh`,`cfr`,`rfcf`,`fc`,`beta`,`E_corr`,`lp`,`k0`,`k1`,`k2`,`uzl`,`perc`,`maxbas`], and in case the catchment does not have a snow then the HBV model used 11 parameter (excluding the first 5 parameters)
+The model has 15 free parameters, values of which are found by calibration, some of the parameters describe the characteristics of the basin while others describe its climate.
+the 15 parameter by order are [`tt`,`rfcf`,`sfcf`,`cfmax`,`cwh`,`cfr`,`fc`,`beta`,`etf`,`lp`,`k0`,`k1`,`k2`,`uzl`,`perc`]. Two parameters are added for the correction of the rainfall values `rfcf` and for the correction of the calculated evapotranspiration values `Etf`, and in case the catchment does not have a snow then the HBV model used 10 parameter (excluding the first 5 parameters)
 
 
 ![HBV Component](../img/HBV_buckets.png)
@@ -45,12 +44,6 @@ If temperature is TT, precipitation occurs as snowfall, and is added to the dry 
 
 Melting starts with temperatures above the threshold, TT, according to a simple degree-day
 
-.. math::
-
-    Q_{m}  =  cfmax(T_{a}-TT)\;\;;T_{a}>TT
-    
-    Q_{r}  =  cfmax*cfr(TT-T_{a})\;;T_{a}<TT
-
 ```
 Snow MELT = Cfmax * (T - TT) ; temp > TT
 Snow Refreezing = Cfr * Cfmax * (TT - T ) ; temp < TT
@@ -61,21 +54,14 @@ TT = temperature threshold (C).
 ```
 The maximum capacity of liquid water the snow can hold (holding water capacity WHC) has to be exceeded before any runoff is generated. A refreezing coefficient, which is used to refreeze free water in the snow if snowmelt is interrupted.
 
-The snow routine of the HBV model has primarily four free parameters that have to be estimated by calibration: TT, Cfmax, cfr, cwh· 
+The snow routine of the HBV model has primarily five free parameters that have to be estimated by calibration: 
+`tt`,`sfcf`,`cfmax`,`cwh`,`cfr`.
 
 
-::
-
-       # Masswasting of snow
-       # 5.67 = tan 80 graden
-       SnowFluxFrac = min(0.5,self.Slope/5.67) * min(1.0,self.DrySnow/MaxSnowPack)
-       MaxFlux = SnowFluxFrac * self.DrySnow
-       self.DrySnow = accucapacitystate(self.TopoLdd,self.DrySnow, MaxFlux)
-       self.FreeWater = accucapacitystate(self.TopoLdd,self.FreeWater,SnowFluxFrac * self.FreeWater )
-
- 
 ## Soil moisture
-The soil moisture accounting routine computes an index of the wetness of the entire basin and integrates interception and soil moisture storage. Soil moisture subroutine is controlled by three free parameters, FC, BETA and LP. FC (Field capacity) is the maximum soil moisture storage in the basin and BETA determines the relative contribution to runoff from a millimeter of rain or snowmelt at a given soil moisture deficit. 
+
+
+The soil moisture accounting routine computes an index of the wetness of the entire basin and integrates interception and soil moisture storage. Soil moisture subroutine is controlled by three free parameters, FC, BETA and LP. FC (Field capacity) is the maximum soil moisture storage in the basin and BETA (power parameter) determines the relative contribution to runoff from a millimeter of rain or snowmelt at a given soil moisture deficit. 
 
 ![Beta](../img/Beta.png)
 
@@ -83,7 +69,7 @@ LP controls the shape of the reduction curve for potential evaporation. At soil 
 
 To accounts for temperature anomalies a correction factor based on mean daily air temperatures and long term averages is used.
 ```
-Ea = (1 + (T - Tm) * Ecorr)*Ep
+Ea = (1 + (T - Tm) * ETF)*Ep
 where:
 Ea is calculated actual evapotranspiration
 Ecorr is evapotranspiration correction factor
@@ -110,3 +96,14 @@ Lakes have a significant impact on the dynamics of runoff process and the routin
 ![MaxBas](../img/lake.png)
 
 Bergström, Sten. 1992. “The HBV Model - Its Structure and Applications.” Smhi Rh 4(4): 35.
+
+
+::
+
+       # Masswasting of snow
+       # 5.67 = tan 80 graden
+       SnowFluxFrac = min(0.5,self.Slope/5.67) * min(1.0,self.DrySnow/MaxSnowPack)
+       MaxFlux = SnowFluxFrac * self.DrySnow
+       self.DrySnow = accucapacitystate(self.TopoLdd,self.DrySnow, MaxFlux)
+       self.FreeWater = accucapacitystate(self.TopoLdd,self.FreeWater,SnowFluxFrac * self.FreeWater )
+
