@@ -32,10 +32,8 @@ CHRIPS data are uploaded into a ftp server therefore and can be downloaded throu
 
 - First import the class from the remotesensing module
 
-	```
-	from Hapi.remotesensing import CHIRPS
-	```
-
+	
+		from Hapi.remotesensing import CHIRPS
 
 - Create the object with the following information
 	- Period of time (start and end date)
@@ -45,11 +43,17 @@ CHRIPS data are uploaded into a ftp server therefore and can be downloaded throu
 
 	
 		StartDate = '2009-01-01'
+
 		EndDate = '2009-01-10'
+
 		Time = 'daily'
+
 		lat = [4.190755,4.643963]
+
 		lon = [-75.649243,-74.727286]
+
 		Path = "directory to save the data"
+
 		Coello = CHIRPS(StartDate=StartDate, EndDate=EndDate, Time=Time,
         	    	latlim=lat , lonlim=lon, Path=Path)
 	
@@ -77,14 +81,14 @@ The ERA-Interim data assimilation and forecast suite produces:
 • four analyses per day, at 00, 06, 12 and 18 UTC;
 • two 10-day forecasts per day, initialized from analyses at 00 and 12 UTC
 
-- Most archived ERA-Interim data can be downloaded from the ECMWF Data Server at http://data.ecmwf.int/data.
+- Most archived ERA-Interim data can be downloaded from the ECMWF Data Server at [http://data.ecmwf.int/data](http://data.ecmwf.int/data).
 - The ERA-Interim Archive is part of ECMWF’s Meteorological Archive and Retrieval System (MARS), which is accessible to registered users
 - The RemoteSensing and the ECMWF classes can retrieve  the data from the ECMWF servers, if you are registered and setup the API Key in your machine
 
 
 so inorder to be able to use the following code to download ECMWF data you need to 
 - register and setup your account in the ECMWF website (https://apps.ecmwf.int/registration/)
--  Install ECMWF key (instruction are here https://confluence.ecmwf.int/display/WEBAPI/Access+ECMWF+Public+Datasets#AccessECMWFPublicDatasets-key)
+-  Install ECMWF key (instruction are here [https://confluence.ecmwf.int/display/WEBAPI/Access+ECMWF+Public+Datasets#AccessECMWFPublicDatasets-key](https://confluence.ecmwf.int/display/WEBAPI/Access+ECMWF+Public+Datasets#AccessECMWFPublicDatasets-key))
 
 - ERA-Interim data set has a lot of meteorological variables which you can download
 - You need to provide the name of the variable using the `Variables` object 
@@ -96,7 +100,21 @@ so inorder to be able to use the following code to download ECMWF data you need 
 
 	![ECMWF_Variable](../img/ECMWF_Variable.png)
 
-For the information about the ECMWF data https://apps.ecmwf.int/codes/grib/param-db/
+For the information about the ECMWF data [https://apps.ecmwf.int/codes/grib/param-db/](https://apps.ecmwf.int/codes/grib/param-db/)
+
+		StartDate = '2009-01-01'
+		EndDate = '2009-01-10'
+		Time = 'daily'
+		lat = [4.190755,4.643963]
+		lon = [-75.649243,-74.727286]
+		Path = "/data/satellite_data/"
+		# Temperature, Evapotranspiration
+		variables = ['T','E']
+
+		Coello = RS(StartDate=StartDate, EndDate=EndDate, Time=Time,
+            latlim=lat , lonlim=lon, Path=Path, Vars=variables)
+
+		Coello.ECMWF(Waitbar=1)
 
 ## Parameters
 

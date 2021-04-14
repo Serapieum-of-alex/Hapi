@@ -12,16 +12,15 @@ Using ResmoteSensing module from Hapi
 
 from Hapi.remotesensing import RemoteSensing as RS
 from Hapi.remotesensing import Variables, CHIRPS
-
-wpath = "/data/Satellite data/"
 #%% precipitation
-# # chrips
 StartDate = '2009-01-01'
-EndDate = '2009-02-01'
+EndDate = '2009-01-10'
 Time = 'daily'
-latlim = [4.190755,4.643963]
-lonlim = [-75.649243,-74.727286]
-Path = wpath + "trial/"
+lat = [4.190755,4.643963]
+lon = [-75.649243,-74.727286]
+Path = "/data/satellite_data/"
+# Temperature, Evapotranspiration
+variables = ['T','E']
 #%%
 Vars = Variables('daily')
 Vars.__str__()
@@ -31,7 +30,7 @@ EndDate = '2009-02-01'
 Time = 'daily'
 latlim = [4.190755,4.643963]
 lonlim = [-75.649243,-74.727286]
-Path = wpath + "trial/"
+Path = "/data/Satellite data/"
 # Temperature, Evapotranspiration
 variables = ['T','E']
 
