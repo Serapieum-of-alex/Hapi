@@ -1,4 +1,4 @@
-{% set version = "1.0.3" %}
+{% set version = "1.0.4" %}
 
 package:
   name: hapi
@@ -13,33 +13,12 @@ build:
   script: python -m pip install --no-deps --ignore-installed .
 
 channels:
-#  - mafarrag
   - conda-forge  
 
 requirements:
   host:
+  - python >=2.7
   - pip
-  - numpy
-  - affine
-  - fiona
-  - proj
-  - pyproj
-  - gdal
-  - pandas
-  - geopandas
-  - matplotlib
-  - python
-  - scipy
-  - shapely
-  - statsmodels
-  - rasterio
-  - rasterstats
-  - oasis
-  - netCDF4
-  - scikit-learn
-  - scikit-image
-  - ecmwf-api-client
-  - joblib
   run:
     - pip
     - numpy
@@ -74,5 +53,5 @@ about:
   description: |
     This module builds Distributed Hydrological model.
   dev_url: https://github.com/MAfarrag/HAPI
-  doc_url: https://github.com/MAfarrag/HAPI
+  doc_url: https://hapi-hm.readthedocs.io/en/latest/
   doc_source_url: https://github.com/MAfarrag/HAPI/master/README.md
