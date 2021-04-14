@@ -13,8 +13,8 @@ Channel routing functions of inflow, outflow and storage where storage can be co
 ```
 S = K\ast\left[x\ast I^m+\left(1-x\right)\ast Q^m\right]
 ```
-\[S = K\ast\left[x\ast I^m+\left(1-x\right)\ast Q^m\right]\]
 
+<img src="https://latex.codecogs.com/svg.latex?\fn_jvn&space;S&space;=&space;K\ast\left[x\ast&space;I^m&plus;\left(1-x\right)\ast&space;Q^m\right]" title="S = K\ast\left[x\ast I^m+\left(1-x\right)\ast Q^m\right]" />
 
 
 Where k is the travel time constant and x are weighting coefficient to determine the linearity of the water surface, and it ranges between 0 & 0.5, and m is an exponential constant varies from 0.6 for rectangle channel to 1.
