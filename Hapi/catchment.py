@@ -840,16 +840,16 @@ class Catchment():
                          Gauges=False,**kwargs):
         """
          =============================================================================
-           PlotDistributedQ(StartDate, EndDate, fmt="%Y-%m-%d", Option = 1, Gauges=False,
-               Arr, Time, NoElem, TicksSpacing = 2, Figsize=(8,8), PlotNumbers=True,
-                  NumSize= 8, Title = 'Total Discharge',titlesize = 15, Backgroundcolorthreshold=None,
-                  cbarlabel = 'Discharge m3/s', cbarlabelsize = 12, textcolors=("white","black"),
-                  Cbarlength = 0.75, Interval = 200,cmap='coolwarm_r', Textloc=[0.1,0.2],
-                  Gaugecolor='red',Gaugesize=100, ColorScale = 1,gamma=1./2.,linthresh=0.0001,
-                  linscale=0.001, midpoint=0, orientation='vertical', rotation=-90,
-                  **kwargs):
+           PlotDistributedResults(StartDate, EndDate, fmt="%Y-%m-%d", Option = 1, Gauges=False,
+                            TicksSpacing = 2, Figsize=(8,8), PlotNumbers=True,
+                            NumSize= 8, Title = 'Total Discharge',titlesize = 15, Backgroundcolorthreshold=None,
+                            cbarlabel = 'Discharge m3/s', cbarlabelsize = 12, textcolors=("white","black"),
+                            Cbarlength = 0.75, Interval = 200,cmap='coolwarm_r', Textloc=[0.1,0.2],
+                            Gaugecolor='red',Gaugesize=100, ColorScale = 1,gamma=1./2.,linthresh=0.0001,
+                            linscale=0.001, midpoint=0, orientation='vertical', rotation=-90,
+                            **kwargs):
         =============================================================================
-        PlotDistributedQ animate the time series of the meteorological inputs and
+        PlotDistributedResults animate the time series of the meteorological inputs and
         the result calculated by the model  like the total discharge, upper zone,
         and lower zone discharge and the state variables
 
@@ -868,12 +868,6 @@ class Catchment():
             11-Temperature. The default is 1
         Gauges : [str]
             . The default is False
-        Arr : [array]
-            the array you want to animate.
-        Time : [dataframe]
-            dataframe contains the date of values.
-        NoElem : [integer]
-            Number of the cells that has values.
         TicksSpacing : [integer], optional
             Spacing in the colorbar ticks. The default is 2.
         Figsize : [tuple], optional
@@ -1074,6 +1068,7 @@ class Catchment():
         endi = np.where(self.Index == EndDate)[0][0]+1
 
         if self.SpatialResolution == "Distributed":
+            assert FlowAccPath != '', "Please enter the  FlowAccPath parameter to the SaveResults method"
             src = gdal.Open(FlowAccPath)
 
             if Prefix == '' :

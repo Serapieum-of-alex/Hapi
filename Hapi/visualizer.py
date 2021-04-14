@@ -1082,8 +1082,7 @@ class Visualize():
         message = """
         please visit https://ffmpeg.org/ and download a version of ffmpeg compitable
         with your operating system, and copy the content of the folder and paste it
-        in the "user/.matplotlib/ffmpeg-static/"
-        ffmpeg-static
+        in the "c:/user/.matplotlib/ffmpeg-static/"
         """
         assert os.path.exists(ffmpegPath), message
 

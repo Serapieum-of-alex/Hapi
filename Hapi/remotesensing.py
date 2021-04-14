@@ -637,15 +637,25 @@ class CHIRPS():
 
     def Download(self, Waitbar=1, cores=None):
         """
-        This function downloads CHIRPS daily or monthly data
+        ============================================================
+            Download(self, Waitbar=1, cores=None)
+        ============================================================
+        Download method downloads CHIRPS data
 
-        Keyword arguments:
+        Parameters
+        ----------
+        Waitbar : TYPE, optional
+            will print a waitbar. The default is 1.
+        cores : TYPE, optional
+            The number of cores used to run the routine. It can be 'False'
+                 to avoid using parallel computing routines. The default is None.
 
-        Waitbar -- 1 (Default) will print a waitbar
-        cores -- The number of cores used to run the routine. It can be 'False'
-                 to avoid using parallel computing routines.
+        Returns
+        -------
+        results : TYPE
+            DESCRIPTION.
+
         """
-
         # Pass variables to parallel function and run
         args = [self.output_folder, self.Time, self.xID, self.yID, self.lonlim, self.latlim]
 
@@ -670,12 +680,29 @@ class CHIRPS():
 
     def RetrieveData(Date, args):
         """
-        This function retrieves CHIRPS data for a given date from the
-        ftp://chg-ftpout.geog.ucsb.edu server.
+        ===============================================
+             RetrieveData(Date, args)
+        ===============================================
+        RetrieveData method retrieves CHIRPS data for a given date from the
         https://data.chc.ucsb.edu/
-        Keyword arguments:
-        Date -- 'yyyy-mm-dd'
-        args -- A list of parameters defined in the DownloadData function.
+
+        Parameters
+        ----------
+        Date : TYPE
+            DESCRIPTION.
+        args : TYPE
+            A list of parameters defined in the DownloadData function.
+
+        Raises
+        ------
+        KeyError
+            DESCRIPTION.
+
+        Returns
+        -------
+        bool
+            DESCRIPTION.
+
         """
         # Argument
         [output_folder, TimeCase, xID, yID, lonlim, latlim] = args
