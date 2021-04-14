@@ -10,10 +10,10 @@ A catchment is divided into a number of grid cells. For each of the cells indivi
 The HBV model [Bergström, 1992] is usually run with daily time steps, but higher resolution (hourly) can be used if data are available. Input data are precipitation, air temperature and potential evapotranspiration.
 
 HBV model consists of three main components:
-- [Snow Subroutine](HBV#Snow)
+- [Snow Subroutine](HBV/#snow)
 - [Soil Moisture](HBV#Soil_moisture)
-- [Runoff response](HBV#Runoff_response)
-
+- [Runoff response](HBV/#runoff-response)
+- [Lake](HBV/#lake)
 
 ![HBV Component](../img/water_cycle.png)
 [Bergström, 1992]
@@ -44,6 +44,13 @@ The snow routine controls snow accumulation and melt. The precipitation accumula
 If temperature is TT, precipitation occurs as snowfall, and is added to the dry snow component within the snow pack. Otherwise it ends up in the free water reservoir, which represents the liquid water content of the snow pack. Between the two components of the snow pack, interactions take place, either through snow melt (if temperatures are above a threshold TT) or through snow refreezing (if temperatures are below threshold TT). 
 
 Melting starts with temperatures above the threshold, TT, according to a simple degree-day
+
+.. math::
+
+    Q_{m}  =  cfmax(T_{a}-TT)\;\;;T_{a}>TT
+    
+    Q_{r}  =  cfmax*cfr(TT-T_{a})\;;T_{a}<TT
+
 ```
 Snow MELT = Cfmax * (T - TT) ; temp > TT
 Snow Refreezing = Cfr * Cfmax * (TT - T ) ; temp < TT
@@ -56,8 +63,6 @@ The maximum capacity of liquid water the snow can hold (holding water capacity W
 
 The snow routine of the HBV model has primarily four free parameters that have to be estimated by calibration: TT, Cfmax, cfr, cwh· 
 
-.. digraph:: Linking
-	Muskingum Routing -> Muskingum.md
 
 ## Soil moisture
 The soil moisture accounting routine computes an index of the wetness of the entire basin and integrates interception and soil moisture storage. Soil moisture subroutine is controlled by three free parameters, FC, BETA and LP. FC (Field capacity) is the maximum soil moisture storage in the basin and BETA determines the relative contribution to runoff from a millimeter of rain or snowmelt at a given soil moisture deficit. 
