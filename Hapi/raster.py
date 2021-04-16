@@ -2315,7 +2315,7 @@ class Raster():
         assert type(Compressed) == bool, "Compressed input should be Boolen type"
         # input values
         # check wether the path exist or not
-        assert os.path.exists(Path), "the path you have provided does not exist"
+        assert os.path.exists(Path), "the path you have provided does not exist" + str(Path)
         # check wether the path has the extention or not
         if Compressed == True:
             assert Path.endswith(".zip") , "file" + Path +" should have .asc extension"
