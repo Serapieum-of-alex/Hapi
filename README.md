@@ -1,4 +1,4 @@
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4678959.svg)](https://doi.org/10.5281/zenodo.4678959)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4686056.svg)](https://doi.org/10.5281/zenodo.4686056)
 [![PyPI version](https://badge.fury.io/py/HAPI-Nile.svg)](https://badge.fury.io/py/HAPI-Nile)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/MAfarrag/HAPI/master)
 [![Anaconda-Server Badge](https://anaconda.org/conda-forge/hapi/badges/version.svg)](https://anaconda.org/conda-forge/hapi)
