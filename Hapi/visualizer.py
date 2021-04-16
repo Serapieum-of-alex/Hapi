@@ -61,7 +61,7 @@ class Visualize():
 
     def __init__(self, resolution = "Hourly"):
         self.resolution = "Hourly"
-        # self.XSname = Sub.crosssections['xsid'].tolist()
+
 
     @staticmethod
     def LineStyle(Style = 'loosely dotted'):
@@ -75,11 +75,14 @@ class Visualize():
         else:
             return list(Visualize.linestyles.items())[Style][1]
 
+
     @staticmethod
     def MarkerStyle(Style):
         if Style > len(Visualize.MarkerStyle)-1:
            Style = Style % len(Visualize.MarkerStyle)
         return Visualize.MarkerStyle[Style]
+
+
 
     def GroundSurface(self, Sub, XSID='', XSbefore = 10, XSafter = 10, FloodPlain = False):
 
@@ -132,10 +135,6 @@ class Visualize():
         axGS.set_ylabel("Elevation m", fontsize = 15)
         axGS.grid()
 
-        # if XS == 0 :
-            # day_text = axGS.annotate('',xy=(Sub.XSname[0],Sub.crosssections['gl'].min()),fontsize= 20)
-        # else:
-            # day_text = axGS.annotate('',xy=(FigureFirstXS+1,Sub.crosssections['gl'][FigureLastXS]+1),fontsize= 20)
 
         GroundSurfacefig.tight_layout()
 
@@ -225,7 +224,7 @@ class Visualize():
 
 
 
-        Qline, = ax1.plot([],[],linewidth = 5) #Sub.Result1D['q'][Sub.Result1D['day'] == Sub.Result1D['day'][1]][Sub.Result1D['hour'] == 1]
+        Qline, = ax1.plot([],[],linewidth = 5)
         ax1.grid()
 
         ### BC
@@ -337,29 +336,22 @@ class Visualize():
             hLline.set_data(x,y)
 
             x = Sub.QBC.columns.values
-        #    if XS == 0:
-        #        y = BC_q_T.loc[Qobs.index[counter[i][0]-1]].values
-        #    else:
+    
             y = Sub.QBC.loc[Sub.ReferenceIndex.loc[counter[i][0],'date']].values
             BC_q_line.set_data(x,y)
 
-            # BC H (ax3)
-        #    if XS == 0:
-        #        y = BC_h_T.loc[Qobs.index[counter[i][0]-1]].values
-        #    else:
+    
             y = Sub.HBC.loc[Sub.ReferenceIndex.loc[counter[i][0],'date']].values
 
             BC_h_line.set_data(x,y)
 
-            #BC Q point (ax2)
+    
             x = counter[i][1]
-        #    if XS == 0:
-        #        y= Qobs.index[counter[i][0]-1]
-        #    else :
+    
             y= Sub.ReferenceIndex.loc[counter[i][0],'date']
             ax2.scatter(x, Sub.QBC[x][y])
 
-            #BC h point (ax3)
+    
             ax3.scatter(x, Sub.QBC[x][y])
 
 
@@ -388,7 +380,8 @@ class Visualize():
                     print("please visit https://ffmpeg.org/ and download a version of ffmpeg compitable with your operating system, for more details please check the method definition")
 
         return anim
-
+    
+    
     def CrossSections(self, Sub):
         """
         =========================================================
@@ -1105,76 +1098,6 @@ class Visualize():
                 print("please visit https://ffmpeg.org/ and download a version of ffmpeg compitable with your operating system, for more details please check the method definition")
 
 
-    @staticmethod
-    def rescale(OldValue,OldMin,OldMax,NewMin,NewMax):
-        """
-        ===================================================================
-            rescale(OldValue,OldMin,OldMax,NewMin,NewMax)
-        ===================================================================
-        this function rescale a value between two boundaries to a new value bewteen two
-        other boundaries
-        inputs:
-            1-OldValue:
-                [float] value need to transformed
-            2-OldMin:
-                [float] min old value
-            3-OldMax:
-                [float] max old value
-            4-NewMin:
-                [float] min new value
-            5-NewMax:
-                [float] max new value
-        output:
-            1-NewValue:
-                [float] transformed new value
-
-        """
-        OldRange = (OldMax - OldMin)
-        NewRange = (NewMax - NewMin)
-        NewValue = (((OldValue - OldMin) * NewRange) / OldRange) + NewMin
-
-        return NewValue
-
-    @staticmethod
-    def mycolor(x,min_old,max_old,min_new, max_new):
-        """
-        ===================================================================
-             mycolor(x,min_old,max_old,min_new, max_new)
-        ===================================================================
-        this function transform the value between two normal values to a logarithmic scale
-        between logarithmic value of both boundaries
-        inputs:
-            1-x:
-                [float] new value needed to be transformed to a logarithmic scale
-            2-min_old:
-                [float] min old value in normal scale
-            3-max_old:
-                [float] max old value in normal scale
-            4-min_new:
-                [float] min new value in normal scale
-            5-max_new:
-                [float] max_new max new value
-        output:
-            1-Y:
-                [int] integer number between new max_new and min_new boundaries
-        """
-
-        # get the boundaries of the logarithmic scale
-        if min_old == 0.0:
-            min_old_log = -7
-        else:
-            min_old_log = np.log(min_old)
-
-        max_old_log = np.log(max_old)
-
-        if x == 0:
-            x_log = -7
-        else:
-            x_log = np.log(x)
-
-        y = int(np.round(Visualize.rescale(x_log,min_old_log,max_old_log,min_new,max_new)))
-
-        return y
 
     def ListAttributes(self):
         """
