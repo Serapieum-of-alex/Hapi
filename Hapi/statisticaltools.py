@@ -176,7 +176,8 @@ class StatisticalTools():
         sp_dist=sp_dist.astype(np.float32)
 
         return sp_dist
-
+    
+    
     @staticmethod
     def Normalizer(x):
         """
@@ -196,6 +197,8 @@ class StatisticalTools():
         DataMin = min(x)
 
         return [i - DataMin/(DataMax-DataMin) for i in x]
+    
+    
     @staticmethod
     def Standardize(x):
         """
@@ -203,7 +206,7 @@ class StatisticalTools():
            Standardize(x)
         ================================================
         to standardize (make the average equals 1 and the standard deviation
-        equals1)
+        equals 0)
 
         Inputs :
             1-x:
@@ -216,10 +219,127 @@ class StatisticalTools():
         std = np.std(x)
 
         return [i - mean/(std) for i in x]
+    
+    @staticmethod
+    def Rescale(OldValue, OldMin, OldMax, NewMin, NewMax):
+        """
+        ===================================================================
+            Rescale(OldValue,OldMin,OldMax,NewMin,NewMax)
+        ===================================================================
+        Rescale nethod rescales a value between two boundaries to a new value 
+        bewteen two other boundaries
+        inputs:
+            1-OldValue:
+                [float] value need to transformed
+            2-OldMin:
+                [float] min old value
+            3-OldMax:
+                [float] max old value
+            4-NewMin:
+                [float] min new value
+            5-NewMax:
+                [float] max new value
+        output:
+            1-NewValue:
+                [float] transformed new value
 
+        """
+        OldRange = (OldMax - OldMin)
+        NewRange = (NewMax - NewMin)
+        NewValue = (((OldValue - OldMin) * NewRange) / OldRange) + NewMin
+
+        return NewValue
+    
+    
+    @staticmethod
+    def LogarithmicRescale(x, min_old, max_old, min_new, max_new):
+        """
+        ===================================================================
+             LogarithmicRescale(x,min_old,max_old,min_new, max_new)
+        ===================================================================
+        this function transform the value between two normal values to a logarithmic scale
+        between logarithmic value of both boundaries
+            np.log(base)(number) = power
+            the inverse of logarithmic is base**power = number
+        inputs:
+            1-x:
+                [float] new value needed to be transformed to a logarithmic scale
+            2-min_old:
+                [float] min old value in normal scale
+            3-max_old:
+                [float] max old value in normal scale
+            4-min_new:
+                [float] min new value in normal scale
+            5-max_new:
+                [float] max_new max new value
+        output:
+            1-Y:
+                [int] integer number between new max_new and min_new boundaries
+        """
+        # get the boundaries of the logarithmic scale
+        if min_old == 0.0:
+            min_old_log = -7
+        else:
+            min_old_log = np.log(min_old)
+
+        max_old_log = np.log(max_old)
+
+        if x == 0:
+            x_log = -7
+        else:
+            x_log = np.log(x)
+
+        y = int(np.round(StatisticalTools.Rescale(x_log, min_old_log, max_old_log, 
+                                                  min_new, max_new)))
+
+        return y
+    
+        
+    @staticmethod
+    def InvLogarithmicRescale(x, min_old, max_old, min_new, max_new, base=np.e):
+        """
+        ===================================================================
+             LogarithmicRescale(x,min_old,max_old,min_new, max_new)
+        ===================================================================
+        this function transform the value between two normal values to a logarithmic scale
+        between logarithmic value of both boundaries
+            np.log(base)(number) = power
+            the inverse of logarithmic is base**power = number
+        inputs:
+            1-x:
+                [float] new value needed to be transformed to a logarithmic scale
+            2-min_old:
+                [float] min old value in normal scale
+            3-max_old:
+                [float] max old value in normal scale
+            4-min_new:
+                [float] min new value in normal scale
+            5-max_new:
+                [float] max_new max new value
+        output:
+            1-Y:
+                [int] integer number between new max_new and min_new boundaries
+        """
+        # get the boundaries of the logarithmic scale
+
+        min_old_power = np.power(base, min_old)
+
+        max_old_power = np.power(base, max_old)
+
+        x_power = np.power(base, x)
+        
+
+        y = int(np.round(StatisticalTools.Rescale(x_power, min_old_power, max_old_power, 
+                                                  min_new, max_new)))
+
+        return y
+    
+    
+    def Round(number,roundto):
+        return (round(number / roundto) * roundto)
 
     @staticmethod
-    def Weibul(data,option=1):
+    def Weibul(data, option=1):
         """
         =========================================
           Weibul(data,option)
