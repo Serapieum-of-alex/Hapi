@@ -15,22 +15,6 @@ import math
 import matplotlib.colors as colors
 from matplotlib.ticker import LogFormatter
 from collections import OrderedDict
-linestyles = OrderedDict( [('solid', (0, ())),                              #0
-                               ('loosely dotted', (0, (1, 10))),                #1
-                               ('dotted', (0, (1, 5))),                         #2
-                               ('densely dotted', (0, (1, 1))),                 #3
-                               ('loosely dashed', (0, (5, 10))),                #4
-                               ('dashed',(0, (5, 5))),                          #5
-                               ('densely dashed', (0, (5, 1))),                 #6
-                               ('loosely dashdotted', (0, (3, 10, 1, 10))),     #7
-                               ('dashdotted', (0, (3, 5, 1, 5))),               #8
-                               ('densely dashdotted',  (0, (3, 1, 1, 1))),      #9
-                               ('loosely dashdotdotted', (0, (3, 10, 1, 10, 1, 10))), #10
-                               ('dashdotdotted', (0, (3, 5, 1, 5, 1, 5))),            #11
-                               ('densely dashdotdotted', (0, (3, 1, 1, 1, 1, 1))),    #12
-                               ('densely dashdotdottededited', (0, (6, 1, 1, 1, 1, 1)))])  #13
-
-MarkerStyle = ['--o',':D','-.H','--x',':v','--|','-+','-^','--s','-.*','-.h']
 
 
 
@@ -57,6 +41,23 @@ class Visualize():
                       color1 = '#3D59AB', color2 = "#DC143C", linewidth = 3,
                       Axisfontsize = 15
                       )
+    
+    linestyles = OrderedDict( [('solid', (0, ())),                              #0
+                               ('loosely dotted', (0, (1, 10))),                #1
+                               ('dotted', (0, (1, 5))),                         #2
+                               ('densely dotted', (0, (1, 1))),                 #3
+                               ('loosely dashed', (0, (5, 10))),                #4
+                               ('dashed',(0, (5, 5))),                          #5
+                               ('densely dashed', (0, (5, 1))),                 #6
+                               ('loosely dashdotted', (0, (3, 10, 1, 10))),     #7
+                               ('dashdotted', (0, (3, 5, 1, 5))),               #8
+                               ('densely dashdotted',  (0, (3, 1, 1, 1))),      #9
+                               ('loosely dashdotdotted', (0, (3, 10, 1, 10, 1, 10))), #10
+                               ('dashdotdotted', (0, (3, 5, 1, 5, 1, 5))),            #11
+                               ('densely dashdotdotted', (0, (3, 1, 1, 1, 1, 1))),    #12
+                               ('densely dashdotdottededited', (0, (6, 1, 1, 1, 1, 1)))])  #13
+
+    MarkerStyle = ['--o',':D','-.H','--x',':v','--|','-+','-^','--s','-.*','-.h']
 
     def __init__(self, resolution = "Hourly"):
         self.resolution = "Hourly"
@@ -67,18 +68,18 @@ class Visualize():
 
         if type(Style) == str:
             try:
-                return linestyles[Style]
+                return Visualize.linestyles[Style]
             except KeyError:
                 print("The Style name you entered-" + Style + "-does not exist please choose from the available styles")
-                print(list(linestyles))
+                print(list(Visualize.linestyles))
         else:
-            return list(linestyles.items())[Style][1]
+            return list(Visualize.linestyles.items())[Style][1]
 
     @staticmethod
     def MarkerStyle(Style):
-        if Style > len(MarkerStyle)-1:
-           Style = Style % len(MarkerStyle)
-        return MarkerStyle[Style]
+        if Style > len(Visualize.MarkerStyle)-1:
+           Style = Style % len(Visualize.MarkerStyle)
+        return Visualize.MarkerStyle[Style]
 
     def GroundSurface(self, Sub, XSID='', XSbefore = 10, XSafter = 10, FloodPlain = False):
 
