@@ -1,6 +1,5 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4686056.svg)](https://doi.org/10.5281/zenodo.4686056)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/MAfarrag/HAPI/master)
-[![Anaconda-Server Badge](https://anaconda.org/conda-forge/hapi/badges/version.svg)](https://anaconda.org/conda-forge/hapi)
 [![Build Status](https://travis-ci.org/MAfarrag/Hapi.svg?branch=master)](https://travis-ci.org/MAfarrag/Hapi)
 [![Coverage Status](https://coveralls.io/repos/github/MAfarrag/Hapi/badge.svg?branch=master)](https://coveralls.io/github/MAfarrag/Hapi?branch=master)
 [![Python Versions](https://img.shields.io/pypi/pyversions/HAPI-Nile.png)](https://img.shields.io/pypi/pyversions/HAPI-Nile)
@@ -27,7 +26,7 @@ Current release info
 
 | Name | Downloads | Version | Platforms |
 | --- | --- | --- | --- |
-| [![Conda Recipe](https://img.shields.io/badge/recipe-hapi-green.svg)](https://anaconda.org/conda-forge/hapi) | [![Conda Downloads](https://img.shields.io/conda/dn/conda-forge/hapi.svg)](https://anaconda.org/conda-forge/hapi) [![Downloads](https://pepy.tech/badge/hapi-nile)](https://pepy.tech/project/hapi-nile) [![Downloads](https://pepy.tech/badge/hapi-nile/month)](https://pepy.tech/project/hapi-nile) [![Downloads](https://pepy.tech/badge/hapi-nile/week)](https://pepy.tech/project/hapi-nile) | [![Conda Version](https://img.shields.io/conda/vn/conda-forge/hapi.svg)](https://anaconda.org/conda-forge/hapi) [![PyPI version](https://badge.fury.io/py/HAPI-Nile.svg)](https://badge.fury.io/py/HAPI-Nile) | [![Conda Platforms](https://img.shields.io/conda/pn/conda-forge/hapi.svg)](https://anaconda.org/conda-forge/hapi) [![Join the chat at https://gitter.im/Hapi-Nile/Hapi](https://badges.gitter.im/Hapi-Nile/Hapi.svg)](https://gitter.im/Hapi-Nile/Hapi?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) |
+| [![Conda Recipe](https://img.shields.io/badge/recipe-hapi-green.svg)](https://anaconda.org/conda-forge/hapi) | [![Conda Downloads](https://img.shields.io/conda/dn/conda-forge/hapi.svg)](https://anaconda.org/conda-forge/hapi) [![Downloads](https://pepy.tech/badge/hapi-nile)](https://pepy.tech/project/hapi-nile) [![Downloads](https://pepy.tech/badge/hapi-nile/month)](https://pepy.tech/project/hapi-nile) [![Downloads](https://pepy.tech/badge/hapi-nile/week)](https://pepy.tech/project/hapi-nile) | [![Conda Version](https://img.shields.io/conda/vn/conda-forge/hapi.svg)](https://anaconda.org/conda-forge/hapi) [![PyPI version](https://badge.fury.io/py/HAPI-Nile.svg)](https://badge.fury.io/py/HAPI-Nile) [![Anaconda-Server Badge](https://anaconda.org/conda-forge/hapi/badges/version.svg)](https://anaconda.org/conda-forge/hapi) | [![Conda Platforms](https://img.shields.io/conda/pn/conda-forge/hapi.svg)](https://anaconda.org/conda-forge/hapi) [![Join the chat at https://gitter.im/Hapi-Nile/Hapi](https://badges.gitter.im/Hapi-Nile/Hapi.svg)](https://gitter.im/Hapi-Nile/Hapi?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) |
 
 
 ![Hapi](/docs/img/Hapi4.png) ![Hapi](/docs/img/name.png)
