@@ -73,7 +73,7 @@ install:
   
   # Install various dependencies
   - cmd: conda config --add channels conda-forge
-  - cmd: while read requirement; do conda install --yes $requirement; done < requirement.txt
+  - cmd: while read requirement; do conda install --yes $requirement; done ^< requirement.txt
   - cmd: conda install --yes --file requirement.txt
 #  - cmd: conda env update -name Hapi-env --file environment.yml  --prune
 #  - cmd: activate Hapi-env
