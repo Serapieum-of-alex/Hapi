@@ -74,12 +74,13 @@ install:
   # Install various dependencies
   - cmd: conda config --add channels conda-forge
   - cmd: while read requirement; do conda install --yes $requirement; done < requirement.txt
+  - cmd: conda env update -p Hapi-env --file environment.yml  --prune
 #  - cmd: pip install ecmwf-api-client
   - cmd: python -V
   - cmd: python setup.py build_ext --inplace
   - cmd: python setup.py install
-  - cmd: sbt clean coverage test
-  - cmd: conda install numpy --yes
+#  - cmd: sbt clean coverage test
+#  - cmd: conda install numpy --yes
   #- cmd: cd ..
 
 build: off
@@ -93,4 +94,4 @@ test_script:
 #- tox
 - cmd: cd tests/
 - cmd: python test.py
-- cmd: sbt coveralls
+#- cmd: sbt coveralls
