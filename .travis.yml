@@ -40,10 +40,11 @@ install:
   - conda clean --packages -y
   # Install various dependencies  
   #- conda install --yes $DEPS pip
-  #- conda install --yes --file requirement.txt
-  - while read requirement; do conda install --yes $requirement; done < requirement.txt
-  # ecmwf-api-client has problem when installed from the requirement file
-  - pip install ecmwf-api-client
+  - conda install --yes --file requirement.txt
+  #- while read requirement; do conda install --yes $requirement; done < requirement.txt
+  # ecmwf-api-client and joblib have problem when installed from the requirement file
+  #- pip install ecmwf-api-client
+  #- pip install joblib
   - python -V
   - python setup.py build_ext --inplace
   - python setup.py install
