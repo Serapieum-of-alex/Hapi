@@ -1,8 +1,5 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4686056.svg)](https://doi.org/10.5281/zenodo.4686056)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/MAfarrag/HAPI/master)
-[![Build Status](https://travis-ci.com/MAfarrag/Hapi.svg?branch=master)](https://travis-ci.com/MAfarrag/Hapi)
-[![Build status](https://ci.appveyor.com/api/projects/status/rys2u0l1nbmfjuww?svg=true)](https://ci.appveyor.com/project/MAfarrag/hapi)
-[![Coverage Status](https://coveralls.io/repos/github/MAfarrag/Hapi/badge.svg?branch=master)](https://coveralls.io/github/MAfarrag/Hapi?branch=master)
 [![Python Versions](https://img.shields.io/pypi/pyversions/HAPI-Nile.png)](https://img.shields.io/pypi/pyversions/HAPI-Nile)
 [![Documentation Status](https://readthedocs.org/projects/hapi-hm/badge/?version=latest)](https://hapi-hm.readthedocs.io/en/latest/?badge=latest)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
@@ -20,6 +17,10 @@ Current build status
     </td>
   </tr>
 </table>
+
+[![Build Status](https://travis-ci.com/MAfarrag/Hapi.svg?branch=master)](https://travis-ci.com/MAfarrag/Hapi)
+[![Build status](https://ci.appveyor.com/api/projects/status/rys2u0l1nbmfjuww?svg=true)](https://ci.appveyor.com/project/MAfarrag/hapi)
+[![Coverage Status](https://coveralls.io/repos/github/MAfarrag/Hapi/badge.svg?branch=master)](https://coveralls.io/github/MAfarrag/Hapi?branch=master)
 
 
 Current release info
