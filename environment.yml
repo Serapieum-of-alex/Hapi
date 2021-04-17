@@ -2,6 +2,7 @@ channels:
   - conda-forge
 dependencies:
   - pip
+  - numpy
   - affine
   - fiona
   - proj
@@ -25,6 +26,5 @@ dependencies:
   - pip:
     - numpy
     - pyproj
-    - ecmwf-api-client 
     - hapi-nile
     #- git+https://github.com/MAfarrag/HAPI.git
