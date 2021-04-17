@@ -7,7 +7,7 @@ proj
 pyproj
 pandas
 geopandas
-matplotlib-base
+matplotlib
 python
 scipy
 shapely
