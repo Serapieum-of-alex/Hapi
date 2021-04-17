@@ -48,7 +48,6 @@ install:
   - python setup.py build_ext --inplace
   - python setup.py install
   - conda update --all --yes
-  - 
  # - cd ..
 # command to run tests
 script:
