@@ -68,14 +68,12 @@ install:
   # Create a new environment
   - cmd: conda create -q -n Hapi-env python=%PYTHON_VERSION% --yes
   - cmd: activate Hapi-env
-  - cmd: conda config --add channels conda-forge
-  - cmd: conda config --add channels mafarrag
   - cmd: conda clean --tarballs -y
   - cmd: conda clean --packages -y
   
   # Install various dependencies
   - cmd: conda config --add channels conda-forge
-  - cmd: while read requirement; do conda install --yes $requirement; done < requirements.txt
+  - cmd: while read requirement; do conda install --yes $requirement; done < requirement.txt
 #  - cmd: pip install ecmwf-api-client
   - cmd: python -V
   - cmd: python setup.py build_ext --inplace
