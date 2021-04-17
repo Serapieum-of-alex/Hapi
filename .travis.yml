@@ -53,8 +53,10 @@ install:
 # command to run tests
 script:
   #- cd ./Hapi/Examples
-  - cd ./tests
+  - cd ./Examples/
   - python test.py
+  - cd ./GIS
+  - python 01Reproject_points.py
 # - "sbt clean coverage test"
 
 after_success: 
