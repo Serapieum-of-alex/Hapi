@@ -39,13 +39,15 @@ def Plot_Type1(X_axis, Y_axis1, Y2_axis2, Points, PointsY, PointMaxSize=200,
     if 'Y_axis1_2' in kwargs.keys():
         Y_axis1_2 = kwargs['Y_axis1_2']
 
+        rows_axis1, cols_axis1 = np.shape(Y_axis1_2)
+
         if 'label' in kwargs.keys():
             label = kwargs['label']
         else:
-            label = ['label'] * (len(Y_axis1_2) - 1)
+            label = ['label'] * (cols_axis1 - 1)
 
-        for i in range(1, len(Y_axis1_2)):
-            ax1.plot(Y_axis1_2[0,:] , Y_axis1_2[i,:], zorder=1, color = color2 ,
+        for i in range(1, cols_axis1):
+            ax1.plot(Y_axis1_2[:,0] , Y_axis1_2[:,i], zorder=1, color = color2 ,
                       linestyle = Vis.LineStyle(3), linewidth = linewidth,
                       label = label[i-1])
 
@@ -55,8 +57,11 @@ def Plot_Type1(X_axis, Y_axis1, Y2_axis2, Points, PointsY, PointMaxSize=200,
 
     if 'Y_axis2_2' in kwargs.keys():
         Y_axis2_2 = kwargs['Y_axis2_2']
+        rows_axis2, cols_axis2 = np.shape(Y_axis2_2)
+
         label = kwargs['Y_axis2_label']
-        for i in range(1, len(Y_axis2_2)):
+
+        for i in range(1, rows_axis2):
             ax1.plot(Y_axis2_2[0,:] , Y_axis2_2[i,:], zorder=1, color = color2 ,
                       linestyle = Vis.LineStyle(3), linewidth = linewidth,
                       label = label[i-1])
@@ -78,18 +83,18 @@ def Plot_Type1(X_axis, Y_axis1, Y2_axis2, Points, PointsY, PointMaxSize=200,
 
     Points_scaled = [ST.Rescale(x,vmin,vmax,vminnew, vmaxnew)   for x in Points]
     if 'Points1' in kwargs.keys():
-        for i in range(len(Points1)):
-            row, col= np.shape(Points1)
+        row_points, col_points = np.shape(Points1)
+        for i in range(col_points):
 
             Points1_scaled = [ST.Rescale(x,vmin,vmax,vminnew, vmaxnew)   for x in Points1[:,i]]
-    # OT1_scaled = [ST.Rescale(x,vmin,vmax,vminnew, vmaxnew)   for x in OT1]
 
 
     f1 = np.ones(shape=(len(Points)))*PointsY
+
     if 'Points1' in kwargs.keys():
         PointsY1 = kwargs['PointsY1']
         f2 = np.ones_like(Points1)
-        for i in range(Points1):
+        for i in range(len(Points1)):
             f2[:,i] = PointsY1[i]
 
     scatter = ax2.scatter(X_axis, f1, zorder=1, c=color1 ,
@@ -112,7 +117,7 @@ def Plot_Type1(X_axis, Y_axis1, Y2_axis2, Points, PointsY, PointMaxSize=200,
     labels1 = [round(ST.Rescale(x,vminnew, vmaxnew,vmin,vmax)/1000)   for x in L]
 
     legend2 = ax2.legend(handles, labels1, bbox_to_anchor=LegendLoc, title=PointLegendTitle)
-    # ax2.add_artist(legend2)
+    ax2.add_artist(legend2)
 
     ax1.set_ylim(Ylim)
     ax2.set_ylim(Y2lim)
@@ -128,13 +133,19 @@ def Plot_Type1(X_axis, Y_axis1, Y2_axis2, Points, PointsY, PointMaxSize=200,
     plt.title("Model Output Comparison", fontsize = 15)
 
     plt.subplots_adjust(right=0.7)
-    return (ax1,ax2), fig
     # plt.tight_layout()
+
+    return (ax1,ax2), fig
+
 #%%
-Y_axis1_2 = np.array([distance, wl2])
+Y_axis1_2 = np.transpose([distance, wl2])
+# Y_axis1_2 = np.transpose(Y_axis1_2)
+
 # label = ['YYY']
-Points1 = np.array([OT2])
+Points1 = np.transpose([OT2])
+PointsY1 = [13]
+
 Plot_Type1(distance, wl1, diff, OT1, 13, PointMaxSize=200, PointMinSize=1,
                X_axis_label='Distance', LegendNum=5, LegendLoc = (1.3, 1),
                PointLegendTitle="Output 2", Ylim=[0,180], Y2lim=[-2,14],
-               Y_axis1_2=Y_axis1_2, Points1 = Points1)#label= label,
+               Y_axis1_2=Y_axis1_2, Points1 = Points1, PointsY1 = PointsY1)#label= label,
