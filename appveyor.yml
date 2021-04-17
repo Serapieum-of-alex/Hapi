@@ -80,7 +80,8 @@ install:
   - cmd: python -V
   - cmd: python setup.py build_ext --inplace
   - cmd: python setup.py install
-#  - cmd: conda install numpy --yes
+  - cmd: sbt clean coverage test
+  - cmd: conda install numpy --yes
   #- cmd: cd ..
 
 build: off
@@ -94,3 +95,4 @@ test_script:
 #- tox
 - cmd: cd tests/
 - cmd: python test.py
+- cmd: sbt coveralls
