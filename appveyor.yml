@@ -98,6 +98,10 @@ configuration:
 
 test_script:
 #- tox
-- cmd: cd tests/
+- cmd: cd Examples/
+- cmd: python test.py
+- cmd: cd ./GIS
+- cmd: python 01Reproject_points.py
+
 - cmd: python test.py
 #- cmd: sbt coveralls
