@@ -7,7 +7,6 @@ proj
 pyproj
 pandas
 geopandas
-matplotlib
 python
 scipy
 shapely
@@ -20,3 +19,4 @@ scikit-learn
 scikit-image
 ecmwf-api-client
 joblib
+matplotlib
