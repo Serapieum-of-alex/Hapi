@@ -16,7 +16,7 @@ import matplotlib.colors as colors
 from matplotlib.ticker import LogFormatter
 from collections import OrderedDict
 
-
+from Hapi.statisticaltools  import StatisticalTools as ST
 
 hours = list(range(1,25))
 
@@ -41,7 +41,7 @@ class Visualize():
                       color1 = '#3D59AB', color2 = "#DC143C", linewidth = 3,
                       Axisfontsize = 15
                       )
-    
+
     linestyles = OrderedDict( [('solid', (0, ())),                              #0
                                ('loosely dotted', (0, (1, 10))),                #1
                                ('dotted', (0, (1, 5))),                         #2
@@ -336,22 +336,22 @@ class Visualize():
             hLline.set_data(x,y)
 
             x = Sub.QBC.columns.values
-    
+
             y = Sub.QBC.loc[Sub.ReferenceIndex.loc[counter[i][0],'date']].values
             BC_q_line.set_data(x,y)
 
-    
+
             y = Sub.HBC.loc[Sub.ReferenceIndex.loc[counter[i][0],'date']].values
 
             BC_h_line.set_data(x,y)
 
-    
+
             x = counter[i][1]
-    
+
             y= Sub.ReferenceIndex.loc[counter[i][0],'date']
             ax2.scatter(x, Sub.QBC[x][y])
 
-    
+
             ax3.scatter(x, Sub.QBC[x][y])
 
 
@@ -380,8 +380,8 @@ class Visualize():
                     print("please visit https://ffmpeg.org/ and download a version of ffmpeg compitable with your operating system, for more details please check the method definition")
 
         return anim
-    
-    
+
+
     def CrossSections(self, Sub):
         """
         =========================================================
@@ -1096,6 +1096,124 @@ class Visualize():
                     anim.save(Path, writer=writermp4)
             except FileNotFoundError:
                 print("please visit https://ffmpeg.org/ and download a version of ffmpeg compitable with your operating system, for more details please check the method definition")
+
+
+
+    def Plot_Type1(Y1, Y2, Points, PointsY, PointMaxSize=200,
+               PointMinSize=1, X_axis_label='X Axis', LegendNum=5, LegendLoc = (1.3, 1),
+               PointLegendTitle="Output 2", Ylim=[0,180], Y2lim=[-2,14],
+               color1 = '#27408B', color2 = '#DC143C', color3 = "grey",
+               linewidth = 4, **kwargs):
+
+
+        fig, ax1 = plt.subplots(nrows=1, ncols=1, figsize=(10,6))
+
+
+        ax2 = ax1.twinx()
+
+        ax1.plot(Y1[:,0], Y1[:,1], zorder=1, color =color1 ,
+                  linestyle = Visualize.LineStyle(0), linewidth = linewidth,
+                  label = "Model 1 Output1")
+
+        if 'Y1_2' in kwargs.keys():
+            Y1_2 = kwargs['Y1_2']
+
+            rows_axis1, cols_axis1 = np.shape(Y1_2)
+
+            if 'Y1_2_label' in kwargs.keys():
+                label = kwargs['Y2_2_label']
+            else:
+                label = ['label'] * (cols_axis1 - 1)
+            # first column is the x axis
+            for i in range(1, cols_axis1):
+                ax1.plot(Y1_2[:,0] , Y1_2[:,i], zorder=1, color = color2 ,
+                          linestyle = Visualize.LineStyle(i), linewidth = linewidth,
+                          label = label[i-1])
+
+        ax2.plot(Y2[:,0], Y2[:,1], zorder=1, color =color3 ,
+                  linestyle = Visualize.LineStyle(6), linewidth = 2,
+                  label = "Output1-Diff")
+
+        if 'Y2_2' in kwargs.keys():
+            Y2_2 = kwargs['Y2_2']
+            rows_axis2, cols_axis2 = np.shape(Y2_2)
+
+            if 'Y2_2_label' in kwargs.keys():
+                label = kwargs['Y2_2_label']
+            else:
+                label = ['label'] * (cols_axis2 - 1)
+
+            for i in range(1, cols_axis2):
+                ax1.plot(Y2_2[:,0] , Y2_2[:,i], zorder=1, color = color2 ,
+                          linestyle = Visualize.LineStyle(i), linewidth = linewidth,
+                          label = label[i-1])
+
+        if 'Points1' in kwargs.keys():
+            # first axis in the x axis
+            Points1 = kwargs['Points1']
+
+            vmax = np.max(Points1[:,1:])
+            vmin = np.min(Points1[:,1:])
+
+            vmax = max(Points[:,1].max(), vmax)
+            vmin = min(Points[:,1].min(), vmin)
+
+        else:
+            vmax = max(Points)
+            vmin = min(Points)
+
+        vmaxnew = PointMaxSize
+        vminnew = PointMinSize
+
+        Points_scaled = [ST.Rescale(x,vmin,vmax,vminnew, vmaxnew)   for x in Points[:,1]]
+        f1 = np.ones(shape=(len(Points)))*PointsY
+        scatter = ax2.scatter(Points[:,0], f1, zorder=1, c=color1 ,
+                    s = Points_scaled, label = "Model 1 Output 2")
+
+        if 'Points1' in kwargs.keys():
+            row_points, col_points = np.shape(Points1)
+            PointsY1 = kwargs['PointsY1']
+            f2 = np.ones_like(Points1[:,1:])
+
+            for i in range(col_points-1):
+                Points1_scaled = [ST.Rescale(x,vmin,vmax,vminnew, vmaxnew)   for x in Points1[:,i]]
+                f2[:,i] = PointsY1[i]
+
+                ax2.scatter(Points1[:,0], f2[:,i], zorder=1, c = color2 ,
+                           s = Points1_scaled, label = "Model 2 Output 2")
+
+        # produce a legend with the unique colors from the scatter
+        legend1 = ax2.legend(*scatter.legend_elements(),
+                             bbox_to_anchor=(1.1, 0.2)) #loc="lower right", title="RIM"
+
+        ax2.add_artist(legend1)
+
+        # produce a legend with a cross section of sizes from the scatter
+        handles, labels = scatter.legend_elements(prop="sizes", alpha=0.6,num=LegendNum)
+        # L = [vminnew] + [float(i[14:-2]) for i in labels] + [vmaxnew]
+        L = [float(i[14:-2]) for i in labels]
+        labels1 = [round(ST.Rescale(x,vminnew, vmaxnew,vmin,vmax)/1000)   for x in L]
+
+        legend2 = ax2.legend(handles, labels1, bbox_to_anchor=LegendLoc, title=PointLegendTitle)
+        ax2.add_artist(legend2)
+
+        ax1.set_ylim(Ylim)
+        ax2.set_ylim(Y2lim)
+        #
+        ax1.set_ylabel('Output 1 (m)', fontsize = 12)
+        ax2.set_ylabel('Output 1 - Diff (m)', fontsize = 12)
+        ax1.set_xlabel(X_axis_label, fontsize = 12)
+        ax1.xaxis.set_minor_locator(plt.MaxNLocator(10))
+        ax1.tick_params(which='minor', length=5)
+        fig.legend(loc="lower center", bbox_to_anchor=(1.3,0.3), bbox_transform=ax1.transAxes,fontsize = 10)
+        plt.rcParams.update({'ytick.major.size': 3.5})
+        plt.rcParams.update({'font.size': 12})
+        plt.title("Model Output Comparison", fontsize = 15)
+
+        plt.subplots_adjust(right=0.7)
+        # plt.tight_layout()
+
+        return (ax1,ax2), fig
 
 
 
