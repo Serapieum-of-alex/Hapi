@@ -78,7 +78,7 @@ install:
 
 #  - cmd: FOR /F "delims=~" %f in (requirement.txt) DO (conda install f --yes )
   - cmd: conda install --yes --file requirement.txt
-#  - cmd: conda update -n base -c defaults conda
+  - cmd: conda update -n base -c defaults conda
 #  - cmd: pip install matplotlib
 #  - cmd: pip install -r requirement.txt
 #  - cmd: conda env update -name Hapi-env --file environment.yml  --prune
@@ -87,7 +87,6 @@ install:
   - cmd: python -V
   - cmd: python setup.py build_ext --inplace
   - cmd: python setup.py install
-  - cmd: where codnda
   - cmd: conda list
 #  - cmd: sbt clean coverage test
 #  - cmd: conda install numpy --yes
@@ -103,7 +102,6 @@ configuration:
 
 test_script:
 - cmd: cd Examples/
-- cmd: where codnda
 - cmd: conda list
 - cmd: python test.py
 - cmd: cd ./GIS
