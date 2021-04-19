@@ -87,6 +87,8 @@ install:
   - cmd: python -V
   - cmd: python setup.py build_ext --inplace
   - cmd: python setup.py install
+  - cmd: where codnda
+  - cmd: conda list
 #  - cmd: sbt clean coverage test
 #  - cmd: conda install numpy --yes
 #  - cmd: conda install gdal --yes  
@@ -101,6 +103,8 @@ configuration:
 
 test_script:
 - cmd: cd Examples/
+- cmd: where codnda
+- cmd: conda list
 - cmd: python test.py
 - cmd: cd ./GIS
 - cmd: python 01Reproject_points.py
