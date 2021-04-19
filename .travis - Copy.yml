@@ -10,8 +10,8 @@ python:
   - "3.7"
   - "3.8"
   - "3.9"
-  - "3.5"  
-  - "2.7"
+#  - "3.5"  
+#  - "2.7"
 #env: DEPS= " affine numpy fiona proj pyproj gdal pandas geopandas matplotlib python scipy shapely statsmodels rasterio rasterstats oasis netCDF4 sklearn ecmwf-api-client "
 
 before_install:
@@ -42,16 +42,22 @@ install:
   #- conda install --yes $DEPS pip
   #- conda install --yes --file requirement.txt
   - while read requirement; do conda install --yes $requirement; done < requirement.txt
-  # ecmwf-api-client has problem when installed from the requirement file
-  - pip install ecmwf-api-client
+  # ecmwf-api-client and joblib have problem when installed from the requirement file
+  #- pip install ecmwf-api-client
+  #- pip install joblib
   - python -V
   - python setup.py build_ext --inplace
   - python setup.py install
   - conda update --all --yes
-  - 
  # - cd ..
 # command to run tests
 script:
   #- cd ./Hapi/Examples
-  - cd ./tests
+  - cd ./Examples/
   - python test.py
+  - cd ./GIS
+  - python 01Reproject_points.py
+# - "sbt clean coverage test"
+
+after_success: 
+#  - "sbt coveralls"
