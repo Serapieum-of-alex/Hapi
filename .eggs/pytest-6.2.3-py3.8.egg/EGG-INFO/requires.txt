@@ -1,0 +1,16 @@
+atomicwrites>=1.0
+attrs>=19.2.0
+colorama
+iniconfig
+packaging
+pluggy<1.0.0a1,>=0.12
+py>=1.8.2
+toml
+
+[testing]
+argcomplete
+hypothesis>=3.56
+mock
+nose
+requests
+xmlschema

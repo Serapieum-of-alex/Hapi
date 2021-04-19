@@ -1,0 +1,11 @@
+requests>=2.0
+six
+urllib3>=1.25.10
+
+[tests]
+coverage<6.0.0,>=3.7.1
+flake8
+mypy
+pytest-cov
+pytest-localserver
+pytest>=4.6

@@ -5,7 +5,7 @@ include =
 
 omit =
     *pyftpdlib/_compat.py
-    *pyftpdlib/test/*
+    *pyftpdlib/Examples/*
     setup.py
 
 exclude_lines =
