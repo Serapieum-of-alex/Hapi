@@ -15,6 +15,7 @@ setup(
     long_description_content_type="text/markdown",
     License="MIT" ,
     zip_safe=False, 
+    tests_require=['mock', 'responses', 'pytest'],
     packages=find_packages(),
     classifiers=[	
     'Development Status :: 5 - Production/Stable',

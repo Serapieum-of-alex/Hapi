@@ -49,22 +49,17 @@ install:
   - python setup.py build_ext --inplace
   - python setup.py install
   - conda update --all --yes
+  - pip install tox
  # - cd ..
 # command to run tests
 script:
-  #- cd ./Hapi/Examples
   - cd ./Examples/
   - python test.py
   - cd ./GIS
   - python 01Reproject_points.py
-# - "sbt clean coverage test"
+  - tox -e $(echo py$TRAVIS_PYTHON_VERSION | tr -d . | sed -e 's/pypypy/pypy/')-cov41-pyyaml
 
-after_success: 
+
+
+#after_success: 
 #  - "sbt coveralls"
-
-language: ruby
-rvm:
-- 2.0.0
-- 1.9.3
-- jruby-19mode
-- rbx-2
