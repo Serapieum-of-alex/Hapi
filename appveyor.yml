@@ -103,7 +103,7 @@ configuration:
 test_script:
 - cmd: cd Examples/
 - cmd: conda list
-- cmd: python test.py
+- cmd: C:/Miniconda-x64/envs/Hapi-env/python test.py
 - cmd: cd ./GIS
-- cmd: python 01Reproject_points.py
+- cmd: C:/Miniconda-x64/envs/Hapi-env/python 01Reproject_points.py
 #- cmd: sbt coveralls
