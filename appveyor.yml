@@ -63,7 +63,7 @@ install:
   - cmd: SET PATH=%CONDA_INSTALL_LOCN%;%CONDA_INSTALL_LOCN%\Scripts;%PATH%
   - cmd: SET PATH=%MINICONDA%;%MINICONDA%\\Scripts;%PATH%
   - cmd: conda config --set always_yes yes --set changeps1 no
-  - cmd: conda update -q conda
+#  - cmd: conda update -q conda
   - cmd: conda info -a
   # Create a new environment
   - cmd: conda create -q -n Hapi-env python=%PYTHON_VERSION% --yes
