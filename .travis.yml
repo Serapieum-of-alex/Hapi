@@ -45,6 +45,7 @@ install:
   # ecmwf-api-client and joblib have problem when installed from the requirement file
   #- pip install ecmwf-api-client
   #- pip install joblib
+  - pip install --upgrade coveralls  
   - python -V
   - python setup.py build_ext --inplace
   - python setup.py install
