@@ -79,7 +79,7 @@ install:
 #  - cmd: FOR /F "delims=~" %f in (requirement.txt) DO (conda install f --yes )
 #  - cmd: conda install --yes --file requirement.txt
 #  - cmd: pip install matplotlib
-  - cmd: pip install --upgrade pip
+  - cmd: pip install --upgrade --user pip
   - cmd: pip install -r requirement.txt
 #  - cmd: conda update -n base -c defaults conda
 #  - cmd: conda env update -name Hapi-env --file environment.yml  --prune
