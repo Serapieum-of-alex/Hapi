@@ -51,7 +51,6 @@ install:
   - python setup.py install
   - conda update --all --yes
   - pip install --upgrade pytest pytest-cov
-
 #  - pip install tox
  # - cd ..
 # command to run tests

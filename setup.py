@@ -19,7 +19,6 @@ setup(
     classifiers=[	
     'Development Status :: 5 - Production/Stable',
     'Environment :: Console',
-    'Intended Audience :: Developers',
     'Natural Language :: English',
     'Programming Language :: Python',
     'Programming Language :: Python :: 2.7',
@@ -28,7 +27,10 @@ setup(
     'Programming Language :: Python :: 3.7',
     'Programming Language :: Python :: 3.8',
     'Programming Language :: Python :: 3.9',
-    'Topic :: Software Development',
+    'Topic :: Scientific/Engineering :: Hydrology',
+    'Topic :: Scientific/Engineering :: GIS',
+    "Intended Audience :: Science/Research",
+    'Intended Audience :: Developers',
     ],
 	include_package_data=True,
 	package_data={'': [
