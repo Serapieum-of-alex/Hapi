@@ -27,7 +27,7 @@ sys.path.insert(0, os.path.abspath("../Hapi"))
 sys.path.insert(0, os.path.abspath(".."))
 sys.path.insert(0, os.path.abspath("../Examples"))
 
-import Hapi
+#import Hapi
 
 
 # -- General configuration -----------------------------------------------------
