@@ -5,7 +5,7 @@
 [![Documentation Status](https://readthedocs.org/projects/hapi-hm/badge/?version=latest)](https://hapi-hm.readthedocs.io/en/latest/?badge=latest)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-[![GitHub Clones](https://img.shields.io/badge/dynamic/json?color=success&label=Clone&query=count&url=<https://github.com/MAfarrag/Hapi/blob/master/clone.json>?raw=True&logo=github)](https://github.com/MShawon/github-clone-count-badge)
+[![GitHub Clones](https://img.shields.io/badge/dynamic/json?color=success&label=Clone&query=count&url=https://github.com/MAfarrag/Hapi/blob/master/clone.json?raw=True&logo=github)](https://github.com/MShawon/github-clone-count-badge)
 
 Current build status
 ====================
