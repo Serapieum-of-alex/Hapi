@@ -6,7 +6,7 @@ Created on Tue May 22 09:01:55 2018
 """
 # documentation format
 __author__ = 'Mostafa Farrag'
-__version__ = '0.3.0'
+__version__ = '1.0.4'
 
 __docformat__ = 'restructuredtext'
 

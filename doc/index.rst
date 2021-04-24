@@ -59,7 +59,6 @@ their own model, it contains two routing functions muskingum cunge, and MAXBAS t
 
 
 
-
 ![1](/docs/img/Picture1.png)
 
 ![2](/docs/img/Picture2.png)
@@ -81,6 +80,39 @@ Main Features
 
 The recent version of Hapi (Hapi 1.0.1) integrates the global hydrological parameters obtained by Beck et al., (2016), 
 to reduce model complexity and uncertainty of parameters.
+
+
+.. digraph:: Linking
+
+    Hapi -> GIS;
+    Hapi -> HBV;
+    Hapi -> HBV;
+    Hapi -> calibration;
+    Hapi -> calibration
+    Hapi -> distparameters
+    Hapi -> distrrm
+    Hapi -> giscatchment
+    Hapi -> raster
+    Hapi -> vector
+    Hapi -> inputs
+    Hapi -> performancecriteria
+    Hapi -> routing
+    Hapi -> run
+    Hapi -> catchment
+    Hapi -> statisticaltools
+    Hapi -> wrapper
+    Hapi -> weirdFn
+    Hapi -> hbv_lake
+    Hapi -> hbv_bergestrom92
+    Hapi -> hminputs
+    Hapi -> event
+    Hapi -> river
+    Hapi -> visualizer
+    Hapi -> crosssection
+    Hapi -> hmcalibration
+    Hapi -> interface
+    Hapi -> sensitivityanalysis
+    Hapi -> remotesensing
 
 Future work
 -------------
