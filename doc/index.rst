@@ -165,3 +165,12 @@ in the master branch
 ```
 conda env create --name Hapi_env -f environment.yml
 ```
+
+
+.. toctree::
+   :hidden:
+   :maxdepth: 2
+
+   tutorial.rst
+   Inputs.rst
+   Available Models <availablemodels.rst>
