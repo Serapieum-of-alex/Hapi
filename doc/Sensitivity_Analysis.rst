@@ -1,20 +1,21 @@
-# Sensetivity Analysis (OAT)
-
+*****
+Sensetivity Analysis (OAT)
+*****
 If you want to check the sensitivity of the HBV hydrological model performance to predict stream flow to each parameter, the One-At-a Time sensitivity analysis is agreat meathod that helps in this area 
 OAT fixes the value of all parameters and change the value of one parameter within boundaries each time to check the result of the given function based on different values of one of the inputs
 
 First of all to run the HBV lumped model which we need to test its 
 performance (RMSE) based on a defined range for each parameter 
-```
+``
 import numpy as np
 import pandas as pd
 
 import Hapi.hbv_bergestrom92 as HBVLumped
 import Hapi.run as RUN
 from Hapi.routing import TriangularRouting
-```
+``
 load all data needed to run the model as mentioned in [Lumped model](Lumped_HBV.md)
-```
+``
 ### meteorological data
 path= comp + "/Coello/Hapi/Data/00inputs/Lumped/"
 data=pd.read_csv(path+"meteo_data.txt",header=0 ,delimiter=',',
@@ -49,7 +50,7 @@ Qobs =np.loadtxt(path+"Qout_c.txt")
 Routing=1
 RoutingFn=TriangularRouting
 
-```
+``
 First the SensitivityAnalysis method takes 4 arguments :
 
     1-parameters:previous obtained parameters
@@ -57,7 +58,9 @@ First the SensitivityAnalysis method takes 4 arguments :
     3-UB: lower bound
     4-wrapper: defined function contains the function you want to run with different parameters and the metric function you want to assess the first function based on it.
 
-## Wrapper function definition
+Wrapper function definition
+########
+
 define the function to the OAT sesitivity wrapper and put the parameters argument
 at the first position, and then list all the other arguments required for your function
 
@@ -78,8 +81,8 @@ as keys,
 Each parameter has a disctionary with two keys 0: list of parameters woth relative values
 1: list of parameter values
 
-```
+``
 import matplotlib.pyplot as plt
 import Hapi.performancecriteria as PC
 import Hapi.statisticaltools as ST
-```
+``

@@ -1,5 +1,6 @@
-# Muskingum 
-
+*****
+Muskingum 
+*****
 Muskingum is a hydrologic-routing method which employs the equation of continuity to predict magnitude, volume and temporal patterns of flow as it translates downstream of a channel.
 
 ```
