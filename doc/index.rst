@@ -90,7 +90,8 @@ Future work
   - Developing a DEM processing module for generating the river network at different DEM spatial resolutions.
 
 References
--------------
+==========
+
 Beck, H. E., Dijk, A. I. J. M. van, Ad de Roo, Diego G. Miralles, T. R. M. & Jaap Schellekens,  and L. A. B. (2016) Global-scale regionalization of hydrologic model parameters-Supporting materials 3599–3622. doi:10.1002/2015WR018247.Received
 
 Bergström, S. (1992) The HBV model - its structure and applications. Smhi Rh 4(4), 35.
@@ -100,77 +101,12 @@ Rusli, S. R., Yudianto, D. & Liu, J. tao. (2015) Effects of temporal variability
 
 
 
-Installation
-============
-```
-Please install Hapi in a Virtual environment so that its requirements don't tamper with your system's python
-**Hapi** works with Python 2.7 and 3.7 64Bit on Windows
-```
-
-if you are using conda
-```
-# Clone the repository. Or download the ZIP and add `-master` to the name.
-git clone https://github.com/MAfarrag/HAPI
-
-# Enter the repository
-open comand prompt and type cd then the path to the repository
-cd Hapi
-
-# Create a virtualenv
-open anaconda prompt and type
-conda create -n Hapi_env python=3.7 anaconda 
-that will create an environment named python3 that contain s Python3.7 version of Anaconda 
-
-# Activate the env
-conda activate Hapi_env
-
-```
-# Install the dependencies
-you can check [libraries.io](https://libraries.io/github/MAfarrag/HAPI) to check versions of the libraries
-```
-conda install Numpy
-conda install pandas
-conda install scipy
-conda install fiona
-conda install -c conda-forge gdal
-conda install -c conda-forge rasterio
-conda install shapely
-conda install geopandas
-```
-## Install from Github
-to install the last development to time you can install the library from github
-```
-pip install git+https://github.com/MAfarrag/HAPI
-```
-## Compile 
-You can compile the repository after you clone it 
-iF python is already added to your system environment variable
-```
-python setup.py install
-# 
-pathto_your_env\python setup.py install
-```
-## pip
-to install the last release you can easly use pip
-```
-pip install HAPI-Nile
-```
-## conda
-```
-conda install -c mafarrag hapi
-```
-## YML file
-using the environment.yml file included with hapi you can create a new environment with all the dependencies installed with the latest Hapi version
-in the master branch
-```
-conda env create --name Hapi_env -f environment.yml
-```
-
 
 .. toctree::
    :hidden:
    :maxdepth: 2
 
-   tutorial.rst
+   installation.rst
    Inputs.rst
    Available Models <availablemodels.rst>
+   tutorial.rst
