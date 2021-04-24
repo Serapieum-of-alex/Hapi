@@ -1,13 +1,13 @@
 from setuptools import setup , find_packages
 
-#try:    
-#    import gdal
-#except: 
-#    print("Could not import gdal, install using conda install gdal")    
-#    try:
-#        import numpy
-#    except:
-#        print("Could not import numpy, install using conda install numpy")    
+try:    
+    import gdal
+except: 
+    print("Could not import gdal, install using conda install gdal")    
+    try:
+        import numpy
+    except:
+        print("Could not import numpy, install using conda install numpy")    
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
