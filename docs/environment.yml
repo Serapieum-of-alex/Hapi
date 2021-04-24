@@ -10,17 +10,17 @@ dependencies:
   - pandas
   - geopandas
   - matplotlib
-#  - scipy
+  - scipy
   - shapely
-#  - statsmodels
-#  - rasterio
-#  - rasterstats
-#  - oasis
-#  - netCDF4
-#  - scikit-learn
-#  - scikit-image
-#  - ecmwf-api-client
-#  - joblib
+  - statsmodels
+  - rasterio
+  - rasterstats
+  - oasis
+  - netCDF4
+  - scikit-learn
+  - scikit-image
+  - ecmwf-api-client
+  - joblib
   #- hapi
   - pip:
     - numpy
