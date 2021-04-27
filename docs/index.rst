@@ -35,10 +35,10 @@ Current release info
 
 
   
-  .. image:: docs/img/Hapi4.png
-   :width: 40pt
+  .. image:: docs/img/Hapi.jpg
+
   
-  .. image:: docs/img/name.png
+  .. image:: docs/img/name.jpg
    :width: 40pt
 
 
