@@ -1,3 +1,4 @@
+import sys
 import os
 import pandas as pd
 import numpy as np
@@ -12,6 +13,8 @@ from Hapi import performancecriteria as Pf
 import Hapi.visualizer as V
 # for line styling
 Vis = V.Visualize(1)
+
+hours = list(range(1,25))
 
 
 class River():
@@ -29,7 +32,7 @@ class River():
                  leftOvertopping_Suffix = "_left.txt",
                  RightOvertopping_Suffix = "_right.txt", DepthPrefix = "DepthMax",
                  DurationPrefix = "Duration", ReturnPeriodPrefix = "ReturnPeriod",
-                 Compressed=True, OneDResultPath='', TwoDResultPath=''):
+                 Compressed=True, OneDResultPath='', TwoDResultPath='', fmt="%Y-%m-%d"):
         """
         =============================================================================
             River(self, name, Version = 2, start = "1950-1-1", days = 36890,
@@ -85,10 +88,10 @@ class River():
 
         self.name = name
         self.Version = Version
-        self.start = dt.datetime.strptime(start,"%Y-%m-%d")
+        self.start = dt.datetime.strptime(start,fmt)
         self.end = self.start + dt.timedelta(days = days)
 
-        self.RRMstart = dt.datetime.strptime(RRMstart,"%Y-%m-%d")
+        self.RRMstart = dt.datetime.strptime(RRMstart,fmt)
         self.RRMend = self.RRMstart  + dt.timedelta(days = RRMdays)
 
         self.leftOvertopping_Suffix = leftOvertopping_Suffix
@@ -160,7 +163,14 @@ class River():
         """
         if type(Date) == str:
             Date = dt.datetime.strptime(Date,"%Y-%m-%d")
-        return np.where(self.ReferenceIndex['date'] == Date)[0][0]+1
+        
+        try:
+            return np.where(self.ReferenceIndex['date'] == Date)[0][0]+1    
+        except:
+            print("The input date " + str(Date) + " is out of the range")
+            print("Simulation is between " + str(self.ReferenceIndex.loc[1,'date']) + " and " + str(self.ReferenceIndex.loc[len(self.ReferenceIndex),'date']))
+            sys.exit
+        
 
     def IndexToDateRRM(self,Index):
         """
@@ -2011,20 +2021,23 @@ class River():
             Q = pd.read_csv(Path + "/" + str(NodeID) + '.txt',header = None, skiprows=1)
             Q.index = [dt.datetime.strptime(date,date_format) for date in Q[0]]
             del Q[0]
-            Q = Q.rename(columns = {1:NodeID})
+            
+            
             # convert the date into integer index
             s = np.where(RRMReferenceIndex['date'] == Q.index[0])[0][0]+1
             e = np.where(RRMReferenceIndex['date'] == Q.index[-1])[0][0]+1
             Q.index = list(range(s,e+1))
 
             if FromDay == '':
-                FromDay = s#1
+                FromDay = s
             if ToDay == '':
-                ToDay = e#len(Q)
+                ToDay = e
 
             Q = Q.loc[Q.index >= FromDay,:]
             Q = Q.loc[Q.index <= ToDay, :]
-
+            
+            Q = Q[1].to_frame()
+            Q = Q.rename(columns = {1:NodeID})
         return Q
 
 
@@ -2435,6 +2448,7 @@ class Sub(River):
         if not hasattr(self, "XSHydrographs") :
             self.XSHydrographs = pd.DataFrame(index = pd.date_range(start,end,freq = 'H')[:-1])
             self.XSWaterLevel = pd.DataFrame(index = pd.date_range(start,end,freq = 'H')[:-1])
+            self.XSWaterDepth = pd.DataFrame(index = pd.date_range(start,end,freq = 'H')[:-1])
 
         #check if the XSID is in the sub-basin
         if XSID != '':
@@ -2456,9 +2470,13 @@ class Sub(River):
 
         self.XSWaterLevel[self.LastXS]  = self.Result1D['wl'][self.Result1D['xs'] == self.LastXS ].values
         self.XSWaterLevel[self.FirstXS] = self.Result1D['wl'][self.Result1D['xs'] == self.FirstXS ].values
+        
+        self.XSWaterDepth[self.LastXS]  = self.Result1D['h'][self.Result1D['xs'] == self.LastXS ].values
+        self.XSWaterDepth[self.FirstXS] = self.Result1D['h'][self.Result1D['xs'] == self.FirstXS ].values
 
         if XSID != '':
             self.XSWaterLevel[XSID]  = self.Result1D['wl'][self.Result1D['xs'] == XSID ].values
+            self.XSWaterDepth[XSID]  = self.Result1D['h'][self.Result1D['xs'] == XSID ].values
 
 
         # check the first day in the results and get the date of the first day and last day
@@ -2569,7 +2587,7 @@ class Sub(River):
             self.NegQmin = f
 
 
-    def ReadBoundaryConditions(self, FromDay = '', ToDay = '', Path = ''):
+    def ReadBoundaryConditions(self, FromDay = '', ToDay = '', Path = '', fmt="%Y-%m-%d"):
         """
         =============================================================================
             ReadBoundaryConditions(FromDay = '', ToDay = '', Path = '')
@@ -2597,17 +2615,24 @@ class Sub(River):
             1-HBC: [dataframe attribute]
                 dataframe contains the water depth boundary conditions for each
                 day as a row and for each column are the hours
-
         """
         if FromDay == '':
             FromDay = 1
         if ToDay ==  '':
             ToDay = len(self.ReferenceIndex_Results) - 1
-
+        
+        if type(FromDay) == str:
+            FromDay = dt.datetime.strptime(FromDay,fmt)
+            FromDay = np.where(self.ReferenceIndex_Results == FromDay)[0][0] + 1
+        if type(ToDay) == str:
+            ToDay = dt.datetime.strptime(ToDay,fmt)
+            ToDay = np.where(self.ReferenceIndex_Results == ToDay)[0][0] + 1
+            
         if Path != '':
             self.USbndPath = Path
-        QBC = pd.DataFrame(index = self.ReferenceIndex_Results[FromDay-1:ToDay] ,columns = list(range(24)))
-        HBC = pd.DataFrame(index = self.ReferenceIndex_Results[FromDay-1:ToDay] ,columns = list(range(24)))
+        
+        QBC = pd.DataFrame(index = self.ReferenceIndex_Results[FromDay-1:ToDay] ,columns = hours)
+        HBC = pd.DataFrame(index = self.ReferenceIndex_Results[FromDay-1:ToDay] ,columns = hours)
 
         for i in self.Daylist[FromDay-1:ToDay]:
             bc_q = np.loadtxt(self.USbndPath +str(self.ID) + "-" + str(i) +'.txt',dtype = np.float16)
@@ -2619,9 +2644,12 @@ class Sub(River):
 
 
 
-    def Read1DResults1Min(self, Smin, Emin):
-
+    def Read1DResults1Min(self, Smin, Emin,fmt="%Y-%m-%d"):
+        
+        Smin = dt.datetime.strptime(Smin,fmt)
+        Emin = dt.datetime.strptime(Emin,fmt)        
         indmin = pd.date_range(Smin,Emin,freq = "min")[:-1]
+        
         XSname = [int(i) for i in self.XSname]
         Hmin = pd.DataFrame(index = indmin,columns = XSname)
         Qmin = pd.DataFrame(index = indmin,columns = XSname)
@@ -2630,17 +2658,19 @@ class Sub(River):
         index_daily = pd.date_range(Smin,Emin,freq = "D")[:-1]
         BC_q = pd.DataFrame(index = index_daily ,columns = list(range(1,1441)))
         BC_h = pd.DataFrame(index = index_daily ,columns = list(range(1,1441)))
-
-        ii = self.ReferenceIndex.index[np.where(self.ReferenceIndex == Smin)[0][0]]  # old (Smin-s).days+1
-        ii2 = self.ReferenceIndex.index[np.where(self.ReferenceIndex == Emin)[0][0]]  # old (Emin-s).days+1
-
+        
+        ii = self.DateToIndex(Smin)
+        # ii = Sub.ReferenceIndex.index[np.where(Sub.ReferenceIndex == Smin)[0][0]]  # old (Smin-s).days+1
+        # ii2 = Sub.ReferenceIndex.index[np.where(self.ReferenceIndex == Emin)[0][0]]  # old (Emin-s).days+1
+        ii2 = self.DateToIndex(Emin)
+        
         list2 = list(range(ii,ii2))
 
 
         for i in list2:
-            h = np.transpose(np.loadtxt(self.OneMinResultPath + "h/" +str(self.ID)+"-h-"+str(i) +'.txt',dtype = np.float16))
-            q = np.transpose(np.loadtxt(self.OneMinResultPath + "q/" +str(self.ID)+"-q-"+str(i) +'.txt'))
-            h = h +self.crosssections['gl'].tolist()
+            h = np.transpose(np.loadtxt(self.OneMinResultPath + "h/" +str(self.ID)+"-h-"+str(i) +'.txt',dtype = np.float16))[:,:-1]
+            q = np.transpose(np.loadtxt(self.OneMinResultPath + "q/" +str(self.ID)+"-q-"+str(i) +'.txt'))[:,:-1]
+            h = h + self.crosssections['gl'].tolist()
             # old is i-(Smin-s).days-1 new is i-list2[0]
             Hmin.loc[Hmin.index[(i-list2[0])*1440]:Hmin.index[(i-list2[0])*1440+1439]]= h
             Qmin.loc[Hmin.index[(i-list2[0])*1440]:Hmin.index[(i-list2[0])*1440+1439]]= q
@@ -2917,7 +2947,7 @@ class Sub(River):
         # River.Read1DResult(self,self.ID, FromDay, ToDay, FillMissing)
 
 
-    def SaveHydrograph(self, xsid, Path=''):
+    def SaveHydrograph(self, xsid, Path='', Option=1):
         """
         ==============================================================
             SaveHydrograph(xsid, Path='')
@@ -2934,7 +2964,8 @@ class Sub(River):
             the id of the cross section.
         Path : [string], optional
             Path to the directory where you want to save the file to. The default is ''.
-
+        Option : [integer]
+            1 to write water level results, 2 to write water depth results
         Returns
         -------
         None.
@@ -2945,16 +2976,20 @@ class Sub(River):
             assert hasattr(self, 'CustomizedRunsPath'), "please enter the value of the CustomizedRunsPath or use the Path argument to specify where to save the file"
             Path = self.CustomizedRunsPath
 
-        saveDS = self.XSHydrographs[xsid].resample('D').backfill()
-        # saveDS.to_csv(savepath+str(Sub.ID)+"_00.txt", header = None, float_format="%.3f") #index = False,
+        saveDS = self.XSHydrographs[xsid].resample('D').mean()
         f = pd.DataFrame(index = saveDS.index)
         f['date'] = ["'" + str(i)[:10] + "'" for i in saveDS.index]
-        f['values'] = saveDS
+        f['discharge(m3/s)'] = saveDS
+        if Option == 1 :
+            f['water depth(m)'] = self.XSWaterDepth[xsid].resample('D').mean().values
+        else:
+            f['water level(m)'] = self.XSWaterLevel[xsid].resample('D').mean().values
+            
         f.to_csv(Path+str(self.ID)+".txt", index = False, float_format="%.3f")  #header = None ,
 
 
     def PlotHydrographProgression(self, XSs, plotstart, plotend, linewidth = 4,
-                                  Spacing=5):
+                                  Spacing=5, FigSize=(7,5)):
         """
         ============================================================================
              PlotHydrographProgression(XSs, plotstart, plotend, linewidth = 4, Spacing=5)
@@ -3004,7 +3039,7 @@ class Sub(River):
         ax.set_ylabel("Discharge m3/s", fontsize = 10)
         plt.tight_layout()
 
-        return ax
+        return fig, ax
 
     def ReadUSHydrograph(self, FromDay = '', ToDay = '', Path = '',
                           date_format="'%Y-%m-%d'"):
@@ -3045,6 +3080,7 @@ class Sub(River):
                     self.USHydrographs[NodeID]  = self.ReadRRMResults(self.Version, self.RRMReferenceIndex,
                                                                     Path, NodeID, FromDay, ToDay,
                                                                     date_format)[NodeID]
+                    
             #there is one upstream segment
         elif self.USnode != []:
             NodeID = self.USnode[0]
@@ -3054,7 +3090,7 @@ class Sub(River):
         else:
             print("the Segment Does not have any Upstream Segments")
             return
-
+        
         self.USHydrographs['total'] = self.USHydrographs.sum(axis=1)
         if FromDay == '':
             # FromDay = 1
@@ -3228,13 +3264,13 @@ class Sub(River):
 
     def PlotQ(self, Calib, GagueXS,plotstart,plotend,stationname, Gaugename, Segment_XS,
              PlotLaterals=True, plotUS=True, SpecificXS=False, plotRRM=True,
-             PlotGauge=True, RIMcolor="#004c99",gaugecolor="#DC143C",
+             PlotGauge=True, RIMcolor="#004c99", gaugecolor="#DC143C",BCcolor = "grey",
              RRMcolor = "green",Latcolor = (0.3,0,0),XScolor = "grey",linewidth = 4,
              RIMorder = 6, Gaugeorder = 5, RRMorder = 4, BCorder = 7, USHorder = 2,
-             XSorder = 1):
+             XSorder = 1, fmt="%Y-%m-%d", NXlabels=False):
 
-        plotstart = dt.datetime.strptime(plotstart,"%Y-%m-%d")
-        plotend = dt.datetime.strptime(plotend,"%Y-%m-%d")
+        plotstart = dt.datetime.strptime(plotstart,fmt)
+        plotend = dt.datetime.strptime(plotend,fmt)
         #"#FF34B3"
 
         fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(6, 5))
@@ -3248,7 +3284,7 @@ class Sub(River):
                 Laterals = self.GetLaterals(GagueXS)
                 if type(self.BC) != bool:
                     ax.plot(self.BC.loc[plotstart:plotend,self.ID], label = "BC",zorder=BCorder,
-                            linewidth=linewidth, linestyle = Vis.LineStyle(9), color = RRMcolor)
+                            linewidth=linewidth, linestyle = Vis.LineStyle(9), color = BCcolor)
                 if len(self.LateralsTable) > 0:
                     ax.plot(Laterals.loc[plotstart:plotend,0], label = "Laterals",zorder=RRMorder,
                             linewidth=linewidth, linestyle = Vis.LineStyle(9), color = Latcolor)
@@ -3285,9 +3321,9 @@ class Sub(River):
                 ax.plot(Sub.RRM.loc[Calib.CalibrationQ.index[0]:Calib.CalibrationQ.index[-1],stationname],
                         label="RRM")
 
-
-        start, end = ax.get_xlim()
-        ax.xaxis.set_ticks(np.linspace(start,end,4))
+        if type(NXlabels) != bool :
+            start, end = ax.get_xlim()
+            ax.xaxis.set_ticks(np.linspace(start,end,NXlabels))
         # xlabels = ["1990-01-01","1990-11-13","1991-11-15","1992-11-16"]
         # ax.set_xticklabels(xlabels)
 
@@ -3298,21 +3334,24 @@ class Sub(River):
         ax.set_ylabel("Discharge m3/s", fontsize = 12)
         plt.tight_layout()
 
-        return ax
+        return fig, ax 
 
 
-    def CalculateQMetrics(self,Calib, stationname, startError,endError,startgauge,
-                         endgauge, Filter=False):
+    def CalculateQMetrics(self, Calib, stationname, startError, endError, GagueXS,
+                          GaugeStart, GaugeEnd,Filter=False, fmt="%Y-%m-%d"):
 
         QRIM = pd.DataFrame()
-        startError = dt.datetime.strptime(startError,"%Y-%m-%d")
-        endError = dt.datetime.strptime(endError,"%Y-%m-%d")
-
+        startError = dt.datetime.strptime(startError,fmt)
+        endError = dt.datetime.strptime(endError,fmt)
+        
+        # GaugeStart = Calib.GaugesTable[Calib.GaugesTable['xsid'] == GagueXS]['Qstart'].values[0]
+        # GaugeEnd = Calib.GaugesTable[Calib.GaugesTable['xsid'] == GagueXS]['Qend'].values[0]
+        
         if Filter :
             # get the latest date of the filter date and the first date in the result
             # get the earliest date of the end and the last date in the result
-            st2 = max(startgauge,startError, self.FirstDayResults)
-            end2 = min(endgauge,endError, self.EndDays)
+            st2 = max(GaugeStart,startError, self.FirstDayResults)
+            end2 = min(GaugeEnd,endError, self.EndDays)
 
             # starti = River.DateToIndex(st2)
             # endi = River.DateToIndex(end2)
@@ -3335,8 +3374,8 @@ class Sub(River):
             # QRIM.index = pd.date_range(st2, end2)
 
         else:
-            st2 = max(startgauge,self.FirstDayResults)
-            end2 = min(endgauge,self.LastDay)
+            st2 = max(GaugeStart,self.FirstDayResults)
+            end2 = min(GaugeEnd,self.LastDay)
             # get the observed discharge
             Qobs = Calib.QGauges.loc[st2:end2,stationname]
 
@@ -3364,16 +3403,35 @@ class Sub(River):
         print("NSE = " + str(nse))
 
         return rmse, kge, wb, nsehf, nse
-
+    
+    
     def PlotWL(self, Calib, plotstart, plotend, GagueXS, stationname, Gaugename,
                Filter = False, gaugecolor = "#DC143C", RIMcolor = "#004c99",
-               linewidth=2, RIMorder=1, Gaugeorder=0):
-
+               linewidth=2, RIMorder=1, Gaugeorder=0, PlotGauge=True, fmt="%Y-%m-%d"):
+        
+        plotstart = dt.datetime.strptime(plotstart,fmt)
+        plotend = dt.datetime.strptime(plotend,fmt)
+        
+        if PlotGauge:
+            
+            GaugeStart = Calib.GaugesTable[Calib.GaugesTable['xsid'] == GagueXS]['WLstart']
+            GaugeEnd = Calib.GaugesTable[Calib.GaugesTable['xsid'] == GagueXS]['WLend']
+            
+            if len(GaugeStart.values) != 0:
+                print("The XS you provided does not exist in the GaugesTable")    
+                GaugeStart = GaugeStart.values[0]
+                GaugeEnd = GaugeEnd.values[0]
+        
+                if GaugeStart > plotstart and  GaugeStart > plotend:
+                    print("Availabel data for the gauge starts from " + str(GaugeStart))
+                    print("The period you provided is between " + str(plotstart) + " and " + str(plotend)) 
+                    PlotGauge = False
+                elif GaugeEnd < plotstart and  GaugeStart < plotend:
+                    print("Availabel data for the gauge starts from" + str(GaugeEnd))
+                    print("Out of Gauge dates") 
+                    PlotGauge = False   
+            
         fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(6, 5))
-
-
-        plotstart = dt.datetime.strptime(plotstart,"%Y-%m-%d")
-        plotend = dt.datetime.strptime(plotend,"%Y-%m-%d")
 
         # if self.ID == SubID :
         """
@@ -3384,8 +3442,9 @@ class Sub(River):
 
         ax.plot(self.XSWaterLevel.loc[plotstart:plotend,GagueXS],label="RIM" ,
                  zorder=RIMorder, linewidth=linewidth, color = RIMcolor, linestyle = Vis.LineStyle(6))
-        ax.plot(Calib.WLGauges.loc[plotstart:plotend,stationname],label='Gauge',
-                 zorder = Gaugeorder, linewidth=linewidth, color = gaugecolor)
+        if PlotGauge:
+            ax.plot(Calib.WLGauges.loc[plotstart:plotend,stationname],label='Gauge',
+                     zorder = Gaugeorder, linewidth=linewidth, color = gaugecolor)
 
         # ax1.plot(Sub2.XSWaterLevel.loc[plotstart:plotend,GagueXS],label="step-1" + str(GagueXS),
         #          zorder=3, linewidth=linewidth, color = 'grey')
@@ -3412,15 +3471,25 @@ class Sub(River):
 
         return ax
 
-    def CalculateWLMetrics(self, Calib, stationname, gaugestart, gaugeend, startError,
-                           endError, GagueXS, Filter=False):
+    def CalculateWLMetrics(self, Calib, stationname, startError,  
+                           endError, GagueXS, Filter=False): #GaugeStart, GaugeEnd, 
 
         startError = dt.datetime.strptime(startError,"%Y-%m-%d")
         endError = dt.datetime.strptime(endError,"%Y-%m-%d")
-
+        
+        GaugeStart = Calib.GaugesTable[Calib.GaugesTable['xsid'] == GagueXS]['WLstart'].values[0]
+        GaugeEnd = Calib.GaugesTable[Calib.GaugesTable['xsid'] == GagueXS]['WLend'].values[0]
+        
+        # if GaugeStart > plotstart and  GaugeStart > plotend:
+        #    print("Out of Gauge dates") 
+        #    PlotGauge = False
+        # elif GaugeEnd < plotstart and  GaugeStart < plotend:
+        #    print("Out of Gauge dates") 
+        #    PlotGauge = False
+           
         if Filter:
-            st2 = max(gaugestart,startError, self.FirstDayResults)
-            end2 = min(gaugeend,endError,self.EndDays)
+            st2 = max(GaugeStart,startError, self.FirstDayResults)
+            end2 = min(GaugeEnd,endError,self.EndDays)
             # observed
             obs = np.array(Calib.WLGauges.loc[st2:end2,stationname])
 
@@ -3440,8 +3509,8 @@ class Sub(River):
             # series1 = np.array(Sub.ResampledWL[GagueXS])
 
         else:
-            st2 = max(gaugestart,self.FirstDayResults)
-            end2 = min(gaugeend,self.LastDay)
+            st2 = max(GaugeStart,self.FirstDayResults)
+            end2 = min(GaugeEnd,self.LastDay)
             # Observed
             obs = np.array(Calib.WLGauges.loc[st2:end2,stationname])
 
@@ -3456,8 +3525,10 @@ class Sub(River):
             # RIM
             # Sub.Resample(GagueXS, 'wl', River.DateToIndex(st2), River.DateToIndex(end2), Delete = False)
             # series1 = np.array(Sub.ResampledWL[GagueXS])
-
-
+        
+        if len(obs) != len(mod) or len(mod) ==0:
+            print("Availabel data for the gauge starts from " + str(GaugeStart)+ " To " + str(GaugeEnd))
+            return 
 
         MBE = round(Pf.MBE(obs, mod),2)
         MAE = round(Pf.MAE(obs, mod),2)
@@ -3507,6 +3578,22 @@ class Sub(River):
         #ax1.cla
 
         ax1.tick_params(axis='y', color = '#27408B')
+        
+        
+    def PlotBC(self, date, fmt="%Y-%m-%d"):
+        date = dt.datetime.strptime(date,fmt)
+        
+        fig, ax1 = plt.subplots()
+        ax2 = ax1.twinx()
+        ax1.plot(self.HBCmin.loc[date])
+        ax1.set_xlabel('Date', fontsize = 15)
+        ax1.set_ylabel('H', fontsize = 15)
+        ax1.set_xlim(0,1440)
+        ax2.plot(self.QBCmin.loc[date])
+        ax2.set_ylabel('Q', fontsize = 15)
+    
+    # def CalculateHydraulics():
+        # Sub.C
 
     def ListAttributes(self):
         """
