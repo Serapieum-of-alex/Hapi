@@ -6,7 +6,7 @@ Created on Wed Mar  3 12:40:23 2021
 """
 import pandas as pd
 import datetime as dt
-from Hapi.river import River
+from Hapi.hm.river import River
 
 class Interface(River):
     """

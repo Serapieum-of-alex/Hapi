@@ -15,7 +15,7 @@ import numpy as np
 import pandas as pd
 
 
-from Hapi.wrapper import Wrapper
+from Hapi.rrm.wrapper import Wrapper
 from Hapi.catchment import Catchment
 
 

@@ -30,7 +30,7 @@ import netCDF4
 # import datetime as dt
 import time
 
-from Hapi.vector import Vector
+from Hapi.gis.vector import Vector
 #import skimage.transform as transform
 
 # import subprocess

@@ -8,8 +8,8 @@ from scipy.stats import gumbel_r
 import matplotlib.pyplot as plt
 import zipfile
 
-from Hapi.raster import Raster as raster
-from Hapi import performancecriteria as Pf
+from Hapi.gis.raster import Raster as raster
+from Hapi.statistics import performancecriteria as Pf
 import Hapi.visualizer as V
 # for line styling
 Vis = V.Visualize(1)

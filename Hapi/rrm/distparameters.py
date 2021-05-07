@@ -12,8 +12,8 @@ import numpy as np
 import datetime as dt
 import os
 import gdal
-from Hapi.raster import Raster
-from Hapi.giscatchment import GISCatchment as GC
+from Hapi.gis.raster import Raster
+from Hapi.gis.giscatchment import GISCatchment as GC
 
 
 class DistParameters():

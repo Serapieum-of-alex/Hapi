@@ -16,7 +16,7 @@ import matplotlib.colors as colors
 from matplotlib.ticker import LogFormatter
 from collections import OrderedDict
 
-from Hapi.statisticaltools  import StatisticalTools as ST
+from Hapi.statistics.statisticaltools  import StatisticalTools as ST
 
 hours = list(range(1,25))
 

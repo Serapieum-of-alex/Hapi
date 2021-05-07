@@ -12,7 +12,7 @@ you can use the following command:
 
 + ``conda install -c conda-forge hapi``
 
-If this works it will install wflow with all dependencies including Python and gdal,
+If this works it will install Hapi with all dependencies including Python and gdal,
 and you skip the rest of the installation instructions.
 
 

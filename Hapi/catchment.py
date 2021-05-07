@@ -14,9 +14,9 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as dates
 
 
-from Hapi.raster import Raster
-from Hapi.giscatchment import GISCatchment as GC
-import Hapi.performancecriteria as PC
+from Hapi.gis.raster import Raster
+from Hapi.gis.giscatchment import GISCatchment as GC
+import Hapi.statistics.performancecriteria as PC
 from Hapi.visualizer import Visualize as Vis
 
 

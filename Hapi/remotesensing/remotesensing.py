@@ -16,7 +16,7 @@ from ecmwfapi import ECMWFDataServer
 from ftplib import FTP
 from joblib import Parallel, delayed
 
-from Hapi.raster import Raster
+from Hapi.gis.raster import Raster
 import Hapi.weirdFn as weirdFn
 
 class RemoteSensing():

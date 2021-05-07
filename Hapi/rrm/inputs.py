@@ -17,7 +17,7 @@ import rasterio
 from rasterio.plot import show
 
 import Hapi
-from Hapi.raster import Raster as raster
+from Hapi.gis.raster import Raster as raster
 
 class Inputs():
 

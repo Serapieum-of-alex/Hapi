@@ -9,7 +9,7 @@ Created on Sat May 26 04:52:15 2018
 import numpy as np
 import pandas as pd
 import gdal
-from Hapi.raster import Raster as raster
+from Hapi.gis.raster import Raster as raster
 
 #from osgeo import gdalconst
 #import osr

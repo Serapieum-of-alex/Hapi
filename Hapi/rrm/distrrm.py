@@ -5,8 +5,8 @@ Created on Wed Jun 27 19:17:15 2018
 """
 
 import numpy as np
-from Hapi.raster import Raster as raster
-from Hapi.routing import Routing as routing
+from Hapi.gis.raster import Raster as raster
+from Hapi.rrm.routing import Routing as routing
 
 class DistributedRRM():
     """

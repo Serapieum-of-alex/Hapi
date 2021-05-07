@@ -26,35 +26,67 @@ if missing_dependencies:
 
 # del hard_dependencies, dependency, missing_dependencies
 
+def configuration(parent_package='',top_path=None):
 
-#import Calibration
-import Hapi.distparameters
-import Hapi.distrrm
-import Hapi.giscatchment
-import Hapi.raster
-import Hapi.vector
-import Hapi.inputs
-import Hapi.java_functions
-import Hapi.performancecriteria
-import Hapi.routing
-import Hapi.run
+    from numpy.distutils.misc_util import Configuration
+
+    config = Configuration(None,parent_package,top_path)
+    config.set_options(
+        ignore_setup_xxx_py=True,
+        assume_default_configuration=True,
+        delegate_options_to_subpackages=True,
+        quiet=True,
+    )
+
+    config.add_subpackage('statistics')
+    config.add_subpackage('rrm')
+    config.add_subpackage('remotesensing')
+    config.add_subpackage('hm')
+    config.add_subpackage('gis')
+
+    return config
+
+
+#import Hapi.giscatchment
+#import Hapi.raster
+#import Hapi.vector
+import Hapi.gis as gis
+
+#import Hapi.distparameters
+#import Hapi.distrrm
+#import Hapi.inputs
+#import Hapi.routing
+#import Hapi.run
+#import Hapi.hbv
+#import Hapi.hbv_lake
+#import Hapi.hbvlumped
+#import Hapi.hbv_bergestrom92
+#import Hapi.wrapper
+import Hapi.rrm as rrm 
+
+#import Hapi.hminputs
+#import Hapi.event
+#import Hapi.river
+#import Hapi.crosssection
+#import Hapi.hmcalibration
+#import Hapi.interface
+import Hapi.hm as hm
+
+
+#import Hapi.performancecriteria
+#import Hapi.sensitivityanalysis
+#import Hapi.statisticaltools 
+
+import Hapi.statistics as statistics
+
+import Hapi.remotesensing as remotesensing
+
 import Hapi.catchment
-import Hapi.statisticaltools
-import Hapi.wrapper
 import Hapi.weirdFn
-import Hapi.hbv
-import Hapi.hbv_lake
-import Hapi.hbvlumped
-import Hapi.hbv_bergestrom92
-import Hapi.hminputs
-import Hapi.event
-import Hapi.river
+import Hapi.java_functions
 import Hapi.visualizer
-import Hapi.crosssection
-import Hapi.hmcalibration
-import Hapi.interface
-import Hapi.sensitivityanalysis
-import Hapi.remotesensing
+
+
 #import Hapi.saintvenant
 # module level doc-string
 __doc__ = """

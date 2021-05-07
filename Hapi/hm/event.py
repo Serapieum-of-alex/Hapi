@@ -6,7 +6,7 @@ Created on Tue Feb  4 14:57:30 2020
 import os
 import datetime as dt
 import pandas as pd
-from Hapi.raster import Raster
+from Hapi.gis.raster import Raster
 import numpy as np
 import matplotlib.pyplot as plt
 
