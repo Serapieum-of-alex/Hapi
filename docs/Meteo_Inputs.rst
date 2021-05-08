@@ -3,7 +3,9 @@ Hapi Inputs
 *****
 The required inputs for the distributed model is divided into Meteorological, GIS inputs and Distributed model parameters
 
-![process](../img/process.png)
+  .. image:: /img/process.png
+    :width: 400pt
+
 
 Meteorological Inputs
 ########

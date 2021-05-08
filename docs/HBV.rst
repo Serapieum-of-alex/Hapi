@@ -37,7 +37,9 @@ The model has 15 free parameters, values of which are found by calibration, some
 the 15 parameter by order are [`tt`,`rfcf`,`sfcf`,`cfmax`,`cwh`,`cfr`,`fc`,`beta`,`etf`,`lp`,`k0`,`k1`,`k2`,`uzl`,`perc`]. Two parameters are added for the correction of the rainfall values `rfcf` and for the correction of the calculated evapotranspiration values `Etf`, and in case the catchment does not have a snow then the HBV model used 10 parameter (excluding the first 5 parameters)
 
 
-![HBV Component](../img/HBV_buckets.png)
+  .. image:: /img/HBV_buckets.png
+    :width: 400pt
+
 [Bergström, 1992]
 
 

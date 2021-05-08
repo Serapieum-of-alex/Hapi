@@ -34,15 +34,16 @@ Current release info
    .. image:: https://anaconda.org/conda-forge/hapi/badges/platforms.svg   :target: https://anaconda.org/conda-forge/hapi
 
 
-  .. image:: https://static.pepy.tech/personalized-badge/hapi-nile?period=total&units=international_system&left_color=grey&right_color=blue&left_text=Downloads :target: https://pypi.org/project/HAPI-Nile/1.0.4/
+  .. image:: https://static.pepy.tech/personalized-badge/hapi-nile?period=total&units=international_system&left_color=grey&right_color=blue&left_text=Downloads :target: https://pepy.tech/project/hapi-nile
  
 
 
-  .. image:: https://static.pepy.tech/personalized-badge/hapi-nile?period=month&units=international_system&left_color=grey&right_color=blue&left_text=Downloads :target: https://pypi.org/project/HAPI-Nile/1.0.4/
+  .. image:: https://static.pepy.tech/personalized-badge/hapi-nile?period=month&units=international_system&left_color=grey&right_color=blue&left_text=Downloads :target: https://pepy.tech/project/hapi-nile
  
 
-  .. image:: https://static.pepy.tech/personalized-badge/hapi-nile?period=week&units=international_system&left_color=grey&right_color=blue&left_text=Downloads :target: https://pypi.org/project/HAPI-Nile/1.0.4/
+  .. image:: https://static.pepy.tech/personalized-badge/hapi-nile?period=week&units=international_system&left_color=grey&right_color=blue&left_text=Downloads :target: https://pepy.tech/project/hapi-nile
  
+
 
 
 Hapi - Hydrological library for Python 
@@ -97,7 +98,7 @@ to reduce model complexity and uncertainty of parameters.
     Hapi -> catchment;
     Hapi -> weirdFn;
     Hapi -> visualizer;
-    dpi=200;
+    dpi=400;
 
 .. digraph:: Linking
 
@@ -118,7 +119,7 @@ to reduce model complexity and uncertainty of parameters.
     RRM -> wrapper;
     RRM -> hbv_lake;
     RRM -> hbv_bergestrom92;
-    dpi=200;
+    dpi=400;
 
 .. digraph:: Linking
 
@@ -128,14 +129,14 @@ to reduce model complexity and uncertainty of parameters.
     HM -> calibration;
     HM -> crosssection;
     HM -> interface;
-    dpi=200;
+    dpi=400;
 
 .. digraph:: Linking
 
     Statistics -> performancecriteria;
     Statistics -> statisticaltools;
     Statistics -> sensitivityanalysis;
-    dpi=200;
+    dpi=400;
 
 .. digraph:: Linking
     RemoteSensing -> remotesensing;
