@@ -6,21 +6,31 @@ Current release info
 
 .. image:: https://img.shields.io/pypi/v/Hapi-nile   :alt: PyPI
 
-.. image:: https://img.shields.io/conda/v/conda-forge/hapi?label=conda-forge   :alt: Conda
 
-.. image:: https://img.shields.io/pypi/pyversions/hapi-nile   :alt: PyPI - Python Version
+.. image:: https://img.shields.io/conda/v/conda-forge/hapi?label=conda-forge
+
+
+.. image:: https://img.shields.io/pypi/pyversions/hapi-nile
+
+
+.. image:: https://img.shields.io/github/forks/mafarrag/hapi?style=social   :alt: GitHub forks
 
 
 	.. image:: https://anaconda.org/conda-forge/hapi/badges/downloads.svg :target: https://anaconda.org/conda-forge/hapi
 
+
   .. image:: https://img.shields.io/conda/vn/conda-forge/hapi   :alt: Conda (channel only)     
+
 
   .. image:: https://img.shields.io/gitter/room/mafarrag/Hapi   :alt: Gitter
 
+
   .. image:: https://static.pepy.tech/personalized-badge/hapi-nile?period=total&units=international_system&left_color=grey&right_color=blue&left_text=Downloads
 
-   .. image:: https://img.shields.io/pypi/v/hapi-nile   :alt: PyPI |  
-   
+
+   .. image:: https://img.shields.io/pypi/v/hapi-nile   :alt: PyPI
+
+
    .. image:: https://anaconda.org/conda-forge/hapi/badges/platforms.svg   :target: https://anaconda.org/conda-forge/hapi
 
 
@@ -56,7 +66,7 @@ their own model, it contains two routing functions muskingum cunge, and MAXBAS t
    :width: 400pt
 
   .. image:: /img/Picture2.png
-   :width: 600pt
+   :width: 800pt
 
 Main Features
 -------------
@@ -87,9 +97,17 @@ to reduce model complexity and uncertainty of parameters.
     Hapi -> catchment;
     Hapi -> weirdFn;
     Hapi -> visualizer;
+    dpi=200;
+
+.. digraph:: Linking
+
     GIS -> raster;
     GIS -> vector;
     GIS -> giscatchment;
+    dpi=200;
+
+.. digraph:: Linking
+
     RRM -> HBV;
     RRM -> calibration;
     RRM -> distparameters;
@@ -100,15 +118,26 @@ to reduce model complexity and uncertainty of parameters.
     RRM -> wrapper;
     RRM -> hbv_lake;
     RRM -> hbv_bergestrom92;
+    dpi=200;
+
+.. digraph:: Linking
+
     HM -> inputs;
     HM -> event;
     HM -> river;
     HM -> calibration;
     HM -> crosssection;
     HM -> interface;
+    dpi=200;
+
+.. digraph:: Linking
+
     Statistics -> performancecriteria;
     Statistics -> statisticaltools;
     Statistics -> sensitivityanalysis;
+    dpi=200;
+
+.. digraph:: Linking
     RemoteSensing -> remotesensing;
     dpi=200;
 
@@ -132,3 +161,12 @@ Bergström, S. (1992) The HBV model - its structure and applications. Smhi Rh 4(
 
 Rusli, S. R., Yudianto, D. & Liu, J. tao. (2015) Effects of temporal variability on HBV model calibration. Water Sci. Eng. 8(4), 291–300. Elsevier Ltd. doi:10.1016/j.wse.2015.12.002
 
+
+.. toctree::
+   :hidden:
+   :maxdepth: 2
+
+   installation.rst
+   Inputs.rst
+   Available Models <availablemodels.rst>
+   tutorial.rst
