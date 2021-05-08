@@ -100,7 +100,9 @@ In case of the existence of a lake in the catchment, the outflow from basins ups
 Storage in the lake will be computed according to water stage/storage curve or water stage/lake surface area table and outflow can be obtained from a rating curve (IHMS 2010).
 Lakes have a significant impact on the dynamics of runoff process and the routing and therefore modelled explicitly, and for that the presence of a lake in the catchment is an important factor for choosing substructure based on sub basins. (Lindström et al. 1997)
 
-![MaxBas](../img/lake.png)
+  .. image:: /img/lake.png
+    :width: 400pt
+
 
 References
 ########

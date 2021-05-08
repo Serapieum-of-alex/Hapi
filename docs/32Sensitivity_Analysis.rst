@@ -6,51 +6,53 @@ OAT fixes the value of all parameters and change the value of one parameter with
 
 First of all to run the HBV lumped model which we need to test its 
 performance (RMSE) based on a defined range for each parameter 
-``
-import numpy as np
-import pandas as pd
 
-import Hapi.hbv_bergestrom92 as HBVLumped
-import Hapi.run as RUN
-from Hapi.routing import TriangularRouting
-``
+.. code:: ipython3
+
+	import numpy as np
+	import pandas as pd
+
+	import Hapi.hbv_bergestrom92 as HBVLumped
+	import Hapi.run as RUN
+	from Hapi.routing import TriangularRouting
+
 load all data needed to run the model as mentioned in [Lumped model](Lumped_HBV.md)
-``
-### meteorological data
-path= comp + "/Coello/Hapi/Data/00inputs/Lumped/"
-data=pd.read_csv(path+"meteo_data.txt",header=0 ,delimiter=',',
-                   engine='python',index_col=0)
-data=data.values
+.. code:: ipython3
+	### meteorological data
+	path= comp + "/Coello/Hapi/Data/00inputs/Lumped/"
+	data=pd.read_csv(path+"meteo_data.txt",header=0 ,delimiter=',',
+	                   engine='python',index_col=0)
+	data=data.values
 
-### Basic_inputs
-ConceptualModel = HBVLumped
-# p2 = [temporal resolution, catchment area]
-p2=[24, 1530]
-init_st=[0,10,10,10,0]
-# no snow subroutine
-snow = 0
+	### Basic_inputs
+	ConceptualModel = HBVLumped
+	# p2 = [temporal resolution, catchment area]
+	p2=[24, 1530]
+	init_st=[0,10,10,10,0]
+	# no snow subroutine
+	snow = 0
 
-### parameters
-# parameters= pd.read_csv("results\parameters\lumped\oldparameters.txt", index_col = 0, header = None)
-parameters = pd.read_csv(Parameterpath + "\scenario1.txt", index_col = 0, header = None)
-parameters.rename(columns={1:'value'}, inplace=True)
-parameters.drop('maxbas', axis=0, inplace=True)
-
-
-UB = pd.read_csv(Parameterpath + "/UB-Extracted.txt", index_col = 0, header = None)
-UB = UB[1].tolist()
-
-LB = pd.read_csv(Parameterpath  + "/LB-Extracted.txt", index_col = 0, header = None)
-LB = LB[1].tolist()
+	### parameters
+	# parameters= pd.read_csv("results\parameters\lumped\oldparameters.txt", index_col = 0, header = None)
+	parameters = pd.read_csv(Parameterpath + "\scenario1.txt", index_col = 0, header = None)
+	parameters.rename(columns={1:'value'}, inplace=True)
+	parameters.drop('maxbas', axis=0, inplace=True)
 
 
-# observed flow
-Qobs =np.loadtxt(path+"Qout_c.txt")
-### Routing
-Routing=1
-RoutingFn=TriangularRouting
+	UB = pd.read_csv(Parameterpath + "/UB-Extracted.txt", index_col = 0, header = None)
+	UB = UB[1].tolist()
 
-``
+	LB = pd.read_csv(Parameterpath  + "/LB-Extracted.txt", index_col = 0, header = None)
+	LB = LB[1].tolist()
+
+
+	# observed flow
+	Qobs =np.loadtxt(path+"Qout_c.txt")
+	### Routing
+	Routing=1
+	RoutingFn=TriangularRouting
+
+
 First the SensitivityAnalysis method takes 4 arguments :
 
     1-parameters:previous obtained parameters
@@ -81,8 +83,7 @@ as keys,
 Each parameter has a disctionary with two keys 0: list of parameters woth relative values
 1: list of parameter values
 
-``
-import matplotlib.pyplot as plt
-import Hapi.performancecriteria as PC
-import Hapi.statisticaltools as ST
-``
+.. code:: ipython3
+	import matplotlib.pyplot as plt
+	import Hapi.performancecriteria as PC
+	import Hapi.statisticaltools as ST

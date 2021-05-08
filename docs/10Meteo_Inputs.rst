@@ -44,37 +44,37 @@ CHRIPS data are uploaded into a ftp server therefore and can be downloaded throu
 	- Extend (Longitude/Latitude)
 	- Path (directory to save the downloaded data)
 
-	
-		StartDate = '2009-01-01'
+.. code:: ipython3
 
-		EndDate = '2009-01-10'
-
-		Time = 'daily'
-
-		lat = [4.190755,4.643963]
-
-		lon = [-75.649243,-74.727286]
-
-		Path = "directory to save the data"
-
-		Coello = CHIRPS(StartDate=StartDate, EndDate=EndDate, Time=Time,
-        	    	latlim=lat , lonlim=lon, Path=Path)
+	StartDate = '2009-01-01'
+	EndDate = '2009-01-10'
+	Time = 'daily'
+	lat = [4.190755,4.643963]
+	lon = [-75.649243,-74.727286]
+	Path = "directory to save the data"
+	Coello = CHIRPS(StartDate=StartDate, EndDate=EndDate, Time=Time,
+    	    	latlim=lat , lonlim=lon, Path=Path)
 	
 
 - Call the `Download` method 
 
-		Coello.Download()
+.. code:: ipython3
+
+	Coello.Download()
 	
 - A Progress bar will appear and be updated with percent of the download
 
-	![progressbar](../img/progress.png)
+	.. image:: /img/progress.png
+    :width: 400pt
+
 	
 
 - If the period is long and the Download method can run in parallel, to activate the parallel mode enter the number of cores with the keyword argument `cores`
 
-	```
+.. code:: ipython3
+
 	Coello.Download(cores=4)
-	```
+
 
 ECMWF
 ########
@@ -84,36 +84,41 @@ The ERA-Interim data assimilation and forecast suite produces:
 • four analyses per day, at 00, 06, 12 and 18 UTC;
 • two 10-day forecasts per day, initialized from analyses at 00 and 12 UTC
 
-- Most archived ERA-Interim data can be downloaded from the ECMWF Data Server at [http://data.ecmwf.int/data](http://data.ecmwf.int/data).
+- Most archived ERA-Interim data can be downloaded from the ECMWF Data Server at  `http://data.ecmwf.int/data <http://data.ecmwf.intdata>`_.
+
 - The ERA-Interim Archive is part of ECMWF’s Meteorological Archive and Retrieval System (MARS), which is accessible to registered users
 - The RemoteSensing and the ECMWF classes can retrieve  the data from the ECMWF servers, if you are registered and setup the API Key in your machine
 
 
 so inorder to be able to use the following code to download ECMWF data you need to 
-- register and setup your account in the ECMWF website (https://apps.ecmwf.int/registration/)
--  Install ECMWF key (instruction are here [https://confluence.ecmwf.int/display/WEBAPI/Access+ECMWF+Public+Datasets#AccessECMWFPublicDatasets-key](https://confluence.ecmwf.int/display/WEBAPI/Access+ECMWF+Public+Datasets#AccessECMWFPublicDatasets-key))
+- register and setup your account in the `ECMWF website <https://apps.ecmwf.int/registration/>`_.
+
+-  Install ECMWF key `instruction are here <https://confluence.ecmwf.int/display/WEBAPI/Access+ECMWF+Public+Datasets#AccessECMWFPublicDatasets-key](https://confluence.ecmwf.int/display/WEBAPI/Access+ECMWF+Public+Datasets#AccessECMWFPublicDatasets-key>`_.
 
 - ERA-Interim data set has a lot of meteorological variables which you can download
 - You need to provide the name of the variable using the `Variables` object 
 - `Variables` contains the tame of the variable you need to give to the `ECMWF` object to get and the unit and description
 
-		from Hapi.remotesensing import Variables
-		Vars = Variables('daily')
-		Vars.__str__()
+.. code:: ipython3
+	from Hapi.remotesensing import Variables
+	Vars = Variables('daily')
+	Vars.__str__()
 
 
-For the information about the ECMWF data [https://apps.ecmwf.int/codes/grib/param-db/](https://apps.ecmwf.int/codes/grib/param-db/)
+For the information about the ECMWF data `https://apps.ecmwf.int/codes/grib/param-db/ <https://apps.ecmwf.int/codes/grib/param-db/>`_.
 
-		StartDate = '2009-01-01'
-		EndDate = '2009-01-10'
-		Time = 'daily'
-		lat = [4.190755,4.643963]
-		lon = [-75.649243,-74.727286]
-		Path = "/data/satellite_data/"
-		# Temperature, Evapotranspiration
-		variables = ['T','E']
+.. code:: ipython3
 
-		Coello = RS(StartDate=StartDate, EndDate=EndDate, Time=Time,
-            latlim=lat , lonlim=lon, Path=Path, Vars=variables)
+	StartDate = '2009-01-01'
+	EndDate = '2009-01-10'
+	Time = 'daily'
+	lat = [4.190755,4.643963]
+	lon = [-75.649243,-74.727286]
+	Path = "/data/satellite_data/"
+	# Temperature, Evapotranspiration
+	variables = ['T','E']
 
-		Coello.ECMWF(Waitbar=1)
+	Coello = RS(StartDate=StartDate, EndDate=EndDate, Time=Time,
+        latlim=lat , lonlim=lon, Path=Path, Vars=variables)
+
+	Coello.ECMWF(Waitbar=1)
