@@ -130,7 +130,7 @@ html_theme = "sphinx_rtd_theme"
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
 """
-html_logo = "_images/WFlow.png"
+html_logo = "_images/Hapi.png"
 """
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
@@ -140,13 +140,13 @@ html_logo = "_images/WFlow.png"
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ["_static"]
-
-html_context = {
-    'css_files': [
-        '_static/theme_overrides.css',  # override wide tables in RTD theme
-        ],
-     }
+#html_static_path = ["_static"]
+#
+#html_context = {
+#    'css_files': [
+#        '_static/theme_overrides.css',  # override wide tables in RTD theme
+#        ],
+#     }
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
@@ -190,7 +190,7 @@ html_context = {
 html_file_suffix = ".html"
 
 # Output file base name for HTML help builder.
-#htmlhelp_basename = "wflowdoc"
+#htmlhelp_basename = "Hapidoc"
 
 
 # -- Options for LaTeX output --------------------------------------------------
@@ -199,7 +199,7 @@ html_file_suffix = ".html"
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 #latex_documents = [
-#    ("index", "wflow.tex", u"wflow Documentation", u"Jaap Schellekens", "report")
+#    ("index", "Hapi.tex", u"Hapi Documentation", u"Mostafa Farrag", "report")
 #]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -269,9 +269,6 @@ autodoc_mock_imports = [
     "netCDF4",
     "netCDF4_utils",
     "netcdftime",
-    "pcraster.framework",
-    "pcraster._pcraster",
-    "pcraster",
     "pyproj",
     "Hapi.version",
 ]
