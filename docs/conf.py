@@ -260,15 +260,15 @@ texinfo_documents = [
 # texinfo_show_urls = 'footnote'
 
 autodoc_mock_imports = [
-    "osgeo.gdal",
-    "osgeo.gdalconst",
-    "osgeo",
-    "osgeo.ogr",
-    "cftime",
-    "xarray",
-    "netCDF4",
-    "netCDF4_utils",
-    "netcdftime",
-    "pyproj",
-    "Hapi.version",
+#    "osgeo.gdal",
+#    "osgeo.gdalconst",
+#    "osgeo",
+#    "osgeo.ogr",
+#    "cftime",
+#    "xarray",
+#    "netCDF4",
+#    "netCDF4_utils",
+#    "netcdftime",
+#    "pyproj",
+#    "Hapi.version",
 ]
