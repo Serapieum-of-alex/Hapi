@@ -29,7 +29,7 @@ docs/source/HapiDocs.sublime-project
 docs/source/HapiDocs.sublime-workspace
 docs/HapiDocs.sublime-project
 docs/HapiDocs.sublime-workspace
-Hapi/saintvenant.py
+Hapi/hm/saintvenant.py
 Hapi/hm.py
 
 HAPI_Nile.egg-info/PKG-INFO

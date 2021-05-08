@@ -349,7 +349,7 @@ class River():
             self.slope = pd.read_csv(Path, delimiter = ",",header = None)
             self.slope.columns = ['id','f1','slope','f2']
         else:
-            self.slope = pd.read_csv(Path, delimiter = ",",header = None)
+            self.slope = pd.read_csv(Path, delimiter = ",",header = None, skiprows=1)
             self.slope.columns = ['id','slope']
 
     def ReturnPeriod(self,Path):
@@ -2370,7 +2370,7 @@ class Sub(River):
 
         self.OneDResultPath = River.OneDResultPath
 
-        if hasattr(River, 'slope'):
+        if hasattr(River, 'slope') and self.ID in River.slope['id'].tolist():
             if self.Version == 1 or self.Version == 2 :
                 self.slope = River.slope[River.slope['id']==ID]['slope'].tolist()[0]
             else:
@@ -2976,14 +2976,14 @@ class Sub(River):
             assert hasattr(self, 'CustomizedRunsPath'), "please enter the value of the CustomizedRunsPath or use the Path argument to specify where to save the file"
             Path = self.CustomizedRunsPath
 
-        saveDS = self.XSHydrographs[xsid].resample('D').mean()
+        saveDS = self.XSHydrographs[xsid].resample('D').bfill()
         f = pd.DataFrame(index = saveDS.index)
         f['date'] = ["'" + str(i)[:10] + "'" for i in saveDS.index]
         f['discharge(m3/s)'] = saveDS
         if Option == 1 :
-            f['water depth(m)'] = self.XSWaterDepth[xsid].resample('D').mean().values
+            f['water depth(m)'] = self.XSWaterDepth[xsid].resample('D').bfill().values
         else:
-            f['water level(m)'] = self.XSWaterLevel[xsid].resample('D').mean().values
+            f['water level(m)'] = self.XSWaterLevel[xsid].resample('D').bfill().values
             
         f.to_csv(Path+str(self.ID)+".txt", index = False, float_format="%.3f")  #header = None ,
 
