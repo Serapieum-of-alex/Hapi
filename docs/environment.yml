@@ -9,20 +9,20 @@ dependencies:
   - fiona
   - proj
   - gdal
-  - pandas
-  - geopandas
-  - matplotlib
-  - scipy
-  - shapely
-  - statsmodels
-  - rasterio
-  - rasterstats
-  - oasis
-  - netCDF4
-  - scikit-learn
-  - scikit-image
-  - ecmwf-api-client
-  - joblib
+#  - pandas
+#  - geopandas
+#  - matplotlib
+#  - scipy
+#  - shapely
+#  - statsmodels
+#  - rasterio
+#  - rasterstats
+#  - oasis
+#  - netCDF4
+#  - scikit-learn
+#  - scikit-image
+#  - ecmwf-api-client
+#  - joblib
   #- hapi
   - pip:
     - numpy
