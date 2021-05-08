@@ -2,7 +2,7 @@
 Tutorials
 ================
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
 
     30build_model.rst
     31Lumped_HBV.rst

@@ -10,6 +10,10 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
+# General information about the project.
+project = u"Hapi"
+#copyright = u"2013-2019, "
+
 
 import sys, os
 
@@ -62,9 +66,7 @@ source_suffix = ".rst"
 # The master toctree document.
 master_doc = "index"
 
-# General information about the project.
-project = u"Hapi"
-#copyright = u"2013-2019, "
+
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

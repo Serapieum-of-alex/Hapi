@@ -2,6 +2,6 @@
 Available Models
 ================
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
 
     40GIS_tutorials.rst

@@ -165,7 +165,7 @@ Rusli, S. R., Yudianto, D. & Liu, J. tao. (2015) Effects of temporal variability
 
 .. toctree::
    :hidden:
-   :maxdepth: 2
+   :maxdepth: 1
 
    Installation <00Installation.rst>
    Inputs <01Inputs.rst>

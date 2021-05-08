@@ -2,7 +2,7 @@
 Inputs
 ================
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
 
     10Meteo_Inputs.rst
     11GIS_inputs.rst
