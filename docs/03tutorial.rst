@@ -4,7 +4,7 @@ Tutorials
 .. toctree::
     :maxdepth: 2
 
-    build_model.rst
-    Lumped_HBV.rst
-    Sensitivity_Analysis.rst
+    30build_model.rst
+    31Lumped_HBV.rst
+    32Sensitivity_Analysis.rst
     

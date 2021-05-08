@@ -4,7 +4,7 @@ Available Models
 .. toctree::
     :maxdepth: 2
 
-    HBV.rst
-    Muskingum.rst
+    20HBV.rst
+    21Muskingum.rst
     
 

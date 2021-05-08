@@ -62,7 +62,8 @@ class Catchment():
 
 - To instantiate the object you need to provide the `name`, `statedate`, `enddate`, and the `SpatialResolution`
 
-``
+.. code:: ipython3
+
 	from Hapi.catchment import Catchment
 
 	start = "2009-01-01"
@@ -70,7 +71,7 @@ class Catchment():
 	name = "Coello"
 
 	Coello = Catchment(name, start, end, SpatialResolution = "Distributed")
-``
+
 
 Read Meteorological Inputs
 ########
@@ -78,15 +79,16 @@ Read Meteorological Inputs
 
 - First define the directory where the data exist
 
-``
-PrecPath = "Hapi/Data/00inputs/meteodata/4000/calib/prec-CPC-NOAA" #
-Evap_Path = "Hapi/Data/00inputs/meteodata/4000/calib/evap"
-TempPath = "Hapi/Data/00inputs/meteodata/4000/calib/temp"
-FlowAccPath = "Hapi/Data/00inputs/GIS/4000/acc4000.tif"
-FlowDPath = "Hapi/Data/00inputs/GIS/4000/fd4000.tif"
-ParPathRun = "Hapi/Model/results/parameters/02lumped parameters/Parameter set-1/"
-SaveTo = "Hapi/Model/results/"
-``
+.. code:: ipython3
+
+    PrecPath = "Hapi/Data/00inputs/meteodata/4000/calib/prec-CPC-NOAA"
+    Evap_Path = "Hapi/Data/00inputs/meteodata/4000/calib/evap"
+    TempPath = "Hapi/Data/00inputs/meteodata/4000/calib/temp"
+    FlowAccPath = "Hapi/Data/00inputs/GIS/4000/acc4000.tif"
+    FlowDPath = "Hapi/Data/00inputs/GIS/4000/fd4000.tif"
+    ParPathRun = "Hapi/Model/results/parameters/02lumped parameters/Parameter set-1/"
+    SaveTo = "Hapi/Model/results/"
+
 
 - Then use the each method in the object to read the coresponding data
 
@@ -100,34 +102,41 @@ Coello.ReadFlowDir(FlowDPath)
 
 - To read the parameters you need to provide whether you need to consider the snow subroutine or not
 
-```
+.. code:: ipython3
+
 			Snow = 0
 			Coello.ReadParameters(ParPathRun, Snow)
-```
+
 
 2- Lumped Model
 ########
 
 - Get the Lumpde conceptual model you want to couple it with the distributed routing module which in our case HBV 
 	and define the initial condition, and catchment area.
-``
-import Hapi.hbv_bergestrom92 as HBV
 
-CatchmentArea = 1530
-InitialCond = [0,5,5,5,0]
-Coello.ReadLumpedModel(HBV, CatchmentArea, InitialCond)
-``
+.. code:: ipython3
+
+    import Hapi.hbv_bergestrom92 as HBV
+
+    CatchmentArea = 1530
+    InitialCond = [0,5,5,5,0]
+    Coello.ReadLumpedModel(HBV, CatchmentArea, InitialCond)
+
 - If the Inpus are consistent in dimensions you will get a the following message
 
-![check_inputs](../img/check_inputs.png)
+  .. image:: /img/check_inputs.png
+    :width: 400pt
+
+
 
 - to check the performance of the model we need to read the gauge hydrographs
 
-``
-Coello.ReadGaugeTable("Hapi/Data/00inputs/Discharge/stations/gauges.csv", FlowAccPath)
-GaugesPath = "Hapi/Data/00inputs/Discharge/stations/"
-Coello.ReadDischargeGauges(GaugesPath, column='id', fmt="%Y-%m-%d")
-``
+.. code:: ipython3
+
+    Coello.ReadGaugeTable("Hapi/Data/00inputs/Discharge/stations/gauges.csv", FlowAccPath)
+    GaugesPath = "Hapi/Data/00inputs/Discharge/stations/"
+    Coello.ReadDischargeGauges(GaugesPath, column='id', fmt="%Y-%m-%d")
+
 
 3-Run Object
 ########
@@ -136,10 +145,10 @@ Coello.ReadDischargeGauges(GaugesPath, column='id', fmt="%Y-%m-%d")
 - The `Run` object connects all the components of the simulation together, the `Catchment` object, the `Lake` object and the `distributedrouting` object
 - import the Run object and use the `Catchment` object as a parameter to the `Run` object, then call the RunHapi method to start the simulation
 
-``
-from Hapi.run import Run
-Run.RunHapi(Coello)
-``
+.. code:: ipython3
+    from Hapi.run import Run
+    Run.RunHapi(Coello)
+
 
 - the result of the simulation will be stored as attributes in the Catchment object as follow
 
@@ -165,21 +174,21 @@ Outputs:
 - The final step is to extract the simulated Hydrograph from the cells at the location of the gauges to compare
 - The `ExtractDischarge` method extracts the hydrographs, however you have to provide in the gauge file the coordinates of the gauges with the same coordinate system of the `FlowAcc` raster
 
-``
-Coello.ExtractDischarge(Factor=Coello.GaugesTable['area ratio'].tolist())
+.. code:: ipython3
+    Coello.ExtractDischarge(Factor=Coello.GaugesTable['area ratio'].tolist())
 
-for i in range(len(Coello.GaugesTable)):
-	gaugeid = Coello.GaugesTable.loc[i,'id']
-	print("----------------------------------")
-	print("Gauge - " +str(gaugeid))
-	print("RMSE= " + str(round(Coello.Metrics.loc['RMSE',gaugeid],2)))
-	print("NSE= " + str(round(Coello.Metrics.loc['NSE',gaugeid],2)))
-	print("NSEhf= " + str(round(Coello.Metrics.loc['NSEhf',gaugeid],2)))
-	print("KGE= " + str(round(Coello.Metrics.loc['KGE',gaugeid],2)))
-	print("WB= " + str(round(Coello.Metrics.loc['WB',gaugeid],2)))
-	print("Pearson CC= " + str(round(Coello.Metrics.loc['Pearson-CC',gaugeid],2)))
-	print("R2 = " + str(round(Coello.Metrics.loc['R2',gaugeid],2)))
-``
+    for i in range(len(Coello.GaugesTable)):
+    	gaugeid = Coello.GaugesTable.loc[i,'id']
+    	print("----------------------------------")
+    	print("Gauge - " +str(gaugeid))
+    	print("RMSE= " + str(round(Coello.Metrics.loc['RMSE',gaugeid],2)))
+    	print("NSE= " + str(round(Coello.Metrics.loc['NSE',gaugeid],2)))
+    	print("NSEhf= " + str(round(Coello.Metrics.loc['NSEhf',gaugeid],2)))
+    	print("KGE= " + str(round(Coello.Metrics.loc['KGE',gaugeid],2)))
+    	print("WB= " + str(round(Coello.Metrics.loc['WB',gaugeid],2)))
+    	print("Pearson CC= " + str(round(Coello.Metrics.loc['Pearson-CC',gaugeid],2)))
+    	print("R2 = " + str(round(Coello.Metrics.loc['R2',gaugeid],2)))
+
 
 - The `ExtractDischarge` will print the performance metics
 
@@ -190,15 +199,18 @@ for i in range(len(Coello.GaugesTable)):
 - Firts type of visualization we can do with the results is to compare the gauge hydrograph with the simulatied hydrographs 
 - Call the `PlotHydrograph` method and provide the period you want to visualize with the order of the gauge
 
-``
-gaugei = 5
-plotstart = "2009-01-01"
-plotend = "2011-12-31"
+.. code:: ipython3
 
-Coello.PlotHydrograph(plotstart, plotend, gaugei)
-``
+    gaugei = 5
+    plotstart = "2009-01-01"
+    plotend = "2011-12-31"
 
-![hydrograph](../img/hydrograph.png) 
+    Coello.PlotHydrograph(plotstart, plotend, gaugei)
+
+
+
+.. image:: /img/hydrograph.png
+:width: 400pt
 
 
 6-Animation
@@ -297,22 +309,19 @@ animation.FuncAnimation.
 
 - choose the period of time you want to animate and the result (total discharge, upper zone discharge, soil moisture,...)
 
-``
-plotstart = "2009-01-01"
-plotend = "2009-02-01"
+.. code:: ipython3
+    plotstart = "2009-01-01"
+    plotend = "2009-02-01"
 
-Anim = Coello.PlotDistributedResults(plotstart, plotend, Figsize=(9,9), Option = 1,threshold=160, PlotNumbers=True,
+    Anim = Coello.PlotDistributedResults(plotstart, plotend, Figsize=(9,9), Option = 1,threshold=160, PlotNumbers=True,
                                 TicksSpacing = 5,Interval = 200, Gauges=True, cmap='inferno', Textloc=[0.1,0.2],
                                 Gaugecolor='red',ColorScale = 1, IDcolor='blue', IDsize=25)
-``
 
-<!-- blank line -->
-<figure class="video_container">
-  <video controls="true" allowfullscreen="true" poster="../img/anim.gif">
-    <source src="../img/anim.mp4" type="video/mp4">
-  </video>
-</figure>
-<!-- blank line -->
+
+.. only:: html
+
+   .. figure:: /img/anim.gif
+
 
 - to save the animation
 
@@ -322,15 +331,15 @@ Anim = Coello.PlotDistributedResults(plotstart, plotend, Figsize=(9,9), Option =
 
 	- define the path where the downloaded folder "ffmpeg-static" exist to matplotlib using the following lines 
 
-``
-import matplotlib as mpl
-mpl.rcParams['animation.ffmpeg_path'] = "path where you saved the ffmpeg.exe/ffmpeg.exe" 
-``
+.. code:: ipython3
+    import matplotlib as mpl
+    mpl.rcParams['animation.ffmpeg_path'] = "path where you saved the ffmpeg.exe/ffmpeg.exe" 
 
-``
-Path = SaveTo + "anim.gif"
-Coello.SaveAnimation(VideoFormat="gif",Path=Path,SaveFrames=3)
-``
+
+.. code:: ipython3
+    Path = SaveTo + "anim.gif"
+    Coello.SaveAnimation(VideoFormat="gif",Path=Path,SaveFrames=3)
+
 
 
 7-Save the result into rasters

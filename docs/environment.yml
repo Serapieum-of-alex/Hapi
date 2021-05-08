@@ -6,27 +6,26 @@ dependencies:
   - python  
   - pip
   - matplotlib
-#  - gdal  
-#  - proj  
-#  - affine
-#  - fiona
-
-#  - pandas
-#  - geopandas
-#  - scipy
-#  - shapely
-#  - statsmodels
-#  - rasterio
-#  - rasterstats
-#  - oasis
-#  - netCDF4
-#  - scikit-learn
-#  - scikit-image
-#  - ecmwf-api-client
-#  - joblib
-  #- hapi
+  - gdal  
+  - proj  
+  - affine
+  - fiona
+  - pandas
+  - geopandas
+  - scipy
+  - shapely
+  - statsmodels
+  - rasterio
+  - rasterstats
+  - oasis
+  - netCDF4
+  - scikit-learn
+  - scikit-image
+  - ecmwf-api-client
+  - joblib
+  - hapi
   - pip:
     - numpy
     - pyproj
 #    - hapi-nile
-    #- git+https://github.com/MAfarrag/HAPI.git
+    - git+https://github.com/MAfarrag/HAPI.git

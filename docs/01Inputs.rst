@@ -4,6 +4,6 @@ Inputs
 .. toctree::
     :maxdepth: 2
 
-    Meteo_Inputs.est
-    GIS_inputs.rst
-    Parameters.rst
+    10Meteo_Inputs.rst
+    11GIS_inputs.rst
+    12Parameters.rst
