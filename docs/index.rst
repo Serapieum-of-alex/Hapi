@@ -8,7 +8,7 @@ Current release info
 
   .. image:: https://img.shields.io/github/commit-activity/m/mafarrag/HAPI   :alt: GitHub commit activity
   
-  .. image:: https://img.shields.io/github/issues/mafarrag/HAPI   :alt: GitHub issues
+  .. image:: https://img.shields.io/github/issues/mafarrag/HAPI :alt: GitHub issues
 
 
 
@@ -19,12 +19,12 @@ Current release info
 
   .. image:: https://img.shields.io/gitter/room/mafarrag/Hapi   :alt: Gitter
 
-
-  .. image:: https://static.pepy.tech/personalized-badge/hapi-nile?period=total&units=international_system&left_color=grey&right_color=blue&left_text=Downloads :target: https://pepy.tech/project/hapi-nile 
+  .. image:: https://static.pepy.tech/personalized-badge/hapi-nile?period=total&units=international_system&left_color=grey&right_color=blue&left_text=Downloads
 
    .. image:: https://img.shields.io/pypi/v/hapi-nile   :alt: PyPI |  
    
    .. image:: https://anaconda.org/conda-forge/hapi/badges/platforms.svg   :target: https://anaconda.org/conda-forge/hapi
+
 
   .. image:: https://static.pepy.tech/personalized-badge/hapi-nile?period=total&units=international_system&left_color=grey&right_color=blue&left_text=Downloads
  
@@ -39,12 +39,12 @@ Current release info
 
 
   
-  .. image:: /img/Hapi.jpg
-    :width: 40pt
+  .. image:: /img/Hapi.png
+    :width: 400pt
   
  
-  .. image:: /img/name.jpg
-    :width: 40pt
+  .. image:: /img/name.png
+    :width: 400pt
 
 
 Hapi - Hydrological library for Python 
@@ -56,10 +56,10 @@ their own model, it contains two routing functions muskingum cunge, and MAXBAS t
 
 
   .. image:: /img/Picture1.png
-   :width: 40pt
+   :width: 400pt
 
   .. image:: /img/Picture2.png
-   :width: 40pt
+   :width: 400pt
 
 Main Features
 -------------
@@ -113,6 +113,7 @@ to reduce model complexity and uncertainty of parameters.
     Statistics -> statisticaltools;
     Statistics -> sensitivityanalysis;
     RemoteSensing -> remotesensing;
+    dpi=69;
 
 Future work
 -------------
