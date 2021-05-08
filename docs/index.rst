@@ -27,22 +27,24 @@ Current release info
    .. image:: https://anaconda.org/conda-forge/hapi/badges/platforms.svg   :target: https://anaconda.org/conda-forge/hapi
 
   .. image:: https://static.pepy.tech/personalized-badge/hapi-nile?period=total&units=international_system&left_color=grey&right_color=blue&left_text=Downloads
- :target: https://pepy.tech/project/hapi-nile
+ 
+
 
   .. image:: https://static.pepy.tech/personalized-badge/hapi-nile?period=month&units=international_system&left_color=grey&right_color=blue&left_text=Downloads
- :target: https://pepy.tech/project/hapi-nile
+ 
 
   .. image:: https://static.pepy.tech/personalized-badge/hapi-nile?period=week&units=international_system&left_color=grey&right_color=blue&left_text=Downloads
- :target: https://pepy.tech/project/hapi-nile
+ 
 
 
 
   
-  .. image:: /docs/img/Hapi.jpg
-  :width: 40pt
+  .. image:: /img/Hapi.jpg
+    :width: 40pt
   
-  .. image:: /docs/img/name.jpg
-   :width: 40pt
+ 
+  .. image:: /img/name.jpg
+    :width: 40pt
 
 
 Hapi - Hydrological library for Python 
@@ -53,10 +55,10 @@ their own model, it contains two routing functions muskingum cunge, and MAXBAS t
 
 
 
-  .. image:: /docs/img/Picture1.png
+  .. image:: /img/Picture1.png
    :width: 40pt
 
-  .. image:: /docs/img/Picture2.png
+  .. image:: /img/Picture2.png
    :width: 40pt
 
 Main Features
@@ -81,34 +83,36 @@ to reduce model complexity and uncertainty of parameters.
 .. digraph:: Linking
 
     Hapi -> GIS;
-    Hapi -> HBV;
-    Hapi -> HBV;
-    Hapi -> calibration;
-    Hapi -> calibration
-    Hapi -> distparameters
-    Hapi -> distrrm
-    Hapi -> giscatchment
-    Hapi -> raster
-    Hapi -> vector
-    Hapi -> inputs
-    Hapi -> performancecriteria
-    Hapi -> routing
-    Hapi -> run
-    Hapi -> catchment
-    Hapi -> statisticaltools
-    Hapi -> wrapper
-    Hapi -> weirdFn
-    Hapi -> hbv_lake
-    Hapi -> hbv_bergestrom92
-    Hapi -> hminputs
-    Hapi -> event
-    Hapi -> river
-    Hapi -> visualizer
-    Hapi -> crosssection
-    Hapi -> hmcalibration
-    Hapi -> interface
-    Hapi -> sensitivityanalysis
-    Hapi -> remotesensing
+    Hapi -> HM;
+    Hapi -> RemoteSensing;
+    Hapi -> RRM;
+    Hapi -> Statistics;
+    Hapi -> catchment;
+    Hapi -> weirdFn;
+    Hapi -> visualizer;
+    GIS -> raster;
+    GIS -> vector;
+    GIS -> giscatchment;
+    RRM -> HBV;
+    RRM -> calibration;
+    RRM -> distparameters;
+    RRM -> distrrm;
+    RRM -> routing;
+    RRM -> run;
+    RRM -> inputs;
+    RRM -> wrapper;
+    RRM -> hbv_lake;
+    RRM -> hbv_bergestrom92;
+    HM -> inputs;
+    HM -> event;
+    HM -> river;
+    HM -> calibration;
+    HM -> crosssection;
+    HM -> interface;
+    Statistics -> performancecriteria;
+    Statistics -> statisticaltools;
+    Statistics -> sensitivityanalysis;
+    RemoteSensing -> remotesensing;
 
 Future work
 -------------
