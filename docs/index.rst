@@ -26,19 +26,22 @@ Current release info
    
    .. image:: https://anaconda.org/conda-forge/hapi/badges/platforms.svg   :target: https://anaconda.org/conda-forge/hapi
 
+  .. image:: https://static.pepy.tech/personalized-badge/hapi-nile?period=total&units=international_system&left_color=grey&right_color=blue&left_text=Downloads
+ :target: https://pepy.tech/project/hapi-nile
 
-  .. image:: https://static.pepy.tech/personalized-badge/hapi-nile?period=month&units=international_system&left_color=grey&right_color=blue&left_text=downloads/month :target: https://pepy.tech/project/hapi-nile
+  .. image:: https://static.pepy.tech/personalized-badge/hapi-nile?period=month&units=international_system&left_color=grey&right_color=blue&left_text=Downloads
+ :target: https://pepy.tech/project/hapi-nile
 
-
-  .. image:: https://static.pepy.tech/personalized-badge/hapi-nile?period=week&units=international_system&left_color=grey&right_color=blue&left_text=downloads/week :target: https://pepy.tech/project/hapi-nile
+  .. image:: https://static.pepy.tech/personalized-badge/hapi-nile?period=week&units=international_system&left_color=grey&right_color=blue&left_text=Downloads
+ :target: https://pepy.tech/project/hapi-nile
 
 
 
   
-  .. image:: docs/img/Hapi.jpg
-
+  .. image:: /docs/img/Hapi.jpg
+  :width: 40pt
   
-  .. image:: docs/img/name.jpg
+  .. image:: /docs/img/name.jpg
    :width: 40pt
 
 
@@ -50,10 +53,11 @@ their own model, it contains two routing functions muskingum cunge, and MAXBAS t
 
 
 
+  .. image:: /docs/img/Picture1.png
+   :width: 40pt
 
-![1](/docs/img/Picture1.png)
-
-![2](/docs/img/Picture2.png)
+  .. image:: /docs/img/Picture2.png
+   :width: 40pt
 
 Main Features
 -------------
