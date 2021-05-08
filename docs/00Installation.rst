@@ -17,7 +17,7 @@ and you skip the rest of the installation instructions.
 
 
 Installing Python and gdal dependencies
-===========================================
+**********************
 
 The main dependencies for Hapi are an installation of Python 2.7+, and gdal
 
@@ -34,15 +34,15 @@ Note that there is no hard requirement specifically for Anaconda's Python, but o
 makes installation of required dependencies easier using the conda package manager.
 
 Install as a conda environment
-==============================
+**********************
 
-The easiest and most robust way to install wflow is by installing it in a separate
+The easiest and most robust way to install Hapi is by installing it in a separate
 conda environment. In the root repository directory there is an ``environment.yml`` file.
 This file lists all dependencies. Either use the ``environment.yml`` file from the master branch
 (please note that the master branch can change rapidly and break functionality without warning),
 or from one of the releases {release}.
 
-Run this command to start installing all wflow dependencies:
+Run this command to start installing all Hapi dependencies:
 
 + ``conda env create -f environment.yml``
 
@@ -52,7 +52,7 @@ a session, run:
 + ``activate hapi``
 
 For the installation of Hapi there are two options (from the Python Package Index (PyPI)
-or from Github). To install a release of wflow from the PyPI (available from release 2018.1):
+or from Github). To install a release of Hapi from the PyPI (available from release 2018.1):
 
 + ``pip install HAPI-Nile=={release}``
 
@@ -72,7 +72,7 @@ More details on how to work with conda environments can be found here:
 https://conda.io/docs/user-guide/tasks/manage-environments.html
 
 
-If you are planning to make changes and contribute to the development of wflow, it is
+If you are planning to make changes and contribute to the development of Hapi, it is
 best to make a git clone of the repository, and do a editable install in the location
 of you clone. This will not move a copy to your Python installation directory, but
 instead create a link in your Python installation pointing to the folder you installed
@@ -86,26 +86,28 @@ it from, such that any changes you make there are directly reflected in your ins
 Alternatively, if you want to avoid using ``git`` and simply want to test the latest
 version from the ``master`` branch, you can replace the first line with downloading
 a zip archive from GitHub: https://github.com/MAfarrag/HAPI/archive/master.zip
+`libraries.io <https://libraries.io/github/MAfarrag/HAPI>`_.
 
 Install using pip
-=================
+**********************
 
 Besides the recommended conda environment setup described above, you can also install
-wflow with ``pip``. For the more difficult to install Python dependencies, it is best to
+Hapi with ``pip``. For the more difficult to install Python dependencies, it is best to
 use the conda package manager:
 
 + ``conda install numpy scipy gdal netcdf4 pyproj``
 
 
-you can check [libraries.io](https://libraries.io/github/MAfarrag/HAPI) to check versions of the libraries
+you can check `libraries.io <https://libraries.io/github/MAfarrag/HAPI>`_. to check versions of the libraries
 
-Then install a release {release} of wflow (available from release 2018.1) with pip:
+
+Then install a release {release} of Hapi (available from release 2018.1) with pip:
 
 + ``pip install HAPI-Nile=={release}``
 
 
 Check if the installation is successful
-=======================================
+**********************
 
 To check it the install is successful, go to the examples directory and run the following command:
 
@@ -119,14 +121,7 @@ This should run without errors.
       This documentation was generated on |today|
 
       Documentation for the development version:
-      https://wflow.readthedocs.org/en/latest/
+      https://Hapi.readthedocs.org/en/latest/
 
       Documentation for the stable version:
-      https://wflow.readthedocs.org/en/stable/
-
-
-TODO
-====
-
-.. todolist::
-	- add the test
+      https://Hapi.readthedocs.org/en/stable/

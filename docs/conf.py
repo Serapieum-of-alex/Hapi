@@ -12,6 +12,8 @@
 
 # General information about the project.
 project = u"Hapi"
+author = 'Mostafa Farrag'
+
 #copyright = u"2013-2019, "
 
 
@@ -55,7 +57,7 @@ autosectionlabel_prefix_document = True
 
 todo_include_todos = True
 # Add any paths that contain templates here, relative to this directory.
-# templates_path = ['_templates']
+templates_path = ['_templates']
 
 # The suffix of source filenames.
 source_suffix = ".rst"
@@ -142,7 +144,7 @@ html_logo = "_images/Hapi.png"
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-#html_static_path = ["_static"]
+html_static_path = ["_static"]
 #
 #html_context = {
 #    'css_files': [
@@ -192,7 +194,7 @@ html_logo = "_images/Hapi.png"
 html_file_suffix = ".html"
 
 # Output file base name for HTML help builder.
-#htmlhelp_basename = "Hapidoc"
+htmlhelp_basename = "Hapidoc"
 
 
 # -- Options for LaTeX output --------------------------------------------------
@@ -200,9 +202,9 @@ html_file_suffix = ".html"
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
-#latex_documents = [
-#    ("index", "Hapi.tex", u"Hapi Documentation", u"Mostafa Farrag", "report")
-#]
+latex_documents = [
+    ("index", "Hapi.tex", u"Hapi Documentation", u"Mostafa Farrag", "report")
+]
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
@@ -229,7 +231,7 @@ latex_domain_indices = False
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [("index", "Hapi", u"Hapi Documentation", [u"Mostafa Farrag"], 1)]
+man_pages = [("index", "Hapi", "Hapi Documentation", [author], 1)]
 
 # If true, show URL addresses after external links.
 # man_show_urls = False
