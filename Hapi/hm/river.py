@@ -2976,14 +2976,19 @@ class Sub(River):
             assert hasattr(self, 'CustomizedRunsPath'), "please enter the value of the CustomizedRunsPath or use the Path argument to specify where to save the file"
             Path = self.CustomizedRunsPath
 
-        saveDS = self.XSHydrographs[xsid].resample('D').bfill()
+        saveDS = self.XSHydrographs[xsid].resample('D').last().to_frame()
+        val = [self.XSHydrographs[xsid][0]] + self.XSHydrographs[xsid].resample('D').last().values.tolist()[:-1]
+        saveDS[xsid] = val
         f = pd.DataFrame(index = saveDS.index)
         f['date'] = ["'" + str(i)[:10] + "'" for i in saveDS.index]
         f['discharge(m3/s)'] = saveDS
         if Option == 1 :
-            f['water depth(m)'] = self.XSWaterDepth[xsid].resample('D').bfill().values
+            val = [self.XSWaterDepth[xsid][0]] + self.XSWaterDepth[xsid].resample('D').last().values.tolist()[:-1]
+            f['water depth(m)'] = val
+            
         else:
-            f['water level(m)'] = self.XSWaterLevel[xsid].resample('D').bfill().values
+            val = [self.XSWaterLevel[xsid][0]]+ self.XSWaterLevel[xsid].resample('D').last().values.tolist()[:-1]
+            f['water level(m)'] = val
             
         f.to_csv(Path+str(self.ID)+".txt", index = False, float_format="%.3f")  #header = None ,
 
