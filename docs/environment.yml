@@ -5,10 +5,10 @@ channels:
 dependencies:
   - python  
   - pip
-  - affine
-  - fiona
-  - proj
-  - gdal
+#  - affine
+#  - fiona
+#  - proj
+#  - gdal
 #  - pandas
 #  - geopandas
 #  - matplotlib
