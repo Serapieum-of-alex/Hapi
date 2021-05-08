@@ -4,13 +4,11 @@
 Current release info
 ====================
 
-  .. image:: https://img.shields.io/pypi/pyversions/hapi-nile   :alt: PyPI - Python Version
+.. image:: https://img.shields.io/pypi/v/Hapi-nile   :alt: PyPI
 
-  .. image:: https://img.shields.io/github/commit-activity/m/mafarrag/HAPI   :alt: GitHub commit activity
-  
-  .. image:: https://img.shields.io/github/issues/mafarrag/HAPI :alt: GitHub issues
+.. image:: https://img.shields.io/conda/v/conda-forge/hapi?label=conda-forge   :alt: Conda
 
-
+.. image:: https://img.shields.io/pypi/pyversions/hapi-nile   :alt: PyPI - Python Version
 
 
 	.. image:: https://anaconda.org/conda-forge/hapi/badges/downloads.svg :target: https://anaconda.org/conda-forge/hapi
@@ -26,18 +24,19 @@ Current release info
    .. image:: https://anaconda.org/conda-forge/hapi/badges/platforms.svg   :target: https://anaconda.org/conda-forge/hapi
 
 
-  .. image:: https://static.pepy.tech/personalized-badge/hapi-nile?period=total&units=international_system&left_color=grey&right_color=blue&left_text=Downloads
+  .. image:: https://static.pepy.tech/personalized-badge/hapi-nile?period=total&units=international_system&left_color=grey&right_color=blue&left_text=Downloads :target: https://pypi.org/project/HAPI-Nile/1.0.4/
  
 
 
-  .. image:: https://static.pepy.tech/personalized-badge/hapi-nile?period=month&units=international_system&left_color=grey&right_color=blue&left_text=Downloads
+  .. image:: https://static.pepy.tech/personalized-badge/hapi-nile?period=month&units=international_system&left_color=grey&right_color=blue&left_text=Downloads :target: https://pypi.org/project/HAPI-Nile/1.0.4/
  
 
-  .. image:: https://static.pepy.tech/personalized-badge/hapi-nile?period=week&units=international_system&left_color=grey&right_color=blue&left_text=Downloads
+  .. image:: https://static.pepy.tech/personalized-badge/hapi-nile?period=week&units=international_system&left_color=grey&right_color=blue&left_text=Downloads :target: https://pypi.org/project/HAPI-Nile/1.0.4/
  
 
 
-
+Hapi - Hydrological library for Python 
+=====================================================================
   
   .. image:: /img/Hapi.png
     :width: 400pt
@@ -47,8 +46,6 @@ Current release info
     :width: 400pt
 
 
-Hapi - Hydrological library for Python 
-=====================================================================
 **Hapi** is a Python package providing fast and flexible way to build Hydrological models with different spatial representations (lumped, semidistributed and conceptual distributed) using HBV96.
 The package is very flexible to an extent that it allows developers to change the structure of the defined conceptual model or to enter
 their own model, it contains two routing functions muskingum cunge, and MAXBAS triangular function.
@@ -59,7 +56,7 @@ their own model, it contains two routing functions muskingum cunge, and MAXBAS t
    :width: 400pt
 
   .. image:: /img/Picture2.png
-   :width: 400pt
+   :width: 600pt
 
 Main Features
 -------------
@@ -113,7 +110,7 @@ to reduce model complexity and uncertainty of parameters.
     Statistics -> statisticaltools;
     Statistics -> sensitivityanalysis;
     RemoteSensing -> remotesensing;
-    dpi=69;
+    dpi=200;
 
 Future work
 -------------
