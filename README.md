@@ -39,8 +39,8 @@ Current release info
 Hapi - Hydrological library for Python 
 =====================================================================
 **Hapi** is an open-source Python Framework for building raster-based conceptual distributed hydrological models using HBV96 lumped 
-model & Muskingum routing method at a catchment scale, Hapi gives a high degree of flexibility to all components of the model 
-(spatial discretization - cell size, temporal resolution, parameterization approaches and calibration).
+model & Muskingum routing method at a catchment scale (Farrag & Corzo, 2021), Hapi gives a high degree of flexibility to all components of the model 
+(spatial discretization - cell size, temporal resolution, parameterization approaches and calibration (Farrag et al., 2021)).
 
 
 ![1](/docs/img/Picture1.png)  ![2](/docs/img/Picture2.png)
@@ -72,11 +72,12 @@ Future work
   - Apply the model for large scale (regional/continental) cases
   - Developing a DEM processing module for generating the river network at different DEM spatial resolutions.
 
+For using Hapi please cite Farrag et al. (2021) and Farrag & Corzo (2021)
 References
 -------------
 Farrag, M. & Corzo, G. (2021) MAfarrag/Hapi: Hapi. doi:10.5281/ZENODO.4662170
 
-Farrag, M., Perez, G. C. & Solomatine, D. (2021) Spatio-Temporal Hydrological Model Structure and Parametrization Analysis. J. Mar. Sci. Eng. 9(5), 467. doi:10.3390/jmse9050467 (Link)[https://www.researchgate.net/publication/351143581_Spatio-Temporal_Hydrological_Model_Structure_and_Parametrization_Analysis]
+Farrag, M., Perez, G. C. & Solomatine, D. (2021) Spatio-Temporal Hydrological Model Structure and Parametrization Analysis. J. Mar. Sci. Eng. 9(5), 467. doi:10.3390/jmse9050467 [Link](https://www.researchgate.net/publication/351143581_Spatio-Temporal_Hydrological_Model_Structure_and_Parametrization_Analysis)
 
 Beck, H. E., Dijk, A. I. J. M. van, Ad de Roo, Diego G. Miralles, T. R. M. & Jaap Schellekens,  and L. A. B. (2016) Global-scale regionalization of hydrologic model parameters-Supporting materials 3599–3622. doi:10.1002/2015WR018247.Received
 
