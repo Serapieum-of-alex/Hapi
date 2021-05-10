@@ -17,12 +17,14 @@ performance (RMSE) based on a defined range for each parameter
 	from Hapi.routing import TriangularRouting
 
 load all data needed to run the model as mentioned in [Lumped model](Lumped_HBV.md)
+
 .. code:: ipython3
+
 	### meteorological data
-	path= comp + "/Coello/Hapi/Data/00inputs/Lumped/"
-	data=pd.read_csv(path+"meteo_data.txt",header=0 ,delimiter=',',
+	path = comp + "/Coello/Hapi/Data/00inputs/Lumped/"
+	data = pd.read_csv(path+"meteo_data.txt",header=0 ,delimiter=',',
 	                   engine='python',index_col=0)
-	data=data.values
+	data = data.values
 
 	### Basic_inputs
 	ConceptualModel = HBVLumped
@@ -84,6 +86,7 @@ Each parameter has a disctionary with two keys 0: list of parameters woth relati
 1: list of parameter values
 
 .. code:: ipython3
+
 	import matplotlib.pyplot as plt
 	import Hapi.performancecriteria as PC
 	import Hapi.statisticaltools as ST

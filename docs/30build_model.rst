@@ -3,7 +3,8 @@ Distributed Hydrological Model
 *****
 After preparing all the meteorological, GIS inputs required for the model, and Extracting the parameters for the catchment 
 
-## 1- Catchment Object
+1- Catchment Object
+-------------
 - Import the Catchment object which is the main object in the distributed model, to read and check the input data,  and when the model finish the simulation it stores the results and do the visualization
 
 
@@ -92,13 +93,14 @@ Read Meteorological Inputs
 
 - Then use the each method in the object to read the coresponding data
 
-``
-Coello.ReadRainfall(PrecPath)
-Coello.ReadTemperature(TempPath)
-Coello.ReadET(Evap_Path)
-Coello.ReadFlowAcc(FlowAccPath)
-Coello.ReadFlowDir(FlowDPath)
-``
+.. code:: ipython3
+
+    Coello.ReadRainfall(PrecPath)
+    Coello.ReadTemperature(TempPath)
+    Coello.ReadET(Evap_Path)
+    Coello.ReadFlowAcc(FlowAccPath)
+    Coello.ReadFlowDir(FlowDPath)
+
 
 - To read the parameters you need to provide whether you need to consider the snow subroutine or not
 
@@ -124,8 +126,9 @@ Coello.ReadFlowDir(FlowDPath)
 
 - If the Inpus are consistent in dimensions you will get a the following message
 
-  .. image:: /img/check_inputs.png
-    :width: 400pt
+
+.. image:: /img/check_inputs.png
+:width: 400pt
 
 
 
@@ -152,21 +155,23 @@ Coello.ReadFlowDir(FlowDPath)
 
 - the result of the simulation will be stored as attributes in the Catchment object as follow
 
-Outputs:
-    1-statevariables: [numpy attribute]
-        4D array (rows,cols,time,states) states are [sp,wc,sm,uz,lv]
-    2-qlz: [numpy attribute]
-        3D array of the lower zone discharge
-    3-quz: [numpy attribute]
-        3D array of the upper zone discharge
-    4-qout: [numpy attribute]
-        1D timeseries of discharge at the outlet of the catchment
-        of unit m3/sec
-    5-quz_routed: [numpy attribute]
-        3D array of the upper zone discharge  accumulated and
-        routed at each time step
-    6-qlz_translated: [numpy attribute]
-        3D array of the lower zone discharge translated at each time step
+.. code:: ipython3
+
+    Outputs:
+        1-statevariables: [numpy attribute]
+            4D array (rows,cols,time,states) states are [sp,wc,sm,uz,lv]
+        2-qlz: [numpy attribute]
+            3D array of the lower zone discharge
+        3-quz: [numpy attribute]
+            3D array of the upper zone discharge
+        4-qout: [numpy attribute]
+            1D timeseries of discharge at the outlet of the catchment
+            of unit m3/sec
+        5-quz_routed: [numpy attribute]
+            3D array of the upper zone discharge  accumulated and
+            routed at each time step
+        6-qlz_translated: [numpy attribute]
+            3D array of the lower zone discharge translated at each time step
 
 4-Extract Hydrographs
 ########

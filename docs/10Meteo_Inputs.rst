@@ -1,5 +1,5 @@
 *****
-Hapi Inputs
+Rainfall Runoff Model Inputs
 *****
 The required inputs for the distributed model is divided into Meteorological, GIS inputs and Distributed model parameters
 
@@ -19,7 +19,8 @@ To be able to run the hydrologic simulation with Hapi the following meteorologic
 
 Distributed meteorological data can be obtain from gauge data with some interpolation method or from remote sensing data
 
-## Remote Sensing Module
+Remote Sensing Module
+########
 
 The remote sensing module includes two classes to download ECMWF, and CHRIPS data
 
@@ -65,7 +66,7 @@ CHRIPS data are uploaded into a ftp server therefore and can be downloaded throu
 - A Progress bar will appear and be updated with percent of the download
 
 	.. image:: /img/progress.png
-    :width: 400pt
+	    :width: 400pt
 
 	
 

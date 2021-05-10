@@ -12,15 +12,15 @@ The HBV model [Bergström, 1992] is usually run with daily time steps, but highe
 
 HBV model consists of three main components:
 
-- [Snow Subroutine](#snow)
+- Snow Subroutine :ref:`snow`
 
-- [Soil Moisture](#soil-moisture)
+- Soil Moisture
 
-- [Runoff response](#runoff-response)
+- Runoff response
 
-- [Lake](#lake)
+- Lake
 
-- [References](#references)
+- References
 
 ![HBV Component](../img/water_cycle.png)
 [Bergström, 1992]
@@ -42,6 +42,7 @@ the 15 parameter by order are [`tt`,`rfcf`,`sfcf`,`cfmax`,`cwh`,`cfr`,`fc`,`beta
 
 [Bergström, 1992]
 
+.. _snow:
 
 Snow
 ########

@@ -100,9 +100,10 @@ Main Features
   - Visualization module for animating the results of the distributed model, and the meteorological inputs
   - Optimization module, for calibrating the model based on the Harmony search method 
 
-The recent version of Hapi (Hapi 1.0.1) integrates the global hydrological parameters obtained by Beck et al., (2016), 
-to reduce model complexity and uncertainty of parameters.
+The recent version of Hapi (Hapi 1.0.1 Farrag et al. (2021)) integrates the global hydrological parameters obtained by Beck et al., (2016), to reduce model complexity and uncertainty of parameters.
 
+
+For using Hapi please cite Farrag et al. (2021) and Farrag & Corzo (2021) References
 
 .. digraph:: Linking
 

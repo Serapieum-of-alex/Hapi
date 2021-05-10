@@ -7,7 +7,8 @@ it it an extremely difficult task to keep the model simple and minimize uncertai
 Based on Beck et al., (2016) there is 10 sets of global parameters which are derived for catchment with good quality of data and are calibratedvery well calibrated, afterwards golbal parameters are derived by transfering parameters to from the good calibrated catchments to global grid of 0.5 degree cells where each cell receives the parameters of the best 10 catchments that have similar climatic and physiographic characteristics
 
 
-## Extract Distributed Parameters
+Extract Distributed Parameters
+----------
 
 The only input we need to extract parameters to our catchment is the DEM or any raster that has the full extent and allignment of the catchment and use the `Inputs` object to select the set of parameters we want 
 
