@@ -15,7 +15,7 @@ import numpy as np
 import pandas as pd
 import datetime as dt
 from Oasis.optimization import Optimization
-from Oasis.harmonysearch.hsapi import HSapi
+from Oasis.harmonysearch import HSapi
 from Hapi.catchment import Catchment
 from Hapi.rrm.wrapper import Wrapper
 
