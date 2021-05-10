@@ -119,6 +119,7 @@ Quick start
 ```
   >>> import Hapi
 ```
+
 [other code samples](https://hapi-hm.readthedocs.io/en/latest/?badge=latest)
 
 
