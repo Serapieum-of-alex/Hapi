@@ -4,6 +4,7 @@ Created on Wed Mar 31 02:10:49 2021
 
 @author: mofarrag
 """
+import math
 import numpy as np
 import pandas as pd
 import datetime as dt
@@ -51,7 +52,7 @@ class Catchment():
     """
 
     def __init__(self, name, StartDate, EndDate, fmt="%Y-%m-%d", SpatialResolution = 'Lumped',
-                 TemporalResolution = "Daily"):
+                 TemporalResolution = "Daily", RouteRiver="Muskingum"):
         """
         =============================================================================
             Catchment(name, StartDate, EndDate, fmt="%Y-%m-%d", SpatialResolution = 'Lumped',
@@ -96,6 +97,7 @@ class Catchment():
             # if daily tfac=24 if hourly tfac=1 if 15 min tfac=0.25
             self.Tfactor = 24
 
+        self.RouteRiver = RouteRiver
         pass
 
     def ReadRainfall(self,Path):
@@ -234,23 +236,31 @@ class Catchment():
         FlowAcc = gdal.Open(Path)
         [self.rows,self.cols] = FlowAcc.ReadAsArray().shape
         # check flow accumulation input raster
-        self.NoDataValue = np.float32(FlowAcc.GetRasterBand(1).GetNoDataValue())
+        self.NoDataValue = FlowAcc.GetRasterBand(1).GetNoDataValue()
         self.FlowAccArr = FlowAcc.ReadAsArray()
-        self.no_elem = np.size(self.FlowAccArr[:,:])-np.count_nonzero((self.FlowAccArr[self.FlowAccArr==self.NoDataValue]))
-        self.acc_val = [int(self.FlowAccArr[i,j]) for i in range(self.rows) for j in range(self.cols) if self.FlowAccArr[i,j] != self.NoDataValue]
+
+        for i in range(self.rows):
+            for j in range(self.cols):
+                if math.isclose(self.FlowAccArr[i,j], self.NoDataValue, rel_tol=0.001):
+                    self.FlowAccArr[i,j] = np.nan
+
+        self.no_elem = np.size(self.FlowAccArr[:,:]) - np.count_nonzero((self.FlowAccArr[np.isnan(self.FlowAccArr)]))
+        self.acc_val = [int(self.FlowAccArr[i,j]) for i in range(self.rows) for j in range(self.cols) if not np.isnan(self.FlowAccArr[i,j])]
         self.acc_val = list(set(self.acc_val))
         self.acc_val.sort()
         acc_val_mx = max(self.acc_val)
         if not (acc_val_mx == self.no_elem or acc_val_mx == self.no_elem -1):
-            message = """ flow accumulation raster values are not correct max value should equal number of cells or number of cells -1 """
-            message = message + " Max Value in the Flow Acc raster is " + str(acc_val_mx)
-            message = message + " while No of cells are " + str(self.no_elem)
+            message = ('flow accumulation raster values are not correct max '\
+            'value should equal number of cells or number of cells -1 '\
+            'Max Value in the Flow Acc raster is {x}'
+            ' while No of cells are {y}').format(x=acc_val_mx, y=self.no_elem, sep='\n')
             print(message)
+
         # assert acc_val_mx == self.no_elem or acc_val_mx == self.no_elem -1,
 
         # location of the outlet
         # outlet is the cell that has the max flow_acc
-        self.Outlet = np.where(self.FlowAccArr == np.nanmax(self.FlowAccArr[self.FlowAccArr != self.NoDataValue ]))
+        self.Outlet = np.where(self.FlowAccArr == np.nanmax(self.FlowAccArr))
 
         # calculate area covered by cells
         geo_trans = FlowAcc.GetGeoTransform() # get the coordinates of the top left corner and cell size [x,dx,y,dy]
@@ -349,7 +359,19 @@ class Catchment():
         self.no_elem = np.size(self.FPLArr[:,:])-np.count_nonzero((self.FPLArr[self.FPLArr==self.NoDataValue]))
 
         print("Flow Path length input is read successfully")
+    def ReadRiverGeometry(self, BankfulldepthF, RiverWidthF, RiverRoughnessF, FloodPlainRoughnessF):
 
+        Bankfulldepth = gdal.Open(BankfulldepthF)
+        self.Bankfulldepth = Bankfulldepth.ReadAsArray()
+
+        RiverWidth = gdal.Open(RiverWidthF)
+        self.RiverWidth = RiverWidth.ReadAsArray()
+
+        RiverRoughness = gdal.Open(RiverRoughnessF)
+        self.RiverRoughness = RiverRoughness.ReadAsArray()
+
+        FloodPlainRoughness = gdal.Open(FloodPlainRoughnessF)
+        self.FloodPlainRoughness = FloodPlainRoughness.ReadAsArray()
 
     def ReadParameters(self, Path, Snow=0, Maxbas=False):
         """

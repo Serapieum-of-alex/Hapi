@@ -5,7 +5,7 @@ Created on Sun Apr 29 17:17:54 2018
 @author: Mostafa
 """
 import numpy as np
-import Hapi.rrm.hbv_lake as hbv_lake
+from Hapi.rrm import hbv_lake
 from Hapi.rrm.distrrm import DistributedRRM as distrrm
 from Hapi.rrm.routing import Routing as routing
 

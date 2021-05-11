@@ -47,39 +47,12 @@ def configuration(parent_package='',top_path=None):
     return config
 
 
-#import Hapi.giscatchment
-#import Hapi.raster
-#import Hapi.vector
-import Hapi.gis as gis
 
-#import Hapi.distparameters
-#import Hapi.distrrm
-#import Hapi.inputs
-#import Hapi.routing
-#import Hapi.run
-#import Hapi.hbv
-#import Hapi.hbv_lake
-#import Hapi.hbvlumped
-#import Hapi.hbv_bergestrom92
-#import Hapi.wrapper
-import Hapi.rrm as rrm 
-
-#import Hapi.hminputs
-#import Hapi.event
-#import Hapi.river
-#import Hapi.crosssection
-#import Hapi.hmcalibration
-#import Hapi.interface
-import Hapi.hm as hm
-
-
-#import Hapi.performancecriteria
-#import Hapi.sensitivityanalysis
-#import Hapi.statisticaltools 
-
-import Hapi.statistics as statistics
-
-import Hapi.remotesensing as remotesensing
+import Hapi.gis #as gis
+import Hapi.rrm #as rrm
+import Hapi.hm #as hm
+import Hapi.statistics #as statistics
+import Hapi.remotesensing #as remotesensing
 
 import Hapi.catchment
 import Hapi.weirdFn
