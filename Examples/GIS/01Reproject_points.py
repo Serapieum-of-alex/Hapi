@@ -4,7 +4,7 @@ Created on Fri Feb 19 17:57:06 2021
 
 @author: mofarrag
 """
-from Hapi.vector import Vector
+from Hapi.gis.vector import Vector
 
 #%%
 lon = [-180,-179.5]
