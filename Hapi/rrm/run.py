@@ -108,10 +108,84 @@ class Run(Catchment):
         assert np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2], "all meteorological input data should have the same length"
 
         #run the model
-        Wrapper.HapiModel(self)
+        Wrapper.RRMModel(self)
 
         print("Model Run has finished")
 
+    def RunFloodModel(self):
+        """
+        =======================================================================
+            RunModel(PrecPath, Evap_Path, TempPath, DemPath, FlowAccPath, FlowDPath, ParPath, p2)
+        =======================================================================
+        this function runs the conceptual distributed hydrological model
+
+        Inputs:
+        ----------
+            1-Paths:
+
+                4-FlowAccPath:
+
+                5-FlowDPath:
+                    [String] path to the Flow Direction raster of the catchment (it should
+                    include the raster name and extension)
+            7-ParPath:
+                [String] path to the Folder contains parameters rasters of the catchment
+            8-p2:
+                [List] list of unoptimized parameters
+                p2[0] = tfac, 1 for hourly, 0.25 for 15 min time step and 24 for daily time step
+                p2[1] = catchment area in km2
+
+        Outputs:
+        ----------
+            1-statevariables: [numpy attribute]
+                4D array (rows,cols,time,states) states are [sp,wc,sm,uz,lv]
+            2-qlz: [numpy attribute]
+                3D array of the lower zone discharge
+            3-quz: [numpy attribute]
+                3D array of the upper zone discharge
+            4-qout: [numpy attribute]
+                1D timeseries of discharge at the outlet of the catchment
+                of unit m3/sec
+            5-quz_routed: [numpy attribute]
+                3D array of the upper zone discharge  accumulated and
+                routed at each time step
+            6-qlz_translated: [numpy attribute]
+                3D array of the lower zone discharge translated at each time step
+
+        Example:
+        ----------
+            PrecPath = prec_path="meteodata/4000/calib/prec"
+            Evap_Path = evap_path="meteodata/4000/calib/evap"
+            TempPath = temp_path="meteodata/4000/calib/temp"
+            DemPath = "GIS/4000/dem4000.tif"
+            FlowAccPath = "GIS/4000/acc4000.tif"
+            FlowDPath = "GIS/4000/fd4000.tif"
+            ParPath = "meteodata/4000/parameters"
+            p2=[1, 227.31]
+            st, q_out, q_uz_routed = RunModel(PrecPath,Evap_Path,TempPath,DemPath,
+                                              FlowAccPath,FlowDPath,ParPath,p2)
+        """
+        ### input data validation
+        # data type
+        # assert type(self.FlowAcc)==gdal.Dataset, "flow_acc should be read using gdal (gdal dataset please read it using gdal library) "
+        # assert type(self.FlowDir)==gdal.Dataset, "flow_direct should be read using gdal (gdal dataset please read it using gdal library) "
+
+        # input dimensions
+        [fd_rows,fd_cols] = self.FlowDirArr.shape
+        assert fd_rows == self.rows and fd_cols == self.cols, "all input data should have the same number of rows"
+
+        # input dimensions
+        assert np.shape(self.Prec)[0] == self.rows and np.shape(self.ET)[0] == self.rows and np.shape(self.Temp)[0] == self.rows and np.shape(self.Parameters)[0] == self.rows, "all input data should have the same number of rows"
+        assert np.shape(self.Prec)[1] == self.cols and np.shape(self.ET)[1] == self.cols and np.shape(self.Temp)[1] == self.cols and np.shape(self.Parameters)[1] == self.cols, "all input data should have the same number of columns"
+        assert np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2], "all meteorological input data should have the same length"
+
+        assert np.shape(self.Bankfulldepth)[0] == self.rows and np.shape(self.RiverWidth)[0] == self.rows and np.shape(self.RiverRoughness)[0] == self.rows and np.shape(self.FloodPlainRoughness)[0] == self.rows, "all input data should have the same number of rows"
+        assert np.shape(self.Bankfulldepth)[1] == self.cols and np.shape(self.RiverWidth)[1] == self.cols and np.shape(self.RiverRoughness)[1] == self.cols and np.shape(self.FloodPlainRoughness)[1] == self.cols, "all input data should have the same number of columns"
+
+        #run the model
+        Wrapper.RRMModel(self)
+
+        print("Model Run has finished")
 
 
     def RunHAPIwithLake(self, Lake):
@@ -178,7 +252,7 @@ class Run(Catchment):
         assert np.shape(Lake.MeteoData)[1] >= 3, "Lake Meteo data has to have at least three columns rain, ET, and Temp"
 
         #run the model
-        Wrapper.HapiWithlake(self, Lake)
+        Wrapper.RRMWithlake(self, Lake)
 
         print("Model Run has finished")
 

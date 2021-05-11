@@ -19,7 +19,7 @@ class Wrapper():
 
     Methods:
         1- HapiModel
-        2- HapiWithlake
+        2- RRMWithlake
         3- FW1
         4- FW1Withlake
         5- Lumped
@@ -28,7 +28,7 @@ class Wrapper():
         pass
 
     @staticmethod
-    def HapiModel(Model, ll_temp=None, q_0=None):
+    def RRMModel(Model, ll_temp=None, q_0=None):
         """
         =======================================================================
           Dist_model(DEM,flow_acc,flow_direct,sp_prec,sp_et,sp_temp,sp_par,p2,kub,klb,init_st,ll_temp,q_0)
@@ -101,12 +101,12 @@ class Wrapper():
 
 
     @staticmethod
-    def HapiWithlake(Model, Lake,ll_temp=None, q_0=None):
+    def RRMWithlake(Model, Lake,ll_temp=None, q_0=None):
         """
         ============================================================
-            HapiWithlake(Model, Lake,ll_temp=None, q_0=None)
+            RRMWithlake(Model, Lake,ll_temp=None, q_0=None)
         ============================================================
-        HapiWithlake connects three modules the lake, the distributed
+        RRMWithlake connects three modules the lake, the distributed
         ranfall-runoff module and spatial routing module
 
         Parameters

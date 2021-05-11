@@ -86,7 +86,7 @@ class DistributedRRM():
         for x in range(Model.rows):
             for y in range(Model.cols):
                 # only for cells in the domain
-                if Model.FlowAccArr [x, y] != Model.NoDataValue:
+                if not np.isnan(Model.FlowAccArr[x, y]):
                         Model.quz[x,y,:], Model.qlz[x,y,:], Model.statevariables[x,y,:,:] = Model.LumpedModel.Simulate(prec = Model.Prec[x, y,:],
                                                                      temp = Model.Temp[x, y,:],
                                                                      et = Model.ET[x, y,:],
@@ -159,7 +159,7 @@ class DistributedRRM():
         # for all cell with 0 flow acc put the quz
         for x in range(Model.rows): # no of rows
             for y in range(Model.cols): # no of columns
-                if Model.FlowAccArr [x, y] != Model.NoDataValue and Model.FlowAccArr [x, y]==0:
+                if not np.isnan(Model.FlowAccArr[x, y]) and Model.FlowAccArr [x, y] == 0:
                     Model.quz_routed[x,y,:]= Model.quz[x,y,:]
                     Model.qlz_translated[x,y,:]= Model.qlz[x,y,:]
 
@@ -170,24 +170,27 @@ class DistributedRRM():
             for x in range(Model.rows): # no of rows
                 for y in range(Model.cols): # no of columns
                         # check from total flow accumulation
-                        if Model.FlowAccArr[x, y] != Model.NoDataValue and Model.FlowAccArr[x, y] == Model.acc_val[j]:
-                            # for UZ
-                            q_uzi = np.zeros(Model.TS)
-                            # for lz
-                            qlzi = np.zeros(Model.TS)
-                            # iterate to route uz and translate lz
-                            for i in range(len(Model.FDT[str(x)+","+str(y)])): #  Model.acc_val[j]
-                                # bring the indexes of the us cell
-                                x_ind = Model.FDT[str(x)+","+str(y)][i][0]
-                                y_ind = Model.FDT[str(x)+","+str(y)][i][1]
-                                # sum the Q of the US cells (already routed for its cell)
-                                # route first with there own k & xthen sum
-                                q_uzi = q_uzi + routing.Muskingum_V(Model.quz_routed[x_ind,y_ind,:],Model.quz_routed[x_ind,y_ind,0],Model.Parameters[x_ind,y_ind,10],Model.Parameters[x_ind,y_ind,11],Model.Timef)
-                                qlzi = qlzi + Model.qlz_translated[x_ind,y_ind,:]
+                        if not np.isnan(Model.FlowAccArr[x, y]) and Model.FlowAccArr[x, y] == Model.acc_val[j]:
+                            if Model.Bankfulldepth[x,y] > 0 :
+                                continue
+                            else:
+                                # for UZ
+                                q_uzi = np.zeros(Model.TS)
+                                # for lz
+                                qlzi = np.zeros(Model.TS)
+                                # iterate to route uz and translate lz
+                                for i in range(len(Model.FDT[str(x)+","+str(y)])): #  Model.acc_val[j]
+                                    # bring the indexes of the us cell
+                                    x_ind = Model.FDT[str(x)+","+str(y)][i][0]
+                                    y_ind = Model.FDT[str(x)+","+str(y)][i][1]
+                                    # sum the Q of the US cells (already routed for its cell)
+                                    # route first with there own k & xthen sum
+                                    q_uzi = q_uzi + routing.Muskingum_V(Model.quz_routed[x_ind,y_ind,:],Model.quz_routed[x_ind,y_ind,0],Model.Parameters[x_ind,y_ind,10],Model.Parameters[x_ind,y_ind,11],Model.Timef)
+                                    qlzi = qlzi + Model.qlz_translated[x_ind,y_ind,:]
 
-                            # add the routed upstream flows to the current Quz in the cell
-                            Model.quz_routed[x,y,:] = Model.quz[x,y,:] + q_uzi
-                            Model.qlz_translated[x,y,:] = Model.qlz[x,y,:] + qlzi
+                                # add the routed upstream flows to the current Quz in the cell
+                                Model.quz_routed[x,y,:] = Model.quz[x,y,:] + q_uzi
+                                Model.qlz_translated[x,y,:] = Model.qlz[x,y,:] + qlzi
 
 
         outletx = Model.Outlet[0][0]
@@ -257,7 +260,7 @@ class DistributedRRM():
 
         for x in range(Model.rows):
             for y in range(Model.cols):
-                if not np.isnan(Model.FPLArr[x,y]):# FPLArray[x,y] != np.nan: #NoDataValue:
+                if not np.isnan(Model.FPLArr[x,y]):
                     Model.quz[x,y,:] = routing.TriangularRouting2(Model.quz[x,y,:], NormalizedFPL[x,y])
 
 
