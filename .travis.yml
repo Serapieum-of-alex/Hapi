@@ -35,7 +35,6 @@ install:
   # the add command places the channel at the front of the priority 
   # list, while append does the opposite.
   - conda config --add channels conda-forge
-  - conda config --add channels mafarrag
   - conda clean --tarballs -y
   - conda clean --packages -y
   # Install various dependencies  
@@ -51,6 +50,7 @@ install:
   - python setup.py install
   - conda update --all --yes
   - pip install --upgrade pytest pytest-cov
+  - conda list
 #  - pip install tox
  # - cd ..
 # command to run tests
