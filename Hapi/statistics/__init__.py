@@ -5,7 +5,7 @@ Created on Sat Apr 24 20:57:45 2021
 @author: mofarrag
 """
 
-from .performancecriteria import *
-from .sensitivityanalysis import *
-from .statisticaltools import *
+import Hapi.statistics.performancecriteria as performancecriteria
+import Hapi.statistics.sensitivityanalysis as sensitivityanalysis
+import Hapi.statistics.statisticaltools as statisticaltools
 

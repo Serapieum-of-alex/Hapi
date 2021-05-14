@@ -17,7 +17,7 @@ import pandas as pd
 
 from Hapi.rrm.wrapper import Wrapper
 from Hapi.catchment import Catchment
-
+from Hapi.hm.saintvenant import SaintVenant
 
 class Run(Catchment):
     """
@@ -179,13 +179,15 @@ class Run(Catchment):
         assert np.shape(self.Prec)[1] == self.cols and np.shape(self.ET)[1] == self.cols and np.shape(self.Temp)[1] == self.cols and np.shape(self.Parameters)[1] == self.cols, "all input data should have the same number of columns"
         assert np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2], "all meteorological input data should have the same length"
 
-        assert np.shape(self.Bankfulldepth)[0] == self.rows and np.shape(self.RiverWidth)[0] == self.rows and np.shape(self.RiverRoughness)[0] == self.rows and np.shape(self.FloodPlainRoughness)[0] == self.rows, "all input data should have the same number of rows"
-        assert np.shape(self.Bankfulldepth)[1] == self.cols and np.shape(self.RiverWidth)[1] == self.cols and np.shape(self.RiverRoughness)[1] == self.cols and np.shape(self.FloodPlainRoughness)[1] == self.cols, "all input data should have the same number of columns"
+        assert np.shape(self.BankfullDepth)[0] == self.rows and np.shape(self.RiverWidth)[0] == self.rows and np.shape(self.RiverRoughness)[0] == self.rows and np.shape(self.FloodPlainRoughness)[0] == self.rows, "all input data should have the same number of rows"
+        assert np.shape(self.BankfullDepth)[1] == self.cols and np.shape(self.RiverWidth)[1] == self.cols and np.shape(self.RiverRoughness)[1] == self.cols and np.shape(self.FloodPlainRoughness)[1] == self.cols, "all input data should have the same number of columns"
 
         #run the model
         Wrapper.RRMModel(self)
+        print("RRM has finished")
 
-        print("Model Run has finished")
+        SaintVenant.Kinematic(self)
+        print("1D model Run has finished")
 
 
     def RunHAPIwithLake(self, Lake):
@@ -441,3 +443,6 @@ class Run(Catchment):
         self.Qsim = Qsim[:]
 
         print("Model Run has finished")
+
+if __name__=='__main__':
+    print("Run")

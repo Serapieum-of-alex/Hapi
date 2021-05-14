@@ -613,3 +613,6 @@ class Calibration(Catchment):
                 print(str(key) + ' : ' + repr(self.__dict__[key]))
 
         print('\n')
+
+if __name__=='__main__':
+    print("Calibration")

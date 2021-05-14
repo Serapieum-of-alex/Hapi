@@ -40,7 +40,7 @@ def configuration(parent_package='',top_path=None):
 
     config.add_subpackage('statistics')
     config.add_subpackage('rrm')
-    config.add_subpackage('remotesensing')
+    config.add_subpackage('rs')
     config.add_subpackage('hm')
     config.add_subpackage('gis')
 
@@ -50,9 +50,10 @@ def configuration(parent_package='',top_path=None):
 
 import Hapi.gis #as gis
 import Hapi.rrm #as rrm
+import Hapi.run
 import Hapi.hm #as hm
 import Hapi.statistics #as statistics
-import Hapi.remotesensing #as remotesensing
+import Hapi.rs #as remotesensing
 
 import Hapi.catchment
 import Hapi.weirdFn
@@ -80,3 +81,5 @@ Here are just a few of the things that pandas does well:
    calculated discharge values to the correct place
 
 """
+# if __name__=='__main__':
+#     print("Hapi")

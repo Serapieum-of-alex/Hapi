@@ -96,8 +96,7 @@ class Wrapper():
         # run the GIS part to rout from cell to another
         distrrm.SpatialRouting(Model)
 
-        Model.qout = Model.qout[:-1]
-
+        # Model.qout = Model.qout[:-1]
 
 
     @staticmethod
@@ -328,3 +327,6 @@ class Wrapper():
         elif Routing != 0:
             Model.Qsim = RoutingFn(np.array(Model.Qsim[:-1]), Model.Qsim[0],
                                    Model.Parameters[-2], Model.Parameters[-1], Model.Timef)
+
+if __name__=='__main__':
+    print("Wrapper")
