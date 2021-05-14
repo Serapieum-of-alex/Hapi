@@ -5,17 +5,92 @@ Created on Tue Mar 16 22:25:59 2021
 @author: mofarrag
 """
 import numpy as np
-CWEIR = 1.704
-BWIDTH = 10
-HLIN = 0.001
-power = 2/3
+
 
 class SaintVenant():
 
-    def __init__():
+    def __init__(self):
+        self.CWEIR = 1.704
+        self.BWIDTH = 10
+        self.HLIN = 0.001
+        self.power = 2/3
         pass
 
-    def HBC(Sub, River, Hbnd, dt, dx,inih,storewl, MinQ):
+    def Kinematic(self, Model):
+
+        beta = 3/5
+        dx = Model.CellSize
+        dt = 24*60*60
+        dtx = dt/dx
+        # for the river cells
+        for i in range(Model.rows):
+            for j in range(Model.cols):
+                if not np.isnan(Model.FlowAccArr[i,j]) and Model.BankfullDepth[i,j] > 0:
+                    p = Model.RiverWidth[i,j] + 2 * Model.BankfullDepth[i,j]
+                    n = Model.RiverRoughness[i,j]
+                    alpha1 = n * pow(p, 2/3)
+
+                    # get the hydrograph of the upstream cells
+                    UScells = Model.FDT[str(i) + "," + str(j)]
+                    hyd = np.zeros(Model.TS, dtype=np.float32)
+                    Laterals = np.zeros(Model.TS, dtype=np.float32)
+
+                    # get the US cells and check which is river and which is lateral
+                    rivercells = list()
+                    lateralcells = list()
+                    f = 0
+                    for k in range(len(UScells)):
+                        if Model.BankfullDepth[UScells[k][0], UScells[k][1]] == 0:
+                            lateralcells.append(UScells[k])
+                        else:
+                            f = f + 1
+                            rivercells.append(UScells[k])
+                    # if the beginning of a river
+                    if f == 0:
+                        # get the sum of laterals as one hydrograph and route it
+                        s = 0
+                        for k in range(len(lateralcells)):
+                            s = s + (Model.DEM[lateralcells[k][0], lateralcells[k][1]] - Model.DEM[i,j] ) / dx
+                            hyd = hyd + Model.quz_routed[lateralcells[k][0], lateralcells[k][1],:]
+                        # get average slope
+                        s = s / len(lateralcells)
+                        if s < self.HLIN/dx :
+                            s = self.HLIN/dx
+                        alpha = pow(alpha1 / pow(s,0.5) ,0.6)
+                        Q = np.zeros(Model.TS, dtype=np.float32)
+                        Q[0] = Model.quz[i,j,0]
+
+                        for t in range(1,Model.TS):
+                            val1 = alpha * beta * pow((Q[t-1] + hyd[t])/2,beta-1)
+                            Q[t] = (dtx * hyd[t] +  val1 * Q[t-1] ) / (dtx + val1)
+
+                        Model.quz_routed[i,j,:] = Q
+                    else:
+                        # if not the beginning of a river sum lateras and take them as one lateral time series
+                        for k in range(len(lateralcells)):
+                            Laterals = Laterals + Model.quz_routed[lateralcells[k][0], lateralcells[k][1],:]
+
+                        for k in range(f):
+                            # print(rivercells[k])
+                            hyd = hyd + Model.quz_routed[rivercells[k][0], rivercells[k][1],:]
+                            s = (Model.DEM[rivercells[k][0], rivercells[k][1]] - Model.DEM[i,j] ) / dx
+
+                            if s < self.HLIN/dx :
+                                s = self.HLIN/dx
+
+                            alpha = pow(alpha1 / pow(s,0.5) ,0.6)
+                            Q = np.zeros(Model.TS, dtype=np.float32)
+                            Q[0] = Model.quz[i,j,0]
+
+                            for t in range(1,Model.TS):
+                                val1 = alpha * beta * pow((Q[t-1] + hyd[t])/2,beta-1)
+                                Q[t] = (dtx * hyd[t] +  val1 * Q[t-1] + (Laterals[t] + Laterals[t-1])/2) / (dtx + val1)
+
+                            Model.quz_routed[i,j,:] = Model.quz_routed[i,j,:] + Q
+
+
+
+    def HBC(self, Sub, River, Hbnd, dt, dx,inih,storewl, MinQ):
 
         xs = np.zeros(shape=(Sub.XSno,8))
         Diff_coeff = np.zeros(shape=(Sub.XSno,3))
@@ -126,7 +201,7 @@ class SaintVenant():
                             # if water depth is higher than the left dike height and the threshold
                             if  hx[x] > max(Sub.zl[x] - Sub.bedlevel[x], River.D1['MinDepth']):
                                 #weir formular - free flow
-                                q_outLx[x] = CWEIR*BWIDTH * (hx[x] - max(Sub.zl[x] - Sub.bedlevel[x] , River.D1['MinDepth']))**1.5
+                                q_outLx[x] = self.CWEIR*self.BWIDTH * (hx[x] - max(Sub.zl[x] - Sub.bedlevel[x] , River.D1['MinDepth']))**1.5
 
                         #to RIGHT?
                         q_outRx[x] = 0
@@ -135,7 +210,7 @@ class SaintVenant():
                         if  storewl[Sub.xsid[x] + River.XSno] - Sub.bedlevel[x] < hx[x] :
 
                             if hx[x] > max(Sub.zr[x] - Sub.bedlevel[x],River.D1['MinDepth']) :
-                                q_outRx[x] = CWEIR * BWIDTH * (hx[x] - max( Sub.zr[x] - Sub.bedlevel[x],River.D1['MinDepth']) )**1.5
+                                q_outRx[x] = self.CWEIR * self.BWIDTH * (hx[x] - max( Sub.zr[x] - Sub.bedlevel[x],River.D1['MinDepth']) )**1.5
 
 
 
@@ -176,9 +251,9 @@ class SaintVenant():
                                 R_UM = (xs[x,2]/xs[x,3] + xs[x+1,2] / xs[x+1,3])/2		#mean radius
 
                             # upper discharge
-                            xs[x,6] = (1.0/Sub.mn[x]) * Area_UM * (R_UM**power)
+                            xs[x,6] = (1.0/Sub.mn[x]) * Area_UM * (R_UM**self.power)
                             # diffusive wave coefficient for upper wave
-                            Diff_coeff[x,0] = (1.0/Sub.mn[x])* (R_UM**power )
+                            Diff_coeff[x,0] = (1.0/Sub.mn[x])* (R_UM**self.power )
 
                             # Lower mean area and hydraulic radius
                             Area_LM = (xs[x,4]+xs[x+1,4])/2							#mean area
@@ -207,9 +282,9 @@ class SaintVenant():
                                 R_UM = (xs[x,2]/xs[x,3] + xs[x-1,2]/xs[x-1,3])/2	#mean radius
 
                             # upper discharge
-                            xs[x,6] = (1.0/Sub.mn[x]) * Area_UM * (R_UM**power)
+                            xs[x,6] = (1.0/Sub.mn[x]) * Area_UM * (R_UM**self.power)
                             # diffusive wave coefficient for upper wave
-                            Diff_coeff[x,0] = (1.0/Sub.mn[x])* (R_UM**power)
+                            Diff_coeff[x,0] = (1.0/Sub.mn[x])* (R_UM**self.power)
 
                             # Lower mean area and hydraulic radius
                             Area_LM = (xs[x,4]+xs[x-1,4])/2						#for LOWER BOUNDARY node
@@ -217,33 +292,33 @@ class SaintVenant():
 
 
                     #calculation of fluxes
-                    if abs(sf) > HLIN/dx:
+                    if abs(sf) > self.HLIN/dx:
                         # diffusive wave coefficient for upper wave
                         Diff_coeff[x,0] = Diff_coeff[x,0] / np.sqrt(abs(sf))
                         # diffusive wave coefficient for Lower wave
-                        Diff_coeff[x,1] = (1.0/Sub.mn[x])* (R_LM**power) / np.sqrt(abs(sf))
+                        Diff_coeff[x,1] = (1.0/Sub.mn[x])* (R_LM**self.power) / np.sqrt(abs(sf))
                         # total diffusion coefficient
                         Diff_coeff[x,2] = Diff_coeff[x,0] + Diff_coeff[x,1]
                         # discharge
                         # upper discharge
                         xs[x,6] = xs[x,6] * (np.sqrt(abs(sf))*sf/abs(sf))
                         # Lower discharge
-                        xs[x,7] = (1.0/Sub.mn[x]) * Area_LM * (R_LM**power) * (np.sqrt(abs(sf))*sf/abs(sf))
+                        xs[x,7] = (1.0/Sub.mn[x]) * Area_LM * (R_LM**self.power) * (np.sqrt(abs(sf))*sf/abs(sf))
                     else :
                         # diffusive wave coefficient for upper wave
-                        Diff_coeff[x,0] = Diff_coeff[x,0] / np.sqrt(HLIN/dx)
+                        Diff_coeff[x,0] = Diff_coeff[x,0] / np.sqrt(self.HLIN/dx)
 
                         # diffusive wave coefficient for Lower wave
-                        Diff_coeff[x,1] = (1.0/Sub.mn[x])* (R_LM**power) / np.sqrt(HLIN/dx)
+                        Diff_coeff[x,1] = (1.0/Sub.mn[x])* (R_LM**self.power) / np.sqrt(self.HLIN/dx)
                         # total diffusion coefficient
                         Diff_coeff[x,2] = Diff_coeff[x,0] + Diff_coeff[x,1]
 
                         # discharge
                         # upper discharge
-                        xs[x,6] = xs[x,6] * (np.sqrt(dx/HLIN)*sf)
+                        xs[x,6] = xs[x,6] * (np.sqrt(dx/self.HLIN)*sf)
                         #xs[x,7] = xs[x,7] * (np.sqrt(HLINQ/dx]]
                         # Lower discharge
-                        xs[x,7] = (1.0/Sub.mn[x]) * Area_LM * (R_LM**power) * (np.sqrt(dx/HLIN)*sf)
+                        xs[x,7] = (1.0/Sub.mn[x]) * Area_LM * (R_LM**self.power) * (np.sqrt(dx/self.HLIN)*sf)
                         #xs[x,8] = (1.0/mn[x]] * Area_LM * (R_LM** (2.0/3.0]] * (np.sqrt(HLINQ/dx]]
 
 
@@ -400,74 +475,3 @@ class SaintVenant():
     def QuadraticEqn(a,b,c):
         delta = (b**2) - 4*a*c
         return (-b + np.sqrt(delta))/(2*a)
-
-    def Kinematic(Model):
-        beta = 3/5
-        dx = Model.CellSize
-        dt = 24*60*60
-        dtx = dt/dx
-        # for the river cells
-        for i in range(Model.rows):
-            for j in range(Model.cols):
-                if not np.isnan(Model.FlowAccArr[i,j]) and Model.BankfullDepth[i,j] > 0:
-                    p = Model.RiverWidth[i,j] + 2 * Model.BankfullDepth[i,j]
-                    n = Model.RiverRoughness[i,j]
-                    alpha1 = n * pow(p, 2/3)
-
-                    # get the hydrograph of the upstream cells
-                    UScells = Model.FDT[str(i) + "," + str(j)]
-                    hyd = np.zeros(Model.TS, dtype=np.float32)
-                    Laterals = np.zeros(Model.TS, dtype=np.float32)
-
-                    # get the US cells and check which is river and which is lateral
-                    rivercells = list()
-                    lateralcells = list()
-                    f = 0
-                    for k in range(len(UScells)):
-                        if Model.BankfullDepth[UScells[k][0], UScells[k][1]] == 0:
-                            lateralcells.append(UScells[k])
-                        else:
-                            f = f + 1
-                            rivercells.append(UScells[k])
-                    # if the beginning of a river
-                    if f == 0:
-                        # get the sum of laterals as one hydrograph and route it
-                        s = 0
-                        for k in range(len(lateralcells)):
-                            s = s + (Model.DEM[lateralcells[k][0], lateralcells[k][1]] - Model.DEM[i,j] ) / dx
-                            hyd = hyd + Model.quz_routed[lateralcells[k][0], lateralcells[k][1],:]
-                        # get average slope
-                        s = s / len(lateralcells)
-                        if s < HLIN/dx :
-                            s = HLIN/dx
-                        alpha = pow(alpha1 / pow(s,0.5) ,0.6)
-                        Q = np.zeros(Model.TS, dtype=np.float32)
-                        Q[0] = Model.quz[i,j,0]
-
-                        for t in range(1,Model.TS):
-                            val1 = alpha * beta * pow((Q[t-1] + hyd[t])/2,beta-1)
-                            Q[t] = (dtx * hyd[t] +  val1 * Q[t-1] ) / (dtx + val1)
-
-                        Model.quz_routed[i,j,:] = Q
-                    else:
-                        # if not the beginning of a river sum lateras and take them as one lateral time series
-                        for k in range(len(lateralcells)):
-                            Laterals = Laterals + Model.quz_routed[lateralcells[k][0], lateralcells[k][1],:]
-
-                        for k in range(f):
-                            # print(rivercells[k])
-                            hyd = hyd + Model.quz_routed[rivercells[k][0], rivercells[k][1],:]
-                            s = (Model.DEM[rivercells[k][0], rivercells[k][1]] - Model.DEM[i,j] ) / dx
-
-                            if s < HLIN/dx :
-                                s = HLIN/dx
-
-                            alpha = pow(alpha1 / pow(s,0.5) ,0.6)
-                            Q = np.zeros(Model.TS, dtype=np.float32)
-                            Q[0] = Model.quz[i,j,0]
-
-                            for t in range(1,Model.TS):
-                                val1 = alpha * beta * pow((Q[t-1] + hyd[t])/2,beta-1)
-                                Q[t] = (dtx * hyd[t] +  val1 * Q[t-1] + (Laterals[t] + Laterals[t-1])/2) / (dtx + val1)
-
-                            Model.quz_routed[i,j,:] = Model.quz_routed[i,j,:] + Q

@@ -198,12 +198,6 @@ class DistributedRRM():
                                 Model.qlz_translated[x,y,:] = Model.qlz[x,y,:] + qlzi
 
 
-        # outletx = Model.Outlet[0][0]
-        # outlety = Model.Outlet[1][0]
-
-        # Model.qout = Model.qlz_translated[outletx,outlety,:] + Model.quz_routed[outletx,outlety,:]
-        # Model.Qtot = Model.qlz_translated + Model.quz_routed
-
     @staticmethod
     def DistMaxbas1(Model):
         """

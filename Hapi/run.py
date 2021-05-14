@@ -185,8 +185,8 @@ class Run(Catchment):
         #run the model
         Wrapper.RRMModel(self)
         print("RRM has finished")
-
-        SaintVenant.Kinematic(self)
+        SV = SaintVenant()
+        SV.Kinematic(self)
         print("1D model Run has finished")
 
 
