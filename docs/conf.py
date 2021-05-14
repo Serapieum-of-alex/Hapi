@@ -33,6 +33,11 @@ sys.path.insert(0, os.path.abspath("../Hapi"))
 sys.path.insert(0, os.path.abspath(".."))
 sys.path.insert(0, os.path.abspath("../Examples"))
 
+# If your extensions are in another directory, add it here. If the
+# directory is relative to the documentation root, use
+# os.path.abspath to make it absolute, like shown here.
+sys.path.append(os.path.abspath('sphinxext'))
+
 #import Hapi
 
 
@@ -57,7 +62,7 @@ autosectionlabel_prefix_document = True
 
 todo_include_todos = True
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ['templates']
 
 # The suffix of source filenames.
 source_suffix = ".rst"
@@ -87,7 +92,7 @@ master_doc = "index"
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ["_build"]
+exclude_patterns = ["build"]
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 # default_role = None
@@ -134,7 +139,7 @@ html_theme = "sphinx_rtd_theme"
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
 """
-html_logo = "_images/Hapi.png"
+html_logo = "images/Hapi.png"
 """
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
@@ -144,7 +149,7 @@ html_logo = "_images/Hapi.png"
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ["_static"]
+html_static_path = ["static"]
 #
 #html_context = {
 #    'css_files': [
@@ -177,7 +182,7 @@ html_static_path = ["_static"]
 # html_split_index = False
 
 # If true, links to the reST sources are added to the pages.
-# html_show_sourcelink = True
+html_show_sourcelink = True
 
 # If true, "Created using Sphinx" is shown in the HTML footer. Default is True.
 # html_show_sphinx = True
