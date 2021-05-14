@@ -4,6 +4,9 @@ Created on Wed Mar 31 02:10:49 2021
 
 @author: mofarrag
 """
+
+__name__ = 'catchment'
+
 import math
 import numpy as np
 import pandas as pd
@@ -249,9 +252,10 @@ class Catchment():
         self.acc_val = list(set(self.acc_val))
         self.acc_val.sort()
         acc_val_mx = max(self.acc_val)
+
         if not (acc_val_mx == self.no_elem or acc_val_mx == self.no_elem -1):
-            message = ('flow accumulation raster values are not correct max '\
-            'value should equal number of cells or number of cells -1 '\
+            message = ('flow accumulation raster values are not correct max '
+            'value should equal number of cells or number of cells -1 '
             'Max Value in the Flow Acc raster is {x}'
             ' while No of cells are {y}').format(x=acc_val_mx, y=self.no_elem, sep='\n')
             print(message)
@@ -266,6 +270,8 @@ class Catchment():
         geo_trans = FlowAcc.GetGeoTransform() # get the coordinates of the top left corner and cell size [x,dx,y,dy]
         dx = np.abs(geo_trans[1])/1000.0  # dx in Km
         dy = np.abs(geo_trans[-1])/1000.0  # dy in Km
+        self.CellSize = dx * 1000
+
         # area of the cell
         self.px_area = dx*dy
         # no_cells=np.size(raster[:,:])-np.count_nonzero(raster[raster==no_val])
@@ -359,10 +365,15 @@ class Catchment():
         self.no_elem = np.size(self.FPLArr[:,:])-np.count_nonzero((self.FPLArr[self.FPLArr==self.NoDataValue]))
 
         print("Flow Path length input is read successfully")
-    def ReadRiverGeometry(self, BankfulldepthF, RiverWidthF, RiverRoughnessF, FloodPlainRoughnessF):
 
-        Bankfulldepth = gdal.Open(BankfulldepthF)
-        self.Bankfulldepth = Bankfulldepth.ReadAsArray()
+
+    def ReadRiverGeometry(self,  DEMF, BankfulldepthF, RiverWidthF, RiverRoughnessF,
+                          FloodPlainRoughnessF):
+        DEM = gdal.Open(DEMF)
+        self.DEM = DEM.ReadAsArray()
+
+        BankfullDepth = gdal.Open(BankfulldepthF)
+        self.BankfullDepth = BankfullDepth.ReadAsArray()
 
         RiverWidth = gdal.Open(RiverWidthF)
         self.RiverWidth = RiverWidth.ReadAsArray()
@@ -698,6 +709,13 @@ class Catchment():
             if CalculateMetrics:
                 index = ['RMSE', 'NSE', 'NSEhf', 'KGE', 'WB','Pearson-CC','R2']
                 self.Metrics = pd.DataFrame(index = index, columns = self.QGauges.columns)
+            # sum the lower zone and the upper zone discharge
+            outletx = self.Outlet[0][0]
+            outlety = self.Outlet[1][0]
+
+            # self.qout = self.qlz_translated[outletx,outlety,:] + self.quz_routed[outletx,outlety,:]
+            self.Qtot = self.qlz_translated + self.quz_routed
+            self.qout = self.Qtot[outletx,outlety,:]
 
             for i in range(len(self.GaugesTable)):
                 Xind = int(self.GaugesTable.loc[self.GaugesTable.index[i],"cell_row"])
@@ -1331,3 +1349,6 @@ class Lake():
         self.OutflowCell = OutflowCell
         self.StageDischargeCurve = StageDischargeCurve
         print("Lumped model is read successfully")
+
+# if __name__=='__main__':
+#     print("Catchment module")

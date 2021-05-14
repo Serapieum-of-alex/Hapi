@@ -455,7 +455,7 @@ class SaintVenant():
                             Laterals = Laterals + Model.quz_routed[lateralcells[k][0], lateralcells[k][1],:]
 
                         for k in range(f):
-                            print(rivercells[k])
+                            # print(rivercells[k])
                             hyd = hyd + Model.quz_routed[rivercells[k][0], rivercells[k][1],:]
                             s = (Model.DEM[rivercells[k][0], rivercells[k][1]] - Model.DEM[i,j] ) / dx
 

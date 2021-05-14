@@ -87,14 +87,14 @@ class DistributedRRM():
             for y in range(Model.cols):
                 # only for cells in the domain
                 if not np.isnan(Model.FlowAccArr[x, y]):
-                        Model.quz[x,y,:], Model.qlz[x,y,:], Model.statevariables[x,y,:,:] = Model.LumpedModel.Simulate(prec = Model.Prec[x, y,:],
-                                                                     temp = Model.Temp[x, y,:],
-                                                                     et = Model.ET[x, y,:],
-                                                                     ll_temp = Model.ll_temp[x, y,:],
-                                                                     par = Model.Parameters[x, y, :],
-                                                                     init_st = Model.InitialCond,
-                                                                     q_init = Model.q_init,
-                                                                     snow=Model.Snow)
+                    Model.quz[x,y,:], Model.qlz[x,y,:], Model.statevariables[x,y,:,:] = Model.LumpedModel.Simulate(prec = Model.Prec[x, y,:],
+                                                                 temp = Model.Temp[x, y,:],
+                                                                 et = Model.ET[x, y,:],
+                                                                 ll_temp = Model.ll_temp[x, y,:],
+                                                                 par = Model.Parameters[x, y, :],
+                                                                 init_st = Model.InitialCond,
+                                                                 q_init = Model.q_init,
+                                                                 snow=Model.Snow)
 
         area_coef = Model.CatArea/Model.px_tot_area
         # convert quz from mm/time step to m3/sec
@@ -171,7 +171,7 @@ class DistributedRRM():
                 for y in range(Model.cols): # no of columns
                         # check from total flow accumulation
                         if not np.isnan(Model.FlowAccArr[x, y]) and Model.FlowAccArr[x, y] == Model.acc_val[j]:
-                            if Model.Bankfulldepth[x,y] > 0 :
+                            if Model.RouteRiver != "Muskingum" and Model.BankfullDepth[x,y] > 0 :
                                 continue
                             else:
                                 # for UZ
@@ -185,7 +185,12 @@ class DistributedRRM():
                                     y_ind = Model.FDT[str(x)+","+str(y)][i][1]
                                     # sum the Q of the US cells (already routed for its cell)
                                     # route first with there own k & xthen sum
-                                    q_uzi = q_uzi + routing.Muskingum_V(Model.quz_routed[x_ind,y_ind,:],Model.quz_routed[x_ind,y_ind,0],Model.Parameters[x_ind,y_ind,10],Model.Parameters[x_ind,y_ind,11],Model.Timef)
+                                    q_uzi = q_uzi + routing.Muskingum_V(Model.quz_routed[x_ind,y_ind,:],
+                                                                        Model.quz_routed[x_ind,y_ind,0],
+                                                                        Model.Parameters[x_ind,y_ind,10],
+                                                                        Model.Parameters[x_ind,y_ind,11],
+                                                                        Model.Timef)
+
                                     qlzi = qlzi + Model.qlz_translated[x_ind,y_ind,:]
 
                                 # add the routed upstream flows to the current Quz in the cell
@@ -193,11 +198,11 @@ class DistributedRRM():
                                 Model.qlz_translated[x,y,:] = Model.qlz[x,y,:] + qlzi
 
 
-        outletx = Model.Outlet[0][0]
-        outlety = Model.Outlet[1][0]
+        # outletx = Model.Outlet[0][0]
+        # outlety = Model.Outlet[1][0]
 
-        Model.qout = Model.qlz_translated[outletx,outlety,:] + Model.quz_routed[outletx,outlety,:]
-        Model.Qtot = Model.qlz_translated + Model.quz_routed
+        # Model.qout = Model.qlz_translated[outletx,outlety,:] + Model.quz_routed[outletx,outlety,:]
+        # Model.Qtot = Model.qlz_translated + Model.quz_routed
 
     @staticmethod
     def DistMaxbas1(Model):
