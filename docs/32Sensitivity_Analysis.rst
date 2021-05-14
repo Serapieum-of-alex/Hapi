@@ -111,6 +111,22 @@ Run the model
 .. _2:
 Define wrapper function and type
 ----------------------------------------
+
+Define the wrapper function to the OAT method and put the parameters argument
+at the first position, and then list all the other arguments required for your function
+
+the following defined function contains two inner function that calculates discharge for lumped HBV model and calculates the RMSE of the calculated discharge.
+
+the first function `RUN.RunLumped` takes some arguments we need to pass it through the `OAT` method 
+[ConceptualModel,data,p2,init_st,snow,Routing, RoutingFn] with the same order in the defined function "wrapper"
+
+the second function is RMSE takes the calculated discharge from the first function and measured discharge array
+
+to define the argument of the "wrapper" function
+1- the random parameters valiable i=of the first function should be the first argument "wrapper(Randpar)"
+2- the first function arguments with the same order (except that the parameter argument is taken out and placed at the first potition step-1)
+3- list the argument of the second function with the same order that the second function takes them
+
 There are two types of wrappers 
 - The first one returns one value (performance metric)
 
@@ -189,41 +205,6 @@ The second type
 
 
 
-.. code:: ipython3
-
-	### meteorological data
-	path = comp + "/Coello/Hapi/Data/00inputs/Lumped/"
-	data = pd.read_csv(path+"meteo_data.txt",header=0 ,delimiter=',',
-	                   engine='python',index_col=0)
-	data = data.values
-
-	### Basic_inputs
-	ConceptualModel = HBVLumped
-	# p2 = [temporal resolution, catchment area]
-	p2=[24, 1530]
-	init_st=[0,10,10,10,0]
-	# no snow subroutine
-	snow = 0
-
-	### parameters
-	# parameters= pd.read_csv("results\parameters\lumped\oldparameters.txt", index_col = 0, header = None)
-	parameters = pd.read_csv(Parameterpath + "\scenario1.txt", index_col = 0, header = None)
-	parameters.rename(columns={1:'value'}, inplace=True)
-	parameters.drop('maxbas', axis=0, inplace=True)
-
-
-	UB = pd.read_csv(Parameterpath + "/UB-Extracted.txt", index_col = 0, header = None)
-	UB = UB[1].tolist()
-
-	LB = pd.read_csv(Parameterpath  + "/LB-Extracted.txt", index_col = 0, header = None)
-	LB = LB[1].tolist()
-
-
-	# observed flow
-	Qobs =np.loadtxt(path+"Qout_c.txt")
-	### Routing
-	Routing=1
-	RoutingFn=TriangularRouting
 
 
 First the SensitivityAnalysis method takes 4 arguments :
@@ -233,23 +214,7 @@ First the SensitivityAnalysis method takes 4 arguments :
     3-UB: lower bound
     4-wrapper: defined function contains the function you want to run with different parameters and the metric function you want to assess the first function based on it.
 
-Wrapper function definition
-########
 
-define the function to the OAT sesitivity wrapper and put the parameters argument
-at the first position, and then list all the other arguments required for your function
-
-the following defined function contains two inner function that calculates discharge for lumped HBV model and calculates the RMSE of the calculated discharge.
-
-the first function "RUN.RunLumped" takes some arguments we need to pass it through the SensitivityAnalysis method 
-[ConceptualModel,data,p2,init_st,snow,Routing, RoutingFn] with the same order in the defined function "wrapper"
-
-the second function is RMSE takes the calculated discharge from the first function and measured discharge array
-
-to define the argument of the "wrapper" function
-1- the random parameters valiable i=of the first function should be the first argument "wrapper(Randpar)"
-2- the first function arguments with the same order (except that the parameter argument is taken out and placed at the first potition step-1)
-3- list the argument of the second function with the same order that the second function takes them
 
 SensitivityAnalysis method returns a dictionary with the name of the parameters
 as keys,
