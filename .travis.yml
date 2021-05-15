@@ -63,3 +63,4 @@ script:
 
 after_success: 
   - coveralls
+  - if [ $TRAVIS_PYTHON_VERSION == '3.7' ] && [ "$TRAVIS_PULL_REQUEST" = "false" ]; then codecov; fi
