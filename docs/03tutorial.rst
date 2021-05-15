@@ -4,8 +4,9 @@ Tutorials
 .. toctree::
     :maxdepth: 1
 
-    30build_model.rst
-    31Lumped_HBV.rst
-    32Lumped_calib.rst
+    Hydrological model/Lumped_HBV.rst
+    Hydrological model/Lumped_calib.rst
+    Hydrological model/DistributedModel_run.rst
+    Hydrological model/DistributedModel_calib.rst
     32Sensitivity_Analysis.rst
     

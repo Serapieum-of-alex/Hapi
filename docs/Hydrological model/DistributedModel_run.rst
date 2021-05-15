@@ -82,13 +82,13 @@ Read Meteorological Inputs
 
 .. code:: ipython3
 
-    PrecPath = "Hapi/Data/00inputs/meteodata/4000/calib/prec-CPC-NOAA"
-    Evap_Path = "Hapi/Data/00inputs/meteodata/4000/calib/evap"
-    TempPath = "Hapi/Data/00inputs/meteodata/4000/calib/temp"
-    FlowAccPath = "Hapi/Data/00inputs/GIS/4000/acc4000.tif"
-    FlowDPath = "Hapi/Data/00inputs/GIS/4000/fd4000.tif"
-    ParPathRun = "Hapi/Model/results/parameters/02lumped parameters/Parameter set-1/"
-    SaveTo = "Hapi/Model/results/"
+    Path = Comp + "/data/distributed/coello"
+    PrecPath = Path + "/prec"
+    Evap_Path = Path + "/evap"
+    TempPath = Path + "/temp"
+    FlowAccPath = Path + "/GIS/acc4000.tif"
+    FlowDPath = Path + "/GIS/fd4000.tif"
+    ParPathRun = Path + "/Parameter set-Avg/"
 
 
 - Then use the each method in the object to read the coresponding data

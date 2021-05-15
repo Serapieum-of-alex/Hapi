@@ -27,4 +27,5 @@ dependencies:
     - numpy
     - pyproj
     - hapi-nile
+    - ffmpeg-python
     #- git+https://github.com/MAfarrag/HAPI.git
