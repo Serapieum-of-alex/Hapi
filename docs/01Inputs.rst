@@ -2,6 +2,7 @@
 Inputs
 ================
 .. toctree::
+	:hidden:
     :maxdepth: 1
 
     Hydrological model/Meteo_Inputs.rst

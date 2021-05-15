@@ -2,6 +2,7 @@
 Tutorials
 ================
 .. toctree::
+	:hidden:
     :maxdepth: 1
 
     Hydrological model/Lumped_run.rst

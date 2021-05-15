@@ -109,6 +109,7 @@ Run the model
 	print("WB= " + str(round(Metrics['WB'],2)))
 
 .. _2:
+
 Define wrapper function and type
 ----------------------------------------
 
@@ -143,6 +144,7 @@ There are two types of wrappers
 
 
 .. _3:
+
 Instantiate the SensitivityAnalysis object
 -------------------------------------------
 
@@ -156,6 +158,7 @@ Instantiate the SensitivityAnalysis object
 	Sen = SA(parameters,Coello.LB, Coello.UB, fn, Positions, 5, Type=Type)
 
 .. _4:
+
 Run the OAT method
 -------------------
 
@@ -164,6 +167,7 @@ Run the OAT method
 	Sen.OAT(Route, RoutingFn, Qobs)
 
 .. _5:
+
 Display the result with the SOBOL plot
 ---------------------------------------
 
@@ -212,5 +216,6 @@ The second type
 	    ax2.plot(Qobs.values[From:To], label='Observed', color='red')
 
 - Type 2
+
 .. image:: /img/sensitivityAnalysis2.png
     :width: 400pt
