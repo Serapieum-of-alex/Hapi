@@ -4,11 +4,12 @@ Distributed Hydrological Model Calibration
 The calibration of the Distributed rainfall runoff model follows the same steps of running the model with extra steps to define the calibration algorithm arguments
 
 1- Catchment Object
----------------------
+-----------------------
 - Import the Catchment object which is the main object in the distributed model, to read and check the input data,  and when the model finish the simulation it stores the results and do the visualization
 
 
-.. code:: ipython3
+.. code-block:: ipython3
+    :linenos:
 
     class Catchment():
 
@@ -63,7 +64,8 @@ The calibration of the Distributed rainfall runoff model follows the same steps 
 
 - To instantiate the object you need to provide the `name`, `statedate`, `enddate`, and the `SpatialResolution`
 
-.. code:: ipython3
+.. code-block:: ipython3
+    :linenos:
 
 	from Hapi.catchment import Catchment
 
@@ -75,12 +77,13 @@ The calibration of the Distributed rainfall runoff model follows the same steps 
 
 
 Read Meteorological Inputs
-########
+############################
 
 
 - First define the directory where the data exist
 
-.. code:: ipython3
+.. code-block:: ipython3
+    :linenos:
 
     Path = Comp + "/data/distributed/coello"
     PrecPath = Path + "/prec"
@@ -93,7 +96,8 @@ Read Meteorological Inputs
 
 - Then use the each method in the object to read the coresponding data
 
-.. code:: ipython3
+.. code-block:: ipython3
+    :linenos:
 
     Coello.ReadRainfall(PrecPath)
     Coello.ReadTemperature(TempPath)
@@ -104,19 +108,20 @@ Read Meteorological Inputs
 
 - To read the parameters you need to provide whether you need to consider the snow subroutine or not
 
-.. code:: ipython3
-
+.. code-block:: ipython3
+    :linenos:
 			Snow = 0
 			Coello.ReadParameters(ParPathRun, Snow)
 
 
 2- Lumped Model
-########
+-------------------
 
 - Get the Lumpde conceptual model you want to couple it with the distributed routing module which in our case HBV 
 	and define the initial condition, and catchment area.
 
-.. code:: ipython3
+.. code-block:: ipython3
+    :linenos:
 
     import Hapi.hbv_bergestrom92 as HBV
 
@@ -134,7 +139,8 @@ Read Meteorological Inputs
 
 - to check the performance of the model we need to read the gauge hydrographs
 
-.. code:: ipython3
+.. code-block:: ipython3
+    :linenos:
 
     Coello.ReadGaugeTable("Hapi/Data/00inputs/Discharge/stations/gauges.csv", FlowAccPath)
     GaugesPath = "Hapi/Data/00inputs/Discharge/stations/"
@@ -142,21 +148,22 @@ Read Meteorological Inputs
 
 
 3-Run Object
-########
+----------------
 
 
 - The `Run` object connects all the components of the simulation together, the `Catchment` object, the `Lake` object and the `distributedrouting` object
 - import the Run object and use the `Catchment` object as a parameter to the `Run` object, then call the RunHapi method to start the simulation
 
-.. code:: ipython3
+.. code-block:: ipython3
+
     from Hapi.run import Run
     Run.RunHapi(Coello)
 
 
 - the result of the simulation will be stored as attributes in the Catchment object as follow
 
-.. code:: ipython3
-
+.. code-block:: ipython3
+    
     Outputs:
         1-statevariables: [numpy attribute]
             4D array (rows,cols,time,states) states are [sp,wc,sm,uz,lv]
@@ -174,12 +181,13 @@ Read Meteorological Inputs
             3D array of the lower zone discharge translated at each time step
 
 4-Extract Hydrographs
-########
+-----------------------
 
 - The final step is to extract the simulated Hydrograph from the cells at the location of the gauges to compare
 - The `ExtractDischarge` method extracts the hydrographs, however you have to provide in the gauge file the coordinates of the gauges with the same coordinate system of the `FlowAcc` raster
 
-.. code:: ipython3
+.. code-block:: ipython3
+    :linenos:
     Coello.ExtractDischarge(Factor=Coello.GaugesTable['area ratio'].tolist())
 
     for i in range(len(Coello.GaugesTable)):
@@ -199,12 +207,12 @@ Read Meteorological Inputs
 
 
 5-Visualization
-########
+-------------------
 
 - Firts type of visualization we can do with the results is to compare the gauge hydrograph with the simulatied hydrographs 
 - Call the `PlotHydrograph` method and provide the period you want to visualize with the order of the gauge
 
-.. code:: ipython3
+.. code-block:: ipython3
 
     gaugei = 5
     plotstart = "2009-01-01"
@@ -219,11 +227,11 @@ Read Meteorological Inputs
 
 
 6-Animation
-########
+-----------------
 
 - the best way to visualize time series of distributed data is through visualization, for theis reason, The `Catchment` object has `PlotDistributedResults` method which can animate all the results of the model
 
-.. code:: ipython3
+.. code-block:: ipython3
 
     =============================================================================
     AnimateArray(Arr, Time, NoElem, TicksSpacing = 2, Figsize=(8,8), PlotNumbers=True,
@@ -315,7 +323,7 @@ Read Meteorological Inputs
 
 - choose the period of time you want to animate and the result (total discharge, upper zone discharge, soil moisture,...)
 
-.. code:: ipython3
+.. code-block:: ipython3
     plotstart = "2009-01-01"
     plotend = "2009-02-01"
 
@@ -337,23 +345,23 @@ Read Meteorological Inputs
 
 	- define the path where the downloaded folder "ffmpeg-static" exist to matplotlib using the following lines 
 
-.. code:: ipython3
+.. code-block:: ipython3
     import matplotlib as mpl
     mpl.rcParams['animation.ffmpeg_path'] = "path where you saved the ffmpeg.exe/ffmpeg.exe" 
 
 
-.. code:: ipython3
+.. code-block:: ipython3
     Path = SaveTo + "anim.gif"
     Coello.SaveAnimation(VideoFormat="gif",Path=Path,SaveFrames=3)
 
 
 
 7-Save the result into rasters
-########
+----------------------------------
 
 - To save the results as rasters provide the period and the path 
 
-.. code:: ipython3
+.. code-block:: ipython3
 
     StartDate = "2009-01-01"
     EndDate = "2010-04-20"

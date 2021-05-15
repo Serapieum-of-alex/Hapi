@@ -11,6 +11,7 @@ from Hapi.rrm.calibration import Calibration
 from Hapi.rrm.routing import Routing
 from Hapi.run import Run
 import Hapi.statistics.performancecriteria as PC
+#%% Paths
 Parameterpath = Comp + "/data/lumped/Coello_Lumped2021-03-08_muskingum.txt"
 MeteoDataPath = Comp + "/data/lumped/meteo_data-MSWEP.csv"
 Path = Comp + "/data/lumped/"

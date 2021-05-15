@@ -178,6 +178,15 @@ Display the result with the SOBOL plot
 	              ylabel2='Discharge m3/s', spaces=[None,None,None,None,None,None])
 	
 
+- Type 1 with one parameter
+
+.. image:: /img/sensitivityAnalysis1.png
+    :width: 400pt
+
+- Type 1 with all parameters
+.. image:: /img/sensitivityAnalysis3.png
+    :width: 400pt
+
 The second type 
 ----------------
 
@@ -201,3 +210,7 @@ The second type
 	    From = 0
 	    To = len(Qobs.values)
 	    ax2.plot(Qobs.values[From:To], label='Observed', color='red')
+
+- Type 2
+.. image:: /img/sensitivityAnalysis2.png
+    :width: 400pt

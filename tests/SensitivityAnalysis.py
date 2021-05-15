@@ -18,16 +18,13 @@ from Hapi.statistics.sensitivityanalysis import SensitivityAnalysis as SA
 Parameterpath = Comp + "/data/lumped/Coello_Lumped2021-03-08_muskingum.txt"
 MeteoDataPath = Comp + "/data/lumped/meteo_data-MSWEP.csv"
 Path = Comp + "/data/lumped/"
-
-BoundaryPath = Comp + "/Coello/Hapi/Data/00inputs/Basic_inputs"
-path = Comp + "/Coello/Hapi/Data/00inputs/"
 #%%
 ### meteorological data
 start = "2009-01-01"
 end = "2011-12-31"
 name = "Coello"
 Coello = Catchment(name, start, end)
-Coello.ReadLumpedInputs(MeteoDataPath + "meteo_data-MSWEP.csv")
+Coello.ReadLumpedInputs(MeteoDataPath)
 
 ### Basic_inputs
 # catchment area
@@ -40,24 +37,21 @@ Coello.ReadLumpedModel(HBVLumped, CatArea, InitialCond)
 
 ### parameters
 Snow = 0 # no snow subroutine
-Maxbas = False# if routing using Maxbas True, if Muskingum False
-Coello.ReadParameters(Parameterpath, Snow, Maxbas=Maxbas)
+Coello.ReadParameters(Parameterpath, Snow)
 
 parameters = pd.read_csv(Parameterpath, index_col = 0, header = None)
 parameters.rename(columns={1:'value'}, inplace=True)
-# parameters.drop('maxbas', axis=0, inplace=True)
-
-
-# parameters' boundaries
-UB = pd.read_csv(path  + "Basic_inputs/lumped/UB-1-Muskinguk.txt", index_col = 0, header = None)
+#%% parameters boundaries
+UB = pd.read_csv(Path + "/LB-1-Muskinguk.txt", index_col = 0, header = None)
 parnames = UB.index
 UB = UB[1].tolist()
-LB = pd.read_csv(path  + "Basic_inputs/lumped/LB-1-Muskinguk.txt", index_col = 0, header = None)
+LB = pd.read_csv(Path + "/UB-1-Muskinguk.txt", index_col = 0, header = None)
 LB = LB[1].tolist()
 Coello.ReadParametersBounds(UB, LB, Snow)
 
+#%%
 # observed flow
-Coello.ReadDischargeGauges(Meteopath + "Qout_c.csv", fmt="%Y-%m-%d")
+Coello.ReadDischargeGauges(Path + "Qout_c.csv", fmt="%Y-%m-%d")
 ### Routing
 Route=1
 # RoutingFn=Routing.TriangularRouting2
@@ -134,17 +128,18 @@ def WrapperType2(Randpar,Route, RoutingFn, Qobs):
     rmse = PC.RMSE(Qobs, Coello.Qsim['q'])
     return rmse, Coello.Qsim['q']
 
+Type = 1
 
-Type = 2
 if Type ==1:
     fn = WrapperType1
 elif Type == 2:
     fn = WrapperType2
 
-Positions = [10]
+
+Positions = []
 
 
-Sen = SA(parameters,Coello.LB, Coello.UB, fn, Positions, 5, Type=Type)
+Sen = SA(parameters, Coello.LB, Coello.UB, fn, Positions, 5, Type=Type)
 Sen.OAT(Route, RoutingFn, Qobs)
 #%%
 From = ''

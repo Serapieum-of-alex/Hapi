@@ -3,7 +3,7 @@ Distributed Hydrological Model
 ******************************
 After preparing all the meteorological, GIS inputs required for the model, and Extracting the parameters for the catchment 
 
-.. code:: ipython3
+.. code-block:: ipython3
     
     import numpy as np
     import datetime as dt
@@ -53,13 +53,13 @@ After preparing all the meteorological, GIS inputs required for the model, and E
 
 
 3-Spatial Variability Object
-##############################
+-------------------------------
 
 from Hapi.rrm.distparameters import DistParameters as DP
 
 - The `DistParameters` distribute the parameter vector on the cells following some sptial logic (same set of parameters for all cells, different parameters for each cell, HRU, different parameters for each class in aditional map)
 
-.. code:: ipython3
+.. code-block:: ipython3
 
     raster = gdal.Open(FlowAccPath)
     #-------------
@@ -78,8 +78,10 @@ from Hapi.rrm.distparameters import DistParameters as DP
 
 
 - Define the objective function
-################################
-.. code:: ipython3
+-----------------------------------
+
+.. code-block:: ipython3
+    :linenos:
 
     coordinates = Coello.GaugesTable[['id','x','y','weight']][:]
 
@@ -99,15 +101,16 @@ from Hapi.rrm.distparameters import DistParameters as DP
     Coello.ReadObjectiveFn(OF, OF_args)
 
 -Calibration algorithm Arguments
-##################################
+------------------------------------
 
 - Create the options dictionary all the optimization parameters should be passed to the optimization object inside the option dictionary:
 
 to see all options import Optimizer class and check the documentation of the
 method setOption
 
-.. code:: ipython3
-    
+.. code-block:: ipython3
+    :linenos:
+
     ApiObjArgs = dict(hms=50, hmcr=0.95, par=0.65, dbw=2000, fileout=1,
                       filename=SaveTo + "/Coello_"+str(dt.datetime.now())[0:10]+".txt")
 
@@ -122,14 +125,16 @@ method setOption
     OptimizationArgs=[ApiObjArgs, pll_type, ApiSolveArgs]
 
 - Run Calibration algorithm
-################
+------------------------------------
 
-.. code:: ipython3
+.. code-block:: ipython3
+
     cal_parameters = Coello.RunCalibration(SpatialVarFun, OptimizationArgs,printError=0)
 
 - Save results
-################
+----------------
 
-.. code:: ipython3
+.. code-block:: ipython3
+
     SpatialVarFun.Function(Coello.Parameters, kub=SpatialVarFun.Kub, klb=SpatialVarFun.Klb)
     SpatialVarFun.SaveParameters(SaveTo)
