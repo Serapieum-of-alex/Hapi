@@ -1,83 +1,129 @@
 *****
 Hapi Lumped Model
 *****
-to run the HBV lumped model inside Hapi you need to prepare the meteorological inputs (rainfall, temperature and potential evapotranspiration), HBV parameters, and the HBV model (you can load Bergström, 1992 version of HBV from Hapi )
+To run the HBV lumped model inside Hapi you need to prepare the meteorological inputs (rainfall, temperature and potential evapotranspiration), HBV parameters, and the HBV model (you can load Bergström, 1992 version of HBV from Hapi )
 
 - First load the prepared lumped version of the HBV module inside Hapi, the triangular routing function and the wrapper function that runs the lumped model `RUN`.
 
-.. code:: ipython3
-	import Hapi.hbv_bergestrom92 as HBVLumped
-	import Hapi.run as RUN
-	from Hapi.routing import TriangularRouting
+.. code-block:: ipython3
+	:linenos:
+
+	import Hapi.rrm.hbv_bergestrom92 as HBVLumped
+	from Hapi.run import Run
+	from Hapi.catchment import Catchment
+	from Hapi.rrm.routing import Routing
 
 - read the meteorological data, data has be in the form of numpy array with the following order [rainfall, ET, Temp, Tm], ET is the potential evapotranspiration, Temp is the temperature (C), and Tm is the long term monthly average temperature.
 
-.. code:: ipython3
-	import numpy as np
-	import pandas as pd
+.. code-block:: ipython3
+	:linenos:
 
-	data=pd.read_csv("meteo_data.txt",header=0 ,delimiter=',', index_col=0)
-	data=data.values
+	Parameterpath = Comp + "/data/lumped/Coello_Lumped2021-03-08_muskingum.txt"
+	MeteoDataPath = Comp + "/data/lumped/meteo_data-MSWEP.csv"
 
-- Loat the pre-estimated parameters with the following order ["rfcf","tt","sfcf","cfmax","cwh","cfr","fc","beta","lp","k0","k1","k2","uzl","perc","maxbas"] if the catchment has snow, if not ["rfcf","fc","beta","lp","k0","k1","k2","uzl","perc","maxbas"] and convert it to list
+	### meteorological data
+	start = "2009-01-01"
+	end = "2011-12-31"
+	name = "Coello"
+	Coello = Catchment(name, start, end)
+	Coello.ReadLumpedInputs(MeteoDataPath)
 
-.. code:: ipython3
-	parameters = pd.read_csv("parameter.txt", index_col = 0, header = None)
-	parameters = parameters[1].tolist()
+- Meteorological data
 
-- prepare the initial conditions, snow option (if you want to simulate snow accumulation and snow melt or not), temporal resolution, and cathcment area.
+.. code-block:: ipython3
+	:linenos:
 
-.. code:: ipython3
-	### Basic_inputs
-	ConceptualModel = HBVLumped
-	# p2 = [temporal resolution, catchment area]
-	p2=[24, 1530]
-	init_st=[0,10,10,10,0]
-	# no snow subroutine
-	snow = 0
+	start = "2009-01-01"
+	end = "2011-12-31"
+	name = "Coello"
+	Coello = Catchment(name, start, end)
+	Coello.ReadLumpedInputs(MeteoDataPath)
 
-- prepare the routing options (whether you want to route the generated discharge or not, if yes the routing function).
+- Lumped model
 
-.. code:: ipython3
-	### Routing
-	Routing=1
-	RoutingFn=TriangularRouting
+	prepare the initial conditions, cathcment area and the lumped model.
+
+.. code-block:: ipython3
+	:linenos:
+
+	# catchment area
+	AreaCoeff = 1530
+	# [Snow pack, Soil moisture, Upper zone, Lower Zone, Water content]
+	InitialCond = [0,10,10,10,0]
+
+	Coello.ReadLumpedModel(HBVLumped, AreaCoeff, InitialCond)
+
+- Load the pre-estimated parameters
+	snow option (if you want to simulate snow accumulation and snow melt or not)
+
+.. code-block:: ipython3
+	:linenos:
+
+	Snow = 0 # no snow subroutine
+	# if routing using Maxbas True, if Muskingum False
+	Coello.ReadParameters(Parameterpath, Snow)
+
+
+- Prepare the routing options.
+
+.. code-block:: ipython3
+	:linenos:
+
+	# RoutingFn = Routing.TriangularRouting2
+	RoutingFn = Routing.Muskingum_V
+	Route = 1
 
 - now all the data required for the model are prepared in the right form, now you can call the `RunLumped` wrapper to initiate the calculation
 
-.. code:: ipython3
-	st, q_sim=RUN.RunLumped(ConceptualModel,data,parameters,p2,init_st,snow,Routing, RoutingFn)
+.. code-block:: ipython3
+	:linenos:
 
-the `RunLumped` returns two numpy arrays first is the state variables [snow pack, soil moisture, upper zone, lower zone, water content], and second array is the calculated discharge.
+	Run.RunLumped(Coello, Route, RoutingFn)
 
 to calculate some metrics for the quality assessment of the calculate discharge the `performancecriteria` contains some metrics like `RMSE`, `NSE`, `KGE` and `WB` , you need to load it, a measured time series of doscharge for the same period of the simulation is also needed for the comparison.
 
 all methods in `performancecriteria` takes two numpy arrays of the same length and return real number.
 
-.. code:: ipython3
-	import Hapi.performancecriteria as PC
-
-	# observed flow
-	Qobs =np.loadtxt("measuredQ.txt")
+.. code-block:: ipython3
+	:linenos:
+	import Hapi.statistics.performancecriteria as PC
 
 	Metrics = dict()
+	Qobs = Coello.QGauges['q']
 
-	Metrics['RMSE'] = PC.RMSE(Qobs, q_sim)
-	Metrics['NSE'] = PC.NSE(Qobs, q_sim)
-	Metrics['NSEhf'] = PC.NSEHF(Qobs, q_sim)
-	Metrics['KGE'] = PC.KGE(Qobs, q_sim)
-	Metrics['WB'] = PC.WB(Qobs, q_sim)
+	Metrics['RMSE'] = PC.RMSE(Qobs, Coello.Qsim['q'])
+	Metrics['NSE'] = PC.NSE(Qobs, Coello.Qsim['q'])
+	Metrics['NSEhf'] = PC.NSEHF(Qobs, Coello.Qsim['q'])
+	Metrics['KGE'] = PC.KGE(Qobs, Coello.Qsim['q'])
+	Metrics['WB'] = PC.WB(Qobs, Coello.Qsim['q'])
 
-to plot the calculated and measured discharge import matplotlib
+	print("RMSE= " + str(round(Metrics['RMSE'],2)))
+	print("NSE= " + str(round(Metrics['NSE'],2)))
+	print("NSEhf= " + str(round(Metrics['NSEhf'],2)))
+	print("KGE= " + str(round(Metrics['KGE'],2)))
+	print("WB= " + str(round(Metrics['WB'],2)))
 
-.. code:: ipython3
+To plot the calculated and measured discharge import matplotlib
 
-	import matplotlib.pyplot as plt
+.. code-block:: ipython3
+	:linenos:
 
-	plt.figure(1, figsize=(12,8))
-	plt.plot(q_sim)
-	plt.plot(Qobs)
-	plt.xlabel("Time (daily)")
-	plt.ylabel("Flow Hydrograph m3/s")
+	gaugei = 0
+	plotstart = "2009-01-01"
+	plotend = "2011-12-31"
+	Coello.PlotHydrograph(plotstart, plotend, gaugei, Title= "Lumped Model")
 
 
+  .. image:: /img/lumpedmodel.png
+    :width: 400pt
+
+- To save the results
+
+.. code-block:: ipython3
+	:linenos:
+
+	StartDate = "2009-01-01"
+	EndDate = "2010-04-20"
+
+	Path = SaveTo + "Results-Lumped-Model" + str(dt.datetime.now())[0:10] + ".txt"
+	Coello.SaveResults(Result=5, StartDate=StartDate, EndDate=EndDate, Path=Path)
