@@ -18,14 +18,14 @@ The only input we need to extract parameters to our catchment is the DEM or any 
 
 - define the paths to the DEM and the directory to save the parameters
 
-.. code:: ipython3
+.. code:: py
 
 	dem_path = "../../data/GIS/Hapi_GIS_Data/acc4000.tif"
 	outputpath = "../../data/parameters/03/"
 
 - call the `ExtractParameters` method 
 
-.. code:: ipython3
+.. code:: py
 
 	Inputs.ExtractParameters(dem_path, '03', AsRaster=True, SaveTo=outputpath)
 
@@ -38,7 +38,7 @@ You will find the following example in the `ExtractParametersBounds.py` file und
 
 To Extract the parameters range needed for the Calibration you have to prepare a shapefile of the catchment you are developing a distributed model and read it using `geopandas`, 
 
-.. code:: ipython3
+.. code:: py
 
 	import geopandas as gpd
 	import numpy as np
@@ -54,14 +54,14 @@ To Extract the parameters range needed for the Calibration you have to prepare a
 
 the `inputs` module in Hapi has a `ExtractParametersBoundaries` method to overlay the basin shapefile with the global parameters rasters and extract the max and min parameter values within the basin and plots your basin shapefile in top of the world map to make sure of the projection transformation from whatever projection your basin shapefile to the `WGS64` that the parameters rasters have
 
-.. code:: ipython3
+.. code:: py
 
 	# extract parameters boundaries
 	Par['UB'], Par['LB'] = IN.ExtractParametersBoundaries(Basin)
 
 To extract the parameters from one of the ten scenarios developed to derive the Global model `ExtractParameters` method takes the number of the scenario as a string and return the parameters
 
-.. code:: ipython3
+.. code:: py
 
 	# extract parameters in a specific scenarion from the 10 scenarios
 	Par['1'] = IN.ExtractParameters(Basin,"01")

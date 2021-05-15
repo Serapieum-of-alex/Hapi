@@ -5,7 +5,7 @@ Lumped Model Calibration
 To calibrate the HBV lumped model inside Hapi you need to follow the same steps of running the lumped model with few extra steps to define the requirement of the calibration algorithm.
 
 
-.. code-block:: ipython3
+.. code-block:: py
 	:linenos:
 
 	import pandas as pd
@@ -65,7 +65,7 @@ To calibrate the HBV lumped model inside Hapi you need to follow the same steps 
 
 - after defining all the components of the lumped model, we have to define the calibration arguments
 
-.. code-block:: ipython3
+.. code-block:: py
 	:linenos:
 
 	ApiObjArgs = dict(hms=100, hmcr=0.95, par=0.65, dbw=2000, fileout=1, xinit =0,
@@ -84,7 +84,7 @@ To calibrate the HBV lumped model inside Hapi you need to follow the same steps 
 
 - Run Calibration
 
-.. code-block:: ipython3
+.. code-block:: py
 	:linenos:
 
 	cal_parameters = Coello.LumpedCalibration(Basic_inputs, OptimizationArgs, printError=None)

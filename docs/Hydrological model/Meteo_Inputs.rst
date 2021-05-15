@@ -45,7 +45,7 @@ CHRIPS data are uploaded into a ftp server therefore and can be downloaded throu
 	- Extend (Longitude/Latitude)
 	- Path (directory to save the downloaded data)
 
-.. code:: ipython3
+.. code:: py
 
 	StartDate = '2009-01-01'
 	EndDate = '2009-01-10'
@@ -59,7 +59,7 @@ CHRIPS data are uploaded into a ftp server therefore and can be downloaded throu
 
 - Call the `Download` method 
 
-.. code:: ipython3
+.. code:: py
 
 	Coello.Download()
 	
@@ -72,7 +72,7 @@ CHRIPS data are uploaded into a ftp server therefore and can be downloaded throu
 
 - If the period is long and the Download method can run in parallel, to activate the parallel mode enter the number of cores with the keyword argument `cores`
 
-.. code:: ipython3
+.. code:: py
 
 	Coello.Download(cores=4)
 
@@ -100,7 +100,7 @@ so inorder to be able to use the following code to download ECMWF data you need 
 - You need to provide the name of the variable using the `Variables` object 
 - `Variables` contains the tame of the variable you need to give to the `ECMWF` object to get and the unit and description
 
-.. code:: ipython3
+.. code:: py
 	from Hapi.remotesensing import Variables
 	Vars = Variables('daily')
 	Vars.__str__()
@@ -108,7 +108,7 @@ so inorder to be able to use the following code to download ECMWF data you need 
 
 For the information about the ECMWF data `https://apps.ecmwf.int/codes/grib/param-db/ <https://apps.ecmwf.int/codes/grib/param-db/>`_.
 
-.. code:: ipython3
+.. code:: py
 
 	StartDate = '2009-01-01'
 	EndDate = '2009-01-10'

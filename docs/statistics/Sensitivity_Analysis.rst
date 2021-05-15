@@ -30,7 +30,7 @@ Steps:
 Run the model
 --------------
 
-.. code-block:: ipython3
+.. code-block:: py
 	:linenos:
 	
 	import pandas as pd
@@ -91,7 +91,7 @@ Run the model
 
 - Measure the performance of the baseline parameters
 
-.. code:: ipython3
+.. code:: py
 
 	Metrics = dict()
 	Qobs = Coello.QGauges[Coello.QGauges.columns[0]]
@@ -131,7 +131,7 @@ to define the argument of the "wrapper" function
 There are two types of wrappers 
 - The first one returns one value (performance metric)
 
-.. code-block:: ipython3
+.. code-block:: py
 	:linenos:
 
 	# For Type 1
@@ -148,7 +148,7 @@ There are two types of wrappers
 Instantiate the SensitivityAnalysis object
 -------------------------------------------
 
-.. code-block:: ipython3
+.. code-block:: py
 	:linenos:
 
 	fn = WrapperType2
@@ -162,7 +162,7 @@ Instantiate the SensitivityAnalysis object
 Run the OAT method
 -------------------
 
-.. code-block:: ipython3
+.. code-block:: py
 	:linenos:
 	Sen.OAT(Route, RoutingFn, Qobs)
 
@@ -171,7 +171,7 @@ Run the OAT method
 Display the result with the SOBOL plot
 ---------------------------------------
 
-.. code-block:: ipython3
+.. code-block:: py
 	:linenos:
 
 	From = ''
@@ -190,13 +190,14 @@ Display the result with the SOBOL plot
 - Type 1 with all parameters
 .. image:: /img/sensitivityAnalysis3.png
     :width: 400pt
-
+	:align: center
+	
 The second type 
 ----------------
 
 - The second wrapper returns two values (the performance metric and the calculated output from the model)
 
-.. code-block:: ipython3
+.. code-block:: py
 	:linenos:
 
 	# For Type 2

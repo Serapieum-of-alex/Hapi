@@ -5,7 +5,7 @@ To run the HBV lumped model inside Hapi you need to prepare the meteorological i
 
 - First load the prepared lumped version of the HBV module inside Hapi, the triangular routing function and the wrapper function that runs the lumped model `RUN`.
 
-.. code-block:: ipython3
+.. code-block:: py
 	:linenos:
 
 	import Hapi.rrm.hbv_bergestrom92 as HBVLumped
@@ -15,7 +15,7 @@ To run the HBV lumped model inside Hapi you need to prepare the meteorological i
 
 - read the meteorological data, data has be in the form of numpy array with the following order [rainfall, ET, Temp, Tm], ET is the potential evapotranspiration, Temp is the temperature (C), and Tm is the long term monthly average temperature.
 
-.. code-block:: ipython3
+.. code-block:: py
 	:linenos:
 
 	Parameterpath = Comp + "/data/lumped/Coello_Lumped2021-03-08_muskingum.txt"
@@ -30,7 +30,7 @@ To run the HBV lumped model inside Hapi you need to prepare the meteorological i
 
 - Meteorological data
 
-.. code-block:: ipython3
+.. code-block:: py
 	:linenos:
 
 	start = "2009-01-01"
@@ -43,7 +43,7 @@ To run the HBV lumped model inside Hapi you need to prepare the meteorological i
 
 	prepare the initial conditions, cathcment area and the lumped model.
 
-.. code-block:: ipython3
+.. code-block:: py
 	:linenos:
 
 	# catchment area
@@ -56,7 +56,7 @@ To run the HBV lumped model inside Hapi you need to prepare the meteorological i
 - Load the pre-estimated parameters
 	snow option (if you want to simulate snow accumulation and snow melt or not)
 
-.. code-block:: ipython3
+.. code-block:: py
 	:linenos:
 
 	Snow = 0 # no snow subroutine
@@ -66,7 +66,7 @@ To run the HBV lumped model inside Hapi you need to prepare the meteorological i
 
 - Prepare the routing options.
 
-.. code-block:: ipython3
+.. code-block:: py
 	:linenos:
 
 	# RoutingFn = Routing.TriangularRouting2
@@ -75,7 +75,7 @@ To run the HBV lumped model inside Hapi you need to prepare the meteorological i
 
 - now all the data required for the model are prepared in the right form, now you can call the `RunLumped` wrapper to initiate the calculation
 
-.. code-block:: ipython3
+.. code-block:: py
 	:linenos:
 
 	Run.RunLumped(Coello, Route, RoutingFn)
@@ -84,7 +84,7 @@ to calculate some metrics for the quality assessment of the calculate discharge 
 
 all methods in `performancecriteria` takes two numpy arrays of the same length and return real number.
 
-.. code-block:: ipython3
+.. code-block:: py
 	:linenos:
 	import Hapi.statistics.performancecriteria as PC
 
@@ -105,7 +105,7 @@ all methods in `performancecriteria` takes two numpy arrays of the same length a
 
 To plot the calculated and measured discharge import matplotlib
 
-.. code-block:: ipython3
+.. code-block:: py
 	:linenos:
 
 	gaugei = 0
@@ -119,7 +119,7 @@ To plot the calculated and measured discharge import matplotlib
 
 - To save the results
 
-.. code-block:: ipython3
+.. code-block:: py
 	:linenos:
 
 	StartDate = "2009-01-01"

@@ -64,13 +64,15 @@ Current release info
 
 Hapi - Hydrological library for Python 
 =====================================================================
-  
+ 
   .. image:: /img/Hapi.png
     :width: 400pt
+    :align: center
   
  
   .. image:: /img/name.png
     :width: 400pt
+    :align: center
 
 
 **Hapi** is a Python package providing fast and flexible way to build Hydrological models with different spatial representations (lumped, semidistributed and conceptual distributed) using HBV96.
@@ -81,9 +83,11 @@ their own model, it contains two routing functions muskingum cunge, and MAXBAS t
 
   .. image:: /img/Picture1.png
    :width: 400pt
+   :align: center
 
   .. image:: /img/Picture2.png
    :width: 800pt
+   :align: center
 
 Main Features
 -------------

@@ -15,7 +15,7 @@ OverlayMap one map
 The `OverlayMap` function takes two ascii files the `BaseMap` which is the raster/asc file of the polygons and the secon is the asc file you want to extract its values. 
 
 
-.. code:: ipython3
+.. code:: py
 
     def OverlayMap(Path, BaseMap, ExcludeValue, Compressed = False, OccupiedCellsOnly=True):
     """
@@ -48,7 +48,7 @@ The `OverlayMap` function takes two ascii files the `BaseMap` which is the raste
 
 To extract the 
 
-.. code:: ipython3
+.. code:: py
 
     import Hapi.raster as R
 
@@ -66,7 +66,7 @@ OverlayMap Several maps
 ===================
 The `OverlayMaps` function takes path to the folder where more than one map exist instead of a path to one file, it also takes an extra parameter `FilePrefix`, this prefix is used to name the files in the given path and all the file has to start with the prefix
 
-.. code:: ipython3
+.. code:: py
 
     FilePrefix = "Map"
     # several maps
@@ -77,7 +77,7 @@ both methods `OverlayMap` and `OverlayMaps` returns the values as a `dict`, the 
 Save extracted values 
 ===================
 
-.. code:: ipython3
+.. code:: py
     # save extracted values in different files
     Polygons = list(ExtractedValues.keys())
     for i in range(len(Polygons)):
