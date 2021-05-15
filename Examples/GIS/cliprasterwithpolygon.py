@@ -4,11 +4,9 @@ Created on Sat May 16 00:02:08 2020
 
 @author: mofarrag
 """
-from IPython import get_ipython
-get_ipython().magic("reset -f")
-# import os
-# os.chdir("")
-import Hapi.raster as Raster
+
+
+import Hapi.gis.raster as Raster
 import geopandas as gpd
 
 

@@ -7,8 +7,6 @@ Created on Fri Oct 11 15:43:22 2019
 match two rasters
 """
 #%links
-from IPython import get_ipython   # to reset the variable explorer each time
-get_ipython().magic('reset -f')
 import os
 os.chdir("F:/01Algorithms/Hydrology/HAPI/Examples/GIS")
 
@@ -17,7 +15,7 @@ os.chdir("F:/01Algorithms/Hydrology/HAPI/Examples/GIS")
 import gdal
 # import datetime as dt
 #import pandas as pd
-from Hapi.raster import Raster
+from Hapi.gis.raster import Raster
 #import matplotlib.pyplot as plt
 #%% inputs
 RasterAPath = "F:/01Algorithms/Hydrology/HAPI/Examples/data/GIS/DEM5km_Rhine_burned_acc.tif"

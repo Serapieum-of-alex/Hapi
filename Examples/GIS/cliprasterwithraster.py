@@ -11,7 +11,7 @@ from osgeo import gdal
 # from gdalconst import GA_ReadOnly
 import osr
 from osgeo import gdalconst
-from Hapi.raster import Raster
+from Hapi.gis.raster import Raster
 
 SourceRasterPath ="00inputs/GIS/4000/acc4000.tif"
 RasterTobeClippedPath = Comp + "/Documents/01Algorithms/HAPI/Hapi/Parameters/01/Par_BETA.tif"

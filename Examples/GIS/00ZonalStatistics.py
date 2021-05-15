@@ -10,7 +10,7 @@ currunt_work_directory = Hapi/Example
 """
 # import os
 import numpy as np
-from Hapi.raster import Raster as R
+from Hapi.gis.raster import Raster as R
 
 Path = "data/GIS/ZonalStatistics/"
 SavePath  = Path

@@ -1,5 +1,5 @@
 # import numpy as np
-from Hapi.giscatchment import GISCatchment as GC
+from Hapi.gis.giscatchment import GISCatchment as GC
 import gdal
 Path = "F:/04Private/990110182315.csv" #Book1.csv
 

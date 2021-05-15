@@ -9,7 +9,7 @@ get_ipython().magic("reset -f")
 import os
 # os.chdir("F:/02Case studies/Rhine/base_data/GIS/Layers/DEM/srtm/srtms")
 import glob
-import Hapi.raster as Raster
+import Hapi.gis.raster as Raster
 from rasterio.plot import show
 
 # File and folder paths

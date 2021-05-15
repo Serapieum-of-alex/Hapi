@@ -8,7 +8,7 @@ Created on Fri Feb 19 17:04:28 2021
 import os
 # os.chdir("F:/01Algorithms/Hydrology/HAPI/Examples")
 
-from Hapi.raster import Raster
+from Hapi.gis.raster import Raster
 import gdal
 import osr
 
