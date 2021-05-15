@@ -4,7 +4,7 @@ Available Models
 .. toctree::
     :maxdepth: 1
 
-    20HBV.rst
-    21Muskingum.rst
+    Hydrological model/HBV.rst
+    Hydrological model/Muskingum.rst
     
 

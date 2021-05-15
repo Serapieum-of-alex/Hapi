@@ -1,5 +1,5 @@
 *****
-Hapi Lumped Model
+Lumped Model Run
 *****
 To run the HBV lumped model inside Hapi you need to prepare the meteorological inputs (rainfall, temperature and potential evapotranspiration), HBV parameters, and the HBV model (you can load Bergström, 1992 version of HBV from Hapi )
 

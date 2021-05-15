@@ -1,5 +1,5 @@
 *****
-Hapi Lumped Model Calibration
+Lumped Model Calibration
 *****
 
 To calibrate the HBV lumped model inside Hapi you need to follow the same steps of running the lumped model with few extra steps to define the requirement of the calibration algorithm.

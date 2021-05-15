@@ -201,28 +201,3 @@ The second type
 	    From = 0
 	    To = len(Qobs.values)
 	    ax2.plot(Qobs.values[From:To], label='Observed', color='red')
-
-
-
-
-
-
-First the SensitivityAnalysis method takes 4 arguments :
-
-    1-parameters:previous obtained parameters
-    2-LB: upper bound
-    3-UB: lower bound
-    4-wrapper: defined function contains the function you want to run with different parameters and the metric function you want to assess the first function based on it.
-
-
-
-SensitivityAnalysis method returns a dictionary with the name of the parameters
-as keys,
-Each parameter has a disctionary with two keys 0: list of parameters woth relative values
-1: list of parameter values
-
-.. code:: ipython3
-
-	import matplotlib.pyplot as plt
-	import Hapi.performancecriteria as PC
-	import Hapi.statisticaltools as ST

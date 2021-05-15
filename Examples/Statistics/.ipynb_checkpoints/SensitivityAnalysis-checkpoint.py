@@ -4,30 +4,27 @@ Created on Sun Jun 21 01:55:25 2020
 
 @author: mofarrag
 """
-
-Comp = "F:/01Algorithms/Hydrology/HAPI/Examples"
-
+# import os
+Path = "F:/01Algorithms/Hydrology/HAPI/Examples"
+# os.chdir(Path)
 import pandas as pd
+
+# functions
 import Hapi.rrm.hbv_bergestrom92 as HBVLumped
 from Hapi.run import Run
 from Hapi.catchment import Catchment
 from Hapi.rrm.routing import Routing
 import Hapi.statistics.performancecriteria as PC
 from Hapi.statistics.sensitivityanalysis import SensitivityAnalysis as SA
-#%% Paths
-Parameterpath = Comp + "/data/lumped/Coello_Lumped2021-03-08_muskingum.txt"
-MeteoDataPath = Comp + "/data/lumped/meteo_data-MSWEP.csv"
-Path = Comp + "/data/lumped/"
-
-BoundaryPath = Comp + "/Coello/Hapi/Data/00inputs/Basic_inputs"
-path = Comp + "/Coello/Hapi/Data/00inputs/"
+Parameterpath = Path + "/data/Lumped/Coello_Lumped2021-03-08_muskingum.txt"
+Path = Path + "/data/Lumped/"
 #%%
 ### meteorological data
 start = "2009-01-01"
 end = "2011-12-31"
 name = "Coello"
 Coello = Catchment(name, start, end)
-Coello.ReadLumpedInputs(MeteoDataPath + "meteo_data-MSWEP.csv")
+Coello.ReadLumpedInputs(Path + "meteo_data-MSWEP.csv")
 
 ### Basic_inputs
 # catchment area
@@ -39,25 +36,24 @@ InitialCond = [0,10,10,10,0]
 Coello.ReadLumpedModel(HBVLumped, CatArea, InitialCond)
 
 ### parameters
-Snow = 0 # no snow subroutine
-Maxbas = False# if routing using Maxbas True, if Muskingum False
+ # no snow subroutine
+Snow = 0
+# if routing using Maxbas True, if Muskingum False
+Maxbas = False
 Coello.ReadParameters(Parameterpath, Snow, Maxbas=Maxbas)
 
 parameters = pd.read_csv(Parameterpath, index_col = 0, header = None)
 parameters.rename(columns={1:'value'}, inplace=True)
-# parameters.drop('maxbas', axis=0, inplace=True)
 
-
-# parameters' boundaries
-UB = pd.read_csv(path  + "Basic_inputs/lumped/UB-1-Muskinguk.txt", index_col = 0, header = None)
+UB = pd.read_csv(Path + "/UB-1-Muskinguk.txt", index_col = 0, header = None)
 parnames = UB.index
 UB = UB[1].tolist()
-LB = pd.read_csv(path  + "Basic_inputs/lumped/LB-1-Muskinguk.txt", index_col = 0, header = None)
+LB = pd.read_csv(Path + "/LB-1-Muskinguk.txt", index_col = 0, header = None)
 LB = LB[1].tolist()
 Coello.ReadParametersBounds(UB, LB, Snow)
 
 # observed flow
-Coello.ReadDischargeGauges(Meteopath + "Qout_c.csv", fmt="%Y-%m-%d")
+Coello.ReadDischargeGauges(Path + "Qout_c.csv", fmt="%Y-%m-%d")
 ### Routing
 Route=1
 # RoutingFn=Routing.TriangularRouting2
