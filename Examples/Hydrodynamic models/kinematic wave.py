@@ -4,10 +4,10 @@ Created on Sun May 16 18:33:09 2021
 
 @author: mofarrag
 """
-import numpy as np
+# import numpy as np
 import pandas as pd
 import datetime as dt
-
+from Hapi.hm.river import River
 Path = "F:/01Algorithms/Hydrology/HAPI/Examples/"
 #%%
 def convertdate(date):
@@ -23,14 +23,14 @@ MinQ.loc[:,:] = USBC.loc[:,:].resample('1Min').mean().interpolate('linear')
 XS = pd.read_csv(Path + "/data/hydrodynamic model/xs.csv")
 #%%
 dx = 1000
-beta = 3/5
 dt = 3*60
-dtx = dt/dx
+
 b=60
 Laterals = False
 LateralsQ = 0
 
-
+Coello = River("Coello",Version=3, start="2010-01-01")
+Coello.ReadCrossSections(Path + "/data/hydrodynamic model/xs.csv")
 #%%
 
 
