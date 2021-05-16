@@ -162,8 +162,7 @@ class River():
 
         """
         if type(Date) == str:
-            Date = dt.datetime.strptime(Date,"%Y-%m-%d")
-        
+            Date = dt.datetime.strptime(Date,"%Y-%m-%d")    
         try:
             return np.where(self.ReferenceIndex['date'] == Date)[0][0]+1    
         except:
@@ -581,6 +580,8 @@ class River():
     def GetQForReturnPeriod(self, SubID, T):
 
         assert hasattr(self, "SP"), "Please read the statistical properties file for the catchment first"
+        assert "id" in self.SP.columns, "the SP dataframe should have a column 'id' containing the id of the gauges"
+        
         F = 1 - (1/T)
         try:
             loc = np.where(self.SP['id'] == SubID)[0][0]

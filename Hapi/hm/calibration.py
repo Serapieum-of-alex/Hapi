@@ -1,11 +1,12 @@
 import pandas as pd
 import datetime as dt
 import numpy as np
+from Hapi.hm.river import River
 
 datafn = lambda x: dt.datetime.strptime(x,"%Y-%m-%d")
 
 
-class Calibration():
+class Calibration(River):
     """
     =====================================
         HMCalibration
@@ -51,55 +52,55 @@ class Calibration():
         self.ReferenceIndex['date'] = Ref_ind[:-1]
 
 
-    def IndexToDate(self,Index):
-        """
-        =======================================================
-           IndexToDate(Index)
-        =======================================================
-        IndexToDate takes an integer number and returns the date coresponding
-        to this date based on a time series starting from the "start" attribute
-        of  River object and for a length of the value of the "days" attribute
+    # def IndexToDate(self,Index):
+    #     """
+    #     =======================================================
+    #        IndexToDate(Index)
+    #     =======================================================
+    #     IndexToDate takes an integer number and returns the date coresponding
+    #     to this date based on a time series starting from the "start" attribute
+    #     of  River object and for a length of the value of the "days" attribute
 
-        Parameters
-        ----------
-        Index : [Integer]
-            Integer number ranges from 1 and max value of the value of the attribute
-            "days" of the River object.
+    #     Parameters
+    #     ----------
+    #     Index : [Integer]
+    #         Integer number ranges from 1 and max value of the value of the attribute
+    #         "days" of the River object.
 
-        Returns
-        -------
-        [Date time ]
-            date object.
+    #     Returns
+    #     -------
+    #     [Date time ]
+    #         date object.
 
-        """
-        # convert the index into date
-        return self.ReferenceIndex.loc[Index,'date']
+    #     """
+    #     # convert the index into date
+    #     return self.ReferenceIndex.loc[Index,'date']
 
-    def DateToIndex(self,Date):
-        """
-        ===================================================
-             DateToIndex(Date)
-        ===================================================
-        DateToIndex takes a date and returns a the order of the days in the
-        time series. The time series starts from the value of the "start" for
-        a length of "days" value
+    # def DateToIndex(self,Date):
+    #     """
+    #     ===================================================
+    #          DateToIndex(Date)
+    #     ===================================================
+    #     DateToIndex takes a date and returns a the order of the days in the
+    #     time series. The time series starts from the value of the "start" for
+    #     a length of "days" value
 
-        Parameters
-        ----------
-        Date : [string/date time object]
-            string in the format of "%Y-%m-%d" or a date time object.
+    #     Parameters
+    #     ----------
+    #     Date : [string/date time object]
+    #         string in the format of "%Y-%m-%d" or a date time object.
 
-        Returns
-        -------
-        [Integer]
-            the order oif the date in the time series.
+    #     Returns
+    #     -------
+    #     [Integer]
+    #         the order oif the date in the time series.
 
-        """
-        # convert the index into date+
-        # Date = dt.datetime(1950,1,1)
-        if type(Date) == str:
-            Date = dt.datetime.strptime(Date,"%Y-%m-%d")
-        return np.where(self.ReferenceIndex['date'] == Date)[0][0]+1
+    #     """
+    #     # convert the index into date+
+    #     # Date = dt.datetime(1950,1,1)
+    #     if type(Date) == str:
+    #         Date = dt.datetime.strptime(Date,"%Y-%m-%d")
+    #     return np.where(self.ReferenceIndex['date'] == Date)[0][0]+1
 
     def ReadGaugesTable(self,Path):
         """
@@ -498,49 +499,49 @@ class Calibration():
         self.CalibrationWL[SubID] = wl[1].resample('D').mean()
 
 
-    def ReturnPeriod(self,Path):
-        """
-        ==========================================
-             ReturnPeriod(Path)
-        ==========================================
-        ReturnPeriod method reads the HQ file which contains all the computational nodes
-        with HQ2, HQ10, HQ100
-        Parameters
-        ----------
-            1-Path : [String]
-                path to the HQ.csv file including the file name and extention
-                "RIM1Files + "/HQRhine.csv".
+    # def ReturnPeriod(self,Path):
+    #     """
+    #     ==========================================
+    #          ReturnPeriod(Path)
+    #     ==========================================
+    #     ReturnPeriod method reads the HQ file which contains all the computational nodes
+    #     with HQ2, HQ10, HQ100
+    #     Parameters
+    #     ----------
+    #         1-Path : [String]
+    #             path to the HQ.csv file including the file name and extention
+    #             "RIM1Files + "/HQRhine.csv".
 
-        Returns
-        -------
-            1-RP:[data frame attribute]
-                containing the river computational node and calculated return period
-                for with columns ['node','HQ2','HQ10','HQ100']
-        """
-        self.RP = pd.read_csv(Path, delimiter = ",",header = None)
-        self.RP.columns = ['node','HQ2','HQ10','HQ100']
+    #     Returns
+    #     -------
+    #         1-RP:[data frame attribute]
+    #             containing the river computational node and calculated return period
+    #             for with columns ['node','HQ2','HQ10','HQ100']
+    #     """
+    #     self.RP = pd.read_csv(Path, delimiter = ",",header = None)
+    #     self.RP.columns = ['node','HQ2','HQ10','HQ100']
 
-    def RiverNetwork(self, Path):
-        """
-        =====================================================
-              RiverNetwork(Path)
-        =====================================================
-        RiverNetwork method rad the table of each computational node followed by
-        upstream and then downstream node (TraceAll file)
+    # def RiverNetwork(self, Path):
+    #     """
+    #     =====================================================
+    #           RiverNetwork(Path)
+    #     =====================================================
+    #     RiverNetwork method rad the table of each computational node followed by
+    #     upstream and then downstream node (TraceAll file)
 
-        ==============   ====================================================
-        Keyword          Description
-        ==============   ====================================================
-        1-Path :         [String] path to the Trace.txt file including the file name and extention
-                            "path/Trace.txt".
+    #     ==============   ====================================================
+    #     Keyword          Description
+    #     ==============   ====================================================
+    #     1-Path :         [String] path to the Trace.txt file including the file name and extention
+    #                         "path/Trace.txt".
 
-        Returns
-        -------
-            1-rivernetwork:[data frame attribute]
-                containing the river network with columns ['SubID','US','DS']
-        """
-        self.rivernetwork = pd.read_csv(Path, delimiter = ',') #,header = None
-        # self.rivernetwork.columns = ['SubID','US','DS']
+    #     Returns
+    #     -------
+    #         1-rivernetwork:[data frame attribute]
+    #             containing the river network with columns ['SubID','US','DS']
+    #     """
+    #     self.rivernetwork = pd.read_csv(Path, delimiter = ',') #,header = None
+    #     # self.rivernetwork.columns = ['SubID','US','DS']
 
     def GetAnnualMax(self, option=1, CorespondingTo=dict(MaxObserved=" ", TimeWindow=0)):
         """
@@ -831,18 +832,18 @@ class Calibration():
         # self.slope.loc[self.slope['id']==Segmenti, 'slope'] = AvgSlope
         self.slope.loc[self.slope['id']==Segmenti, 'slope'] = BC_slope
 
-    def ReadCrossSections(self,Path):
-        """
-        ===========================================
-          CrossSections(self,Path)
-        ===========================================
-        CrossSections method reads the cross section data of the river and assign it
-        to an attribute "Crosssections" of type dataframe
-        """
-        if self.Version == 1 or self.Version == 2:
-            self.crosssections = pd.read_csv(Path, delimiter = ',', skiprows =1  )
-        else:
-            self.crosssections = pd.read_csv(Path, delimiter = ',')
+    # def ReadCrossSections(self,Path):
+    #     """
+    #     ===========================================
+    #       CrossSections(self,Path)
+    #     ===========================================
+    #     CrossSections method reads the cross section data of the river and assign it
+    #     to an attribute "Crosssections" of type dataframe
+    #     """
+    #     if self.Version == 1 or self.Version == 2:
+    #         self.crosssections = pd.read_csv(Path, delimiter = ',', skiprows =1  )
+    #     else:
+    #         self.crosssections = pd.read_csv(Path, delimiter = ',')
 
     def SmoothBedLevel(self, segmenti):
         """
