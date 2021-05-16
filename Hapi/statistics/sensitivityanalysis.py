@@ -63,6 +63,7 @@ class SensitivityAnalysis():
         self.LB = LB
         self.UB = UB
 
+        assert len(self.Parameter) == len(self.LB) == len(self.UB) , "Length of the boundary shoulf be of the same length as the length of the parameters"
         assert callable(Function) , "function should be of type callable (function that takes arguments)"
         self.Function = Function
 

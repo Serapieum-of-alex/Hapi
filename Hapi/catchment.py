@@ -1160,6 +1160,8 @@ class Catchment():
                 data['Qlz'] = self.qlz[starti:endi]
                 data[['SP','SM','UZ','LZ','WC']] = self.statevariables[starti:endi,:]
                 data.to_csv(Path, index = False, float_format="%.3f")
+            else:
+                assert False, "the possible options are from 1 to 5"
 
         print("Data is saved successfully")
 

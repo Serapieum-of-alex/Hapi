@@ -16,7 +16,7 @@ class SaintVenant():
         self.power = 2/3
         pass
 
-    def Kinematic(self, Model):
+    def KinematicRaster(self, Model):
 
         beta = 3/5
         dx = Model.CellSize
@@ -88,6 +88,24 @@ class SaintVenant():
 
                             Model.quz_routed[i,j,:] = Model.quz_routed[i,j,:] + Q
 
+    def Kinematic1D(self):
+        self.Q = np.zeros(shape=(len(MinQ)+20, len(self.XS)))
+        # columns are space, rows are time
+        self.Q[0,:] = 50
+        Q[:len(MinQ),0] = MinQ.loc[:,'Q']
+        for t in range(1,len(Q)):
+            for x in range(1,len(XS)):
+                p = b + 2 * XS.loc[x,'b']
+                n = self.XS.loc[x,'n']
+                alpha1 = n * pow(p, 2/3)
+                s = (self.XS.loc[x-1,'bed level'] - self.XS.loc[x,'bed level']) /dx
+                alpha = pow(alpha1 / pow(s,0.5) ,0.6)
+
+                val1 = alpha * beta * pow((Q[t-1,x] + Q[t,x-1])/2,beta-1)
+                Q[t,x] = (dtx * Q[t,x-1] +  val1 * Q[t-1,x] ) / (dtx + val1)
+
+                if Laterals:
+                    Q[t,x] = (dtx * Q[t,x-1] +  val1 * Q[t-1,x] + (LateralsQ[t] + LateralsQ[t-1])/2) / (dtx + val1)
 
 
     def HBC(self, Sub, River, Hbnd, dt, dx,inih,storewl, MinQ):

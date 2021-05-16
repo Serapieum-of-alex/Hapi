@@ -157,7 +157,7 @@ class Wrapper():
         # run the GIS part to rout from cell to another
         distrrm.SpatialRouting(Model)
 
-        Model.qout = Model.qout[:-1]
+        # Model.qout = Model.qout[:-1]
 
 
     @staticmethod

@@ -272,7 +272,7 @@ class Calibration(Catchment):
 
                 # print error
                 if printError != 0:
-                    print(error)
+                    print(round(error,3))
                     print(par)
 
                 fail = 0
@@ -413,7 +413,7 @@ class Calibration(Catchment):
 
                 # print error
                 if printError != 0:
-                    print(error)
+                    print(round(error,3))
                     print(par)
 
                 fail = 0
@@ -549,11 +549,11 @@ class Calibration(Catchment):
                 try:
                     error = self.OF(self.QGauges[self.QGauges.columns[-1]],self.Qsim,*self.OFArgs)
                 except TypeError: # if no of inputs less than what the function needs
-                    assert 1==5, "the objective function you have entered needs more inputs please enter then in a list as *args"
+                    assert False, "the objective function you have entered needs more inputs please enter then in a list as *args"
 
                 # print error
                 if printError != 0:
-                    print(error)
+                    print(round(error,3))
                     # print(par)
 
                 fail = 0

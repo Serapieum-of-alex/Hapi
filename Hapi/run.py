@@ -186,7 +186,7 @@ class Run(Catchment):
         Wrapper.RRMModel(self)
         print("RRM has finished")
         SV = SaintVenant()
-        SV.Kinematic(self)
+        SV.KinematicRaster(self)
         print("1D model Run has finished")
 
 

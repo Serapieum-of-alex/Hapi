@@ -1219,7 +1219,6 @@ class Visualize():
         mpl.rcParams['animation.ffmpeg_path'] = ffmpegPath
 
         if VideoFormat == "gif":
-            # assert len(Path) >= 1 and Path.endswith(".gif"), "please enter a valid path to save the animation"
             writergif = animation.PillowWriter(fps=SaveFrames)
             anim.save(Path, writer=writergif)
         else:
