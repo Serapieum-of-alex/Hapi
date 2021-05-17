@@ -7,7 +7,6 @@ Created on Sun May 16 18:33:09 2021
 # import numpy as np
 import pandas as pd
 import datetime as dt
-from Hapi.hm.river import River
 Path = "F:/01Algorithms/Hydrology/HAPI/Examples/"
 #%%
 def convertdate(date):
@@ -31,7 +30,5 @@ LateralsQ = 0
 
 Coello = River("Coello",Version=3, start="2010-01-01")
 Coello.ReadCrossSections(Path + "/data/hydrodynamic model/xs.csv")
-#%%
-
 
 
