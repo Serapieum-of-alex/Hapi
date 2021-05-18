@@ -13,7 +13,7 @@ import numpy as np
 import Hapi.hm.river as R
 from Hapi.hm.interface import Interface
 
-from Hapi.hm.saintvenant import HBC
+from Hapi.hm.saintvenant import GVF
 Comp = "F:/RFM/mHM2RIM_testcase"
 os.chdir(Comp + "/RIM/processing")
 #%% Paths
@@ -104,7 +104,7 @@ for i in range(River.NoSeg):
             
             ICflag[i] = 1
             
-            q,h,wl = HBC(Sub, River, Hbnd, 60, 500,inih,storewl, MinQ)
+            q,h,wl = GVF(Sub, River, Hbnd, 60, 500,inih,storewl, MinQ)
             
 
             River.RoutedQ[step_ind-1,River.Segments.index(SubID)] = q[Sub.XSno-1,0]
