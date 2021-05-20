@@ -14,11 +14,11 @@ class Calibration(River):
     Hydraulic model calibration class
 
     """
-    def __init__(self, name, Version = 3, start = "1950-1-1", days = 36890,
+    def __init__(self, name, version = 3, start = "1950-1-1", days = 36890,
                  fmt="%Y-%m-%d"):
         """
         =============================================================================
-            HMCalibration(self, name, Version = 3, start = "1950-1-1", days = 36890)
+            HMCalibration(self, name, version = 3, start = "1950-1-1", days = 36890)
         =============================================================================
         To instantiate the HMCalibration object you have to provide the following
         arguments
@@ -27,7 +27,7 @@ class Calibration(River):
         ----------
         name : [str]
             name of the catchment.
-        Version : [integer], optional
+        version : [integer], optional
             The version of the model. The default is 3.
         start : [str], optional
             starting date. The default is "1950-1-1".
@@ -41,7 +41,7 @@ class Calibration(River):
 
         """
         self.name = name
-        self.Version = Version
+        self.version = version
 
         self.start = dt.datetime.strptime(start,fmt)
         self.end = self.start + dt.timedelta(days = days)
@@ -346,7 +346,7 @@ class Calibration(River):
             dataframe containing the hydrograph of sub-basins in the Qgauge entered dataframe.
 
         """
-        if AddHQ2 and self.Version == 1:
+        if AddHQ2 and self.version == 1:
             assert hasattr(self,"rivernetwork"), "please read the traceall file using the RiverNetwork method"
             assert hasattr(self, "RP"), "please read the HQ file first using ReturnPeriod method"
         EndDate = StartDate + dt.timedelta(days = days-1)
@@ -354,7 +354,7 @@ class Calibration(River):
         QRIM = pd.DataFrame(index = ind, columns = self.GaugesTable.loc[self.GaugesTable['discharge']==1,column].tolist())
         # for RIM1.0 don't fill with -9 as the empty days will be filled with 0 so to get
         # the event days we have to filter 0 and -9
-        if self.Version == 1:
+        if self.version == 1:
             QRIM.loc[:,:] = 0
         else:
             QRIM.loc[:,:] = NoValue
@@ -366,7 +366,7 @@ class Calibration(River):
             f1 = list(range(int(f[0,0]),int(f[-1,0])+1))
             f2 = list()
 
-            if AddHQ2 and self.Version == 1:
+            if AddHQ2 and self.version == 1:
                 USnode = self.rivernetwork.loc[np.where(self.rivernetwork['SubID'] == self.GaugesTable.loc[i,column])[0][0],'US']
                 CutValue = self.RP.loc[np.where(self.RP['node'] == USnode)[0][0],'HQ2']
 
@@ -378,7 +378,7 @@ class Calibration(River):
                     f2.append(f[np.where(f[:,0] == f1[j])[0][0],1])
                 else:
                     # if it does not exist put zero
-                    if AddHQ2 and self.Version == 1:
+                    if AddHQ2 and self.version == 1:
                         f2.append(CutValue)
                     else:
                         f2.append(0)
@@ -840,7 +840,7 @@ class Calibration(River):
     #     CrossSections method reads the cross section data of the river and assign it
     #     to an attribute "Crosssections" of type dataframe
     #     """
-    #     if self.Version == 1 or self.Version == 2:
+    #     if self.version == 1 or self.version == 2:
     #         self.crosssections = pd.read_csv(Path, delimiter = ',', skiprows =1  )
     #     else:
     #         self.crosssections = pd.read_csv(Path, delimiter = ',')

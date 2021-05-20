@@ -8,7 +8,10 @@ Created on Sat May 26 04:52:15 2018
 # import os
 import numpy as np
 import pandas as pd
-import gdal
+try :
+    import gdal
+except:
+    print("failed to import gdal")
 from Hapi.gis.raster import Raster as raster
 
 #from osgeo import gdalconst

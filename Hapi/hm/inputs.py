@@ -34,9 +34,9 @@ class Inputs():
         6- CreateTraceALL
     """
 
-    def __init__(self, Name, Version=2 ):
+    def __init__(self, Name, version=2 ):
         self.Name = Name
-        self.Version = Version
+        self.version = version
 
 
     def ExtractHydrologicalInputs(self, WeatherGenerator, FilePrefix, realization,
@@ -622,7 +622,7 @@ class Inputs():
         Subs = pd.read_csv(RIMSubsFilePath, header = None)
         Subs = Subs.rename(columns = {0:"SubID"})
 
-        if self.Version == 1:
+        if self.version == 1:
             Subs['US'] = -1
             Subs['DS'] = -1
         else:
@@ -638,7 +638,7 @@ class Inputs():
             except IndexError:
                 # if the sub-basin is not in the route array so it is not routed by SWIM
                 # but still can be routed using RIM
-                if self.Version == 1:
+                if self.version == 1:
                     Subs.loc[i,'US'] = -1
                     Subs.loc[i,'DS'] = -1
                 else:
@@ -648,7 +648,7 @@ class Inputs():
                     Subs.loc[i,'DS'] = -1
 
         # Save the file with the same format required for the hg R code
-        if self.Version == 1:
+        if self.version == 1:
         #    ToSave = Subs.loc[:,['US','SubID']]
         #    ToSave['Extra column 1'] = -1
         #    ToSave['Extra column 2'] = -1

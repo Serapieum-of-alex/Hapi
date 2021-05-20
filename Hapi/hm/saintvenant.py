@@ -7,7 +7,7 @@ Created on Tue Mar 16 22:25:59 2021
 import numpy as np
 
 
-class SaintVenant():
+class SaintVenant:
 
     def __init__(self):
         self.CWEIR = 1.704
@@ -16,7 +16,7 @@ class SaintVenant():
         self.power = 2/3
         pass
 
-    def KinematicRaster(self, Model):
+    def kinematicraster(self, Model):
 
         beta = 3/5
         dx = Model.CellSize
@@ -88,27 +88,55 @@ class SaintVenant():
 
                             Model.quz_routed[i,j,:] = Model.quz_routed[i,j,:] + Q
 
-    def Kinematic1D(self):
-        self.Q = np.zeros(shape=(len(MinQ)+20, len(self.XS)))
+    @staticmethod
+    def kinematic1d(Model,usbc):
+        """
+        Kkinematic wave approx solver for 1D river reach considering very wide 
+        cross section 
+
+        Parameters
+        ----------
+        Model : TYPE
+            DESCRIPTION.
+
+        Returns
+        -------
+        None.
+
+        """
+
+        nt = len(usbc)  #int(24*60*60/Model.dt)
+        Model.q = np.zeros(shape=(nt, len(Model.crosssections)))
+        Model.h = np.zeros(shape=(nt, len(Model.crosssections)))
+
+        beta = 3 / 5
+        dtx = Model.dt / Model.dx
         # columns are space, rows are time
-        self.Q[0,:] = 50
-        Q[:len(MinQ),0] = MinQ.loc[:,'Q']
-        for t in range(1,len(Q)):
-            for x in range(1,len(XS)):
-                p = b + 2 * XS.loc[x,'b']
-                n = self.XS.loc[x,'n']
+        Model.q[0, :] = Model.InihQ
+        Model.q[:len(Model.qusbc), 0] = usbc.loc[:, 'Q']
+
+        for t in range(1, len(Model.q)):
+            for x in range(1, len(Model.crosssections)):
+                # p = Model.crosssections.loc[x,'b'] + 2 * Model.crosssections.loc[x,'depth']
+                p = Model.crosssections.loc[x, 'b']
+                n = Model.crosssections.loc[x, 'n']
                 alpha1 = n * pow(p, 2/3)
-                s = (self.XS.loc[x-1,'bed level'] - self.XS.loc[x,'bed level']) /dx
-                alpha = pow(alpha1 / pow(s,0.5) ,0.6)
+                s = (Model.crosssections.loc[x-1, 'bed level'] - Model.crosssections.loc[x, 'bed level']) / Model.dx
+                alpha = pow(alpha1 / pow(s, 0.5), 0.6)
 
-                val1 = alpha * beta * pow((Q[t-1,x] + Q[t,x-1])/2,beta-1)
-                Q[t,x] = (dtx * Q[t,x-1] +  val1 * Q[t-1,x] ) / (dtx + val1)
+                val1 = alpha * beta * pow((Model.q[t-1, x] + Model.q[t, x-1])/2, beta-1)
+                
+                if Model.Laterals:
+                    Model.q[t, x] = (dtx * Model.q[t, x-1] + val1 * Model.q[t-1, x] + (Model.LateralsQ[t] + Model.LateralsQ[t-1])/2) / (dtx + val1)
+                else:
+                    Model.q[t, x] = (dtx * Model.q[t, x-1] + val1 * Model.q[t-1, x]) / (dtx + val1)
+                Model.h[t, x] = ((n*Model.q[t, x])/(np.sqrt(s) * p))**beta
+        # take the calculated water depth for the first time step the same as the second time step
+        Model.h[0, :] = Model.h[1, :]
+        Model.h[:, 0] = Model.h[:, 1]
+        Model.wl = Model.h + Model.crosssections['bed level'].values
 
-                if Laterals:
-                    Q[t,x] = (dtx * Q[t,x-1] +  val1 * Q[t-1,x] + (LateralsQ[t] + LateralsQ[t-1])/2) / (dtx + val1)
-
-
-    def HBC(self, Sub, River, Hbnd, dt, dx,inih,storewl, MinQ):
+    def GVF(self, Sub, River, Hbnd, dt, dx,inih,storewl, MinQ):
 
         xs = np.zeros(shape=(Sub.XSno,8))
         Diff_coeff = np.zeros(shape=(Sub.XSno,3))

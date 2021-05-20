@@ -6,7 +6,6 @@ based on a source raster, perform any algebric operation on cell's values
 @author: Mostafa
 """
 
-#%library
 import os
 import re
 import sys
@@ -18,7 +17,6 @@ import osr
 import pandas as pd
 import geopandas as gpd
 from osgeo import gdalconst
-# from gdalconst import GA_ReadOnly
 
 import zipfile
 import pyproj
@@ -43,7 +41,7 @@ import scipy.interpolate
 from pyproj import Proj, transform
 
 
-class Raster():
+class Raster:
     """
     ==========================================
          Raster
@@ -215,7 +213,6 @@ class Raster():
         # Adding 0.5 to get the centre
         x = np.array([x_init + xx_span*(i+0.5) for i in range(shape_dem[0])])
         y = np.array([y_init + yy_span*(i+0.5) for i in range(shape_dem[1])])
-        #mat_range = np.array([[(xi, yi) for xi in x] for yi in y])
         mat_range = [[(xi, yi) for xi in x] for yi in y]
 
         # applying the mask
@@ -224,10 +221,8 @@ class Raster():
             for j in range(len(y)):
                 if mask[j, i] != no_val:
                     coords.append(mat_range[j][i])
-                    #mat_range[j, i, :] = [np.nan, np.nan]
 
         return np.array(coords), np.array(mat_range)
-
 
     @staticmethod
     def SaveRaster(raster,path):
@@ -255,15 +250,15 @@ class Raster():
         """
         # input data validation
         # data type
-        assert type(raster)==gdal.Dataset, "src should be read using gdal (gdal dataset please read it using gdal library) "
-        assert type(path)== str, "Raster_path input should be string type"
+        assert type(raster) == gdal.Dataset, "src should be read using gdal (gdal dataset please read it using gdal library) "
+        assert type(path) == str, "Raster_path input should be string type"
         # input values
-        ext=path[-4:]
+        ext = path[-4:]
         assert ext == ".tif", "please add the extension at the end of the path input"
 
-        driver = gdal.GetDriverByName( "GTiff" )
-        dst_ds = driver.CreateCopy( path, raster, 0 )
-        dst_ds = None # Flush the dataset to disk
+        driver = gdal.GetDriverByName("GTiff")
+        dst_ds = driver.CreateCopy(path, raster, 0)
+        dst_ds = None  # Flush the dataset to disk
 
     @staticmethod
     def GetRasterData(Input, band=''):
@@ -305,7 +300,7 @@ class Raster():
         return Data, NoDataValue
 
     @staticmethod
-    def CreateRaster(Path='', data='', geo='', EPSG='',NoDataValue=-9999):
+    def CreateRaster(Path='', data='', geo='', EPSG='', NoDataValue=-9999):
         """
         =============================================================================
             CreateRaster(Path='', data='', geo='', projection='',NoDataValue=-9999)
@@ -338,11 +333,11 @@ class Raster():
         if Path == '':
             driver = gdal.GetDriverByName("MEM")
             dst_ds = driver.Create('', int(data.shape[1]), int(data.shape[0]), 1,
-                               gdal.GDT_Float32, ['COMPRESS=LZW'])
+                                    gdal.GDT_Float32, ['COMPRESS=LZW'])
         else:
             driver = gdal.GetDriverByName("GTiff")
             dst_ds = driver.Create(Path, int(data.shape[1]), int(data.shape[0]), 1,
-                                gdal.GDT_Float32, ['COMPRESS=LZW'])
+                                    gdal.GDT_Float32, ['COMPRESS=LZW'])
 
         srse = osr.SpatialReference()
 
@@ -465,7 +460,7 @@ class Raster():
         """
         # input data validation
         # data type
-        assert type(src)==gdal.Dataset, "src should be read using gdal (gdal dataset please read it using gdal library) "
+        assert type(src) == gdal.Dataset, "src should be read using gdal (gdal dataset please read it using gdal library) "
         # assert callable(fun) , "second argument should be a function"
 
         NoDataVal = src.GetRasterBand(1).GetNoDataValue()
@@ -484,9 +479,8 @@ class Raster():
 
         Raster.RasterLike(src,src_array,SaveTo,pixel_type=1)
 
-
     @staticmethod
-    def ResampleRaster(src,cell_size,resample_technique="Nearest"):
+    def ResampleRaster(src, cell_size, resample_technique="Nearest"):
         """
         ======================================================================
           project_dataset(src, to_epsg):
@@ -523,41 +517,41 @@ class Raster():
         """
         # input data validation
         # data type
-        assert type(src)==gdal.Dataset, "src should be read using gdal (gdal dataset please read it using gdal library) "
-        assert type(resample_technique)== str ," please enter correct resample_technique more information see docmentation "
+        assert type(src) == gdal.Dataset, "src should be read using gdal (gdal dataset please read it using gdal library) "
+        assert type(resample_technique) == str ," please enter correct resample_technique more information see docmentation "
 
-        if resample_technique=="Nearest":
-            resample_technique=gdal.GRA_NearestNeighbour
-        elif resample_technique=="cubic":
-            resample_technique=gdal.GRA_Cubic
-        elif resample_technique=="bilinear":
-            resample_technique=gdal.GRA_Bilinear
+        if resample_technique == "Nearest":
+            resample_technique = gdal.GRA_NearestNeighbour
+        elif resample_technique == "cubic":
+            resample_technique = gdal.GRA_Cubic
+        elif resample_technique == "bilinear":
+            resample_technique = gdal.GRA_Bilinear
 
     #    # READ THE RASTER
     #    src = gdal.Open(inputspath+"dem_4km.tif")
         # GET PROJECTION
-        src_proj=src.GetProjection()
+        src_proj = src.GetProjection()
         # GET THE GEOTRANSFORM
-        src_gt=src.GetGeoTransform()
+        src_gt = src.GetGeoTransform()
         # GET NUMBER OF columns
-        src_x=src.RasterXSize
+        src_x = src.RasterXSize
         # get number of rows
-        src_y=src.RasterYSize
+        src_y = src.RasterYSize
         # number of bands
     #    src_bands=src.RasterCount
         # spatial ref
-        src_epsg=osr.SpatialReference(wkt=src_proj)
+        src_epsg = osr.SpatialReference(wkt=src_proj)
 
         ulx = src_gt[0]
         uly = src_gt[3]
         # transform the right lower corner point
-        lrx = src_gt[0]+src_gt[1]*src_x
-        lry = src_gt[3]+src_gt[5]*src_y
+        lrx = src_gt[0] + src_gt[1]*src_x
+        lry = src_gt[3] + src_gt[5]*src_y
 
         pixel_spacing=cell_size
         # create a new raster
-        mem_drv=gdal.GetDriverByName("MEM")
-        dst=mem_drv.Create("",int(np.round(abs(lrx-ulx)/pixel_spacing)),int(np.round(abs(uly-lry)/pixel_spacing)),
+        mem_drv = gdal.GetDriverByName("MEM")
+        dst = mem_drv.Create("",int(np.round(abs(lrx-ulx)/pixel_spacing)),int(np.round(abs(uly-lry)/pixel_spacing)),
                            1,gdalconst.GDT_Float32,['COMPRESS=LZW']) # LZW is a lossless compression method achieve the highst compression but with lot of computation
 
         # set the geotransform
@@ -611,8 +605,8 @@ class Raster():
         # input data validation
         # data type
         assert type(src) == gdal.Dataset, "src should be read using gdal (gdal dataset please read it using gdal library) "
-        assert type(to_epsg) == int,"please enter correct integer number for to_epsg more information https://epsg.io/"
-        assert type(resample_technique) == str ," please enter correct resample_technique more information see docmentation "
+        assert type(to_epsg) == int, "please enter correct integer number for to_epsg more information https://epsg.io/"
+        assert type(resample_technique) == str, " please enter correct resample_technique more information see docmentation "
 
         if resample_technique == "Nearest":
             resample_technique = gdal.GRA_NearestNeighbour
@@ -647,13 +641,13 @@ class Raster():
             # greater than 180
             if src_epsg.GetAttrValue('AUTHORITY',1) != str(to_epsg) :
                 if src_epsg.GetAttrValue('AUTHORITY',1)=="4326" and src_gt[0] > 180:
-                    lng_new=src_gt[0]-360
+                    lng_new = src_gt[0]-360
                     # transformation factors
-                    tx = osr.CoordinateTransformation(src_epsg,dst_epsg)
+                    tx = osr.CoordinateTransformation(src_epsg, dst_epsg)
                     # transform the right upper corner point
                     (ulx,uly,ulz) = tx.TransformPoint(lng_new, src_gt[3])
                     # transform the right lower corner point
-                    (lrx,lry,lrz)=tx.TransformPoint(lng_new+src_gt[1]*src_x,
+                    (lrx,lry,lrz) = tx.TransformPoint(lng_new+src_gt[1]*src_x,
                                                     src_gt[3]+src_gt[5]*src_y)
                 else:
                     xs = [src_gt[0], src_gt[0]+src_gt[1]*src_x]

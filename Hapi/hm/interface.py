@@ -23,9 +23,9 @@ class Interface(River):
         5- ListAttributes
     """
 
-    def __init__(self, name, Version=3, start = "1952-1-1", days =36890,):
+    def __init__(self, name, version=3, start = "1952-1-1", days =36890,):
         self.name = name
-        self.Version = Version
+        self.version = version
         self.start = dt.datetime.strptime(start,"%Y-%m-%d")
         self.end = self.start  + dt.timedelta(days = days)
         Ref_ind = pd.date_range(self.start, self.end, freq='D')
@@ -103,7 +103,7 @@ class Interface(River):
         for i in range(len(self.LateralsTable)):
             NodeID = self.LateralsTable.loc[i,'xsid']
             fname = "LF_xsid" + str(NodeID)
-            self.Laterals[NodeID]  = self.ReadRRMResults(self.Version, self.ReferenceIndex,
+            self.Laterals[NodeID]  = self.ReadRRMResults(self.version, self.ReferenceIndex,
                                                             Path, fname, FromDay, ToDay,
                                                             date_format)[fname].tolist()
 
@@ -182,7 +182,7 @@ class Interface(River):
         for i in range(len(self.BCTable)):
             NodeID = self.BCTable.loc[i,'id']
             fname = "BC_" + str(NodeID)
-            self.BC[NodeID] = self.ReadRRMResults(self.Version, self.ReferenceIndex,
+            self.BC[NodeID] = self.ReadRRMResults(self.version, self.ReferenceIndex,
                                                             Path, fname, FromDay, ToDay,
                                                             date_format)[fname].tolist()
 
