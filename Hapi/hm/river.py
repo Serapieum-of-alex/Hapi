@@ -105,7 +105,11 @@ class River:
         self.compressed = compressed
         self.oneminresultpath = None
         self.usbcpath = None
-
+        # attributes related to the results
+        self.firstday = None
+        self.referenceindex_results = None
+        self.firstday = None
+        #----------------------------------------------------
         ref_ind = pd.date_range(self.start, self.end, freq='D')
         # the last day is not in the results day Ref_ind[-1]
         # write the number of days + 1 as python does not include the last number in the range
@@ -325,10 +329,10 @@ class River:
             self.crosssections = pd.read_csv(path, delimiter=',', skiprows=1 )
         elif self.version == 3:
             self.crosssections = pd.read_csv(path, delimiter=',')
-            self.XSno = len(self.crosssections)
+            self.xsno = len(self.crosssections)
         else:
             self.crosssections = pd.read_csv(path, delimiter=',')
-            self.XSno = len(self.crosssections)
+            self.xsno = len(self.crosssections)
             #TODO to be checked later now for testing of version 4
             self.xsname = self.crosssections['xsid'].tolist()
     
@@ -854,10 +858,50 @@ class River:
         usbc = self.qusbc.loc[self.referenceindex_results,:]
         SaintVenant.kinematic1d(self, usbc)
 
+    def storagecell(self, start='', end='', fmt="%Y-%m-%d"):
+        """
+        kinematicwave apply the kinematic wave approximation of the shallow
+        water equation to the 1d river reach
+
+        Returns
+        -------
+        1- Q : [array]
+            discharge time series with the rows as time and columns as space
+        2- H: [array]
+            water depth time series with the rows as time and columns as space
+        """
+        if start == '':
+            start = self.start
+        else:
+            start = dt.datetime.strptime(start, fmt)
+
+        if end == '':
+            end = self.end
+        else:
+            end = dt.datetime.strptime(end, fmt)
+        ind = pd.date_range(start, end, freq=self.freq)
+
+        # TODO to be checked later now for testing
+        # self.from_beginning = self.indsub[np.where(self.indsub == start)[0][0]]
+
+        self.firstday = self.indsub[np.where(self.indsub == start)[0][0]]
+        # if there are empty days at the beginning the filling missing days is not going to detect it
+        # so ignore it here by starting from the first day in the data (data['day'][0]) dataframe
+        # empty days at the beginning
+        # self.firstdayresults = self.indsub[np.where(self.indsub == start)[0][0]]
+        self.lastday = self.indsub[np.where(self.indsub == end)[0][0]]
+
+        # last days+1 as range does not include the last element
+        # self.Daylist = list(range(self.from_beginning, len(self.referenceindex)))
+        self.referenceindex_results = pd.date_range(self.firstday, self.lastday, freq=self.freq)
+
+        usbc = self.qusbc.loc[self.referenceindex_results,:]
+        SaintVenant.storagecell(self, usbc)
+
+
     def animatefloodwave(self, start, end, interval=0.00002, xs=0,
                          xsbefore=10, xsafter=10, fmt="%Y-%m-%d %H:%M:%S", textlocation=2,
-                         LateralsColor='red', LaterlasLineWidth=1, xaxislabelsize=15,
-                         yaxislabelsize=15, nxlabels=50
+                         xaxislabelsize=15, yaxislabelsize=15, nxlabels=50
                          ):
         """
         
@@ -2565,7 +2609,7 @@ class Sub(River):
         self.LastXS = self.crosssections.loc[len(self.crosssections)-1,'xsid']
         self.FirstXS = self.crosssections.loc[0,'xsid']
         self.xsname = self.crosssections['xsid'].tolist()
-        self.XSno = len(self.xsname)
+        self.xsno = len(self.xsname)
 
         self.referenceindex = River.referenceindex
         self.RRMreferenceindex = River.RRMreferenceindex
@@ -3103,7 +3147,7 @@ class Sub(River):
         plotstart = dt.datetime.strptime(plotstart,"%Y-%m-%d")
         plotend = dt.datetime.strptime(plotend,"%Y-%m-%d")
 
-        XSlist = self.xsname[Spacing:self.XSno:Spacing]
+        XSlist = self.xsname[Spacing:self.xsno:Spacing]
 
         XSlist = XSlist + XSs
         # to remove repeated XSs
@@ -3228,9 +3272,9 @@ class Sub(River):
 
 
     def GetXSGeometry(self):
-        AreaPerLow = np.zeros(shape=(self.XSno,2))
-        AreaPerHigh = np.zeros(shape=(self.XSno,2))
-        for i in range(self.XSno):
+        AreaPerLow = np.zeros(shape=(self.xsno,2))
+        AreaPerHigh = np.zeros(shape=(self.xsno,2))
+        for i in range(self.xsno):
             geom = self.crosssections.loc[i,:]
             H = min(geom['hl'], geom['hr']) + geom['dbf']
             Coords = self.GetVortices(H, geom['hl'], geom['hr'], geom['bl'], geom['br'], geom['b'], geom['dbf'])

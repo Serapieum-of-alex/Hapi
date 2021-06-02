@@ -5,7 +5,7 @@ Created on Tue Mar 16 22:25:59 2021
 @author: mofarrag
 """
 import numpy as np
-
+from numpy.linalg import inv
 
 class SaintVenant:
 
@@ -14,6 +14,11 @@ class SaintVenant:
         self.BWIDTH = 10
         self.HLIN = 0.001
         self.power = 2/3
+
+        # preismann scheme parameters
+        self.theta = 0.5
+        self.epsi = 0.5
+        self.beta = 1
         pass
 
     def kinematicraster(self, Model):
@@ -89,7 +94,7 @@ class SaintVenant:
                             Model.quz_routed[i,j,:] = Model.quz_routed[i,j,:] + Q
 
     @staticmethod
-    def kinematic1d(Model,usbc):
+    def kinematic1d(Model, usbc):
         """
         Kkinematic wave approx solver for 1D river reach considering very wide 
         cross section 
@@ -136,32 +141,92 @@ class SaintVenant:
         Model.h[:, 0] = Model.h[:, 1]
         Model.wl = Model.h + Model.crosssections['bed level'].values
 
-    def GVF(self, Sub, River, Hbnd, dt, dx,inih,storewl, MinQ):
 
-        xs = np.zeros(shape=(Sub.XSno,8))
-        Diff_coeff = np.zeros(shape=(Sub.XSno,3))
-        XSarea = np.zeros(shape=(Sub.XSno))
+    @staticmethod
+    def storagecell(Model, usbc):
 
-        wl = np.zeros(shape=(Sub.XSno))
-        hx = np.zeros(shape=(Sub.XSno))
-        qx = np.zeros(shape=(Sub.XSno))
+        nt = len(usbc)
+        Model.q = np.zeros(shape=(nt, len(Model.crosssections)))
+        Model.h = np.zeros(shape=(nt, len(Model.crosssections)))
+        # calculate area and perimeter of all xssbased on the
+        xs = np.zeros(shape=(Model.xsno, 2))
+        Model.h[0, :] = 0.1
+        Model.q[0, :] = Model.InihQ
+        Model.q[:len(Model.qusbc), 0] = usbc.loc[:, 'Q']
 
-        h = np.zeros(shape=(Sub.XSno,River.TS))
-        q = np.zeros(shape=(Sub.XSno,River.TS))
+        beta = 3 / 5
+        dtx = Model.dt / Model.dx
+        # columns are space, rows are time
 
-        storewl = np.zeros(shape=(River.XSno,2))
-        # OverTopFlow = np.zeros(shape=(River.XSno*2,24))
-        # OverTopWL = np.zeros(shape=(River.XSno*2,24))
+        for t in range(1, len(Model.q)):
+
+            for x in range(len(Model.crosssections)):
+                # area
+                xs[x, 1] = Model.h[t,x] * Model.crosssections.loc[x, 'b']
+                # perimeter
+                xs[x, 2] = Model.crosssections.loc[x, 'b']
+
+            for x in range(1, len(Model.xsno)):
+                if x < Model.xsno - 1:
+                    # friction slope = (so - dhx/dx] - diffusive wave
+                    sf = (Model.h[t,x] + Model.crosssections.loc[x,'bed level'] - Model.h[t,x+1] -
+                          Model.crosssections.loc[x+1,'bed level']) / Model.dx
+                else:
+                    # for LOWER BOUNDARY node
+                    sf = (Model.h[t,x-1] + Model.crosssections.loc[x-1,'bed level'] - Model.h[t, x] -
+                          Model.crosssections.loc[x,'bed level']) / Model.dx
+
+                if x < Model.xsno - 1:
+                    Area = (xs[x, 1] + xs[x + 1, 2]) / 2
+                    R = (xs[x, 1] / xs[x, 2] + xs[x + 1, 1] / xs[x + 1, 2]) / 2
+
+                # p = Model.crosssections.loc[x,'b'] + 2 * Model.crosssections.loc[x,'depth']
+                p = Model.crosssections.loc[x, 'b']
+                n = Model.crosssections.loc[x, 'n']
+                alpha1 = n * pow(p, 2 / 3)
+                s = (Model.crosssections.loc[x - 1, 'bed level'] - Model.crosssections.loc[x, 'bed level']) / Model.dx
+                alpha = pow(alpha1 / pow(s, 0.5), 0.6)
+
+                val1 = alpha * beta * pow((Model.q[t - 1, x] + Model.q[t, x - 1]) / 2, beta - 1)
+
+                if Model.Laterals:
+                    Model.q[t, x] = (dtx * Model.q[t, x - 1] + val1 * Model.q[t - 1, x] + (
+                                Model.LateralsQ[t] + Model.LateralsQ[t - 1]) / 2) / (dtx + val1)
+                else:
+                    Model.q[t, x] = (dtx * Model.q[t, x - 1] + val1 * Model.q[t - 1, x]) / (dtx + val1)
+                Model.h[t, x] = ((n * Model.q[t, x]) / (np.sqrt(s) * p)) ** beta
+        # take the calculated water depth for the first time step the same as the second time step
+        Model.h[0, :] = Model.h[1, :]
+        Model.h[:, 0] = Model.h[:, 1]
+        Model.wl = Model.h + Model.crosssections['bed level'].values
+
+
+    def GVF00(self, Sub, River, Hbnd, dt, dx,inih,storewl, MinQ):
+
+        xs = np.zeros(shape=(Sub.xsno,8))
+        Diff_coeff = np.zeros(shape=(Sub.xsno,3))
+        XSarea = np.zeros(shape=(Sub.xsno))
+
+        wl = np.zeros(shape=(Sub.xsno))
+        hx = np.zeros(shape=(Sub.xsno))
+        qx = np.zeros(shape=(Sub.xsno))
+
+        h = np.zeros(shape=(Sub.xsno,River.TS))
+        q = np.zeros(shape=(Sub.xsno,River.TS))
+
+        storewl = np.zeros(shape=(River.xsno,2))
+        # OverTopFlow = np.zeros(shape=(River.xsno*2,24))
+        # OverTopWL = np.zeros(shape=(River.xsno*2,24))
         Lateral_q = MinQ.values[:-1,:-2]
 
 
-        q_outL = np.zeros(shape=(Sub.XSno,River.TS))
-        q_outR = np.zeros(shape=(Sub.XSno,River.TS))
-        q_out = np.zeros(shape=(Sub.XSno,River.TS))
+        q_outL = np.zeros(shape=(Sub.xsno,River.TS))
+        q_outR = np.zeros(shape=(Sub.xsno,River.TS))
+        q_out = np.zeros(shape=(Sub.xsno,River.TS))
 
-        q_outLx = np.zeros(shape=(Sub.XSno))
-        q_outRx = np.zeros(shape=(Sub.XSno))
-        q_outx = np.zeros(shape=(Sub.XSno))
+        q_outLx = np.zeros(shape=(Sub.xsno))
+        q_outRx = np.zeros(shape=(Sub.xsno))
+        q_outx = np.zeros(shape=(Sub.xsno))
 
 
         for t in range(0,River.TS):
@@ -188,7 +253,7 @@ class SaintVenant:
                 adaptiveTS_counter = adaptiveTS_counter + 1
                 # calculate the area and perimeter based on the water depth of the previous time step
                 # for the whole cross sections in the sub-basin
-                for x in range(0, Sub.XSno):
+                for x in range(0, Sub.xsno):
                     # xs[:,:] = 0
                     # calculate the area & perimeter of the whole XS
                     Coords = River.GetVortices(hx[x], Sub.hl[x], Sub.hr[x], Sub.cl[x], Sub.cr[x], Sub.mw[x],Sub.Dbf[x])
@@ -213,13 +278,13 @@ class SaintVenant:
                         assert False, 'at x= ' + str(Sub.xsid[x]) + ' t= ' + str(t) + ' total perimiter is zero'
 
                 #for each cross section -------------------------------
-                for x in range(0, Sub.XSno) :
+                for x in range(0, Sub.xsno) :
                     #print(*,'(a3,i4,a4,i6,a]'] 't= ',t,' x= ', xsid[x],'------------------'
                     # forward difference
                     # surface slope is calculated based on the previous time step water depth
                     # except for the first cross section hx[1]is from current time step
                     # while hx[2]is from previous time step
-                    if x < Sub.XSno-1:
+                    if x < Sub.xsno-1:
                         #friction slope = (so - dhx/dx] - diffusive wave
                         sf = (hx[x] + Sub.bedlevel[x] - hx[x+1] - Sub.bedlevel[x+1])/dx
                     else:
@@ -253,7 +318,7 @@ class SaintVenant:
                         q_outRx[x] = 0
                         # nxs is added to the ipf just because of the numbering system of the
                         # cross section
-                        if  storewl[Sub.xsid[x] + River.XSno] - Sub.bedlevel[x] < hx[x] :
+                        if  storewl[Sub.xsid[x] + River.xsno] - Sub.bedlevel[x] < hx[x] :
 
                             if hx[x] > max(Sub.zr[x] - Sub.bedlevel[x],River.D1['MinDepth']) :
                                 q_outRx[x] = self.CWEIR * self.BWIDTH * (hx[x] - max( Sub.zr[x] - Sub.bedlevel[x],River.D1['MinDepth']) )**1.5
@@ -273,7 +338,7 @@ class SaintVenant:
 
                     # compute mean area and hydraulic radius
                     # all cross section except the last one
-                    if x < Sub.XSno-1:
+                    if x < Sub.xsno-1:
                         if hx[x] <= Sub.Dbf[x]:
                             # upper discharge
                             xs[x,6] = 0
@@ -416,10 +481,10 @@ class SaintVenant:
                 if dto > dtrest:
                     dto = dtrest
 
-                #print[800000,'(a3,f8.2,a7,f4.2,a7,f8.2]'] 'dto= ', dto,' ratio=', dto/dt, ' max Q= ',qx[Sub.XSno]
+                #print[800000,'(a3,f8.2,a7,f4.2,a7,f8.2]'] 'dto= ', dto,' ratio=', dto/dt, ' max Q= ',qx[Sub.xsno]
 
                 # update the water level at each cross section except the upstream boundary node
-                for x in range(1, (Sub.XSno)-2) :
+                for x in range(1, (Sub.xsno)-2) :
                     # check if the XS has laterals
                     # FindInArrayF(real[xsid[x]],sub_XSLaterals,loc)
                     if Sub.xsid[x] in Sub.LateralsTable:
@@ -495,7 +560,7 @@ class SaintVenant:
 
 
                 # water depth at the last point equals to wl at point before the last
-                hx[Sub.XSno-1] = hx[Sub.XSno-2]- 0.001
+                hx[Sub.xsno-1] = hx[Sub.xsno-2]- 0.001
 
                 if min(hx)<0:
                     assert False ,'calculated water depth is less than 0 '
@@ -517,7 +582,188 @@ class SaintVenant:
 
         return q, h, wl
 
-
+    @staticmethod
     def QuadraticEqn(a,b,c):
         delta = (b**2) - 4*a*c
         return (-b + np.sqrt(delta))/(2*a)
+
+
+    def preissmann(self, Model):
+        # calculating no of discritization points
+        theta = self.theta
+        epsi = self.epsi
+        beta = self.beta
+        b = Model.b
+        dx = Model.dx
+        dt = Model.dt
+        # n = Model.n
+        c = Model.c
+
+        X = round(Model.L / dx) + 1
+        T = round(Model.Time / dt) + 1
+
+        Q = np.zeros(shape=(T, X), dtype=np.float32)
+        H = np.zeros(shape=(T, X), dtype=np.float32)
+        # initial condition
+        H[0, :] = Model.ICH
+        Q[0, :] = Model.ICQ
+
+        # boundary condition
+        Q[:, 0] = Model.LBC['interpolatedvalues']
+        Q[:, X - 1] = Model.RBC['interpolatedvalues']
+
+        # Factors
+        A1 = np.zeros(X - 1, dtype=np.float32)
+        B1 = np.zeros(X - 1, dtype=np.float32)
+        C1 = np.zeros(X - 1, dtype=np.float32)
+        D1 = np.zeros(X - 1, dtype=np.float32)
+        E1 = np.zeros(X - 1, dtype=np.float32)
+
+        A2 = np.zeros(X - 1, dtype=np.float32)
+        B2 = np.zeros(X - 1, dtype=np.float32)
+        C2 = np.zeros(X - 1, dtype=np.float32)
+        D2 = np.zeros(X - 1, dtype=np.float32)
+        E2 = np.zeros(X - 1, dtype=np.float32)
+
+        E = np.zeros(2 * X, dtype=np.float32)
+        # matrix of the coefficient Size of(2X * 2X)
+        F = np.zeros(shape=(2 * X, 2 * X), dtype=np.float32)
+
+        Unknowns = np.zeros(2 * X, dtype=np.float32)
+        cols = 0
+        # start of computation
+        for t in range(1, T):
+            # Iteration
+            for it in range(Model.maxiteration):
+                # for the first iteration assume that the current and next value of Q & H is
+                # the same like the previous step
+                if it == 0:
+                    Q[t, :] = Q[t - 1, :]
+                    H[t, :] = H[t - 1, :]
+                elif it > 0:
+                    # for the second iteration use the values that we have calculated in the
+                    # previous iteration
+                    Q[t, :] = Q[t, :]
+                    H[t, :] = H[t, :]
+
+                # as we have changed the entire row including the BC that we have
+                # assigned we have to bring them back
+                # if the lBC is h
+                # if LBC['type'] == 'h':
+                #     # bring back the value of the LBC do not assume it
+                #     H[t, 1] = LBC['interpolatedvalues'][t]
+                # else :
+                #     Q[t, 1] = LBC['interpolatedvalues'][t]
+                #
+                # # if the RBC is h
+                # if RBC['type'] == 'h':
+                #     # bring back the value of the LBC do not assume it
+                #     H[t, X] = RBC['interpolatedvalues'][t]
+                # else:
+                #     Q[t, X] = RBC['interpolatedvalues'][t]
+
+                # compute all the coefficient A B C D based on Q(t - 1) and Q_comp
+                for x in range(X - 1):
+                    # continuity equation factors
+                    A1[x] = -theta / dx
+                    B1[x] = (b * (1 - epsi) / dt)
+                    C1[x] = theta / dx
+                    D1[x] = (b * epsi) / dt
+                    E1[x] = ((1 - epsi) * b * H[t - 1, x] / dt) + (epsi * b * H[t - 1, x + 1] / dt) - (
+                            (1 - theta) * (Q[t - 1, x + 1] - Q[t - 1, x]) / dx)
+                    # continuity equation factors
+                    F[2 * x, cols] = A1[x]
+                    F[2 * x, cols + 1] = B1[x]
+                    F[2 * x, cols + 2] = C1[x]
+                    F[2 * x, cols + 3] = D1[x]
+                    E[2 * x] = E1[x]
+
+                    # momentum equation factors
+                    hj_nhalf = 0.5 * (H[t, x] + H[t - 1, x])
+                    Aj_nhalf = b * hj_nhalf
+
+                    hj1_nhalf = 0.5 * (H[t, x + 1] + H[t - 1, x + 1])
+                    Aj1_nhalf = b * hj1_nhalf
+
+                    Ajhalf_nhalf = 0.5 * (Aj_nhalf + Aj1_nhalf)
+
+                    Kj_nhalf = c * b * (hj_nhalf ** 1.5)
+                    Kj1_nhalf = c * b * (hj1_nhalf ** 1.5)
+
+                    # Kj_nhalf = (1/n) * b * (hj_nhalf ** (5/3))
+                    # Kj1_nhalf = (1/n) * b * (hj1_nhalf ** (5/3))
+
+                    A2[x] = ((1 - epsi) / dt) - (beta / Aj_nhalf / dx) * Q[t - 1, x] + (1 - epsi) * 9.81 * Aj_nhalf * (
+                            abs(Q[t - 1, x]) / (Kj_nhalf ** 2))
+                    B2[x] = -9.81 * Ajhalf_nhalf * (theta / dx)
+                    C2[x] = (epsi / dt) + (beta / Aj1_nhalf / dx) * Q[t - 1, x + 1] + epsi * 9.81 * Ajhalf_nhalf * (
+                            abs(Q[t - 1, x + 1]) / (Kj1_nhalf ** 2))
+                    D2[x] = 9.81 * Ajhalf_nhalf * (theta / dx)
+                    E2[x] = ((1 - epsi) / dt) * Q[t - 1, x] + (epsi / dt) * Q[t - 1, x + 1] - 9.81 * Ajhalf_nhalf * (
+                                1 - theta) * (
+                                    H[t - 1, x + 1] - H[t - 1, x]) / dx + 9.81 * Ajhalf_nhalf * Model.s
+                    # momentum equation factors
+                    F[2 * x + 1, cols] = A2[x]
+                    F[2 * x + 1, cols + 1] = B2[x]
+                    F[2 * x + 1, cols + 2] = C2[x]
+                    F[2 * x + 1, cols + 3] = D2[x]
+                    E[2 * x + 1] = E2[x]
+                    cols = cols + 2
+                # end of X loop(all factors are calculated except the BC )
+
+                #  BC at F & E matrix
+                # lBC
+                # the left BC is always at the row before the last row 2 * X - 1
+                # if Q put 1 in the 1 st column if h put 1 in the 2 nd column of the
+                # matrix F(the matrix of the factors A B C D)
+                # put the value of the BC at that time at vector E at the same row
+                if Model.LBC['type'] == 'h':  # if the lBC is h
+                    # put 1 at the factor matrix at the line before the last line
+                    F[2 * X - 2, 2] = 1
+                    # put the value of the HLBC at this certain time at the E matrix at the line before the last line
+                    E[2 * X - 2] = Model.LBC['interpolatedvalues'][t]
+                else:  # Q
+                    F[2 * X - 2, 0] = 1
+                    E[2 * X - 2] = Model.LBC['interpolatedvalues'][t]
+
+                # RBC
+                # the right BC is always at the last row 2 * X
+                # if Q put 1 in the column before the last column if h put 1 in the last column of the
+                # matrix F (the matrix of the factors A B C D)
+                # put the value of the BC at that time at vector E at the same row
+                # if the RBC is h
+                if Model.RBC['type'] == 'h':
+                    # put 1 at the factor matrix at the line before the last line
+                    F[2 * X, 2 * X] = 1
+                    # put the value of the HLBC at this certain time at the E matrix at the line before the last line
+                    E[2 * X] = Model.RBC['interpolatedvalues'][t]
+                else:
+                    F[2 * X - 1, 2 * X - 2] = 1
+                    E[2 * X - 1] = Model.RBC['interpolatedvalues'][t]
+
+                # to make the storing of factors starts from the first row again
+                cols = 0
+                #  Solving the equation F * Unknowns = E
+                # E=E'
+                # F is a square matrix , E is a column vector
+                invF = inv(F)
+                Unknowns = np.matmul(invF, E)
+                # Unknowns=F\E'
+                # Extracting the values of Q & H from the Unknown matrix
+                # unknowns=[Q, H, Q, H, Q, H, Q, H............, LBC, RBC]
+                j = 0
+                k = 0
+                for i in range(len(Unknowns)):
+                    # mod is zero
+                    if np.mod(i, 2) != 0:
+                        # for all the even numbers
+                        H[t, j] = Unknowns[i]
+                        j = j + 1
+                    else:
+                        # mod is nonzero for all the odd numbers
+                        Q[t, k] = Unknowns[i]
+                        k = k + 1
+
+        # end  # end of computation for all time steps
+        Model.Q = Q[:,:]
+        Model.H = H[:,:]
