@@ -672,7 +672,8 @@ class Visualize:
         """
 
         start = dt.datetime.strptime(start, fmt)
-        end = dt.datetime.strptime(end, fmt) - dt.timedelta(minutes=int(Sub.dt / 60))
+        # end = dt.datetime.strptime(end, fmt) - dt.timedelta(minutes=int(Sub.dt / 60))
+        end = dt.datetime.strptime(end, fmt)
 
         assert start in Sub.referenceindex_results, (
                 "plot start date in not in the 1min results, the results starts from " + str(
@@ -680,7 +681,7 @@ class Visualize:
         assert end in Sub.referenceindex_results, ("plot end date in not in the 1min results, the results starts from " + str(
             Sub.referenceindex_results[0]) + " - and ends on " + str(Sub.referenceindex_results[-1]))
 
-        counter = Sub.referenceindex_results[np.where(Sub.referenceindex_results == start)[0][0]:np.where(Sub.referenceindex_results == end)[0][0]]
+        counter = Sub.referenceindex_results[np.where(Sub.referenceindex_results == start)[0][0]:np.where(Sub.referenceindex_results == end)[0][0]+1]
 #%%
         fig2 = plt.figure(20, figsize=(20, 10))
         gs = gridspec.GridSpec(nrows=2, ncols=6, figure=fig2)
@@ -725,12 +726,6 @@ class Visualize:
         ax2 = fig2.add_subplot(gs[0, 1:2])
         # ax2.set_xlim(1, 1440)
         ax2.set_ylim(0, int(Sub.qusbc.max()))
-        # ax2.set_xticks(xsname)
-        # ax2.set_xticklabels(xsname)
-        # if len(xsname) > 35:
-        #    ax2.tick_params(labelsize= 5)
-        # else :
-        #    ax2.tick_params(labelsize= 8)
 
         ax2.set_xlabel('Time', fontsize=15)
         ax2.set_ylabel('Discharge (m3/s)', fontsize=15)
@@ -802,7 +797,7 @@ class Visualize:
 
             # water level (ax4)
             # y = Sub.h.loc[Sub.q.index == counter[i]].values[0]
-            y = Sub.h[np.where(Sub.referenceindex_results == counter[i])[0][0],:]
+            y = Sub.wl[np.where(Sub.referenceindex_results == counter[i])[0][0],:]
             wl_line.set_data(x, y)
             # BC Q (ax2)
 
@@ -819,7 +814,7 @@ class Visualize:
 
         # plt.tight_layout()
 
-        anim = animation.FuncAnimation(fig2, animate_min, init_func=init_min, frames=np.shape(Sub.q)[0],
+        anim = animation.FuncAnimation(fig2, animate_min, init_func=init_min, frames=len(counter),
                                        interval=interval, blit=True)
         #%%
         return anim
@@ -926,7 +921,7 @@ class Visualize:
         # to plot cross section where there is -ve discharge
         # XsId = NegXS[0]
         # to plot cross section you want
-        XSno = -1
+        xsno = -1
         # len(Sub.xsname)/9
         rows = 3
         columns = 3
@@ -937,160 +932,160 @@ class Visualize:
             fig = plt.figure(1000 + i, figsize=(18, 10))
             gs = gridspec.GridSpec(rows, columns)
 
-            XSno = XSno + 1
-            XsId = Sub.crosssections['xsid'][Sub.crosssections.index[XSno]]
-            xcoord = XSS[names[0:8]].loc[XSS.index == XSS.index[XSno]].values.tolist()[0]
-            ycoord = XSS[names[8:16]].loc[XSS.index == XSS.index[XSno]].values.tolist()[0]
-            b = Sub.crosssections['b'].loc[Sub.crosssections['xsid'] == XSS.index[XSno]].values[0]
-            bl = Sub.crosssections['bl'].loc[Sub.crosssections['xsid'] == XSS.index[XSno]].values[0]
+            xsno = xsno + 1
+            XsId = Sub.crosssections['xsid'][Sub.crosssections.index[xsno]]
+            xcoord = XSS[names[0:8]].loc[XSS.index == XSS.index[xsno]].values.tolist()[0]
+            ycoord = XSS[names[8:16]].loc[XSS.index == XSS.index[xsno]].values.tolist()[0]
+            b = Sub.crosssections['b'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
+            bl = Sub.crosssections['bl'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
             ax_XS1 = fig.add_subplot(gs[0, 0])
             ax_XS1.plot(xcoord, ycoord, linewidth=6)
             ax_XS1.title.set_text('xs ID = ' + str(XsId))
             ax_XS1.title.set_fontsize(titlesize)
 
             if Sub.Version > 1:
-                dbf = Sub.crosssections['dbf'].loc[Sub.crosssections['xsid'] == XSS.index[XSno]].values[0]
+                dbf = Sub.crosssections['dbf'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
                 ax_XS1.annotate("dbf=" + str(round(dbf, 2)), xy=(bl, dbf - 0.5), fontsize=textsize)
                 # ax_XS1.annotate("Area="+str(round(dbf*b,2))+"m2",xy=(bl,dbf-1.4), fontsize = textsize  )
 
             ax_XS1.annotate("b=" + str(round(b, 2)), xy=(bl, 0), fontsize=textsize)
 
-            XSno = XSno + 1
-            XsId = Sub.crosssections['xsid'][Sub.crosssections.index[XSno]]
-            xcoord = XSS[names[0:8]].loc[XSS.index == XSS.index[XSno]].values.tolist()[0]
-            ycoord = XSS[names[8:16]].loc[XSS.index == XSS.index[XSno]].values.tolist()[0]
-            b = Sub.crosssections['b'].loc[Sub.crosssections['xsid'] == XSS.index[XSno]].values[0]
-            bl = Sub.crosssections['bl'].loc[Sub.crosssections['xsid'] == XSS.index[XSno]].values[0]
+            xsno = xsno + 1
+            XsId = Sub.crosssections['xsid'][Sub.crosssections.index[xsno]]
+            xcoord = XSS[names[0:8]].loc[XSS.index == XSS.index[xsno]].values.tolist()[0]
+            ycoord = XSS[names[8:16]].loc[XSS.index == XSS.index[xsno]].values.tolist()[0]
+            b = Sub.crosssections['b'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
+            bl = Sub.crosssections['bl'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
             ax_XS2 = fig.add_subplot(gs[0, 1])
             ax_XS2.plot(xcoord, ycoord, linewidth=6)
             ax_XS2.title.set_text('xs ID = ' + str(XsId))
             ax_XS2.title.set_fontsize(titlesize)
 
             if Sub.Version > 1:
-                dbf = Sub.crosssections['dbf'].loc[Sub.crosssections['xsid'] == XSS.index[XSno]].values[0]
+                dbf = Sub.crosssections['dbf'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
                 ax_XS2.annotate("dbf=" + str(round(dbf, 2)), xy=(bl, dbf - 0.5), fontsize=textsize)
                 # ax_XS2.annotate("Area="+str(round(dbf*b,2))+"m2",xy=(bl,dbf-1.4), fontsize = textsize  )
 
             ax_XS2.annotate("b=" + str(round(b, 2)), xy=(bl, 0), fontsize=textsize)
 
-            XSno = XSno + 1
-            XsId = Sub.crosssections['xsid'][Sub.crosssections.index[XSno]]
-            xcoord = XSS[names[0:8]].loc[XSS.index == XSS.index[XSno]].values.tolist()[0]
-            ycoord = XSS[names[8:16]].loc[XSS.index == XSS.index[XSno]].values.tolist()[0]
-            b = Sub.crosssections['b'].loc[Sub.crosssections['xsid'] == XSS.index[XSno]].values[0]
-            bl = Sub.crosssections['bl'].loc[Sub.crosssections['xsid'] == XSS.index[XSno]].values[0]
+            xsno = xsno + 1
+            XsId = Sub.crosssections['xsid'][Sub.crosssections.index[xsno]]
+            xcoord = XSS[names[0:8]].loc[XSS.index == XSS.index[xsno]].values.tolist()[0]
+            ycoord = XSS[names[8:16]].loc[XSS.index == XSS.index[xsno]].values.tolist()[0]
+            b = Sub.crosssections['b'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
+            bl = Sub.crosssections['bl'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
             ax_XS3 = fig.add_subplot(gs[0, 2])
             ax_XS3.plot(xcoord, ycoord, linewidth=6)
             ax_XS3.title.set_text('xs ID = ' + str(XsId))
             ax_XS3.title.set_fontsize(titlesize)
 
             if Sub.Version > 1:
-                dbf = Sub.crosssections['dbf'].loc[Sub.crosssections['xsid'] == XSS.index[XSno]].values[0]
+                dbf = Sub.crosssections['dbf'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
                 ax_XS3.annotate("dbf=" + str(round(dbf, 2)), xy=(bl, dbf - 0.5), fontsize=textsize)
                 # ax_XS3.annotate("Area="+str(round(dbf*b,2))+"m2",xy=(bl,dbf-1.4), fontsize = textsize  )
             ax_XS3.annotate("b=" + str(round(b, 2)), xy=(bl, 0), fontsize=textsize)
 
-            XSno = XSno + 1
-            XsId = Sub.crosssections['xsid'][Sub.crosssections.index[XSno]]
-            xcoord = XSS[names[0:8]].loc[XSS.index == XSS.index[XSno]].values.tolist()[0]
-            ycoord = XSS[names[8:16]].loc[XSS.index == XSS.index[XSno]].values.tolist()[0]
-            b = Sub.crosssections['b'].loc[Sub.crosssections['xsid'] == XSS.index[XSno]].values[0]
-            bl = Sub.crosssections['bl'].loc[Sub.crosssections['xsid'] == XSS.index[XSno]].values[0]
+            xsno = xsno + 1
+            XsId = Sub.crosssections['xsid'][Sub.crosssections.index[xsno]]
+            xcoord = XSS[names[0:8]].loc[XSS.index == XSS.index[xsno]].values.tolist()[0]
+            ycoord = XSS[names[8:16]].loc[XSS.index == XSS.index[xsno]].values.tolist()[0]
+            b = Sub.crosssections['b'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
+            bl = Sub.crosssections['bl'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
             ax_XS4 = fig.add_subplot(gs[1, 0])
             ax_XS4.plot(xcoord, ycoord, linewidth=6)
             ax_XS4.title.set_text('xs ID = ' + str(XsId))
             ax_XS4.title.set_fontsize(titlesize)
             if Sub.Version > 1:
-                dbf = Sub.crosssections['dbf'].loc[Sub.crosssections['xsid'] == XSS.index[XSno]].values[0]
+                dbf = Sub.crosssections['dbf'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
                 ax_XS4.annotate("dbf=" + str(round(dbf, 2)), xy=(bl, dbf - 0.5), fontsize=textsize)
                 # ax_XS4.annotate("Area="+str(round(dbf*b,2))+"m2",xy=(bl,dbf-1.4), fontsize = textsize  )
 
             ax_XS4.annotate("b=" + str(round(b, 2)), xy=(bl, 0), fontsize=textsize)
 
-            XSno = XSno + 1
-            XsId = Sub.crosssections['xsid'][Sub.crosssections.index[XSno]]
-            xcoord = XSS[names[0:8]].loc[XSS.index == XSS.index[XSno]].values.tolist()[0]
-            ycoord = XSS[names[8:16]].loc[XSS.index == XSS.index[XSno]].values.tolist()[0]
-            b = Sub.crosssections['b'].loc[Sub.crosssections['xsid'] == XSS.index[XSno]].values[0]
-            bl = Sub.crosssections['bl'].loc[Sub.crosssections['xsid'] == XSS.index[XSno]].values[0]
+            xsno = xsno + 1
+            XsId = Sub.crosssections['xsid'][Sub.crosssections.index[xsno]]
+            xcoord = XSS[names[0:8]].loc[XSS.index == XSS.index[xsno]].values.tolist()[0]
+            ycoord = XSS[names[8:16]].loc[XSS.index == XSS.index[xsno]].values.tolist()[0]
+            b = Sub.crosssections['b'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
+            bl = Sub.crosssections['bl'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
             ax_XS5 = fig.add_subplot(gs[1, 1])
             ax_XS5.plot(xcoord, ycoord, linewidth=6)
             ax_XS5.title.set_text('xs ID = ' + str(XsId))
             ax_XS5.title.set_fontsize(titlesize)
 
             if Sub.Version > 1:
-                dbf = Sub.crosssections['dbf'].loc[Sub.crosssections['xsid'] == XSS.index[XSno]].values[0]
+                dbf = Sub.crosssections['dbf'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
                 ax_XS5.annotate("dbf=" + str(round(dbf, 2)), xy=(bl, dbf - 0.5), fontsize=textsize)
                 # ax_XS5.annotate("Area="+str(round(dbf*b,2))+"m2",xy=(bl,dbf-1.4), fontsize = textsize  )
 
             ax_XS5.annotate("b=" + str(round(b, 2)), xy=(bl, 0), fontsize=textsize)
 
-            XSno = XSno + 1
-            XsId = Sub.crosssections['xsid'][Sub.crosssections.index[XSno]]
-            xcoord = XSS[names[0:8]].loc[XSS.index == XSS.index[XSno]].values.tolist()[0]
-            ycoord = XSS[names[8:16]].loc[XSS.index == XSS.index[XSno]].values.tolist()[0]
-            b = Sub.crosssections['b'].loc[Sub.crosssections['xsid'] == XSS.index[XSno]].values[0]
-            bl = Sub.crosssections['bl'].loc[Sub.crosssections['xsid'] == XSS.index[XSno]].values[0]
+            xsno = xsno + 1
+            XsId = Sub.crosssections['xsid'][Sub.crosssections.index[xsno]]
+            xcoord = XSS[names[0:8]].loc[XSS.index == XSS.index[xsno]].values.tolist()[0]
+            ycoord = XSS[names[8:16]].loc[XSS.index == XSS.index[xsno]].values.tolist()[0]
+            b = Sub.crosssections['b'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
+            bl = Sub.crosssections['bl'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
             ax_XS6 = fig.add_subplot(gs[1, 2])
             ax_XS6.plot(xcoord, ycoord, linewidth=6)
             ax_XS6.title.set_text('xs ID = ' + str(XsId))
             ax_XS6.title.set_fontsize(titlesize)
 
             if Sub.Version > 1:
-                dbf = Sub.crosssections['dbf'].loc[Sub.crosssections['xsid'] == XSS.index[XSno]].values[0]
+                dbf = Sub.crosssections['dbf'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
                 ax_XS6.annotate("dbf=" + str(round(dbf, 2)), xy=(bl, dbf - 0.5), fontsize=textsize)
                 # ax_XS6.annotate("Area="+str(round(dbf*b,2))+"m2",xy=(bl,dbf-1.4), fontsize = textsize  )
 
             ax_XS6.annotate("b=" + str(round(b, 2)), xy=(bl, 0), fontsize=textsize)
 
-            XSno = XSno + 1
-            XsId = Sub.crosssections['xsid'][Sub.crosssections.index[XSno]]
-            xcoord = XSS[names[0:8]].loc[XSS.index == XSS.index[XSno]].values.tolist()[0]
-            ycoord = XSS[names[8:16]].loc[XSS.index == XSS.index[XSno]].values.tolist()[0]
-            b = Sub.crosssections['b'].loc[Sub.crosssections['xsid'] == XSS.index[XSno]].values[0]
-            bl = Sub.crosssections['bl'].loc[Sub.crosssections['xsid'] == XSS.index[XSno]].values[0]
+            xsno = xsno + 1
+            XsId = Sub.crosssections['xsid'][Sub.crosssections.index[xsno]]
+            xcoord = XSS[names[0:8]].loc[XSS.index == XSS.index[xsno]].values.tolist()[0]
+            ycoord = XSS[names[8:16]].loc[XSS.index == XSS.index[xsno]].values.tolist()[0]
+            b = Sub.crosssections['b'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
+            bl = Sub.crosssections['bl'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
             ax_XS7 = fig.add_subplot(gs[2, 0])
             ax_XS7.plot(xcoord, ycoord, linewidth=6)
             ax_XS7.title.set_text('xs ID = ' + str(XsId))
             ax_XS7.title.set_fontsize(titlesize)
 
             if Sub.Version > 1:
-                dbf = Sub.crosssections['dbf'].loc[Sub.crosssections['xsid'] == XSS.index[XSno]].values[0]
+                dbf = Sub.crosssections['dbf'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
                 ax_XS7.annotate("dbf=" + str(round(dbf, 2)), xy=(bl, dbf - 0.5), fontsize=textsize)
                 # ax_XS7.annotate("Area="+str(round(dbf*b,2))+"m2",xy=(bl,dbf-1.4), fontsize = textsize  )
             ax_XS7.annotate("b=" + str(round(b, 2)), xy=(bl, 0), fontsize=textsize)
 
-            XSno = XSno + 1
-            XsId = Sub.crosssections['xsid'][Sub.crosssections.index[XSno]]
-            xcoord = XSS[names[0:8]].loc[XSS.index == XSS.index[XSno]].values.tolist()[0]
-            ycoord = XSS[names[8:16]].loc[XSS.index == XSS.index[XSno]].values.tolist()[0]
-            b = Sub.crosssections['b'].loc[Sub.crosssections['xsid'] == XSS.index[XSno]].values[0]
-            bl = Sub.crosssections['bl'].loc[Sub.crosssections['xsid'] == XSS.index[XSno]].values[0]
+            xsno = xsno + 1
+            XsId = Sub.crosssections['xsid'][Sub.crosssections.index[xsno]]
+            xcoord = XSS[names[0:8]].loc[XSS.index == XSS.index[xsno]].values.tolist()[0]
+            ycoord = XSS[names[8:16]].loc[XSS.index == XSS.index[xsno]].values.tolist()[0]
+            b = Sub.crosssections['b'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
+            bl = Sub.crosssections['bl'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
             ax_XS8 = fig.add_subplot(gs[2, 1])
             ax_XS8.plot(xcoord, ycoord, linewidth=6)
             ax_XS8.title.set_text('xs ID = ' + str(XsId))
             ax_XS8.title.set_fontsize(titlesize)
 
             if Sub.Version > 1:
-                dbf = Sub.crosssections['dbf'].loc[Sub.crosssections['xsid'] == XSS.index[XSno]].values[0]
+                dbf = Sub.crosssections['dbf'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
                 ax_XS8.annotate("dbf=" + str(round(dbf, 2)), xy=(bl, dbf - 0.5), fontsize=textsize)
                 # ax_XS8.annotate("Area="+str(round(dbf*b,2))+"m2",xy=(bl,dbf-1.4), fontsize = textsize  )
 
             ax_XS8.annotate("b=" + str(round(b, 2)), xy=(bl, 0), fontsize=textsize)
 
-            XSno = XSno + 1
-            XsId = Sub.crosssections['xsid'][Sub.crosssections.index[XSno]]
-            xcoord = XSS[names[0:8]].loc[XSS.index == XSS.index[XSno]].values.tolist()[0]
-            ycoord = XSS[names[8:16]].loc[XSS.index == XSS.index[XSno]].values.tolist()[0]
-            b = Sub.crosssections['b'].loc[Sub.crosssections['xsid'] == XSS.index[XSno]].values[0]
-            bl = Sub.crosssections['bl'].loc[Sub.crosssections['xsid'] == XSS.index[XSno]].values[0]
+            xsno = xsno + 1
+            XsId = Sub.crosssections['xsid'][Sub.crosssections.index[xsno]]
+            xcoord = XSS[names[0:8]].loc[XSS.index == XSS.index[xsno]].values.tolist()[0]
+            ycoord = XSS[names[8:16]].loc[XSS.index == XSS.index[xsno]].values.tolist()[0]
+            b = Sub.crosssections['b'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
+            bl = Sub.crosssections['bl'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
             ax_XS9 = fig.add_subplot(gs[2, 2])
             ax_XS9.plot(xcoord, ycoord, linewidth=6)
             ax_XS9.title.set_text('xs ID = ' + str(XsId))
             ax_XS9.title.set_fontsize(titlesize)
 
             if Sub.Version > 1:
-                dbf = Sub.crosssections['dbf'].loc[Sub.crosssections['xsid'] == XSS.index[XSno]].values[0]
+                dbf = Sub.crosssections['dbf'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
                 ax_XS9.annotate("dbf=" + str(round(dbf, 2)), xy=(bl, dbf - 0.5), fontsize=textsize)
                 # ax_XS9.annotate("Area="+str(round(dbf*b,2))+"m2",xy=(bl,dbf-1.4), fontsize = textsize  )
             ax_XS9.annotate("b=" + str(round(b, 2)), xy=(bl, 0), fontsize=textsize)
