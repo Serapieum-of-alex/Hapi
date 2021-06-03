@@ -9,7 +9,7 @@ from Hapi.rrm import hbv_lake
 from Hapi.rrm.distrrm import DistributedRRM as distrrm
 from Hapi.rrm.routing import Routing as routing
 
-class Wrapper():
+class Wrapper:
     """
     ==================
         Wrapper
@@ -317,8 +317,8 @@ class Wrapper():
                                                      snow = Model.Snow)
         # q mm , area sq km  (1000**2)/1000/f/60/60 = 1/(3.6*f)
         # if daily tfac=24 if hourly tfac=1 if 15 min tfac=0.25
-        Model.quz = Model.quz*Model.CatArea/(Model.Timef*3.6)
-        Model.qlz = Model.qlz*Model.CatArea/(Model.Timef*3.6)
+        Model.quz = Model.quz*Model.CatArea/Model.conversionfactor
+        Model.qlz = Model.qlz*Model.CatArea/Model.conversionfactor
 
         Model.Qsim = Model.quz + Model.qlz
 
@@ -326,7 +326,7 @@ class Wrapper():
             Model.Qsim = RoutingFn(np.array(Model.Qsim[:-1]), Model.Parameters[-1])
         elif Routing != 0:
             Model.Qsim = RoutingFn(np.array(Model.Qsim[:-1]), Model.Qsim[0],
-                                   Model.Parameters[-2], Model.Parameters[-1], Model.Timef)
+                                   Model.Parameters[-2], Model.Parameters[-1], Model.dt)
 
 if __name__=='__main__':
     print("Wrapper")

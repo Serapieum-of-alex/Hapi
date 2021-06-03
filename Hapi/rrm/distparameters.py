@@ -37,7 +37,7 @@ class DistParameters():
     """
 
     def __init__(self, raster, no_parameters, no_lumped_par=0, lumped_par_pos=[],
-                 Lake = 0, Snow=0, HRUs=0, Function=1, Kub=1, Klb= 0.5, Maskingum=False):
+                 Lake = 0, Snow=0, HRUs=0, Function=1, Kub=1, Klb= 50, Maskingum=False):
         """
         =============================================================================
              DistParameters(self, raster, no_parameters, no_lumped_par=0, lumped_par_pos=[],
@@ -114,7 +114,8 @@ class DistParameters():
             self.no_elem = np.size(self.raster_A[:,:])-np.count_nonzero((self.raster_A[self.raster_A == self.noval]))
 
         self.no_parameters = no_parameters
-
+        # all parameters lumped and distributed
+        self.totnumberpar = no_parameters
         # store the indeces of the non-empty cells
         self.celli=[]
         self.cellj=[]
@@ -238,7 +239,7 @@ class DistParameters():
 
         # input values
         if self.no_lumped_par > 0:
-            assert len(par_g) == (self.no_elem*(self.no_parameters))+self.no_lumped_par,"As there is "+str(self.no_lumped_par)+" lumped parameters, length of input parameters should be "+str(self.no_elem)+"*"+"("+str(self.no_parameters + self.no_lumped_par)+"-"+str(self.no_lumped_par)+")"+"+"+str(self.no_lumped_par)+"="+str(self.no_elem*(self.no_parameters-self.no_lumped_par)+self.no_lumped_par)+" not "+str(len(par_g))+" probably you have to add the value of the lumped parameter at the end of the list"
+            assert len(par_g) == (self.no_elem*self.no_parameters)+self.no_lumped_par,"As there is "+str(self.no_lumped_par)+" lumped parameters, length of input parameters should be "+str(self.no_elem)+"*"+"("+str(self.no_parameters + self.no_lumped_par)+"-"+str(self.no_lumped_par)+")"+"+"+str(self.no_lumped_par)+"="+str(self.no_elem*(self.no_parameters-self.no_lumped_par)+self.no_lumped_par)+" not "+str(len(par_g))+" probably you have to add the value of the lumped parameter at the end of the list"
         else:
             # if there is no lumped parameters
             assert len(par_g) == self.no_elem*self.no_parameters,"As there is no lumped parameters length of input parameters should be "+str(self.no_elem)+"*"+str(self.no_parameters)+"="+str(self.no_elem*self.no_parameters)
@@ -267,9 +268,10 @@ class DistParameters():
 
         # calculate the value of k(travelling time in muskingum based on value of
         # x and the position and upper, lower bound of k value
-        if Maskingum == True:
-            for i in range(self.no_elem):
-                self.Par3d[self.celli[i],self.cellj[i],-2]= DistParameters.calculateK(self.Par3d[self.celli[i],self.cellj[i],-1],self.Par3d[self.celli[i],self.cellj[i],-2],kub,klb)
+
+        # if Maskingum:
+        #     for i in range(self.no_elem):
+        #         self.Par3d[self.celli[i],self.cellj[i],-2]= DistParameters.calculateK(self.Par3d[self.celli[i],self.cellj[i],-1],self.Par3d[self.celli[i],self.cellj[i],-2],kub,klb)
 
 
 
@@ -332,8 +334,9 @@ class DistParameters():
         # x and the position and upper, lower bound of k value
         if Maskingum == True:
             for i in range(self.no_elem):
-                self.Par3d[self.celli[i],self.cellj[i],-2] = DistParameters.calculateK(self.Par3d[self.celli[i],self.cellj[i],-1],self.Par3d[self.celli[i],self.cellj[i],-2],kub,klb)
-
+                self.Par3d[self.celli[i],self.cellj[i],-2] = DistParameters.calculateK(self.Par3d[self.celli[i],self.cellj[i],-1],
+                                                                                       self.Par3d[self.celli[i],self.cellj[i],-2],
+                                                                                       kub,klb)
 
     @staticmethod
     def calculateK(x,position,UB,LB):
@@ -368,7 +371,7 @@ class DistParameters():
         if constraint1 <= LB :
             constraint1 = LB
 
-        generatedK = np.linspace(constraint1,constraint2,101)
+        generatedK = np.linspace(constraint1,constraint2,50)
         k = generatedK[int(round(position,0))]
         return k
 

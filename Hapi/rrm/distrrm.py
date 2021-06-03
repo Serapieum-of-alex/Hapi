@@ -8,7 +8,7 @@ import numpy as np
 from Hapi.gis.raster import Raster as raster
 from Hapi.rrm.routing import Routing as routing
 
-class DistributedRRM():
+class DistributedRRM:
     """
     ================================
         DistributedRRM
@@ -81,7 +81,6 @@ class DistributedRRM():
         Model.quz = np.zeros([Model.rows,Model.cols, Model.TS], dtype=np.float32)
         # Model.q_uz[:] = np.nan
         Model.qlz = np.zeros([Model.rows,Model.cols, Model.TS], dtype=np.float32)
-        # Model.qlz[:] = np.nan
 
         for x in range(Model.rows):
             for y in range(Model.cols):
@@ -98,9 +97,9 @@ class DistributedRRM():
 
         area_coef = Model.CatArea/Model.px_tot_area
         # convert quz from mm/time step to m3/sec
-        Model.quz = Model.quz * Model.px_area * area_coef / (Model.Timef*3.6)
+        Model.quz = Model.quz * Model.px_area * area_coef / Model.conversionfactor #Timef*3.6
         # convert Qlz to m3/sec
-        Model.qlz = Model.qlz * Model.px_area * area_coef / (Model.Timef*3.6)
+        Model.qlz = Model.qlz * Model.px_area * area_coef / Model.conversionfactor #Timef*3.6
 
 
     @staticmethod
@@ -154,12 +153,12 @@ class DistributedRRM():
         in order to be able to calculate total discharge (uz+lz) at internal points
         in the catchment
         """
-        Model.qlz_translated = np.zeros_like(Model.quz)#*np.nan
-        Model.Qtot = np.zeros_like(Model.quz)
+        Model.qlz_translated = np.zeros_like(Model.quz)
+        # Model.Qtot = np.zeros_like(Model.quz)
         # for all cell with 0 flow acc put the quz
         for x in range(Model.rows): # no of rows
             for y in range(Model.cols): # no of columns
-                if not np.isnan(Model.FlowAccArr[x, y]) and Model.FlowAccArr [x, y] == 0:
+                if not np.isnan(Model.FlowAccArr[x, y]) and Model.FlowAccArr[x, y] == 0:
                     Model.quz_routed[x,y,:]= Model.quz[x,y,:]
                     Model.qlz_translated[x,y,:]= Model.qlz[x,y,:]
 
@@ -189,13 +188,14 @@ class DistributedRRM():
                                                                         Model.quz_routed[x_ind,y_ind,0],
                                                                         Model.Parameters[x_ind,y_ind,10],
                                                                         Model.Parameters[x_ind,y_ind,11],
-                                                                        Model.Timef)
+                                                                        Model.dt)
 
                                     qlzi = qlzi + Model.qlz_translated[x_ind,y_ind,:]
 
                                 # add the routed upstream flows to the current Quz in the cell
                                 Model.quz_routed[x,y,:] = Model.quz[x,y,:] + q_uzi
                                 Model.qlz_translated[x,y,:] = Model.qlz[x,y,:] + qlzi
+        Model.Qtot = Model.qlz_translated + Model.quz_routed
 
 
     @staticmethod

@@ -13,12 +13,8 @@ Created on Sun Apr 29 17:42:04 2018
 import numpy as np
 
 
-
-class Routing():
+class Routing:
     """
-    ==============================================================
-        Routing
-    ==============================================================
     Routing class contains routing method
 
     Methods
@@ -38,9 +34,6 @@ class Routing():
     @staticmethod
     def Muskingum(inflow,Qinitial,k,x,dt):
         """
-        ===========================================================
-         muskingum(inflow,Qinitial,k,x,dt)
-        ===========================================================
 
         inputs:
         ----------
@@ -67,10 +60,9 @@ class Routing():
         p2[0]=1  # hourly time step
         q_routed = Routing.muskingum(q_uz,q_uz[0],pars[10],pars[11],p2[0])
        """
-
-        c1 = (dt-2*k*x)/(2*k*(1-x)+dt)
-        c2 = (dt+2*k*x)/(2*k*(1-x)+dt)
-        c3 = (2*k*(1-x)-dt)/(2*k*(1-x)+dt)
+        c1 = ( dt - 2 * k * x) / ( 2 * k * ( 1 - x ) + dt )
+        c2 = ( dt + 2 * k * x ) / ( 2 * k * ( 1 - x ) + dt )
+        c3 = ( 2 * k * ( 1 - x ) - dt ) / ( 2 * k * ( 1 - x ) + dt )
 
     #    if c1+c2+c3!=1:
     #        raise("sim of c1,c2 & c3 is not 1")
@@ -88,9 +80,6 @@ class Routing():
     @staticmethod
     def Muskingum_V(inflow,Qinitial,k,x,dt):
         """
-        ===========================================================
-         Muskingum_V(inflow,Qinitial,k,x,dt)
-        ===========================================================
         Vectorized version of Muskingum
 
         inputs:
@@ -118,7 +107,6 @@ class Routing():
         p2[0]=1  # hourly time step
         q_routed = Routing.muskingum(q_uz,q_uz[0],pars[10],pars[11],p2[0])
        """
-
         c1 = (dt-2*k*x)/(2*k*(1-x)+dt)
         c2 = (dt+2*k*x)/(2*k*(1-x)+dt)
         c3 = (2*k*(1-x)-dt)/(2*k*(1-x)+dt)
@@ -140,9 +128,6 @@ class Routing():
     @staticmethod
     def Tf(maxbas):
         """
-        =======================================
-             Tf(maxbas)
-        =======================================
         Transfer function weight generator in a shape of a triangle
 
         Inputs:
@@ -178,9 +163,6 @@ class Routing():
     @staticmethod
     def TriangularRouting2(q, maxbas=1):
         """
-        ==========================================================
-             TriangularRouting(q, maxbas=1)
-        ==========================================================
         TriangularRouting implements the transfer function using a triangular
         function (considers only integer values of Maxbas parameter)
 
@@ -224,9 +206,6 @@ class Routing():
     @staticmethod
     def CalculateWeights(MAXBAS):
         """
-        ======================================================
-            CalculateMaxBas(MAXBAS)
-        ======================================================
         CalculateMaxBas calculate the MAXBAS Weights based on a MAXBAX number
         The MAXBAS is a HBV parameter that controls the routing
 
@@ -245,26 +224,19 @@ class Routing():
             It is important to mention that this function allows to obtain weights
             not only for interger values but from decimals values as well.
         """
-
         yant = 0
         Total = 0 # Just to verify how far from the unit is the result
 
         TotalA = (MAXBAS * MAXBAS * np.sin(np.pi/3)) / 2
-
-
         IntPart = np.floor(MAXBAS)
-
         RealPart = MAXBAS - IntPart
-
         PeakPoint = MAXBAS%2
-
         flag = 1  # 1 = "up"  ; 2 = down
 
         if RealPart>0 : # even number 2,4,6,8,10
             maxbasW = np.ones(int(IntPart)+1) # if even add 1
         else:            # odd number
             maxbasW = np.ones(int(IntPart))
-
 
         for x in range(int(MAXBAS)):
 
@@ -273,18 +245,17 @@ class Routing():
                 ynow = np.tan(np.pi/3) * (x+1)
                 # ' Area / Total Area
                 maxbasW[x] = ((ynow + yant) / 2) / TotalA
-
             else:     #The area here is calculated by the formlua of a trapezoidal (B1+B2)*h /2
                 if flag == 1 :
-                    ynow = np.sin(np.pi/3) * MAXBAS;
+                    ynow = np.sin(np.pi/3) * MAXBAS
                     if PeakPoint == 0 :
-                        maxbasW[x] = ((ynow + yant) / 2) / TotalA;
+                        maxbasW[x] = ((ynow + yant) / 2) / TotalA
                     else:
-                        A1 = ((ynow + yant) / 2) * (MAXBAS / 2.0 - x ) / TotalA;
-                        yant = ynow;
+                        A1 = ((ynow + yant) / 2) * (MAXBAS / 2.0 - x ) / TotalA
+                        yant = ynow
                         ynow = (MAXBAS * np.sin(np.pi/3)) - (np.tan(np.pi/3) * (x+1 - MAXBAS / 2.0));
-                        A2 = ((ynow + yant) * (x +1 - MAXBAS / 2.0) / 2) / TotalA;
-                        maxbasW[x] = A1 + A2;
+                        A2 = ((ynow + yant) * (x +1 - MAXBAS / 2.0) / 2) / TotalA
+                        maxbasW[x] = A1 + A2
 
                     flag = 2
                 else:
@@ -293,8 +264,8 @@ class Routing():
                     #Multiplying by the height of the trapezoidal and dividing by 2
                     maxbasW[x] = ((ynow + yant) / 2) / TotalA
 
-            Total = Total + maxbasW[x];
-            yant = ynow;
+            Total = Total + maxbasW[x]
+            yant = ynow
 
         x = int(MAXBAS)
         # x = x + 1
@@ -309,8 +280,7 @@ class Routing():
                 Total = Total + maxbasW[x]
                 NumberofWeights = x
         else:
-
-            NumberofWeights = x - 1;
+            NumberofWeights = x - 1
 
         return maxbasW
 
@@ -318,9 +288,6 @@ class Routing():
     @staticmethod
     def TriangularRouting1(Q,MAXBAS):
         """
-        ====================================================
-             TriangularRouting1(Q,MAXBAS)
-        ====================================================
         TriangularRouting1 calculate the routing from a input hydrograph using
         the MAXBAS parameter from the HBV model (considers float values of Maxbas
                                                  parameter).
@@ -345,18 +312,18 @@ class Routing():
                 Qw[i,k] = maxbasW[k]*Q[i]
 
         def mm(A,s):
-            tot=[]
+            tot = []
             for o in range(np.shape(A)[1]): # columns
                 for t in range(np.shape(A)[0]): # rows
                     tot.append(A[t,o])
-            Su=tot[s:-1:s]
+            Su = tot[s:-1:s]
             return Su
 
         # Calculate routing
         j = 0
         Qout = np.ones(shape=(len(Q)))
 
-        for i in range(len(Q) ):
+        for i in range(len(Q)):
             if i == 0:
                 Qout[i] = Qw[i,i]
             elif i < len(maxbasW)-1:
@@ -371,7 +338,5 @@ class Routing():
                 Su = mm(A,s)
                 Qout[i] = sum(Su)
                 j = j + 1
-
-    #        del A ,s, Su
 
         return Qout #,maxbasW

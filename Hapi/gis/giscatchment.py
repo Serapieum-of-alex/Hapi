@@ -294,50 +294,50 @@ class GISCatchment():
         """
         # input data validation
         # data type
-        assert type(flow_direct)==gdal.Dataset, "src should be read using gdal (gdal dataset please read it using gdal library) "
+        assert type(flow_direct) == gdal.Dataset, "src should be read using gdal (gdal dataset please read it using gdal library) "
 
         # check flow direction input raster
-        no_val=np.float32(flow_direct.GetRasterBand(1).GetNoDataValue())
-        cols=flow_direct.RasterXSize
-        rows=flow_direct.RasterYSize
+        no_val = np.float32(flow_direct.GetRasterBand(1).GetNoDataValue())
+        cols = flow_direct.RasterXSize
+        rows = flow_direct.RasterYSize
 
-        fd=flow_direct.ReadAsArray()
-        fd_val=[int(fd[i,j]) for i in range(rows) for j in range(cols) if fd[i,j] != no_val]
-        fd_val=list(set(fd_val))
-        fd_should=[1,2,4,8,16,32,64,128]
+        fd = flow_direct.ReadAsArray()
+        fd_val = [int(fd[i,j]) for i in range(rows) for j in range(cols) if fd[i,j] != no_val]
+        fd_val = list(set(fd_val))
+        fd_should = [1,2,4,8,16,32,64,128]
         assert all(fd_val[i] in fd_should for i in range(len(fd_val))), "flow direction raster should contain values 1,2,4,8,16,32,64,128 only "
 
 
     #    fd=np.float32(flow_direct.ReadAsArray())
     #    fd[fd==no_val]=np.nan
-        fd_cell=np.ones((rows,cols,2))*np.nan
+        fd_cell = np.ones((rows,cols,2))*np.nan
 
         for i in range(rows):
             for j in range(cols):
                 if fd[i,j]==1:
-                    fd_cell[i,j,0]=i  # index of the row
-                    fd_cell[i,j,1]=j+1 # index of the column
+                    fd_cell[i,j,0] = i  # index of the row
+                    fd_cell[i,j,1] = j+1 # index of the column
                 elif fd[i,j]==128:
-                    fd_cell[i,j,0]=i-1
-                    fd_cell[i,j,1]=j+1
+                    fd_cell[i,j,0] = i-1
+                    fd_cell[i,j,1] = j+1
                 elif fd[i,j]==64:
-                    fd_cell[i,j,0]=i-1
-                    fd_cell[i,j,1]=j
+                    fd_cell[i,j,0] = i-1
+                    fd_cell[i,j,1] = j
                 elif fd[i,j]==32:
-                    fd_cell[i,j,0]=i-1
-                    fd_cell[i,j,1]=j-1
+                    fd_cell[i,j,0] = i-1
+                    fd_cell[i,j,1] = j-1
                 elif fd[i,j]==16:
-                    fd_cell[i,j,0]=i
-                    fd_cell[i,j,1]=j-1
+                    fd_cell[i,j,0] = i
+                    fd_cell[i,j,1] = j-1
                 elif fd[i,j]==8:
-                    fd_cell[i,j,0]=i+1
-                    fd_cell[i,j,1]=j-1
+                    fd_cell[i,j,0] = i+1
+                    fd_cell[i,j,1] = j-1
                 elif fd[i,j]==4:
-                    fd_cell[i,j,0]=i+1
-                    fd_cell[i,j,1]=j
+                    fd_cell[i,j,0] = i+1
+                    fd_cell[i,j,1] = j
                 elif fd[i,j]==2:
-                    fd_cell[i,j,0]=i+1
-                    fd_cell[i,j,1]=j+1
+                    fd_cell[i,j,0] = i+1
+                    fd_cell[i,j,1] = j+1
 
         return fd_cell
 
@@ -369,15 +369,15 @@ class GISCatchment():
         """
         # input data validation
         # validation is inside FlowDirectِِIndex
-        FDI=GISCatchment.FlowDirectIndex(flow_direct)
+        FDI = GISCatchment.FlowDirectIndex(flow_direct)
 
-        rows=flow_direct.RasterYSize
-        cols=flow_direct.RasterXSize
+        rows = flow_direct.RasterYSize
+        cols = flow_direct.RasterXSize
 
-        celli=[]
-        cellj=[]
-        celli_content=[]
-        cellj_content=[]
+        celli = []
+        cellj = []
+        celli_content = []
+        cellj_content = []
         for i in range(rows): # rows
             for j in range(cols): # columns
                 if not np.isnan(FDI[i,j,0]):
@@ -388,17 +388,17 @@ class GISCatchment():
                     celli_content.append(FDI[i,j,0])
                     cellj_content.append(FDI[i,j,1])
 
-        flow_acc_table={}
+        flow_acc_table = {}
         # for each cell store the directly giving cells
         for i in range(rows): # rows
             for j in range(cols): # columns
                 if not np.isnan(FDI[i,j,0]):
                     # get the indexes of the cell and use it as a key in a dictionary
-                    name=str(i)+','+str(j)
+                    name = str(i)+','+str(j)
                     flow_acc_table[name]=[]
                     for k in range(len(celli_content)):
                         # search if any cell are giving this cell
-                        if i==celli_content[k] and j==cellj_content[k]:
+                        if i == celli_content[k] and j == cellj_content[k]:
                             flow_acc_table[name].append((celli[k],cellj[k]))
 
         return flow_acc_table

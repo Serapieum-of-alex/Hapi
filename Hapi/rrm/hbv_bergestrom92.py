@@ -135,7 +135,7 @@ def Snow(temp, rf, sf, wc_old, sp_old, tt, cfmax, cfr, cwh):
         if cfmax*(temp-tt) < sp_old+sf: #if amount of melted snow < the entire existing snow (previous amount+new)
             melt = cfmax*(temp-tt)
         else:                             #if amount of melted snow > the entire existing snow (previous amount+new)
-            melt = sp_old+sf           # then the entire existing snow will melt (old snow pack + the current snowfall)
+            melt = sp_old + sf           # then the entire existing snow will melt (old snow pack + the current snowfall)
 
         sp_new = sp_old + sf - melt
         wc_int = wc_old + melt + rf
@@ -151,9 +151,9 @@ def Snow(temp, rf, sf, wc_old, sp_old, tt, cfmax, cfr, cwh):
         wc_int = wc_old - refr + rf
 
     #
-    if wc_int > cwh*sp_new: # if water content > holding water capacity of the snow
-        inf = wc_int-cwh*sp_new  #water content  will infiltrate
-        wc_new = cwh*sp_new # and the capacity of snow of holding water will retained
+    if wc_int > cwh * sp_new: # if water content > holding water capacity of the snow
+        inf = wc_int - cwh * sp_new  #water content  will infiltrate
+        wc_new = cwh * sp_new # and the capacity of snow of holding water will retained
     else:           # if water content < holding water capacity of the snow
         inf = 0.0            # no infiltration
         wc_new = wc_int
@@ -528,7 +528,7 @@ def Simulate(prec, temp, et, ll_temp, par, init_st=None, q_init=None, snow=0):
     
     ### initial runoff
     # calculate the runoff for the first time step
-    if q_init == None:
+    if q_init is None:
         if snow == 1:
             # upper zone          
             q_0[0] = par[10] * max(st[0,2] - par[13],0)
@@ -577,9 +577,9 @@ def Simulate(prec, temp, et, ll_temp, par, init_st=None, q_init=None, snow=0):
         rfcf = par[0]    # 1.0 #par[16] # all precipitation becomes rainfall
         sfcf = 0.00001  # there is no snow
         # snow function
-        cfmax = 0.00001  # as there is no melting  and sp+sf=zero all the time so it doesn't matter the value of cfmax
-        cwh = 0.00001    # as sp is always zero it doesn't matter all wc will go as inf
-        cfr = 0.000001   # as temp > ttm all the time so it doesn't matter the value of cfr but put it zero
+        # cfmax = 0.00001  # as there is no melting  and sp+sf=zero all the time so it doesn't matter the value of cfmax
+        # cwh = 0.00001    # as sp is always zero it doesn't matter all wc will go as inf
+        # cfr = 0.000001   # as temp > ttm all the time so it doesn't matter the value of cfr but put it zero
         #soil function
         fc = par[1]
         beta = par[2]
@@ -607,9 +607,14 @@ def Simulate(prec, temp, et, ll_temp, par, init_st=None, q_init=None, snow=0):
         wc_old = st[i-1,4]
     
         rf, sf = Precipitation(preci, tempi, tt, rfcf, sfcf)
-    
-        inf, wc_new, sp_new = Snow(tempi, rf, sf, wc_old, sp_old,
-                                   tt, cfmax, cfr, cwh)
+
+        if snow ==0:
+            inf = rf
+            wc_new = 0
+            sp_new = 0
+        else:
+            inf, wc_new, sp_new = Snow(tempi, rf, sf, wc_old, sp_old,
+                                       tt, cfmax, cfr, cwh)
     
         sm_new, uz_int_1 = Soil(tempi, inf, epi, sm_old, uz_old, tmi,
                                 fc, beta, e_corr, lp)

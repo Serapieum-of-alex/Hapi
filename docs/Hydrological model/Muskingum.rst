@@ -27,12 +27,12 @@ For Muskingum version of the channel routing equation `m` equals one which made 
 
 .. math::
 	
-	C1 = \left(\frac{𝛥𝑡−2𝐾𝑋}{2𝐾(1−𝑋)+𝛥𝑡}\right)\label{eq:C1}
-	C2 = \left(\frac{𝛥𝑡+2𝐾𝑋}{2𝐾(1−𝑋)+𝛥𝑡}\right)\label{eq:C2}
-	C3 = \left(\frac{2𝐾(1-𝑋)-𝛥𝑡}{2𝐾(1−𝑋)+𝛥𝑡}\right)\label{eq:C3}
+    C1 = \left(\frac{𝛥𝑡−2𝐾𝑋}{2𝐾(1−𝑋)+𝛥𝑡}\right)\label{eq:C1}
+    C2 = \left(\frac{𝛥𝑡+2𝐾𝑋}{2𝐾(1−𝑋)+𝛥𝑡}\right)\label{eq:C2}
+    C3 = \left(\frac{2𝐾(1-𝑋)-𝛥𝑡}{2𝐾(1−𝑋)+𝛥𝑡}\right)\label{eq:C3}
 
 To route the inflow hydrograph
 
 .. math::
-	Q = \left(C1 * I_{j+1} + C2 * I_{j} + C3 * Q_{j} }\right)\label{eq:Q}
+    Q = \left(C1 * I_{j+1} + C2 * I_{j} + C3 * Q_{j} }\right)\label{eq:Q}
 

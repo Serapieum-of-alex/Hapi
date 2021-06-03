@@ -39,7 +39,7 @@ class Calibration(Catchment):
     """
 
     def __init__(self, name, StartDate, EndDate, fmt="%Y-%m-%d", SpatialResolution = 'Lumped',
-                 TemporalResolution = "Daily"):
+                 TemporalResolution = "Daily", RouteRiver="Muskingum"):
         """
         =============================================================================
          Calibration(name, StartDate, EndDate, fmt="%Y-%m-%d", SpatialResolution = 'Lumped',
@@ -74,11 +74,15 @@ class Calibration(Catchment):
         self.SpatialResolution = SpatialResolution
         self.TemporalResolution = TemporalResolution
 
+        conversionfactor = (1000 * 24 * 60 * 60) / (1000 ** 2)
+
         if TemporalResolution == "Daily":
-            self.Timef = 24
+            self.dt = 1  # 24
+            self.conversionfactor = conversionfactor * 1
             self.Index = pd.date_range(self.StartDate, self.EndDate, freq = "D" )
         elif TemporalResolution == "Hourly":
-            self.Timef = 1
+            self.dt = 1  # 24
+            self.conversionfactor = conversionfactor * 1 / 24
             self.Index = pd.date_range(self.StartDate, self.EndDate, freq = "H" )
         else:
             #TODO calculate the teporal resolution factor
@@ -86,6 +90,7 @@ class Calibration(Catchment):
             # if daily tfac=24 if hourly tfac=1 if 15 min tfac=0.25
             self.Tfactor = 24
 
+        self.RouteRiver = RouteRiver
         pass
 
 
@@ -155,7 +160,7 @@ class Calibration(Catchment):
 
             Qsim = np.reshape(self.Qtot[Xind,Yind,:-1],self.TS-1)
 
-            if Factor != None:
+            if Factor is not None:
                 self.Qsim[:,i] = Qsim * Factor[i]
             else:
                 self.Qsim[:,i] = Qsim
@@ -263,10 +268,18 @@ class Calibration(Catchment):
                 SpatialVarFun.Function(par, kub=SpatialVarFun.Kub, klb=SpatialVarFun.Klb)
                 self.Parameters = SpatialVarFun.Par3d
                 #run the model
-                Wrapper.HapiModel(self)
+                Wrapper.RRMModel(self)
                 # calculate performance of the model
                 try:
-                    error = self.OF(self.QGauges, self.qout, self.quz_routed, self.qlz_translated,*[self.GaugesTable])
+                    error = self.OF(self.QGauges, *[self.GaugesTable]) #self.qout, self.quz_routed, self.qlz_translated,
+                    f = list(range(9, len(par), SpatialVarFun.no_parameters))
+                    g = list()
+                    for i in range(len(f)):
+                        k = par[f[i]]
+                        x = par[f[i]+1]
+                        g.append(2 * k * x /self.dt)
+                        g.append((2 * k * (1 - x)) / self.dt)
+
                 except TypeError: # if no of inputs less than what the function needs
                     assert False, "the objective function you have entered needs more inputs please enter then in a list as *args"
 
@@ -278,14 +291,21 @@ class Calibration(Catchment):
                 fail = 0
             except:
                 error = np.nan
+                g = []
                 fail = 1
 
-            return error, [], fail
+            return error, g, fail
 
         ### define the optimization components
         opt_prob = Optimization('HBV Calibration', opt_fun)
         for i in range(len(self.LB)):
             opt_prob.addVar('x{0}'.format(i), type='c', lower=self.LB[i], upper=self.UB[i])
+
+        opt_prob.addObj('f')
+
+        for i in range(self.no_elem):
+            opt_prob.addCon('g'+str(i)+"-1", 'i')
+            opt_prob.addCon('g'+str(i)+"-2", 'i')
 
         print(opt_prob)
 
@@ -548,20 +568,19 @@ class Calibration(Catchment):
                 # calculate performance of the model
                 try:
                     error = self.OF(self.QGauges[self.QGauges.columns[-1]],self.Qsim,*self.OFArgs)
+                    g = [2*par[-2]*par[-1]/self.dt, (2*par[-2]*(1-par[-1]))/self.dt]
                 except TypeError: # if no of inputs less than what the function needs
                     assert False, "the objective function you have entered needs more inputs please enter then in a list as *args"
 
-                # print error
                 if printError != 0:
-                    print(round(error,3))
+                    print("Error = " + str(round(error,3)) + " Inequality Const = " + str(np.round(g,2)))
                     # print(par)
-
                 fail = 0
             except:
                 error = np.nan
+                g = []
                 fail = 1
-
-            return error, [], fail
+            return error, g, fail
 
         ### define the optimization components
         opt_prob = Optimization('HBV Calibration', opt_fun)
@@ -573,14 +592,15 @@ class Calibration(Catchment):
             for i in range(len(self.LB)):
                 opt_prob.addVar('x{0}'.format(i), type='c', lower=self.LB[i], upper=self.UB[i])
 
+        opt_prob.addObj('f')
+
+        opt_prob.addCon('g1','i')
+        opt_prob.addCon('g2','i')
         # print(opt_prob)
-
-
         opt_engine = HSapi(pll_type=pll_type , options=ApiObjArgs)
 
         # parse the ApiSolveArgs inputs
         # availablekeys = ['store_sol',"display_opts","store_hst","hot_start"]
-
         store_sol = ApiSolveArgs['store_sol']
         display_opts = ApiSolveArgs['display_opts']
         store_hst = ApiSolveArgs['store_hst']

@@ -24,7 +24,7 @@ import Hapi.statistics.performancecriteria as PC
 from Hapi.visualizer import Visualize as Vis
 
 
-class Catchment():
+class Catchment:
     """
     ================================
         Catchment
@@ -87,16 +87,26 @@ class Catchment():
         self.EndDate = dt.datetime.strptime(EndDate,fmt)
         self.SpatialResolution = SpatialResolution
         self.TemporalResolution = TemporalResolution
+        self.Parameters = None
+        # self.Prec = None
+        # self.TS = None
+        # self.Temp = None
+        # self.ET = None
+        # self.ll_temp = None
 
+        # assuming the default dt is 1 day
+        conversionfactor = (1000 * 24 * 60 * 60) / (1000 ** 2)
         if TemporalResolution == "Daily":
-            self.Timef = 24
+            self.dt = 1 #24
+            self.conversionfactor = conversionfactor * 1
             self.Index = pd.date_range(self.StartDate, self.EndDate, freq = "D" )
         elif TemporalResolution == "Hourly":
-            self.Timef = 1
+            self.dt = 1  # 24
+            self.conversionfactor = conversionfactor * 1/24
             self.Index = pd.date_range(self.StartDate, self.EndDate, freq = "H" )
         else:
-            #TODO calculate the teporal resolution factor
-            # q mm , area sq km  (1000**2)/1000/f/60/60 = 1/(3.6*f)
+            #TODO calculate the temporal resolution factor
+            # q mm , area sq km  (1000**2)/1000/f/24/60/60 = 1/(3.6*f)
             # if daily tfac=24 if hourly tfac=1 if 15 min tfac=0.25
             self.Tfactor = 24
 
@@ -310,11 +320,16 @@ class Catchment():
         FlowDir = gdal.Open(Path)
 
         [rows,cols] = FlowDir.ReadAsArray().shape
-
+        self.FlowDirArr = FlowDir.ReadAsArray().astype(float)
         # check flow direction input raster
-        fd_noval = np.float32(FlowDir.GetRasterBand(1).GetNoDataValue())
-        self.FlowDirArr = FlowDir.ReadAsArray()
-        fd_val = [int(self.FlowDirArr[i,j]) for i in range(rows) for j in range(cols) if self.FlowDirArr[i,j] != fd_noval]
+        fd_noval = FlowDir.GetRasterBand(1).GetNoDataValue()
+
+        for i in range(rows):
+            for j in range(cols):
+                if math.isclose(self.FlowDirArr[i,j], fd_noval, rel_tol=0.001):
+                    self.FlowDirArr[i,j] = np.nan
+
+        fd_val = [int(self.FlowDirArr[i,j]) for i in range(rows) for j in range(cols) if not np.isnan(self.FlowDirArr[i,j])]
         fd_val = list(set(fd_val))
         fd_should = [1,2,4,8,16,32,64,128]
         assert all(fd_val[i] in fd_should for i in range(len(fd_val))), "flow direction raster should contain values 1,2,4,8,16,32,64,128 only "
@@ -359,10 +374,15 @@ class Catchment():
 
         FPL = gdal.Open(Path)
         [self.rows,self.cols] = FPL.ReadAsArray().shape
-        # check flow accumulation input raster
-        self.NoDataValue = np.float32(FPL.GetRasterBand(1).GetNoDataValue())
         self.FPLArr = FPL.ReadAsArray()
-        self.no_elem = np.size(self.FPLArr[:,:])-np.count_nonzero((self.FPLArr[self.FPLArr==self.NoDataValue]))
+        self.NoDataValue = FPL.GetRasterBand(1).GetNoDataValue()
+
+        for i in range(self.rows):
+            for j in range(self.cols):
+                if math.isclose(self.FPLArr[i,j], self.NoDataValue, rel_tol=0.001):
+                    self.FPLArr[i,j] = np.nan
+        # check flow accumulation input raster
+        self.no_elem = np.size(self.FPLArr[:,:])-np.count_nonzero((self.FPLArr[np.isnan(self.FPLArr)]))
 
         print("Flow Path length input is read successfully")
 
@@ -677,9 +697,6 @@ class Catchment():
     def ExtractDischarge(self, CalculateMetrics=True, FW1=False, Factor=None,
                          OnlyOutlet=False):
         """
-        =============================================================================
-              ExtractDischarge(CalculateMetrics=True, FW1=False)
-        =============================================================================
         ExtractDischarge method extracts and sums the discharge from the
         Quz_routed and Qlz_translated arrays at the location of the gauges
 
@@ -714,7 +731,7 @@ class Catchment():
             outlety = self.Outlet[1][0]
 
             # self.qout = self.qlz_translated[outletx,outlety,:] + self.quz_routed[outletx,outlety,:]
-            self.Qtot = self.qlz_translated + self.quz_routed
+            # self.Qtot = self.qlz_translated + self.quz_routed
             self.qout = self.Qtot[outletx,outlety,:]
 
             for i in range(len(self.GaugesTable)):
@@ -860,6 +877,7 @@ class Catchment():
         ax.set_xlabel("Time", fontsize = 12)
         ax.set_ylabel("Discharge m3/s", fontsize = 12)
         plt.tight_layout()
+
 
         if hasattr(self, "Metrics") :
             #print the metrics
@@ -1142,19 +1160,19 @@ class Catchment():
 
             data['date'] = ["'" + str(i)[:10] + "'" for i in data.index]
 
-            if Result ==1:
+            if Result == 1:
                 data['Qsim'] = self.Qsim[starti:endi]
                 data.to_csv(Path, index = False, float_format="%.3f")
-            elif Result ==2:
+            elif Result == 2:
                 data['Quz'] = self.quz[starti:endi]
                 data.to_csv(Path, index = False, float_format="%.3f")
-            elif Result ==3:
+            elif Result == 3:
                 data['Qlz'] = self.qlz[starti:endi]
                 data.to_csv(Path, index = False, float_format="%.3f")
-            elif Result ==4:
+            elif Result == 4:
                 data[['SP','SM','UZ','LZ','WC']] = self.statevariables[starti:endi,:]
                 data.to_csv(Path, index = False, float_format="%.3f")
-            elif Result ==5:
+            elif Result == 5:
                 data['Qsim'] = self.Qsim[starti:endi]
                 data['Quz'] = self.quz[starti:endi]
                 data['Qlz'] = self.qlz[starti:endi]
