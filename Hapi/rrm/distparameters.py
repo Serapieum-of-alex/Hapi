@@ -8,6 +8,7 @@ into rasters
 @author: Mostafa
 """
 import numbers
+import math
 import numpy as np
 import datetime as dt
 import os
@@ -16,11 +17,8 @@ from Hapi.gis.raster import Raster
 from Hapi.gis.giscatchment import GISCatchment as GC
 
 
-class DistParameters():
+class DistParameters:
     """
-    ==============================================================
-        DistParameters
-    ==============================================================
     Distripute parameter class is used to distribute the values of the parameter
     vector in the calibration process into the 3D array, considering if some
     of the parameters are lumped parameters, if you want to distribute the
@@ -39,10 +37,6 @@ class DistParameters():
     def __init__(self, raster, no_parameters, no_lumped_par=0, lumped_par_pos=[],
                  Lake = 0, Snow=0, HRUs=0, Function=1, Kub=1, Klb= 50, Maskingum=False):
         """
-        =============================================================================
-             DistParameters(self, raster, no_parameters, no_lumped_par=0, lumped_par_pos=[],
-                         Lake = 0, Snow=0, HRUs=0, Function=1, Kub=1, Klb= 0.5, Maskingum=False):
-        =============================================================================
         To initiate the DistParameters class you have to provide the Flow Acc
         raster
 
@@ -79,9 +73,9 @@ class DistParameters():
         None.
 
         """
-        assert type(raster)==gdal.Dataset, "raster should be read using gdal (gdal dataset please read it using gdal library) "
-        assert type(no_parameters)==int, " no_parameters should be integer number"
-        assert type(no_lumped_par)== int, "no of lumped parameters should be integer"
+        assert type(raster) == gdal.Dataset, "raster should be read using gdal (gdal dataset please read it using gdal library) "
+        assert type(no_parameters) == int, " no_parameters should be integer number"
+        assert type(no_lumped_par) == int, "no of lumped parameters should be integer"
 
         if no_lumped_par >= 1:
             if type(lumped_par_pos) == list:
@@ -99,43 +93,49 @@ class DistParameters():
         self.Maskingum = Maskingum
         # read the raster
         self.raster = raster
-        self.raster_A = raster.ReadAsArray()
+        self.raster_A = raster.ReadAsArray().astype(float)
         # get the shape of the raster
         self.rows = raster.RasterYSize
         self.cols = raster.RasterXSize
         # get the no_value of in the raster
-        self.noval = np.float32(raster.GetRasterBand(1).GetNoDataValue())
+        self.noval = raster.GetRasterBand(1).GetNoDataValue()
+
+        for i in range(self.rows):
+            for j in range(self.cols):
+                if math.isclose(self.raster_A[i,j], self.noval, rel_tol=0.001):
+                    self.raster_A[i,j] = np.nan
 
         # count the number of non-empty cells
         if self.HRUs == 1:
-            self.values = list(set([int(self.raster_A[i,j]) for i in range(self.rows) for j in range(self.cols) if self.raster_A[i,j] != self.noval]))
+            self.values = list(set([int(self.raster_A[i,j]) for i in range(self.rows) for j in range(self.cols) if not np.isnan(self.raster_A[i,j])]))
             self.no_elem = len(self.values)
         else:
-            self.no_elem = np.size(self.raster_A[:,:])-np.count_nonzero((self.raster_A[self.raster_A == self.noval]))
+            self.no_elem = np.size(self.raster_A[:,:])-np.count_nonzero((self.raster_A[np.isnan(self.raster_A)]))
 
         self.no_parameters = no_parameters
-        # all parameters lumped and distributed
-        self.totnumberpar = no_parameters
+
         # store the indeces of the non-empty cells
-        self.celli=[]
-        self.cellj=[]
+        self.celli = []
+        self.cellj = []
         for i in range(self.rows):
             for j in range(self.cols):
-                if self.raster_A[i,j] != self.noval:
+                if not np.isnan(self.raster_A[i,j]) :
                     self.celli.append(i)
                     self.cellj.append(j)
 
         # create an empty 3D array [[raster dimension], no_parameters]
-        self.Par3d = np.zeros([self.rows, self.cols, self.no_parameters])*np.nan
+        self.Par3d = np.zeros([self.rows, self.cols, self.no_parameters]) * np.nan
 
         if no_lumped_par >= 1:
             # parameters in array
             # remove a place for the lumped parameter (k1) lower zone coefficient
             self.no_parameters = self.no_parameters - no_lumped_par
 
+        # all parameters lumped and distributed
+        self.totnumberpar = self.no_parameters * self.no_elem + no_lumped_par
         # parameters in array
         # create a 2d array [no_parameters, no_cells]
-        self.Par2d = np.ones((self.no_parameters,self.no_elem))
+        self.Par2d = np.zeros(shape=(self.no_parameters,self.no_elem), dtype=np.float)
 
         if Function == 1:
             self.Function = self.par3dLumped
@@ -145,7 +145,7 @@ class DistParameters():
             self.Function = self.par2d_lumpedK1_lake
         elif Function == 4:
             self.Function = self.HRU
-
+        # to overwrite any choice user choose if the is HRUs
         if self.HRUs == 1:
             self.Function = self.HRU
 
@@ -156,9 +156,6 @@ class DistParameters():
 
     def par3d(self,par_g, kub=1,klb=0.5,Maskingum=True):
         """
-        ===========================================================
-          par3d(par_g,raster, no_parameters, no_lumped_par, lumped_par_pos, kub, klb)
-        ===========================================================
         par3d method takes a list of parameters [saved as one column or generated
         as 1D list from optimization algorithm] and distribute them horizontally on
         number of cells given by a raster
@@ -277,9 +274,6 @@ class DistParameters():
 
     def par3dLumped(self, par_g, kub=1, klb=0.5, Maskingum = True):
         """
-        ===========================================================
-          par3dLumped(par_g,raster, no_parameters, kub, klb)
-        ===========================================================
         par3dLumped method takes a list of parameters [saved as one column or generated
         as 1D list from optimization algorithm] and distribute them horizontally on
         number of cells given by a raster
@@ -341,9 +335,6 @@ class DistParameters():
     @staticmethod
     def calculateK(x,position,UB,LB):
         """
-        ===================================================
-            calculateK(x,position,UB,LB):
-        ===================================================
         calculateK method takes value of x parameter and generate 100 random
         value of k parameters between upper & lower constraint then the output
         will be the value coresponding to the giving position
@@ -378,9 +369,6 @@ class DistParameters():
 
     def par2d_lumpedK1_lake(self,par_g,no_parameters_lake,kub,klb):
         """
-        ===========================================================
-          par2d_lumpedK1_lake(par_g,raster,no_parameters,no_par_lake,kub,klb)
-        ===========================================================
         par2d_lumpedK1_lake method takes a list of parameters and distribute
         them horizontally on number of cells given by a raster
 
@@ -456,9 +444,6 @@ class DistParameters():
 
     def HRU(self,par_g,kub=1,klb=0.5):
         """
-        ===========================================================
-           HRU(par_g, raster, no_parameters, no_lumped_par=0, lumped_par_pos=[], kub=1, klb=0.5)
-        ===========================================================
         HRU method takes a list of parameters [saved as one column or generated
         as 1D list from optimization algorithm] and distribute them horizontally on
         number of cells given by a raster
@@ -531,13 +516,14 @@ class DistParameters():
 
         # input values
         if self.no_lumped_par > 0:
-            assert len(par_g) == (self.no_elem*(self.no_parameters))+self.no_lumped_par,"As there is "+str(self.no_lumped_par)+" lumped parameters, length of input parameters should be "+str(self.no_elem)+"*"+"("+str(self.no_parameters)+"-"+str(self.no_lumped_par)+")"+"+"+str(self.no_lumped_par)+"="+str(self.no_elem*(self.no_parameters-self.no_lumped_par)+self.no_lumped_par)+" not "+str(len(par_g))+" probably you have to add the value of the lumped parameter at the end of the list"
+            assert len(par_g) == (self.no_elem * self.no_parameters) + self.no_lumped_par ,"As there is "+str(self.no_lumped_par)+" lumped parameters, length of input parameters should be "+str(self.no_elem)+"*"+"("+str(self.no_parameters)+"-"+str(self.no_lumped_par)+")"+"+"+str(self.no_lumped_par)+"="+str(self.no_elem*(self.no_parameters - self.no_lumped_par) + self.no_lumped_par) + " not "+str(len(par_g)) + " probably you have to add the value of the lumped parameter at the end of the list"
         else:
             # if there is no lumped parameters
             assert len(par_g) == self.no_elem*self.no_parameters,"As there is no lumped parameters length of input parameters should be "+str(self.no_elem)+"*"+str(self.no_parameters)+"="+str(self.no_elem*self.no_parameters)
 
         # take the parameters from the generated parameters or the 1D list and
         # assign them to each cell
+        self.Par2d = np.zeros(shape=(self.no_parameters, self.no_elem), dtype=np.float)
         for i in range(self.no_elem):
             self.Par2d[:,i] = par_g[i*self.no_parameters:(i*self.no_parameters) + self.no_parameters]
 
@@ -552,8 +538,8 @@ class DistParameters():
 
         # calculate the value of k(travelling time in muskingum based on value of
         # x and the position and upper, lower bound of k value
-        for i in range(self.no_elem):
-            self.Par2d[-2,i] = DistParameters.calculateK(self.Par2d[-1,i],self.Par2d[-2,i],kub,klb)
+        # for i in range(self.no_elem):
+        #     self.Par2d[-2,i] = DistParameters.calculateK(self.Par2d[-1,i],self.Par2d[-2,i],kub,klb)
 
         # assign the parameters from the array (no_parameters, no_cells) to
         # the spatially corrected location in par2d each soil type will have the same
@@ -565,9 +551,6 @@ class DistParameters():
     @staticmethod
     def HRU_HAND(DEM,FD,FPL,River):
         """
-        =============================================================
-            HRU_HAND(DEM,FD,FPL,River)
-        =============================================================
         this function calculates inputs for the HAND (height above nearest drainage)
         method for land use classification
 
@@ -661,9 +644,6 @@ class DistParameters():
 
     def ParametersNumber(self):
         """
-        ==================================================================
-             ParametersNO(raster,no_parameters,no_lumped_par,HRUs=0)
-        ==================================================================
         ParametersNO method calculates the nomber of parameters that the optimization
         algorithm is going top search for, use it only in case of totally distributed
         catchment parameters (in case of lumped parameters no of parameters are the same
@@ -701,9 +681,6 @@ class DistParameters():
 
     def SaveParameters(self, Path):
         """
-        ============================================================
-            SaveParameters(DistParFn, raster, Par, No_parameters, snow, kub, klb, Path=None)
-        ============================================================
         SaveParameters method takes generated parameters by the calibration algorithm,
         distributed them with a given function and save them as a rasters
 
