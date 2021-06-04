@@ -303,7 +303,7 @@ class Calibration(Catchment):
 
         opt_prob.addObj('f')
 
-        for i in range(self.no_elem):
+        for i in range(SpatialVarFun.no_elem):
             opt_prob.addCon('g'+str(i)+"-1", 'i')
             opt_prob.addCon('g'+str(i)+"-2", 'i')
 
