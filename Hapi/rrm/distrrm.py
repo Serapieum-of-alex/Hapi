@@ -10,9 +10,6 @@ from Hapi.rrm.routing import Routing as routing
 
 class DistributedRRM:
     """
-    ================================
-        DistributedRRM
-    ================================
     DistributedRRM class runs simulation in lumped form for each cell separetly
     and rout the discharge between the cells following the rivernetwork
 
@@ -29,9 +26,6 @@ class DistributedRRM:
     @staticmethod
     def RunLumpedRRM(Model):
         """
-        ========================================================================
-          RunLumpedRRM(Raster,sp_prec,sp_et,sp_temp,sp_pars,p2,init_st,ll_temp,q_init)
-        ========================================================================
         RunLumpedRRM method runs the rainfall runoff lumped model (HBV, GR4,...) separately
         for each cell and return a time series of arrays
 
@@ -105,9 +99,6 @@ class DistributedRRM:
     @staticmethod
     def SpatialRouting(Model):
         """
-        ====================================================================
-          SpatialRouting(qlz,quz,flow_acc,flow_direct,sp_pars,p2)
-        ====================================================================
         SpatialRouting method routes the discharge from cell to another following
         the flow direction input raster
 
@@ -201,9 +192,6 @@ class DistributedRRM:
     @staticmethod
     def DistMaxbas1(Model):
         """
-        =========================================================
-              DistMaxbas1(Model)
-        =========================================================
         DistMaxbas1 method rout the discharge directly to the outlet from each cell
         using triangular function
 
@@ -228,9 +216,6 @@ class DistributedRRM:
     @staticmethod
     def DistMaxbas2(Model):
         """
-        =========================================================
-             DistMaxbas2(Model)
-        =========================================================
         DistMaxbas2 method rout the discharge directly to the outlet from each cell
         using triangular function, the maxbas parameters are going to be calculated
         based on the flow path length input
@@ -253,7 +238,7 @@ class DistributedRRM:
         MaxFPL = np.nanmax(Model.FPLArr)
         MinFPL = np.nanmin(Model.FPLArr)
         #resize_fun = lambda x: np.round(((((x - min_dist)/(max_dist - min_dist))*(1*maxbas - 1)) + 1), 0)
-        resize_fun = lambda x: ((((x - MinFPL)/(MaxFPL - MinFPL))*(1*MAXBAS - 1)) + 1)
+        resize_fun = lambda g: ((((g - MinFPL)/(MaxFPL - MinFPL))*(1*MAXBAS - 1)) + 1)
 
         NormalizedFPL = resize_fun(Model.FPLArr)
 
