@@ -26,9 +26,6 @@ from Hapi.visualizer import Visualize as Vis
 
 class Catchment:
     """
-    ================================
-        Catchment
-    ================================
     Catchment class include methods to read the meteorological and Spatial inputs
     of the distributed hydrological model. Catchment class also reads the data
     of the gauges, it is a super class that has the run subclass, so you
@@ -57,10 +54,6 @@ class Catchment:
     def __init__(self, name, StartDate, EndDate, fmt="%Y-%m-%d", SpatialResolution = 'Lumped',
                  TemporalResolution = "Daily", RouteRiver="Muskingum"):
         """
-        =============================================================================
-            Catchment(name, StartDate, EndDate, fmt="%Y-%m-%d", SpatialResolution = 'Lumped',
-                             TemporalResolution = "Daily")
-        =============================================================================
         Parameters
         ----------
         name : [str]
@@ -115,10 +108,6 @@ class Catchment:
 
     def ReadRainfall(self,Path):
         """
-        =========================================================
-             ReadRainfall(Path)
-        =========================================================
-
         Parameters
         ----------
         Path : [String]
@@ -145,10 +134,6 @@ class Catchment:
 
     def ReadTemperature(self,Path, ll_temp=None):
         """
-        =========================================================
-            ReadTemperature(Path)
-        =========================================================
-
         Parameters
         ----------
         Path : [String]
@@ -183,10 +168,6 @@ class Catchment:
 
     def ReadET(self,Path):
         """
-        =========================================================
-            ReadET(Path)
-        =========================================================
-
         Parameters
         ----------
         Path : [String]
@@ -213,10 +194,6 @@ class Catchment:
 
     def ReadFlowAcc(self, Path):
         """
-        =========================================================
-            ReadET(Path)
-        =========================================================
-
         Parameters
         ----------
         Path : [String]
@@ -247,7 +224,7 @@ class Catchment:
         assert os.path.exists(Path), Path + " you have provided does not exist"
 
         FlowAcc = gdal.Open(Path)
-        [self.rows,self.cols] = FlowAcc.ReadAsArray().shape
+        [self.rows, self.cols] = FlowAcc.ReadAsArray().shape
         # check flow accumulation input raster
         self.NoDataValue = FlowAcc.GetRasterBand(1).GetNoDataValue()
         self.FlowAccArr = FlowAcc.ReadAsArray()
@@ -292,9 +269,6 @@ class Catchment:
 
     def ReadFlowDir(self, Path):
         """
-        ================================================================
-            ReadFlowDir(Path)
-        ================================================================
         ReadFlowDir method reads the flow direction raster
 
         Parameters
@@ -341,9 +315,6 @@ class Catchment:
 
     def ReadFlowPathLength(self, Path):
         """
-        ==============================================================
-            ReadFlowPathLength(Path)
-        ==============================================================
         ReadFlowPathLength method reads the flow path length
 
         Parameters
@@ -373,7 +344,7 @@ class Catchment:
         assert os.path.exists(Path), Path + " you have provided does not exist"
 
         FPL = gdal.Open(Path)
-        [self.rows,self.cols] = FPL.ReadAsArray().shape
+        [self.rows, self.cols] = FPL.ReadAsArray().shape
         self.FPLArr = FPL.ReadAsArray()
         self.NoDataValue = FPL.GetRasterBand(1).GetNoDataValue()
 
@@ -406,9 +377,6 @@ class Catchment:
 
     def ReadParameters(self, Path, Snow=0, Maxbas=False):
         """
-        ============================================================================
-             ReadParameters(Path, Snow, Maxbas=False)
-        ============================================================================
         ReadParameters method reads the parameters' raster
 
         Parameters
@@ -472,10 +440,6 @@ class Catchment:
 
     def ReadLumpedModel(self, LumpedModel, CatArea, InitialCond, q_init=None):
         """
-        =============================================================================
-              ReadLumpedModel(LumpedModel, CatArea, InitialCond, q_init=None)
-        =============================================================================
-
         Parameters
         ----------
         LumpedModel : [module]
@@ -511,7 +475,7 @@ class Catchment:
             assert type(q_init) == float, "q_init should be of type float"
         self.q_init = q_init
 
-        if self.InitialCond != None:
+        if self.InitialCond is not None:
             assert type(self.InitialCond)==list, "init_st should be of type list"
 
         print("Lumped model is read successfully")
@@ -519,9 +483,6 @@ class Catchment:
 
     def ReadLumpedInputs(self, Path, ll_temp=None):
         """
-        ================================================================
-              ReadLumpedInputs(Path, ll_temp=None)
-        ================================================================
         ReadLumpedInputs method read the meteorological data of lumped mode
         [precipitation, Evapotranspiration, temperature, long term average temperature]
 
@@ -554,9 +515,6 @@ class Catchment:
 
     def ReadGaugeTable(self, Path, FlowaccPath=''):
         """
-        ==========================================================================
-               ReadGaugeTable(self, Path, FlowaccPath='')
-        ==========================================================================
         ReadGaugeTable reads the table where the data about the gauges are listed
         [x coordinate, y coordinate, 'area ratio', 'weight'], the coordinates are
         mandatory to enter , to locate the gauges and be able to extract the
@@ -590,10 +548,6 @@ class Catchment:
     def ReadDischargeGauges(self, Path, delimiter=",", column='id',fmt="%Y-%m-%d",
                             Split=False, Date1='', Date2=''):
         """
-        =========================================================================
-            ReadDischargeGauges(Path, delimiter=",", column='id',fmt="%Y-%m-%d",
-                                 Split=False, Date1='', Date2='')
-        ==========================================================================
         ReadDischargeGauges method read the gauge discharge data, discharge of
         each gauge has to be stored separetly in a file, and the name of the file
         has to be stored in the Gauges table you entered ubing the method "ReadGaugeTable"
@@ -655,11 +609,8 @@ class Catchment:
         print("Gauges data are read successfully")
 
 
-    def ReadParametersBounds(self, UB, LB, Snow, Maxbas=False):
+    def ReadParametersBounds(self, UB, LB, Snow=0, Maxbas=False):
         """
-        =======================================================================
-            ReadParametersBounds(UB, LB, Snow)
-        =======================================================================
         ReadParametersBounds method reads the lower and upper boundarys for each
         parameter
 
@@ -744,7 +695,7 @@ class Catchment:
                 # Qsim = Quz + Qlz
 
                 Qsim = np.reshape(self.Qtot[Xind,Yind,:-1],self.TS-1)
-                if Factor != None:
+                if Factor is not None:
                     self.Qsim.loc[:,gaugeid] = Qsim * Factor[i]
                 else:
                     self.Qsim.loc[:,gaugeid] = Qsim
@@ -783,12 +734,6 @@ class Catchment:
                        Gaugeorder = 0, labelfontsize=10, XMajorfmt='%Y-%m-%d',
                        Noxticks=5, Title='', Xaxis_fmt = '%d\n%m', label=''):
         """
-        =========================================================================
-        PlotHydrograph(plotstart, plotend, gaugei, Hapicolor="#004c99",
-                       gaugecolor="#DC143C", linewidth = 3, Hapiorder = 1,
-                       Gaugeorder = 0, labelfontsize=10, XMajorfmt='%Y-%m-%d',
-                       Noxticks=5)
-        =========================================================================
         PlotHydrograph plot the simulated and gauge hydrograph
 
         Parameters
