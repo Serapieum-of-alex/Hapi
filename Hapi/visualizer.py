@@ -701,7 +701,7 @@ class Visualize:
         # ax1.legend(["Q"], fontsize=10)
         ax1.set_xlim(1, 25)
         usbc_line, = ax1.plot([], [], linewidth=5)
-        usbc_point = ax1.scatter([], [], s=150)
+        # usbc_point = ax1.scatter([], [], s=150)
         ax1.grid()
 
 
