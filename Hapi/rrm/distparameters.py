@@ -154,7 +154,7 @@ class DistParameters:
         pass
 
 
-    def par3d(self,par_g, kub=1,klb=0.5,Maskingum=True):
+    def par3d(self,par_g): #, kub=1,klb=0.5,Maskingum=True
         """
         par3d method takes a list of parameters [saved as one column or generated
         as 1D list from optimization algorithm] and distribute them horizontally on
@@ -272,7 +272,7 @@ class DistParameters:
 
 
 
-    def par3dLumped(self, par_g, kub=1, klb=0.5, Maskingum = True):
+    def par3dLumped(self, par_g): #, kub=1, klb=0.5, Maskingum = True
         """
         par3dLumped method takes a list of parameters [saved as one column or generated
         as 1D list from optimization algorithm] and distribute them horizontally on
@@ -311,8 +311,8 @@ class DistParameters:
         # input data validation
         # data type
         assert type(par_g)==np.ndarray or type(par_g)==list, "par_g should be of type 1d array or list"
-        assert isinstance(kub,numbers.Number) , " kub should be a number"
-        assert isinstance(klb,numbers.Number) , " klb should be a number"
+        # assert isinstance(kub,numbers.Number) , " kub should be a number"
+        # assert isinstance(klb,numbers.Number) , " klb should be a number"
 
         # take the parameters from the generated parameters or the 1D list and
         # assign them to each cell
@@ -326,11 +326,11 @@ class DistParameters:
 
         # calculate the value of k(travelling time in muskingum based on value of
         # x and the position and upper, lower bound of k value
-        if Maskingum == True:
-            for i in range(self.no_elem):
-                self.Par3d[self.celli[i],self.cellj[i],-2] = DistParameters.calculateK(self.Par3d[self.celli[i],self.cellj[i],-1],
-                                                                                       self.Par3d[self.celli[i],self.cellj[i],-2],
-                                                                                       kub,klb)
+        # if Maskingum == True:
+        #     for i in range(self.no_elem):
+        #         self.Par3d[self.celli[i],self.cellj[i],-2] = DistParameters.calculateK(self.Par3d[self.celli[i],self.cellj[i],-1],
+        #                                                                                self.Par3d[self.celli[i],self.cellj[i],-2],
+        #                                                                                kub,klb)
 
     @staticmethod
     def calculateK(x,position,UB,LB):
@@ -367,7 +367,7 @@ class DistParameters:
         return k
 
 
-    def par2d_lumpedK1_lake(self,par_g,no_parameters_lake,kub,klb):
+    def par2d_lumpedK1_lake(self,par_g,no_parameters_lake):#,kub,klb
         """
         par2d_lumpedK1_lake method takes a list of parameters and distribute
         them horizontally on number of cells given by a raster
@@ -432,17 +432,17 @@ class DistParameters:
 
         # calculate the value of k(travelling time in muskingum based on value of
         # x and the position and upper, lower bound of k value
-        for i in range(self.no_elem):
-            self.Par3d[self.celli[i],self.cellj[i],-2]= DistParameters.calculateK(self.Par3d[self.celli[i],self.cellj[i],-1],self.Par3d[self.celli[i],self.cellj[i],-2],kub,klb)
+        # for i in range(self.no_elem):
+        #     self.Par3d[self.celli[i],self.cellj[i],-2]= DistParameters.calculateK(self.Par3d[self.celli[i],self.cellj[i],-1],self.Par3d[self.celli[i],self.cellj[i],-2],kub,klb)
 
         # lake parameters
         self.lake_par = par_g[len(par_g)-no_parameters_lake:]
-        self.lake_par[-2] = DistParameters.calculateK(self.lake_par[-1],self.lake_par[-2],kub,klb)
+        # self.lake_par[-2] = DistParameters.calculateK(self.lake_par[-1],self.lake_par[-2],kub,klb)
 
         # return self.Par3d, lake_par
 
 
-    def HRU(self,par_g,kub=1,klb=0.5):
+    def HRU(self,par_g): #,kub=1,klb=0.5
         """
         HRU method takes a list of parameters [saved as one column or generated
         as 1D list from optimization algorithm] and distribute them horizontally on
@@ -510,8 +510,8 @@ class DistParameters:
         # input data validation
         # data type
         assert type(par_g)==np.ndarray or type(par_g)==list, "par_g should be of type 1d array or list"
-        assert isinstance(kub,numbers.Number) , " kub should be a number"
-        assert isinstance(klb,numbers.Number) , " klb should be a number"
+        # assert isinstance(kub,numbers.Number) , " kub should be a number"
+        # assert isinstance(klb,numbers.Number) , " klb should be a number"
 
 
         # input values

@@ -265,7 +265,7 @@ class Calibration(Catchment):
         def opt_fun(par):
             try:
                 # distribute the parameters
-                SpatialVarFun.Function(par, kub=SpatialVarFun.Kub, klb=SpatialVarFun.Klb)
+                SpatialVarFun.Function(par) #, kub=SpatialVarFun.Kub, klb=SpatialVarFun.Klb
                 self.Parameters = SpatialVarFun.Par3d
                 #run the model
                 Wrapper.RRMModel(self)
@@ -420,7 +420,7 @@ class Calibration(Catchment):
         def opt_fun(par):
             try:
                 # distribute the parameters
-                SpatialVarFun.Function(par, kub=SpatialVarFun.Kub, klb=SpatialVarFun.Klb, Maskingum=SpatialVarFun.Maskingum)
+                SpatialVarFun.Function(par)#, kub=SpatialVarFun.Kub, klb=SpatialVarFun.Klb, Maskingum=SpatialVarFun.Maskingum
                 self.Parameters = SpatialVarFun.Par3d
                 #run the model
                 Wrapper.FW1(self)
