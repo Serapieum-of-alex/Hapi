@@ -91,7 +91,10 @@ class River:
             days = (self.end - self.start).days
         
         self.dt = dto
-        self.freq = str(int(self.dt/60))+'Min'
+        if self.dt < 60:
+            self.freq = str(self.dt) + 'S'
+        else:
+            self.freq = str(int(self.dt/60))+'Min'
         self.dx = dx
 
 
@@ -192,7 +195,7 @@ class River:
 
         Parameters
         ----------
-        Index : [Integer]
+        index : [Integer]
             Integer number ranges from 1 and max value of the value of the attribute
             "days" of the River object.
 
@@ -336,8 +339,9 @@ class River:
             #TODO to be checked later now for testing of version 4
             self.xsname = self.crosssections['xsid'].tolist()
     
-    
-    def ReadBoundaryConditions(self, FromDay='', ToDay='', path='', fmt="%Y-%m-%d"):
+
+    def ReadBoundaryConditions(self, FromDay='', ToDay='', path='', fmt="%Y-%m-%d",
+                               ds=False, dsbcpath=''):
         """
 
         ReadBoundaryConditions method reads the BC files and since these files are separated each day is
@@ -394,14 +398,15 @@ class River:
             HBC = pd.DataFrame(index = self.referenceindex_results[FromDay-1:ToDay] ,columns = hours)
     
             for i in self.Daylist[FromDay-1:ToDay]:
-                bc_q = np.loadtxt(self.usbcpath +str(self.id) + "-" + str(i) +'.txt',dtype = np.float16)
+                bc_q = np.loadtxt(self.usbcpath + str(self.id) + "-" + str(i) +'.txt',dtype = np.float16)
                 QBC.loc[self.referenceindex.loc[i,'date'],:]= bc_q[:,0].tolist()[0:bc_q.shape[0]:60]
                 HBC.loc[self.referenceindex.loc[i,'date'],:]= bc_q[:,1].tolist()[0:bc_q.shape[0]:60]
     
             self.QBC = QBC
             self.HBC = HBC
+
         else:
-            
+
             def convertdate(date):
                 return dt.datetime.strptime(date, fmt)
             
@@ -410,9 +415,19 @@ class River:
             BC = BC.drop(BC.columns[0],axis=1)
 
             ind = pd.date_range(BC.index[0], BC.index[-1], freq=self.freq)
-            self.qusbc = pd.DataFrame(index=ind, columns=BC.columns)
+            self.usbc = pd.DataFrame(index=ind, columns=BC.columns)
 
-            self.qusbc.loc[:,:] = BC.loc[:,:].resample(self.freq).mean().interpolate('linear')
+            self.usbc.loc[:,:] = BC.loc[:,:].resample(self.freq).mean().interpolate('linear')
+
+            if ds:
+                BC = pd.read_csv(dsbcpath)
+                BC.index = BC[BC.columns[0]].apply(convertdate)
+                BC = BC.drop(BC.columns[0], axis=1)
+
+                ind = pd.date_range(BC.index[0], BC.index[-1], freq=self.freq)
+                self.dsbc = pd.DataFrame(index=ind, columns=BC.columns)
+
+                self.dsbc.loc[:, :] = BC.loc[:, :].resample(self.freq).mean().interpolate('linear')
     
     
     def ReadSubDailyResults(self, startdate, enddate, fmt="%Y-%m-%d"):
@@ -839,6 +854,7 @@ class River:
             end = self.end
         else:
             end = dt.datetime.strptime(end, fmt)
+
         ind = pd.date_range(start, end, freq=self.freq)
 
         # TODO to be checked later now for testing
@@ -855,8 +871,46 @@ class River:
         # self.Daylist = list(range(self.from_beginning, len(self.referenceindex)))
         self.referenceindex_results = pd.date_range(self.firstday, self.lastday, freq=self.freq)
 
-        usbc = self.qusbc.loc[self.referenceindex_results,:]
+        usbc = self.usbc.loc[self.referenceindex_results,:]
         SaintVenant.kinematic1d(self, usbc)
+
+
+    def preissmann(self, start='', end='', fmt="%Y-%m-%d", maxiteration=10,
+                   beta=1, epsi=0.5, theta=0.5):
+
+        if start == '':
+            start = self.start
+        else:
+            start = dt.datetime.strptime(start, fmt)
+
+        if end == '':
+            end = self.end
+        else:
+            end = dt.datetime.strptime(end, fmt)
+
+        ind = pd.date_range(start, end, freq=self.freq)
+
+        # TODO to be checked later now for testing
+        # self.from_beginning = self.indsub[np.where(self.indsub == start)[0][0]]
+
+        self.firstday = self.indsub[np.where(self.indsub == start)[0][0]]
+        # if there are empty days at the beginning the filling missing days is not going to detect it
+        # so ignore it here by starting from the first day in the data (data['day'][0]) dataframe
+        # empty days at the beginning
+        # self.firstdayresults = self.indsub[np.where(self.indsub == start)[0][0]]
+        self.lastday = self.indsub[np.where(self.indsub == end)[0][0]]
+
+        # last days+1 as range does not include the last element
+        # self.Daylist = list(range(self.from_beginning, len(self.referenceindex)))
+        self.referenceindex_results = pd.date_range(self.firstday, self.lastday, freq=self.freq)
+
+        # usbc = self.qusbc.loc[self.referenceindex_results,:]
+        # dsbc = self.qusbc.loc[self.referenceindex_results, :]
+        saintpreis = SaintVenant(maxiteration=maxiteration, beta=beta, epsi=epsi, theta=theta)
+        saintpreis.preissmann(self)
+
+
+
 
     def storagecell(self, start='', end='', fmt="%Y-%m-%d"):
         """
@@ -895,13 +949,13 @@ class River:
         # self.Daylist = list(range(self.from_beginning, len(self.referenceindex)))
         self.referenceindex_results = pd.date_range(self.firstday, self.lastday, freq=self.freq)
 
-        usbc = self.qusbc.loc[self.referenceindex_results,:]
+        usbc = self.usbc.loc[self.referenceindex_results,:]
         SaintVenant.storagecell(self, usbc)
 
 
     def animatefloodwave(self, start, end, interval=0.00002, xs=0,
                          xsbefore=10, xsafter=10, fmt="%Y-%m-%d %H:%M:%S", textlocation=2,
-                         xaxislabelsize=15, yaxislabelsize=15, nxlabels=50
+                         xaxislabelsize=15, yaxislabelsize=15, nxlabels=50, plotbanhfuldepth=False
                          ):
         """
         

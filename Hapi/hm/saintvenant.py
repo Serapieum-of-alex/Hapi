@@ -9,16 +9,18 @@ from numpy.linalg import inv
 
 class SaintVenant:
 
-    def __init__(self):
+    def __init__(self, maxiteration=10, beta=1, epsi=0.5, theta=0.5):
+        # preismann scheme parameters
+        self.theta = theta
+        self.epsi = epsi
+        self.beta = beta
+        self.maxiteration = maxiteration
+        # Storage cell
         self.CWEIR = 1.704
         self.BWIDTH = 10
         self.HLIN = 0.001
-        self.power = 2/3
+        self.power = 2 / 3
 
-        # preismann scheme parameters
-        self.theta = 0.5
-        self.epsi = 0.5
-        self.beta = 1
         pass
 
     def kinematicraster(self, Model):
@@ -117,8 +119,8 @@ class SaintVenant:
         beta = 3 / 5
         dtx = Model.dt / Model.dx
         # columns are space, rows are time
-        Model.q[0, :] = Model.InihQ
-        Model.q[:len(Model.qusbc), 0] = usbc.loc[:, 'Q']
+        Model.q[0, :] = Model.icq
+        Model.q[:len(Model.usbc), 0] = usbc.loc[:, 'q']
 
         for t in range(1, len(Model.q)):
             for x in range(1, len(Model.crosssections)):
@@ -593,24 +595,22 @@ class SaintVenant:
         theta = self.theta
         epsi = self.epsi
         beta = self.beta
-        b = Model.b
         dx = Model.dx
         dt = Model.dt
-        # n = Model.n
-        c = Model.c
 
-        X = round(Model.L / dx) + 1
+        X = len(Model.crosssections) #round(Model.L / dx) + 1
         T = round(Model.Time / dt) + 1
 
-        Q = np.zeros(shape=(T, X), dtype=np.float32)
-        H = np.zeros(shape=(T, X), dtype=np.float32)
+        q = np.zeros(shape=(T, X), dtype=np.float32)
+        h = np.zeros(shape=(T, X), dtype=np.float32)
         # initial condition
-        H[0, :] = Model.ICH
-        Q[0, :] = Model.ICQ
-
+        h[0, :] = Model.ich
+        q[0, :] = Model.icq
         # boundary condition
-        Q[:, 0] = Model.LBC['interpolatedvalues']
-        Q[:, X - 1] = Model.RBC['interpolatedvalues']
+        if 'q' in Model.usbc.columns:
+            q[0:len(Model.usbc['q'].values), 0] = Model.usbc['q'].values
+        if 'q' in Model.dsbc.columns:
+            q[0:len(Model.dsbc['q'].values), X - 1] = Model.dsbc['q'].values
 
         # Factors
         A1 = np.zeros(X - 1, dtype=np.float32)
@@ -629,22 +629,28 @@ class SaintVenant:
         # matrix of the coefficient Size of(2X * 2X)
         F = np.zeros(shape=(2 * X, 2 * X), dtype=np.float32)
 
-        Unknowns = np.zeros(2 * X, dtype=np.float32)
+        # Unknowns = np.zeros(2 * X, dtype=np.float32)
         cols = 0
+        b = Model.crosssections.loc[:, 'b']
+        n = Model.crosssections.loc[:, 'n']
+        s = Model.crosssections.loc[:, 'bed level']
+        s = s[:-1].values - s[1:].values
+        s = s/dx
+        s = np.append(s, s[-1])
         # start of computation
         for t in range(1, T):
             # Iteration
-            for it in range(Model.maxiteration):
+            for it in range(self.maxiteration):
                 # for the first iteration assume that the current and next value of Q & H is
                 # the same like the previous step
                 if it == 0:
-                    Q[t, :] = Q[t - 1, :]
-                    H[t, :] = H[t - 1, :]
+                    q[t, :] = q[t-1,:]
+                    h[t, :] = h[t-1,:]
                 elif it > 0:
                     # for the second iteration use the values that we have calculated in the
                     # previous iteration
-                    Q[t, :] = Q[t, :]
-                    H[t, :] = H[t, :]
+                    q[t, :] = q[t, :]
+                    h[t, :] = h[t, :]
 
                 # as we have changed the entire row including the BC that we have
                 # assigned we have to bring them back
@@ -666,11 +672,11 @@ class SaintVenant:
                 for x in range(X - 1):
                     # continuity equation factors
                     A1[x] = -theta / dx
-                    B1[x] = (b * (1 - epsi) / dt)
+                    B1[x] = (b[x] * (1 - epsi) / dt)
                     C1[x] = theta / dx
-                    D1[x] = (b * epsi) / dt
-                    E1[x] = ((1 - epsi) * b * H[t - 1, x] / dt) + (epsi * b * H[t - 1, x + 1] / dt) - (
-                            (1 - theta) * (Q[t - 1, x + 1] - Q[t - 1, x]) / dx)
+                    D1[x] = (b[x] * epsi) / dt
+                    E1[x] = ((1 - epsi) * b[x] * h[t - 1, x] / dt) + (epsi * b[x + 1] * h[t - 1, x + 1] / dt) - (
+                            (1 - theta) * (q[t - 1, x + 1] - q[t - 1, x]) / dx)
                     # continuity equation factors
                     F[2 * x, cols] = A1[x]
                     F[2 * x, cols + 1] = B1[x]
@@ -679,29 +685,32 @@ class SaintVenant:
                     E[2 * x] = E1[x]
 
                     # momentum equation factors
-                    hj_nhalf = 0.5 * (H[t, x] + H[t - 1, x])
-                    Aj_nhalf = b * hj_nhalf
+                    hx_thalf = 0.5 * (h[t, x] + h[t - 1, x])
+                    Ax_thalf = b[x] * hx_thalf
+                    # if hx_thalf < 0:
+                        # print('xxx')
 
-                    hj1_nhalf = 0.5 * (H[t, x + 1] + H[t - 1, x + 1])
-                    Aj1_nhalf = b * hj1_nhalf
+                    hx1_thalf = 0.5 * (h[t, x + 1] + h[t - 1, x + 1])
+                    Ax1_thalf = b[x + 1] * hx1_thalf
 
-                    Ajhalf_nhalf = 0.5 * (Aj_nhalf + Aj1_nhalf)
+                    Axhalf_thalf = 0.5 * (Ax_thalf + Ax1_thalf)
 
-                    Kj_nhalf = c * b * (hj_nhalf ** 1.5)
-                    Kj1_nhalf = c * b * (hj1_nhalf ** 1.5)
+                    # Kx_thalf = n[x] * b[x] * (hx_thalf ** 1.5)
+                    # Kx1_thalf = n[x+1] * b[x+1] * (hx1_thalf ** 1.5)
 
-                    # Kj_nhalf = (1/n) * b * (hj_nhalf ** (5/3))
-                    # Kj1_nhalf = (1/n) * b * (hj1_nhalf ** (5/3))
+                    Kx_thalf = (1/n[x]) * b[x] * (hx_thalf ** (5/3))
+                    Kx1_thalf = (1/n[x + 1]) * b[x + 1] * (hx1_thalf ** (5/3))
 
-                    A2[x] = ((1 - epsi) / dt) - (beta / Aj_nhalf / dx) * Q[t - 1, x] + (1 - epsi) * 9.81 * Aj_nhalf * (
-                            abs(Q[t - 1, x]) / (Kj_nhalf ** 2))
-                    B2[x] = -9.81 * Ajhalf_nhalf * (theta / dx)
-                    C2[x] = (epsi / dt) + (beta / Aj1_nhalf / dx) * Q[t - 1, x + 1] + epsi * 9.81 * Ajhalf_nhalf * (
-                            abs(Q[t - 1, x + 1]) / (Kj1_nhalf ** 2))
-                    D2[x] = 9.81 * Ajhalf_nhalf * (theta / dx)
-                    E2[x] = ((1 - epsi) / dt) * Q[t - 1, x] + (epsi / dt) * Q[t - 1, x + 1] - 9.81 * Ajhalf_nhalf * (
-                                1 - theta) * (
-                                    H[t - 1, x + 1] - H[t - 1, x]) / dx + 9.81 * Ajhalf_nhalf * Model.s
+                    sx_half = 0.5 * (s[x] + s[x+1])
+
+                    A2[x] = ((1 - epsi) / dt) - (beta / Ax_thalf / dx) * q[t - 1, x] + (1 - epsi) * 9.81 * Ax_thalf * (
+                            abs(q[t - 1, x]) / (Kx_thalf ** 2))
+                    B2[x] = -9.81 * Axhalf_thalf * (theta / dx)
+                    C2[x] = (epsi / dt) + (beta / Ax1_thalf / dx) * q[t - 1, x + 1] + epsi * 9.81 * Axhalf_thalf * (
+                            abs(q[t - 1, x + 1]) / (Kx1_thalf ** 2))
+                    D2[x] = 9.81 * Axhalf_thalf * (theta / dx)
+                    E2[x] = ((1 - epsi) / dt) * q[t - 1, x] + (epsi / dt) * q[t - 1, x + 1] - 9.81 * Axhalf_thalf * (
+                                1 - theta) * (h[t - 1, x + 1] - h[t - 1, x]) / dx + 9.81 * Axhalf_thalf * sx_half
                     # momentum equation factors
                     F[2 * x + 1, cols] = A2[x]
                     F[2 * x + 1, cols + 1] = B2[x]
@@ -717,29 +726,28 @@ class SaintVenant:
                 # if Q put 1 in the 1 st column if h put 1 in the 2 nd column of the
                 # matrix F(the matrix of the factors A B C D)
                 # put the value of the BC at that time at vector E at the same row
-                if Model.LBC['type'] == 'h':  # if the lBC is h
+                if 'h' in Model.usbc.columns:  # if the lBC is h
                     # put 1 at the factor matrix at the line before the last line
-                    F[2 * X - 2, 2] = 1
+                    F[2 * X - 2, 1] = 1
                     # put the value of the HLBC at this certain time at the E matrix at the line before the last line
-                    E[2 * X - 2] = Model.LBC['interpolatedvalues'][t]
+                    E[2 * X - 2] = Model.usbc.loc[Model.usbc.index[t],'h']
                 else:  # Q
                     F[2 * X - 2, 0] = 1
-                    E[2 * X - 2] = Model.LBC['interpolatedvalues'][t]
-
+                    E[2 * X - 2] = Model.dsbc.loc[Model.usbc.index[t],'q']
                 # RBC
                 # the right BC is always at the last row 2 * X
                 # if Q put 1 in the column before the last column if h put 1 in the last column of the
                 # matrix F (the matrix of the factors A B C D)
                 # put the value of the BC at that time at vector E at the same row
                 # if the RBC is h
-                if Model.RBC['type'] == 'h':
+                if 'h' in Model.dsbc.columns:
                     # put 1 at the factor matrix at the line before the last line
                     F[2 * X, 2 * X] = 1
                     # put the value of the HLBC at this certain time at the E matrix at the line before the last line
-                    E[2 * X] = Model.RBC['interpolatedvalues'][t]
+                    E[2 * X] = Model.dsbc.loc[Model.dsbc.index[t],'h']
                 else:
                     F[2 * X - 1, 2 * X - 2] = 1
-                    E[2 * X - 1] = Model.RBC['interpolatedvalues'][t]
+                    E[2 * X - 1] = Model.dsbc.loc[Model.dsbc.index[t],'q']
 
                 # to make the storing of factors starts from the first row again
                 cols = 0
@@ -757,13 +765,20 @@ class SaintVenant:
                     # mod is zero
                     if np.mod(i, 2) != 0:
                         # for all the even numbers
-                        H[t, j] = Unknowns[i]
+                        h[t, j] = Unknowns[i]
                         j = j + 1
                     else:
                         # mod is nonzero for all the odd numbers
-                        Q[t, k] = Unknowns[i]
+                        q[t, k] = Unknowns[i]
                         k = k + 1
 
         # end  # end of computation for all time steps
-        Model.Q = Q[:,:]
-        Model.H = H[:,:]
+        Model.q = q[:,:]
+        Model.h = h[:,:]
+        Model.wl = Model.h + Model.crosssections['bed level'].values
+
+        area = h * b.values
+        v = q / area
+        c = v + (9.81*h)**0.5
+        stabilityfactor = ((epsi-0.5) / (c * dt/dx) ) + (theta-0.5)
+        Model.stabilityfactor = stabilityfactor

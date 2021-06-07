@@ -643,7 +643,7 @@ class Visualize:
     
     def river1d(self, Sub, start, end, interval=0.00002, xs=0,
                 xsbefore=10, xsafter=10, fmt="%Y-%m-%d", textlocation=2,
-                xaxislabelsize=15, yaxislabelsize=15, nxlabels=50):
+                xaxislabelsize=15, yaxislabelsize=15, nxlabels=50, plotbanhfuldepth=False):
         """
 
 
@@ -683,16 +683,34 @@ class Visualize:
 
         counter = Sub.referenceindex_results[np.where(Sub.referenceindex_results == start)[0][0]:np.where(Sub.referenceindex_results == end)[0][0]+1]
 #%%
+        margin = 10
         fig2 = plt.figure(20, figsize=(20, 10))
         gs = gridspec.GridSpec(nrows=2, ncols=6, figure=fig2)
 
-        ax1 = fig2.add_subplot(gs[0, 2:6])
+        # USBC
+        ax1 = fig2.add_subplot(gs[0, 0])
+        # ax1.set_xlim(1, 1440)
+        ax1.set_ylim(0, int(Sub.usbc.max() + margin))
+        ax1.set_xlabel('Time', fontsize=15)
+        if Sub.usbc.columns[0] == 'q':
+            # ax1.set_ylabel('USBC - Q (m3/s)', fontsize=15)
+            ax1.set_title("USBC - Q (m3/s)", fontsize=20)
+        else:
+            # ax1.set_ylabel('USBC - H (m)', fontsize=15)
+            ax1.set_title("USBC - H (m)", fontsize=20)
+        # ax1.legend(["Q"], fontsize=10)
+        ax1.set_xlim(1, 25)
+        usbc_line, = ax1.plot([], [], linewidth=5)
+        usbc_point = ax1.scatter([], [], s=150)
+        ax1.grid()
 
+
+        ax2 = fig2.add_subplot(gs[0, 1:5])
         if xs == 0:
             # plot the whole sub-basin
-            ax1.set_xlim(Sub.xsname[0] - 1, Sub.xsname[-1] + 1)
-            ax1.set_xticks(Sub.xsname)
-            ax1.set_xticklabels(Sub.xsname)
+            ax2.set_xlim(Sub.xsname[0] - 1, Sub.xsname[-1] + 1)
+            ax2.set_xticks(Sub.xsname)
+            ax2.set_xticklabels(Sub.xsname)
 
             FigureFirstXS = Sub.xsname[0]
             FigureLastXS = Sub.xsname[-1]
@@ -706,35 +724,41 @@ class Visualize:
             if FigureLastXS > Sub.xsname[-1]:
                 FigureLastXS = Sub.xsname[-1]
 
-            ax1.set_xlim(FigureFirstXS, FigureLastXS)
+            ax2.set_xlim(FigureFirstXS, FigureLastXS)
+            ax2.set_xticks(list(range(FigureFirstXS, FigureLastXS)))
+            ax2.set_xticklabels(list(range(FigureFirstXS, FigureLastXS)))
 
-            ax1.set_xticks(list(range(FigureFirstXS, FigureLastXS)))
-            ax1.set_xticklabels(list(range(FigureFirstXS, FigureLastXS)))
+        ax2.set_ylim(np.nanmin(Sub.q)-10, int(np.nanmax(Sub.q))+10) #Sub.q.max().max()
+        ax2.tick_params(labelsize=xaxislabelsize)
+        ax2.locator_params(axis="x", nbins=nxlabels)
+        ax2.set_xlabel('Cross section No', fontsize=xaxislabelsize)
+        ax2.set_title("Discharge (m3/s)", fontsize=20)
+        # ax2.set_ylabel('Discharge (m3/s)', fontsize=yaxislabelsize, labelpad=0.5)
+        ax2.legend(["Discharge"], fontsize=15)
 
-        ax1.set_ylim(0, int(Sub.q.max().max()))
-        ax1.tick_params(labelsize=xaxislabelsize)
-        ax1.locator_params(axis="x", nbins=nxlabels)
-        ax1.set_xlabel('Cross section No', fontsize=xaxislabelsize)
-        ax1.set_ylabel('Discharge (m3/s)', fontsize=yaxislabelsize, labelpad=0.5)
-        ax1.legend(["Discharge"], fontsize=15)
-
-        q_line, = ax1.plot([], [], linewidth=5)
-        ax1.grid()
+        q_line, = ax2.plot([], [], linewidth=5)
+        ax2.grid()
 
         ### BC
-        # Q
-        ax2 = fig2.add_subplot(gs[0, 1:2])
-        # ax2.set_xlim(1, 1440)
-        ax2.set_ylim(0, int(Sub.qusbc.max()))
 
-        ax2.set_xlabel('Time', fontsize=15)
-        ax2.set_ylabel('Discharge (m3/s)', fontsize=15)
-        ax2.set_title("BC - Q", fontsize=20)
-        ax2.legend(["Q"], fontsize=10)
+        # DSBC
+        ax3 = fig2.add_subplot(gs[0, 5:6])
+        ax3.set_xlim(1, 25)
+        ax3.set_ylim(0, float(Sub.dsbc.min() + margin))
 
-        bc_q_line, = ax2.plot([], [], linewidth=5)
-        bc_q_point = ax2.scatter([], [], s=150)
-        ax2.grid()
+        ax3.set_xlabel('Time', fontsize=15)
+        if Sub.dsbc.columns[0] == 'q':
+            # ax3.set_ylabel('DSBC', fontsize=15, labelpad=0.5)
+            ax3.set_title("DSBC - Q (m3/s)", fontsize=20)
+        else:
+            # ax3.set_ylabel('USBC', fontsize=15, labelpad=0.5)
+            ax3.set_title("DSBC - H(m)", fontsize=20)
+
+        # ax3.legend(["WL"], fontsize=10)
+
+        dsbc_line, = ax3.plot([], [], linewidth=5)
+        # dsbc_point = ax3.scatter([], [], s=300)
+        ax3.grid()
 
         # water surface profile
         ax4 = fig2.add_subplot(gs[1, 0:6])
@@ -742,6 +766,9 @@ class Visualize:
         if xs == 0:
             ax4.set_xlim(Sub.xsname[0] - 1, Sub.xsname[-1] + 1)
             ax4.set_xticks(Sub.xsname)
+            ymin = Sub.crosssections.loc[Sub.crosssections['xsid'] == FigureFirstXS, 'bed level'].values.min()
+            ymax = Sub.crosssections.loc[Sub.crosssections['xsid'] == FigureFirstXS, 'bed level'].values.max()
+            ax4.set_ylim(ymin, ymax + np.nanmax(Sub.h) + 5) #Sub.h.max().max()
         else:
             ax4.set_xlim(FigureFirstXS, FigureLastXS)
             ax4.set_xticks(list(range(FigureFirstXS, FigureLastXS)))
@@ -752,8 +779,9 @@ class Visualize:
         ax4.locator_params(axis="x", nbins=nxlabels)
 
         ax4.plot(Sub.xsname, Sub.crosssections['bed level'], 'k-', linewidth=5, label='Ground level')
-        ax4.plot(Sub.xsname, Sub.crosssections['bed level'] + Sub.crosssections['depth'], 'k',
-                 linewidth=2, label='Bankful depth')
+        if plotbanhfuldepth :
+            ax4.plot(Sub.xsname, Sub.crosssections['bed level'] + Sub.crosssections['depth'], 'k',
+                     linewidth=2, label='Bankful depth')
 
         ax4.set_title("Water surface Profile Simulation", fontsize=15)
         ax4.legend(['Ground level', 'Bankful depth'], fontsize=10)
@@ -762,16 +790,17 @@ class Visualize:
         ax4.grid()
 
         if xs == 0:
-            day_text = ax4.annotate('Begining', xy=(Sub.xsname[0], Sub.crosssections['bed level'].min()),
+            textlocation = textlocation + Sub.xsname[0]
+            day_text = ax4.annotate(' ', xy=(textlocation, Sub.crosssections['bed level'].min()+1),
                                     fontsize=20)
         else:
-            day_text = ax4.annotate('Begining', xy=(FigureFirstXS + textlocation,
+            day_text = ax4.annotate(' ', xy=(FigureFirstXS + textlocation,
                                                     Sub.crosssections.loc[
                                                         Sub.crosssections['xsid'] == FigureLastXS, 'gl'].values + 1),
                                     fontsize=20)
 
         wl_line, = ax4.plot([], [], linewidth=5)
-        hLline, = ax4.plot([], [], linewidth=5)
+        # hLline, = ax4.plot([], [], linewidth=5)
 
         gs.update(wspace=0.2, hspace=0.2, top=0.96, bottom=0.1, left=0.05, right=0.96)
         # animation
@@ -782,13 +811,15 @@ class Visualize:
             q_line.set_data([], [])
             wl_line.set_data([], [])
             day_text.set_text('')
-            bc_q_line.set_data([], [])
+            usbc_line.set_data([], [])
+            dsbc_line.set_data([], [])
             # bc_q_point
-            return q_line, wl_line, bc_q_line, bc_q_point, day_text
+            return q_line, wl_line, day_text, usbc_line, dsbc_line #usbc_point,dsbc_point,
 
         # animation function. this is called sequentially
         def animate_min(i):
             day_text.set_text('Date = ' + str(counter[i]))
+
             # discharge (ax1)
             x = Sub.xsname
             # y = Sub.q[Sub.q.index == counter[i]].values[0]
@@ -799,18 +830,27 @@ class Visualize:
             # y = Sub.h.loc[Sub.q.index == counter[i]].values[0]
             y = Sub.wl[np.where(Sub.referenceindex_results == counter[i])[0][0],:]
             wl_line.set_data(x, y)
-            # BC Q (ax2)
 
-            # x = Sub.USBC.values
-            # y = Sub.USBC.loc[dt.datetime(counter[i].year, counter[i].month, counter[i].day)].values
-            # bc_q_line.set_data(x, y)
+            # USBC
+            f = dt.datetime(counter[i].year, counter[i].month, counter[i].day)
+            y = Sub.usbc.loc[f:f + dt.timedelta(days=1)].resample('H').mean().interpolate('linear').values
+            x = hours[:len(y)]
+            usbc_line.set_data(x, y)
+
+            # DSBC
+            y = Sub.dsbc.loc[f:f + dt.timedelta(days=1)].resample('H').mean().interpolate('linear').values
+            dsbc_line.set_data(x, y)
+
+            # x = counter[i][1]
+            # y = Sub.referenceindex.loc[counter[i][0], 'date']
+            # ax2.scatter(x, Sub.QBC[x][y])
 
             # # BC Q point (ax2)
             # x = ((counter[i] - dt.datetime(counter[i].year, counter[i].month, counter[i].day)).seconds / 60) + 1
             # y = dt.datetime(counter[i].year, counter[i].month, counter[i].day)
             # ax2.scatter(x, Sub.USBC[x][y])
 
-            return q_line, wl_line, day_text #bc_q_line, ax2.scatter(x, Sub.USBC[x][y], s=150),
+            return q_line, wl_line, day_text, usbc_line, dsbc_line #ax2.scatter(x, Sub.USBC[x][y], s=150),
 
         # plt.tight_layout()
 

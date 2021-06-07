@@ -1,36 +1,36 @@
-import numpy as np
-import pandas as pd
+# import numpy as np
 
+import pandas as pd
 from Hapi.hm.river import River
+from Hapi.hm import saintvenant
 path = "F:/01Algorithms/Hydrology/HAPI/Examples/"
 #%% create the River object
 start = "2010-1-1 00:00:00"
-end = "2010-1-3 00:00:00"
+end = "2010-1-1 05:00:00"
 # dx in meter
 dx = 20
-
-maxiteration = 10
 # dt in sec
 dto = 50 # sec
-Time = 5*60*60 #(hrs to seconds)
-
-b = 100 #m
-c = 100000000
-s = 0 # slope
-L = 500
-
 Test = River("Test", version=4, start=start, end=end, dto=dto, dx=dx, fmt="%Y-%m-%d %H:%M:%S")
 Test.oneminresultpath = path + "/data/hydrodynamic model/"
-#%%
-ICQ = 10
-ICH = 15
 
-LBC = dict()
-LBC['type'] = 'q'
-LBC['interpolatedvalues'] = pd.read_csv(path + "/data/hydrodynamic model/"+"LBC.txt").values#.reshape((361))
-LBC['interpolatedvalues'] = LBC['interpolatedvalues'].reshape(len(LBC['interpolatedvalues']))
-RBC = dict()
-RBC['type'] = 'q'
-RBC['interpolatedvalues'] = pd.read_csv(path + "/data/hydrodynamic model/"+"RBC.txt").values
-RBC['interpolatedvalues'] = RBC['interpolatedvalues'].reshape(len(RBC['interpolatedvalues']))
-#%%
+Test.Time = 5*60*60 #(hrs to seconds)
+# Read Input Data
+Test.ReadCrossSections(path + "/data/hydrodynamic model/xs_hz.csv")
+#%% Initial and Boundary condition
+Test.icq = 0
+Test.ich = 12
+Test.ReadBoundaryConditions(path=path + "/data/hydrodynamic model/BCH-2.txt",
+                            fmt="%Y-%m-%d %H:%M:%S", ds=True,
+                            dsbcpath=path + "/data/hydrodynamic model/BCQ-constant.txt")
+#%% Run the model
+start = "2010-1-1 00:00:00"
+end = "2010-1-1 05:00:00"
+Test.preissmann(start, end, fmt="%Y-%m-%d %H:%M:%S", maxiteration=5,
+                   beta=1, epsi=0.5, theta=0.55)
+print("Stability Factor = " +str(Test.stabilityfactor.min()))
+#%% Visualization
+plotstart = "2010-01-01 00:00:00"
+plotend = "2010-1-1 05:00:00"
+# ffmpegPath = "F:/Users/mofarrag/.matplotlib/ffmpeg-4.4-full_build/bin/ffmpeg.exe"
+anim = Test.animatefloodwave(start=plotstart, end=plotend, interval=2, textlocation=-1)
