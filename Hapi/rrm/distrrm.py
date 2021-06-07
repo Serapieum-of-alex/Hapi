@@ -210,7 +210,7 @@ class DistributedRRM:
 
         for x in range(Model.rows):
             for y in range(Model.cols):
-                if Model.FlowAccArr [x, y] != Model.NoDataValue:
+                if not np.isnan(Model.FlowAccArr [x, y]) :
                     Model.quz[x,y,:] = routing.TriangularRouting1(Model.quz[x,y,:], Maxbas[x,y])
 
     @staticmethod
