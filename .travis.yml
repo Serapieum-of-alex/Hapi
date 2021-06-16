@@ -42,7 +42,6 @@ install:
   #- conda install --yes --file requirement.txt
   - while read requirement; do conda install --yes $requirement; done < requirement.txt
   # ecmwf-api-client and joblib have problem when installed from the requirement file
-  #- pip install ecmwf-api-client
   #- pip install joblib
   - pip install --upgrade coveralls  
   - python -V
