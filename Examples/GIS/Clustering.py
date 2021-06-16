@@ -15,7 +15,7 @@ print(sys.getrecursionlimit())
 # sys.setrecursionlimit(6000)
 # print(sys.getrecursionlimit())
 #%%
-lowervalue = 10 #DataArr[DataArr != NoDataValue].min()
-uppervalue = 5000# DataArr[DataArr != NoDataValue].max()
+lowervalue = 0.1 #DataArr[DataArr != NoDataValue].min()
+uppervalue = 20# DataArr[DataArr != NoDataValue].max()
 
 ClusterArray, count, Position, Values = GC.Cluster(DataArr, lowervalue, uppervalue)
