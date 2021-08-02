@@ -15,7 +15,7 @@ import math
 import matplotlib.colors as colors
 from matplotlib.ticker import LogFormatter
 from collections import OrderedDict
-
+from scipy.stats import gumbel_r
 from Hapi.statistics.statisticaltools import StatisticalTools as ST
 
 hours = list(range(1, 25))
@@ -1593,6 +1593,142 @@ class Visualize:
         # plt.tight_layout()
 
         return (ax1, ax2), fig
+
+    @staticmethod
+    def Histogram(v1, v2, NoAxis=2, filter1=0.2, Save=False, pdf=True, **kwargs):
+        """
+        Histogram method plots the histogram of two given list of values
+
+        Parameters
+        ----------
+            1-v1 : [List]
+                first list of values.
+            2-v2 : [List]
+                second list of values.
+
+        Returns
+        -------
+            - histogram plot.
+
+        Example
+        -------
+        Vis.Histogram(Val1, val2,2,figsize=(5.5,4.5), color1='#27408B',
+                        xlabel = 'Inundation Depth (m)', ylabel = 'Frequency', legend_size = 15,
+                         fontsize=15, labelsize = 15, Axisfontsize = 11,
+                         legend = ['RIM1.0', 'RIM2.0'], pdf = False, Save = False,
+                         name = str(Event1.EventIndex.loc[EndInd,'id']))
+
+        """
+        # update the default options
+        Fkeys = list(kwargs.keys())
+        for key in Fkeys:
+            if key in Visualize.FigureDefaultOptions.keys():
+                Visualize.FigureDefaultOptions[key] = kwargs[key]
+
+        v1 = np.array([j for j in v1 if j > filter1])
+        v2 = np.array([j for j in v2 if j > filter1])
+
+        if pdf:
+            param_dist1 = gumbel_r.fit(np.array(v1))
+            param_dist2 = gumbel_r.fit(np.array(v2))
+
+            d1 = np.linspace(v1.min(), v1.max(), v1.size)
+            d2 = np.linspace(v2.min(), v2.max(), v2.size)
+            pdf_fitted1 = gumbel_r.pdf(d1, loc=param_dist1[0], scale=param_dist1[1])
+            pdf_fitted2 = gumbel_r.pdf(d2, loc=param_dist2[0], scale=param_dist2[1])
+
+        if NoAxis == 1:
+            # if bins in kwargs.keys():
+            plt.figure(60, figsize=(10, 8))
+            n, bins, patches = plt.hist([v1, v2], color=['#3D59AB', '#DC143C'])
+            # for key in kwargs.keys():
+            #     if key == 'legend':
+            #         plt.legend(kwargs['legend'])
+            #     if key == 'legend size':
+            #         plt.legend(kwargs['legend'],fontsize = int(kwargs['legend_size']))
+            #     if key == 'xlabel':
+            #         plt.xlabel(kwargs['xlabel'])
+            #     if key == 'ylabel':
+            #         plt.ylabel(kwargs['ylabel'])
+            # #     # if key == 'xlabel':
+            # #         # xlabel = kwargs['xlabel']
+            # #     # if key == 'xlabel':
+            # #         # xlabel = kwargs['xlabel']
+
+        elif NoAxis == 2:
+            fig, ax1 = plt.subplots(figsize=Visualize.FigureDefaultOptions['figsize'])
+            # n1= ax1.hist([v1,v2], bins=15, alpha = 0.7, color=[color1,color2])
+            n1 = ax1.hist([v1, v2], bins=15, alpha=0.7, color=[Visualize.FigureDefaultOptions['color1'],
+                                                               Visualize.FigureDefaultOptions['color2']])
+            # label=['RIM1.0','RIM2.0']) #width = 0.2,
+
+            ax1.set_ylabel("Frequency", fontsize=Visualize.FigureDefaultOptions['AxisLabelSize'])
+            # ax1.yaxis.label.set_color(color1)
+            ax1.set_xlabel("Inundation Depth Ranges (m)", fontsize=Visualize.FigureDefaultOptions['AxisLabelSize'])
+
+            # ax1.tick_params(axis='y', color = color1)
+            # ax1.spines['right'].set_color(color1)
+            if pdf:
+                ax2 = ax1.twinx()
+                ax2.plot(d1, pdf_fitted1, '-.', color=Visualize.FigureDefaultOptions['color1'],
+                         linewidth=Visualize.FigureDefaultOptions['linewidth'], label="RIM1.0 pdf")
+                ax2.plot(d2, pdf_fitted2, '-.', color=Visualize.FigureDefaultOptions['color2'],
+                         linewidth=Visualize.FigureDefaultOptions['linewidth'], label="RIM2.0 pdf")
+                ax2.set_ylabel("Probability density function (pdf)", fontsize=Visualize.FigureDefaultOptions['AxisLabelSize'])
+            # else:
+            #     ax2.yaxis.set_ticklabels([])
+            #     # ax2.yaxis.set_major_formatter(plt.NullFormatter())
+            #     # ax2.tick_params(right='off', labelright='off')
+            #     ax2.set_xticks([])
+            #     ax2.tick_params(axis='y', color = color2)
+
+            #     # if key == 'xlabel':
+            #         # xlabel = kwargs['xlabel']
+            #     # if key == 'xlabel':
+            #         # xlabel = kwargs['xlabel']
+
+            # n2 = ax2.hist(v2,  bins=n1[1], alpha = 0.4, color=color2)#width=0.2,
+            # ax2.set_ylabel("Frequency", fontsize = 15)
+            # ax2.yaxis.label.set_color(color2)
+
+            # ax2.tick_params(axis='y', color = color2)
+            # plt.title("Sub-Basin = " + str(Subid), fontsize = 15)
+
+            # minall = min(min(n1[1]), min(n2[1]))
+            # if minall < 0:
+            #     minall =0
+
+            # maxall = max(max(n1[1]), max(n2[1]))
+            # ax1.set_xlim(minall, maxall)
+            #    ax1.set_yticklabels(ax1.get_yticklabels(), color = color1)
+            #    ax2.set_yticklabels(ax2.get_yticklabels(), color = color2)
+
+            # # options
+            # for key in kwargs.keys():
+            # if key == 'legend':
+            # ax1.legend(self.FigureOptions['legend'])
+            # if key == 'legend_size':
+            ax1.legend(kwargs['legend'], fontsize=int(Visualize.FigureDefaultOptions['legend_size']))
+            # if key == 'xlabel':
+            # ax1.set_xlabel(self.FigureOptions['xlabel'])
+            # if key == 'ylabel':
+            # ax1.set_ylabel(self.FigureOptions['ylabel'])
+            # if key == 'labelsize':
+            ax1.set_xlabel(Visualize.FigureDefaultOptions['xlabel'],
+                           fontsize=Visualize.FigureDefaultOptions['AxisLabelSize'])
+            ax1.set_ylabel(Visualize.FigureDefaultOptions['ylabel'],
+                           fontsize=Visualize.FigureDefaultOptions['AxisLabelSize'])
+            # if key == 'fontsize':
+            plt.rcParams.update({'font.size': int(Visualize.FigureDefaultOptions['Axisfontsize'])})
+
+            # fig.legend(loc="upper right", bbox_to_anchor=(1,1), bbox_transform=ax1.transAxes,fontsize = 15)
+
+            plt.tight_layout()
+
+        if Save == True:
+            plt.savefig(Visualize.FigureDefaultOptions['name'] + "-hist.tif", transparent=True)
+            # plt.close()
+
 
     def ListAttributes(self):
         """

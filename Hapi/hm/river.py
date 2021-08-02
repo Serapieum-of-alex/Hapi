@@ -29,7 +29,7 @@ class River:
     """
 
     def __init__(self, name, version=3, start="1950-1-1", end='', days=36890,
-                 rrmstart='', rrmdays=36890, dto=60, dx='',
+                 rrmstart="1950-1-1", rrmdays=36890, dto=60, dx='',
                  leftovertopping_suffix="_left.txt",
                  rightovertopping_suffix="_right.txt", depthprefix="DepthMax",
                  durationprefix="Duration", returnperiod_prefix="ReturnPeriod",
@@ -125,17 +125,15 @@ class River:
             self.referenceindex = pd.DataFrame(index=list(range(1, days+1)))
             self.referenceindex['date'] = ref_ind[:-1]
 
-        if rrmstart != '':
-            self.rrmstart = dt.datetime.strptime(rrmstart,fmt)
-            self.rrmend = self.rrmstart + dt.timedelta(days = rrmdays)
-            ref_ind = pd.date_range(self.rrmstart, self.rrmend, freq='D')
-            self.RRMreferenceindex = pd.DataFrame(index=list(range(1, rrmdays+1)))
-            self.RRMreferenceindex['date'] = ref_ind[:-1]
-            self.NoTimeSteps = len(self.RRMreferenceindex)
+        self.rrmstart = rrmstart
+        self.rrmstart = dt.datetime.strptime(rrmstart,fmt)
+        self.rrmend = self.rrmstart + dt.timedelta(days = rrmdays)
+        ref_ind = pd.date_range(self.rrmstart, self.rrmend, freq='D')
+        self.rrmreferenceindex = pd.DataFrame(index=list(range(1, rrmdays+1)))
+        self.rrmreferenceindex['date'] = ref_ind[:-1]
+        self.notimesteps = len(self.rrmreferenceindex)
 
-        self.FigureOptions = Vis.FigureDefaultOptions
-
-        self.indsub = pd.date_range(start, end, freq=self.freq)
+        self.indsub = pd.date_range(self.start, self.end, freq=self.freq)
 
 
     def IndexToDate(self, index):
@@ -158,6 +156,7 @@ class River:
         """
         # convert the index into date
         return self.referenceindex.loc[index, 'date']
+
 
     def DateToIndex(self, date, fmt="%Y-%m-%d"):
         """
@@ -432,9 +431,9 @@ class River:
     
     def ReadSubDailyResults(self, startdate, enddate, fmt="%Y-%m-%d"):
         """
-        Read1DResults1Min method is used by the Sub sub-class, so most of the 
+        Read1DResults1Min method is used by the sub sub-class, so most of the 
         parameters (xsname,...) are assigned to values after reading results
-        with other methods in the Sub class
+        with other methods in the sub class
         
         version 4
         - 
@@ -773,7 +772,7 @@ class River:
                 exec(var + ".to_csv(path ,index= None, sep = ' ', header = None)")
 
     @staticmethod
-    def ReadRRMResults(version, RRMreferenceindex, path, Nodeid, FromDay, ToDay,
+    def ReadRRMResults(version, rrmreferenceindex, path, Nodeid, FromDay, ToDay,
                        date_format="%d_%m_%Y"):
         """
         
@@ -817,8 +816,8 @@ class River:
             
             
             # convert the date into integer index
-            s = np.where(RRMreferenceindex['date'] == Q.index[0])[0][0]+1
-            e = np.where(RRMreferenceindex['date'] == Q.index[-1])[0][0]+1
+            s = np.where(rrmreferenceindex['date'] == Q.index[0])[0][0]+1
+            e = np.where(rrmreferenceindex['date'] == Q.index[-1])[0][0]+1
             Q.index = list(range(s,e+1))
 
             if FromDay == '':
@@ -1160,7 +1159,7 @@ class River:
         Returns
         -------
             1-SP:[data frame attribute]
-                containing the river computational nodes US of the Sub basins
+                containing the river computational nodes US of the sub basins
                 and estimated gumbel distribution parameters that fit the time
                 series
                 ['node','HQ2','HQ10','HQ100']
@@ -1176,9 +1175,9 @@ class River:
             NewSP = pd.DataFrame(columns = ['id','loc','scale'])
             NewSP['id'] = self.slope['id']
             for i in range(len(self.slope)):
-                # get the location of the USnode in the rivernetwork attribute
+                # get the location of the usnode in the rivernetwork attribute
                 loc = np.where(self.rivernetwork['id'] == self.slope.loc[i,'id'])[0][0]
-                #  get the location of USnode in the SP attribute
+                #  get the location of usnode in the SP attribute
                 try:
                     loc = np.where(self.SP['id'] == self.rivernetwork.loc[loc,'US'])[0][0]
                     NewSP.loc[i,['loc','scale']] = self.SP.loc[loc,['loc','scale']]
@@ -1207,7 +1206,7 @@ class River:
         Parameters
         ----------
             1-Subid : [Integer]
-                Sub-basin id.
+                sub-basin id.
             2-Q : [Float]
                 Discharge value.
 
@@ -1311,9 +1310,9 @@ class River:
                 # lowest dike
                 # get the vortices of the cross sections
                 H = self.crosssections.loc[i,['zl','zr']].min()
-                Hl, Hr, Bl, Br, B, Dbf = self.crosssections.loc[i,['hl','hr','bl','br','b','dbf']].tolist()
+                Hl, Hr, Bl, Br, B, dbf = self.crosssections.loc[i,['hl','hr','bl','br','b','dbf']].tolist()
                 BedLevel = self.crosssections.loc[i,'gl']
-                Coords = self.GetVortices(H - BedLevel, Hl, Hr, Bl, Br, B, Dbf)
+                Coords = self.GetVortices(H - BedLevel, Hl, Hr, Bl, Br, B, dbf)
                 # get the area and perimeters
                 Area, Perimeter = self.PolygonGeometry(Coords)
                 # self.crosssections.loc[i,'Area'] = Area
@@ -1369,7 +1368,7 @@ class River:
             else:
                 slope = abs(self.crosssections.loc[i,'gl'] - self.crosssections.loc[i-1,'gl'])/500
             # self.crosssections.loc[i,'Slope'] = slope
-            Hl, Hr, Bl, Br, B, Dbf = self.crosssections.loc[i,['hl','hr','bl','br','b','dbf']].tolist()
+            Hl, Hr, Bl, Br, B, dbf = self.crosssections.loc[i,['hl','hr','bl','br','b','dbf']].tolist()
             BedLevel = self.crosssections.loc[i,'gl']
 
 
@@ -1393,7 +1392,7 @@ class River:
                     H = self.crosssections.loc[i,['zlnew','zrnew']].min()
                     # print("H=" + str(H))
 
-                    Coords = self.GetVortices(H - BedLevel, Hl, Hr, Bl, Br, B, Dbf)
+                    Coords = self.GetVortices(H - BedLevel, Hl, Hr, Bl, Br, B, dbf)
                     # get the area and perimeters
                     Area, Perimeter = self.PolygonGeometry(Coords)
                     # self.crosssections.loc[i,'Area'] = Area
@@ -1752,9 +1751,9 @@ class River:
 
             for i in range(len(self.crosssections)):
                 inputs = self.crosssections.loc[i,list(self.crosssections.columns)[3:15]].tolist()
-                Dbf = self.crosssections.loc[i,list(self.crosssections.columns)[16]]
+                dbf = self.crosssections.loc[i,list(self.crosssections.columns)[16]]
 
-                outputs = self.GetCoordinates(inputs,Dbf)
+                outputs = self.GetCoordinates(inputs,dbf)
 
                 self.crosssections.loc[i,['x1','x2','x3','x4','x5','x6','x7','x8']] = outputs[0]
 
@@ -1768,11 +1767,11 @@ class River:
                                                            x4=0,y4=0,z4=0,
                                                            x5=0,y5=0,z5=0,
                                                            x6=0,y6=0,z6=0)
-            Dbf = False
+            dbf = False
             for i in range(len(self.crosssections)):
                 inputs = self.crosssections.loc[i,list(self.crosssections.columns)[3:15]].tolist()
 
-                outputs = self.GetCoordinates(inputs, Dbf)
+                outputs = self.GetCoordinates(inputs, dbf)
 
                 self.crosssections.loc[i,['x1','x2','x3','x4','x5','x6']] = outputs[0]
 
@@ -1884,7 +1883,7 @@ class River:
         return peri
 
     @staticmethod
-    def GetCoordinates(XSGeometry, Dbf):
+    def GetCoordinates(XSGeometry, dbf):
         """
         GetCoordinates calculates the coordinates of all the points (vortices)
         of the cross section
@@ -1915,7 +1914,7 @@ class River:
                 DESCRIPTION.
             12- B : [Float]
                 DESCRIPTION.
-            13- Dbf : [Float/Bool]
+            13- dbf : [Float/Bool]
                 DESCRIPTION.
 
         Returns
@@ -1949,15 +1948,15 @@ class River:
         Ycoords.append(yl)
         Zcoords.append(BankLeftLevel)
         # 8 points cross sections
-        if Dbf != False:
+        if dbf != False:
             # point 2
             Xcoords.append(xl)
             Ycoords.append(yl)
-            Zcoords.append(BedLevel + Dbf + InterPLHeight)
+            Zcoords.append(BedLevel + dbf + InterPLHeight)
             # point 3
             Xcoords.append(xl + (Bl / (Bl + Br + B)) * (xr - xl))
             Ycoords.append(yl + (Bl / (Bl + Br + B)) * (yr - yl))
-            Zcoords.append(BedLevel + Dbf)
+            Zcoords.append(BedLevel + dbf)
             # point 4
             Xcoords.append(xl + (Bl / (Bl + Br + B)) * (xr - xl))
             Ycoords.append(yl + (Bl / (Bl + Br + B)) * (yr - yl))
@@ -1969,11 +1968,11 @@ class River:
             # point 6
             Xcoords.append(xl + ((Bl+B) / (Bl + Br + B)) * (xr - xl))
             Ycoords.append(yl + ((Bl+B) / (Bl + Br + B)) * (yr - yl))
-            Zcoords.append(BedLevel + Dbf)
+            Zcoords.append(BedLevel + dbf)
             # point 7
             Xcoords.append(xr)
             Ycoords.append(yr)
-            Zcoords.append(BedLevel + Dbf + InterPRHeight)
+            Zcoords.append(BedLevel + dbf + InterPRHeight)
         else:
             # point 2
             Xcoords.append(xl)
@@ -2000,7 +1999,7 @@ class River:
         return Xcoords, Ycoords, Zcoords
 
     @staticmethod
-    def GetVortices(H, Hl, Hr, Bl, Br, B, Dbf):
+    def GetVortices(H, Hl, Hr, Bl, Br, B, dbf):
         """
         GetCoordinates calculates the coordinates of all the points (vortices)
         of the cross section
@@ -2019,7 +2018,7 @@ class River:
                 DESCRIPTION.
             12- B : [Float]
                 DESCRIPTION.
-            13- Dbf : [Float/Bool]
+            13- dbf : [Float/Bool]
                 DESCRIPTION.
 
         Returns
@@ -2040,7 +2039,7 @@ class River:
         Xcoords = list()
         Ycoords = list()
 
-        if H <= Dbf:
+        if H <= dbf:
             # Point 1
             Xcoords.append(0)
             Ycoords.append(H)
@@ -2054,8 +2053,8 @@ class River:
             Xcoords.append(B)
             Ycoords.append(H)
             # PropXS8P = PolygonGeometry(mp)
-        elif H - Dbf < min(Hl, Hr):
-            Hnew = H - Dbf
+        elif H - dbf < min(Hl, Hr):
+            Hnew = H - dbf
             # Trapizoidal cross section with 4 points
             # case 1
             # Point 1
@@ -2063,7 +2062,7 @@ class River:
             Ycoords.append(H)
             # Point 2
             Xcoords.append(Hnew/Sl)
-            Ycoords.append(Dbf)
+            Ycoords.append(dbf)
             # Point 3
             Xcoords.append(Hnew/Sl)
             Ycoords.append(0)
@@ -2072,12 +2071,12 @@ class River:
             Ycoords.append(0)
             # Point 5
             Xcoords.append((Hnew/Sl) + B)
-            Ycoords.append(Dbf)
+            Ycoords.append(dbf)
             # Point 6
             Xcoords.append(Hnew/Sl + B + Hnew/Sr)
             Ycoords.append(H)
-        elif H - Dbf < max(Hl, Hr) and Hl < Hr:
-            Hnew = H - Dbf
+        elif H - dbf < max(Hl, Hr) and Hl < Hr:
+            Hnew = H - dbf
             # the height of one of the slopes is higher than the water depth.
             # so the shape of the cross section is 5 points
             # case 2
@@ -2086,10 +2085,10 @@ class River:
             Ycoords.append(H)
             # Point 2
             Xcoords.append(0)
-            Ycoords.append(Hl + Dbf)
+            Ycoords.append(Hl + dbf)
             # Point 3
             Xcoords.append(Bl)
-            Ycoords.append(Dbf)
+            Ycoords.append(dbf)
             # Point 4
             Xcoords.append(Bl)
             Ycoords.append(0)
@@ -2098,19 +2097,19 @@ class River:
             Ycoords.append(0)
             # Point 6
             Xcoords.append(Bl + B)
-            Ycoords.append(Dbf)
+            Ycoords.append(dbf)
             # Point 7
             Xcoords.append(Bl + B + Hnew/Sr)
             Ycoords.append(H)
-        elif H - Dbf < max(Hl, Hr) and Hl > Hr:
-            Hnew = H - Dbf
+        elif H - dbf < max(Hl, Hr) and Hl > Hr:
+            Hnew = H - dbf
             # case 3
             # Point 1
             Xcoords.append(0)
             Ycoords.append(H)
             # Point 2
             Xcoords.append(Hnew/Sl)
-            Ycoords.append(Dbf)
+            Ycoords.append(dbf)
             # Point 3
             Xcoords.append(Hnew/Sl)
             Ycoords.append(0)
@@ -2119,16 +2118,16 @@ class River:
             Ycoords.append(0)
             # Point 5
             Xcoords.append(Hnew/Sl + B)
-            Ycoords.append(Dbf)
+            Ycoords.append(dbf)
             # Point 6
             Xcoords.append(Hnew/Sl + B + Br)
-            Ycoords.append(Hr + Dbf)
+            Ycoords.append(Hr + dbf)
             # Point 7
             Xcoords.append(Hnew/Sl + B + Br)
             Ycoords.append(H)
         else:
-#       elif H - Dbf  > max(Hl,Hr):
-            # Hnew = H - Dbf
+#       elif H - dbf  > max(Hl,Hr):
+            # Hnew = H - dbf
             # the whole 6 points cross section
             # case 4
             # Point 1
@@ -2136,10 +2135,10 @@ class River:
             Ycoords.append(H)
             # Point 2
             Xcoords.append(0)
-            Ycoords.append(Hl + Dbf)
+            Ycoords.append(Hl + dbf)
             # Point 3
             Xcoords.append(Bl)
-            Ycoords.append(Dbf)
+            Ycoords.append(dbf)
             # Point 4
             Xcoords.append(Bl)
             Ycoords.append(0)
@@ -2148,18 +2147,18 @@ class River:
             Ycoords.append(0)
             # Point 6
             Xcoords.append(Bl + B)
-            Ycoords.append(Dbf)
+            Ycoords.append(dbf)
             # Point 7
             Xcoords.append(Bl + B + Br)
-            Ycoords.append(Hr + Dbf)
+            Ycoords.append(Hr + dbf)
             # Point 8
             Xcoords.append(Bl + B + Br)
             Ycoords.append(H)
             # calculate the area & perimeter of the bankful area
             # area
-            # PropXS8P(1) = PropXS8P(1) + (Dbf * mw)
+            # PropXS8P(1) = PropXS8P(1) + (dbf * mw)
             # perimeter
-            # PropXS8P(2) = PropXS8P(2) + (2*Dbf)
+            # PropXS8P(2) = PropXS8P(2) + (2*dbf)
         Coords = np.array([Xcoords, Ycoords]).transpose()
 
         return Coords
@@ -2466,144 +2465,6 @@ class River:
 
         return Errors
 
-
-
-
-    # @staticmethod
-    def Histogram(self, v1, v2, NoAxis=2, filter1=0.2, Save = False, pdf=True, **kwargs):
-        """
-        
-        Histogram method plots the histogram of two given list of values
-
-        Parameters
-        ----------
-            1-v1 : [List]
-                first list of values.
-            2-v2 : [List]
-                second list of values.
-
-        Returns
-        -------
-            - histogram plot.
-
-        """
-        # update the default options
-        Fkeys = list(kwargs.keys())
-        for key in Fkeys:
-            if key in self.FigureOptions.keys():
-                self.FigureOptions[key] = kwargs[key]
-
-
-
-        v1 = np.array([j for j in v1 if j > filter1])
-        v2 = np.array([j for j in v2 if j > filter1])
-
-        if pdf :
-            param_dist1 = gumbel_r.fit(np.array(v1))
-            param_dist2 = gumbel_r.fit(np.array(v2))
-
-            d1 = np.linspace(v1.min(), v1.max(), v1.size)
-            d2 = np.linspace(v2.min(), v2.max(), v2.size)
-            pdf_fitted1 = gumbel_r.pdf(d1, loc=param_dist1[0], scale=param_dist1[1])
-            pdf_fitted2 = gumbel_r.pdf(d2, loc=param_dist2[0], scale=param_dist2[1])
-        #
-        # color1 = '#3D59AB'
-        # color2 = "#DC143C"
-
-        if NoAxis == 1:
-            # if bins in kwargs.keys():
-
-            plt.figure(60,figsize=(10,8))
-            n, bins, patches  = plt.hist([v1,v2], color=['#3D59AB','#DC143C' ])
-            # plt.xlabel("Depth Values (m)")
-            # plt.ylabel("Frequency")
-
-            # for key in kwargs.keys():
-            #     if key == 'legend':
-            #         plt.legend(kwargs['legend'])
-            #     if key == 'legend size':
-            #         plt.legend(kwargs['legend'],fontsize = int(kwargs['legend_size']))
-            #     if key == 'xlabel':
-            #         plt.xlabel(kwargs['xlabel'])
-            #     if key == 'ylabel':
-            #         plt.ylabel(kwargs['ylabel'])
-            # #     # if key == 'xlabel':
-            # #         # xlabel = kwargs['xlabel']
-            # #     # if key == 'xlabel':
-            # #         # xlabel = kwargs['xlabel']
-
-        elif NoAxis == 2:
-            fig, ax1 = plt.subplots(figsize = self.FigureOptions['figsize'])
-            # n1= ax1.hist([v1,v2], bins=15, alpha = 0.7, color=[color1,color2])
-            n1= ax1.hist([v1,v2], bins=15, alpha = 0.7, color = [self.FigureOptions['color1'],
-                                                                 self.FigureOptions['color2']])
-                         # label=['RIM1.0','RIM2.0']) #width = 0.2,
-
-            ax1.set_ylabel("Frequency", fontsize = self.FigureOptions['fontsize'])
-            # ax1.yaxis.label.set_color(color1)
-            ax1.set_xlabel("Inundation Depth Ranges (m)", fontsize = self.FigureOptions['fontsize'])
-
-            # ax1.tick_params(axis='y', color = color1)
-            # ax1.spines['right'].set_color(color1)
-            if pdf:
-                ax2 = ax1.twinx()
-                ax2.plot(d1, pdf_fitted1, '-.', color = self.FigureOptions['color1'],
-                         linewidth = self.FigureOptions['linewidth'], label ="RIM1.0 pdf")
-                ax2.plot(d2, pdf_fitted2, '-.', color = self.FigureOptions['color2'],
-                         linewidth = self.FigureOptions['linewidth'], label ="RIM2.0 pdf")
-                ax2.set_ylabel("Probability density function (pdf)", fontsize = self.FigureOptions['labelsize'])
-            # else:
-            #     ax2.yaxis.set_ticklabels([])
-            #     # ax2.yaxis.set_major_formatter(plt.NullFormatter())
-            #     # ax2.tick_params(right='off', labelright='off')
-            #     ax2.set_xticks([])
-            #     ax2.tick_params(axis='y', color = color2)
-
-            #     # if key == 'xlabel':
-            #         # xlabel = kwargs['xlabel']
-            #     # if key == 'xlabel':
-            #         # xlabel = kwargs['xlabel']
-
-            # n2 = ax2.hist(v2,  bins=n1[1], alpha = 0.4, color=color2)#width=0.2,
-            # ax2.set_ylabel("Frequency", fontsize = 15)
-            # ax2.yaxis.label.set_color(color2)
-
-            # ax2.tick_params(axis='y', color = color2)
-            # plt.title("Sub-Basin = " + str(Subid), fontsize = 15)
-
-            # minall = min(min(n1[1]), min(n2[1]))
-            # if minall < 0:
-            #     minall =0
-
-            # maxall = max(max(n1[1]), max(n2[1]))
-            # ax1.set_xlim(minall, maxall)
-            #    ax1.set_yticklabels(ax1.get_yticklabels(), color = color1)
-            #    ax2.set_yticklabels(ax2.get_yticklabels(), color = color2)
-
-            # # options
-            # for key in kwargs.keys():
-                # if key == 'legend':
-                    # ax1.legend(self.FigureOptions['legend'])
-                # if key == 'legend_size':
-            ax1.legend(kwargs['legend'],fontsize = int(self.FigureOptions['legend_size']))
-                # if key == 'xlabel':
-                    # ax1.set_xlabel(self.FigureOptions['xlabel'])
-                # if key == 'ylabel':
-                    # ax1.set_ylabel(self.FigureOptions['ylabel'])
-                # if key == 'labelsize':
-            ax1.set_xlabel(self.FigureOptions['xlabel'], fontsize = self.FigureOptions['labelsize'])
-            ax1.set_ylabel(self.FigureOptions['ylabel'], fontsize = self.FigureOptions['labelsize'])
-                # if key == 'fontsize':
-            plt.rcParams.update({'font.size': int(self.FigureOptions['Axisfontsize'])})
-
-            # fig.legend(loc="upper right", bbox_to_anchor=(1,1), bbox_transform=ax1.transAxes,fontsize = 15)
-
-            plt.tight_layout()
-
-        if Save == True:
-            plt.savefig(self.FigureOptions['name'] +"-hist.tif", transparent=True)
-            # plt.close()
-
     def ListAttributes(self):
         """
         Print Attributes List
@@ -2625,14 +2486,21 @@ class Sub(River):
         self.id = id
         self.RIM = River.name
         self.version = River.version
-        self.rightovertopping_suffix = River.rightovertopping_suffix
-        self.leftovertopping_suffix = River.leftovertopping_suffix
-        self.depthprefix = River.depthprefix
-        self.durationprefix = River.durationprefix
-        self.returnperiod_prefix = River.returnperiod_prefix
-        self.compressed = River.compressed
-        self.twodresultpath = River.twodresultpath
 
+        if hasattr(River,"rightovertopping_suffix"):
+            self.rightovertopping_suffix = River.rightovertopping_suffix
+        if hasattr(River, "leftovertopping_suffix"):
+            self.leftovertopping_suffix = River.leftovertopping_suffix
+        if hasattr(River, "depthprefix"):
+            self.depthprefix = River.depthprefix
+        if hasattr(River, "durationprefix"):
+            self.durationprefix = River.durationprefix
+        if hasattr(River, "returnperiod_prefix"):
+            self.returnperiod_prefix = River.returnperiod_prefix
+        if hasattr(River, "compressed"):
+            self.compressed = River.compressed
+        if hasattr(River,"twodresultpath"):
+            self.twodresultpath = River.twodresultpath
         if hasattr(River, 'CustomizedRunspath'):
                 self.CustomizedRunspath = River.CustomizedRunspath
         if hasattr(River,'usbcpath'):
@@ -2647,26 +2515,27 @@ class Sub(River):
         else:
             self.crosssections = River.crosssections[River.crosssections['id'] == id]
             if RunModel:
-                self.xsid = Sub.crosssections.loc[:,'xsid'].values
-                self.Dbf = Sub.crosssections.loc[:,'dbf'].values
-                self.bedlevel = Sub.crosssections.loc[:,'gl'].values
-                self.hl = Sub.crosssections.loc[:,'hl'].values
-                self.cl = Sub.crosssections.loc[:,'bl'].values
-                self.zl = Sub.crosssections.loc[:,'zl'].values
-                self.hr = Sub.crosssections.loc[:,'hr'].values
-                self.cr = Sub.crosssections.loc[:,'br'].values
-                self.zr = Sub.crosssections.loc[:,'zr'].values
-                self.mw = Sub.crosssections.loc[:,'b'].values
-                self.mn = Sub.crosssections.loc[:,'m'].values
+                self.xsid = sub.crosssections.loc[:,'xsid'].values
+                self.dbf = sub.crosssections.loc[:,'dbf'].values
+                self.bedlevel = sub.crosssections.loc[:,'gl'].values
+                self.hl = sub.crosssections.loc[:,'hl'].values
+                self.cl = sub.crosssections.loc[:,'bl'].values
+                self.zl = sub.crosssections.loc[:,'zl'].values
+                self.hr = sub.crosssections.loc[:,'hr'].values
+                self.cr = sub.crosssections.loc[:,'br'].values
+                self.zr = sub.crosssections.loc[:,'zr'].values
+                self.mw = sub.crosssections.loc[:,'b'].values
+                self.mn = sub.crosssections.loc[:,'m'].values
 
         self.crosssections.index = list(range(len(self.crosssections)))
-        self.LastXS = self.crosssections.loc[len(self.crosssections)-1,'xsid']
-        self.FirstXS = self.crosssections.loc[0,'xsid']
+        self.lastxs = self.crosssections.loc[len(self.crosssections)-1,'xsid']
+        self.firstxs = self.crosssections.loc[0,'xsid']
         self.xsname = self.crosssections['xsid'].tolist()
         self.xsno = len(self.xsname)
 
         self.referenceindex = River.referenceindex
-        self.RRMreferenceindex = River.RRMreferenceindex
+        if hasattr(River, "rrmreferenceindex"):
+            self.rrmreferenceindex = River.rrmreferenceindex
 
         self.onedresultpath = River.onedresultpath
 
@@ -2677,20 +2546,21 @@ class Sub(River):
                 self.slope = River.slope[River.slope['id']==id]['slope'].tolist()[0]
 
         if hasattr(River, "rivernetwork"):
-            self.USnode, self.DSnode = River.TraceSegment(id)
+            self.usnode, self.dsnode = River.TraceSegment(id)
 
         if hasattr(River, 'RP'):
-            self.RP = River.RP.loc[River.RP['node'] == self.USnode,['HQ2','HQ10','HQ100']]
-        if hasattr(River,"SP"):
+            self.RP = River.RP.loc[River.RP['node'] == self.usnode,['HQ2','HQ10','HQ100']]
+
+        if hasattr(River, "SP"):
             self.SP = River.SP.loc[River.SP['id'] == self.id,:]
             self.SP.index = list(range(len(self.SP)))
 
-        if hasattr(River,"RRMpath"):
-            self.RRMpath = River.RRMpath
-        # create dictionary to store any extracted values from maps
+        if hasattr(River, "rrmpath"):
+            self.rrmpath = River.rrmpath
+
+        # Create dictionary to store any extracted values from maps
         self.ExtractedValues = dict()
 
-        self.FigureOptions = River.FigureOptions
 
     def Read1DResult(self, FromDay = '', ToDay = '', FillMissing = True,
                      addHQ2 = False, path = '', XSid = ''):
@@ -2751,26 +2621,26 @@ class Sub(River):
         #check if the XSid is in the sub-basin
         if XSid != '':
             XSsub = list(set(self.Result1D['xs']))
-            assert  XSid in XSsub, "The given cross-section " + str(XSid) + " does not exist inside the current Segment of the river, first XS is " + str(self.FirstXS) + ", and last XS is " + str(self.LastXS)
+            assert  XSid in XSsub, "The given cross-section " + str(XSid) + " does not exist inside the current Segment of the river, first XS is " + str(self.firstxs) + ", and last XS is " + str(self.lastxs)
 
         # get the simulated hydrograph and add the cutted HQ2
         if addHQ2:
-            self.XSHydrographs[self.LastXS] = self.Result1D['q'][self.Result1D['xs'] == self.LastXS ].values + self.RP['HQ2'].tolist()[0]
-            self.XSHydrographs[self.FirstXS] = self.Result1D['q'][self.Result1D['xs'] == self.FirstXS ].values + self.RP['HQ2'].tolist()[0]
+            self.XSHydrographs[self.lastxs] = self.Result1D['q'][self.Result1D['xs'] == self.lastxs ].values + self.RP['HQ2'].tolist()[0]
+            self.XSHydrographs[self.firstxs] = self.Result1D['q'][self.Result1D['xs'] == self.firstxs ].values + self.RP['HQ2'].tolist()[0]
 
             if XSid != '':
                 self.XSHydrographs[XSid] = self.Result1D['q'][self.Result1D['xs'] == XSid ].values + self.RP['HQ2'].tolist()[0]
         else:
-            self.XSHydrographs[self.LastXS] = self.Result1D['q'][self.Result1D['xs'] == self.LastXS ].values
-            self.XSHydrographs[self.FirstXS] = self.Result1D['q'][self.Result1D['xs'] == self.FirstXS ].values
+            self.XSHydrographs[self.lastxs] = self.Result1D['q'][self.Result1D['xs'] == self.lastxs ].values
+            self.XSHydrographs[self.firstxs] = self.Result1D['q'][self.Result1D['xs'] == self.firstxs ].values
             if XSid != '':
                 self.XSHydrographs[XSid] = self.Result1D['q'][self.Result1D['xs'] == XSid ].values
 
-        self.XSWaterLevel[self.LastXS]  = self.Result1D['wl'][self.Result1D['xs'] == self.LastXS ].values
-        self.XSWaterLevel[self.FirstXS] = self.Result1D['wl'][self.Result1D['xs'] == self.FirstXS ].values
+        self.XSWaterLevel[self.lastxs]  = self.Result1D['wl'][self.Result1D['xs'] == self.lastxs ].values
+        self.XSWaterLevel[self.firstxs] = self.Result1D['wl'][self.Result1D['xs'] == self.firstxs ].values
         
-        self.XSWaterDepth[self.LastXS]  = self.Result1D['h'][self.Result1D['xs'] == self.LastXS ].values
-        self.XSWaterDepth[self.FirstXS] = self.Result1D['h'][self.Result1D['xs'] == self.FirstXS ].values
+        self.XSWaterDepth[self.lastxs]  = self.Result1D['h'][self.Result1D['xs'] == self.lastxs ].values
+        self.XSWaterDepth[self.firstxs] = self.Result1D['h'][self.Result1D['xs'] == self.firstxs ].values
 
         if XSid != '':
             self.XSWaterLevel[XSid]  = self.Result1D['wl'][self.Result1D['xs'] == XSid ].values
@@ -2909,9 +2779,9 @@ class Sub(River):
             self.RRM = pd.DataFrame()
 
         if path == '':
-            path = self.RRMpath
+            path = self.rrmpath
 
-        self.RRM[Nodeid] = self.ReadRRMResults(self.version, self.RRMreferenceindex,
+        self.RRM[Nodeid] = self.ReadRRMResults(self.version, self.rrmreferenceindex,
                                                path, Nodeid, FromDay, ToDay,
                                                date_format)[Nodeid].tolist()
 
@@ -2920,8 +2790,8 @@ class Sub(River):
         if ToDay == '':
             ToDay = len(self.RRM[Nodeid])
 
-        start = self.RRMreferenceindex.loc[FromDay,'date']
-        end = self.RRMreferenceindex.loc[ToDay,'date']
+        start = self.rrmreferenceindex.loc[FromDay,'date']
+        end = self.rrmreferenceindex.loc[ToDay,'date']
 
 
         self.RRM.index = pd.date_range(start, end, freq = 'D')
@@ -3210,7 +3080,7 @@ class Sub(River):
         for i in range(len(XSlist)):
             self.Read1DResult(XSid=XSlist[i])
 
-        XSlist = [self.FirstXS] + XSlist + [self.LastXS]
+        XSlist = [self.firstxs] + XSlist + [self.lastxs]
         XSlist.sort()
 
 
@@ -3254,19 +3124,19 @@ class Sub(River):
         if path == '':
             path = self.CustomizedRunspath
 
-        if len(self.USnode) > 1 :
+        if len(self.usnode) > 1 :
             # there is more than one upstream segment
-            if type(self.USnode) == list:
-                for i in range(len(self.USnode)):
-                    Nodeid = self.USnode[i]
-                    self.USHydrographs[Nodeid]  = self.ReadRRMResults(self.version, self.RRMreferenceindex,
+            if type(self.usnode) == list:
+                for i in range(len(self.usnode)):
+                    Nodeid = self.usnode[i]
+                    self.USHydrographs[Nodeid]  = self.ReadRRMResults(self.version, self.rrmreferenceindex,
                                                                     path, Nodeid, FromDay, ToDay,
                                                                     date_format)[Nodeid]
                     
             #there is one upstream segment
-        elif self.USnode != []:
-            Nodeid = self.USnode[0]
-            self.USHydrographs[Nodeid] = self.ReadRRMResults(self.version, self.RRMreferenceindex,
+        elif self.usnode != []:
+            Nodeid = self.usnode[0]
+            self.USHydrographs[Nodeid] = self.ReadRRMResults(self.version, self.rrmreferenceindex,
                                                                    path, Nodeid, FromDay, ToDay,
                                                                     date_format)[Nodeid]
         else:
@@ -3305,19 +3175,19 @@ class Sub(River):
             array of the hydrograph
         """
 
-        self.USHydrographs = np.zeros(shape=(River.NoTimeSteps))
+        self.USHydrographs = np.zeros(shape=(River.notimesteps))
 
-        if len(self.USnode) > 1 :
+        if len(self.usnode) > 1 :
             # there is more than one upstream segment
-            if type(self.USnode) == list:
-                for i in range(len(self.USnode)):
-                    Nodeid = self.USnode[i]
+            if type(self.usnode) == list:
+                for i in range(len(self.usnode)):
+                    Nodeid = self.usnode[i]
                     # get the order of the segment
                     River.Segments.index(Nodeid)
                     self.USHydrographs = self.USHydrographs + River.RoutedQ[:,River.Segments.index(Nodeid)]
             #there is one upstream segment
-        elif self.USnode != []:
-            Nodeid = self.USnode[0]
+        elif self.usnode != []:
+            Nodeid = self.usnode[0]
             River.Segments.index(Nodeid)
             self.USHydrographs = self.USHydrographs + River.RoutedQ[:,River.Segments.index(Nodeid)]
 
@@ -3464,7 +3334,7 @@ class Sub(River):
                     ax.plot(Laterals.loc[plotstart:plotend,0], label = "Laterals",zorder=RRMorder,
                             linewidth=linewidth, linestyle = Vis.LineStyle(9), color = Latcolor)
 
-            if self.USnode != [] and plotUS :
+            if self.usnode != [] and plotUS :
                 ax.plot(self.USHydrographs.loc[plotstart:plotend,'total'], label = "US Hydrograph",zorder=USHorder,
                         linewidth=linewidth, linestyle = Vis.LineStyle(9), color = RRMcolor)
 
@@ -3493,7 +3363,7 @@ class Sub(River):
             ax.plot(Calib.QGauges.loc[Calib.CalibrationQ.index[0]:Calib.CalibrationQ.index[-1],stationname],
                     label = 'Gauge-' + str(self.id), linewidth=linewidth, color = gaugecolor)
             if plotRRM:
-                ax.plot(Sub.RRM.loc[Calib.CalibrationQ.index[0]:Calib.CalibrationQ.index[-1],stationname],
+                ax.plot(sub.RRM.loc[Calib.CalibrationQ.index[0]:Calib.CalibrationQ.index[-1],stationname],
                         label="RRM")
 
         if type(NXlabels) != bool :
@@ -3536,16 +3406,16 @@ class Sub(River):
 
             # resample the times series to average daily
             ind = pd.date_range(self.firstdayresults, self.EndDays + dt.timedelta(days=1), freq = 'h')[:-1]
-            Q = self.Result1D[self.Result1D['xs'] == self.LastXS]#['q']#[Sub.Result1D['hour'] == 24]
+            Q = self.Result1D[self.Result1D['xs'] == self.lastxs]#['q']#[sub.Result1D['hour'] == 24]
             Q.index = ind
             QRIM['q'] = Q['q'].resample('D').mean()
             QRIM['q'] = QRIM.loc[st2:end2,'q']
 
             # try:
-            #     Sub.Resample(GagueXS, 'q', starti, endi, Delete=True)
+            #     sub.Resample(GagueXS, 'q', starti, endi, Delete=True)
             # except:
-            #     Sub.Resample(GagueXS, 'q', starti, endi, Delete=False)
-            # QRIM['q']  = Sub.ResampledQ[GagueXS][:]
+            #     sub.Resample(GagueXS, 'q', starti, endi, Delete=False)
+            # QRIM['q']  = sub.ResampledQ[GagueXS][:]
             # QRIM.index = pd.date_range(st2, end2)
 
         else:
@@ -3556,13 +3426,13 @@ class Sub(River):
 
             # resample the times series to average daily
             ind = pd.date_range(self.firstdayresults, self.lastday + dt.timedelta(days=1), freq = 'h')[:-1]
-            Q = self.Result1D[self.Result1D['xs'] == self.LastXS]#['q']#[Sub.Result1D['hour'] == 24]
+            Q = self.Result1D[self.Result1D['xs'] == self.lastxs]#['q']#[sub.Result1D['hour'] == 24]
             Q.index = ind
             QRIM['q'] = Q['q'].resample('D').mean()
             QRIM['q'] = QRIM.loc[st2:end2,'q']
 
             # old
-            # QRIM['q'] = Sub.Result1D['q'][Sub.Result1D['xs'] == GagueXS][Sub.Result1D['hour'] == 24][:]
+            # QRIM['q'] = sub.Result1D['q'][sub.Result1D['xs'] == GagueXS][sub.Result1D['hour'] == 24][:]
             # QRIM.index = pd.date_range(st2, end2)
 
         rmse = round(Pf.RMSE(Qobs,QRIM.loc[st2:end2,'q'].tolist()),0)
@@ -3628,7 +3498,7 @@ class Sub(River):
         #     """
         #     these lines are made to plot the closest downstreeam gauge
         #     """
-        #     ax.plot(Sub.XSWaterLevel.loc[plotstart:plotend,Sub.LastXS], label = "RIM-XS " + str(Sub.LastXS),
+        #     ax.plot(sub.XSWaterLevel.loc[plotstart:plotend,sub.lastxs], label = "RIM-XS " + str(sub.lastxs),
         #              zorder=3, linewidth = linewidth, color = RIMcolor)
         #     ax.plot(Calib.WLGauges.loc[plotstart:plotend,stationname], label = 'Gauge' +str(stationname),
         #              linewidth = linewidth)
@@ -3669,8 +3539,8 @@ class Sub(River):
             obs = np.array(Calib.WLGauges.loc[st2:end2,stationname])
 
             # RIM
-            ind = pd.date_range(Sub.firstdayresults, Sub.EndDays+dt.timedelta(days=1), freq = 'h')[:-1]
-            mod = Sub.Result1D[Sub.Result1D['xs'] == Sub.LastXS]#['q']#[Sub.Result1D['hour'] == 24]
+            ind = pd.date_range(sub.firstdayresults, sub.EndDays+dt.timedelta(days=1), freq = 'h')[:-1]
+            mod = sub.Result1D[sub.Result1D['xs'] == sub.lastxs]#['q']#[sub.Result1D['hour'] == 24]
             mod.index = ind
             mod = mod['wl'].resample('D').mean()
             mod = mod.loc[st2:end2]
@@ -3678,10 +3548,10 @@ class Sub(River):
 
             # RIM
             # try:
-            #     Sub.Resample(GagueXS, 'wl', River.DateToIndex(st2), River.DateToIndex(end2), Delete = True)
+            #     sub.Resample(GagueXS, 'wl', River.DateToIndex(st2), River.DateToIndex(end2), Delete = True)
             # except:
-            #     Sub.Resample(GagueXS, 'wl', River.DateToIndex(st2), River.DateToIndex(end2), Delete = False)
-            # series1 = np.array(Sub.ResampledWL[GagueXS])
+            #     sub.Resample(GagueXS, 'wl', River.DateToIndex(st2), River.DateToIndex(end2), Delete = False)
+            # series1 = np.array(sub.ResampledWL[GagueXS])
 
         else:
             st2 = max(GaugeStart,self.firstdayresults)
@@ -3692,14 +3562,14 @@ class Sub(River):
 
             # RIM
             ind = pd.date_range(self.firstdayresults, self.lastday + dt.timedelta(days=1), freq = 'h')[:-1]
-            mod = self.Result1D[self.Result1D['xs'] == GagueXS]#['q']#[Sub.Result1D['hour'] == 24]
+            mod = self.Result1D[self.Result1D['xs'] == GagueXS]#['q']#[sub.Result1D['hour'] == 24]
             mod.index = ind
             mod = mod['wl'].resample('D').mean()
             mod = mod.loc[st2:end2]
 
             # RIM
-            # Sub.Resample(GagueXS, 'wl', River.DateToIndex(st2), River.DateToIndex(end2), Delete = False)
-            # series1 = np.array(Sub.ResampledWL[GagueXS])
+            # sub.Resample(GagueXS, 'wl', River.DateToIndex(st2), River.DateToIndex(end2), Delete = False)
+            # series1 = np.array(sub.ResampledWL[GagueXS])
         
         if len(obs) != len(mod) or len(mod) ==0:
             print("Availabel data for the gauge starts from " + str(GaugeStart)+ " To " + str(GaugeEnd))
@@ -3724,6 +3594,20 @@ class Sub(River):
 
     def Histogram(self, Day, BaseMapF, ExcludeValue, OccupiedCellsOnly, Map = 1,
                   filter1 = 0.2, filter2 = 15):
+        """
+        Histogram Extracts the values that are located in the same location in the BaseMap as the Sub-basin
+
+        :param Day:
+        :param BaseMapF:
+        :param ExcludeValue:
+        :param OccupiedCellsOnly: [boolean] True if you want to count only cells that is not zero and not
+                                    to extract the values.
+        :param Map: [1/2/3] 1 for depthmax maps, 2 for duration maps, 3 for return period maps
+        :param filter1: [real] execlude lower values than filter1
+        :param filter2: [real] execlude values higher than filter2
+        :return:
+            ExtractedValues [list] list of extracted values
+        """
 
         # check if the object has the attribute ExtractedValues
         if hasattr(self,'ExtractedValues'):
@@ -3768,7 +3652,7 @@ class Sub(River):
         ax2.set_ylabel('Q', fontsize = 15)
     
     # def CalculateHydraulics():
-        # Sub.C
+        # sub.C
 
     def ListAttributes(self):
         """
