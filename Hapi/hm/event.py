@@ -11,7 +11,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-class Event():
+class Event:
     # class attributes
     """
     =========================================
@@ -43,13 +43,6 @@ class Event():
                  DurationPrefix = "Duration", ReturnPeriodPrefix = "ReturnPeriod" ,
                  Compressed = True):
         """
-        =============================================================================
-            Event(self, name, start = "1950-1-1", days = 36890,
-                  leftOvertopping_Suffix = "_left.txt",
-                  RightOvertopping_Suffix = "_right.txt", DepthPrefix = "DepthMax",
-                  DurationPrefix = "Duration", ReturnPeriodPrefix = "ReturnPeriod" ,
-                  Compressed = True)
-        =============================================================================
         To instantiate the Event class you need to provide the following arguments
 
         Parameters
@@ -373,11 +366,8 @@ class Event():
 
 
     def Histogram(self, Day, ExcludeValue, OccupiedCellsOnly, Map = 1, filter1 = 0.2,
-                  filter2 = 15):
+                  filter2=15):
         """
-        ==================================================================
-           Histogram(Day, ExcludeValue, OccupiedCellsOnly, Map = 1)
-        ==================================================================
         Histogram method extract values fro the event MaxDepth map and plot the histogram
         th emethod check first if you already extracted the values before then
         plot the histogram

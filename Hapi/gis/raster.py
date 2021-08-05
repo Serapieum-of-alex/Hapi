@@ -2367,11 +2367,8 @@ class Raster:
 
 
     @staticmethod
-    def OverlayMap(Path, BaseMap, ExcludeValue, Compressed = False, OccupiedCellsOnly=True):
+    def OverlayMap(Path, BaseMap, ExcludeValue, Compressed=False, OccupiedCellsOnly=True):
         """
-        =================================================================
-            (Path, BaseMap, ExcludeValue, Compressed = False, OccupiedCellsOnly=True)
-        =================================================================
         this function is written to extract and return a list of all the values
         in an ASCII file
 
@@ -2404,8 +2401,6 @@ class Raster:
         # input values
         # check wether the path exist or not
         assert os.path.exists(Path), "the path you have provided does not exist"
-
-
 
 
         # read the base map
@@ -2471,6 +2466,7 @@ class Raster:
     #                NanList.append(FilteredList[i])
 
         return ExtractedValues, NonZeroCells
+
 
     @staticmethod
     def OverlayMaps(Path, BaseMapF, FilePrefix, ExcludeValue, Compressed = False,
