@@ -33,7 +33,7 @@ class Interface(River):
         self.ReferenceIndex['date'] = Ref_ind[:-1]
         pass
 
-    def ReadLateralsTable(self, Path):
+    def ReadLateralsTable(self, Path, prefix='lf_xsid', suffix='.txt'):
         """
         ===============================================================
                ReadLateralsTable(Path)
@@ -56,7 +56,14 @@ class Interface(River):
 
         """
         self.LateralsTable = pd.read_csv(Path, skiprows=[0], header=None)
-        self.LateralsTable.columns = ["xsid"]
+        self.LateralsTable.columns = ['filename']
+        l1 = len(prefix)
+        l2 = len(suffix)
+        self.LateralsTable['xsid'] = [int(i[l1:len(i)-l2]) for i in self.LateralsTable[self.LateralsTable.columns[0]]]
+        
+        
+        # self.LateralsTable['xsid'] = 
+        # self.LateralsTable.columns = ["xsid"]
 
         if hasattr(self, "crosssections"):
             self.crosssections['lateral'] = 0
@@ -102,7 +109,7 @@ class Interface(River):
 
         for i in range(len(self.LateralsTable)):
             NodeID = self.LateralsTable.loc[i,'xsid']
-            fname = "LF_xsid" + str(NodeID)
+            fname = "lf_xsid" + str(NodeID)
             self.Laterals[NodeID]  = self.ReadRRMResults(self.version, self.ReferenceIndex,
                                                             Path, fname, FromDay, ToDay,
                                                             date_format)[fname].tolist()
@@ -119,11 +126,8 @@ class Interface(River):
 
         self.Laterals.index = pd.date_range(start, end, freq = 'D')
 
-    def ReadBoundaryConditionsTable(self, Path):
+    def ReadBoundaryConditionsTable(self, path, prefix='bc_xsid', suffix='.txt'):
         """
-        ===============================================================
-               ReadLateralsTable(Path)
-        ===============================================================
         ReadLateralsTable method reads the laterals file
             laterals file : file contains the xsid of the cross-sections that
             has laterals
@@ -141,12 +145,17 @@ class Interface(River):
         None.
 
         """
-        self.BCTable = pd.read_csv(Path, skiprows=[0], header=None)
-        self.BCTable.columns = ["id"]
-        self.BCTable['id'] = [int(i[3:]) for i in self.BCTable['id'].tolist()]
+        self.BCTable = pd.read_csv(path, skiprows=[0], header=None)
+        self.BCTable.columns = ['filename']
+        l1 = len(prefix)
+        l2 = len(suffix)
+        self.BCTable['id'] = [i[l1:len(i)-l2] for i in self.BCTable[self.BCTable.columns[0]]]
+        
+        # self.BCTable.columns = ["id"]
+        # self.BCTable['id'] = [int(i[7:]) for i in self.BCTable['id'].tolist()]
 
 
-    def ReadBoundaryConditions(self, FromDay = '', ToDay = '', Path = '',
+    def ReadBoundaryConditions(self, FromDay='', ToDay='', path='',
                           date_format="'%Y-%m-%d'"):
         """
         =======================================================================
@@ -181,9 +190,9 @@ class Interface(River):
 
         for i in range(len(self.BCTable)):
             NodeID = self.BCTable.loc[i,'id']
-            fname = "BC_" + str(NodeID)
+            fname = "bc_xsid" + str(NodeID)
             self.BC[NodeID] = self.ReadRRMResults(self.version, self.ReferenceIndex,
-                                                            Path, fname, FromDay, ToDay,
+                                                            path, fname, FromDay, ToDay,
                                                             date_format)[fname].tolist()
 
 
