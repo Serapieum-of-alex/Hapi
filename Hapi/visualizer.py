@@ -15,7 +15,7 @@ import math
 import matplotlib.colors as colors
 from matplotlib.ticker import LogFormatter
 from collections import OrderedDict
-
+from scipy.stats import gumbel_r
 from Hapi.statistics.statisticaltools import StatisticalTools as ST
 
 hours = list(range(1, 25))
@@ -123,14 +123,14 @@ class Visualize:
             else:
                 print(" Please Read the Laterals data")
         # plot the bedlevel/baklevel
-        if Sub.Version == 1:
+        if Sub.version == 1:
             axGS.plot(Sub.xsname, Sub.crosssections['gl'], 'k-', linewidth=5, label='Bankful level')
         else:
             axGS.plot(Sub.xsname, Sub.crosssections['gl'], 'k-', linewidth=5, label='Ground level')
             axGS.plot(Sub.xsname, Sub.crosssections['gl'] + Sub.crosssections['dbf'], 'k', linewidth=2,
                       label='Bankful depth')
 
-        axGS.set_title("Water surface Profile Simulation SubID = " + str(Sub.ID), fontsize=15)
+        axGS.set_title("Water surface Profile Simulation Subid = " + str(Sub.id), fontsize=15)
         axGS.legend(fontsize=15)
         axGS.set_xlabel("Profile", fontsize=15)
         axGS.set_ylabel("Elevation m", fontsize=15)
@@ -237,7 +237,7 @@ class Visualize:
         ax1.tick_params(labelsize=6)
         ax1.set_xlabel('Cross section No', fontsize=xaxislabelsize)
         ax1.set_ylabel('Discharge (m3/s)', fontsize=yaxislabelsize, labelpad=0.5)
-        ax1.set_title('Sub-Basin' + ' ' + str(Sub.ID), fontsize=15)
+        ax1.set_title('Sub-Basin' + ' ' + str(Sub.id), fontsize=15)
         ax1.legend(["Discharge"], fontsize=15)
 
         # plot location of laterals
@@ -293,7 +293,7 @@ class Visualize:
         ax4.plot(Sub.xsname, Sub.crosssections['zl'], 'k--', dashes=(5, 1), linewidth=2, label='Left Dike')
         ax4.plot(Sub.xsname, Sub.crosssections['zr'], 'k.-', linewidth=2, label='Right Dike')
 
-        if Sub.Version == 1:
+        if Sub.version == 1:
             ax4.plot(Sub.xsname, Sub.crosssections['gl'], 'k-', linewidth=5, label='Bankful level')
         else:
             ax4.plot(Sub.xsname, Sub.crosssections['gl'], 'k-', linewidth=5, label='Ground level')
@@ -464,7 +464,7 @@ class Visualize:
 
             ax1.set_xticks(list(range(FigureFirstXS, FigureLastXS)))
             ax1.set_xticklabels(list(range(FigureFirstXS, FigureLastXS)))
-        if Sub.Version < 4:
+        if Sub.version < 4:
             ax1.set_ylim(0, int(Sub.Result1D['q'].max()))
         else:
             ax1.set_ylim(0, int(Sub.Qmin.max().max()))
@@ -477,7 +477,7 @@ class Visualize:
 
         ax1.legend(["Discharge"], fontsize=15)
 
-        if Sub.Version < 4:
+        if Sub.version < 4:
             # plot location of laterals
             for i in range(len(Sub.LateralsTable)):
                 ax1.vlines(Sub.LateralsTable[i], 0, int(Sub.Result1D['q'].max()),
@@ -491,7 +491,7 @@ class Visualize:
         # Q
         ax2 = fig2.add_subplot(gs[0, 1:2])
         ax2.set_xlim(1, 1440)
-        if Sub.Version < 4:
+        if Sub.version < 4:
             ax2.set_ylim(0, int(Sub.QBCmin.max()))
         else:
             ax2.set_ylim(0, int(Sub.USBC.max()))
@@ -514,7 +514,7 @@ class Visualize:
         # h
         ax3 = fig2.add_subplot(gs[0, 0:1])
         ax3.set_xlim(1, 1440)
-        if Sub.Version < 4:
+        if Sub.version < 4:
             ax3.set_ylim(float(Sub.HBC.min().min()), float(Sub.HBC.max().max()))
 
         # ax3.set_xticks(xsname)
@@ -552,7 +552,7 @@ class Visualize:
         ax4.plot(Sub.xsname, Sub.crosssections['zl'], 'k--', dashes=(5, 1), linewidth=2, label='Left Dike')
         ax4.plot(Sub.xsname, Sub.crosssections['zr'], 'k.-', linewidth=2, label='Right Dike')
 
-        if Sub.Version == 1:
+        if Sub.version == 1:
             ax4.plot(Sub.xsname, Sub.crosssections['gl'], 'k-', linewidth=5, label='Bankful level')
         else:
             ax4.plot(Sub.xsname, Sub.crosssections['gl'], 'k-', linewidth=5, label='Ground level')
@@ -682,7 +682,7 @@ class Visualize:
             Sub.referenceindex_results[0]) + " - and ends on " + str(Sub.referenceindex_results[-1]))
 
         counter = Sub.referenceindex_results[np.where(Sub.referenceindex_results == start)[0][0]:np.where(Sub.referenceindex_results == end)[0][0]+1]
-#%%
+
         margin = 10
         fig2 = plt.figure(20, figsize=(20, 10))
         gs = gridspec.GridSpec(nrows=2, ncols=6, figure=fig2)
@@ -805,7 +805,7 @@ class Visualize:
         gs.update(wspace=0.2, hspace=0.2, top=0.96, bottom=0.1, left=0.05, right=0.96)
         # animation
         plt.show()
-#%%
+
         # animation
         def init_min():
             q_line.set_data([], [])
@@ -856,7 +856,7 @@ class Visualize:
 
         anim = animation.FuncAnimation(fig2, animate_min, init_func=init_min, frames=len(counter),
                                        interval=interval, blit=True)
-        #%%
+
         return anim
 
 
@@ -893,7 +893,10 @@ class Visualize:
                 print(
                     "please visit https://ffmpeg.org/ and download a version of ffmpeg compitable with your operating system, for more details please check the method definition")
 
-    def CrossSections(self, Sub):
+
+    def CrossSections(self, Sub, startxs='', endxs='', xsrows=3, xscolumns=3, 
+                      bedlevel=False, titlesize=15, textsize=15, figsize=(18, 10), 
+                      linewidth=6):
         """
 
         plot all the cross sections of the sub-basin
@@ -908,15 +911,15 @@ class Visualize:
         None.
 
         """
-        # names = ['gl','zl','zr','hl','hr','bl','br','b','dbf']
         names = list(range(1, 17))
         XSS = pd.DataFrame(columns=names, index=Sub.crosssections['xsid'].values)
-        # xsname = Sub.crosssections['xsid'].tolist()
-
+        
+        # calculate the vertices of the cross sections
         for i in range(len(Sub.crosssections.index)):
 
             XSS[1].loc[XSS.index == XSS.index[i]] = 0
             XSS[2].loc[XSS.index == XSS.index[i]] = 0
+            
             bl = Sub.crosssections['bl'].loc[Sub.crosssections.index == Sub.crosssections.index[i]].values[0]
             b = Sub.crosssections['b'].loc[Sub.crosssections.index == Sub.crosssections.index[i]].values[0]
             br = Sub.crosssections['br'].loc[Sub.crosssections.index == Sub.crosssections.index[i]].values[0]
@@ -929,20 +932,22 @@ class Visualize:
             XSS[8].loc[XSS.index == XSS.index[i]] = bl + b + br
 
             gl = Sub.crosssections['gl'].loc[Sub.crosssections.index == Sub.crosssections.index[i]].values[0]
-            subtract = gl
-            #    subtract = 0
+            if bedlevel :
+                subtract = 0
+            else:
+                subtract = gl
 
             zl = Sub.crosssections['zl'].loc[Sub.crosssections.index == Sub.crosssections.index[i]].values[0]
             zr = Sub.crosssections['zr'].loc[Sub.crosssections.index == Sub.crosssections.index[i]].values[0]
 
-            if Sub.Version > 1:
+            if Sub.version > 1:
                 dbf = Sub.crosssections['dbf'].loc[Sub.crosssections.index == Sub.crosssections.index[i]].values[0]
 
             hl = Sub.crosssections['hl'].loc[Sub.crosssections.index == Sub.crosssections.index[i]].values[0]
             hr = Sub.crosssections['hr'].loc[Sub.crosssections.index == Sub.crosssections.index[i]].values[0]
 
             XSS[9].loc[XSS.index == XSS.index[i]] = zl - subtract
-            if Sub.Version == 1:
+            if Sub.version == 1:
                 XSS[10].loc[XSS.index == XSS.index[i]] = gl + hl - subtract
                 XSS[11].loc[XSS.index == XSS.index[i]] = gl - subtract
                 XSS[14].loc[XSS.index == XSS.index[i]] = gl - subtract
@@ -958,177 +963,47 @@ class Visualize:
 
             XSS[16].loc[XSS.index == XSS.index[i]] = zr - subtract
 
-        # to plot cross section where there is -ve discharge
-        # XsId = NegXS[0]
-        # to plot cross section you want
-        xsno = -1
-        # len(Sub.xsname)/9
-        rows = 3
-        columns = 3
+        
+        if startxs == '' :
+            startxs_ind = 0
+        else:
+            startxs_ind = Sub.xsname.index(startxs)
+            
+        if endxs == '' :
+            endxs_ind = Sub.xsno-1
+        else:
+            endxs_ind = Sub.xsname.index(endxs)
+        
+        xsplot = len(range(startxs_ind, endxs_ind+1))
+        
+        figno = int(math.ceil( xsplot / (xscolumns * xsrows)))
 
-        titlesize = 15
-        textsize = 15
-        for i in range(int(math.ceil(len(Sub.xsname) / 9.0))):
-            fig = plt.figure(1000 + i, figsize=(18, 10))
-            gs = gridspec.GridSpec(rows, columns)
+        ind = startxs_ind
+        for i in range(figno):
+                                                                                                                           
+            fig = plt.figure(1000 + i, figsize=figsize)
+            gs = gridspec.GridSpec(xsrows, xscolumns)
+            
+            for j in range(xsrows):
+                for k in range(xscolumns):
+                    if ind <= endxs_ind:
+                        XsId = Sub.crosssections['xsid'][Sub.crosssections.index[ind]]
+                        xcoord = XSS[names[0:8]].loc[XSS.index == XSS.index[ind]].values.tolist()[0]
+                        ycoord = XSS[names[8:16]].loc[XSS.index == XSS.index[ind]].values.tolist()[0]
+                        b = Sub.crosssections['b'].loc[Sub.crosssections['xsid'] == XSS.index[ind]].values[0]
+                        bl = Sub.crosssections['bl'].loc[Sub.crosssections['xsid'] == XSS.index[ind]].values[0]
+                        ax_XS1 = fig.add_subplot(gs[j, k])
+                        ax_XS1.plot(xcoord, ycoord, linewidth=linewidth)
+                        ax_XS1.title.set_text('xs ID = ' + str(XsId))
+                        ax_XS1.title.set_fontsize(titlesize)
+            
+                        if Sub.version > 1:
+                            dbf = Sub.crosssections['dbf'].loc[Sub.crosssections['xsid'] == XSS.index[ind]].values[0]
+                            ax_XS1.annotate("dbf=" + str(round(dbf, 2)), xy=(bl, dbf - 0.5), fontsize=textsize)
+            
+                        ax_XS1.annotate("b=" + str(round(b, 2)), xy=(bl, 0), fontsize=textsize)
+                        ind = ind + 1
 
-            xsno = xsno + 1
-            XsId = Sub.crosssections['xsid'][Sub.crosssections.index[xsno]]
-            xcoord = XSS[names[0:8]].loc[XSS.index == XSS.index[xsno]].values.tolist()[0]
-            ycoord = XSS[names[8:16]].loc[XSS.index == XSS.index[xsno]].values.tolist()[0]
-            b = Sub.crosssections['b'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
-            bl = Sub.crosssections['bl'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
-            ax_XS1 = fig.add_subplot(gs[0, 0])
-            ax_XS1.plot(xcoord, ycoord, linewidth=6)
-            ax_XS1.title.set_text('xs ID = ' + str(XsId))
-            ax_XS1.title.set_fontsize(titlesize)
-
-            if Sub.Version > 1:
-                dbf = Sub.crosssections['dbf'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
-                ax_XS1.annotate("dbf=" + str(round(dbf, 2)), xy=(bl, dbf - 0.5), fontsize=textsize)
-                # ax_XS1.annotate("Area="+str(round(dbf*b,2))+"m2",xy=(bl,dbf-1.4), fontsize = textsize  )
-
-            ax_XS1.annotate("b=" + str(round(b, 2)), xy=(bl, 0), fontsize=textsize)
-
-            xsno = xsno + 1
-            XsId = Sub.crosssections['xsid'][Sub.crosssections.index[xsno]]
-            xcoord = XSS[names[0:8]].loc[XSS.index == XSS.index[xsno]].values.tolist()[0]
-            ycoord = XSS[names[8:16]].loc[XSS.index == XSS.index[xsno]].values.tolist()[0]
-            b = Sub.crosssections['b'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
-            bl = Sub.crosssections['bl'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
-            ax_XS2 = fig.add_subplot(gs[0, 1])
-            ax_XS2.plot(xcoord, ycoord, linewidth=6)
-            ax_XS2.title.set_text('xs ID = ' + str(XsId))
-            ax_XS2.title.set_fontsize(titlesize)
-
-            if Sub.Version > 1:
-                dbf = Sub.crosssections['dbf'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
-                ax_XS2.annotate("dbf=" + str(round(dbf, 2)), xy=(bl, dbf - 0.5), fontsize=textsize)
-                # ax_XS2.annotate("Area="+str(round(dbf*b,2))+"m2",xy=(bl,dbf-1.4), fontsize = textsize  )
-
-            ax_XS2.annotate("b=" + str(round(b, 2)), xy=(bl, 0), fontsize=textsize)
-
-            xsno = xsno + 1
-            XsId = Sub.crosssections['xsid'][Sub.crosssections.index[xsno]]
-            xcoord = XSS[names[0:8]].loc[XSS.index == XSS.index[xsno]].values.tolist()[0]
-            ycoord = XSS[names[8:16]].loc[XSS.index == XSS.index[xsno]].values.tolist()[0]
-            b = Sub.crosssections['b'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
-            bl = Sub.crosssections['bl'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
-            ax_XS3 = fig.add_subplot(gs[0, 2])
-            ax_XS3.plot(xcoord, ycoord, linewidth=6)
-            ax_XS3.title.set_text('xs ID = ' + str(XsId))
-            ax_XS3.title.set_fontsize(titlesize)
-
-            if Sub.Version > 1:
-                dbf = Sub.crosssections['dbf'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
-                ax_XS3.annotate("dbf=" + str(round(dbf, 2)), xy=(bl, dbf - 0.5), fontsize=textsize)
-                # ax_XS3.annotate("Area="+str(round(dbf*b,2))+"m2",xy=(bl,dbf-1.4), fontsize = textsize  )
-            ax_XS3.annotate("b=" + str(round(b, 2)), xy=(bl, 0), fontsize=textsize)
-
-            xsno = xsno + 1
-            XsId = Sub.crosssections['xsid'][Sub.crosssections.index[xsno]]
-            xcoord = XSS[names[0:8]].loc[XSS.index == XSS.index[xsno]].values.tolist()[0]
-            ycoord = XSS[names[8:16]].loc[XSS.index == XSS.index[xsno]].values.tolist()[0]
-            b = Sub.crosssections['b'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
-            bl = Sub.crosssections['bl'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
-            ax_XS4 = fig.add_subplot(gs[1, 0])
-            ax_XS4.plot(xcoord, ycoord, linewidth=6)
-            ax_XS4.title.set_text('xs ID = ' + str(XsId))
-            ax_XS4.title.set_fontsize(titlesize)
-            if Sub.Version > 1:
-                dbf = Sub.crosssections['dbf'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
-                ax_XS4.annotate("dbf=" + str(round(dbf, 2)), xy=(bl, dbf - 0.5), fontsize=textsize)
-                # ax_XS4.annotate("Area="+str(round(dbf*b,2))+"m2",xy=(bl,dbf-1.4), fontsize = textsize  )
-
-            ax_XS4.annotate("b=" + str(round(b, 2)), xy=(bl, 0), fontsize=textsize)
-
-            xsno = xsno + 1
-            XsId = Sub.crosssections['xsid'][Sub.crosssections.index[xsno]]
-            xcoord = XSS[names[0:8]].loc[XSS.index == XSS.index[xsno]].values.tolist()[0]
-            ycoord = XSS[names[8:16]].loc[XSS.index == XSS.index[xsno]].values.tolist()[0]
-            b = Sub.crosssections['b'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
-            bl = Sub.crosssections['bl'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
-            ax_XS5 = fig.add_subplot(gs[1, 1])
-            ax_XS5.plot(xcoord, ycoord, linewidth=6)
-            ax_XS5.title.set_text('xs ID = ' + str(XsId))
-            ax_XS5.title.set_fontsize(titlesize)
-
-            if Sub.Version > 1:
-                dbf = Sub.crosssections['dbf'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
-                ax_XS5.annotate("dbf=" + str(round(dbf, 2)), xy=(bl, dbf - 0.5), fontsize=textsize)
-                # ax_XS5.annotate("Area="+str(round(dbf*b,2))+"m2",xy=(bl,dbf-1.4), fontsize = textsize  )
-
-            ax_XS5.annotate("b=" + str(round(b, 2)), xy=(bl, 0), fontsize=textsize)
-
-            xsno = xsno + 1
-            XsId = Sub.crosssections['xsid'][Sub.crosssections.index[xsno]]
-            xcoord = XSS[names[0:8]].loc[XSS.index == XSS.index[xsno]].values.tolist()[0]
-            ycoord = XSS[names[8:16]].loc[XSS.index == XSS.index[xsno]].values.tolist()[0]
-            b = Sub.crosssections['b'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
-            bl = Sub.crosssections['bl'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
-            ax_XS6 = fig.add_subplot(gs[1, 2])
-            ax_XS6.plot(xcoord, ycoord, linewidth=6)
-            ax_XS6.title.set_text('xs ID = ' + str(XsId))
-            ax_XS6.title.set_fontsize(titlesize)
-
-            if Sub.Version > 1:
-                dbf = Sub.crosssections['dbf'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
-                ax_XS6.annotate("dbf=" + str(round(dbf, 2)), xy=(bl, dbf - 0.5), fontsize=textsize)
-                # ax_XS6.annotate("Area="+str(round(dbf*b,2))+"m2",xy=(bl,dbf-1.4), fontsize = textsize  )
-
-            ax_XS6.annotate("b=" + str(round(b, 2)), xy=(bl, 0), fontsize=textsize)
-
-            xsno = xsno + 1
-            XsId = Sub.crosssections['xsid'][Sub.crosssections.index[xsno]]
-            xcoord = XSS[names[0:8]].loc[XSS.index == XSS.index[xsno]].values.tolist()[0]
-            ycoord = XSS[names[8:16]].loc[XSS.index == XSS.index[xsno]].values.tolist()[0]
-            b = Sub.crosssections['b'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
-            bl = Sub.crosssections['bl'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
-            ax_XS7 = fig.add_subplot(gs[2, 0])
-            ax_XS7.plot(xcoord, ycoord, linewidth=6)
-            ax_XS7.title.set_text('xs ID = ' + str(XsId))
-            ax_XS7.title.set_fontsize(titlesize)
-
-            if Sub.Version > 1:
-                dbf = Sub.crosssections['dbf'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
-                ax_XS7.annotate("dbf=" + str(round(dbf, 2)), xy=(bl, dbf - 0.5), fontsize=textsize)
-                # ax_XS7.annotate("Area="+str(round(dbf*b,2))+"m2",xy=(bl,dbf-1.4), fontsize = textsize  )
-            ax_XS7.annotate("b=" + str(round(b, 2)), xy=(bl, 0), fontsize=textsize)
-
-            xsno = xsno + 1
-            XsId = Sub.crosssections['xsid'][Sub.crosssections.index[xsno]]
-            xcoord = XSS[names[0:8]].loc[XSS.index == XSS.index[xsno]].values.tolist()[0]
-            ycoord = XSS[names[8:16]].loc[XSS.index == XSS.index[xsno]].values.tolist()[0]
-            b = Sub.crosssections['b'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
-            bl = Sub.crosssections['bl'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
-            ax_XS8 = fig.add_subplot(gs[2, 1])
-            ax_XS8.plot(xcoord, ycoord, linewidth=6)
-            ax_XS8.title.set_text('xs ID = ' + str(XsId))
-            ax_XS8.title.set_fontsize(titlesize)
-
-            if Sub.Version > 1:
-                dbf = Sub.crosssections['dbf'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
-                ax_XS8.annotate("dbf=" + str(round(dbf, 2)), xy=(bl, dbf - 0.5), fontsize=textsize)
-                # ax_XS8.annotate("Area="+str(round(dbf*b,2))+"m2",xy=(bl,dbf-1.4), fontsize = textsize  )
-
-            ax_XS8.annotate("b=" + str(round(b, 2)), xy=(bl, 0), fontsize=textsize)
-
-            xsno = xsno + 1
-            XsId = Sub.crosssections['xsid'][Sub.crosssections.index[xsno]]
-            xcoord = XSS[names[0:8]].loc[XSS.index == XSS.index[xsno]].values.tolist()[0]
-            ycoord = XSS[names[8:16]].loc[XSS.index == XSS.index[xsno]].values.tolist()[0]
-            b = Sub.crosssections['b'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
-            bl = Sub.crosssections['bl'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
-            ax_XS9 = fig.add_subplot(gs[2, 2])
-            ax_XS9.plot(xcoord, ycoord, linewidth=6)
-            ax_XS9.title.set_text('xs ID = ' + str(XsId))
-            ax_XS9.title.set_fontsize(titlesize)
-
-            if Sub.Version > 1:
-                dbf = Sub.crosssections['dbf'].loc[Sub.crosssections['xsid'] == XSS.index[xsno]].values[0]
-                ax_XS9.annotate("dbf=" + str(round(dbf, 2)), xy=(bl, dbf - 0.5), fontsize=textsize)
-                # ax_XS9.annotate("Area="+str(round(dbf*b,2))+"m2",xy=(bl,dbf-1.4), fontsize = textsize  )
-            ax_XS9.annotate("b=" + str(round(b, 2)), xy=(bl, 0), fontsize=textsize)
 
             gs.update(wspace=0.2, hspace=0.2, top=0.96, bottom=0.1, left=0.05, right=0.96)
 
@@ -1593,6 +1468,142 @@ class Visualize:
         # plt.tight_layout()
 
         return (ax1, ax2), fig
+
+    @staticmethod
+    def Histogram(v1, v2, NoAxis=2, filter1=0.2, Save=False, pdf=True, **kwargs):
+        """
+        Histogram method plots the histogram of two given list of values
+
+        Parameters
+        ----------
+            1-v1 : [List]
+                first list of values.
+            2-v2 : [List]
+                second list of values.
+
+        Returns
+        -------
+            - histogram plot.
+
+        Example
+        -------
+        Vis.Histogram(Val1, val2,2,figsize=(5.5,4.5), color1='#27408B',
+                        xlabel = 'Inundation Depth (m)', ylabel = 'Frequency', legend_size = 15,
+                         fontsize=15, labelsize = 15, Axisfontsize = 11,
+                         legend = ['RIM1.0', 'RIM2.0'], pdf = False, Save = False,
+                         name = str(Event1.EventIndex.loc[EndInd,'id']))
+
+        """
+        # update the default options
+        Fkeys = list(kwargs.keys())
+        for key in Fkeys:
+            if key in Visualize.FigureDefaultOptions.keys():
+                Visualize.FigureDefaultOptions[key] = kwargs[key]
+
+        v1 = np.array([j for j in v1 if j > filter1])
+        v2 = np.array([j for j in v2 if j > filter1])
+
+        if pdf:
+            param_dist1 = gumbel_r.fit(np.array(v1))
+            param_dist2 = gumbel_r.fit(np.array(v2))
+
+            d1 = np.linspace(v1.min(), v1.max(), v1.size)
+            d2 = np.linspace(v2.min(), v2.max(), v2.size)
+            pdf_fitted1 = gumbel_r.pdf(d1, loc=param_dist1[0], scale=param_dist1[1])
+            pdf_fitted2 = gumbel_r.pdf(d2, loc=param_dist2[0], scale=param_dist2[1])
+
+        if NoAxis == 1:
+            # if bins in kwargs.keys():
+            plt.figure(60, figsize=(10, 8))
+            n, bins, patches = plt.hist([v1, v2], color=['#3D59AB', '#DC143C'])
+            # for key in kwargs.keys():
+            #     if key == 'legend':
+            #         plt.legend(kwargs['legend'])
+            #     if key == 'legend size':
+            #         plt.legend(kwargs['legend'],fontsize = int(kwargs['legend_size']))
+            #     if key == 'xlabel':
+            #         plt.xlabel(kwargs['xlabel'])
+            #     if key == 'ylabel':
+            #         plt.ylabel(kwargs['ylabel'])
+            # #     # if key == 'xlabel':
+            # #         # xlabel = kwargs['xlabel']
+            # #     # if key == 'xlabel':
+            # #         # xlabel = kwargs['xlabel']
+
+        elif NoAxis == 2:
+            fig, ax1 = plt.subplots(figsize=Visualize.FigureDefaultOptions['figsize'])
+            # n1= ax1.hist([v1,v2], bins=15, alpha = 0.7, color=[color1,color2])
+            n1 = ax1.hist([v1, v2], bins=15, alpha=0.7, color=[Visualize.FigureDefaultOptions['color1'],
+                                                               Visualize.FigureDefaultOptions['color2']])
+            # label=['RIM1.0','RIM2.0']) #width = 0.2,
+
+            ax1.set_ylabel("Frequency", fontsize=Visualize.FigureDefaultOptions['AxisLabelSize'])
+            # ax1.yaxis.label.set_color(color1)
+            ax1.set_xlabel("Inundation Depth Ranges (m)", fontsize=Visualize.FigureDefaultOptions['AxisLabelSize'])
+
+            # ax1.tick_params(axis='y', color = color1)
+            # ax1.spines['right'].set_color(color1)
+            if pdf:
+                ax2 = ax1.twinx()
+                ax2.plot(d1, pdf_fitted1, '-.', color=Visualize.FigureDefaultOptions['color1'],
+                         linewidth=Visualize.FigureDefaultOptions['linewidth'], label="RIM1.0 pdf")
+                ax2.plot(d2, pdf_fitted2, '-.', color=Visualize.FigureDefaultOptions['color2'],
+                         linewidth=Visualize.FigureDefaultOptions['linewidth'], label="RIM2.0 pdf")
+                ax2.set_ylabel("Probability density function (pdf)", fontsize=Visualize.FigureDefaultOptions['AxisLabelSize'])
+            # else:
+            #     ax2.yaxis.set_ticklabels([])
+            #     # ax2.yaxis.set_major_formatter(plt.NullFormatter())
+            #     # ax2.tick_params(right='off', labelright='off')
+            #     ax2.set_xticks([])
+            #     ax2.tick_params(axis='y', color = color2)
+
+            #     # if key == 'xlabel':
+            #         # xlabel = kwargs['xlabel']
+            #     # if key == 'xlabel':
+            #         # xlabel = kwargs['xlabel']
+
+            # n2 = ax2.hist(v2,  bins=n1[1], alpha = 0.4, color=color2)#width=0.2,
+            # ax2.set_ylabel("Frequency", fontsize = 15)
+            # ax2.yaxis.label.set_color(color2)
+
+            # ax2.tick_params(axis='y', color = color2)
+            # plt.title("Sub-Basin = " + str(Subid), fontsize = 15)
+
+            # minall = min(min(n1[1]), min(n2[1]))
+            # if minall < 0:
+            #     minall =0
+
+            # maxall = max(max(n1[1]), max(n2[1]))
+            # ax1.set_xlim(minall, maxall)
+            #    ax1.set_yticklabels(ax1.get_yticklabels(), color = color1)
+            #    ax2.set_yticklabels(ax2.get_yticklabels(), color = color2)
+
+            # # options
+            # for key in kwargs.keys():
+            # if key == 'legend':
+            # ax1.legend(self.FigureOptions['legend'])
+            # if key == 'legend_size':
+            ax1.legend(kwargs['legend'], fontsize=int(Visualize.FigureDefaultOptions['legend_size']))
+            # if key == 'xlabel':
+            # ax1.set_xlabel(self.FigureOptions['xlabel'])
+            # if key == 'ylabel':
+            # ax1.set_ylabel(self.FigureOptions['ylabel'])
+            # if key == 'labelsize':
+            ax1.set_xlabel(Visualize.FigureDefaultOptions['xlabel'],
+                           fontsize=Visualize.FigureDefaultOptions['AxisLabelSize'])
+            ax1.set_ylabel(Visualize.FigureDefaultOptions['ylabel'],
+                           fontsize=Visualize.FigureDefaultOptions['AxisLabelSize'])
+            # if key == 'fontsize':
+            plt.rcParams.update({'font.size': int(Visualize.FigureDefaultOptions['Axisfontsize'])})
+
+            # fig.legend(loc="upper right", bbox_to_anchor=(1,1), bbox_transform=ax1.transAxes,fontsize = 15)
+
+            plt.tight_layout()
+
+        if Save == True:
+            plt.savefig(Visualize.FigureDefaultOptions['name'] + "-hist.tif", transparent=True)
+            # plt.close()
+
 
     def ListAttributes(self):
         """
