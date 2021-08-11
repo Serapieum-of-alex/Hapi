@@ -2559,8 +2559,8 @@ class Sub(River):
         self.ExtractedValues = dict()
 
 
-    def Read1DResult(self, FromDay = '', ToDay = '', FillMissing = True,
-                     addHQ2 = False, path = '', xsid = ''):
+    def Read1DResult(self, FromDay='', ToDay='', FillMissing=True,
+                     addHQ2=False, path='', xsid=''):
         """
         Read1DResult method reads the 1D (1D-2D coupled) result of the sub-basin the object is
         created for and return the hydrograph of the first and last cross section
@@ -3093,7 +3093,7 @@ class Sub(River):
 
         return fig, ax
 
-    def ReadUSHydrograph(self, FromDay = '', ToDay = '', path = '',
+    def ReadUSHydrograph(self, FromDay='', ToDay='', path='',
                           date_format="'%Y-%m-%d'"):
         """
 
@@ -3247,7 +3247,8 @@ class Sub(River):
         
         # get the id of the boundary condition
         xs_as_set = set(self.xsname)
-        bcids = list(xs_as_set.intersection(IF.BCTable['id'].tolist()))
+        bclist = [int(i) for i in IF.BCTable['id'].tolist()]
+        bcids = list(xs_as_set.intersection(bclist))
         
         if len(bcids) == 0:
             self.BC = False
@@ -3310,12 +3311,12 @@ class Sub(River):
 
         return H
 
-    def PlotQ(self, Calib, gaguexs, start, end, stationname, gaugename, segment_xs,
+    def PlotQ(self, Calib, gaugexs, start, end, stationname, gaugename, segment_xs,
              plotlaterals=True, plotus=True, specificxs=False, plotrrm=True,
              plotgauge=True, hmcolor="#004c99", gaugecolor="#DC143C", bccolor="grey",
              rrmcolor="green", latcolor=(0.3,0,0), xscolor="grey", linewidth = 4,
-             hmorder = 6, gaugeorder = 5, rrmorder = 4, bcorder = 7, ushorder = 2,
-             xsorder = 1, fmt="%Y-%m-%d", nxlabels=False):
+             hmorder=6, gaugeorder=5, latorder=4, bcorder=7, ushorder=2,rrmorder=3,
+             xsorder=1, fmt="%Y-%m-%d", nxlabels=False):
         """
         
 
@@ -3323,7 +3324,7 @@ class Sub(River):
         ----------
         Calib : [Calibration object]
             DESCRIPTION.
-        GagueXS : integer
+        gaugexs : integer
             the xsid of the gauge.
         plotstart : [string]
             start date of the plot.
@@ -3387,26 +3388,26 @@ class Sub(River):
 
         start = dt.datetime.strptime(start,fmt)
         end = dt.datetime.strptime(end,fmt)
-        #"#FF34B3"
+        
 
         fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(6, 5))
 
         if hasattr(self,"XSHydrographs"):
         # plot if you read the results using ther read1DResults
         
-            ax.plot(self.XSHydrographs.loc[start:end,gaguexs], label="RIM",
+            ax.plot(self.XSHydrographs.loc[start:end,gaugexs], label="RIM",
                     zorder=hmorder, linewidth=linewidth, linestyle=V.LineStyle(6),
                     color = hmcolor)
             
             if plotlaterals:
-                Laterals = self.GetLaterals(gaguexs)
+                Laterals = self.GetLaterals(gaugexs)
                 
                 if type(self.BC) != bool:
                     ax.plot(self.BC.loc[start:end,self.BC.columns[0]], label = "BC",zorder=bcorder,
                             linewidth=linewidth, linestyle = V.LineStyle(9), color = bccolor)
                 
                 if len(self.LateralsTable) > 0:
-                    ax.plot(Laterals.loc[start:end,0], label="Laterals",zorder=rrmorder,
+                    ax.plot(Laterals.loc[start:end,0], label="Laterals",zorder=latorder,
                             linewidth=linewidth, linestyle = V.LineStyle(9), color=latcolor)
 
             if self.usnode != [] and plotus :
@@ -3457,15 +3458,15 @@ class Sub(River):
         return fig, ax 
 
 
-    def CalculateQMetrics(self, Calib, stationname, startError, endError, GagueXS,
+    def CalculateQMetrics(self, Calib, stationname, startError, endError, gaugexs,
                           GaugeStart, GaugeEnd,Filter=False, fmt="%Y-%m-%d"):
 
         QRIM = pd.DataFrame()
         startError = dt.datetime.strptime(startError,fmt)
         endError = dt.datetime.strptime(endError,fmt)
         
-        # GaugeStart = Calib.GaugesTable[Calib.GaugesTable['xsid'] == GagueXS]['Qstart'].values[0]
-        # GaugeEnd = Calib.GaugesTable[Calib.GaugesTable['xsid'] == GagueXS]['Qend'].values[0]
+        # GaugeStart = Calib.GaugesTable[Calib.GaugesTable['xsid'] == gaugexs]['Qstart'].values[0]
+        # GaugeEnd = Calib.GaugesTable[Calib.GaugesTable['xsid'] == gaugexs]['Qend'].values[0]
         
         if Filter :
             # get the latest date of the filter date and the first date in the result
@@ -3487,10 +3488,10 @@ class Sub(River):
             QRIM['q'] = QRIM.loc[st2:end2,'q']
 
             # try:
-            #     sub.Resample(GagueXS, 'q', starti, endi, Delete=True)
+            #     sub.Resample(gaugexs, 'q', starti, endi, Delete=True)
             # except:
-            #     sub.Resample(GagueXS, 'q', starti, endi, Delete=False)
-            # QRIM['q']  = sub.ResampledQ[GagueXS][:]
+            #     sub.Resample(gaugexs, 'q', starti, endi, Delete=False)
+            # QRIM['q']  = sub.ResampledQ[gaugexs][:]
             # QRIM.index = pd.date_range(st2, end2)
 
         else:
@@ -3507,7 +3508,7 @@ class Sub(River):
             QRIM['q'] = QRIM.loc[st2:end2,'q']
 
             # old
-            # QRIM['q'] = sub.Result1D['q'][sub.Result1D['xs'] == GagueXS][sub.Result1D['hour'] == 24][:]
+            # QRIM['q'] = sub.Result1D['q'][sub.Result1D['xs'] == gaugexs][sub.Result1D['hour'] == 24][:]
             # QRIM.index = pd.date_range(st2, end2)
 
         rmse = round(Pf.RMSE(Qobs,QRIM.loc[st2:end2,'q'].tolist()),0)
@@ -3525,7 +3526,7 @@ class Sub(River):
         return rmse, kge, wb, nsehf, nse
     
     
-    def PlotWL(self, Calib, plotstart, plotend, GagueXS, stationname, Gaugename,
+    def PlotWL(self, Calib, plotstart, plotend, gaugexs, stationname, Gaugename,
                Filter = False, gaugecolor = "#DC143C", RIMcolor = "#004c99",
                linewidth=2, RIMorder=1, Gaugeorder=0, PlotGauge=True, fmt="%Y-%m-%d"):
         
@@ -3534,8 +3535,8 @@ class Sub(River):
         
         if PlotGauge:
             
-            GaugeStart = Calib.GaugesTable[Calib.GaugesTable['xsid'] == GagueXS]['WLstart']
-            GaugeEnd = Calib.GaugesTable[Calib.GaugesTable['xsid'] == GagueXS]['WLend']
+            GaugeStart = Calib.GaugesTable[Calib.GaugesTable['xsid'] == gaugexs]['WLstart']
+            GaugeEnd = Calib.GaugesTable[Calib.GaugesTable['xsid'] == gaugexs]['WLend']
             
             if len(GaugeStart.values) != 0:
                 print("The XS you provided does not exist in the GaugesTable")    
@@ -3558,15 +3559,15 @@ class Sub(River):
         these lines were made to only plot the gauge if existed inside the processed sub-basin
         """
         # extract the water levels at the gauge cross section
-        self.ExtractXS(GagueXS)
+        self.ExtractXS(gaugexs)
 
-        ax.plot(self.XSWaterLevel.loc[plotstart:plotend,GagueXS],label="RIM" ,
+        ax.plot(self.XSWaterLevel.loc[plotstart:plotend,gaugexs],label="RIM" ,
                  zorder=RIMorder, linewidth=linewidth, color = RIMcolor, linestyle=V.LineStyle(6))
         if PlotGauge:
             ax.plot(Calib.WLGauges.loc[plotstart:plotend,stationname],label='Gauge',
                      zorder = Gaugeorder, linewidth=linewidth, color = gaugecolor)
 
-        # ax1.plot(Sub2.XSWaterLevel.loc[plotstart:plotend,GagueXS],label="step-1" + str(GagueXS),
+        # ax1.plot(Sub2.XSWaterLevel.loc[plotstart:plotend,gaugexs],label="step-1" + str(gaugexs),
         #          zorder=3, linewidth=linewidth, color = 'grey')
 
         # else:
@@ -3592,13 +3593,13 @@ class Sub(River):
         return ax
 
     def CalculateWLMetrics(self, Calib, stationname, startError,  
-                           endError, GagueXS, Filter=False): #GaugeStart, GaugeEnd, 
+                           endError, gaugexs, Filter=False): #GaugeStart, GaugeEnd, 
 
         startError = dt.datetime.strptime(startError,"%Y-%m-%d")
         endError = dt.datetime.strptime(endError,"%Y-%m-%d")
         
-        GaugeStart = Calib.GaugesTable[Calib.GaugesTable['xsid'] == GagueXS]['WLstart'].values[0]
-        GaugeEnd = Calib.GaugesTable[Calib.GaugesTable['xsid'] == GagueXS]['WLend'].values[0]
+        GaugeStart = Calib.GaugesTable[Calib.GaugesTable['xsid'] == gaugexs]['WLstart'].values[0]
+        GaugeEnd = Calib.GaugesTable[Calib.GaugesTable['xsid'] == gaugexs]['WLend'].values[0]
         
         # if GaugeStart > plotstart and  GaugeStart > plotend:
         #    print("Out of Gauge dates") 
@@ -3623,10 +3624,10 @@ class Sub(River):
 
             # RIM
             # try:
-            #     sub.Resample(GagueXS, 'wl', River.DateToIndex(st2), River.DateToIndex(end2), Delete = True)
+            #     sub.Resample(gaugexs, 'wl', River.DateToIndex(st2), River.DateToIndex(end2), Delete = True)
             # except:
-            #     sub.Resample(GagueXS, 'wl', River.DateToIndex(st2), River.DateToIndex(end2), Delete = False)
-            # series1 = np.array(sub.ResampledWL[GagueXS])
+            #     sub.Resample(gaugexs, 'wl', River.DateToIndex(st2), River.DateToIndex(end2), Delete = False)
+            # series1 = np.array(sub.ResampledWL[gaugexs])
 
         else:
             st2 = max(GaugeStart,self.firstdayresults)
@@ -3637,14 +3638,14 @@ class Sub(River):
 
             # RIM
             ind = pd.date_range(self.firstdayresults, self.lastday + dt.timedelta(days=1), freq = 'h')[:-1]
-            mod = self.Result1D[self.Result1D['xs'] == GagueXS]#['q']#[sub.Result1D['hour'] == 24]
+            mod = self.Result1D[self.Result1D['xs'] == gaugexs]#['q']#[sub.Result1D['hour'] == 24]
             mod.index = ind
             mod = mod['wl'].resample('D').mean()
             mod = mod.loc[st2:end2]
 
             # RIM
-            # sub.Resample(GagueXS, 'wl', River.DateToIndex(st2), River.DateToIndex(end2), Delete = False)
-            # series1 = np.array(sub.ResampledWL[GagueXS])
+            # sub.Resample(gaugexs, 'wl', River.DateToIndex(st2), River.DateToIndex(end2), Delete = False)
+            # series1 = np.array(sub.ResampledWL[gaugexs])
         
         if len(obs) != len(mod) or len(mod) ==0:
             print("Availabel data for the gauge starts from " + str(GaugeStart)+ " To " + str(GaugeEnd))

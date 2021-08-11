@@ -149,10 +149,8 @@ class Interface(River):
         self.BCTable.columns = ['filename']
         l1 = len(prefix)
         l2 = len(suffix)
-        self.BCTable['id'] = [i[l1:len(i)-l2] for i in self.BCTable[self.BCTable.columns[0]]]
+        self.BCTable['id'] = [int(i[l1:len(i)-l2]) for i in self.BCTable[self.BCTable.columns[0]]]
         
-        # self.BCTable.columns = ["id"]
-        # self.BCTable['id'] = [int(i[7:]) for i in self.BCTable['id'].tolist()]
 
 
     def ReadBoundaryConditions(self, FromDay='', ToDay='', path='',

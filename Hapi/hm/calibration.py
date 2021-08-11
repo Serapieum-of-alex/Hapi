@@ -123,7 +123,7 @@ class Calibration(River):
         self.GaugesTable = pd.read_csv(Path)
 
 
-    def ReadObservedWL(self, Path, StartDate, EndDate, NoValue, # GaugesTable,
+    def ReadObservedWL(self, path, start, end, novalue, # GaugesTable,
                        column='oid'):
         """
         ============================================================================
@@ -154,7 +154,7 @@ class Calibration(River):
                 be the segment ID
         """
 
-        ind = pd.date_range(StartDate, EndDate)
+        ind = pd.date_range(start, end)
         columns = self.GaugesTable[column].tolist()
 
         WLGauges = pd.DataFrame(index = ind)
@@ -164,7 +164,7 @@ class Calibration(River):
         for i in range(len(columns)):
             if self.GaugesTable.loc[i,'waterlevel'] == 1:
                 name = self.GaugesTable.loc[i,column]
-                f = pd.read_csv(Path + str(int(name)) + ".txt",
+                f = pd.read_csv(path + str(int(name)) + ".txt",
                                delimiter = ",", header = None)
                 f[0] = f[0].map(datafn)
                 # sort by date as some values are missed up
@@ -175,7 +175,7 @@ class Calibration(River):
                 # reindex
                 f.index = list(range(len(f)))
                 # add datum and convert to meter
-                f.loc[f[1]!= NoValue,1] = (f.loc[f[1]!= NoValue,1] / 100) + self.GaugesTable.loc[i,'datum(m)']
+                f.loc[f[1]!= novalue,1] = (f.loc[f[1]!= novalue,1] / 100) + self.GaugesTable.loc[i,'datum(m)']
                 f = f.rename(columns={1:columns[i]})
 
                 # assign the values in the dateframe
@@ -183,7 +183,7 @@ class Calibration(River):
                 # use merge as there are some gaps in the middle
                 WLGauges = WLGauges.merge(f, on=0, how='left', sort=False)
 
-        WLGauges.replace(to_replace = np.nan, value = NoValue, inplace=True)
+        WLGauges.replace(to_replace = np.nan, value = novalue, inplace=True)
         WLGauges.index = ind
         del WLGauges[0]
         self.WLGauges = WLGauges
@@ -193,13 +193,13 @@ class Calibration(River):
         self.GaugesTable['WLend'] = 0
         for i in range(len(columns)):
             if self.GaugesTable.loc[i,'waterlevel'] == 1:
-                st1 = WLGauges[columns[i]][WLGauges[columns[i]] != NoValue].index[0]
-                end1 = WLGauges[columns[i]][WLGauges[columns[i]] != NoValue].index[-1]
+                st1 = WLGauges[columns[i]][WLGauges[columns[i]] != novalue].index[0]
+                end1 = WLGauges[columns[i]][WLGauges[columns[i]] != novalue].index[-1]
                 self.GaugesTable.loc[i,'WLstart'] = st1
                 self.GaugesTable.loc[i,'WLend'] = end1
 
 
-    def ReadObservedQ(self, Path, StartDate, EndDate, NoValue, column='oid'): #Gauges,
+    def ReadObservedQ(self, path, start, end, novalue, column='oid'): #Gauges,
         """
         ========================================================================
             ReadObservedQ(Gauges, Path, StartDate, EndDate, NoValue)
@@ -255,7 +255,7 @@ class Calibration(River):
 
         # self.QGaugesTable = GaugesTable
 
-        ind = pd.date_range(StartDate, EndDate)
+        ind = pd.date_range(start, end)
         QGauges = pd.DataFrame(index = ind)
         # ID = Gauges.columns[0]
         # columns = Gauges['gid'].tolist()
@@ -263,10 +263,10 @@ class Calibration(River):
             if self.GaugesTable.loc[i,'discharge'] == 1:
                 name = self.GaugesTable.loc[i,column]
                 try:
-                    QGauges.loc[:,int(name)] = np.loadtxt(Path +
+                    QGauges.loc[:,int(name)] = np.loadtxt(path +
                               str(int(name)) + '.txt') #,skiprows = 0
                 except:
-                    print(str(i) + "-" + Path + str(int(name)) + '.txt')
+                    print(str(i) + "-" + path + str(int(name)) + '.txt')
         self.QGauges = QGauges
 
         # Gauges = pd.DataFrame(index = Gauges['id'])
@@ -276,13 +276,13 @@ class Calibration(River):
         for i in range(len(self.GaugesTable)):
             if self.GaugesTable.loc[i,'discharge'] == 1:
                 ii = self.GaugesTable.loc[i,column]
-                st1 = QGauges[ii][QGauges[ii] != NoValue].index[0]
-                end1 = QGauges[ii][QGauges[ii] != NoValue].index[-1]
+                st1 = QGauges[ii][QGauges[ii] != novalue].index[0]
+                end1 = QGauges[ii][QGauges[ii] != novalue].index[-1]
                 self.GaugesTable.loc[i,'Qstart'] = st1
                 self.GaugesTable.loc[i,'Qend'] = end1
 
 
-    def ReadRRM(self, Path, StartDate, EndDate, column='oid'): #Qgauges,
+    def ReadRRM(self, path, start, end, column='oid'): #Qgauges,
         """
         ==============================================================
             ReadRRM(Qgauges, Path, StartDate, EndDate)
@@ -307,20 +307,20 @@ class Calibration(River):
 
         """
 
-        ind = pd.date_range(StartDate,EndDate)
+        ind = pd.date_range(start,end)
         QSWIM = pd.DataFrame(index = ind)
 
 
         for i in range(len(self.GaugesTable[column])):
             # read SWIM data
             # only at the begining to get the length of the time series
-            QSWIM.loc[:,int(self.GaugesTable.loc[i,column])] = np.loadtxt(Path +
+            QSWIM.loc[:,int(self.GaugesTable.loc[i,column])] = np.loadtxt(path +
                   str(int(self.GaugesTable.loc[i,column])) + '.txt')#,skiprows = 0
         self.QRRM = QSWIM
 
 
-    def ReadRIMQ(self, Path, StartDate, days, NoValue, AddHQ2=False, #, column='oid'
-                 Shift=False, ShiftSteps=0, column='oid'):
+    def ReadHMQ(self, path, start, days, novalue, addHQ2=False, #, column='oid'
+                 shift=False, shiftsteps=0, column='oid'):
         """
         ===============================================================
              ReadRIMQ(Qgauges, Path, StartDate, days, NoValue)
@@ -346,28 +346,28 @@ class Calibration(River):
             dataframe containing the hydrograph of sub-basins in the Qgauge entered dataframe.
 
         """
-        if AddHQ2 and self.version == 1:
+        if addHQ2 and self.version == 1:
             assert hasattr(self,"rivernetwork"), "please read the traceall file using the RiverNetwork method"
             assert hasattr(self, "RP"), "please read the HQ file first using ReturnPeriod method"
-        EndDate = StartDate + dt.timedelta(days = days-1)
-        ind = pd.date_range(StartDate,EndDate)
+        end = start + dt.timedelta(days = days-1)
+        ind = pd.date_range(start,end)
         QRIM = pd.DataFrame(index = ind, columns = self.GaugesTable.loc[self.GaugesTable['discharge']==1,column].tolist())
         # for RIM1.0 don't fill with -9 as the empty days will be filled with 0 so to get
         # the event days we have to filter 0 and -9
         if self.version == 1:
             QRIM.loc[:,:] = 0
         else:
-            QRIM.loc[:,:] = NoValue
+            QRIM.loc[:,:] = novalue
 
         # fill non modelled time steps with zeros
         for i in range(len(self.GaugesTable[column])):
-            f = np.loadtxt( Path + str(int(QRIM.columns[i])) + ".txt",
+            f = np.loadtxt( path + str(int(QRIM.columns[i])) + ".txt",
                        delimiter = ",")
             f1 = list(range(int(f[0,0]),int(f[-1,0])+1))
             f2 = list()
 
-            if AddHQ2 and self.version == 1:
-                USnode = self.rivernetwork.loc[np.where(self.rivernetwork['SubID'] == self.GaugesTable.loc[i,column])[0][0],'US']
+            if addHQ2 and self.version == 1:
+                USnode = self.rivernetwork.loc[np.where(self.rivernetwork['id'] == self.GaugesTable.loc[i,column])[0][0],'us']
                 CutValue = self.RP.loc[np.where(self.RP['node'] == USnode)[0][0],'HQ2']
 
 
@@ -378,13 +378,13 @@ class Calibration(River):
                     f2.append(f[np.where(f[:,0] == f1[j])[0][0],1])
                 else:
                     # if it does not exist put zero
-                    if AddHQ2 and self.version == 1:
+                    if addHQ2 and self.version == 1:
                         f2.append(CutValue)
                     else:
                         f2.append(0)
 
-            if Shift:
-                f2[ShiftSteps:-1] = f2[0:-(ShiftSteps+1)]
+            if shift:
+                f2[shiftsteps:-1] = f2[0:-(shiftsteps+1)]
 
             # QRIM.loc[:,QRIM.columns[i]].loc[ind[f1[0]-1]:ind[f1[-1]-1]] = f2
             QRIM.loc[ind[f1[0]-1]:ind[f1[-1]-1],QRIM.columns[i]] = f2
@@ -392,7 +392,7 @@ class Calibration(River):
         self.QRIM = QRIM[:]
 
 
-    def ReadRIMWL(self, Path, StartDate, days, NoValue, Shift=False, ShiftSteps=0,
+    def ReadHMWL(self, path, start, days, novalue, shift=False, shiftsteps=0,
                   column='oid'): #WLGaugesTable,
         """
         =============================================================================
@@ -420,14 +420,14 @@ class Calibration(River):
 
         """
 
-        EndDate = StartDate + dt.timedelta(days = days-1)
-        ind = pd.date_range(StartDate,EndDate)
+        end = start + dt.timedelta(days = days-1)
+        ind = pd.date_range(start,end)
 
-        WLRIM = pd.DataFrame(index = ind, columns = self.GaugesTable.loc[self.GaugesTable['waterlevel']==1,column].tolist()) #WLGaugesTable['id'].tolist()
-        WLRIM.loc[:,:] = NoValue
+        WLRIM = pd.DataFrame(index = ind, columns = self.GaugesTable.loc[self.GaugesTable['waterlevel']==1,column].tolist())
+        WLRIM.loc[:,:] = novalue
 
         for i in range(len(WLRIM.columns)):
-            f = np.loadtxt(Path + str(int(WLRIM.columns[i])) + ".txt",
+            f = np.loadtxt(path + str(int(WLRIM.columns[i])) + ".txt",
                        delimiter = ",")
 
             f1 = list(range(int(f[0,0]),int(f[-1,0])+1))
@@ -441,14 +441,14 @@ class Calibration(River):
                     # if it does not exist put zero
                     f2.append(0)
 
-            if Shift:
-                f2[ShiftSteps:-1] = f2[0:-(ShiftSteps+1)]
-                # f2[1:-1] = f2[0:-2]
+            if shift:
+                f2[shiftsteps:-1] = f2[0:-(shiftsteps+1)]
 
-            # WLRIM.loc[:,WLRIM.columns[i]].loc[ind[f1[0]-1]:ind[f1[-1]-1]] = f2
+            
             WLRIM.loc[ind[f1[0]-1]:ind[f1[-1]-1],WLRIM.columns[i]] = f2
 
         self.WLRIM = WLRIM[:]
+
 
     def ReadCalirationResult(self, SubID, Path = ''):
         """
@@ -775,9 +775,6 @@ class Calibration(River):
 
     def CalculateProfile(self, Segmenti, BedlevelDS, Manning, BC_slope):
         """
-        ===========================================================================
-            CalculateProfile(Segmenti, BedlevelDS, Manning)
-        ===========================================================================
         CalculateProfile method takes the river segment ID and the calibration parameters
         (last downstream cross-section bed level and the manning coefficient) and
         calculates the new profiles
