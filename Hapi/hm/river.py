@@ -17,10 +17,8 @@ hours = list(range(1, 25))
 
 
 class River:
-    """
-    ========================
-       River
-    ========================
+    """River.
+
     River class reads all the data of the river, (cross sections, simulation results)
     and analyse the results and do visualisation
 
@@ -32,7 +30,8 @@ class River:
                  rightovertopping_suffix="_right.txt", depthprefix="DepthMax",
                  durationprefix="Duration", returnperiod_prefix="ReturnPeriod",
                  compressed=True, onedresultpath='', twodresultpath='', fmt="%Y-%m-%d"):
-        """
+        """River.
+        
         to instantiate the river class you need to provide the following parameters
 
         Parameters
@@ -135,7 +134,8 @@ class River:
 
 
     def IndexToDate(self, index):
-        """
+        """IndexToDate.
+        
         IndexToDate takes an integer number and returns the date coresponding
         to this date based on a time series starting from the "start" attribute
         of  River object and for a length of the value of the "days" attribute
@@ -157,7 +157,8 @@ class River:
 
 
     def DateToIndex(self, date, fmt="%Y-%m-%d"):
-        """
+        """DateToIndex.
+        
         DateToIndex takes a date and returns a the order of the days in the
         time series. The time series starts from the value of the "start" for
         a length of "days" value
@@ -185,7 +186,8 @@ class River:
         
 
     def IndexToDateRRM(self, index):
-        """
+        """IndexToDateRRM.
+        
         IndexToDate takes an integer number and returns the date coresponding
         to this date based on a time series starting from the "start" attribute
         of  River object and for a length of the value of the "days" attribute
@@ -206,7 +208,8 @@ class River:
         return self.referenceindex.loc[index, 'date']
 
     def DateToIndexRRM(self, date, fmt="%Y-%m-%d"):
-        """
+        """DateToIndexRRM.
+        
         DateToIndex takes a date and returns a the order of the days in the
         time series. The time series starts from the value of the "start" for
         a length of "days" value
@@ -227,6 +230,20 @@ class River:
         return np.where(self.referenceindex['date'] == date)[0][0]+1
 
     def Read1DConfigFile(self, path):
+        """Read1DConfigFile.
+        
+        Read the configuration file
+        
+        Parameters
+        ----------
+        path : TYPE
+            DESCRIPTION.
+
+        Returns
+        -------
+        None.
+
+        """
         file = open(path)
         wholefile = file.readlines()
         file.close()
@@ -320,7 +337,9 @@ class River:
 
 
     def ReadCrossSections(self, path):
-        """
+        """ReadCrossSections.
+        
+        Read crossSections file
         
         CrossSections method reads the cross section data of the river and assign it
         to an attribute "Crosssections" of type dataframe
@@ -337,9 +356,11 @@ class River:
             self.xsname = self.crosssections['xsid'].tolist()
     
 
-    def ReadBoundaryConditions(self, FromDay='', ToDay='', path='', fmt="%Y-%m-%d",
+    def ReadBoundaryConditions(self, fromday='', today='', path='', fmt="%Y-%m-%d",
                                ds=False, dsbcpath=''):
-        """
+        """ReadBoundaryConditions.
+        
+        Read Boundary Conditions
 
         ReadBoundaryConditions method reads the BC files and since these files are separated each day is
         written in a file so the code is reading a lot of files, therefor you can specify
@@ -356,9 +377,9 @@ class River:
             
         Parameters
         ----------
-        1-FromDay : [integer], optional
+        1-fromday : [integer], optional
                 the day you want to read the result from, the first day is 1 not zero.The default is ''.
-        2-ToDay : [integer], optional
+        2-today : [integer], optional
                 the day you want to read the result to.
         4-path : [String], optional
             path to read the results from. The default is ''.
@@ -377,24 +398,24 @@ class River:
             self.usbcpath = path
                 
         if self.version < 4:
-            if FromDay == '':
-                FromDay = 1
-            if ToDay ==  '':
-                ToDay = len(self.referenceindex_results) - 1
+            if fromday == '':
+                fromday = 1
+            if today ==  '':
+                today = len(self.referenceindex_results) - 1
             
-            if type(FromDay) == str:
-                FromDay = dt.datetime.strptime(FromDay,fmt)
-                FromDay = np.where(self.referenceindex_results == FromDay)[0][0] + 1
+            if type(fromday) == str:
+                fromday = dt.datetime.strptime(fromday,fmt)
+                fromday = np.where(self.referenceindex_results == fromday)[0][0] + 1
                 
-            if type(ToDay) == str:
-                ToDay = dt.datetime.strptime(ToDay,fmt)
-                ToDay = np.where(self.referenceindex_results == ToDay)[0][0] + 1
+            if type(today) == str:
+                today = dt.datetime.strptime(today,fmt)
+                today = np.where(self.referenceindex_results == today)[0][0] + 1
                 
             
-            QBC = pd.DataFrame(index = self.referenceindex_results[FromDay-1:ToDay] ,columns = hours)
-            HBC = pd.DataFrame(index = self.referenceindex_results[FromDay-1:ToDay] ,columns = hours)
+            QBC = pd.DataFrame(index = self.referenceindex_results[fromday-1:today] ,columns = hours)
+            HBC = pd.DataFrame(index = self.referenceindex_results[fromday-1:today] ,columns = hours)
     
-            for i in self.Daylist[FromDay-1:ToDay]:
+            for i in self.Daylist[fromday-1:today]:
                 bc_q = np.loadtxt(self.usbcpath + str(self.id) + "-" + str(i) +'.txt',dtype = np.float16)
                 QBC.loc[self.referenceindex.loc[i,'date'],:]= bc_q[:,0].tolist()[0:bc_q.shape[0]:60]
                 HBC.loc[self.referenceindex.loc[i,'date'],:]= bc_q[:,1].tolist()[0:bc_q.shape[0]:60]
@@ -428,7 +449,10 @@ class River:
     
     
     def ReadSubDailyResults(self, startdate, enddate, fmt="%Y-%m-%d"):
-        """
+        """ReadSubDailyResults.
+        
+        Read Sub-Daily Results
+        
         Read1DResults1Min method is used by the sub sub-class, so most of the 
         parameters (xsname,...) are assigned to values after reading results
         with other methods in the sub class
@@ -518,18 +542,21 @@ class River:
         
             
     
-    def Read1DResult(self, Subid, FromDay ='' , ToDay = '', path = '', FillMissing = False):
-        """
+    def Read1DResult(self, Subid, fromday ='' , today = '', path = '', FillMissing = False):
+        """Read1DResult.
+        
+        Read-1D Result
+        
         Read1DResult method reads the 1D results and fill the missing days in the middle
 
         Parameters
         ----------
             1-Subid : [integer]
                 id of the sub-basin you want to read its data.
-            2-FromDay : [integer], optional
+            2-fromday : [integer], optional
                 the index of the day you want the data to start from. The default is empty.
                 means read everything
-            3-ToDay : [integer], optional
+            3-today : [integer], optional
                 the index of the day you want the data to end to. The default is empty.
                 means read everything
             4-path : [String], optional
@@ -543,7 +570,6 @@ class River:
                 the results read will be stored (as it is without any filter)
                 in the attribute "Result1D"
         """
-
         # if the path is not given try to read from the object predefined onedresultpath
         if path == '':
             path = self.onedresultpath
@@ -555,16 +581,16 @@ class River:
         days = list(set(data['day']))
         days.sort()
 
-        if FromDay != '':
-            assert  FromDay in days, "please use the GetDays method to select FromDay that exist in the data"
-        if ToDay != '':
-            assert ToDay in days, "please use the GetDays method to select FromDay that exist in the data"
+        if fromday != '':
+            assert  fromday in days, "please use the GetDays method to select fromday that exist in the data"
+        if today != '':
+            assert today in days, "please use the GetDays method to select fromday that exist in the data"
 
-        if FromDay != '':
-            data = data.loc[data['day'] >= FromDay,:]
+        if fromday != '':
+            data = data.loc[data['day'] >= fromday,:]
 
-        if ToDay != '':
-            data = data.loc[data['day'] <= ToDay]
+        if today != '':
+            data = data.loc[data['day'] <= today]
 
         data.index = list(range(0,len(data)))
 
@@ -641,7 +667,7 @@ class River:
     @staticmethod
     def Collect1DResults(path, FolderNames, Left, Right, Savepath, OneD,
                          fromf='', tof='', FilterbyName = False):
-        """
+        """Collect1DResults.
         
         Collect1DResults method reads the 1D separated result files and filter
         then between two number to remove any warmup period if exist then stack
@@ -681,7 +707,6 @@ class River:
             combined files will be written to the Savepath .
 
         """
-
         second = "=pd.DataFrame()"
         if fromf == '':
             fromf = 0
@@ -769,9 +794,9 @@ class River:
                 exec(var + ".to_csv(path ,index= None, sep = ' ', header = None)")
 
     @staticmethod
-    def ReadRRMResults(version, rrmreferenceindex, path, Nodeid, FromDay, ToDay,
+    def ReadRRMResults(version, rrmreferenceindex, path, nodeid, fromday, today,
                        date_format="%d_%m_%Y"):
-        """
+        """ReadRRMResults.
         
         ReadRRMResults is a static method to read the results of the rainfall-runoff
         model
@@ -782,9 +807,9 @@ class River:
             path to the result files.
         Nodeid : [Integer]
             the id given the the sub-basin .
-        FromDay : [integer], optional
+        fromday : [integer], optional
                 the day you want to read the result from, the first day is 1 not zero.The default is ''.
-        ToDay : [integer], optional
+        today : [integer], optional
                 the day you want to read the result to.
 
         Returns
@@ -793,44 +818,51 @@ class River:
             time series of the runoff .
 
         """
-
         if version < 3:
-            Q = pd.read_csv(path + "/" + str(Nodeid) + '.txt',header = None)
-            Q = Q.rename(columns = {0:Nodeid})
+            Q = pd.read_csv(path + "/" + str(nodeid) + '.txt') #,header = None
+            if len(Q.columns) > 2:
+                Q = Q.rename(columns = {Q.columns[1]:str(nodeid)+"-1",
+                                        Q.columns[2]:str(nodeid)+"-2"})
+            else:
+                Q = Q.rename(columns = {Q.columns[1]:str(nodeid)+"-1",
+                                        Q.columns[1]:str(nodeid)+"-1"})
+                
             Q.index = list(range(1,len(Q)+1))
 
-            if FromDay == '':
-                FromDay = 1
-            if ToDay == '':
-                ToDay = len(Q)
+            if fromday == '':
+                fromday = 1
+            if today == '':
+                today = len(Q)
 
-            Q = Q.loc[Q.index >= FromDay,:]
-            Q = Q.loc[Q.index <= ToDay]
+            Q = Q.loc[Q.index >= fromday,:]
+            Q = Q.loc[Q.index <= today]
         else:
-            Q = pd.read_csv(path + "/" + str(Nodeid) + '.txt',header = None, skiprows=1)
+            Q = pd.read_csv(path + "/" + str(nodeid) + '.txt',header = None, skiprows=1)
             Q.index = [dt.datetime.strptime(date,date_format) for date in Q[0]]
             del Q[0]
-            
             
             # convert the date into integer index
             s = np.where(rrmreferenceindex['date'] == Q.index[0])[0][0]+1
             e = np.where(rrmreferenceindex['date'] == Q.index[-1])[0][0]+1
             Q.index = list(range(s,e+1))
 
-            if FromDay == '':
-                FromDay = s
-            if ToDay == '':
-                ToDay = e
+            if fromday == '':
+                fromday = s
+            if today == '':
+                today = e
 
-            Q = Q.loc[Q.index >= FromDay,:]
-            Q = Q.loc[Q.index <= ToDay, :]
+            Q = Q.loc[Q.index >= fromday,:]
+            Q = Q.loc[Q.index <= today, :]
             
             Q = Q[1].to_frame()
-            Q = Q.rename(columns = {1:Nodeid})
+            Q = Q.rename(columns = {1:nodeid})
+            
         return Q
     
+    
     def kinematicwave(self, start='', end='', fmt="%Y-%m-%d"):
-        """
+        """kinematicwave.
+        
         kinematicwave apply the kinematic wave approximation of the shallow 
         water equation to the 1d river reach
 
@@ -873,6 +905,32 @@ class River:
 
     def preissmann(self, start='', end='', fmt="%Y-%m-%d", maxiteration=10,
                    beta=1, epsi=0.5, theta=0.5):
+        """preissmann.
+        
+        preissmann scheme solving the whole shallow water equation.
+
+        Parameters
+        ----------
+        start : TYPE, optional
+            DESCRIPTION. The default is ''.
+        end : TYPE, optional
+            DESCRIPTION. The default is ''.
+        fmt : TYPE, optional
+            DESCRIPTION. The default is "%Y-%m-%d".
+        maxiteration : TYPE, optional
+            DESCRIPTION. The default is 10.
+        beta : TYPE, optional
+            DESCRIPTION. The default is 1.
+        epsi : TYPE, optional
+            DESCRIPTION. The default is 0.5.
+        theta : TYPE, optional
+            DESCRIPTION. The default is 0.5.
+
+        Returns
+        -------
+        None.
+
+        """
 
         if start == '':
             start = self.start
@@ -909,7 +967,8 @@ class River:
 
 
     def storagecell(self, start='', end='', fmt="%Y-%m-%d"):
-        """
+        """storagecell.
+        
         kinematicwave apply the kinematic wave approximation of the shallow
         water equation to the 1d river reach
 
@@ -953,7 +1012,7 @@ class River:
                          xsbefore=10, xsafter=10, fmt="%Y-%m-%d %H:%M:%S", textlocation=2,
                          xaxislabelsize=15, yaxislabelsize=15, nxlabels=50, plotbanhfuldepth=False
                          ):
-        """
+        """animatefloodwave.
         
         animatefloodwave method animate 1d the flood wave 
 
@@ -969,7 +1028,6 @@ class River:
         None.
 
         """
-
         anim = V.river1d(self, start, end, interval=interval, xs=xs,
                                 xsbefore=xsbefore, xsafter=xsafter, fmt=fmt, textlocation=textlocation,
                                 xaxislabelsize=xaxislabelsize,
@@ -980,6 +1038,22 @@ class River:
         
 
     def SaveResult(self, path, fmt='%.3f'):
+        """SaveResult.
+        
+        Save Result 
+        
+        Parameters
+        ----------
+        path : TYPE
+            DESCRIPTION.
+        fmt : TYPE, optional
+            DESCRIPTION. The default is '%.3f'.
+
+        Returns
+        -------
+        None.
+
+        """
         for i in range(len(self.referenceindex)):
             name = str(self.referenceindex.loc[self.referenceindex.index[i], 'date'])[:10]
             # space is rows , time is columns
@@ -989,9 +1063,10 @@ class River:
     
     
     def Slope(self, path):
-        """
+        """Slope.
         
-
+        Slope
+        
         Parameters
         ----------
             1-path : [String]
@@ -1009,6 +1084,7 @@ class River:
         else:
             self.slope = pd.read_csv(path, delimiter = ",",header = None, skiprows=1)
             self.slope.columns = ['id','slope']
+
 
     def ReturnPeriod(self,path):
         """
@@ -2214,7 +2290,7 @@ class River:
         self.HQ = HQ[:,:]
 
 
-    def GetDays(self,FromDay,ToDay):
+    def GetDays(self,fromday,today):
         """
         
         GetDays method check if input days exist in the 1D result data
@@ -2225,9 +2301,9 @@ class River:
 
         Parameters
         ----------
-            1-FromDay : [integer]
+            1-fromday : [integer]
                 the day you want to read the result from.
-            2-ToDay : [integer]
+            2-today : [integer]
                 the day you want to read the result to.
 
         Returns
@@ -2244,11 +2320,11 @@ class River:
         days = list(set(data['day']))
         days.sort()
 
-        if FromDay not in days:
-            Alt1 = FromDay
+        if fromday not in days:
+            Alt1 = fromday
 
             stop = 0
-            # search for the FromDay in the days column
+            # search for the fromday in the days column
             while stop == 0:
             # for i in range(0,10):
                 try:
@@ -2261,8 +2337,8 @@ class River:
                         stop = 1
                     continue
 
-            Alt2 = FromDay
-            # FromDay =
+            Alt2 = fromday
+            # fromday =
             # search for closest later days
             stop = 0
             while stop == 0:
@@ -2278,24 +2354,24 @@ class River:
                     continue
 
             text = """"
-            the FromDay you entered does not exist in the data, and the closest day earlier than your input day is
+            the fromday you entered does not exist in the data, and the closest day earlier than your input day is
             """ + str(Alt1) + """  and the closest later day is """ + str(Alt2)
             print(text)
 
-            if abs(Alt1 - FromDay) > abs(Alt2 - FromDay):
+            if abs(Alt1 - fromday) > abs(Alt2 - fromday):
                 Alt1 = Alt2
         else:
-            print("FromDay you entered does exist in the data ")
+            print("fromday you entered does exist in the data ")
             # Alt1 = False
-            Alt1 = FromDay
+            Alt1 = fromday
 
 
-        # if ToDay does not exist in the results
-        if ToDay not in days:
-            Alt3 = ToDay
+        # if today does not exist in the results
+        if today not in days:
+            Alt3 = today
 
             stop = 0
-            # search for the ToDay in the days column
+            # search for the today in the days column
             while stop == 0:
             # for i in range(0,10):
                 try:
@@ -2308,8 +2384,8 @@ class River:
                         stop = 1
                     continue
 
-            Alt4 = ToDay
-            # FromDay =
+            Alt4 = today
+            # fromday =
             # search for closest later days
             stop = 0
             while stop == 0:
@@ -2326,17 +2402,17 @@ class River:
                     continue
             # Alt3 = [Alt3, Alt4]
             text = """"
-            the Today you entered does not exist in the data, and the closest day earlier than your input day is
+            the today you entered does not exist in the data, and the closest day earlier than your input day is
             """ + str(Alt3) + """  and the closest later day is """ + str(Alt4)
             print(text)
 
-            if abs(Alt3 - ToDay) > abs(Alt4 - ToDay):
+            if abs(Alt3 - today) > abs(Alt4 - today):
                 Alt3 = Alt4
 
         else:
-            print("ToDay you entered does exist in the data ")
+            print("today you entered does exist in the data ")
             # Alt3 = False
-            Alt3 = ToDay
+            Alt3 = today
 
 
         return Alt1, Alt3
@@ -2559,7 +2635,7 @@ class Sub(River):
         self.ExtractedValues = dict()
 
 
-    def Read1DResult(self, FromDay='', ToDay='', FillMissing=True,
+    def Read1DResult(self, fromday='', today='', FillMissing=True,
                      addHQ2=False, path='', xsid=''):
         """
         Read1DResult method reads the 1D (1D-2D coupled) result of the sub-basin the object is
@@ -2569,10 +2645,10 @@ class Sub(River):
 
         Parameters
         ----------
-            1-FromDay : [integer], optional
+            1-fromday : [integer], optional
                 the index of the day you want the data to start from. The default is empty.
                 means read everything
-            2-ToDay : [integer], optional
+            2-today : [integer], optional
                 the index of the day you want the data to end to. The default is empty.
                 means read everything
             3-FillMissing : [Bool], optional
@@ -2599,15 +2675,15 @@ class Sub(River):
         """
         # if the results are not read yet read it
         if not hasattr(self, "Result1D") :
-            River.Read1DResult(self,self.id, FromDay, ToDay, path = path, FillMissing = FillMissing)
+            River.Read1DResult(self,self.id, fromday, today, path = path, FillMissing = FillMissing)
 
-        if FromDay == '':
-            FromDay = self.Result1D.loc[0,'day']
-        if ToDay ==  '':
-            ToDay = self.Result1D.loc[len(self.Result1D)-1,'day']
+        if fromday == '':
+            fromday = self.Result1D.loc[0,'day']
+        if today ==  '':
+            today = self.Result1D.loc[len(self.Result1D)-1,'day']
 
-        start = self.IndexToDate(FromDay)
-        end = self.IndexToDate(ToDay+1)
+        start = self.IndexToDate(fromday)
+        end = self.IndexToDate(today+1)
 
         if not hasattr(self, "XSHydrographs") :
             self.XSHydrographs = pd.DataFrame(index = pd.date_range(start,end,freq = 'H')[:-1])
@@ -2746,9 +2822,9 @@ class Sub(River):
             self.NegQmin = f
 
 
-    def ReadRRMHydrograph(self, Nodeid, FromDay = '', ToDay = '',path = '',
-                          date_format="%d_%m_%Y"):
-        """
+    def ReadRRMHydrograph(self, station_id, fromday='', today='', path='',
+                          date_format="%d_%m_%Y", location=1):
+        """ReadRRMHydrograph.
         
         ReadHydrographs method reads the results of the Rainfall-runoff model
         (SWIM) for the given node id for a specific period.
@@ -2757,10 +2833,10 @@ class Sub(River):
         ----------
             1-Nodeid : [Integer]
                 DESCRIPTION.
-            2-FromDay : [Integer], optional
+            2-fromday : [Integer], optional
                 start day of the period you wanrt to read its results.
                 The default is [].
-            3-ToDay : [Integer], optional
+            3-today : [Integer], optional
                 end day of the period you wanrt to read its results.
                 The default is [].
 
@@ -2776,26 +2852,37 @@ class Sub(River):
 
         if path == '':
             path = self.rrmpath
+        
+        if location == 1:
+            
+            Q = self.ReadRRMResults(self.version, self.rrmreferenceindex,
+                                                   path, station_id, fromday, today,
+                                                   date_format)
+            
+            self.RRM[station_id] = Q.loc[:, station_id].tolist()
+            
+        else:
+            Q = self.ReadRRMResults(self.version, self.rrmreferenceindex,
+                                                   path, station_id, fromday, today,
+                                                   date_format)
+            
+            self.RRM.loc[:,[str(station_id)+"-1",str(station_id)+"-2"]] = Q.loc[:, [str(station_id)+"-1",str(station_id)+"-2"]]
 
-        self.RRM[Nodeid] = self.ReadRRMResults(self.version, self.rrmreferenceindex,
-                                               path, Nodeid, FromDay, ToDay,
-                                               date_format)[Nodeid].tolist()
+        if fromday == '':
+            fromday = 1
+        if today == '':
+            today = len(self.RRM[self.RRM.columns[0]])
 
-        if FromDay == '':
-            FromDay = 1
-        if ToDay == '':
-            ToDay = len(self.RRM[Nodeid])
-
-        start = self.rrmreferenceindex.loc[FromDay,'date']
-        end = self.rrmreferenceindex.loc[ToDay,'date']
+        start = self.rrmreferenceindex.loc[fromday,'date']
+        end = self.rrmreferenceindex.loc[today,'date']
 
 
         self.RRM.index = pd.date_range(start, end, freq = 'D')
         # get the simulated hydrograph and add the cutted HQ2
 
 
-    def Resample(self, xsid, ColumnName, FromDay='', ToDay = '', Delete=False):
-        """
+    def Resample(self, xsid, ColumnName, fromday='', today = '', Delete=False):
+        """Resample.
         
         Resample method extract the value at the last hour of the dat [hour == 24]
         from the 1D Result  file, for the discharge, water level, and water depth.
@@ -2808,9 +2895,9 @@ class Sub(River):
             the column name you want to resample in the results1D. ColumnName
             could be 'q' for discharge, 'wl' for water level, and 'h' for water
             depth.
-        FromDay : [integer], optional
+        fromday : [integer], optional
             starting day. The default is ''.
-        ToDay : [integer], optional
+        today : [integer], optional
             end day. The default is ''.
         Delete : [boolen], optional
             to delete the previously resampled data frame to create another one.
@@ -2826,18 +2913,18 @@ class Sub(River):
         """
         assert hasattr(self,"Result1D") , "please read the 1D results"
 
-        if FromDay == '':
-            FromDay = self.Result1D.loc[0,'day']
-        if ToDay ==  '':
-            ToDay = self.Result1D.loc[len(self.Result1D)-1,'day']
+        if fromday == '':
+            fromday = self.Result1D.loc[0,'day']
+        if today ==  '':
+            today = self.Result1D.loc[len(self.Result1D)-1,'day']
 
-        # start = self.IndexToDate(FromDay)
-        # end = self.IndexToDate(ToDay)
+        # start = self.IndexToDate(fromday)
+        # end = self.IndexToDate(today)
 
-        # start = self.referenceindex.loc[FromDay,'date']
-        # end = self.referenceindex.loc[ToDay,'date']
+        # start = self.referenceindex.loc[fromday,'date']
+        # end = self.referenceindex.loc[today,'date']
 
-        ind = pd.date_range(self.IndexToDate(FromDay), self.IndexToDate(ToDay), freq = 'D')
+        ind = pd.date_range(self.IndexToDate(fromday), self.IndexToDate(today), freq = 'D')
 
         if ColumnName == 'q' and not hasattr(self,"ResampledQ"):
             self.ResampledQ = pd.DataFrame(index=ind)
@@ -2858,7 +2945,7 @@ class Sub(River):
                 del self.ResampledH
 
         Q = self.Result1D[self.Result1D['xs'] == xsid][self.Result1D['hour'] == 24]
-        Q = Q[ColumnName][self.Result1D['day'] >= FromDay][self.Result1D['day'] <= ToDay]
+        Q = Q[ColumnName][self.Result1D['day'] >= fromday][self.Result1D['day'] <= today]
 
         # self.Q = Q
         if ColumnName == 'q':
@@ -2996,11 +3083,11 @@ class Sub(River):
         self.AllOvertoppingVSTime.loc[:,'Overtopping'] = (self.DetailedOvertoppingLeft.loc[eventdays, 'sum'] + self.DetailedOvertoppingRight.loc[eventdays, 'sum']).tolist()
         self.AllOvertoppingVSTime.loc[:,'date'] = (self.referenceindex.loc[eventdays[0]:eventdays[-1],'date']).tolist()
     # def Read1DResult1Donly(self,path):
-        # River.Read1DResult(self,self.id, FromDay, ToDay, FillMissing)
+        # River.Read1DResult(self,self.id, fromday, today, FillMissing)
 
 
     def SaveHydrograph(self, xsid, path='', Option=1):
-        """
+        """Save Hydrograph.
         
         SaveHydrograph method saves the hydrograph of any cross-section in
         the segment.
@@ -3021,7 +3108,6 @@ class Sub(River):
         None.
 
         """
-
         if path == '' :
             assert hasattr(self, 'CustomizedRunspath'), "please enter the value of the CustomizedRunspath or use the path argument to specify where to save the file"
             path = self.CustomizedRunspath
@@ -3093,15 +3179,15 @@ class Sub(River):
 
         return fig, ax
 
-    def ReadUSHydrograph(self, FromDay='', ToDay='', path='',
+    def ReadUSHydrograph(self, fromday='', today='', path='',
                           date_format="'%Y-%m-%d'"):
         """
 
         Parameters
         ----------
-        1-FromDay : [integer], optional
+        1-fromday : [integer], optional
                 the day you want to read the result from, the first day is 1 not zero.The default is ''.
-        2-ToDay : [integer], optional
+        2-today : [integer], optional
                 the day you want to read the result to.
         3-path : [String], optional
             path to read the results from. The default is ''.
@@ -3126,29 +3212,29 @@ class Sub(River):
                 for i in range(len(self.usnode)):
                     Nodeid = self.usnode[i]
                     self.USHydrographs[Nodeid]  = self.ReadRRMResults(self.version, self.rrmreferenceindex,
-                                                                    path, Nodeid, FromDay, ToDay,
+                                                                    path, Nodeid, fromday, today,
                                                                     date_format)[Nodeid]
                     
             #there is one upstream segment
         elif self.usnode != []:
             Nodeid = self.usnode[0]
             self.USHydrographs[Nodeid] = self.ReadRRMResults(self.version, self.rrmreferenceindex,
-                                                                   path, Nodeid, FromDay, ToDay,
+                                                                   path, Nodeid, fromday, today,
                                                                     date_format)[Nodeid]
         else:
             print("the Segment Does not have any Upstream Segments")
             return
         
         self.USHydrographs['total'] = self.USHydrographs.sum(axis=1)
-        if FromDay == '':
-            # FromDay = 1
-            FromDay = self.USHydrographs.index[0]
-        if ToDay == '':
-            # ToDay = len(self.USHydrographs[Nodeid])
-            ToDay = self.USHydrographs.index[-1]
+        if fromday == '':
+            # fromday = 1
+            fromday = self.USHydrographs.index[0]
+        if today == '':
+            # today = len(self.USHydrographs[Nodeid])
+            today = self.USHydrographs.index[-1]
 
-        start = self.referenceindex.loc[FromDay,'date']
-        end = self.referenceindex.loc[ToDay,'date']
+        start = self.referenceindex.loc[fromday,'date']
+        end = self.referenceindex.loc[today,'date']
 
         self.USHydrographs.index = pd.date_range(start, end, freq = 'D')
 
@@ -3207,7 +3293,7 @@ class Sub(River):
 
 
 
-    def GetFlow(self, IF, FromDay='', ToDay='', date_format="%d_%m_%Y"):
+    def GetFlow(self, IF, fromday='', today='', date_format="%d_%m_%Y"):
         """
 
         Parameters
@@ -3217,9 +3303,9 @@ class Sub(River):
             boundary conditions first.
         id : [Integer]
             the id of the segment you want to extract the laterals for.
-        FromDay : [string], optional
+        fromday : [string], optional
             the starting day. The default is ''.
-        ToDay : [string], optional
+        today : [string], optional
             the ending day. The default is ''.
         date_format : [string], optional
             the format of the given dates. The default is "%d_%m_%Y".
@@ -3235,15 +3321,15 @@ class Sub(River):
         assert hasattr(IF, "BC"), "the boundary condition does not exist you have to read it first"
         assert hasattr(IF, "Laterals"), "the Laterals does not exist you have to read it first"
 
-        if FromDay == '':
-            FromDay = IF.BC.index[0]
+        if fromday == '':
+            fromday = IF.BC.index[0]
         else:
-            FromDay = dt.datetime.strptime(FromDay,date_format)
+            fromday = dt.datetime.strptime(fromday,date_format)
 
-        if ToDay == '':
-            ToDay = IF.BC.index[-1]
+        if today == '':
+            today = IF.BC.index[-1]
         else:
-            ToDay = dt.datetime.strptime(ToDay,date_format)
+            today = dt.datetime.strptime(today,date_format)
         
         # get the id of the boundary condition
         xs_as_set = set(self.xsname)
@@ -3255,17 +3341,17 @@ class Sub(River):
         elif len(bcids) > 1:
             assert False, "There are more than one BC for this Sub-basin"
         else:
-            self.BC = IF.BC.loc[FromDay:ToDay,bcids[0]].to_frame()
+            self.BC = IF.BC.loc[fromday:today,bcids[0]].to_frame()
             
         
         self.LateralsTable = [value for value in self.xsname if value in IF.LateralsTable['xsid'].tolist()]
 
         if len(self.LateralsTable) > 0:
-            self.Laterals = pd.DataFrame(index = pd.date_range(FromDay, ToDay, freq='D'),
+            self.Laterals = pd.DataFrame(index = pd.date_range(fromday, today, freq='D'),
                                          columns=self.LateralsTable)
 
             for i in self.LateralsTable:
-                self.Laterals.loc[:,i] = IF.Laterals.loc[FromDay:ToDay,i]
+                self.Laterals.loc[:,i] = IF.Laterals.loc[fromday:today,i]
 
             self.Laterals['total'] = self.Laterals.sum(axis=1)
 

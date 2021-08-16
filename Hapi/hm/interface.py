@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Created on Wed Mar  3 12:40:23 2021
 
@@ -9,20 +8,19 @@ import datetime as dt
 from Hapi.hm.river import River
 
 class Interface(River):
-    """
-    ==================================
-        Interface(River)
-    ==================================
+    """Interface(River).
+    
     Interface between the Rainfall runoff model and the Hydraulic model
 
-    Methods:
+    Methods
+    -------
         1- ReadLateralsTable
         2- ReadLaterals
         3- ReadBoundaryConditionsTable
         4- ReadBoundaryConditions
         5- ListAttributes
     """
-
+    
     def __init__(self, name, version=3, start = "1952-1-1", days =36890,):
         self.name = name
         self.version = version
@@ -34,10 +32,8 @@ class Interface(River):
         pass
 
     def ReadLateralsTable(self, Path, prefix='lf_xsid', suffix='.txt'):
-        """
-        ===============================================================
-               ReadLateralsTable(Path)
-        ===============================================================
+        """ReadLateralsTable.
+       
         ReadLateralsTable method reads the laterals file
             laterals file : file contains the xsid of the cross-sections that
             has laterals
@@ -76,12 +72,10 @@ class Interface(River):
 
     def ReadLaterals(self, FromDay = '', ToDay = '', Path = '',
                           date_format="'%Y-%m-%d'"):
-        """
-        =======================================================================
-            ReadUSHydrograph(FromDay = '', ToDay = '', Path = '',
-                                date_format="'%Y-%m-%d'")
-        =======================================================================
-
+        """ReadUSHydrograph.
+        
+        read the upstream hydrograph 
+        
         Parameters
         ----------
         1-FromDay : [integer], optional
@@ -127,7 +121,8 @@ class Interface(River):
         self.Laterals.index = pd.date_range(start, end, freq = 'D')
 
     def ReadBoundaryConditionsTable(self, path, prefix='bc_xsid', suffix='.txt'):
-        """
+        """ReadBoundaryConditionsTable.
+        
         ReadLateralsTable method reads the laterals file
             laterals file : file contains the xsid of the cross-sections that
             has laterals
@@ -155,11 +150,9 @@ class Interface(River):
 
     def ReadBoundaryConditions(self, FromDay='', ToDay='', path='',
                           date_format="'%Y-%m-%d'"):
-        """
-        =======================================================================
-            ReadUSHydrograph(FromDay = '', ToDay = '', Path = '',
-                                date_format="'%Y-%m-%d'")
-        =======================================================================
+        """ReadUSHydrograph.
+        
+        Read the boundary condition
 
         Parameters
         ----------
@@ -208,10 +201,10 @@ class Interface(River):
 
 
     def ListAttributes(self):
-        """
+        """ListAttributes.
+        
         Print Attributes List
         """
-
         print('\n')
         print('Attributes List of: ' + repr(self.__dict__['name']) + ' - ' + self.__class__.__name__ + ' Instance\n')
         self_keys = list(self.__dict__.keys())
