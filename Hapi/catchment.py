@@ -10,6 +10,7 @@ __name__ = 'catchment'
 import math
 import numpy as np
 import pandas as pd
+import geopandas as gpd
 import datetime as dt
 import os
 import gdal
@@ -51,16 +52,16 @@ class Catchment:
         16-SaveResults
     """
 
-    def __init__(self, name, StartDate, EndDate, fmt="%Y-%m-%d", SpatialResolution = 'Lumped',
+    def __init__(self, name, startdata, enddate, fmt="%Y-%m-%d", SpatialResolution = 'Lumped',
                  TemporalResolution = "Daily", RouteRiver="Muskingum"):
         """
         Parameters
         ----------
         name : [str]
             Name of the Catchment.
-        StartDate : [str]
+        startdata : [str]
             starting date.
-        EndDate : [str]
+        enddate : [str]
             end date.
         fmt : [str], optional
             format of the given date. The default is "%Y-%m-%d".
@@ -76,8 +77,8 @@ class Catchment:
         """
 
         self.name = name
-        self.StartDate = dt.datetime.strptime(StartDate,fmt)
-        self.EndDate = dt.datetime.strptime(EndDate,fmt)
+        self.startdata = dt.datetime.strptime(startdata,fmt)
+        self.enddate = dt.datetime.strptime(enddate,fmt)
         self.SpatialResolution = SpatialResolution
         self.TemporalResolution = TemporalResolution
         self.Parameters = None
@@ -92,11 +93,11 @@ class Catchment:
         if TemporalResolution == "Daily":
             self.dt = 1 #24
             self.conversionfactor = conversionfactor * 1
-            self.Index = pd.date_range(self.StartDate, self.EndDate, freq = "D" )
+            self.Index = pd.date_range(self.startdata, self.enddate, freq="D")
         elif TemporalResolution == "Hourly":
             self.dt = 1  # 24
             self.conversionfactor = conversionfactor * 1/24
-            self.Index = pd.date_range(self.StartDate, self.EndDate, freq = "H" )
+            self.Index = pd.date_range(self.startdata, self.enddate, freq = "H" )
         else:
             #TODO calculate the temporal resolution factor
             # q mm , area sq km  (1000**2)/1000/f/24/60/60 = 1/(3.6*f)
@@ -106,7 +107,8 @@ class Catchment:
         self.RouteRiver = RouteRiver
         pass
 
-    def ReadRainfall(self,Path):
+
+    def ReadRainfall(self, Path, start='', end='', fmt=''):
         """
         Parameters
         ----------
@@ -126,13 +128,14 @@ class Catchment:
             # check wether the folder has the rasters or not
             assert len(os.listdir(Path)) > 0, Path+" folder you have provided is empty"
             # read data
-            self.Prec = Raster.ReadRastersFolder(Path)
+            self.Prec = Raster.ReadRastersFolder(Path, start=start, end=end, fmt=fmt)
             self.TS = self.Prec.shape[2] + 1 # no of time steps =length of time series +1
             assert type(self.Prec) == np.ndarray, "array should be of type numpy array"
+
             print("Rainfall data are read successfully")
 
 
-    def ReadTemperature(self,Path, ll_temp=None):
+    def ReadTemperature(self, Path, ll_temp=None, start='', end='', fmt=''):
         """
         Parameters
         ----------
@@ -153,7 +156,7 @@ class Catchment:
             # check wether the folder has the rasters or not
             assert len(os.listdir(Path)) > 0, Path+" folder you have provided is empty"
             # read data
-            self.Temp = Raster.ReadRastersFolder(Path)
+            self.Temp = Raster.ReadRastersFolder(Path, start=start, end=end, fmt=fmt)
             assert type(self.Temp) == np.ndarray, "array should be of type numpy array"
 
             if ll_temp is None:
@@ -166,7 +169,7 @@ class Catchment:
             print("Temperature data are read successfully")
 
 
-    def ReadET(self,Path):
+    def ReadET(self, Path, start='', end='', fmt=''):
         """
         Parameters
         ----------
@@ -187,7 +190,7 @@ class Catchment:
             # check wether the folder has the rasters or not
             assert len(os.listdir(Path)) > 0, Path+" folder you have provided is empty"
             # read data
-            self.ET = Raster.ReadRastersFolder(Path)
+            self.ET = Raster.ReadRastersFolder(Path, start=start, end=end, fmt=fmt)
             assert type(self.ET) == np.ndarray, "array should be of type numpy array"
             print("Potential Evapotranspiration data are read successfully")
 
@@ -228,6 +231,10 @@ class Catchment:
         # check flow accumulation input raster
         self.NoDataValue = FlowAcc.GetRasterBand(1).GetNoDataValue()
         self.FlowAccArr = FlowAcc.ReadAsArray()
+
+        # check if the flow acc array is integer convert it to float
+        if self.FlowAccArr.dtype == 'int':
+            self.FlowAccArr = self.FlowAccArr.astype(float)
 
         for i in range(self.rows):
             for j in range(self.cols):
@@ -513,7 +520,8 @@ class Catchment:
         assert np.shape(self.data)[1] == 3 or np.shape(self.data)[1] == 4," meteorological data should be of length at least 3 (prec, ET, temp) or 4(prec, ET, temp, tm) "
         print("Lumped Model inputs are read successfully")
 
-    def ReadGaugeTable(self, Path, FlowaccPath=''):
+
+    def ReadGaugeTable(self, Path, FlowaccPath='', fmt="%Y-%m"):
         """
         ReadGaugeTable reads the table where the data about the gauges are listed
         [x coordinate, y coordinate, 'area ratio', 'weight'], the coordinates are
@@ -534,19 +542,29 @@ class Catchment:
 
         """
         # read the gauge table
-        self.GaugesTable = pd.read_csv(Path)
+        if Path.endswith('.geojson'):
+            self.GaugesTable = gpd.read_file(Path, driver="GeoJSON")
+        else:
+            self.GaugesTable = pd.read_csv(Path)
         col_list = self.GaugesTable.columns.tolist()
+
+        if 'start' in col_list:
+            for i in range(len(self.GaugesTable)):
+                self.GaugesTable.loc[i,'start'] = dt.datetime.strptime(self.GaugesTable.loc[i,'start']
+                                                                       ,fmt)
+                self.GaugesTable.loc[i, 'end'] = dt.datetime.strptime(self.GaugesTable.loc[i, 'end']
+                                                                         , fmt)
         if FlowaccPath != '' and 'cell_row' not in col_list:
             # if hasattr(self, 'FlowAcc'):
             FlowAcc = gdal.Open(FlowaccPath)
             # calculate the nearest cell to each station
-            self.GaugesTable.loc[:,["cell_row","cell_col"]] = GC.NearestCell(FlowAcc,self.GaugesTable[['id','x','y','weight']][:])
+            self.GaugesTable.loc[:,["cell_row","cell_col"]] = GC.NearestCell(FlowAcc,self.GaugesTable[['id','x','y']][:]) #,'weight'
 
         print("Gauge Table is read successfully")
 
 
     def ReadDischargeGauges(self, Path, delimiter=",", column='id',fmt="%Y-%m-%d",
-                            Split=False, Date1='', Date2=''):
+                            Split=False, Date1='', Date2='', readfrom=''):
         """
         ReadDischargeGauges method read the gauge discharge data, discharge of
         each gauge has to be stored separetly in a file, and the name of the file
@@ -578,9 +596,9 @@ class Catchment:
         """
 
         if self.TemporalResolution == "Daily":
-            ind = pd.date_range(self.StartDate, self.EndDate, freq="D")
+            ind = pd.date_range(self.startdata, self.enddate, freq="D")
         else:
-            ind = pd.date_range(self.StartDate, self.EndDate, freq="H")
+            ind = pd.date_range(self.startdata, self.enddate, freq="H")
 
         if self.SpatialResolution == "Distributed":
             assert hasattr(self, 'GaugesTable'), 'please read the gauges table first'
@@ -589,16 +607,20 @@ class Catchment:
 
             for i in range(len(self.GaugesTable)):
                 name = self.GaugesTable.loc[i,'id']
-                f = pd.read_csv(Path + str(name) + '.csv', header=0, index_col=0, delimiter=delimiter)# ,#delimiter="\t", skiprows=11,
+                if readfrom != '':
+                    f = pd.read_csv(Path + str(name) + '.csv', index_col=0, delimiter=delimiter,
+                                    skiprows=readfrom)# ,#delimiter="\t"
+                else:
+                    f = pd.read_csv(Path + str(name) + '.csv', header=0, index_col=0, delimiter=delimiter)
 
                 f.index = [ dt.datetime.strptime(i,fmt) for i in f.index.tolist()]
 
-                self.QGauges[int(name)] = f.loc[self.StartDate:self.EndDate,f.columns[0]]
+                self.QGauges[int(name)] = f.loc[self.startdata:self.enddate,f.columns[-1]]
         else:
             self.QGauges = pd.DataFrame(index=ind)
             f = pd.read_csv(Path, header=0, index_col=0, delimiter=delimiter)# ,#delimiter="\t", skiprows=11,
             f.index = [ dt.datetime.strptime(i,fmt) for i in f.index.tolist()]
-            self.QGauges[f.columns[0]] = f.loc[self.StartDate:self.EndDate,f.columns[0]]
+            self.QGauges[f.columns[0]] = f.loc[self.startdata:self.enddate,f.columns[0]]
 
 
         if Split:
@@ -718,15 +740,16 @@ class Catchment:
             if CalculateMetrics:
                 index = ['RMSE', 'NSE', 'NSEhf', 'KGE', 'WB','Pearson-CC', 'R2']
                 self.Metrics = pd.DataFrame(index = index)
-            if CalculateMetrics:
-                    Qobs = self.QGauges.loc[:,gaugeid]
-                    self.Metrics.loc['RMSE',gaugeid] = round(PC.RMSE(Qobs, Qsim),3)
-                    self.Metrics.loc['NSE',gaugeid] = round(PC.NSE(Qobs, Qsim),3)
-                    self.Metrics.loc['NSEhf',gaugeid] = round(PC.NSEHF(Qobs, Qsim),3)
-                    self.Metrics.loc['KGE',gaugeid] = round(PC.KGE(Qobs, Qsim),3)
-                    self.Metrics.loc['WB',gaugeid] = round(PC.WB(Qobs, Qsim),3)
-                    self.Metrics.loc['Pearson-CC',gaugeid] = round(PC.PearsonCorre(Qobs, Qsim),3)
-                    self.Metrics.loc['R2',gaugeid] = round(PC.R2(Qobs, Qsim),3)
+
+            # if CalculateMetrics:
+                Qobs = self.QGauges.loc[:,gaugeid]
+                self.Metrics.loc['RMSE',gaugeid] = round(PC.RMSE(Qobs, Qsim),3)
+                self.Metrics.loc['NSE',gaugeid] = round(PC.NSE(Qobs, Qsim),3)
+                self.Metrics.loc['NSEhf',gaugeid] = round(PC.NSEHF(Qobs, Qsim),3)
+                self.Metrics.loc['KGE',gaugeid] = round(PC.KGE(Qobs, Qsim),3)
+                self.Metrics.loc['WB',gaugeid] = round(PC.WB(Qobs, Qsim),3)
+                self.Metrics.loc['Pearson-CC',gaugeid] = round(PC.PearsonCorre(Qobs, Qsim),3)
+                self.Metrics.loc['R2',gaugeid] = round(PC.R2(Qobs, Qsim),3)
 
 
     def PlotHydrograph(self, plotstart, plotend, gaugei, Hapicolor="#004c99",
@@ -839,11 +862,11 @@ class Catchment:
         return fig, ax
 
 
-    def PlotDistributedResults(self, StartDate, EndDate, fmt="%Y-%m-%d", Option = 1,
+    def PlotDistributedResults(self, startdata, enddate, fmt="%Y-%m-%d", Option = 1,
                          Gauges=False,**kwargs):
         """
          =============================================================================
-           PlotDistributedResults(StartDate, EndDate, fmt="%Y-%m-%d", Option = 1, Gauges=False,
+           PlotDistributedResults(startdata, enddate, fmt="%Y-%m-%d", Option = 1, Gauges=False,
                             TicksSpacing = 2, Figsize=(8,8), PlotNumbers=True,
                             NumSize= 8, Title = 'Total Discharge',titlesize = 15, Backgroundcolorthreshold=None,
                             cbarlabel = 'Discharge m3/s', cbarlabelsize = 12, textcolors=("white","black"),
@@ -858,9 +881,9 @@ class Catchment:
 
         Parameters
         ----------
-        StartDate : [str]
+        startdata : [str]
             starting date
-        EndDate : [str]
+        enddate : [str]
             end date
         fmt : [str]
             format of the gicen date. The default is "%Y-%m-%d"
@@ -937,11 +960,11 @@ class Catchment:
         animation.FuncAnimation.
 
         """
-        StartDate = dt.datetime.strptime(StartDate,fmt)
-        EndDate = dt.datetime.strptime(EndDate,fmt)
+        startdata = dt.datetime.strptime(startdata,fmt)
+        enddate = dt.datetime.strptime(enddate,fmt)
 
-        starti = np.where(self.Index == StartDate)[0][0]
-        endi = np.where(self.Index == EndDate)[0][0]
+        starti = np.where(self.Index == startdata)[0][0]
+        endi = np.where(self.Index == enddate)[0][0]
 
         if Option == 1:
             self.Qtot[self.FlowAccArr == self.NoDataValue,:] = np.nan
@@ -1023,11 +1046,11 @@ class Catchment:
         Vis.SaveAnimation(self.anim, VideoFormat=VideoFormat,Path=Path,SaveFrames=SaveFrames)
 
 
-    def SaveResults(self, FlowAccPath='', Result=1, StartDate='', EndDate='',
+    def SaveResults(self, FlowAccPath='', Result=1, startdata='', enddate='',
                     Path='', Prefix='', fmt="%Y-%m-%d"):
         """
         =========================================================================
-        SaveResults(FlowAccPath, Result=1, StartDate='', EndDate='',
+        SaveResults(FlowAccPath, Result=1, startdata='', enddate='',
                     Path='', Prefix='', fmt="%Y-%m-%d")
         =========================================================================
         SaveResults save the results into rasters
@@ -1041,9 +1064,9 @@ class Catchment:
             the lower zone discharge, 4 for the snow pack, 5 for the soil
             moisture, 6 upper zone, 7 for the lower zone, 8 for the water content.
             The default is 1.
-        StartDate : [str], optional
+        startdata : [str], optional
             start date. The default is ''.
-        EndDate : [str], optional
+        enddate : [str], optional
             end date. The default is ''.
         Path : [str], optional
             PAth to the directory where you want to save the results. The default is ''.
@@ -1057,18 +1080,18 @@ class Catchment:
         None.
 
         """
-        if StartDate == '' :
-            StartDate = self.Index[0]
+        if startdata == '' :
+            startdata = self.Index[0]
         else:
-            StartDate = dt.datetime.strptime(StartDate,fmt)
+            startdata = dt.datetime.strptime(startdata,fmt)
 
-        if EndDate == '' :
-            EndDate = self.Index[-1]
+        if enddate == '' :
+            enddate = self.Index[-1]
         else:
-            EndDate = dt.datetime.strptime(EndDate,fmt)
+            enddate = dt.datetime.strptime(enddate,fmt)
 
-        starti = np.where(self.Index == StartDate)[0][0]
-        endi = np.where(self.Index == EndDate)[0][0]+1
+        starti = np.where(self.Index == startdata)[0][0]
+        endi = np.where(self.Index == enddate)[0][0]+1
 
         if self.SpatialResolution == "Distributed":
             assert FlowAccPath != '', "Please enter the  FlowAccPath parameter to the SaveResults method"
@@ -1100,7 +1123,7 @@ class Catchment:
             elif Result ==8:
                 Raster.RastersLike(src,self.statevariables[:,:,starti:endi,4],names)
         else:
-            ind = pd.date_range(StartDate,EndDate,freq='D')
+            ind = pd.date_range(startdata,enddate,freq='D')
             data = pd.DataFrame(index = ind)
 
             data['date'] = ["'" + str(i)[:10] + "'" for i in data.index]
@@ -1162,20 +1185,20 @@ class Lake():
         3- ReadLumpedModel
     """
 
-    def __init__(self, StartDate='', EndDate='', fmt="%Y-%m-%d",
+    def __init__(self, startdata='', enddate='', fmt="%Y-%m-%d",
                  TemporalResolution="Daily", Split=False):
         """
         =========================================================================
-            Lake(StartDate='', EndDate='', fmt="%Y-%m-%d",
+            Lake(startdata='', enddate='', fmt="%Y-%m-%d",
                          TemporalResolution="Daily", Split=False)
         =========================================================================
         Lake class for lake simulation
 
         Parameters
         ----------
-        StartDate : [str], optional
+        startdata : [str], optional
             start date. The default is ''.
-        EndDate : [str], optional
+        enddate : [str], optional
             end date. The default is ''.
         fmt : [str], optional
             date format. The default is "%Y-%m-%d".
@@ -1191,13 +1214,13 @@ class Lake():
         """
 
         self.Split = Split
-        self.StartDate = dt.datetime.strptime(StartDate,fmt)
-        self.EndDate = dt.datetime.strptime(EndDate,fmt)
+        self.startdata = dt.datetime.strptime(startdata,fmt)
+        self.enddate = dt.datetime.strptime(enddate,fmt)
 
         if TemporalResolution == "Daily":
-            self.Index = pd.date_range(StartDate, EndDate, freq = "D" )
+            self.Index = pd.date_range(startdata, enddate, freq = "D" )
         elif TemporalResolution == "Hourly":
-            self.Index = pd.date_range(StartDate, EndDate, freq = "H" )
+            self.Index = pd.date_range(startdata, enddate, freq = "H" )
         else:
             assert False , "Error"
         pass
@@ -1229,7 +1252,7 @@ class Lake():
         df.index = [dt.datetime.strptime(date,fmt) for date in df.index]
 
         if self.Split:
-             df = df.loc[self.StartDate:self.EndDate,:]
+             df = df.loc[self.startdata:self.enddate,:]
 
         self.MeteoData = df.values # lakeCalibArray = lakeCalibArray[:,0:-1]
 
