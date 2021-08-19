@@ -7,19 +7,16 @@ datafn = lambda x: dt.datetime.strptime(x,"%Y-%m-%d")
 
 
 class Calibration(River):
-    """
-    =====================================
-        HMCalibration
-    =====================================
+    """Hydraulic model Calibration.
+    
     Hydraulic model calibration class
 
     """
-    def __init__(self, name, version = 3, start = "1950-1-1", days = 36890,
+    
+    def __init__(self, name, version=3, start="1950-1-1", days=36890,
                  fmt="%Y-%m-%d"):
-        """
-        =============================================================================
-            HMCalibration(self, name, version = 3, start = "1950-1-1", days = 36890)
-        =============================================================================
+        """HMCalibration.
+        
         To instantiate the HMCalibration object you have to provide the following
         arguments
 
@@ -51,62 +48,9 @@ class Calibration(River):
         self.ReferenceIndex = pd.DataFrame(index = list(range(1,days+1)))
         self.ReferenceIndex['date'] = Ref_ind[:-1]
 
-
-    # def IndexToDate(self,Index):
-    #     """
-    #     =======================================================
-    #        IndexToDate(Index)
-    #     =======================================================
-    #     IndexToDate takes an integer number and returns the date coresponding
-    #     to this date based on a time series starting from the "start" attribute
-    #     of  River object and for a length of the value of the "days" attribute
-
-    #     Parameters
-    #     ----------
-    #     Index : [Integer]
-    #         Integer number ranges from 1 and max value of the value of the attribute
-    #         "days" of the River object.
-
-    #     Returns
-    #     -------
-    #     [Date time ]
-    #         date object.
-
-    #     """
-    #     # convert the index into date
-    #     return self.ReferenceIndex.loc[Index,'date']
-
-    # def DateToIndex(self,Date):
-    #     """
-    #     ===================================================
-    #          DateToIndex(Date)
-    #     ===================================================
-    #     DateToIndex takes a date and returns a the order of the days in the
-    #     time series. The time series starts from the value of the "start" for
-    #     a length of "days" value
-
-    #     Parameters
-    #     ----------
-    #     Date : [string/date time object]
-    #         string in the format of "%Y-%m-%d" or a date time object.
-
-    #     Returns
-    #     -------
-    #     [Integer]
-    #         the order oif the date in the time series.
-
-    #     """
-    #     # convert the index into date+
-    #     # Date = dt.datetime(1950,1,1)
-    #     if type(Date) == str:
-    #         Date = dt.datetime.strptime(Date,"%Y-%m-%d")
-    #     return np.where(self.ReferenceIndex['date'] == Date)[0][0]+1
-
     def ReadGaugesTable(self,Path):
-        """
-        =======================================================
-               ReadGaugesTable(Path)
-        =======================================================
+        """ReadGaugesTable.
+        
         ReadGaugesTable reads the table of the gauges
 
         Parameters
@@ -123,12 +67,10 @@ class Calibration(River):
         self.GaugesTable = pd.read_csv(Path)
 
 
-    def ReadObservedWL(self, path, start, end, novalue, # GaugesTable,
-                       column='oid'):
-        """
-        ============================================================================
-            ReadObservedWL( WLGauges, Path, StartDate, EndDate, NoValue)
-        ============================================================================
+    def ReadObservedWL(self, path, start, end, novalue, column='oid', fmt="%Y-%m-%d"):
+        """ReadObservedWL.
+        
+        read the water level data of the gauges.
 
         Parameters
         ----------
@@ -153,7 +95,11 @@ class Calibration(River):
                 the input WLGaugesTable dataframe with the index replaced to
                 be the segment ID
         """
-
+        if type(start) == str:
+            start = dt.datetime.strptime(start,fmt)
+        if type(end) == str:
+            end = dt.datetime.strptime(end,fmt)
+            
         ind = pd.date_range(start, end)
         columns = self.GaugesTable[column].tolist()
 

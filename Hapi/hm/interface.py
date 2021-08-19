@@ -20,8 +20,15 @@ class Interface(River):
         4- ReadBoundaryConditions
         5- ListAttributes
     """
-    
-    def __init__(self, name, version=3, start = "1952-1-1", days =36890,):
+
+    def __init__(self, name, version=3, start="1952-1-1", days=36890,
+                 fmt="%Y-%m-%d"):
+        
+        assert type(start) == str , "start argument has to be string"
+        assert type(version) == int, "version argument has to be integer number"
+        assert type(days) == int, "number of days has to be integer number"
+        assert type(fmt) == str, "date format 'fmt' has to be a string"
+        
         self.name = name
         self.version = version
         self.start = dt.datetime.strptime(start,"%Y-%m-%d")
@@ -96,18 +103,17 @@ class Interface(River):
         """
         assert hasattr(self, 'LateralsTable'), "Please read the lateras table first using the 'ReadLateralsTable' method"
 
-        # if Path == '':
-            # Path = self.CustomizedRunsPath
 
         self.Laterals = pd.DataFrame()
 
         for i in range(len(self.LateralsTable)):
             NodeID = self.LateralsTable.loc[i,'xsid']
             fname = "lf_xsid" + str(NodeID)
+            
             self.Laterals[NodeID]  = self.ReadRRMResults(self.version, self.ReferenceIndex,
                                                             Path, fname, FromDay, ToDay,
                                                             date_format)[fname].tolist()
-
+            print("Lateral file " + fname + " is read")
 
         self.Laterals['total'] = self.Laterals.sum(axis=1)
         if FromDay == '':
@@ -185,7 +191,8 @@ class Interface(River):
             self.BC[NodeID] = self.ReadRRMResults(self.version, self.ReferenceIndex,
                                                             path, fname, FromDay, ToDay,
                                                             date_format)[fname].tolist()
-
+            
+            print("BC file " + fname + " is read")
 
         self.BC['total'] = self.BC.sum(axis=1)
         if FromDay == '':
