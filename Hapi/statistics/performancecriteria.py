@@ -5,10 +5,6 @@ from sklearn.metrics import r2_score
 
 def RMSE(Qobs,Qsim):
     """
-    ===========================================================
-        RMSE
-    ===========================================================
-
     Root Mean Squared Error. Metric for the estimation of performance of the
     hydrological model.
 
@@ -32,11 +28,9 @@ def RMSE(Qobs,Qsim):
 
     return rmse
 
+
 def RMSEHF(Qobs,Qsim,WStype,N,alpha):
     """
-    ====================
-    rmseHF
-    ====================
     Weighted Root mean square Error for High flow
 
     inputs:
@@ -61,9 +55,9 @@ def RMSEHF(Qobs,Qsim,WStype,N,alpha):
     assert isinstance(alpha, numbers.Number), "alpha should be a number and between 0 & 1"
     assert isinstance(N, numbers.Number), "N should be a number and between 0 & 1"
     # Input values
-    assert WStype >= 1 and WStype <= 4 , "Weighting scheme should be an integer number between 1 and 4 you have enters "+ str(WStype)
+    assert 1 <= WStype <= 4, "Weighting scheme should be an integer number between 1 and 4 you have enters " + str(WStype)
     assert N >= 0 , "Weighting scheme Power should be positive number you have entered "+ str(N)
-    assert alpha > 0 and alpha <1, "alpha should be float number and between 0 & 1 you have entered "+ str(alpha)
+    assert 0 < alpha < 1, "alpha should be float number and between 0 & 1 you have entered " + str(alpha)
 
     # convert Qobs & Qsim into arrays
     Qobs=np.array(Qobs)
@@ -97,9 +91,6 @@ def RMSEHF(Qobs,Qsim,WStype,N,alpha):
 
 def RMSELF(Qobs,Qsim,WStype,N,alpha):
     """
-    ====================
-    rmseLF
-    ====================
     Weighted Root mean square Error for low flow
 
     inputs:
@@ -120,49 +111,46 @@ def RMSELF(Qobs,Qsim,WStype,N,alpha):
     assert isinstance(alpha, numbers.Number), "alpha should be a number and between 0 & 1"
     assert isinstance(N, numbers.Number), "N should be a number and between 0 & 1"
     # Input values
-    assert WStype >= 1 and WStype <= 4 , "Weighting scheme should be an integer number between 1 and 4 you have enters "+ str(WStype)
+    assert 1 <= WStype <= 4, "Weighting scheme should be an integer number between 1 and 4 you have enters " + str(WStype)
     assert N >= 0 , "Weighting scheme Power should be positive number you have entered "+ str(N)
-    assert alpha > 0 and alpha <1, "alpha should be float number and between 0 & 1 you have entered "+ str(alpha)
+    assert 0 < alpha < 1, "alpha should be float number and between 0 & 1 you have entered " + str(alpha)
 
     # convert Qobs & Qsim into arrays
-    Qobs=np.array(Qobs)
-    Qsim=np.array(Qsim)
+    Qobs = np.array(Qobs)
+    Qsim = np.array(Qsim)
 
 
-    Qmax=max(Qobs)  # rational Discharge power N
-    l= (Qmax-Qobs)/Qmax
+    Qmax = max(Qobs)  # rational Discharge power N
+    l = (Qmax-Qobs)/Qmax
 
     if WStype==1:
          w = l**N
     elif WStype==2: #------------------------------- N is not in the equation
 #        w=1-l*((0.50 - alpha)**N)
-        w=((1/(alpha**2))*(1-l)**2)-((2/alpha)*(1-l))+1
+        w =((1/(alpha**2))*(1-l)**2)-((2/alpha)*(1-l))+1
         w[1-l> alpha]=0
     elif WStype==3:   # the same like WStype 2
 #        w=1-l*((0.50 - alpha)**N)
-        w=((1/(alpha**2))*(1-l)**2)-((2/alpha)*(1-l))+1
+        w =((1/(alpha**2))*(1-l)**2)-((2/alpha)*(1-l))+1
         w[1-l> alpha]=0
     elif WStype==4:
     #        w = 1-l*(0.50 - alpha)
-        w= 1 - ((1-l)/alpha)
+        w = 1 - ((1-l)/alpha)
         w[1-l>alpha] = 0
     else:                     # sigmoid function
 #        w=1/(1+np.exp(10*h-5))
-        w=1/(1+np.exp(-10*l+5))
+        w = 1/(1+np.exp(-10*l+5))
 
-    a= (Qobs-Qsim)**2
-    b=a*w
-    c=sum(b)
-    error=np.sqrt(c/len(Qobs))
+    a = (Qobs-Qsim)**2
+    b = a*w
+    c = sum(b)
+    error = np.sqrt(c/len(Qobs))
 
     return error
 
 
 def KGE(Qobs,Qsim):
     """
-    ====================
-    KGE
-    ====================
     (Gupta et al. 2009) have showed the limitation of using a single error
     function to measure the efficiency of calculated flow and showed that
     Nash-Sutcliff efficiency (NSE) or RMSE can be decomposed into three component
@@ -192,9 +180,6 @@ def KGE(Qobs,Qsim):
 
 def WB(Qobs,Qsim):
     """
-    ====================
-    WB
-    ====================
     The mean cumulative error measures how much the model succeed to reproduce
     the stream flow volume correctly. This error allows error compensation from
     time step to another and it is not an indication on how accurate is the model
@@ -211,19 +196,15 @@ def WB(Qobs,Qsim):
     ----------
         1- error values
     """
-    Qobssum=np.sum(Qobs)
-    Qsimsum=np.sum(Qsim)
-    wb=100*(1-np.abs(1-(Qsimsum/Qobssum)))
+    Qobssum = np.sum(Qobs)
+    Qsimsum = np.sum(Qsim)
+    wb = 100*(1-np.abs(1-(Qsimsum/Qobssum)))
 
     return wb
 
 
 def NSE(Qobs, Qsim):
     """
-    =================================================
-        NSE(Qobs, Qsim)
-    =================================================
-
     Nash-Sutcliffe efficiency. Metric for the estimation of performance of the
     hydrological model
 
@@ -258,10 +239,6 @@ def NSE(Qobs, Qsim):
 
 def NSEHF(Qobs, Qsim):
     """
-    =================================================
-        NSEHF(Qobs, Qsim)
-    =================================================
-
     Modified Nash-Sutcliffe efficiency. Metric for the estimation of performance of the
     hydrological model
 
@@ -301,9 +278,6 @@ def NSEHF(Qobs, Qsim):
 
 def MBE (Qobs, Qsim):
     """
-    =================================================
-        MBE (series1, series2)
-    ================================================
     MBE (mean bias error)
     MBE = (Qsim - Qobs)/n
 
@@ -325,9 +299,6 @@ def MBE (Qobs, Qsim):
 
 def MAE (Qobs, Qsim):
     """
-    =================================================
-        MAE (Qobs, Qsim)
-    ================================================
     MAE (mean absolute error)
     MAE = |(Qobs - Qsim)|/n
 
@@ -348,28 +319,28 @@ def MAE (Qobs, Qsim):
     return np.abs(np.array(Qobs) - np.array(Qsim)).mean()
 
 def PearsonCorre(Qobs,Qsim):
-	"""
-	Pearson correlation coefficient r2 is independent of the magnitude of the numbers;
-	it is sensitive to relative changes only.
-	"""
-	return (np.corrcoef(np.array(Qobs),np.array(Qsim))[0][1])**2
+    """
+    Pearson correlation coefficient r2 is independent of the magnitude of the numbers;
+    it is sensitive to relative changes only.
+    """
+    return (np.corrcoef(np.array(Qobs),np.array(Qsim))[0][1])**2
 
 def R2(Qobs,Qsim):
-	"""
-	the coefficient of determination measures how well the predicted
-	values match (and not just follow) the observed values.
-	It depends on the distance between the points and the 1:1 line
-	(and not the best-fit line)
-	Closer the data to the 1:1 line, higher the coefficient of determination.
-	The coefficient of determination is often denoted by R². However,
-	it is not the square of anything. It can range from any negative number to +1
-	- R² = +1 indicates that the predictions match the observations perfectly
-	- R² = 0 indicates that the predictions are as good as random guesses around
-		the mean of the observed values
-	- Negative R² indicates that the predictions are worse than random
+    """
+    the coefficient of determination measures how well the predicted
+    values match (and not just follow) the observed values.
+    It depends on the distance between the points and the 1:1 line
+    (and not the best-fit line)
+    Closer the data to the 1:1 line, higher the coefficient of determination.
+    The coefficient of determination is often denoted by R². However,
+    it is not the square of anything. It can range from any negative number to +1
+    - R² = +1 indicates that the predictions match the observations perfectly
+    - R² = 0 indicates that the predictions are as good as random guesses around
+        the mean of the observed values
+    - Negative R² indicates that the predictions are worse than random
 
-	Since R² indicates the distance of points from the 1:1 line, it does depend
-	on the magnitude of the numbers (unlike r² peason correlation coefficient).
-	"""
+    Since R² indicates the distance of points from the 1:1 line, it does depend
+    on the magnitude of the numbers (unlike r² peason correlation coefficient).
+    """
 
-	return  r2_score(np.array(Qobs),np.array(Qsim))
+    return  r2_score(np.array(Qobs),np.array(Qsim))
