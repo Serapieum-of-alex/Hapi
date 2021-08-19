@@ -17,11 +17,8 @@ from Hapi.gis.raster import Raster as raster
 #from osgeo import gdalconst
 #import osr
 
-class GISCatchment():
+class GISCatchment:
     """
-    =============================================================
-        GISCatchment
-    =============================================================
     GISCatchment class contains methods to deal with the MED and generate the
     flow direction based on the D8 method and process the DEM
 
@@ -42,9 +39,6 @@ class GISCatchment():
     @staticmethod
     def D8(DEM):
         """
-        ===========================================================
-           D8(Raster)
-        ===========================================================
         D8 method generate flow direction raster from DEM and fill sinks
 
         inputs:
@@ -269,9 +263,6 @@ class GISCatchment():
     @staticmethod
     def FlowDirectIndex(flow_direct):
         """
-        =============================================================
-          FlowDirectِِIndex(flow_direct)
-        =============================================================
         this function takes flow firection raster and convert codes for the 8 directions
         (1,2,4,8,16,32,64,128) into indices of the Downstream cell
 
@@ -344,9 +335,6 @@ class GISCatchment():
     @staticmethod
     def FlowDirecTable(flow_direct):
         """
-        ====================================================================
-             FlowDirecTable(flow_direct)
-        ====================================================================
         this function takes flow direction indices created by FlowDirectِِIndex function
         and create a dictionary with the cells indices as a key and  indices of directly
         upstream cells as values (list of tuples)
@@ -406,9 +394,6 @@ class GISCatchment():
     @staticmethod
     def DeleteBasins(basins,pathout):
         """
-        ===========================================================
-             DeleteBasins(basins,pathout)
-        ===========================================================
         this function deletes all the basins in a basin raster created when delineating
         a catchment and leave only the first basin which is the biggest basin in the raster
 
@@ -462,9 +447,6 @@ class GISCatchment():
     @staticmethod
     def NearestCell(Raster,StCoord):
         """
-        ======================================================
-           NearestCell(Raster,StCoord)
-        ======================================================
         this function calculates the the indices (row, col) of nearest cell in a given
         raster to a station
         coordinate system of the raster has to be projected to be able to calculate
@@ -526,61 +508,58 @@ class GISCatchment():
 
     @staticmethod
     def GroupNeighbours(array, i,j, lowervalue, uppervalue, position, values, count,cluster):
-		# bottom cell
-    	if array[i+1,j] >= lowervalue and array[i+1,j] <= uppervalue and cluster[i+1,j] == 0 and i+1 < array.shape[0]:
-    		position.append([i+1,j])
-    		values.append(array[i+1,j])
-    		cluster[i+1,j] = count
-    		GISCatchment.GroupNeighbours(array, i+1,j, lowervalue, uppervalue, position, values, count, cluster)
-    	# bottom right
-    	if j+1 < array.shape[1] and i+1 < array.shape[0] and array[i+1,j+1] >= lowervalue and array[i+1,j+1] <= uppervalue and cluster[i+1,j+1] == 0:
-    		position.append([i+1,j+1])
-    		values.append(array[i+1,j+1])
-    		cluster[i+1,j+1] = count
-    		GISCatchment.GroupNeighbours(array,i+1,j+1, lowervalue, uppervalue, position, values, count, cluster)
-    	# right
-    	if j+1 < array.shape[1] and array[i,j+1] >= lowervalue and array[i,j+1] <= uppervalue and cluster[i,j+1] == 0:
-    		position.append([i,j+1])
-    		values.append(array[i,j+1])
-    		cluster[i,j+1] = count
-    		GISCatchment.GroupNeighbours(array, i,j+1, lowervalue, uppervalue, position, values, count, cluster)
-    	# upper right
-    	if j+1 < array.shape[1] and i-1 >= 0 and array[i-1,j+1] >= lowervalue and array[i-1,j+1] <= uppervalue and cluster[i-1,j+1] == 0:
-    		position.append([i-1,j+1])
-    		values.append(array[i-1,j+1])
-    		cluster[i-1,j+1] = count
-    		GISCatchment.GroupNeighbours(array, i-1,j+1, lowervalue, uppervalue, position, values, count, cluster)
-    	# top
-    	if i-1 >= 0 and array[i-1,j] >= lowervalue and array[i-1,j] <= uppervalue and cluster[i-1,j] == 0:
-    		position.append([i-1,j])
-    		values.append(array[i-1,j])
-    		cluster[i-1,j] = count
-    		GISCatchment.GroupNeighbours(array, i-1,j, lowervalue, uppervalue, position, values, count, cluster)
-    	# top left
-    	if i-1 >= 0 and j-1 >= 0 and array[i-1,j-1] >= lowervalue and array[i-1,j-1] <= uppervalue and cluster[i-1,j-1] == 0:
-    		position.append([i-1,j-1])
-    		values.append(array[i-1,j-1])
-    		cluster[i-1,j-1] = count
-    		GISCatchment.GroupNeighbours(array, i-1,j-1, lowervalue, uppervalue, position, values, count, cluster)
-    	# left
-    	if j-1 >= 0 and array[i,j-1] >= lowervalue and array[i,j-1] <= uppervalue and cluster[i,j-1] == 0:
-    		position.append([i,j-1])
-    		values.append(array[i,j-1])
-    		cluster[i,j-1] = count
-    		GISCatchment.GroupNeighbours(array, i,j-1, lowervalue, uppervalue, position, values, count, cluster)
-    	# bottom left
-    	if j-1 >= 0 and i+1 < array.shape[0] and array[i+1,j-1] >= lowervalue and array[i+1,j-1] <= uppervalue and cluster[i+1,j-1] == 0:
-    		position.append([i+1,j-1])
-    		values.append(array[i+1,j-1])
-    		cluster[i+1,j-1] = count
-    		GISCatchment.GroupNeighbours(array, i+1,j-1, lowervalue, uppervalue, position, values, count, cluster)
+        # bottom cell
+        if lowervalue <= array[i + 1, j] <= uppervalue and cluster[i + 1, j] == 0 and i+1 < array.shape[0]:
+            position.append([i+1,j])
+            values.append(array[i+1,j])
+            cluster[i+1,j] = count
+            GISCatchment.GroupNeighbours(array, i+1,j, lowervalue, uppervalue, position, values, count, cluster)
+        # bottom right
+        if j+1 < array.shape[1] and i+1 < array.shape[0] and lowervalue <= array[i + 1, j + 1] <= uppervalue and cluster[i + 1, j + 1] == 0:
+            position.append([i+1,j+1])
+            values.append(array[i+1,j+1])
+            cluster[i+1,j+1] = count
+            GISCatchment.GroupNeighbours(array,i+1,j+1, lowervalue, uppervalue, position, values, count, cluster)
+        # right
+        if j+1 < array.shape[1] and lowervalue <= array[i, j + 1] <= uppervalue and cluster[i, j + 1] == 0:
+            position.append([i,j+1])
+            values.append(array[i,j+1])
+            cluster[i,j+1] = count
+            GISCatchment.GroupNeighbours(array, i,j+1, lowervalue, uppervalue, position, values, count, cluster)
+        # upper right
+        if j+1 < array.shape[1] and i-1 >= 0 and lowervalue <= array[i - 1, j + 1] <= uppervalue and cluster[i - 1, j + 1] == 0:
+            position.append([i-1,j+1])
+            values.append(array[i-1,j+1])
+            cluster[i-1,j+1] = count
+            GISCatchment.GroupNeighbours(array, i-1,j+1, lowervalue, uppervalue, position, values, count, cluster)
+        # top
+        if i-1 >= 0 and lowervalue <= array[i - 1, j] <= uppervalue and cluster[i - 1, j] == 0:
+            position.append([i-1,j])
+            values.append(array[i-1,j])
+            cluster[i-1,j] = count
+            GISCatchment.GroupNeighbours(array, i-1,j, lowervalue, uppervalue, position, values, count, cluster)
+        # top left
+        if i-1 >= 0 and j-1 >= 0 and lowervalue <= array[i - 1, j - 1] <= uppervalue and cluster[i - 1, j - 1] == 0:
+            position.append([i-1,j-1])
+            values.append(array[i-1,j-1])
+            cluster[i-1,j-1] = count
+            GISCatchment.GroupNeighbours(array, i-1,j-1, lowervalue, uppervalue, position, values, count, cluster)
+        # left
+        if j-1 >= 0 and lowervalue <= array[i, j - 1] <= uppervalue and cluster[i, j - 1] == 0:
+            position.append([i,j-1])
+            values.append(array[i,j-1])
+            cluster[i,j-1] = count
+            GISCatchment.GroupNeighbours(array, i,j-1, lowervalue, uppervalue, position, values, count, cluster)
+        # bottom left
+        if j-1 >= 0 and i+1 < array.shape[0] and lowervalue <= array[i + 1, j - 1] <= uppervalue and cluster[i + 1, j - 1] == 0:
+            position.append([i+1,j-1])
+            values.append(array[i+1,j-1])
+            cluster[i+1,j-1] = count
+            GISCatchment.GroupNeighbours(array, i+1,j-1, lowervalue, uppervalue, position, values, count, cluster)
 
     @staticmethod
     def Cluster(Data, LowerValue, UpperValue):
         """
-        ==============================================================
-            Cluster(Data, LowerValue, UpperValue)
-        ==============================================================
         Cluster method group all the connected values between two numbers in
         a raster in clusters
 
@@ -611,15 +590,15 @@ class GISCatchment():
         cluster = np.zeros(shape = (Data.shape[0],Data.shape[1]))
 
         for i in range(Data.shape[0]):
-        	for j in range(Data.shape[1]):
+            for j in range(Data.shape[1]):
 
-        		if Data[i,j] >= LowerValue and Data[i,j] <= UpperValue and cluster[i,j] == 0 :
-        			GISCatchment.GroupNeighbours(Data, i,j, LowerValue, UpperValue,position,values, count, cluster)
-        			if cluster[i,j] == 0 :
-        				position.append([i,j])
-        				values.append(Data[i,j])
-        				cluster[i,j] = count
-        			count = count + 1
+                if LowerValue <= Data[i, j] <= UpperValue and cluster[i, j] == 0 :
+                    GISCatchment.GroupNeighbours(Data, i,j, LowerValue, UpperValue,position,values, count, cluster)
+                    if cluster[i,j] == 0 :
+                        position.append([i,j])
+                        values.append(Data[i,j])
+                        cluster[i,j] = count
+                    count = count + 1
 
         return cluster,count, position, values
 
