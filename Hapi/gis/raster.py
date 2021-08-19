@@ -43,9 +43,6 @@ from pyproj import Proj, transform
 
 class Raster:
     """
-    ==========================================
-         Raster
-    ==========================================
     Raster class contains methods to deal with rasters and netcdf files,
     change projection and coordinate systems.
 
@@ -125,10 +122,6 @@ class Raster:
     # @staticmethod
     # def GetMask(raster):
     #     """
-    #     =======================================================================
-    #        get_mask(dem)
-    #     =======================================================================
-
     #     to create a mask by knowing the stored value inside novalue cells
 
     #     Inputs:
@@ -147,9 +140,6 @@ class Raster:
     @staticmethod
     def AddMask(var, dem=None, mask=None, no_val=None):
         """
-        ===================================================================
-             add_mask(var, dem=None, mask=None, no_val=None)
-        ===================================================================
         Put a mask in the spatially distributed values
 
         Inputs
@@ -182,9 +172,6 @@ class Raster:
     @staticmethod
     def GetTargets(dem):
         """
-        ===================================================================
-            get_targets(dem)
-        ===================================================================
         Returns the centres of the interpolation targets
 
         Parameters
@@ -227,9 +214,6 @@ class Raster:
     @staticmethod
     def SaveRaster(raster,path):
         """
-        ===================================================================
-          SaveRaster(raster,path)
-        ===================================================================
         this function saves a raster to a path
 
         inputs:
@@ -263,9 +247,6 @@ class Raster:
     @staticmethod
     def GetRasterData(Input, band=''):
         """
-        =====================================================
-            GetRasterData(Raster)
-        =====================================================
         to create a mask by knowing the stored value inside novalue cells
 
         Inputs:
@@ -302,9 +283,6 @@ class Raster:
     @staticmethod
     def CreateRaster(Path='', data='', geo='', EPSG='', NoDataValue=-9999):
         """
-        =============================================================================
-            CreateRaster(Path='', data='', geo='', projection='',NoDataValue=-9999)
-        =============================================================================
         CreateRaster method creates a raster from a given array and geotransform data
         and save the figg file if a Path is given or it will return the gdal.Dataset
 
@@ -372,9 +350,6 @@ class Raster:
     @staticmethod
     def MapAlgebra(src, fun):
         """
-        ==============================================================
-          MapAlgebra(src, dst, function)
-        ==============================================================
         this function executes a mathematical operation on raster array and returns
         the result
 
@@ -435,9 +410,6 @@ class Raster:
     @staticmethod
     def RasterFill(src, Val, SaveTo):
         """
-        ==============================================================
-          MapAlgebra(src, dst, function)
-        ==============================================================
         this function executes a mathematical operation on raster array and returns
         the result
 
@@ -466,7 +438,7 @@ class Raster:
         NoDataVal = src.GetRasterBand(1).GetNoDataValue()
         src_array = src.ReadAsArray()
 
-        if NoDataVal == None:
+        if NoDataVal is None:
             NoDataVal = np.nan
 
         if  not np.isnan(NoDataVal):
@@ -482,9 +454,6 @@ class Raster:
     @staticmethod
     def ResampleRaster(src, cell_size, resample_technique="Nearest"):
         """
-        ======================================================================
-          project_dataset(src, to_epsg):
-        ======================================================================
         this function reproject a raster to any projection
         (default the WGS84 web mercator projection, without resampling)
         The function returns a GDAL in-memory file object, where you can ReadAsArray etc.
@@ -570,9 +539,6 @@ class Raster:
     @staticmethod
     def ProjectRaster(src, to_epsg,resample_technique="Nearest", Option=2):
         """
-        =====================================================================
-           project_dataset(src, to_epsg):
-        =====================================================================
         this function reproject a raster to any projection
         (default the WGS84 web mercator projection, without resampling)
         The function returns a GDAL in-memory file object, where you can ReadAsArray etc.
@@ -708,9 +674,6 @@ class Raster:
     @staticmethod
     def ReprojectDataset(src, to_epsg=3857, cell_size=[], resample_technique="Nearest"):
         """
-        =====================================================================
-         reproject_dataset(src, to_epsg=3857, pixel_spacing=[]):
-        =====================================================================
         this function reproject and resample a raster to any projection
         (default the WGS84 web mercator projection, without resampling)
         The function returns a GDAL in-memory file object, where you can ReadAsArray etc.
@@ -790,7 +753,7 @@ class Raster:
             (lrx,lry,lrz)=tx.TransformPoint(src_gt[0]+src_gt[1]*src_x,
                                             src_gt[3]+src_gt[5]*src_y)
 
-        if cell_size==[]:
+        if cell_size ==[]:
         # the result raster has the same pixcel size as the source
             # check if the coordinate system is GCS convert the distance from angular to metric
             if src_epsg.GetAttrValue('AUTHORITY',1)=="4326":
@@ -826,11 +789,8 @@ class Raster:
         return dst
 
     @staticmethod
-    def RasterLike(src,array,path,pixel_type=1):
+    def RasterLike(src, array, path, pixel_type=1):
         """
-        ====================================================================
-          RasterLike(src,array,path)
-        ====================================================================
         RasterLike method creates a Geotiff raster like another input raster, new raster
         will have the same projection, coordinates or the top left corner of the original
         raster, cell size, nodata velue, and number of rows and columns
@@ -915,9 +875,6 @@ class Raster:
     @staticmethod
     def MatchNoDataValue(src, dst):
         """
-        ==================================================================
-          MatchNoDataValue(src,dst)
-        ==================================================================
         this function matches the location of nodata value from src raster to dst
         raster, Both rasters have to have the same dimensions (no of rows & columns)
         so MatchRasterAlignment should be used prior to this function to align both
@@ -1007,9 +964,6 @@ class Raster:
     @staticmethod
     def ChangeNoDataValue(src,dst):
         """
-        ==================================================================
-          ChangeNoDataValue(src,dst)
-        ==================================================================
         this function changes the value of nodata value in a dst raster to be like
         a src raster.
 
@@ -1064,9 +1018,6 @@ class Raster:
     @staticmethod
     def MatchRasterAlignment(RasterA,RasterB):
         """
-        =========================================================================
-          MatchRasterAlignment(RasterA,RasterB)
-        =========================================================================
         this function matches the coordinate system and the number of of rows & columns
         between two rasters
         Raster A is the source of the coordinate system, no of rows and no of columns & cell size
@@ -1135,9 +1086,6 @@ class Raster:
     @staticmethod
     def NearestNeighbour(array, Noval, rows, cols):
         """
-        ===============================================================
-            NearestNeighbour(array, Noval, rows, cols)
-        ===============================================================
         this function filles cells of a given indices in rows and cols with
         the value of the nearest neighbour.
         as the raster grid is square so the 4 perpendicular direction are of the same
@@ -1223,10 +1171,6 @@ class Raster:
     @staticmethod
     def ReadASCII(ASCIIFile,pixel_type=1):
         """
-        =========================================================================
-            ReadASCII(ASCIIFile,pixel_type)
-        =========================================================================
-
         This function reads an ASCII file the spatial information
 
         Inputs:
@@ -1304,10 +1248,6 @@ class Raster:
     @staticmethod
     def WriteASCII(ASCIIFile, ASCIIDetails, ASCIIValues):
         """
-        =========================================================================
-            WriteASCII(ASCIIFile, ASCIIDetails, ASCIIValues, pixel_type=1)
-        =========================================================================
-
         This function reads an ASCII file the spatial information
 
         Inputs:
@@ -1361,12 +1301,8 @@ class Raster:
         File.close()
 
     @staticmethod
-    def ASCIItoRaster(ASCIIFile,savePath,pixel_type=1,RasterFile = None,epsg = None):
+    def ASCIItoRaster(ASCIIFile, savePath, pixel_type=1, RasterFile=None, epsg=None):
         """
-        =========================================================================
-            ASCIItoRaster(ASCIIFile,savePath,pixel_type=1,RasterFile = None,epsg = None)
-        =========================================================================
-
         This function convert an ASCII file into a raster format and in takes  all
         the spatial information (projection, coordinates of the corner point), and
         number of rows and columns from raster file or you have to define the epsg corresponding
@@ -1445,7 +1381,7 @@ class Raster:
         - epsg : if you have the EPSG number (https://epsg.io/) refering to
             the spatial information of the ASCII file
         """
-        assert RasterFile != None or epsg != None, message
+        assert RasterFile is not None or epsg is not None, message
 
         ### read the ASCII file
         ASCIIValues, ASCIIDetails = Raster.ReadASCII(ASCIIFile,pixel_type)
@@ -1453,7 +1389,7 @@ class Raster:
         ASCIIColumns = ASCIIDetails[1]
 
         # check the optional inputs
-        if RasterFile != None :
+        if RasterFile is not None:
             assert type(RasterFile) == str, "RasterFile input should be string type"
 
             RasterExt=RasterFile[-4:]
@@ -1466,7 +1402,7 @@ class Raster:
             assert ASCIIRows == RasterRows and ASCIIColumns == RasterColumns, " Data in both ASCII file and Raster file should have the same number of row and columns"
 
             Raster.RasterLike(src,ASCIIValues, savePath, pixel_type)
-        elif epsg != None :
+        elif epsg is not None:
             assert type(epsg)== int, "epsg input should be integer type please check documentations"
             # coordinates of the lower left corner
             XLeftSide  = ASCIIDetails[2]
@@ -1508,9 +1444,6 @@ class Raster:
     @staticmethod
     def ClipRasterWithPolygon(Raster_path,shapefile_path,save=False,output_path=None):
         """
-        =========================================================================
-          ClipRasterWithPolygon(Raster_path, shapefile_path, output_path)
-        =========================================================================
         this function clip a raster using polygon shapefile
 
         inputs:
@@ -1632,9 +1565,6 @@ class Raster:
     @staticmethod
     def Clip2(Rasterobj, Polygongdf, Save=False, out_tif='masked.tif'):
         """
-        =====================================================================
-            Clip(Rasterobj, Polygongdf, Save=False, out_tif='masked.tif')
-        =====================================================================
         Clip function takes a rasterio object and clip it with a given geodataframe
         containing a polygon shapely object
 
@@ -1746,8 +1676,6 @@ class Raster:
     @staticmethod
     def Mosaic(RasterList, Save=False, Path='MosaicedRaster.tif'):
         """
-
-
         Parameters
         ----------
         RasterList : [list]
@@ -1798,9 +1726,6 @@ class Raster:
     @staticmethod
     def ReadASCIIsFolder(path, pixel_type):
         """
-        ===========================================================
-           ReadASCIIsFolder(path, pixel_type)
-        ===========================================================
         this function reads rasters from a folder and creates a 3d arraywith the same
         2d dimensions of the first raster in the folder and len as the number of files
         inside the folder.
@@ -1859,12 +1784,8 @@ class Raster:
         return arr_3d, ASCIIDetails, files
 
 
-    def ASCIIFoldertoRaster(path,savePath,pixel_type=1,RasterFile = None,epsg = None):
+    def ASCIIFoldertoRaster(path, savePath, pixel_type=1, RasterFile=None, epsg=None):
         """
-        =========================================================================
-        ASCIItoRaster(path,savePath,pixel_type)
-        =========================================================================
-
         This function takes the path of a folder contains ASCII files and convert
         them into a raster format and in takes  all the spatial information
         (projection, coordinates of the corner point), and number of rows
@@ -1945,11 +1866,8 @@ class Raster:
 
 
     @staticmethod
-    def RastersLike(src,array,path=None):
+    def RastersLike(src, array, path=None):
         """
-        ====================================================================
-          RasterLike(src,array,path)
-        ====================================================================
         this function creates a Geotiff raster like another input raster, new raster
         will have the same projection, coordinates or the top left corner of the original
         raster, cell size, nodata velue, and number of rows and columns
@@ -1987,7 +1905,7 @@ class Raster:
             assert False, "the array you have entered is 2D you have to use RasterLike function not RastersLike"
 
         # check length of the list of names to be equal to 3rd dimension of the array
-        if path != None: # paths are given
+        if path is not None: # paths are given
             assert len(path) == np.shape(array)[2], "length of list of names " + str(len(path)) + "should equal the 3d dimension of the array-" + str(np.shape(array)[2])
         else: # paths are not given
             # try to create a folder called results at the current working directory to store resulted rasters
@@ -2003,11 +1921,8 @@ class Raster:
 
 
     @staticmethod
-    def MatchDataAlignment(A_path,B_input_path,new_B_path):
+    def MatchDataAlignment(A_path, B_input_path, new_B_path):
         """
-        =========================================================================
-          MatchData(A_path,B_input_path,new_B_path)
-        =========================================================================
         this function matches the coordinate system and the number of of rows & columns
         between two rasters
         Raster A is the source of the coordinate system, no of rows and no of columns & cell size
@@ -2064,11 +1979,8 @@ class Raster:
             Raster.SaveRaster(new_B,new_B_path+files_list[i])
 
     @staticmethod
-    def MatchDataNoValuecells(A_path,B_input_path,new_B_path):
+    def MatchDataNoValuecells(A_path, B_input_path, new_B_path):
         """
-        ==============================================================
-          MatchData(A_path,B_input_path,new_B_path)
-        ==============================================================
         this function matches the location of nodata value from src raster to dst
         raster
         Raster A is where the NoDatavalue will be taken and the location of this value
@@ -2129,11 +2041,8 @@ class Raster:
 
 
     @staticmethod
-    def FolderCalculator(folder_path,new_folder_path,function):
+    def FolderCalculator(folder_path, new_folder_path, function):
         """
-        =========================================================================
-          FolderCalculator(folder_path, new_folder_path, function)
-        =========================================================================
         this function matches the location of nodata value from src raster to dst
         raster
         Raster A is where the NoDatavalue will be taken and the location of this value
@@ -2198,13 +2107,11 @@ class Raster:
             function(args)
 
     @staticmethod
-    def ReadRastersFolder(path,WithOrder=True):
+    def ReadRastersFolder(path, WithOrder=True, start='', end='', fmt='', freq='daily'):
         """
-        ===========================================================
-           ReadRastersFolder(path)
-        ===========================================================
         this function reads rasters from a folder and creates a 3d arraywith the same
         2d dimensions of the first raster in the folder and len as the number of files
+
         inside the folder.
         - all rasters should have the same dimensions
         - folder should only contain raster files
@@ -2212,7 +2119,8 @@ class Raster:
         Inputs:
         ----------
             1- path:
-                [String] path of the folder that contains all the rasters.
+                [String/list] path of the folder that contains all the rasters or 
+                a list contains the paths of the rasters to read.
 
         Outputs:
         ----------
@@ -2227,14 +2135,14 @@ class Raster:
         """
         # input data validation
         # data type
-        assert type(path)== str or type(path) == list, "A_path input should be string type"
+        assert type(path) == str or type(path) == list, "A_path input should be string type"
 
         # input values
-        if type(path)== str:
+        if type(path) == str:
             # check wether the path exist or not
             assert os.path.exists(path), "the path you have provided does not exist"
             # check whether there are files or not inside the folder
-            assert os.listdir(path)!= "","the path you have provided is empty"
+            assert os.listdir(path) != "","the path you have provided is empty"
             # get list of all files
             files = os.listdir(path)
             if "desktop.ini" in files: files.remove("desktop.ini")
@@ -2242,9 +2150,9 @@ class Raster:
             files = path[:]
 
         # to sort the files in the same order as the first number in the name
-        if WithOrder == True:
+        if WithOrder:
             try:
-                filesNo = [int(files[i].split("_")[0]) for i in range(len(files))]
+                filesNo = [int(i.split("_")[0]) for i in files]
             except:
                 ErrorMsg = """please include a number at the beginning of the
                 rasters name to indicate the order of the raster please use the
@@ -2256,29 +2164,53 @@ class Raster:
             filetuple = sorted(zip(filesNo, files))
             files = [x for _,x in filetuple]
 
+        if start != '' or end != '':
+            start = dt.datetime.strptime(start, fmt)
+            end = dt.datetime.strptime(end, fmt)
 
-        # check that folder only contains rasters
-        assert all(f.endswith(".tif") for f in files), "all files in the given folder should have .tif extension"
+            # get the dates for each file
+            dates = list()
+            for i in range(len(files)):
+                if freq == 'daily':
+                    year = int(files[i].split('_')[-3])
+                    month = int(files[i].split('_')[-2])
+                    day = int(files[i].split('_')[-1].split('.')[0])
+                    dates.append(dt.datetime(year, month, day))
+                elif freq == 'hourly':
+                    year = int(files[i].split('_')[-4])
+                    month = int(files[i].split('_')[-3])
+                    day = int(files[i].split('_')[-2])
+                    hour = int(files[i].split('_')[-1].split('.')[0])
+                    dates.append(dt.datetime(year, month, day, hour))
+
+            starti = dates.index(start)
+            endi = dates.index(end) + 1
+            assert all(f.endswith(".tif") for f in files[starti:endi]), "all files in the given folder should have .tif extension"
+        else:
+            starti = 0
+            endi = len(files)
+            # check that folder only contains rasters
+            assert all(f.endswith(".tif") for f in files), "all files in the given folder should have .tif extension"
         # create a 3d array with the 2d dimension of the first raster and the len
         # of the number of rasters in the folder
         if type(path) == list:
-            sample = gdal.Open(files[0])
+            sample = gdal.Open(files[starti])
         else:
-            sample = gdal.Open(path+"/"+files[0])
+            sample = gdal.Open(path+"/"+files[starti])
 
         dim = sample.ReadAsArray().shape
         naval = sample.GetRasterBand(1).GetNoDataValue()
         # fill the array with noval data
-        arr_3d = np.ones((dim[0],dim[1],len(files)))
+        arr_3d = np.ones((dim[0],dim[1],len(range(starti,endi))))
         arr_3d [:,:,:] = naval
 
         if type(path) == list:
-            for i in range(len(files)):
+            for i in range(starti, endi):
                 # read the tif file
                 f = gdal.Open(files[i])
                 arr_3d[:,:,i] = f.ReadAsArray()
         else:
-            for i in range(len(files)):
+            for i in range(starti, endi):
                 # read the tif file
                 f = gdal.Open(path+"/"+files[i])
                 arr_3d[:,:,i] = f.ReadAsArray()
@@ -2286,11 +2218,8 @@ class Raster:
         return arr_3d
 
 
-    def ExtractValues(Path, ExcludeValue, Compressed = True, OccupiedCellsOnly=True):
+    def ExtractValues(Path, ExcludeValue, Compressed=True, OccupiedCellsOnly=True):
         """
-        =================================================================
-            ExtractValues(Path, ExcludeValue, Compressed = True)
-        =================================================================
         this function is written to extract and return a list of all the values
         in a map
         #TODO (an ASCII for now to be extended later to read also raster)
@@ -2311,7 +2240,7 @@ class Raster:
         # check wether the path exist or not
         assert os.path.exists(Path), "the path you have provided does not exist" + str(Path)
         # check wether the path has the extention or not
-        if Compressed == True:
+        if Compressed:
             assert Path.endswith(".zip") , "file" + Path +" should have .asc extension"
         else:
             assert Path.endswith(".asc") , "file" + Path +" should have .asc extension"
@@ -2344,7 +2273,7 @@ class Raster:
             # count nonzero cells
             NonZeroCells = np.count_nonzero(MapValues)
 
-            if OccupiedCellsOnly == True:
+            if OccupiedCellsOnly:
                 ExtractedValues = 0
                 return ExtractedValues, NonZeroCells
 
@@ -2367,7 +2296,7 @@ class Raster:
 
 
     @staticmethod
-    def OverlayMap(Path, BaseMap, ExcludeValue, Compressed=False, OccupiedCellsOnly=True):
+    def OverlayMap(Path, BaseMap, ExcludeValue, Compressed = False, OccupiedCellsOnly=True):
         """
         this function is written to extract and return a list of all the values
         in an ASCII file
@@ -2401,7 +2330,6 @@ class Raster:
         # input values
         # check wether the path exist or not
         assert os.path.exists(Path), "the path you have provided does not exist"
-
 
         # read the base map
         if type(BaseMap) == str:
@@ -2438,7 +2366,7 @@ class Raster:
             # count number of nonzero cells
             NonZeroCells = np.count_nonzero(MapValues)
 
-            if OccupiedCellsOnly == True:
+            if OccupiedCellsOnly:
                 ExtractedValues = 0
                 return ExtractedValues, NonZeroCells
 
@@ -2467,14 +2395,10 @@ class Raster:
 
         return ExtractedValues, NonZeroCells
 
-
     @staticmethod
-    def OverlayMaps(Path, BaseMapF, FilePrefix, ExcludeValue, Compressed = False,
+    def OverlayMaps(Path, BaseMapF, FilePrefix, ExcludeValue, Compressed=False,
                     OccupiedCellsOnly=True):
         """
-        =================================================================
-            OverlayMaps(Path, ExcludeValue, Compressed = True)
-        =================================================================
         this function is written to extract and return a list of all the values
         in an ASCII file
 
@@ -2538,7 +2462,7 @@ class Raster:
 
         for i in range(len(FilteredList)):
             print("File " + FilteredList[i])
-            if OccupiedCellsOnly == True :
+            if OccupiedCellsOnly:
                 ExtractedValuesi , NonZeroCells.loc[i,'cells'] = Raster.OverlayMap(Path + "/" + FilteredList[i],
                                                                       BaseMapV, ExcludeValue, Compressed,
                                                                       OccupiedCellsOnly)
@@ -2582,14 +2506,11 @@ class Raster:
         """
 
         array_min, array_max = array.min(), array.max()
-        return ((array - array_min)/(array_max - array_min))
+        return (array - array_min)/(array_max - array_min)
 
     @staticmethod
-    def GetEpsg(proj, extension = 'tiff'):
+    def GetEpsg(proj, extension='tiff'):
         """
-        =====================================================
-            GetEpsg(proj, extension = 'tiff')
-        =====================================================
         This function reads the projection of a GEOGCS file or tiff file
 
         Parameters
@@ -2620,9 +2541,6 @@ class Raster:
     @staticmethod
     def NCdetails(nc, Var = None):
         """
-        ==========================================================
-            NCGetGeotransform(nc, Var = None)
-        ==========================================================
         NCGetGeotransform takes a netcdf object and return the geottansform data of
         the bottom left corner
 
@@ -2729,10 +2647,6 @@ class Raster:
     @staticmethod
     def NCtoTiff(input_nc, SaveTo, Separator='_'):
         """
-        =========================================================
-           NCtoTiff(input_nc, SaveTo)
-        =========================================================
-
         Parameters
         ----------
         input_nc : [string/list]
@@ -2886,8 +2800,6 @@ class Raster:
 
     def Convert_grb2_to_nc(input_wgrib, output_nc, band):
 
-
-
         # Get environmental variable
         WA_env_paths = os.environ["WA_PATHS"].split(';')
         GDAL_env_path = WA_env_paths[0]
@@ -2999,10 +2911,6 @@ class Raster:
     @staticmethod
     def ExtractFromGZ(InputFile, OutputFile, delete=False):
         """
-        ============================================================
-             ExtractFromGZ(zip_filename, outfilename)
-        ============================================================
-
         ExtractFromGZ method extract data from the zip/.gz files,
         save the data
 
@@ -3047,13 +2955,11 @@ class Raster:
     #     tar.close()
 
 
-    def SaveNC(namenc, DataCube, Var, Reference_filename,  Startdate = '', Enddate = '', Time_steps = '', Scaling_factor = 1):
+    def SaveNC(namenc, DataCube, Var, Reference_filename,  Startdate='', Enddate='',
+               Time_steps='', Scaling_factor=1):
         """
         Save_as_NC(namenc, DataCube, Var, Reference_filename,  Startdate = '',
                    Enddate = '', Time_steps = '', Scaling_factor = 1)
-
-
-
 
         Parameters
         ----------
@@ -3083,7 +2989,6 @@ class Raster:
         None.
 
         """
-
         if not os.path.exists(namenc):
 
             # Get raster information
@@ -3142,7 +3047,7 @@ class Raster:
             # Create the data variable
             if Startdate != '':
                 preco = nco.createVariable('%s' %Var, 'f8',  ('time', 'latitude', 'longitude'), zlib=True, least_significant_digit=1)
-                timeo[:]=time_or
+                timeo[:] = time_or
             else:
                 preco = nco.createVariable('%s' %Var, 'f8',  ('latitude', 'longitude'), zlib=True, least_significant_digit=1)
 
@@ -3431,9 +3336,9 @@ class Raster:
         geo_out = tuple([Geo1, Geo2, 0, Geo4, 0, Geo6])
         fh.close()
 
-        return(geo_out, epsg, size_X, size_Y, size_Z, Time)
+        return geo_out, epsg, size_X, size_Y, size_Z, Time
 
-    def Open_nc_array(NC_filename, Var = None, Startdate = '', Enddate = ''):
+    def Open_nc_array(NC_filename, Var=None, Startdate='', Enddate=''):
         """
         Opening a nc array.
 
@@ -3449,7 +3354,7 @@ class Raster:
         """
 
         fh = netCDF4.Dataset(NC_filename, mode='r')
-        if Var == None:
+        if Var is None:
             Var = fh.variables.keys()[-1]
 
         if Startdate != '':
@@ -3476,7 +3381,7 @@ class Raster:
             except:
                 End = ''
 
-        if (Enddate != '' or Startdate != ''):
+        if Enddate != '' or Startdate != '':
             Data = fh.variables[Var][int(Start):int(End), :, :]
 
         else:
@@ -3489,9 +3394,9 @@ class Raster:
         except:
             pass
 
-        return(Data)
+        return Data
 
-    def Open_bil_array(bil_filename, band = 1):
+    def Open_bil_array(bil_filename, band=1):
         """
         Opening a bil array.
 
@@ -3505,7 +3410,7 @@ class Raster:
         img = gdal.Open(bil_filename)
         Data = img.GetRasterBand(band).ReadAsArray()
 
-        return(Data)
+        return Data
 
     def Open_ncs_array(NC_Directory, Var, Startdate, Enddate):
         """
@@ -3550,7 +3455,7 @@ class Raster:
 
         Data_end = np.array(Data_end)
 
-        return(Data_end)
+        return Data_end
 
     def Open_nc_dict(input_netcdf, group_name, startdate = '', enddate = ''):
         """
@@ -3701,9 +3606,9 @@ class Raster:
         data = data_in[Start_y:End_y,Start_x:End_x]
         dest_in = None
 
-        return(data, Geo_out)
+        return data, Geo_out
 
-    def reproject_dataset_epsg(dataset, pixel_spacing, epsg_to, method = 2):
+    def reproject_dataset_epsg(dataset, pixel_spacing, epsg_to, method=2):
         """
         A sample function to reproject and resample a GDAL dataset from within
         Python. The idea here is to reproject from one system to another, as well
@@ -3802,8 +3707,9 @@ class Raster:
             gdal.ReprojectImage(g, dest, wgs84.ExportToWkt(), osng.ExportToWkt(), gdal.GRA_Average)
         return dest, ulx, lry, lrx, uly, epsg_to
 
+
     def reproject_MODIS(input_name, epsg_to):
-        '''
+        """
         Reproject the merged data file by using gdalwarp. The input projection must be the MODIS projection.
         The output projection can be defined by the user.
 
@@ -3812,7 +3718,7 @@ class Raster:
             string that defines the input tiff file
         epsg_to -- integer
             The EPSG code of the output dataset
-        '''
+        """
         # Define the output name
         name_out = ''.join(input_name.split(".")[:-1]) + '_reprojected.tif'
 
@@ -3825,7 +3731,8 @@ class Raster:
         fullCmd = ' '.join(["%s" %(GDALWARP_PATH), '-overwrite -s_srs "+proj=sinu +lon_0=0 +x_0=0 +y_0=0 +a=6371007.181 +b=6371007.181 +units=m +no_defs"', '-t_srs EPSG:%s -of GTiff' %(epsg_to), input_name, name_out])
         Raster.Run_command_window(fullCmd)
 
-        return(name_out)
+        return name_out
+
 
     def reproject_dataset_example(dataset, dataset_example, method=1):
         """
@@ -3897,7 +3804,8 @@ class Raster:
             gdal.ReprojectImage(g, dest1, wgs84.ExportToWkt(), osng.ExportToWkt(), gdal.GRA_Lanczos)
         if method == 4:
             gdal.ReprojectImage(g, dest1, wgs84.ExportToWkt(), osng.ExportToWkt(), gdal.GRA_Average)
-        return(dest1)
+        return dest1
+
 
     def resize_array_example(Array_in, Array_example, method=1):
         """
@@ -3961,7 +3869,7 @@ class Raster:
         else:
             print('only 2D or 3D dimensions are supported')
 
-        return(Array_out)
+        return Array_out
 
     def Get_epsg(g, extension = 'tiff'):
         """
@@ -3984,9 +3892,10 @@ class Raster:
         except:
            epsg_to=4326
            #print 'Was not able to get the projection, so WGS84 is assumed'
-        return(epsg_to)
+        return epsg_to
 
-    def gap_filling(dataset,NoDataValue, method = 1):
+
+    def gap_filling(dataset, NoDataValue, method=1):
         """
         This function fills the no data gaps in a numpy array
 
@@ -4037,7 +3946,7 @@ class Raster:
         else:
             EndProduct = data_end
 
-        return (EndProduct)
+        return EndProduct
 
     # def Get3Darray_time_series_monthly(Data_Path, Startdate, Enddate, Example_data = None):
     #     """
@@ -4141,9 +4050,6 @@ class Raster:
         reference_raster_data_name -- 'C:/....../.tif'
             str: Path to an example tiff file (all arrays will be reprojected to this example)
         """
-
-
-
         geo, proj, size_X, size_Y = Raster.Open_array_info(reference_raster_data_name)
 
         x_min = geo[0]
@@ -4185,7 +4091,7 @@ class Raster:
         # Open array
         Raster_Basin = Raster.GetRasterData(Dir_Raster_end)
 
-        return(Raster_Basin)
+        return Raster_Basin
 
     def Moving_average(dataset, Moving_front, Moving_back):
         """
@@ -4202,7 +4108,7 @@ class Raster:
         for i in range(Moving_back, (int(np.shape(dataset)[0]) - Moving_front)):
             dataset_out[i - Moving_back,:,:] = np.nanmean(dataset[i - Moving_back : i + 1 + Moving_front, :,:], 0)
 
-        return(dataset_out)
+        return dataset_out
 
     def Get_ordinal(Startdate, Enddate, freq = 'MS'):
         """
@@ -4224,7 +4130,7 @@ class Raster:
             ordinal[i]=p
             i += 1
 
-        return(ordinal)
+        return ordinal
 
     # def Create_Buffer(Data_In, Buffer_area):
 
