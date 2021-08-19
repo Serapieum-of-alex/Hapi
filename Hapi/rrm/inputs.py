@@ -10,7 +10,7 @@ import datetime as dt
 import numpy as np
 import shutil
 import pandas as pd
-from datetime import datetime
+# from datetime import datetime
 # import geopandas as gpd
 from rasterstats import zonal_stats
 import rasterio
@@ -19,7 +19,7 @@ from rasterio.plot import show
 import Hapi
 from Hapi.gis.raster import Raster as raster
 
-class Inputs():
+class Inputs:
 
     """
     ========================
@@ -267,11 +267,8 @@ class Inputs():
         return data
 
     @staticmethod
-    def RenameFiles(Path, fmt = '%Y.%m.%d'):
+    def RenameFiles(Path, Prefix='', fmt='%Y.%m.%d', freq='daily'):
         """
-        ========================================================
-            RenameFiles(Path, fmt = '%Y.%m.%d')
-        ========================================================
         RenameFiles method takes the path to a folder where you want to put a number
         at the begining of the raster names indicating the order of the raster based on
         its date
@@ -300,17 +297,25 @@ class Inputs():
 
         # get the date
         dates_str = [files[i].split("_")[-1][:-4] for i in range(len(files))]
-        dates = [datetime.strptime(dates_str[i], fmt) for i in range(len(files))]
+        dates = [dt.datetime.strptime(dates_str[i], fmt) for i in range(len(files))]
+
+        if freq == 'daily':
+            new_date_str = [str(i.year) + '_' + str(i.month) + '_' + str(i.day) for i in dates]
+        elif freq == 'hourly':
+            new_date_str = [str(i.year) + '_' + str(i.month) + '_' + str(i.day) + '_' + str(i.hour) for i in dates]
+        else:
+            new_date_str = [str(i.year) + '_' + str(i.month) + '_' + str(i.day) + '_' + str(i.hour) + '_' + str(i.minute) for i in dates]
 
         df = pd.DataFrame()
         df['files'] = files
-        df['DateStr'] = dates_str
+        df['DateStr'] = new_date_str
         df['dates'] = dates
         df.sort_values('dates', inplace=True)
-
+        df.reset_index(inplace=True)
         df['order'] = [i for i in range(len(files))]
 
-        df['new_names'] = [str(df.loc[i,'order']) + "_"+ df.loc[i,'files'] for i in range(len(files))]
+        # df['new_names'] = [str(df.loc[i,'order']) + "_"+ df.loc[i,'files'] for i in range(len(files))]
+        df['new_names'] = [str(df.loc[i, 'order']) + "_" + Prefix + "_" + df.loc[i, 'DateStr'] + '.tif' for i in range(len(files))]
         # rename the files
         for i in range(len(files)):
             os.rename(Path + "/" + df.loc[i,'files'], Path + "/" + df.loc[i,'new_names'])
