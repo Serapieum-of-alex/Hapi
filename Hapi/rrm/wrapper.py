@@ -11,9 +11,6 @@ from Hapi.rrm.routing import Routing as routing
 
 class Wrapper:
     """
-    ==================
-        Wrapper
-    ==================
     Wrapper class connect different commponent together (lumped run of the
     distributed with the spatial routing) for Hapi and for FW1
 
@@ -30,9 +27,6 @@ class Wrapper:
     @staticmethod
     def RRMModel(Model, ll_temp=None, q_0=None):
         """
-        =======================================================================
-          Dist_model(DEM,flow_acc,flow_direct,sp_prec,sp_et,sp_temp,sp_par,p2,kub,klb,init_st,ll_temp,q_0)
-        =======================================================================
             HapiModel connect two modules :
             1- The distributed rainfall runoff: model runs separately for each cell
             2- The Spatial routing scheme (routing is following river network)
@@ -102,9 +96,6 @@ class Wrapper:
     @staticmethod
     def RRMWithlake(Model, Lake,ll_temp=None, q_0=None):
         """
-        ============================================================
-            RRMWithlake(Model, Lake,ll_temp=None, q_0=None)
-        ============================================================
         RRMWithlake connects three modules the lake, the distributed
         ranfall-runoff module and spatial routing module
 
@@ -163,9 +154,6 @@ class Wrapper:
     @staticmethod
     def FW1(Model,ll_temp=None, q_0=None):
         """
-        ====================================================
-            FW1(Model,ll_temp=None, q_0=None)
-        ====================================================
         FW1 connects two module :
             1- The distributed rainfall-runoff module
             2- Triangular function-1 routing method
@@ -200,10 +188,6 @@ class Wrapper:
     @staticmethod
     def FW1Withlake(Model, Lake,ll_temp=None, q_0=None):
         """
-        ==============================================================
-               FW1Withlake(Model, Lake,ll_temp=None, q_0=None)
-        ==============================================================
-
         FW1 connects two module :
             1- The distributed rainfall-runoff module
             2- Triangular function-1 routing method
@@ -261,9 +245,6 @@ class Wrapper:
     @staticmethod
     def Lumped(Model, Routing=0, RoutingFn=[]):
         """
-        ==========================================================
-            Lumped(ConceptualModel,data,parameters,p2,snow,Routing=None, RoutingFn=[])
-        ==========================================================
 
         Inputs:
         ----------
