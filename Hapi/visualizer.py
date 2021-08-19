@@ -1,4 +1,5 @@
-"""
+""".
+
 Created on Sat Mar 14 16:36:01 2020
 
 @author: mofarrag
@@ -22,14 +23,13 @@ hours = list(range(1, 25))
 
 
 class Visualize:
-    """
-    ==================
-        Visualize
-    ==================
+    """Visualize.
+    
     Visualize class contains different method to animate water surface profile
     spatial data change over time, styling methods for plotting
 
-    Methods:
+    Methods
+    -------
         1- AnimateArray
         2- CrossSections
         3- WaterSurfaceProfile
@@ -65,7 +65,21 @@ class Visualize:
 
     @staticmethod
     def LineStyle(Style='loosely dotted'):
+        """LineStyle.
+        
+        Line styles for plotting 
 
+        Parameters
+        ----------
+        Style : TYPE, optional
+            DESCRIPTION. The default is 'loosely dotted'.
+
+        Returns
+        -------
+        TYPE
+            DESCRIPTION.
+
+        """
         if type(Style) == str:
             try:
                 return Visualize.linestyles[Style]
@@ -77,46 +91,78 @@ class Visualize:
 
     @staticmethod
     def MarkerStyle(Style):
+        """MarkerStyle.
+        
+        Marker styles for plotting
+        
+        Parameters
+        ----------
+        Style : TYPE
+            DESCRIPTION.
+
+        Returns
+        -------
+        TYPE
+            DESCRIPTION.
+
+        """
         if Style > len(Visualize.MarkerStyleList) - 1:
             Style = Style % len(Visualize.MarkerStyleList)
         return Visualize.MarkerStyleList[Style]
 
-    def GroundSurface(self, Sub, XSID='', xsbefore=10, xsafter=10,
-                      FloodPlain=False, PlotLateral=False):
 
-        if XSID == '':
-            xs = 0
-        else:
-            xs = np.where(Sub.crosssections['xsid'] == XSID)[0][0]
+    def GroundSurface(self, Sub, fromxs='', toxs='',
+                      floodplain=False, plotlateral=False, nxlabels=10,
+                      figsize=(20,10)):
+        """Plot the longitudinal profile of the segment.
 
-        GroundSurfacefig = plt.figure(70, figsize=(20, 10))
+        Parameters
+        ----------
+        Sub : TYPE
+            DESCRIPTION.
+        XSID : TYPE, optional
+            DESCRIPTION. The default is ''.
+        xsbefore : TYPE, optional
+            DESCRIPTION. The default is 10.
+        xsafter : TYPE, optional
+            DESCRIPTION. The default is 10.
+        FloodPlain : TYPE, optional
+            DESCRIPTION. The default is False.
+        PlotLateral : TYPE, optional
+            DESCRIPTION. The default is False.
+
+        Returns
+        -------
+        None.
+
+        """
+        GroundSurfacefig = plt.figure(70, figsize=figsize)
         gs = gridspec.GridSpec(nrows=2, ncols=6, figure=GroundSurfacefig)
         axGS = GroundSurfacefig.add_subplot(gs[0:2, 0:6])
 
-        if xs == 0:
-            axGS.set_xlim(Sub.xsname[0] - 1, Sub.xsname[-1] + 1)
+        if fromxs == '':
+            fromxs = Sub.xsname[0] - 1
+            toxs = Sub.xsname[-1] + 1
             axGS.set_xticks(Sub.xsname)
         else:
-            # not the whole sub-basin
-            FigureFirstXS = Sub.xsname[xs] - xsbefore
-            FigureLastXS = Sub.xsname[xs] + xsafter
-            axGS.set_xlim(FigureFirstXS, FigureLastXS)
-
-            axGS.set_xticks(list(range(FigureFirstXS, FigureLastXS)))
-            axGS.set_xticklabels(list(range(FigureFirstXS, FigureLastXS)))
-
+            # not the whole sub-basin            
+            axGS.set_xticks(list(range(fromxs, toxs)))
+            axGS.set_xticklabels(list(range(fromxs, toxs)))    
+        
+        axGS.set_xlim(fromxs, toxs)
+        
         axGS.tick_params(labelsize=8)
         # plot dikes
         axGS.plot(Sub.xsname, Sub.crosssections['zl'], 'k--', dashes=(5, 1), linewidth=2, label='Left Dike')
         axGS.plot(Sub.xsname, Sub.crosssections['zr'], 'k.-', linewidth=2, label='Right Dike')
 
-        if FloodPlain:
+        if floodplain:
             fpl = Sub.crosssections['gl'] + Sub.crosssections['dbf'] + Sub.crosssections['hl']
             fpr = Sub.crosssections['gl'] + Sub.crosssections['dbf'] + Sub.crosssections['hr']
             axGS.plot(Sub.xsname, fpl, 'b-.', linewidth=2, label='Floodplain left')
             axGS.plot(Sub.xsname, fpr, 'r-.', linewidth=2, label='Floodplain right')
 
-        if PlotLateral:
+        if plotlateral:
             if hasattr(self, 'LateralsTable'):
                 print('x')
                 # axGS.plot(Sub.xsname, fpr,'r-.',linewidth = 2, label = 'Floodplain right')
@@ -129,7 +175,12 @@ class Visualize:
             axGS.plot(Sub.xsname, Sub.crosssections['gl'], 'k-', linewidth=5, label='Ground level')
             axGS.plot(Sub.xsname, Sub.crosssections['gl'] + Sub.crosssections['dbf'], 'k', linewidth=2,
                       label='Bankful depth')
-
+        
+        if nxlabels != '' :
+            start, end = axGS.get_xlim()
+            label_list = [ int(i) for i in np.linspace(start,end,nxlabels)]
+            axGS.xaxis.set_ticks(label_list)
+            
         axGS.set_title("Water surface Profile Simulation Subid = " + str(Sub.id), fontsize=15)
         axGS.legend(fontsize=15)
         axGS.set_xlabel("Profile", fontsize=15)
@@ -138,11 +189,14 @@ class Visualize:
 
         GroundSurfacefig.tight_layout()
 
+
     def WaterSurfaceProfile(self, Sub, start, end, interval=100, xs=0,
                             xsbefore=10, xsafter=10, fmt="%Y-%m-%d", textlocation=2,
                             LateralsColor='red', LaterlasLineWidth=1, xaxislabelsize=15,
                             yaxislabelsize=15, nxlabels=50):
-        """
+        """WaterSurfaceProfile.
+        
+        Plot water surface profile
 
         Parameters
         ----------
@@ -180,7 +234,6 @@ class Visualize:
         TYPE
 
         """
-
         start = dt.datetime.strptime(start, fmt)
         end = dt.datetime.strptime(end, fmt)
 
@@ -397,10 +450,9 @@ class Visualize:
                                 xsbefore=10, xsafter=10, fmt="%Y-%m-%d", textlocation=2,
                                 LateralsColor='red', LaterlasLineWidth=1, xaxislabelsize=15,
                                 yaxislabelsize=15, nxlabels=50):
-        """
-
-
-
+        """WaterSurfaceProfile1Min.
+        
+        Plot water surface profile for 1 min data
 
         Parameters
         ----------
@@ -425,7 +477,6 @@ class Visualize:
             DESCRIPTION.
 
         """
-
         plotstart = dt.datetime.strptime(plotstart, fmt)
         plotend = dt.datetime.strptime(plotend, fmt) - dt.timedelta(minutes=int(Sub.dt / 60))
 
@@ -644,8 +695,9 @@ class Visualize:
     def river1d(self, Sub, start, end, interval=0.00002, xs=0,
                 xsbefore=10, xsafter=10, fmt="%Y-%m-%d", textlocation=2,
                 xaxislabelsize=15, yaxislabelsize=15, nxlabels=50, plotbanhfuldepth=False):
-        """
-
+        """river1d.
+        
+        plot river 1D
 
         Parameters
         ----------
@@ -670,7 +722,6 @@ class Visualize:
             DESCRIPTION.
 
         """
-
         start = dt.datetime.strptime(start, fmt)
         # end = dt.datetime.strptime(end, fmt) - dt.timedelta(minutes=int(Sub.dt / 60))
         end = dt.datetime.strptime(end, fmt)
@@ -862,7 +913,26 @@ class Visualize:
 
     @staticmethod
     def SaveProfileAnimation(Anim, Path='', fps=3, ffmpegPath=''):
+        """SaveProfileAnimation.
+        
+        save video animation
 
+        Parameters
+        ----------
+        Anim : TYPE
+            DESCRIPTION.
+        Path : TYPE, optional
+            DESCRIPTION. The default is ''.
+        fps : TYPE, optional
+            DESCRIPTION. The default is 3.
+        ffmpegPath : TYPE, optional
+            DESCRIPTION. The default is ''.
+
+        Returns
+        -------
+        None.
+
+        """
         message = """
         please visit https://ffmpeg.org/ and download a version of ffmpeg compitable
         with your operating system, and copy the content of the folder and paste it
@@ -894,17 +964,35 @@ class Visualize:
                     "please visit https://ffmpeg.org/ and download a version of ffmpeg compitable with your operating system, for more details please check the method definition")
 
 
-    def CrossSections(self, Sub, startxs='', endxs='', xsrows=3, xscolumns=3, 
+    def CrossSections(self, Sub, fromxs='', toxs='', xsrows=3, xscolumns=3, 
                       bedlevel=False, titlesize=15, textsize=15, figsize=(18, 10), 
                       linewidth=6):
-        """
-
-        plot all the cross sections of the sub-basin
-
+        """CrossSections.
+        
+        Plot cross sections of a river segment.
+        
         Parameters
         ----------
         Sub : [Object]
-            Sub-object created as a sub class from River object.
+            Sub-object created as a sub class from River object..
+        startxs : TYPE, optional
+            DESCRIPTION. The default is ''.
+        endxs : TYPE, optional
+            DESCRIPTION. The default is ''.
+        xsrows : TYPE, optional
+            DESCRIPTION. The default is 3.
+        xscolumns : TYPE, optional
+            DESCRIPTION. The default is 3.
+        bedlevel : TYPE, optional
+            DESCRIPTION. The default is False.
+        titlesize : TYPE, optional
+            DESCRIPTION. The default is 15.
+        textsize : TYPE, optional
+            DESCRIPTION. The default is 15.
+        figsize : TYPE, optional
+            DESCRIPTION. The default is (18, 10).
+        linewidth : TYPE, optional
+            DESCRIPTION. The default is 6.
 
         Returns
         -------
@@ -932,6 +1020,7 @@ class Visualize:
             XSS[8].loc[XSS.index == XSS.index[i]] = bl + b + br
 
             gl = Sub.crosssections['gl'].loc[Sub.crosssections.index == Sub.crosssections.index[i]].values[0]
+            
             if bedlevel :
                 subtract = 0
             else:
@@ -947,6 +1036,7 @@ class Visualize:
             hr = Sub.crosssections['hr'].loc[Sub.crosssections.index == Sub.crosssections.index[i]].values[0]
 
             XSS[9].loc[XSS.index == XSS.index[i]] = zl - subtract
+            
             if Sub.version == 1:
                 XSS[10].loc[XSS.index == XSS.index[i]] = gl + hl - subtract
                 XSS[11].loc[XSS.index == XSS.index[i]] = gl - subtract
@@ -962,17 +1052,16 @@ class Visualize:
             XSS[13].loc[XSS.index == XSS.index[i]] = gl - subtract
 
             XSS[16].loc[XSS.index == XSS.index[i]] = zr - subtract
-
-        
-        if startxs == '' :
+            
+        if fromxs == '' :
             startxs_ind = 0
         else:
-            startxs_ind = Sub.xsname.index(startxs)
-            
-        if endxs == '' :
+            startxs_ind = Sub.xsname.index(fromxs)
+        
+        if toxs == '' :
             endxs_ind = Sub.xsno-1
         else:
-            endxs_ind = Sub.xsname.index(endxs)
+            endxs_ind = Sub.xsname.index(toxs)
         
         xsplot = len(range(startxs_ind, endxs_ind+1))
         
@@ -1009,7 +1098,28 @@ class Visualize:
 
 
     def Plot1minProfile(self, Sub, date, xaxislabelsize=10, nxlabels=50, fmt="%Y-%m-%d"):
+        """Plot1minProfile.
+        
+        Plot water surface profile for 1 min data.
 
+        Parameters
+        ----------
+        Sub : TYPE
+            DESCRIPTION.
+        date : TYPE
+            DESCRIPTION.
+        xaxislabelsize : TYPE, optional
+            DESCRIPTION. The default is 10.
+        nxlabels : TYPE, optional
+            DESCRIPTION. The default is 50.
+        fmt : TYPE, optional
+            DESCRIPTION. The default is "%Y-%m-%d".
+
+        Returns
+        -------
+        None.
+
+        """
         date = dt.datetime.strptime(date, fmt)
 
         fig50, ax1 = plt.subplots(figsize=(15, 8))
@@ -1032,7 +1142,9 @@ class Visualize:
                      Gaugecolor='red', Gaugesize=100, ColorScale=1, gamma=1. / 2., linthresh=0.0001,
                      linscale=0.001, midpoint=0, orientation='vertical', rotation=-90, IDcolor="blue",
                      IDsize=10, **kwargs):
-        """
+        """AnimateArray.
+        
+        plot an animation for 3d arrays
 
         Parameters
         ----------
@@ -1112,7 +1224,6 @@ class Visualize:
         animation.FuncAnimation.
 
         """
-
         fig = plt.figure(60, figsize=Figsize)
         gs = gridspec.GridSpec(nrows=2, ncols=2, figure=fig)
         ax = fig.add_subplot(gs[:, :])
@@ -1253,8 +1364,9 @@ class Visualize:
         return anim
 
     def SaveAnimation(anim, VideoFormat="gif", Path='', SaveFrames=20):
-        """
-
+        """SaveAnimation.
+        
+        Save animation
 
         Parameters
         ----------
@@ -1278,7 +1390,6 @@ class Visualize:
         None.
 
         """
-
         ffmpegPath = os.getenv("HOME") + "/.matplotlib/ffmpeg-static/bin/ffmpeg.exe"
 
         message = """
@@ -1310,8 +1421,9 @@ class Visualize:
                    PointLegendTitle="Output 2", Ylim=[0, 180], Y2lim=[-2, 14],
                    color1='#27408B', color2='#DC143C', color3="grey",
                    linewidth=4, **kwargs):
-        """
-
+        """Plot_Type1.
+        
+        !TODO Needs docs
 
         Parameters
         ----------
@@ -1360,7 +1472,6 @@ class Visualize:
             DESCRIPTION.
 
         """
-
         fig, ax1 = plt.subplots(nrows=1, ncols=1, figsize=(10, 6))
 
         ax2 = ax1.twinx()
@@ -1471,7 +1582,8 @@ class Visualize:
 
     @staticmethod
     def Histogram(v1, v2, NoAxis=2, filter1=0.2, Save=False, pdf=True, **kwargs):
-        """
+        """Histogram.
+        
         Histogram method plots the histogram of two given list of values
 
         Parameters
@@ -1606,10 +1718,10 @@ class Visualize:
 
 
     def ListAttributes(self):
-        """
+        """ListAttributes.
+        
         Print Attributes List
         """
-
         print('\n')
         print('Attributes List of: ' + repr(self.__dict__['name']) + ' - ' + self.__class__.__name__ + ' Instance\n')
         self_keys = list(self.__dict__.keys())
@@ -1622,12 +1734,34 @@ class Visualize:
 
 
 class MidpointNormalize(colors.Normalize):
+    """MidpointNormalize.
+    
+    !TODO needs docs
+    
+    """
 
     def __init__(self, vmin=None, vmax=None, midpoint=None, clip=False):
         self.midpoint = midpoint
         colors.Normalize.__init__(self, vmin, vmax, clip)
 
     def __call__(self, value, clip=None):
+        """MidpointNormalize.
+        
+        ! TODO needs docs
+        
+        Parameters
+        ----------
+        value : TYPE
+            DESCRIPTION.
+        clip : TYPE, optional
+            DESCRIPTION. The default is None.
+
+        Returns
+        -------
+        TYPE
+            DESCRIPTION.
+
+        """
         # I'm ignoring masked values and all kinds of edge cases to make a
         # simple example...
         x, y = [self.vmin, self.midpoint, self.vmax], [0, 0.5, 1]
