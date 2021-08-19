@@ -33,10 +33,6 @@ DEF_q0 = 0
 
 def Precipitation(prec, temp, tt, rfcf, sfcf):
     """
-    ========================================================
-    Precipitation (temp, tt, prec, rfcf, sfcf)
-    ========================================================
-
     Precipitaiton routine of the HBV96 model.
 
     If temperature is lower than TT [degree C], all the precipitation is considered as
@@ -77,9 +73,6 @@ def Precipitation(prec, temp, tt, rfcf, sfcf):
 
 def Snow(temp, rf, sf, wc_old, sp_old, tt, cfmax, cfr, cwh):
     """
-    ========================================================
-        Snow(cfmax, temp, tt, cfr, cwh, rf, sf, wc_old, sp_old)
-    ========================================================
     Snow routine.
 
     The snow pack consists of two states: Water Content (wc) and Snow Pack
@@ -164,10 +157,6 @@ def Snow(temp, rf, sf, wc_old, sp_old, tt, cfmax, cfr, cwh):
 
 def Soil(temp, inf, ep, sm_old, uz_old, tm, fc, beta, e_corr, lp):
     """
-    ============================================================
-        Soil(fc, beta, temp, tm, e_corr, lp, c_flux, inf, ep, sm_old, uz_old)
-    ============================================================
-
     Soil routine of the HBV-96 model.
 
     The model checks for the amount of water that can infiltrate the soil,
@@ -198,8 +187,6 @@ def Soil(temp, inf, ep, sm_old, uz_old, tm, fc, beta, e_corr, lp):
         Evapotranspiration corrector factor
     lp : float _soil
         wilting point
-    c_flux : float
-        Capilar flux in the root zone
     _in : float
         actual infiltration
     ep : float
@@ -248,9 +235,6 @@ def Soil(temp, inf, ep, sm_old, uz_old, tm, fc, beta, e_corr, lp):
 
 def Response(lz_old, uz_int_1, perc, k, k1, k2, uzl):
     """
-    ============================================================
-        Response(perc, k, k1, k2, uzl, area, lz_old, uz_int_1)
-    ============================================================
     The response routine of the HBV-96 model.
 
     The response routine is in charge of transforming the current values of
@@ -277,14 +261,12 @@ def Response(lz_old, uz_int_1, perc, k, k1, k2, uzl):
             Lower zone recession coefficient
         uzl: float
             Upper zone threshold value
-        area : float
-            Catchment area [Km2]
         lz_old : float
             Previous lower zone value [mm]
         uz_int_1 : float
             Previous upper zone value before percolation [mm]
 
-    Returns:
+    Return:
     ----------
         1-q_uz:[float]
             upper zone discharge (mm/timestep) for both surface runoff & interflow
@@ -299,7 +281,7 @@ def Response(lz_old, uz_int_1, perc, k, k1, k2, uzl):
     q_0 = k*np.max([uz_int_2-uzl,0])
 
     # Interflow
-    q_1 = k1*(uz_int_2)
+    q_1 = k1 * uz_int_2
 
     # as K & k1 are a very small values (0.005) this condition will never happen
     if q_0+q_1 > uz_int_2: # if q_0 =30 and UZ=20
@@ -317,7 +299,7 @@ def Response(lz_old, uz_int_1, perc, k, k1, k2, uzl):
     if q_2 > lz_int_1:
         q_2 = lz_int_1
 
-    lz_new = lz_int_1 - (q_2)
+    lz_new = lz_int_1 - q_2
 
     q_uz = q_0 + q_1
 
@@ -327,17 +309,13 @@ def Response(lz_old, uz_int_1, perc, k, k1, k2, uzl):
 
 def Tf(maxbas):
     """
-     ====================================================
-         Tf(maxbas)
-     ====================================================
     Transfer function weight generator
-
     """
     wi = []
     for x in range(1, maxbas+1):
-        if x <= (maxbas)/2.0:
+        if x <= maxbas/2.0:
             # Growing transfer
-            wi.append((x)/(maxbas+2.0))
+            wi.append(x/(maxbas+2.0))
         else:
             # Receding transfer
             wi.append(1.0 - (x+1)/(maxbas+2.0))
@@ -349,9 +327,6 @@ def Tf(maxbas):
 
 def Routing(q, maxbas=1):
     """
-    ==================================================
-        Routing(q, maxbas=1)
-    ==================================================
     This function implements the transfer function using a triangular
     function
     """
@@ -485,7 +460,7 @@ def Simulate(prec, temp, et, ll_temp, par, init_st=None, q_init=None, snow=0):
 
     Parameters
     ----------
-    avg_prec : array_like [n]
+    prec : array_like [n]
         Average precipitation [mm/h]
     temp : array_like [n]
         Average temperature [C]
@@ -495,9 +470,6 @@ def Simulate(prec, temp, et, ll_temp, par, init_st=None, q_init=None, snow=0):
         Parameter vector, set up as:
         [ltt, utt, ttm, cfmax, fc, ecorr, etf, lp, k, k1,
         alpha, beta, cwh, cfr, c_flux, perc, rfcf, sfcf]
-    p2 : array_like [2]
-        Problem parameter vector setup as:
-        [tfac, area]
     init_st : array_like [5], optional
         Initial model states, [sp, sm, uz, lz, wc]. If unspecified,
         [0.0, 30.0, 30.0, 30.0, 0.0] mm
