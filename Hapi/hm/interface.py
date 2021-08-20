@@ -77,7 +77,7 @@ class Interface(River):
             assert False, "Please read the cross section file first using the method 'ReadCrossSections'"
 
 
-    def ReadLaterals(self, FromDay = '', ToDay = '', Path = '',
+    def ReadLaterals(self, fromday= '', today='', path='',
                           date_format="'%Y-%m-%d'"):
         """ReadUSHydrograph.
         
@@ -85,12 +85,12 @@ class Interface(River):
         
         Parameters
         ----------
-        1-FromDay : [integer], optional
+        1-fromday : [integer], optional
                 the day you want to read the result from, the first day is 1 not zero.The default is ''.
-        2-ToDay : [integer], optional
+        2-today : [integer], optional
                 the day you want to read the result to.
-        3-Path : [String], optional
-            Path to read the results from. The default is ''.
+        3-path : [String], optional
+            path to read the results from. The default is ''.
         4-date_format : "TYPE, optional
             DESCRIPTION. The default is "'%Y-%m-%d'".
 
@@ -111,18 +111,18 @@ class Interface(River):
             fname = "lf_xsid" + str(NodeID)
             
             self.Laterals[NodeID]  = self.ReadRRMResults(self.version, self.ReferenceIndex,
-                                                            Path, fname, FromDay, ToDay,
+                                                            path, fname, fromday, today,
                                                             date_format)[fname].tolist()
             print("Lateral file " + fname + " is read")
 
         self.Laterals['total'] = self.Laterals.sum(axis=1)
-        if FromDay == '':
-            FromDay = 1
-        if ToDay == '':
-            ToDay = len(self.Laterals[NodeID])
+        if fromday == '':
+            fromday = 1
+        if today == '':
+            today = len(self.Laterals[NodeID])
 
-        start = self.ReferenceIndex.loc[FromDay,'date']
-        end = self.ReferenceIndex.loc[ToDay,'date']
+        start = self.ReferenceIndex.loc[fromday,'date']
+        end = self.ReferenceIndex.loc[today,'date']
 
         self.Laterals.index = pd.date_range(start, end, freq = 'D')
 
@@ -138,8 +138,8 @@ class Interface(River):
 
         Parameters
         ----------
-        Path : [String], optional
-            Path to read the results from.
+        path : [String], optional
+            path to read the results from.
 
         Returns
         -------
@@ -154,7 +154,7 @@ class Interface(River):
         
 
 
-    def ReadBoundaryConditions(self, FromDay='', ToDay='', path='',
+    def ReadBoundaryConditions(self, fromday='', today='', path='',
                           date_format="'%Y-%m-%d'"):
         """ReadUSHydrograph.
         
@@ -162,12 +162,12 @@ class Interface(River):
 
         Parameters
         ----------
-        1-FromDay : [integer], optional
+        1-fromday : [integer], optional
                 the day you want to read the result from, the first day is 1 not zero.The default is ''.
-        2-ToDay : [integer], optional
+        2-today : [integer], optional
                 the day you want to read the result to.
-        3-Path : [String], optional
-            Path to read the results from. The default is ''.
+        3-path : [String], optional
+            path to read the results from. The default is ''.
         4-date_format : "TYPE, optional
             DESCRIPTION. The default is "'%Y-%m-%d'".
 
@@ -180,8 +180,8 @@ class Interface(River):
         """
         assert hasattr(self, 'BCTable'), "Please read the lateras table first using the 'ReadLateralsTable' method"
 
-        # if Path == '':
-            # Path = self.CustomizedRunsPath
+        # if path == '':
+            # path = self.CustomizedRunsPath
 
         self.BC = pd.DataFrame()
 
@@ -189,19 +189,19 @@ class Interface(River):
             NodeID = self.BCTable.loc[i,'id']
             fname = "bc_xsid" + str(NodeID)
             self.BC[NodeID] = self.ReadRRMResults(self.version, self.ReferenceIndex,
-                                                            path, fname, FromDay, ToDay,
+                                                            path, fname, fromday, today,
                                                             date_format)[fname].tolist()
             
             print("BC file " + fname + " is read")
 
         self.BC['total'] = self.BC.sum(axis=1)
-        if FromDay == '':
-            FromDay = 1
-        if ToDay == '':
-            ToDay = len(self.BC[NodeID])
+        if fromday == '':
+            fromday = 1
+        if today == '':
+            today = len(self.BC[NodeID])
 
-        start = self.ReferenceIndex.loc[FromDay,'date']
-        end = self.ReferenceIndex.loc[ToDay,'date']
+        start = self.ReferenceIndex.loc[fromday,'date']
+        end = self.ReferenceIndex.loc[today,'date']
 
         self.BC.index = pd.date_range(start, end, freq = 'D')
 

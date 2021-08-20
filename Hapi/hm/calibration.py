@@ -146,25 +146,23 @@ class Calibration(River):
 
 
     def ReadObservedQ(self, path, start, end, novalue, column='oid'): #Gauges,
-        """
-        ========================================================================
-            ReadObservedQ(Gauges, Path, StartDate, EndDate, NoValue)
-        ========================================================================
+        """ReadObservedQ.
+
         ReadObservedQ method reads discharge data and store it in a dataframe
         attribute "QGauges"
 
         Parameters
         ----------
-        Gauges : [DATAFRAME]
-            Dataframe containing sub-id of the gauges under a column with a name 0.
-        Path : [String]
+        path : [String]
             path to the folder where files for the gauges exist.
-        StartDate : [datetime object]
+        start : [datetime object]
             starting date of the time series.
-        EndDate : [datetime object]
+        end : [datetime object]
             ending date of the time series.
-        NoValue : [numeric]
+        novalue : [numeric]
             value stored in gaps.
+        column : [string]
+            name of the column that contains the gauges file name
 
         Returns
         -------
@@ -174,33 +172,6 @@ class Calibration(River):
         QGaugesTable:[dataframe attribute]
             dataframe containing gauge dataframe entered toi the method.
         """
-
-        # ind = pd.date_range(StartDate, EndDate)
-        # GRDC = pd.DataFrame(index = ind)
-        # # ID = Gauges.columns[0]
-        # columns = Gauges['gid'].tolist()
-        # for i in range(len(Gauges)):
-        #     if Gauges.loc[Gauges['oid']==columns[i],'discharge'] ==1:
-        #         name = Gauges.loc[Gauges['oid']==columns[i],column].values[0]
-
-        #         GRDC.loc[:,int(Gauges['oid'][i])] = np.loadtxt(Path +
-        #                   str(int(Gauges[ID][i])) + '.txt') #,skiprows = 0
-        # self.QGauges = GRDC
-
-        # GaugesTable = pd.DataFrame(index = Gauges['id'])
-        # GaugesTable['start'] = 0
-        # GaugesTable['end'] = 0
-
-        # for i in range(len(Gauges[ID])):
-        #     st1 = GRDC[Gauges['id'][i]][GRDC[Gauges['id'][i]] != NoValue].index[0]
-        #     end1 = GRDC[Gauges['id'][i]][GRDC[Gauges['id'][i]] != NoValue].index[-1]
-        #     # GaugesTable.loc[GaugesTable.loc[:,'SubID'] == Gauges[0][i],'start'] = st1
-        #     # GaugesTable.loc[GaugesTable.loc[:,'SubID'] == Gauges[0][i],'end'] = end1
-        #     GaugesTable.loc[Gauges['id'][i],'start'] = st1
-        #     GaugesTable.loc[Gauges['id'][i],'end'] = end1
-
-        # self.QGaugesTable = GaugesTable
-
         ind = pd.date_range(start, end)
         QGauges = pd.DataFrame(index = ind)
         # ID = Gauges.columns[0]
@@ -229,30 +200,27 @@ class Calibration(River):
 
 
     def ReadRRM(self, path, start, end, column='oid'): #Qgauges,
-        """
-        ==============================================================
-            ReadRRM(Qgauges, Path, StartDate, EndDate)
-        ==============================================================
+        """ReadRRM.
+        
         ReadRRM method reads the discharge results of the rainfall runoff model
         and store it in a dataframe attribute "QRRM"
 
         Parameters
         ----------
-        Qgauges : [DATAFRAME]
-            Dataframe containing sub-id of the gauges under a column with a name 0.
-        Path : [String]
+        path : [String]
             path to the folder where files for the gauges exist.
-        StartDate : [datetime object]
+        start : [datetime object]
             starting date of the time series.
-        EndDate : [datetime object]
+        end : [datetime object]
             ending date of the time series.
+        column : [string]
+            name of the column that contains the gauges file name
 
         Returns
         -------
         None.
 
         """
-
         ind = pd.date_range(start,end)
         QSWIM = pd.DataFrame(index = ind)
 
@@ -267,22 +235,19 @@ class Calibration(River):
 
     def ReadHMQ(self, path, start, days, novalue, addHQ2=False, #, column='oid'
                  shift=False, shiftsteps=0, column='oid'):
-        """
-        ===============================================================
-             ReadRIMQ(Qgauges, Path, StartDate, days, NoValue)
-        ===============================================================
+        """ReadRIMQ.
+
+        Read Hydraulic model discharge time series.
 
         Parameters
         ----------
-        Qgauges : [DATAFRAME]
-            Dataframe containing sub-id of the gauges under a column with a name 0.
-        Path : [String]
+        path : [String]
             path to the folder where files for the gauges exist.
-        StartDate : [datetime object]
+        start : [datetime object]
             starting date of the time series.
         days : [integer]
             length of the simulation (how many days after the start date) .
-        NoValue : [numeric value]
+        novalue : [numeric value]
             the value used to fill the gaps in the time series or to fill the days
             that is not simulated (discharge is less than threshold).
 
@@ -339,7 +304,7 @@ class Calibration(River):
 
 
     def ReadHMWL(self, path, start, days, novalue, shift=False, shiftsteps=0,
-                  column='oid'): #WLGaugesTable,
+                  column='oid'):
         """
         =============================================================================
             ReadRIMWL(WLGaugesTable, Path, StartDate, days, NoValue, Shift=False)
@@ -347,8 +312,6 @@ class Calibration(River):
 
         Parameters
         ----------
-        WLGaugesTable : TYPE
-            DESCRIPTION.
         Path : TYPE
             DESCRIPTION.
         StartDate : TYPE
@@ -943,10 +906,8 @@ class Calibration(River):
         # end of loop
 
     def SmoothBedWidth(self,segmenti):
-        """
-        ========================================================
-              SmoothBedWidth(segmenti)
-        ========================================================
+        """SmoothBedWidth.
+
         SmoothBedWidth method smoothes the Bed Width the in the cross section
         for a given segment
 
@@ -963,31 +924,29 @@ class Calibration(River):
         """
         # for i in range(len(segments)):
         # i=30
-        g = self.crosssections.loc[self.crosssections['id']==segmenti,:].index[0]
-        #------
+        g = self.crosssections.loc[self.crosssections['id'] == segmenti, :].index[0]
+        # ------
 
         # segmenti = segments[i]
-        segment = self.crosssections.loc[self.crosssections['id']==segmenti,:]
+        segment = self.crosssections.loc[self.crosssections['id'] == segmenti, :]
         segment.index = range(len(segment))
         segment['bnew'] = 0
-        segment.loc[0,'bnew'] = segment.loc[0,'b']
-        segment.loc[len(segment)-1,'bnew'] = segment.loc[len(segment)-1,'b']
+        segment.loc[0, 'bnew'] = segment.loc[0, 'b']
+        segment.loc[len(segment) - 1, 'bnew'] = segment.loc[len(segment) - 1, 'b']
 
-        for j in range(1,len(segment)-1):
-            segment.loc[j,'bnew'] = (segment.loc[j-1,'b'] + segment.loc[j,'b'] + segment.loc[j+1,'b'])/3
+        for j in range(1, len(segment) - 1):
+            segment.loc[j, 'bnew'] = (segment.loc[j - 1, 'b'] + segment.loc[j, 'b'] + segment.loc[j + 1, 'b']) / 3
 
         segment['b'] = segment['bnew']
         segment.index = range(g, g + len(segment))
         # copy back the segment to the whole XS df
-        self.crosssections.loc[self.crosssections['id']==segmenti,:] = segment
+        self.crosssections.loc[self.crosssections['id'] == segmenti, :] = segment
         # g = g + len(segment)
         # end of loop
 
     def DownWardBedLevel(self,segmenti, height):
-        """
-        ========================================================
-              SmoothBedWidth(segmenti)
-        ========================================================
+        """SmoothBedWidth.
+
         SmoothBedWidth method smoothes the Bed Width the in the cross section
         for a given segment
 

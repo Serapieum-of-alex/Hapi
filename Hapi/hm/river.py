@@ -1064,8 +1064,6 @@ class River:
         return anim
 
 
-
-
     def SaveResult(self, path, fmt='%.3f'):
         """SaveResult.
 
@@ -3222,7 +3220,7 @@ class Sub(River):
 
         Parameters
         ----------
-        XSs : [list]
+        xss : [list]
             DESCRIPTION.
         start : TYPE
             DESCRIPTION.
@@ -3505,19 +3503,20 @@ class Sub(River):
         H = np.zeros(shape=(len(Q)))
 
         for i in range(len(Q)):
-        	# if Qbnd >  calculated Q for the highest depth in the table
+            # if Qbnd >  calculated Q for the highest depth in the table
         	# highest depth = (dike height + 15 m)
-        	if Q[i] > self.HQ[-1,1] :
-        		# depth = highest depth
-        		H[i] = self.HQ[-1,0]
-        	# if not calculate the Q for each discretized depth in the table
-        	# and take the one with the smallest difference from the q given
-        	else :
-        		qq = Q[i]
-        		diff = abs(qq - self.HQ[:,1])
-        		H[i] = self.HQ[np.argmin(diff),0]
+            if Q[i] > self.HQ[-1, 1]:
+                # depth = highest depth
+                H[i] = self.HQ[-1, 0]
+                # if not calculate the Q for each discretized depth in the table
+                # and take the one with the smallest difference from the q given
+            else:
+                qq = Q[i]
+                diff = abs(qq - self.HQ[:, 1])
+                H[i] = self.HQ[np.argmin(diff), 0]
 
         return H
+
 
     def PlotQ(self, Calib, gaugexs, start, end, stationname, gaugename, segment_xs,
              plotlaterals=True, latcolor=(0.3,0,0), latorder=4, latstyle=9,
@@ -3541,55 +3540,55 @@ class Sub(River):
             DESCRIPTION.
         gaugexs : integer
             the xsid of the gauge.
-        plotstart : [string]
+        start : [string]
             start date of the plot.
-        plotend : [string]
+        end : [string]
             end date of the plot.
         stationname : [string]
             station name.
-        Gaugename : TYPE
+        gaugename : TYPE
             DESCRIPTION.
-        Segment_XS : TYPE
+        segment_xs : TYPE
             DESCRIPTION.
-        PlotLaterals : TYPE, optional
+        plotlaterals : TYPE, optional
             DESCRIPTION. The default is True.
-        plotUS : TYPE, optional
+        plotus : TYPE, optional
             DESCRIPTION. The default is True.
-        SpecificXS : TYPE, optional
+        specificxs : TYPE, optional
             DESCRIPTION. The default is False.
-        plotRRM : TYPE, optional
+        plotrrm : TYPE, optional
             DESCRIPTION. The default is True.
-        PlotGauge : TYPE, optional
+        plotgauge : TYPE, optional
             DESCRIPTION. The default is True.
-        RIMcolor : TYPE, optional
+        rimcolor : TYPE, optional
             DESCRIPTION. The default is "#004c99".
         gaugecolor : TYPE, optional
             DESCRIPTION. The default is "#DC143C".
-        BCcolor : TYPE, optional
+        bccolor : TYPE, optional
             DESCRIPTION. The default is "grey".
-        RRMcolor : TYPE, optional
+        rrmcolor : TYPE, optional
             DESCRIPTION. The default is "green".
-        Latcolor : TYPE, optional
+        latcolor : TYPE, optional
             DESCRIPTION. The default is (0.3,0,0).
-        XScolor : TYPE, optional
+        xscolor : TYPE, optional
             DESCRIPTION. The default is "grey".
         linewidth : TYPE, optional
             DESCRIPTION. The default is 4.
-        RIMorder : TYPE, optional
+        rimorder : TYPE, optional
             DESCRIPTION. The default is 6.
-        Gaugeorder : TYPE, optional
+        gaugeorder : TYPE, optional
             DESCRIPTION. The default is 5.
-        RRMorder : TYPE, optional
+        rrmorder : TYPE, optional
             DESCRIPTION. The default is 4.
-        BCorder : TYPE, optional
+        bcorder : TYPE, optional
             DESCRIPTION. The default is 7.
-        USHorder : TYPE, optional
+        ushorder : TYPE, optional
             DESCRIPTION. The default is 2.
-        XSorder : TYPE, optional
+        xsorder : TYPE, optional
             DESCRIPTION. The default is 1.
         fmt : TYPE, optional
             DESCRIPTION. The default is "%Y-%m-%d".
-        NXlabels : TYPE, optional
+        nxlabels : TYPE, optional
             DESCRIPTION. The default is False.
 
         Returns
