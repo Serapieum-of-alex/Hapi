@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Created on Tue May 22 09:01:55 2018
 
@@ -6,7 +5,7 @@ Created on Tue May 22 09:01:55 2018
 """
 # documentation format
 __author__ = 'Mostafa Farrag'
-__version__ = '1.0.4'
+__version__ = '1.0.5'
 
 __docformat__ = 'restructuredtext'
 
@@ -47,13 +46,12 @@ def configuration(parent_package='',top_path=None):
     return config
 
 
-
-import Hapi.gis #as gis
-import Hapi.rrm #as rrm
+import Hapi.gis
+import Hapi.rrm
 import Hapi.run
-import Hapi.hm #as hm
-import Hapi.statistics #as statistics
-import Hapi.rs #as remotesensing
+import Hapi.hm
+import Hapi.statistics
+import Hapi.rs
 
 import Hapi.catchment
 import Hapi.weirdFn
