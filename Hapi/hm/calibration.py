@@ -297,7 +297,6 @@ class Calibration(River):
             if shift:
                 f2[shiftsteps:-1] = f2[0:-(shiftsteps+1)]
 
-            # QRIM.loc[:,QRIM.columns[i]].loc[ind[f1[0]-1]:ind[f1[-1]-1]] = f2
             QRIM.loc[ind[f1[0]-1]:ind[f1[-1]-1],QRIM.columns[i]] = f2
 
         self.QRIM = QRIM[:]
@@ -305,10 +304,7 @@ class Calibration(River):
 
     def ReadHMWL(self, path, start, days, novalue, shift=False, shiftsteps=0,
                   column='oid'):
-        """
-        =============================================================================
-            ReadRIMWL(WLGaugesTable, Path, StartDate, days, NoValue, Shift=False)
-        =============================================================================
+        """ReadRIMWL
 
         Parameters
         ----------
@@ -328,7 +324,6 @@ class Calibration(River):
         None.
 
         """
-
         end = start + dt.timedelta(days = days-1)
         ind = pd.date_range(start,end)
 
@@ -360,10 +355,8 @@ class Calibration(River):
 
 
     def ReadCalirationResult(self, SubID, Path = ''):
-        """
-        =============================================================================
-          ReadCalirationResult(SubID, FromDay = [], ToDay = [], Path = '', FillMissing = True)
-        =============================================================================
+        """ReadCalirationResult.
+        
         ReadCalirationResult method reads the 1D results and fill the missing days in the middle
 
         Parameters
@@ -407,56 +400,10 @@ class Calibration(River):
         self.CalibrationQ[SubID] = q[1].resample('D').mean()
         self.CalibrationWL[SubID] = wl[1].resample('D').mean()
 
-
-    # def ReturnPeriod(self,Path):
-    #     """
-    #     ==========================================
-    #          ReturnPeriod(Path)
-    #     ==========================================
-    #     ReturnPeriod method reads the HQ file which contains all the computational nodes
-    #     with HQ2, HQ10, HQ100
-    #     Parameters
-    #     ----------
-    #         1-Path : [String]
-    #             path to the HQ.csv file including the file name and extention
-    #             "RIM1Files + "/HQRhine.csv".
-
-    #     Returns
-    #     -------
-    #         1-RP:[data frame attribute]
-    #             containing the river computational node and calculated return period
-    #             for with columns ['node','HQ2','HQ10','HQ100']
-    #     """
-    #     self.RP = pd.read_csv(Path, delimiter = ",",header = None)
-    #     self.RP.columns = ['node','HQ2','HQ10','HQ100']
-
-    # def RiverNetwork(self, Path):
-    #     """
-    #     =====================================================
-    #           RiverNetwork(Path)
-    #     =====================================================
-    #     RiverNetwork method rad the table of each computational node followed by
-    #     upstream and then downstream node (TraceAll file)
-
-    #     ==============   ====================================================
-    #     Keyword          Description
-    #     ==============   ====================================================
-    #     1-Path :         [String] path to the Trace.txt file including the file name and extention
-    #                         "path/Trace.txt".
-
-    #     Returns
-    #     -------
-    #         1-rivernetwork:[data frame attribute]
-    #             containing the river network with columns ['SubID','US','DS']
-    #     """
-    #     self.rivernetwork = pd.read_csv(Path, delimiter = ',') #,header = None
-    #     # self.rivernetwork.columns = ['SubID','US','DS']
-
+    
     def GetAnnualMax(self, option=1, CorespondingTo=dict(MaxObserved=" ", TimeWindow=0)):
-        """
-        ========================================================
-              GetAnnualMax(option=1, option=1, CorespondingTo=dict(MaxObserved=" ", TimeWindow=0))
-        ========================================================
+        """GetAnnualMax.
+        
         GetAnnualMax method get the max annual time series out of time series of any
         temporal resolution, the code assumes that the hydrological year is
         1-Nov/31-Oct (Petrow and Merz, 2009, JoH).
@@ -683,7 +630,8 @@ class Calibration(River):
 
 
     def CalculateProfile(self, Segmenti, BedlevelDS, Manning, BC_slope):
-        """
+        """CalculateProfile.
+        
         CalculateProfile method takes the river segment ID and the calibration parameters
         (last downstream cross-section bed level and the manning coefficient) and
         calculates the new profiles
@@ -738,24 +686,9 @@ class Calibration(River):
         # self.slope.loc[self.slope['id']==Segmenti, 'slope'] = AvgSlope
         self.slope.loc[self.slope['id']==Segmenti, 'slope'] = BC_slope
 
-    # def ReadCrossSections(self,Path):
-    #     """
-    #     ===========================================
-    #       CrossSections(self,Path)
-    #     ===========================================
-    #     CrossSections method reads the cross section data of the river and assign it
-    #     to an attribute "Crosssections" of type dataframe
-    #     """
-    #     if self.version == 1 or self.version == 2:
-    #         self.crosssections = pd.read_csv(Path, delimiter = ',', skiprows =1  )
-    #     else:
-    #         self.crosssections = pd.read_csv(Path, delimiter = ',')
-
     def SmoothBedLevel(self, segmenti):
-        """
-        ================================================
-               SmoothXS(segmenti)
-        =================================================
+        """SmoothXS
+
         SmoothBedLevel method smoothes the bed level of a given segment ID by
         calculating the moving average of three cross sections
 
@@ -791,13 +724,12 @@ class Calibration(River):
         segment.index = range(g, g + len(segment))
         # copy back the segment to the whole XS df
         self.crosssections.loc[self.crosssections['id']==segmenti,:] = segment
-        # g = g + len(segment)
+
+
 
     def SmoothBankLevel(self,segmenti):
-        """
-        ========================================================
-              SmoothBankLevel(segmenti)
-        ========================================================
+        """SmoothBankLevel.
+
         SmoothBankLevel method smoothes the bankfull depth for a given segment
 
         Parameters
@@ -814,15 +746,8 @@ class Calibration(River):
 
         self.crosssections['banklevel'] = self.crosssections['dbf'] + self.crosssections['gl']
 
-        # g = 0
-
-
-
-        # for i in range(len(segments)):
-        # i=30
         g = self.crosssections.loc[self.crosssections['id']==segmenti,:].index[0]
-        #---
-        # segmenti = segments[i]
+
         segment = self.crosssections.loc[self.crosssections['id']==segmenti,:]
         segment.index = range(len(segment))
         segment['banklevelnew'] = 0
@@ -840,14 +765,11 @@ class Calibration(River):
 
         # copy back the segment to the whole XS df
         self.crosssections.loc[self.crosssections['id']==segmenti,:] = segment
-        # g = g + len(segment)
-        # end of loop
+        
 
     def SmoothFloodplainHeight(self,segmenti):
-        """
-        ========================================================
-              SmoothFloodplainHeight(segmenti)
-        ========================================================
+        """SmoothFloodplainHeight.
+        
         SmoothFloodplainHeight method smoothes the Floodplain Height the point 5 and 6
         in the cross section for a given segment
 
@@ -862,19 +784,12 @@ class Calibration(River):
             the "hl" and "hr" column in the crosssections attribute will be smoothed
 
         """
-
         self.crosssections['banklevel'] = self.crosssections['dbf'] + self.crosssections['gl']
         self.crosssections['fpl'] = self.crosssections['hl'] + self.crosssections['banklevel']
         self.crosssections['fpr'] = self.crosssections['hr'] + self.crosssections['banklevel']
 
-        # g = 0
-
-        # for i in range(len(segments)):
-        # i=30
         g = self.crosssections.loc[self.crosssections['id']==segmenti,:].index[0]
-        #------
-
-        # segmenti = segments[i]
+        
         segment = self.crosssections.loc[self.crosssections['id']==segmenti,:]
         segment.index = range(len(segment))
 
@@ -902,8 +817,7 @@ class Calibration(River):
         self.crosssections.loc[self.crosssections['id']==segmenti,:] = segment
 
         del self.crosssections['banklevel'], self.crosssections['fpr'], self.crosssections['fpl']
-        # g = g + len(segment)
-        # end of loop
+        
 
     def SmoothBedWidth(self,segmenti):
         """SmoothBedWidth.
@@ -922,27 +836,21 @@ class Calibration(River):
             the "b" column in the crosssections attribute will be smoothed
 
         """
-        # for i in range(len(segments)):
-        # i=30
         g = self.crosssections.loc[self.crosssections['id'] == segmenti, :].index[0]
-        # ------
-
-        # segmenti = segments[i]
         segment = self.crosssections.loc[self.crosssections['id'] == segmenti, :]
         segment.index = range(len(segment))
-        segment['bnew'] = 0
+        segment.loc[:,'bnew'] = 0
         segment.loc[0, 'bnew'] = segment.loc[0, 'b']
         segment.loc[len(segment) - 1, 'bnew'] = segment.loc[len(segment) - 1, 'b']
 
         for j in range(1, len(segment) - 1):
             segment.loc[j, 'bnew'] = (segment.loc[j - 1, 'b'] + segment.loc[j, 'b'] + segment.loc[j + 1, 'b']) / 3
 
-        segment['b'] = segment['bnew']
+        segment.loc[:,'b'] = segment.loc[:,'bnew']
         segment.index = range(g, g + len(segment))
         # copy back the segment to the whole XS df
         self.crosssections.loc[self.crosssections['id'] == segmenti, :] = segment
-        # g = g + len(segment)
-        # end of loop
+
 
     def DownWardBedLevel(self,segmenti, height):
         """SmoothBedWidth.
@@ -976,45 +884,40 @@ class Calibration(River):
         self.crosssections.loc[self.crosssections['id']==segmenti,:] = segment
 
 
-
-
-
-
-
     def SmoothMaxSlope(self,segmenti, SlopePercentThreshold = 1.5):
-        """
-        ========================================================
-              SmoothMaxSlope(segmenti,SlopePercentThreshold = 1.5)
-        ========================================================
+        """SmoothMaxSlope.
+        
         SmoothMaxSlope method smoothes the bed level the in the cross section
         for a given segment
 
-        As now the slope is not very smoothed as it was when using the average slope
-        everywhere, when the the difference between two consecutive slopes is very high,
-        the difference is reflected in the calculated discharge from both cross section
+        As now the slope is not very smoothed as it was when using the average 
+        slope everywhere, when the the difference between two consecutive 
+        slopes is very high, the difference is reflected in the calculated 
+        discharge from both cross section
 
         Qout is very high
         Qin is smaller compared to Qout3
-        and from the continuity equation the amount of water that stays at the cross-section
-        is very few water(Qin3-Qout3), less than the minimum depth
+        and from the continuity equation the amount of water that stays at the 
+        cross-section is very few water(Qin3-Qout3), less than the minimum 
+        depth
 
-        then the minimum depth is assigned at the cross-section, applying the minimum
-        depth in all time steps will make the delta A / delta t equals zero
-        As a result, the integration of delta Q/delta x will give a constant discharge
-        for all the downstream cross-section.
+        then the minimum depth is assigned at the cross-section, applying the 
+        minimum depth in all time steps will make the delta A / delta t equals 
+        zero As a result, the integration of delta Q/delta x will give a 
+        constant discharge for all the downstream cross-section.
 
-        To overcome this limitation, a manual check is performed during the calibration
-        process by visualizing the hydrographs of the first and last cross-section in
-        the sub-basin and the water surface profile to make sure that the algorithm
-        does not give a constant discharge.
+        To overcome this limitation, a manual check is performed during the 
+        calibration process by visualizing the hydrographs of the first and 
+        last cross-section in the sub-basin and the water surface profile to 
+        make sure that the algorithm does not give a constant discharge.
 
         Parameters
         ----------
         segmenti : [Integer]
             segment ID.
         SlopePercentThreshold  : [Float]
-             the percent of change in slope between three successive  cross sections
-             The default is 1.5.
+             the percent of change in slope between three successive  cross 
+             sections. The default is 1.5.
 
         Returns
         -------
@@ -1022,16 +925,8 @@ class Calibration(River):
             the "gl" column in the crosssections attribute will be smoothed
 
         """
-        # segments = list(set(XS['id']))
-        # SlopePercentThreshold = 1.5
-        # g = 0
-
-        # for i in range(len(segments)):
-        #-------
-        # i=30
         g = self.crosssections.loc[self.crosssections['id']==segmenti,:].index[0]
-        #-------
-        # segmenti = segments[i]
+        
         segment = self.crosssections.loc[self.crosssections['id']==segmenti,:]
         segment.index = range(len(segment))
         # slope must be positive due to the smoothing
@@ -1057,13 +952,10 @@ class Calibration(River):
         segment.index = range(g, g + len(segment))
         # copy back the segment to the whole XS df
         self.crosssections.loc[self.crosssections['id']==segmenti,:] = segment
-        # g = g + len(segment)
 
     def CheckFloodplain(self):
-        """
-        =================================================
-               CheckFloodplain(self)
-        =================================================
+        """CheckFloodplain.
+        
         CheckFloodplain method check if the dike levels is higher than the
         floodplain height (point 5 and 6 has to be lower than point 7 and 8
                            in the cross sections)
@@ -1083,10 +975,10 @@ class Calibration(River):
                 self.crosssections.loc[i,'zr'] = BankLevel + self.crosssections.loc[i,'hr'] + 0.5
 
     def ListAttributes(self):
-        """
+        """ListAttributes.
+        
         Print Attributes List
         """
-
         print('\n')
         print('Attributes List of: ' + repr(self.__dict__['name']) + ' - ' + self.__class__.__name__ + ' Instance\n')
         self_keys = list(self.__dict__.keys())
