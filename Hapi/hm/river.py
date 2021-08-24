@@ -88,22 +88,22 @@ class River:
         None.
 
         """
-        assert type(start) == str , "start argument has to be string"
-        assert type(version) == int, "version argument has to be integer number"
-        assert type(days) == int, "number of days has to be integer number"
-        assert type(fmt) == str, "date format 'fmt' has to be a string"
-        assert type(dto) == int, " delta time 'dto' has to be integer"
-        assert type(rrmdays) == int, "rrmdays has to be integer number"
-        assert type(rrmstart) == str, "rrmstart has to be string"
+        assert isinstance(start, str), "start argument has to be string"
+        assert isinstance(version, int), "version argument has to be integer number"
+        assert isinstance(days, int), "number of days has to be integer number"
+        assert isinstance(fmt, str), "date format 'fmt' has to be a string"
+        assert isinstance(dto, int), " delta time 'dto' has to be integer"
+        assert isinstance(rrmdays, int), "rrmdays has to be integer number"
+        assert isinstance(rrmstart, str), "rrmstart has to be string"
 
-        assert type(leftovertopping_suffix) == str, "leftovertopping_suffix should be string"
-        assert type(rightovertopping_suffix) == str, "rightovertopping_suffix should be string"
-        assert type(depthprefix) == str,"depthprefix should be string"
-        assert type(durationprefix) == str,"durationprefix should be string"
-        assert type(returnperiod_prefix) == str,"returnperiod_prefix should be string"
-        assert type(compressed) == bool, "compressed should be string"
-        assert type(onedresultpath) == str,"onedresultpath should be string"
-        assert type(twodresultpath) == str, "twodresultpath should be string"
+        assert isinstance(leftovertopping_suffix, str), "leftovertopping_suffix should be string"
+        assert isinstance(rightovertopping_suffix, str), "rightovertopping_suffix should be string"
+        assert isinstance(depthprefix, str),"depthprefix should be string"
+        assert isinstance(durationprefix, str),"durationprefix should be string"
+        assert isinstance(returnperiod_prefix, str),"returnperiod_prefix should be string"
+        assert isinstance(compressed, bool), "compressed should be string"
+        assert isinstance(onedresultpath, str),"onedresultpath should be string"
+        assert isinstance(twodresultpath, str), "twodresultpath should be string"
 
 
         self.name = name
@@ -203,7 +203,7 @@ class River:
             the order oif the date in the time series.
 
         """
-        if type(date) == str:
+        if isinstance(date, str) :
             date = dt.datetime.strptime(date, fmt)
         try:
             return np.where(self.referenceindex['date'] == date)[0][0]+1
@@ -254,7 +254,7 @@ class River:
             the order oif the date in the time series.
 
         """
-        if type(date) == str:
+        if isinstance(date, str):
             date = dt.datetime.strptime(date, fmt)
         return np.where(self.referenceindex['date'] == date)[0][0]+1
 
@@ -3766,38 +3766,36 @@ class Sub(River):
             DESCRIPTION.
 
         """
-        QRIM = pd.DataFrame()
+        QHM = pd.DataFrame()
         startError = dt.datetime.strptime(startError,fmt)
         endError = dt.datetime.strptime(endError,fmt)
 
-        # GaugeStart = Calib.GaugesTable[Calib.GaugesTable['xsid'] == gaugexs]['Qstart'].values[0]
-        # GaugeEnd = Calib.GaugesTable[Calib.GaugesTable['xsid'] == gaugexs]['Qend'].values[0]
-
         if Filter :
-            # get the latest date of the filter date and the first date in the result
+            # get the latest date of the filter date and the first date in 
+            # the result
             # get the earliest date of the end and the last date in the result
             st2 = max(GaugeStart,startError, self.firstdayresults)
             end2 = min(GaugeEnd,endError, self.enddays)
-
-            # starti = River.DateToIndex(st2)
-            # endi = River.DateToIndex(end2)
 
             # get the observed discharge
             Qobs = Calib.QGauges.loc[st2:end2,stationname]
 
             # resample the times series to average daily
-            ind = pd.date_range(self.firstdayresults, self.enddays + dt.timedelta(days=1), freq = 'h')[:-1]
-            Q = self.Result1D[self.Result1D['xs'] == self.lastxs]#['q']#[sub.Result1D['hour'] == 24]
+            ind = pd.date_range(self.firstdayresults, 
+                                self.enddays + dt.timedelta(days=1), 
+                                            freq = 'h')[:-1]
+            
+            Q = self.Result1D[self.Result1D['xs'] == self.lastxs]
             Q.index = ind
-            QRIM['q'] = Q['q'].resample('D').mean()
-            QRIM['q'] = QRIM.loc[st2:end2,'q']
+            QHM['q'] = Q['q'].resample('D').mean()
+            QHM['q'] = QHM.loc[st2:end2,'q']
 
             # try:
             #     sub.Resample(gaugexs, 'q', starti, endi, Delete=True)
             # except:
             #     sub.Resample(gaugexs, 'q', starti, endi, Delete=False)
-            # QRIM['q']  = sub.ResampledQ[gaugexs][:]
-            # QRIM.index = pd.date_range(st2, end2)
+            # QHM['q']  = sub.ResampledQ[gaugexs][:]
+            # QHM.index = pd.date_range(st2, end2)
 
         else:
             st2 = max(GaugeStart,self.firstdayresults)
@@ -3806,21 +3804,23 @@ class Sub(River):
             Qobs = Calib.QGauges.loc[st2:end2,stationname]
 
             # resample the times series to average daily
-            ind = pd.date_range(self.firstdayresults, self.lastday + dt.timedelta(days=1), freq = 'h')[:-1]
-            Q = self.Result1D[self.Result1D['xs'] == self.lastxs]#['q']#[sub.Result1D['hour'] == 24]
+            ind = pd.date_range(self.firstdayresults, 
+                                self.lastday + dt.timedelta(days=1), 
+                                                    freq = 'h')[:-1]
+            Q = self.Result1D[self.Result1D['xs'] == self.lastxs]
             Q.index = ind
-            QRIM['q'] = Q['q'].resample('D').mean()
-            QRIM['q'] = QRIM.loc[st2:end2,'q']
+            QHM['q'] = Q['q'].resample('D').mean()
+            QHM['q'] = QHM.loc[st2:end2,'q']
 
             # old
-            # QRIM['q'] = sub.Result1D['q'][sub.Result1D['xs'] == gaugexs][sub.Result1D['hour'] == 24][:]
-            # QRIM.index = pd.date_range(st2, end2)
-
-        rmse = round(Pf.RMSE(Qobs,QRIM.loc[st2:end2,'q'].tolist()),0)
-        kge = round(Pf.KGE(Qobs,QRIM.loc[st2:end2,'q'].tolist()),2)
-        wb = round(Pf.WB(Qobs,QRIM.loc[st2:end2,'q'].tolist()),0)
-        nsehf = round(Pf.NSEHF(Qobs,QRIM.loc[st2:end2,'q'].tolist()),2)
-        nse = round(Pf.NSE(Qobs,QRIM.loc[st2:end2,'q'].tolist()),2)
+            # QHM['q'] = sub.Result1D['q'][sub.Result1D['xs'] == gaugexs][sub.Result1D['hour'] == 24][:]
+            # QHM.index = pd.date_range(st2, end2)
+        qsim = QHM.loc[st2:end2,'q'].tolist()
+        rmse = round(Pf.RMSE(Qobs,qsim),0)
+        kge = round(Pf.KGE(Qobs,qsim),2)
+        wb = round(Pf.WB(Qobs, qsim),0)
+        nsehf = round(Pf.NSEHF(Qobs,qsim),2)
+        nse = round(Pf.NSE(Qobs,qsim),2)
         print("--------------------")
         print("RMSE = " + str(rmse))
         print("KGE = " + str(kge))
@@ -3940,11 +3940,15 @@ class Sub(River):
 
 
         """
-        start = dt.datetime.strptime(start,fmt)
-        end = dt.datetime.strptime(end,fmt)
+        if type(start) == str:
+            start = dt.datetime.strptime(start,fmt)
+        if type(start) == str:
+            end = dt.datetime.strptime(end,fmt)
 
-        GaugeStart = Calib.GaugesTable[Calib.GaugesTable['xsid'] == gaugexs]['WLstart'].values[0]
-        GaugeEnd = Calib.GaugesTable[Calib.GaugesTable['xsid'] == gaugexs]['WLend'].values[0]
+        GaugeStart = Calib.GaugesTable[
+                    Calib.GaugesTable['xsid'] == gaugexs]['WLstart'].values[0]
+        GaugeEnd = Calib.GaugesTable[
+                    Calib.GaugesTable['xsid'] == gaugexs]['WLend'].values[0]
 
         if type(GaugeStart) ==  int:
             print("No water level data for this river segment")
@@ -3952,12 +3956,14 @@ class Sub(River):
 
         if Filter:
             st2 = max(GaugeStart, start, self.firstdayresults)
-            end2 = min(GaugeEnd, end,self.enddays)
+            end2 = min(GaugeEnd, end, self.enddays)
             # observed
             obs = np.array(Calib.WLGauges.loc[st2:end2,stationname])
 
             # RIM
-            ind = pd.date_range(self.firstdayresults, self.enddays+dt.timedelta(days=1), freq = 'h')[:-1]
+            ind = pd.date_range(self.firstdayresults, 
+                                self.enddays + dt.timedelta(days=1), 
+                                freq = 'h')[:-1]
             mod = self.Result1D[self.Result1D['xs'] == self.lastxs]
             mod.index = ind
             mod = mod['wl'].resample('D').mean()
@@ -3965,11 +3971,12 @@ class Sub(River):
 
             # RIM
             # try:
-            #     sub.Resample(gaugexs, 'wl', River.DateToIndex(st2), River.DateToIndex(end2), Delete = True)
+            #     sub.Resample(gaugexs, 'wl', River.DateToIndex(st2), 
+            #                   River.DateToIndex(end2), Delete = True)
             # except:
-            #     sub.Resample(gaugexs, 'wl', River.DateToIndex(st2), River.DateToIndex(end2), Delete = False)
+            #     sub.Resample(gaugexs, 'wl', River.DateToIndex(st2),
+            #                   River.DateToIndex(end2), Delete = False)
             # series1 = np.array(sub.ResampledWL[gaugexs])
-
         else:
             st2 = max(GaugeStart,self.firstdayresults)
             end2 = min(GaugeEnd,self.lastday)
@@ -3978,18 +3985,22 @@ class Sub(River):
 
 
             # RIM
-            ind = pd.date_range(self.firstdayresults, self.lastday + dt.timedelta(days=1), freq = 'h')[:-1]
-            mod = self.Result1D[self.Result1D['xs'] == gaugexs]#['q']#[sub.Result1D['hour'] == 24]
+            ind = pd.date_range(self.firstdayresults, 
+                                self.lastday + dt.timedelta(days=1), 
+                                freq = 'h')[:-1]
+            mod = self.Result1D[self.Result1D['xs'] == gaugexs]
             mod.index = ind
             mod = mod['wl'].resample('D').mean()
             mod = mod.loc[st2:end2]
 
             # RIM
-            # sub.Resample(gaugexs, 'wl', River.DateToIndex(st2), River.DateToIndex(end2), Delete = False)
+            # sub.Resample(gaugexs, 'wl', River.DateToIndex(st2),
+            #               River.DateToIndex(end2), Delete = False)
             # series1 = np.array(sub.ResampledWL[gaugexs])
 
         if len(obs) != len(mod) or len(mod) ==0:
-            print("Availabel data for the gauge starts from " + str(GaugeStart)+ " To " + str(GaugeEnd))
+            print("Availabel data for the gauge starts from " 
+                  + str(GaugeStart)+ " To " + str(GaugeEnd))
             return
 
         MBE = round(Pf.MBE(obs, mod),2)
@@ -4009,7 +4020,7 @@ class Sub(River):
         return MBE, MAE, RMSE, KGE, NSEHF, NSE
 
 
-    def Histogram(self, Day, BaseMapF, ExcludeValue, OccupiedCellsOnly, Map = 1,
+    def Histogram(self, Day, BaseMapF, ExcludeValue, OccupiedCellsOnly, Map=1,
                   filter1 = 0.2, filter2 = 15):
         """Histogram.
 
