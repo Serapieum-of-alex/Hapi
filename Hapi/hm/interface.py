@@ -101,7 +101,10 @@ class Interface(River):
             with segment id as a column name and a column 'total' contains the
             sum of all the hydrographs.
         """
-        assert hasattr(self, 'LateralsTable'), "Please read the lateras table first using the 'ReadLateralsTable' method"
+        errmsg = """Please read the lateras table first using the 
+        'ReadLateralsTable' method """
+        
+        assert hasattr(self, 'LateralsTable'), '{0}'.format(errmsg)
 
 
         self.Laterals = pd.DataFrame()
@@ -110,9 +113,11 @@ class Interface(River):
             NodeID = self.LateralsTable.loc[i,'xsid']
             fname = "lf_xsid" + str(NodeID)
             
-            self.Laterals[NodeID]  = self.ReadRRMResults(self.version, self.ReferenceIndex,
-                                                            path, fname, fromday, today,
-                                                            date_format)[fname].tolist()
+            self.Laterals[NodeID]  = self.ReadRRMResults(self.version, 
+                                                         self.ReferenceIndex,
+                                                         path, fname, fromday, 
+                                                         today, 
+                                                         date_format)[fname].tolist()
             print("Lateral file " + fname + " is read")
 
         self.Laterals['total'] = self.Laterals.sum(axis=1)
@@ -126,7 +131,8 @@ class Interface(River):
 
         self.Laterals.index = pd.date_range(start, end, freq = 'D')
 
-    def ReadBoundaryConditionsTable(self, path, prefix='bc_xsid', suffix='.txt'):
+    def ReadBoundaryConditionsTable(self, path, prefix='bc_xsid', 
+                                    suffix='.txt'):
         """ReadBoundaryConditionsTable.
         
         ReadLateralsTable method reads the laterals file

@@ -65,23 +65,26 @@ class River:
             files.
             The default is "_left.txt".
         rightovertopping_suffix : TYPE, optional
-            the prefix you used to name the overtopping form the right bank files.
-            The default is "_right.txt".
+            the prefix you used to name the overtopping form the right bank 
+            files. The default is "_right.txt".
         depthprefix : [str], optional
             the prefix you used to name the Max depth raster result maps.
             The default is "DepthMax".
         durationprefix : [str], optional
-            the prefix you used to name the inundation duration raster result maps.
-            The default is "Duration".
+            the prefix you used to name the inundation duration raster result 
+            maps. The default is "Duration".
         returnperiod_prefix : [str], optional
             the prefix you used to name the Return Period raster result maps.
             The default is "ReturnPeriod".
         compressed : [bool], optional
-            True if the result raster/ascii files are compressed. The default is True.
+            True if the result raster/ascii files are compressed. The default 
+            is True.
         onedresultpath : [str], optional
-            path to the folder where the 1D river routing results exist. The default is ''.
+            path to the folder where the 1D river routing results exist. 
+            The default is ''.
         twodresultpath : [str], optional
-            path to the folder where the 1D river routing results exist. The default is ''.
+            path to the folder where the 1D river routing results exist. 
+            The default is ''.
 
         Returns
         -------
@@ -141,7 +144,8 @@ class River:
         #----------------------------------------------------
         ref_ind = pd.date_range(self.start, self.end, freq='D')
         # the last day is not in the results day Ref_ind[-1]
-        # write the number of days + 1 as python does not include the last number in the range
+        # write the number of days + 1 as python does not include the last 
+        # number in the range
         # 19723 days so write 19724
         if days == 1:
             days = 2
@@ -172,8 +176,8 @@ class River:
         Parameters
         ----------
         index : [Integer]
-            Integer number ranges from 1 and max value of the value of the attribute
-            "days" of the River object.
+            Integer number ranges from 1 and max value of the value of the 
+            attribute "days" of the River object.
 
         Returns
         -------
@@ -537,8 +541,9 @@ class River:
             for i in list2:
                 path = self.oneminresultpath + "{0}/" + str(self.id) + "-{0}-" + str(i) + '.txt'
                 hh = np.transpose(np.loadtxt(path.format("h"), dtype=np.float16))[:, :-1]
+                print(i)
                 qq = np.transpose(np.loadtxt(path.format("q"), dtype=np.float16))[:, :-1]
-                
+                print(i)
                 # add the bed level to the water depth
                 hh = hh + self.crosssections['gl'].values
                 # assign the sub-daily results in the big dataframe 
@@ -2731,19 +2736,20 @@ class Sub(River):
                      addHQ2=False, path='', xsid=''):
         """Read1DResult.
 
-        Read1DResult method reads the 1D (1D-2D coupled) result of the sub-basin the object is
-        created for and return the hydrograph of the first and last cross section
-        the method will not read the 1D result file again if you tried to read results
-        of the same sub-basin again, so you have to re-instantiate the object
+        Read1DResult method reads the 1D (1D-2D coupled) result of the 
+        sub-basin the object is created for and return the hydrograph of the 
+        first and last cross section the method will not read the 1D result 
+        file again if you tried to read results of the same sub-basin again, 
+        so you have to re-instantiate the object
 
         Parameters
         ----------
             1-fromday : [integer], optional
-                the index of the day you want the data to start from. The default is empty.
-                means read everything
+                the index of the day you want the data to start from. 
+                The default is empty. it means read everything
             2-today : [integer], optional
-                the index of the day you want the data to end to. The default is empty.
-                means read everything
+                the index of the day you want the data to end to. The default 
+                is empty. means read everything
             3-FillMissing : [Bool], optional
                 Fill the missing days. The default is False.
             4-addHQ2 : [Bool], optional
@@ -2751,7 +2757,8 @@ class Sub(River):
             5-path : [String], optional
                 path to read the results from. The default is ''.
             6-xsid : [Integer], optional
-                id of a specific cross section you want to get the results on it. The default is ''.
+                id of a specific cross section you want to get the results on 
+                it. The default is ''.
                 
         Returns
         -------
@@ -2759,9 +2766,11 @@ class Sub(River):
                 the results read will be stored (as it is without any filter)
                 in the attribute "Result1D"
             2-XSHydrographs : [dataframe attribute]
-                dataframe containing hydrographs at the position of the first and last cross section
+                dataframe containing hydrographs at the position of the first 
+                and last cross section
             3-XSWaterLevel : [dataframe attribute]
-                dataframe containing waterlevels at the position of the first and last cross section
+                dataframe containing waterlevels at the position of the first 
+                and last cross section
             4-firstdayresults:[attribute]
                 the first day in the 1D result
             5-lastday:[attribute]
@@ -2769,7 +2778,8 @@ class Sub(River):
         """
         # if the results are not read yet read it
         if not hasattr(self, "Result1D") :
-            River.Read1DResult(self,self.id, fromday, today, path = path, FillMissing = FillMissing)
+            River.Read1DResult(self,self.id, fromday, today, path=path, 
+                               FillMissing=FillMissing)
 
         if fromday == '':
             fromday = self.Result1D.loc[0,'day']
@@ -2780,14 +2790,20 @@ class Sub(River):
         end = self.IndexToDate(today+1)
 
         if not hasattr(self, "XSHydrographs") :
-            self.XSHydrographs = pd.DataFrame(index = pd.date_range(start,end,freq = 'H')[:-1])
-            self.XSWaterLevel = pd.DataFrame(index = pd.date_range(start,end,freq = 'H')[:-1])
-            self.XSWaterDepth = pd.DataFrame(index = pd.date_range(start,end,freq = 'H')[:-1])
+            self.XSHydrographs = pd.DataFrame(
+                            index=pd.date_range(start,end,freq = 'H')[:-1])
+            self.XSWaterLevel = pd.DataFrame(
+                            index=pd.date_range(start,end,freq = 'H')[:-1])
+            self.XSWaterDepth = pd.DataFrame(
+                            index=pd.date_range(start,end,freq = 'H')[:-1])
 
         #check if the xsid is in the sub-basin
         if xsid != '':
             XSsub = list(set(self.Result1D['xs']))
-            assert  xsid in XSsub, "The given cross-section " + str(xsid) + " does not exist inside the current Segment of the river, first XS is " + str(self.firstxs) + ", and last XS is " + str(self.lastxs)
+            msg = ("The given cross-section {0} does not exist inside the "
+                   "current Segment of the river, first XS is {1}, and last "
+                   "XS is " + str(self.lastxs)).format(xsid, self.firstxs)
+            assert  xsid in XSsub, msg
 
         # get the simulated hydrograph and add the cutted HQ2
         if addHQ2:
@@ -2820,9 +2836,10 @@ class Sub(River):
 
         # else:
         self.firstday =  self.referenceindex.loc[self.from_beginning,'date']
-        # if there are empty days at the beginning the filling missing days is not going to detect it
-        # so ignore it here by starting from the first day in the data (data['day'][0]) dataframe
-        # empty days at the beginning
+        # if there are empty days at the beginning the filling missing days is 
+        # not going to detect it so ignore it here by starting from the first 
+        # day in the data (data['day'][0]) dataframe empty days at the 
+        # beginning
 
         self.firstdayresults = self.referenceindex.loc[self.Result1D['day'][0],'date']
         self.lastday = self.referenceindex.loc[self.Result1D['day'][self.Result1D.index[-1]],'date']
@@ -2987,8 +3004,9 @@ class Sub(River):
     def Resample(self, xsid, ColumnName, fromday='', today = '', Delete=False):
         """Resample.
 
-        Resample method extract the value at the last hour of the dat [hour == 24]
-        from the 1D Result  file, for the discharge, water level, and water depth.
+        Resample method extract the value at the last hour of the dat 
+        [hour == 24] from the 1D Result  file, for the discharge, water level, 
+        and water depth.
 
         Parameters
         ----------
@@ -2996,8 +3014,8 @@ class Sub(River):
             cross-section id.
         ColumnName : [string]
             the column name you want to resample in the results1D. ColumnName
-            could be 'q' for discharge, 'wl' for water level, and 'h' for water
-            depth.
+            could be 'q' for discharge, 'wl' for water level, and 'h' for 
+            water depth.
         fromday : [integer], optional
             starting day. The default is ''.
         today : [integer], optional
@@ -3193,8 +3211,9 @@ class Sub(River):
 
         SaveHydrograph method saves the hydrograph of any cross-section in
         the segment.
-        Mainly the method is created to to be used to save the last cross-section
-        hydrograph to use it as as a boundary condition for the downstream segment
+        Mainly the method is created to to be used to save the last 
+        cross-section hydrograph to use it as as a boundary condition for the 
+        downstream segment
 
 
         Parameters
@@ -3202,7 +3221,8 @@ class Sub(River):
         xsid : [integer]
             the id of the cross section.
         path : [string], optional
-            path to the directory where you want to save the file to. The default is ''.
+            path to the directory where you want to save the file to. The 
+            default is ''.
         Option : [integer]
             1 to write water level results, 2 to write water depth results
         Returns
@@ -3211,7 +3231,9 @@ class Sub(River):
 
         """
         if path == '' :
-            assert hasattr(self, 'CustomizedRunspath'), "please enter the value of the CustomizedRunspath or use the path argument to specify where to save the file"
+            msg = ("please enter the value of the CustomizedRunspath or use "
+                   " the path argument to specify where to save the file")
+            assert hasattr(self, 'CustomizedRunspath'), msg
             path = self.CustomizedRunspath
 
         saveDS = self.XSHydrographs[xsid].resample('D').last().to_frame()

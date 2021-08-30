@@ -16,8 +16,8 @@ class Calibration(River):
                  fmt="%Y-%m-%d"):
         """HMCalibration.
 
-        To instantiate the HMCalibration object you have to provide the following
-        arguments
+        To instantiate the HMCalibration object you have to provide the
+        following arguments
 
         Parameters
         ----------
@@ -76,7 +76,8 @@ class Calibration(River):
         Parameters
         ----------
             2-path : [String]
-                    path to the folder containing the text files of the water level gauges
+                  path to the folder containing the text files of the water
+                  level gauges
             3-start : [datetime object/str]
                 the starting date of the water level time series.
             4-end : [datetime object/str]
@@ -84,8 +85,8 @@ class Calibration(River):
             5-novalue : [integer/float]
                 value used to fill the missing values.
             6-column : [str/numeric]
-                the id of the column containing the name of the files.default is
-                "oid".
+                the id of the column containing the name of the files.default
+                is "oid".
             7-fmt : [str]
             format of the given dates. The default is "%Y-%m-%d"
 
@@ -97,7 +98,8 @@ class Calibration(River):
                 and the gaps filled with the NoValue
             2-GaugesTable:[dataframe attiribute].
                 in the the GaugesTable dataframe two new columns are inserted
-                ["WLstart", "WLend"] for the start and end date of the time series.
+                ["WLstart", "WLend"] for the start and end date of the time
+                series.
         """
         if isinstance(start, str):
             start = dt.datetime.strptime(start,fmt)
@@ -128,8 +130,6 @@ class Calibration(River):
                 f.loc[f[1]!= novalue,1] = (f.loc[f[1]!= novalue,1] / 100) + self.GaugesTable.loc[i,'datum(m)']
                 f = f.rename(columns={1:columns[i]})
 
-                # assign the values in the dateframe
-                # WLGauges.loc[:,WLGauges.columns[i]].loc[f[0][0]:f[0][len(f)-1]] = f[1].tolist()
                 # use merge as there are some gaps in the middle
                 WLGauges = WLGauges.merge(f, on=0, how='left', sort=False)
 
@@ -143,8 +143,10 @@ class Calibration(River):
         self.GaugesTable['WLend'] = 0
         for i in range(len(columns)):
             if self.GaugesTable.loc[i,'waterlevel'] == 1:
-                st1 = WLGauges[columns[i]][WLGauges[columns[i]] != novalue].index[0]
-                end1 = WLGauges[columns[i]][WLGauges[columns[i]] != novalue].index[-1]
+                st1 = WLGauges[columns[i]][
+                                WLGauges[columns[i]] != novalue].index[0]
+                end1 = WLGauges[columns[i]][
+                                WLGauges[columns[i]] != novalue].index[-1]
                 self.GaugesTable.loc[i,'WLstart'] = st1
                 self.GaugesTable.loc[i,'WLend'] = end1
 
@@ -174,11 +176,12 @@ class Calibration(River):
         Returns
         -------
         QGauges:[dataframe attribute]
-            dataframe containing the hydrograph of each gauge under a column by
-            the name of  gauge.
+            dataframe containing the hydrograph of each gauge under a column
+             by the name of  gauge.
         GaugesTable:[dataframe attribute]
-            in the GaugesTable dataframe two new columns are inserted ["Qstart",
-            "Qend"] containing the start and end date of the discharge time series.
+            in the GaugesTable dataframe two new columns are inserted
+            ["Qstart", "Qend"] containing the start and end date of the
+            discharge time series.
         """
         if isinstance(start, str):
             start = dt.datetime.strptime(start,fmt)
@@ -214,8 +217,8 @@ class Calibration(River):
     def ReadRRM(self, path, start, end, column='oid', fmt="%Y-%m-%d"):
         """ReadRRM.
 
-        ReadRRM method reads the discharge results of the rainfall runoff model
-        and store it in a dataframe attribute "QRRM"
+        ReadRRM method reads the discharge results of the rainfall runoff
+        model and store it in a dataframe attribute "QRRM"
 
         Parameters
         ----------
@@ -249,8 +252,8 @@ class Calibration(River):
         for i in range(len(self.GaugesTable[column])):
             # read SWIM data
             # only at the begining to get the length of the time series
-            QSWIM.loc[:,int(self.GaugesTable.loc[i,column])] = np.loadtxt(path +
-                  str(int(self.GaugesTable.loc[i,column])) + '.txt')#,skiprows = 0
+            QSWIM.loc[:,int(self.GaugesTable.loc[i,column])] = np.loadtxt(path
+                   + str(int(self.GaugesTable.loc[i,column])) + '.txt')
         self.QRRM = QSWIM
 
 
@@ -293,12 +296,14 @@ class Calibration(River):
             segment in the catchment.
         """
         if addHQ2 and self.version == 1:
-            assert hasattr(self,"rivernetwork"), "please read the traceall file using the RiverNetwork method"
-            assert hasattr(self, "RP"), "please read the HQ file first using ReturnPeriod method"
+            msg = "please read the traceall file using the RiverNetwork method"
+            assert hasattr(self,"rivernetwork"), msg
+            msg = "please read the HQ file first using ReturnPeriod method"
+            assert hasattr(self, "RP"), msg
 
         if isinstance(start, str):
             start = dt.datetime.strptime(start,fmt)
-                    
+
         end = start + dt.timedelta(days = days-1)
         ind = pd.date_range(start, end)
         QHM = pd.DataFrame(index = ind, columns = self.GaugesTable.loc[
@@ -501,24 +506,35 @@ class Calibration(River):
             when using option = 5
         """
         if option == 1:
-            assert hasattr(self, "QGauges"), "please read the observed Discharge data first with the ReadObservedQ method"
+            msg = """ please read the observed Discharge data first with the
+            ReadObservedQ method """
+            assert hasattr(self, "QGauges"), "{0}".format(msg)
             columns = self.QGauges.columns.tolist()
         elif option == 2:
-            assert hasattr(self, "WLGauges"), "please read the observed Water level data first with the ReadObservedWL method"
+            msg = """please read the observed Water level data first with the
+            ReadObservedWL method"""
+            assert hasattr(self, "WLGauges"), "{0}".format(msg)
             columns = self.WLGauges.columns.tolist()
         elif option == 3:
-            assert hasattr(self, "QRRM"), "please read the Rainfall-runoff data first with the ReadRRM method"
+            msg = """ please read the Rainfall-runoff data first with the
+            ReadRRM method"""
+            assert hasattr(self, "QRRM"), "{0}".format(msg)
             columns = self.QRRM.columns.tolist()
         elif option == 4:
-            assert hasattr(self, "QHM"), "please read the RIM results first with the ReadRIMQ method"
+            msg = """ please read the RIM results first with the ReadRIMQ
+            method """
+            assert hasattr(self, "QHM"), "{0}".format(msg)
             columns = self.QHM.columns.tolist()
         else:
-            assert hasattr(self, "WLHM"), "please read the RIM results first with the ReadRIMWL method"
+            msg = "please read the RIM results first with the ReadRIMWL method"
+            assert hasattr(self, "WLHM"), "{0}".format(msg)
             columns = self.WLHM.columns.tolist()
 
 
         if CorespondingTo['MaxObserved'] == "WL":
-            assert hasattr(self, "WLGauges"), "please read the observed Water level data first with the ReadObservedWL method"
+            msg = """ please read the observed Water level data first with the
+            ReadObservedWL method"""
+            assert hasattr(self, "WLGauges"), "{0}".format(msg)
 
             startdate = self.WLGauges.index[0]
             AnnualMax = self.WLGauges.loc[:, self.WLGauges.columns[0]
@@ -601,7 +617,9 @@ class Calibration(River):
                 AnnualMax.loc[:, Sub] = QTS
 
         elif CorespondingTo['MaxObserved'] == "Q":
-            assert hasattr(self, "QGauges"), "please read the observed Discharge data first with the ReadObservedQ method"
+            msg = """ please read the observed Discharge data first with the
+            ReadObservedQ method """
+            assert hasattr(self, "QGauges"), "{0}".format(msg)
 
             startdate = self.QGauges.index[0]
             AnnualMax = self.QGauges.loc[:, self.QGauges.columns[0]
@@ -796,7 +814,8 @@ class Calibration(River):
         1-crosssections: [dataframe attribute]
             the "gl" column in the crosssections attribute will be smoothed
         """
-        assert hasattr(self,"crosssections"), "please read the cross section first"
+        msg = "please read the cross section first"
+        assert hasattr(self,"crosssections"), "{0}".format(msg)
         g = self.crosssections.loc[
                 self.crosssections['id']==segmenti,:].index[0]
 
@@ -823,7 +842,8 @@ class Calibration(River):
 
         segment.index = range(g, g + len(segment))
         # copy back the segment to the whole XS df
-        self.crosssections.loc[self.crosssections['id'] == segmenti,:] = segment
+        self.crosssections.loc[
+                    self.crosssections['id'] == segmenti,:] = segment
 
 
 
@@ -851,7 +871,8 @@ class Calibration(River):
         segment.index = range(len(segment))
         segment.loc[:, 'banklevelnew'] = 0
         segment.loc[0,'banklevelnew'] = segment.loc[0,'banklevel']
-        segment.loc[len(segment)-1,'banklevelnew'] = segment.loc[len(segment)-1,'banklevel']
+        segment.loc[len(segment)-1,
+                    'banklevelnew'] = segment.loc[len(segment)-1,'banklevel']
 
         for j in range(1,len(segment)-1):
             segment.loc[j,'banklevelnew'] = (segment.loc[j-1,'banklevel'] +
@@ -865,7 +886,8 @@ class Calibration(River):
         segment.index = range(g, g + len(segment))
 
         # copy back the segment to the whole XS df
-        self.crosssections.loc[self.crosssections['id'] == segmenti,:] = segment
+        self.crosssections.loc[
+                        self.crosssections['id'] == segmenti,:] = segment
 
 
     def SmoothFloodplainHeight(self,segmenti):
@@ -889,7 +911,8 @@ class Calibration(River):
         self.crosssections.loc[:,'fpl'] = self.crosssections.loc[:,'hl'] + self.crosssections.loc[:,'banklevel']
         self.crosssections.loc[:,'fpr'] = self.crosssections.loc[:,'hr'] + self.crosssections.loc[:,'banklevel']
 
-        g = self.crosssections.loc[self.crosssections['id'] == segmenti,:].index[0]
+        g = self.crosssections.loc[
+                        self.crosssections['id'] == segmenti,:].index[0]
 
         segment = self.crosssections.loc[self.crosssections['id'] == segmenti,:]
         segment.index = range(len(segment))
@@ -939,22 +962,26 @@ class Calibration(River):
         -------
         1-crosssections: [dataframe attribute]
             the "b" column in the crosssections attribute will be smoothed
-
         """
-        g = self.crosssections.loc[self.crosssections['id'] == segmenti, :].index[0]
-        segment = self.crosssections.loc[self.crosssections['id'] == segmenti, :]
+        g = self.crosssections.loc[
+                            self.crosssections['id'] == segmenti, :].index[0]
+        segment = self.crosssections.loc[
+                            self.crosssections['id'] == segmenti, :]
         segment.index = range(len(segment))
         segment.loc[:,'bnew'] = 0
         segment.loc[0, 'bnew'] = segment.loc[0, 'b']
         segment.loc[len(segment) - 1, 'bnew'] = segment.loc[len(segment) - 1, 'b']
 
         for j in range(1, len(segment) - 1):
-            segment.loc[j, 'bnew'] = (segment.loc[j - 1, 'b'] + segment.loc[j, 'b'] + segment.loc[j + 1, 'b']) / 3
+            segment.loc[j, 'bnew'] = (segment.loc[j - 1, 'b'] +
+                                      segment.loc[j, 'b'] +
+                                      segment.loc[j + 1, 'b']) / 3
 
         segment.loc[:,'b'] = segment.loc[:,'bnew']
         segment.index = range(g, g + len(segment))
         # copy back the segment to the whole XS df
-        self.crosssections.loc[self.crosssections['id'] == segmenti, :] = segment
+        self.crosssections.loc[
+                        self.crosssections['id'] == segmenti, :] = segment
 
 
     def DownWardBedLevel(self,segmenti, height):
@@ -974,7 +1001,8 @@ class Calibration(River):
             the "b" column in the crosssections attribute will be smoothed
 
         """
-        g = self.crosssections.loc[self.crosssections['id']==segmenti,:].index[0]
+        g = self.crosssections.loc[
+                        self.crosssections['id']==segmenti,:].index[0]
 
         segment = self.crosssections.loc[self.crosssections['id']==segmenti,:]
         segment.index = range(len(segment))
@@ -1062,6 +1090,7 @@ class Calibration(River):
         # copy back the segment to the whole XS df
         self.crosssections.loc[self.crosssections['id']==segmenti,:] = segment
 
+
     def CheckFloodplain(self):
         """CheckFloodplain.
 
@@ -1072,9 +1101,12 @@ class Calibration(River):
         Returns
         -------
         crosssection : [dataframe attribute]
-            the "zl" and "zr" column in the "crosssections" attribute will be updated
+            the "zl" and "zr" column in the "crosssections" attribute will be 
+            updated
         """
-        assert hasattr(self, "crosssections"), "please read the cross section first or copy it to the Calibration object"
+        msg = """please read the cross section first or copy it to the
+        Calibration object"""
+        assert hasattr(self, "crosssections"), "{0}".format(msg)
         for i in range(len(self.crosssections)):
             BankLevel = self.crosssections.loc[i,'gl']+ self.crosssections.loc[i,'dbf']
 
@@ -1097,4 +1129,3 @@ class Calibration(River):
                 print(str(key) + ' : ' + repr(self.__dict__[key]))
 
         print('\n')
-        
