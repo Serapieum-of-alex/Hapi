@@ -229,10 +229,11 @@ class Visualize:
 
 
     def WaterSurfaceProfile(self, Sub, start, end, fps=100, fromxs='',
-                            toxs ='', fmt="%Y-%m-%d", figsize=(20, 10),
+                            toxs='', fmt="%Y-%m-%d", figsize=(20, 10),
                             textlocation=(1,1), LateralsColor='#3D59AB',
                             LaterlasLineWidth=1, xaxislabelsize=10,
-                            yaxislabelsize=10, nxlabels=10, xticklabelsize=8):
+                            yaxislabelsize=10, nxlabels=10, xticklabelsize=8,
+                            Lastxs=True):
         """WaterSurfaceProfile.
 
         Plot water surface profile
@@ -241,41 +242,43 @@ class Visualize:
         ----------
         Sub : [Object]
             Sub-object created as a sub class from River object.
-        plotstart : [datetime object]
+        start : [datetime object]
             starting date of the simulation.
-        plotend : [datetime object]
+        end : [datetime object]
             end date of the simulation.
-        interval : [integer], optional
+        fps : [integer], optional
              It is an optional integer value that represents the delay between
              each frame in milliseconds. Its default is 100.
-        xs : [integer], optional
-            order of a specific cross section to plot the data animation
-            around it. The default is 0.
-        xsbefore : [integer], optional
+        fromxs : [integer], optional
             number of cross sections to be displayed before the chosen cross
             section . The default is 10.
-        xsafter : [integer], optional
+        toxs : [integer], optional
             number of cross sections to be displayed after the chosen cross
             section . The default is 10.
-        Save : [Boolen/string]
-            different formats to save the animation 'gif', 'avi', 'mov',
-            'mp4'.The default is False
-        Path : [String]
-            Path where you want to save the animation, you have to include the
-            extension at the end of the path.
-        fps : [integer]
-            numper of frames per second
+        xticklabelsize: []
 
-        in order to save a video using matplotlib you have to download ffmpeg 
-        from https://ffmpeg.org/ and define this path to matplotlib
+        nxlabels:[]
 
-        import matplotlib as mpl
-        mpl.rcParams['animation.ffmpeg_path'] = "path where you saved the
-                                                ffmpeg.exe/ffmpeg.exe"
+        yaxislabelsize: []
+
+        LaterlasLineWidth: []
+
+        xaxislabelsize:[]
+
+        LateralsColor: []
+
+        textlocation: []
+
+        fmt: []
+
+        figsize: []
+
+        Lastxs: []
 
         Returns
         -------
-        TYPE
+
+
 
         """
         if isinstance(start,str):
@@ -300,7 +303,7 @@ class Visualize:
         assert start < end, msg
 
         if Sub.from_beginning == 1:
-            Period = Sub.Daylist[
+            Period = Sub.daylist[
                      np.where(Sub.referenceindex == start)[0][0]:
                          np.where(Sub.referenceindex == end)[0][0] + 1]
         else:
@@ -309,7 +312,7 @@ class Visualize:
             Period = list(range(ii, ii2 + 1))
 
         counter = [(i, j) for i in Period for j in hours]
-
+#%%
         fig = plt.figure(60, figsize=figsize)
         gs = gridspec.GridSpec(nrows=2, ncols=6, figure=fig)
         ax1 = fig.add_subplot(gs[0, 2:6])
@@ -442,12 +445,6 @@ class Visualize:
             ax4.vlines(Sub.LateralsTable[i], ymin, ymax, colors=LateralsColor,
                        linestyles='dashed', linewidth=LaterlasLineWidth)
 
-        # if xs == 0:
-        #     day_text = ax4.annotate('',
-        #                             xy=(Sub.xsname[0],
-        #                                 Sub.crosssections['gl'].min()),
-        #                                 fontsize=20)
-        # else:
         day_text = ax4.annotate('',
                             xy=(fromxs + textlocation[0],
                             Sub.crosssections.loc[
@@ -462,7 +459,7 @@ class Visualize:
                   right=0.96)
         # animation
         plt.show()
-
+#%%
         def init_q():
             q_line.set_data([], [])
             wl_line.set_data([], [])
@@ -486,14 +483,16 @@ class Visualize:
             # temporary as now the Saintvenant subroutine writes the
             # results of the last xs in the next segment with the current
             # segment
-            y = y.values[:-1]
+            if not Lastxs:
+                y = y.values[:-1]
 
             q_line.set_data(x, y)
 
             day = Sub.referenceindex.loc[counter[i][0], 'date']
 
-            lat.set_sizes(sizes=Sub.Laterals.loc[
-                        day, Sub.LateralsTable].values*100)
+            if len(Sub.LateralsTable) > 0:
+                lat.set_sizes(sizes=Sub.Laterals.loc[
+                            day, Sub.LateralsTable].values*100)
 
 
             day_text.set_text('day = ' +
@@ -504,7 +503,9 @@ class Visualize:
                     Sub.Result1D['hour'] == counter[i][1]]
             # temporary as now the Saintvenant subroutine writes the results
             # of the last xs in the next segment with the current segment
-            y = y.values[:-1]
+            if not Lastxs:
+                y = y.values[:-1]
+
             wl_line.set_data(x, y)
 
             y = Sub.Result1D.loc[
@@ -512,7 +513,9 @@ class Visualize:
                     Sub.Result1D['hour'] == counter[i][1]] * 2
             # temporary as now the Saintvenant subroutine writes the results
             # of the last xs in the next segment with the current segment
-            y = y.values[:-1]
+            if not Lastxs:
+                y = y.values[:-1]
+
             y = y + Sub.crosssections.loc[
                         Sub.crosssections.index[len(Sub.xsname) - 1], 'gl']
             hLline.set_data(x, y)
@@ -1058,64 +1061,6 @@ class Visualize:
 
         return anim
 
-
-    @staticmethod
-    def SaveProfileAnimation(Anim, Path='', fps=3, ffmpegPath=''):
-        """SaveProfileAnimation.
-
-        save video animation
-
-        Parameters
-        ----------
-        Anim : TYPE
-            DESCRIPTION.
-        Path : TYPE, optional
-            DESCRIPTION. The default is ''.
-        fps : TYPE, optional
-            DESCRIPTION. The default is 3.
-        ffmpegPath : TYPE, optional
-            DESCRIPTION. The default is ''.
-
-        Returns
-        -------
-        None.
-
-        """
-        message = """
-        please visit https://ffmpeg.org/ and download a version of ffmpeg
-        compitable with your operating system, and copy the content of the
-        folder and paste it in the "c:/user/.matplotlib/ffmpeg-static/"
-        """
-        if ffmpegPath == '':
-            ffmpegPath = os.getenv("HOME") + "/.matplotlib/ffmpeg-static/bin/ffmpeg.exe"
-            assert os.path.exists(ffmpegPath), "{0}".format(message)
-
-        mpl.rcParams['animation.ffmpeg_path'] = ffmpegPath
-
-        Ext = Path.split('.')[1]
-        if Ext == "gif":
-            msg = """ please enter a valid path to save the animation"""
-            assert len(Path) >= 1 and Path.endswith(".gif"), "{0}".format(msg)
-
-            writergif = animation.PillowWriter(fps=fps)
-            Anim.save(Path, writer=writergif)
-        else:
-            try:
-                if Ext == 'avi' or Ext == 'mov':
-                    writervideo = animation.FFMpegWriter(fps=fps, bitrate=1800)
-                    Anim.save(Path, writer=writervideo)
-                elif Ext == 'mp4':
-                    writermp4 = animation.FFMpegWriter(fps=fps, bitrate=1800)
-                    Anim.save(Path, writer=writermp4)
-
-            except FileNotFoundError:
-                msg= """ please visit https://ffmpeg.org/ and download a
-                version of ffmpeg compitable with your operating system, for
-                more details please check the method definition
-                """
-                print("{0}".format(msg))
-
-
     def CrossSections(self, Sub, fromxs='', toxs='', xsrows=3, xscolumns=3,
                       bedlevel=False, titlesize=15, textsize=15,
                       figsize=(18, 10), linewidth=6, samescale=False,
@@ -1604,6 +1549,72 @@ class Visualize:
                                        interval=interval, blit=True)
 
         return anim
+
+
+    @staticmethod
+    def SaveProfileAnimation(Anim, Path='', fps=3, ffmpegPath=''):
+        """SaveProfileAnimation.
+
+        save video animation
+        available extentions .mov, .gif, .avi, .mp4
+
+        Parameters
+        ----------
+        Anim : TYPE
+            DESCRIPTION.
+        Path : TYPE, optional
+            DESCRIPTION. The default is ''.
+        fps : TYPE, optional
+            DESCRIPTION. The default is 3.
+        ffmpegPath : TYPE, optional
+            DESCRIPTION. The default is ''.
+
+        in order to save a video using matplotlib you have to download ffmpeg
+        from https://ffmpeg.org/ and define this path to matplotlib
+
+        import matplotlib as mpl
+        mpl.rcParams['animation.ffmpeg_path'] = "path where you saved the
+                                                ffmpeg.exe/ffmpeg.exe"
+
+        Returns
+        -------
+        None.
+
+        """
+        message = """
+            please visit https://ffmpeg.org/ and download a version of ffmpeg
+            compitable with your operating system, and copy the content of the
+            folder and paste it in the "c:/user/.matplotlib/ffmpeg-static/"
+            """
+        if ffmpegPath == '':
+            ffmpegPath = os.getenv("HOME") + "/.matplotlib/ffmpeg-static/bin/ffmpeg.exe"
+            assert os.path.exists(ffmpegPath), "{0}".format(message)
+
+        mpl.rcParams['animation.ffmpeg_path'] = ffmpegPath
+
+        Ext = Path.split('.')[1]
+        if Ext == "gif":
+            msg = """ please enter a valid path to save the animation"""
+            assert len(Path) >= 1 and Path.endswith(".gif"), "{0}".format(msg)
+
+            writergif = animation.PillowWriter(fps=fps)
+            Anim.save(Path, writer=writergif)
+        else:
+            try:
+                if Ext == 'avi' or Ext == 'mov':
+                    writervideo = animation.FFMpegWriter(fps=fps, bitrate=1800)
+                    Anim.save(Path, writer=writervideo)
+                elif Ext == 'mp4':
+                    writermp4 = animation.FFMpegWriter(fps=fps, bitrate=1800)
+                    Anim.save(Path, writer=writermp4)
+
+            except FileNotFoundError:
+                msg = """ please visit https://ffmpeg.org/ and download a
+                    version of ffmpeg compitable with your operating system, for
+                    more details please check the method definition
+                    """
+                print("{0}".format(msg))
+
 
     def SaveAnimation(anim, VideoFormat="gif", Path='', SaveFrames=20):
         """SaveAnimation.

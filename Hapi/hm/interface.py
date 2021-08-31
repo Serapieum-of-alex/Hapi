@@ -5,10 +5,13 @@ Created on Wed Mar  3 12:40:23 2021
 """
 import pandas as pd
 import datetime as dt
+
+from pandas import DataFrame
+
 from Hapi.hm.river import River
 
 class Interface(River):
-    """Interface(River).
+    """Interface.
     
     Interface between the Rainfall runoff model and the Hydraulic model
 
@@ -20,6 +23,7 @@ class Interface(River):
         4- ReadBoundaryConditions
         5- ListAttributes
     """
+    Laterals: DataFrame
 
     def __init__(self, name, version=3, start="1952-1-1", days=36890,
                  fmt="%Y-%m-%d"):
@@ -38,7 +42,7 @@ class Interface(River):
         self.ReferenceIndex['date'] = Ref_ind[:-1]
         pass
 
-    def ReadLateralsTable(self, Path, prefix='lf_xsid', suffix='.txt'):
+    def ReadLateralsTable(self, path, prefix='lf_xsid', suffix='.txt'):
         """ReadLateralsTable.
        
         ReadLateralsTable method reads the laterals file
@@ -50,23 +54,32 @@ class Interface(River):
 
         Parameters
         ----------
-        Path : [String], optional
+        path : [String], optional
             Path to read the results from.
+        suffix: []
+
+        prefix: []
+
 
         Returns
         -------
         None.
 
+
         """
-        self.LateralsTable = pd.read_csv(Path, skiprows=[0], header=None)
+        try:
+            self.LateralsTable = pd.read_csv(path, skiprows=[0], header=None)
+        except pd.errors.EmptyDataError:
+            self.LateralsTable = pd.DataFrame()
+            print("The Lateral table file is empty")
+            return
+
+
         self.LateralsTable.columns = ['filename']
         l1 = len(prefix)
         l2 = len(suffix)
         self.LateralsTable['xsid'] = [int(i[l1:len(i)-l2]) for i in self.LateralsTable[self.LateralsTable.columns[0]]]
-        
-        
-        # self.LateralsTable['xsid'] = 
-        # self.LateralsTable.columns = ["xsid"]
+
 
         if hasattr(self, "crosssections"):
             self.crosssections['lateral'] = 0
@@ -103,33 +116,32 @@ class Interface(River):
         """
         errmsg = """Please read the lateras table first using the 
         'ReadLateralsTable' method """
-        
         assert hasattr(self, 'LateralsTable'), '{0}'.format(errmsg)
-
-
         self.Laterals = pd.DataFrame()
 
-        for i in range(len(self.LateralsTable)):
-            NodeID = self.LateralsTable.loc[i,'xsid']
-            fname = "lf_xsid" + str(NodeID)
-            
-            self.Laterals[NodeID]  = self.ReadRRMResults(self.version, 
-                                                         self.ReferenceIndex,
-                                                         path, fname, fromday, 
-                                                         today, 
-                                                         date_format)[fname].tolist()
-            print("Lateral file " + fname + " is read")
+        if len(self.LateralsTable) > 0:
 
-        self.Laterals['total'] = self.Laterals.sum(axis=1)
-        if fromday == '':
-            fromday = 1
-        if today == '':
-            today = len(self.Laterals[NodeID])
+            for i in range(len(self.LateralsTable)):
+                NodeID = self.LateralsTable.loc[i,'xsid']
+                fname = "lf_xsid" + str(NodeID)
 
-        start = self.ReferenceIndex.loc[fromday,'date']
-        end = self.ReferenceIndex.loc[today,'date']
+                self.Laterals[NodeID]  = self.ReadRRMResults(self.version,
+                                                             self.ReferenceIndex,
+                                                             path, fname, fromday,
+                                                             today,
+                                                             date_format)[fname].tolist()
+                print("Lateral file " + fname + " is read")
 
-        self.Laterals.index = pd.date_range(start, end, freq = 'D')
+            self.Laterals['total'] = self.Laterals.sum(axis=1)
+            if fromday == '':
+                fromday = 1
+            if today == '':
+                today = len(self.Laterals[self.Laterals.columns[0]])
+
+            start = self.ReferenceIndex.loc[fromday,'date']
+            end = self.ReferenceIndex.loc[today,'date']
+
+            self.Laterals.index = pd.date_range(start, end, freq = 'D')
 
     def ReadBoundaryConditionsTable(self, path, prefix='bc_xsid', 
                                     suffix='.txt'):
@@ -146,10 +158,15 @@ class Interface(River):
         ----------
         path : [String], optional
             path to read the results from.
+        suffix: [string]
+            if the lateral files has a suffix in their names
+        prefix: [string]
+            `if the lateral files has a prefix in their names
 
         Returns
         -------
         None.
+
 
         """
         self.BCTable = pd.read_csv(path, skiprows=[0], header=None)
