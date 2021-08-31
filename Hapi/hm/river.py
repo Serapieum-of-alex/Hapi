@@ -85,6 +85,8 @@ class River:
         twodresultpath : [str], optional
             path to the folder where the 1D river routing results exist. 
             The default is ''.
+        fmt: [string]
+            format of the date. fmt="%Y-%m-%d %H:%M:%S"
 
         Returns
         -------
@@ -200,11 +202,13 @@ class River:
         ----------
         date : [string/date time object]
             string in the format of "%Y-%m-%d" or a date time object.
-
+        fmt: [string]
+            format of the date. fmt="%Y-%m-%d %H:%M:%S"
         Returns
         -------
         [Integer]
             the order oif the date in the time series.
+
 
         """
         if isinstance(date, str) :
@@ -251,7 +255,8 @@ class River:
         ----------
         date : [string/date time object]
             string in the format of "%Y-%m-%d" or a date time object.
-
+        fmt: [string]
+            format of the date. fmt="%Y-%m-%d %H:%M:%S"
         Returns
         -------
         [Integer]
@@ -502,8 +507,8 @@ class River:
             DESCRIPTION.
         end : [string]
             DESCRIPTION.
-        fmt : [string], optional
-            format of the given date. The default is "%Y-%m-%d".
+        fmt: [string]
+            format of the date. fmt="%Y-%m-%d %H:%M:%S"
 
         Returns
         -------
@@ -586,12 +591,13 @@ class River:
             # if there are empty days at the beginning the filling missing days is not going to detect it
             # so ignore it here by starting from the first day in the data (data['day'][0]) dataframe
             # empty days at the beginning
-            self.firstdayresults = self.IndexToDate(self.from_beginning)  # self.referenceindex.loc[self.Result1D['day'][0],'date']
-            self.lastday = self.IndexToDate(len(self.referenceindex))  # self.referenceindex.loc[self.Result1D['day'][self.Result1D.index[-1]],'date']
+            self.firstdayresults = self.IndexToDate(self.from_beginning)
+            self.lastday = self.IndexToDate(len(self.referenceindex))
 
             # last days+1 as range does not include the last element
-            self.daylist = list(range(self.from_beginning, len(self.referenceindex)))#list(range(self.Result1D['day'][0], self.Result1D['day'][self.Result1D.index[-1]]+1))
-            self.referenceindex_results = pd.date_range(self.firstdayresults, self.lastday, freq="D")
+            self.daylist = list(range(self.from_beginning, len(self.referenceindex)))
+            self.referenceindex_results = pd.date_range(self.firstdayresults,
+                                                        self.lastday, freq="D")
 
 
 
@@ -921,6 +927,9 @@ class River:
         kinematicwave apply the kinematic wave approximation of the shallow
         water equation to the 1d river reach
 
+        fmt: [string]
+            format of the date. fmt="%Y-%m-%d %H:%M:%S"
+
         Returns
         -------
         1- Q : [array]
@@ -970,8 +979,8 @@ class River:
             DESCRIPTION. The default is ''.
         end : TYPE, optional
             DESCRIPTION. The default is ''.
-        fmt : TYPE, optional
-            DESCRIPTION. The default is "%Y-%m-%d".
+        fmt: [string]
+            format of the date. fmt="%Y-%m-%d %H:%M:%S"
         maxiteration : TYPE, optional
             DESCRIPTION. The default is 10.
         beta : TYPE, optional
@@ -1027,6 +1036,9 @@ class River:
         kinematicwave apply the kinematic wave approximation of the shallow
         water equation to the 1d river reach
 
+        fmt: [string]
+            format of the date. fmt="%Y-%m-%d %H:%M:%S"
+
         Returns
         -------
         1- Q : [array]
@@ -1077,6 +1089,8 @@ class River:
             DESCRIPTION.
         end : [string]
             DESCRIPTION.
+        fmt: [string]
+            format of the date. fmt="%Y-%m-%d %H:%M:%S"
 
         Returns
         -------
@@ -1166,11 +1180,11 @@ class River:
         RiverNetwork method rad the table of each computational node followed by
         upstream and then downstream node (TraceAll file)
 
-        ==============   ====================================================
-        Keyword          Description
-        ==============   ====================================================
-        1-path :         [String] path to the Trace.txt file including the file name and extention
-                            "path/Trace.txt".
+        Parameters
+        ----------
+            1-path : [String]
+                path to the Trace.txt file including the file name and extention
+                                "path/Trace.txt".
 
         Returns
         -------
@@ -1186,9 +1200,12 @@ class River:
             File.close()
             rivernetwork = pd.DataFrame(columns=wholefile[0][:-1].split(','))
             # all lines excpt the last line
-            for i in range(1,len(wholefile)-1):
+            for i in range(1,len(wholefile)):
                 rivernetwork.loc[i-1,rivernetwork.columns[0:2].tolist()] = [int(j) for j in wholefile[i][:-1].split(',')[0:2]]
-                rivernetwork.loc[i-1,rivernetwork.columns[2]] = [int(j) for j in wholefile[i][:-1].split(',')[2:]]
+                rivernetwork.loc[i - 1, rivernetwork.columns[2]] = [int(j) for j in wholefile[i][:-1].split(',')[2:]]
+                # rivernetwork.loc[i - 1, rivernetwork.columns[0:2].tolist()] = [int(j) for j in
+                #                                                                wholefile[i].split(',')[0:2]]
+                # rivernetwork.loc[i-1,rivernetwork.columns[2]] = [int(j) for j in wholefile[i].split(',')[2:]]
             # last line does not have the \n at the end
             i = len(wholefile)-1
             rivernetwork.loc[i-1,rivernetwork.columns[0:2].tolist()] = [int(j) for j in wholefile[i][:-1].split(',')[0:2]]
@@ -2831,22 +2848,25 @@ class Sub(River):
 
         # check the first day in the results and get the date of the first day and last day
         ## create time series
-
         self.from_beginning  = self.Result1D['day'][0]
-
-        # else:
-        self.firstday =  self.referenceindex.loc[self.from_beginning,'date']
+        self.firstday =  self.IndexToDate(self.from_beginning)
         # if there are empty days at the beginning the filling missing days is 
         # not going to detect it so ignore it here by starting from the first 
         # day in the data (data['day'][0]) dataframe empty days at the 
         # beginning
+        # TODO
+        # the from_beginning and firstdayresults are exactly the same
+        # delete one of them
+        self.firstdayresults = self.IndexToDate(self.Result1D['day'][0])
+        lastday = self.Result1D.loc[self.Result1D.index[-1],'day']
+        self.lastday = self.IndexToDate(lastday)
 
-        self.firstdayresults = self.referenceindex.loc[self.Result1D['day'][0],'date']
-        self.lastday = self.referenceindex.loc[self.Result1D['day'][self.Result1D.index[-1]],'date']
 
         # last days+1 as range does not include the last element
-        self.daylist = list(range(self.Result1D['day'][0], self.Result1D['day'][self.Result1D.index[-1]]+1))
-        self.referenceindex_results = pd.date_range(self.firstdayresults, self.lastday,freq = "D")
+        self.daylist = list(range(self.Result1D['day'][0],
+                                  self.Result1D['day'][self.Result1D.index[-1]]+1))
+        self.referenceindex_results = pd.date_range(self.firstdayresults,
+                                                    self.lastday,freq = "D")
 
 
     def ExtractXS(self, xsid, addHQ2=False, WaterLevel=True):
@@ -3274,7 +3294,8 @@ class Sub(River):
             width of the plots. The default is 4.
         spacing : [integer]
             hydrographs are going to be plots every spacing. The default is 5.
-            
+        fmt: [string]
+            format of the date. fmt="%Y-%m-%d %H:%M:%S"
         Returns
         -------
         None.
@@ -3459,8 +3480,6 @@ class Sub(River):
         IF : [Interface object]
             You Have to create the interface object then read the laterals and the
             boundary conditions first.
-        id : [Integer]
-            the id of the segment you want to extract the laterals for.
         fromday : [string], optional
             the starting day. The default is ''.
         today : [string], optional
@@ -3502,9 +3521,8 @@ class Sub(River):
             self.BC = IF.BC.loc[fromday:today,bcids[0]].to_frame()
 
 
-        self.LateralsTable = [value for value in self.xsname if value in IF.LateralsTable['xsid'].tolist()]
-
-        if len(self.LateralsTable) > 0:
+        if len(IF.LateralsTable) > 0:
+            self.LateralsTable = [value for value in self.xsname if value in IF.LateralsTable['xsid'].tolist()]
             self.Laterals = pd.DataFrame(index = pd.date_range(fromday, today, freq='D'),
                                          columns=self.LateralsTable)
 
@@ -3512,7 +3530,9 @@ class Sub(River):
                 self.Laterals.loc[:,i] = IF.Laterals.loc[fromday:today,i]
 
             self.Laterals['total'] = self.Laterals.sum(axis=1)
-
+        else:
+            self.LateralsTable = []
+            self.Laterals = pd.DataFrame()
 
     def GetLaterals(self, xsid):
         """GetLaterals.
@@ -3613,7 +3633,7 @@ class Sub(River):
             DESCRIPTION. The default is True.
         plotgauge : TYPE, optional
             DESCRIPTION. The default is True.
-        rimcolor : TYPE, optional
+        hmcolor : TYPE, optional
             DESCRIPTION. The default is "#004c99".
         gaugecolor : TYPE, optional
             DESCRIPTION. The default is "#DC143C".
@@ -3627,7 +3647,7 @@ class Sub(River):
             DESCRIPTION. The default is "grey".
         linewidth : TYPE, optional
             DESCRIPTION. The default is 4.
-        rimorder : TYPE, optional
+        hmorder : TYPE, optional
             DESCRIPTION. The default is 6.
         gaugeorder : TYPE, optional
             DESCRIPTION. The default is 5.
@@ -3639,10 +3659,26 @@ class Sub(River):
             DESCRIPTION. The default is 2.
         xsorder : TYPE, optional
             DESCRIPTION. The default is 1.
-        fmt : TYPE, optional
-            DESCRIPTION. The default is "%Y-%m-%d".
+        fmt: [string]
+            format of the date. fmt="%Y-%m-%d %H:%M:%S"
         nxlabels : TYPE, optional
             DESCRIPTION. The default is False.
+        rrm2color: []
+            Description
+        gaugestyle: []
+            Description
+        rrm2linesytle: []
+            Description
+        ushstyle: []
+            Description
+        xslinestyle: []
+            Description
+        latorder: []
+            Description
+        ushcolor: []
+            Description
+        latstyle: []
+            Description
 
         Returns
         -------
@@ -3650,6 +3686,7 @@ class Sub(River):
             DESCRIPTION.
         ax : TYPE
             DESCRIPTION.
+
 
         """
         start = dt.datetime.strptime(start, fmt)
@@ -3660,10 +3697,12 @@ class Sub(River):
 
         if hasattr(self,"XSHydrographs"):
         # plot if you read the results using ther read1DResults
-
-            ax.plot(self.XSHydrographs.loc[start:end,gaugexs], label="RIM",
-                    zorder=hmorder, linewidth=linewidth, linestyle=V.LineStyle(6),
-                    color = hmcolor)
+            try:
+                ax.plot(self.XSHydrographs.loc[start:end,gaugexs], label="RIM",
+                        zorder=hmorder, linewidth=linewidth, linestyle=V.LineStyle(6),
+                        color = hmcolor)
+            except KeyError:
+                print("the xs given -" + str(gaugexs) + "- does not exist in the river segment")
 
            # laterals
             if plotlaterals:
@@ -3771,8 +3810,8 @@ class Sub(River):
             DESCRIPTION.
         Filter : TYPE, optional
             DESCRIPTION. The default is False.
-        fmt : TYPE, optional
-            DESCRIPTION. The default is "%Y-%m-%d".
+        fmt: [string]
+            format of the date. fmt="%Y-%m-%d %H:%M:%S"
 
         Returns
         -------
@@ -3866,32 +3905,32 @@ class Sub(River):
         ----------
         Calib : TYPE
             DESCRIPTION.
-        plotstart : TYPE
+        start : TYPE
             DESCRIPTION.
-        plotend : TYPE
+        end : TYPE
             DESCRIPTION.
         gaugexs : TYPE
             DESCRIPTION.
         stationname : TYPE
             DESCRIPTION.
-        Gaugename : TYPE
+        gaugename : TYPE
             DESCRIPTION.
         Filter : TYPE, optional
             DESCRIPTION. The default is False.
         gaugecolor : TYPE, optional
             DESCRIPTION. The default is "#DC143C".
-        RIMcolor : TYPE, optional
+        hmcolor : TYPE, optional
             DESCRIPTION. The default is "#004c99".
         linewidth : TYPE, optional
             DESCRIPTION. The default is 2.
-        RIMorder : TYPE, optional
+        hmorder : TYPE, optional
             DESCRIPTION. The default is 1.
-        Gaugeorder : TYPE, optional
+        gaugeorder : TYPE, optional
             DESCRIPTION. The default is 0.
-        PlotGauge : TYPE, optional
+        plotgauge : TYPE, optional
             DESCRIPTION. The default is True.
-        fmt : TYPE, optional
-            DESCRIPTION. The default is "%Y-%m-%d".
+        fmt: [string]
+            format of the date. fmt="%Y-%m-%d %H:%M:%S"
 
         Returns
         -------
@@ -3946,7 +3985,7 @@ class Sub(River):
         # ax1.set_xticklabels(xlabels)
 
         ax.set_title("Water Level - " + gaugename, fontsize = 20)
-        plt.legend(fontsize = legendsize)
+        plt.legend(fontsize=legendsize)
         ax.set_xlabel("Time", fontsize = 15)
         ax.set_ylabel("Water Level m", fontsize = 15)
         plt.tight_layout()
@@ -3960,7 +3999,8 @@ class Sub(River):
 
         calculate the performance metrics for the water level time series
 
-
+        fmt: [string]
+            format of the date. fmt="%Y-%m-%d %H:%M:%S"
         """
         if type(start) == str:
             start = dt.datetime.strptime(start,fmt)
@@ -4098,8 +4138,8 @@ class Sub(River):
         ----------
         date : TYPE
             DESCRIPTION.
-        fmt : TYPE, optional
-            DESCRIPTION. The default is "%Y-%m-%d".
+        fmt: [string] optional
+            format of the date. fmt="%Y-%m-%d %H:%M:%S", default is fmt="%Y-%m-%d"
 
         Returns
         -------
