@@ -65,6 +65,11 @@ Main Features
 The recent version of Hapi (Hapi 1.0.1) integrates the global hydrological parameters obtained by Beck et al., (2016), 
 to reduce model complexity and uncertainty of parameters.
 
+IHE-Delft sessions
+------------------
+  - In April 14-15 we had a two days session for Masters and PhD student in IHE-Delft to explain the different modules and the distributed hydrological model in Hapi
+[Day 1](https://youtu.be/HbmUdN9ehSo) ,  [Day 2](https://youtu.be/m7kHdOFQFIY)
+
 Future work
 -------------
   - Developing a regionalization method for connection model parameters with some catchment characteristics for better model calibration.
