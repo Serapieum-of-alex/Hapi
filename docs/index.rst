@@ -81,9 +81,9 @@ their own model, it contains two routing functions muskingum cunge, and MAXBAS t
 
 
 
-  .. image:: /img/Picture1.png
-   :width: 400pt
-   :align: center
+.. image:: /img/Picture1.png
+  :width: 400pt
+  :align: center
 
   .. image:: /img/Picture2.png
    :width: 800pt
@@ -91,23 +91,27 @@ their own model, it contains two routing functions muskingum cunge, and MAXBAS t
 
 Main Features
 -------------
-  - Modified version of HBV96 hydrological model (Bergström, 1992) with 15 parameters in case of considering
-   snow processes, and 10 parameters without snow, in addition to 2 parameters of Muskingum routing method
-  - Remote sensing module to download the meteorological inputs required for the hydrologic model simulation (ECMWF) 
-  - GIS modules to enable the modeler to fully prepare the meteorological inputs and do all the preprocessing 
-    needed to build the model (align rasters with the DEM), in addition to various methods to manipulate and 
-    convert different forms of distributed data (rasters, NetCDF, shapefiles)
-  - Sensitivity analysis module based on the concept of one-at-a-time OAT and analysis of the interaction among 
-    model parameters using the Sobol concept ((Rusli et al., 2015)) and a visualization
-  - Statistical module containing interpolation methods for generating distributed data from gauge data, some 
-    distribution for frequency analysis and Maximum likelihood method for distribution parameter estimation.
-  - Visualization module for animating the results of the distributed model, and the meteorological inputs
-  - Optimization module, for calibrating the model based on the Harmony search method 
+- Modified version of HBV96 hydrological model (Bergström, 1992) with 15 parameters in case of considering
+  snow processes, and 10 parameters without snow, in addition to 2 parameters of Muskingum routing method
+- Remote sensing module to download the meteorological inputs required for the hydrologic model simulation (ECMWF) 
+- GIS modules to enable the modeler to fully prepare the meteorological inputs and do all the preprocessing 
+  needed to build the model (align rasters with the DEM), in addition to various methods to manipulate and 
+  convert different forms of distributed data (rasters, NetCDF, shapefiles)
+- Sensitivity analysis module based on the concept of one-at-a-time OAT and analysis of the interaction among 
+  model parameters using the Sobol concept ((Rusli et al., 2015)) and a visualization
+- Statistical module containing interpolation methods for generating distributed data from gauge data, some 
+  distribution for frequency analysis and Maximum likelihood method for distribution parameter estimation.
+- Visualization module for animating the results of the distributed model, and the meteorological inputs
+- Optimization module, for calibrating the model based on the Harmony search method 
 
 The recent version of Hapi (Hapi 1.0.1 Farrag et al. (2021)) integrates the global hydrological parameters obtained by Beck et al., (2016), to reduce model complexity and uncertainty of parameters.
 
 
 For using Hapi please cite Farrag et al. (2021) and Farrag & Corzo (2021) References
+
+IHE-Delft sessions
+------------------
+- In April 14-15 we had a two days session for Masters and PhD student in IHE-Delft to explain the different modules and the distributed hydrological model in Hapi [Day 1](https://youtu.be/HbmUdN9ehSo) ,  [Day 2](https://youtu.be/m7kHdOFQFIY)
 
 .. digraph:: Linking
 
@@ -165,10 +169,10 @@ For using Hapi please cite Farrag et al. (2021) and Farrag & Corzo (2021) Refere
 
 Future work
 -------------
-  - Developing a regionalization method for connection model parameters with some catchment characteristics for better model calibration.
-  - Developing and integrate river routing method (kinematic and diffusive wave approximation)
-  - Apply the model for large scale (regional/continental) cases
-  - Developing a DEM processing module for generating the river network at different DEM spatial resolutions.
+- Developing a regionalization method for connection model parameters with some catchment characteristics for better model calibration.
+- Developing and integrate river routing method (kinematic and diffusive wave approximation)
+- Apply the model for large scale (regional/continental) cases
+- Developing a DEM processing module for generating the river network at different DEM spatial resolutions.
 
 References
 ==========

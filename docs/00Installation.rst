@@ -17,12 +17,12 @@ and you skip the rest of the installation instructions.
 
 
 Installing Python and gdal dependencies
-----------
+---------------------------------------
 
 The main dependencies for Hapi are an installation of Python 2.7+, and gdal
 
 Installing Python
-----------
+-----------------
 
 For Python we recommend using the Anaconda Distribution for Python 3, which is available
 for download from https://www.anaconda.com/download/. The installer gives the option to
@@ -34,7 +34,7 @@ Note that there is no hard requirement specifically for Anaconda's Python, but o
 makes installation of required dependencies easier using the conda package manager.
 
 Install as a conda environment
-----------
+------------------------------
 
 The easiest and most robust way to install Hapi is by installing it in a separate
 conda environment. In the root repository directory there is an ``environment.yml`` file.
@@ -89,7 +89,7 @@ a zip archive from GitHub: https://github.com/MAfarrag/HAPI/archive/master.zip
 `libraries.io <https://libraries.io/github/MAfarrag/HAPI>`_.
 
 Install using pip
-----------
+-----------------
 
 Besides the recommended conda environment setup described above, you can also install
 Hapi with ``pip``. For the more difficult to install Python dependencies, it is best to
@@ -107,7 +107,7 @@ Then install a release {release} of Hapi (available from release 2018.1) with pi
 
 
 Check if the installation is successful
-----------
+---------------------------------------
 
 To check it the install is successful, go to the examples directory and run the following command:
 
