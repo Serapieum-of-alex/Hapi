@@ -73,6 +73,11 @@ Future work
   - Developing a DEM processing module for generating the river network at different DEM spatial resolutions.
 
 For using Hapi please cite Farrag et al. (2021) and Farrag & Corzo (2021)
+
+IHE-Delft sessions
+------------------
+- In April 14-15 we had a two days session for Masters and PhD student in IHE-Delft to explain the different modules and the distributed hydrological model in Hapi [Day 1](https://youtu.be/HbmUdN9ehSo) ,  [Day 2](https://youtu.be/m7kHdOFQFIY)
+
 References
 -------------
 Farrag, M. & Corzo, G. (2021) MAfarrag/Hapi: Hapi. doi:10.5281/ZENODO.4662170
