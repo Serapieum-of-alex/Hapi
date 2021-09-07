@@ -112,12 +112,19 @@ class Calibration(River):
         WLGauges = pd.DataFrame(index = ind)
         # WLGaugesf.loc[:,:] = NoValue
         WLGauges.loc[:,0] = ind
-
+        print("Reading water level gauges data")
         for i in range(len(columns)):
             if self.GaugesTable.loc[i,'waterlevel'] == 1:
                 name = self.GaugesTable.loc[i,column]
-                f = pd.read_csv(path + str(int(name)) + ".txt",
-                               delimiter = ",", header = None)
+                try :
+                    f = pd.read_csv(path + str(int(name)) + ".txt",
+                                    delimiter = ",", header = None)
+                    print(str(i) + "-" + path + str(int(name)) + '.txt is read')
+                    
+                except FileNotFoundError:
+                    print(str(i) + "-" + path + str(int(name)) + '.txt has a problem')
+                    return
+                
                 f[0] = f[0].map(datafn)
                 # sort by date as some values are missed up
                 f.sort_values(by = [0], ascending = True, inplace = True)
@@ -190,18 +197,21 @@ class Calibration(River):
 
         ind = pd.date_range(start, end)
         QGauges = pd.DataFrame(index = ind)
-
-        for i in range(len(self.GaugesTable)):
+        print("Reading discharge gauges data")
+        for i in range(len(self.GaugesTable)):  
             if self.GaugesTable.loc[i,'discharge'] == 1:
                 name = self.GaugesTable.loc[i,column]
                 try:
                     QGauges.loc[:,int(name)] = np.loadtxt(path +
                               str(int(name)) + '.txt') #,skiprows = 0
-                except:
-                    print(str(i) + "-" + path + str(int(name)) + '.txt')
+                    print(str(i) + "-" + path + str(int(name)) + '.txt is read')
+                    
+                except FileNotFoundError:
+                    print(str(i) + "-" + path + str(int(name)) + '.txt has a problem')
+                    return
+        
         self.QGauges = QGauges
 
-        # Gauges = pd.DataFrame(index = Gauges['id'])
         self.GaugesTable['Qstart'] = 0
         self.GaugesTable['Qend'] = 0
 
