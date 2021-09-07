@@ -117,7 +117,7 @@ class Visualize:
     def GroundSurface(self, Sub, fromxs='', toxs='',floodplain=False,
                       plotlateral=False, nxlabels=10,
                       figsize=(20,10), LateralsColor='red',
-                      LaterlasLineWidth=1,option=1, size=50):
+                      LaterlasLineWidth=1, option=1, size=50):
         """Plot the longitudinal profile of the segment.
 
         Parameters
@@ -233,7 +233,7 @@ class Visualize:
                             textlocation=(1,1), LateralsColor='#3D59AB',
                             LaterlasLineWidth=1, xaxislabelsize=10,
                             yaxislabelsize=10, nxlabels=10, xticklabelsize=8,
-                            Lastxs=True):
+                            Lastsegment=True):
         """WaterSurfaceProfile.
 
         Plot water surface profile
@@ -312,18 +312,18 @@ class Visualize:
             Period = list(range(ii, ii2 + 1))
 
         counter = [(i, j) for i in Period for j in hours]
-#%%
+
         fig = plt.figure(60, figsize=figsize)
         gs = gridspec.GridSpec(nrows=2, ncols=6, figure=fig)
         ax1 = fig.add_subplot(gs[0, 2:6])
         ax1.set_ylim(0, int(Sub.Result1D['q'].max()))
 
         if fromxs == '':
-            xs = 0
+            # xs = 0
             # plot the whole sub-basin
             fromxs = Sub.xsname[0]
         else:
-            xs = 1
+            # xs = 1
             # not the whole sub-basin
             if fromxs < Sub.xsname[0]:
                 fromxs = Sub.xsname[0]
@@ -459,7 +459,7 @@ class Visualize:
                   right=0.96)
         # animation
         plt.show()
-#%%
+
         def init_q():
             q_line.set_data([], [])
             wl_line.set_data([], [])
@@ -480,10 +480,10 @@ class Visualize:
             y = Sub.Result1D.loc[
                 Sub.Result1D['day'] == counter[i][0], 'q'][
                     Sub.Result1D['hour'] == counter[i][1]]
-            # temporary as now the Saintvenant subroutine writes the
+            # the Saintvenant subroutine writes the
             # results of the last xs in the next segment with the current
             # segment
-            if not Lastxs:
+            if not Lastsegment:
                 y = y.values[:-1]
 
             q_line.set_data(x, y)
@@ -501,9 +501,9 @@ class Visualize:
             y = Sub.Result1D.loc[
                 Sub.Result1D['day'] == counter[i][0], 'wl'][
                     Sub.Result1D['hour'] == counter[i][1]]
-            # temporary as now the Saintvenant subroutine writes the results
+            # the Saintvenant subroutine writes the results
             # of the last xs in the next segment with the current segment
-            if not Lastxs:
+            if not Lastsegment:
                 y = y.values[:-1]
 
             wl_line.set_data(x, y)
@@ -513,7 +513,7 @@ class Visualize:
                     Sub.Result1D['hour'] == counter[i][1]] * 2
             # temporary as now the Saintvenant subroutine writes the results
             # of the last xs in the next segment with the current segment
-            if not Lastxs:
+            if not Lastsegment:
                 y = y.values[:-1]
 
             y = y + Sub.crosssections.loc[
@@ -548,7 +548,7 @@ class Visualize:
 
     def WaterSurfaceProfile1Min(self, Sub, start, end, interval=0.00002,
                                 fromxs='', toxs='', fmt="%Y-%m-%d",
-                                figsize=(20, 10), textlocation=2,
+                                figsize=(20, 10), textlocation=(1,1),
                                 LateralsColor='#3D59AB',
                                 LaterlasLineWidth=1, xaxislabelsize=10,
                                 yaxislabelsize=10, nxlabels=20,
@@ -600,12 +600,12 @@ class Visualize:
         ax1 = fig2.add_subplot(gs[0, 2:6])
 
         if fromxs == '':
-            xs = 0
+            # xs = 0
             # plot the whole sub-basin
             fromxs = Sub.xsname[0]
             toxs = Sub.xsname[-1]
         else:
-            xs = 1
+            # xs = 1
             # not the whole sub-basin
             if fromxs < Sub.xsname[0]:
                 fromxs = Sub.xsname[0]
@@ -736,18 +736,25 @@ class Visualize:
             ax4.vlines(Sub.LateralsTable[i], ymin, ymax, colors=LateralsColor,
                        linestyles='dashed', linewidth=LaterlasLineWidth)
 
-
-        if xs == 0:
-            day_text = ax4.annotate('', 
-                                    xy=(Sub.xsname[0], 
-                                        Sub.crosssections['gl'].min()), 
-                                    fontsize=20)
-        else:
-            day_text = ax4.annotate('', 
-                                    xy=(fromxs + textlocation,
-                                    Sub.crosssections.loc[
-                                    Sub.crosssections['xsid'] == toxs, 'gl'].values + 1),
-                                    fontsize=20)
+        
+        day_text = ax4.annotate('',
+                            xy=(fromxs + textlocation[0],
+                            Sub.crosssections.loc[
+                            Sub.crosssections['xsid'] == toxs,
+                                                'gl'].values + textlocation[1]),
+                            fontsize=20)
+        
+        # if xs == 0:
+        #     day_text = ax4.annotate('', 
+        #                             xy=(Sub.xsname[0], 
+        #                                 Sub.crosssections['gl'].min()), 
+        #                             fontsize=20)
+        # else:
+        #     day_text = ax4.annotate('', 
+        #                             xy=(fromxs + textlocation,
+        #                             Sub.crosssections.loc[
+        #                             Sub.crosssections['xsid'] == toxs, 'gl'].values + 1),
+        #                             fontsize=20)
 
         wl_line, = ax4.plot([], [], linewidth=5)
         hLline, = ax4.plot([], [], linewidth=5)
@@ -790,7 +797,7 @@ class Visualize:
             # BC Q (ax2)
 
             x = Sub.QBCmin.columns.values
-            # dt.datetime(counter[i].year, counter[i].month, counter[i].day)
+            
             y = Sub.QBCmin.loc[day].values
             bc_q_line.set_data(x, y)
 
