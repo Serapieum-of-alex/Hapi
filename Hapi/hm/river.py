@@ -519,9 +519,11 @@ class River:
         """
         if self.version == 4:
             hasattr(self, 'crosssections'), 'please read the cross sections first'
-
-        start = dt.datetime.strptime(start,fmt)
-        end = dt.datetime.strptime(end,fmt)
+        if isinstance(start, str):
+            start = dt.datetime.strptime(start,fmt)
+        
+        if isinstance(end, str):
+            end = dt.datetime.strptime(end,fmt)
         
         indmin = pd.date_range(start, end, freq=self.freq)[:-1]
         
@@ -546,9 +548,9 @@ class River:
             for i in list2:
                 path = self.oneminresultpath + "{0}/" + str(self.id) + "-{0}-" + str(i) + '.txt'
                 hh = np.transpose(np.loadtxt(path.format("h"), dtype=np.float16))[:, :-1]
-                print(i)
+                print(path.format("h") + "- file is read")
                 qq = np.transpose(np.loadtxt(path.format("q"), dtype=np.float16))[:, :-1]
-                print(i)
+                print(path.format("q") + " file is read")
                 # add the bed level to the water depth
                 hh = hh + self.crosssections['gl'].values
                 # assign the sub-daily results in the big dataframe 
@@ -3309,6 +3311,7 @@ class Sub(River):
         
         if toxs == '':
             toxs = self.lastxs
+            xss.append(toxs)
             
         # if fromxs == '':
         #     xslist = self.xsname[spacing:self.xsno:spacing]
@@ -3316,7 +3319,7 @@ class Sub(River):
         fromxs = self.xsname.index(fromxs)
         toxs = self.xsname.index(toxs)
         xslist = self.xsname[fromxs:toxs+1:spacing]
-
+        
         xslist = xslist + xss
         
         # to remove repeated XSs
