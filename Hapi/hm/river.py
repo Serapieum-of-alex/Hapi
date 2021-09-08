@@ -2757,9 +2757,10 @@ class Sub(River):
 
         Read1DResult method reads the 1D (1D-2D coupled) result of the 
         sub-basin the object is created for and return the hydrograph of the 
-        first and last cross section the method will not read the 1D result 
-        file again if you tried to read results of the same sub-basin again, 
-        so you have to re-instantiate the object
+        first and last cross section. 
+        the method will not read the 1D result file again if you tried to read 
+        results of the same sub-basin again, so you have to re-instantiate 
+        the object.
 
         Parameters
         ----------
