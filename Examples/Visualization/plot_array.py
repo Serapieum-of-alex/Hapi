@@ -1,11 +1,8 @@
 import os
 os.chdir("F:/01Algorithms/Hydrology/HAPI/Examples")
 
-from Hapi.gis.raster import Raster
-from Hapi.gis.giscatchment import GISCatchment as GC
 from Hapi.visualizer import Visualize as vis
 import gdal
-import numpy as np
 import pandas as pd
 #%% Paths
 RasterAPath = "data/GIS/Hapi_GIS_Data/acc4000.tif"
@@ -108,8 +105,10 @@ gamma=0.5
 
 vis.PlotArray(src, ColorScale=ColorScale, cmap=cmap, gamma=gamma,
               TicksSpacing=TicksSpacing)
+#%%
 vis.PlotArray(src, ColorScale=ColorScale, cmap=cmap, gamma=0.4,
               TicksSpacing=TicksSpacing)
+#%%
 vis.PlotArray(src, ColorScale=ColorScale, cmap=cmap, gamma=0.2,
               TicksSpacing=TicksSpacing)
 #%%  SymLogNorm scale

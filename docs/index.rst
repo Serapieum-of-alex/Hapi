@@ -196,5 +196,6 @@ Rusli, S. R., Yudianto, D. & Liu, J. tao. (2015) Effects of temporal variability
    Inputs <01Inputs.rst>
    Available Models <02availablemodels.rst>
    Tutorial <03tutorial.rst>
-   GIS <05GIS.rst> 
+   GIS <05GIS.rst>
+   Visualitation <06visualization.rst>
    Statistics <04Statistics tutorial.rst>
