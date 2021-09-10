@@ -19,9 +19,11 @@ Paths
     :linenos:
 
     RasterAPath = "data/GIS/Hapi_GIS_Data/acc4000.tif"
+
 Read the raster
 ---------------
 -To plot the array you need to read the raster using gdal
+
 .. code-block:: py
     :linenos:
 
