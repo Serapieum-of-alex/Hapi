@@ -5,6 +5,8 @@ Created on Sat Mar 14 16:36:01 2020
 @author: mofarrag
 """
 import os
+
+import gdal
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
@@ -18,6 +20,8 @@ from matplotlib.ticker import LogFormatter
 from collections import OrderedDict
 from scipy.stats import gumbel_r
 from Hapi.statistics.statisticaltools import StatisticalTools as ST
+from Hapi.gis.raster import Raster
+from Hapi.gis.giscatchment import GISCatchment as GC
 
 hours = list(range(1, 25))
 
@@ -826,10 +830,9 @@ class Visualize:
         return anim
 
 
-    def river1d(self, Sub, start, end, interval=0.00002, xs=0,
-                xsbefore=10, xsafter=10, fmt="%Y-%m-%d", textlocation=2,
-                xaxislabelsize=15, yaxislabelsize=15, nxlabels=50, 
-                plotbanhfuldepth=False):
+    def river1d(self, Sub, start, end, interval=0.00002, xs=0, xsbefore=10,
+                xsafter=10, fmt="%Y-%m-%d", textlocation=2, xaxislabelsize=15,
+                yaxislabelsize=15, nxlabels=50, plotbanhfuldepth=False):
         """river1d.
 
         plot river 1D
@@ -1329,71 +1332,48 @@ class Visualize:
 
         ax1.grid()
 
-    def AnimateArray(Arr, Time, NoElem, TicksSpacing=2, Figsize=(8, 8), PlotNumbers=True,
-                     NumSize=8, Title='Total Discharge', titlesize=15, Backgroundcolorthreshold=None,
-                     cbarlabel='Discharge m3/s', cbarlabelsize=12, textcolors=("white", "black"),
-                     Cbarlength=0.75, interval=200, cmap='coolwarm_r', Textloc=[0.1, 0.2],
-                     Gaugecolor='red', Gaugesize=100, ColorScale=1, gamma=1. / 2., linthresh=0.0001,
-                     linscale=0.001, midpoint=0, orientation='vertical', rotation=-90, IDcolor="blue",
-                     IDsize=10, **kwargs):
-        """AnimateArray.
 
-        plot an animation for 3d arrays
+    def PlotArray(src, Figsize=(8, 8), Title='Total Discharge', titlesize=15,
+                  Cbarlength=0.75, orientation='vertical', cbarlabelsize=12,
+                  cbarlabel='Color bar label', rotation=-90, TicksSpacing=2,
+                  NumSize=8, ColorScale=1, cmap='coolwarm_r', gamma=0.5,
+                  linscale=0.001, linthresh=0.0001, midpoint=0, display_cellvalue=False,
+                  Backgroundcolorthreshold=None,
+                  Gaugecolor='red', Gaugesize=100, IDcolor="blue",
+                  IDsize=10, **kwargs):
+        """PlotArray.
+
+        plot an image for 2d arrays
 
         Parameters
         ----------
-        Arr : [array]
-            the array you want to animate.
-        Time : [dataframe]
-            dataframe contains the date of values.
-        NoElem : [integer]
-            Number of the cells that has values.
-        TicksSpacing : [integer], optional
-            Spacing in the colorbar ticks. The default is 2.
-        Figsize : [tuple], optional
-            figure size. The default is (8,8).
-        PlotNumbers : [bool], optional
-            True to plot the values intop of each cell. The default is True.
-        NumSize : integer, optional
-            size of the numbers plotted intop of each cells. The default is 8.
-        Title : [str], optional
-            title of the plot. The default is 'Total Discharge'.
-        titlesize : [integer], optional
-            title size. The default is 15.
-        Backgroundcolorthreshold : [float/integer], optional
-            threshold value if the value of the cell is greater, the plotted
-            numbers will be black and if smaller the plotted number will be white
-            if None given the maxvalue/2 will be considered. The default is None.
-        textcolors : TYPE, optional
-            Two colors to be used to plot the values i top of each cell. The default is ("white","black").
-        cbarlabel : str, optional
-            label of the color bar. The default is 'Discharge m3/s'.
-        cbarlabelsize : integer, optional
-            size of the color bar label. The default is 12.
-        Cbarlength : [float], optional
-            ratio to control the height of the colorbar. The default is 0.75.
-        interval : [integer], optional
-            number to controlthe speed of the animation. The default is 200.
-        cmap : [str], optional
-            color style. The default is 'coolwarm_r'.
-        Textloc : [list], optional
-            location of the date text. The default is [0.1,0.2].
-        Gaugecolor : [str], optional
-            color of the points. The default is 'red'.
-        Gaugesize : [integer], optional
-            size of the points. The default is 100.
-        IDcolor : [str]
-            the ID of the Point.The default is "blue".
-        IDsize : [integer]
-            size of the ID text. The default is 10.
-        ColorScale : integer, optional
-            there are 5 options to change the scale of the colors. The default is 1.
-            1- ColorScale 1 is the normal scale
-            2- ColorScale 2 is the power scale
-            3- ColorScale 3 is the SymLogNorm scale
-            4- ColorScale 4 is the PowerNorm scale
-            5- ColorScale 5 is the BoundaryNorm scale
-            ------------------------------------------------------------------
+            1-src : [array/gdal.Dataset]
+                the array/gdal raster you want to plot.
+            Figsize : [tuple], optional
+                figure size. The default is (8,8).
+            Title : [str], optional
+                title of the plot. The default is 'Total Discharge'.
+            titlesize : [integer], optional
+                title size. The default is 15.
+            Cbarlength : [float], optional
+                ratio to control the height of the colorbar. The default is 0.75.
+            orientation : [string], optional
+                orintation of the colorbar horizontal/vertical. The default is 'vertical'.
+            cbarlabelsize : integer, optional
+                size of the color bar label. The default is 12.
+            cbarlabel : str, optional
+                label of the color bar. The default is 'Discharge m3/s'.
+            rotation : [number], optional
+                rotation of the colorbar label. The default is -90.
+            TicksSpacing : [integer], optional
+                Spacing in the colorbar ticks. The default is 2.
+            ColorScale : integer, optional
+                there are 5 options to change the scale of the colors. The default is 1.
+                1- ColorScale 1 is the normal scale
+                2- ColorScale 2 is the power scale
+                3- ColorScale 3 is the SymLogNorm scale
+                4- ColorScale 4 is the PowerNorm scale
+                5- ColorScale 5 is the BoundaryNorm scale
             gamma : [float], optional
                 value needed for option 2 . The default is 1./2..
             linthresh : [float], optional
@@ -1402,20 +1382,240 @@ class Visualize:
                 value needed for option 3. The default is 0.001.
             midpoint : [float], optional
                 value needed for option 5. The default is 0.
-            ------------------------------------------------------------------
-        orientation : [string], optional
-            orintation of the colorbar horizontal/vertical. The default is 'vertical'.
-        rotation : [number], optional
-            rotation of the colorbar label. The default is -90.
-        **kwargs : [dict]
-            keys:
-                Points : [dataframe].
-                    dataframe contains two columns 'cell_row', and cell_col to
-                    plot the point at this location
+            cmap : [str], optional
+                color style. The default is 'coolwarm_r'.
+            display_cellvalue : [bool]
+                True if you want to display the values of the cells as a text
+            NumSize : integer, optional
+                size of the numbers plotted intop of each cells. The default is 8.
+            Backgroundcolorthreshold : [float/integer], optional
+                threshold value if the value of the cell is greater, the plotted
+                numbers will be black and if smaller the plotted number will be white
+                if None given the maxvalue/2 will be considered. The default is None.
+            Gaugecolor : [str], optional
+                color of the points. The default is 'red'.
+            Gaugesize : [integer], optional
+                size of the points. The default is 100.
+            IDcolor : [str]
+                the ID of the Point.The default is "blue".
+            IDsize : [integer]
+                size of the ID text. The default is 10.
+            IDcolor : []
+
+            rotation : []
+
+            midpoint : []
+
+            **kwargs : [dict]
+                keys:
+                    Points : [dataframe].
+                        dataframe contains two columns 'row', and col to
+                        plot the point at this location
+
+        Returns
+        -------
+            1- axes: [figure axes].
+                the axes of the matplotlib figure 
+            2. fig: [matplotlib figure object]
+                the figure object
+
+        """
+        if isinstance(src, gdal.Dataset):
+            Arr, nodataval = Raster.GetRasterData(src)
+            Arr = Arr.astype(np.float32)
+            for i in range(np.shape(Arr)[0]):
+                for j in range(np.shape(Arr)[1]):
+                    if math.isclose(Arr[i, j], nodataval, rel_tol=0.001):
+                        Arr[i, j] = np.nan
+
+            no_elem = np.size(Arr[:, :]) - np.count_nonzero((Arr[np.isnan(Arr)]))
+
+            if 'points' in kwargs.keys():
+                points = kwargs['points']
+                points['row'] = np.nan
+                points['col'] = np.nan
+                # to locte the points in the array
+                points.loc[:, ['row', 'col']] = GC.NearestCell(src, points[['x', 'y']][:]).values
+        elif isinstance(src, np.array):
+            Arr = src
+
+        fig = plt.figure(60, figsize=Figsize)
+        ax = fig.add_subplot()
+        ticks = np.arange(np.nanmin(Arr), np.nanmax(Arr), TicksSpacing)
+
+        if ColorScale == 1:
+            im = ax.matshow(Arr[:, :], cmap=cmap, vmin=np.nanmin(Arr),
+                            vmax=np.nanmax(Arr), )
+            cbar_kw = dict(ticks=ticks)
+        elif ColorScale == 2:
+            im = ax.matshow(Arr[:, :], cmap=cmap,
+                            norm=colors.PowerNorm(gamma=gamma,
+                                                  vmin=np.nanmin(Arr),
+                                                  vmax=np.nanmax(Arr)))
+            cbar_kw = dict(ticks=ticks)
+        elif ColorScale == 3:
+            # linthresh = 1
+            # linscale = 2
+            im = ax.matshow(Arr[:, :], cmap=cmap,
+                            norm=colors.SymLogNorm(linthresh=linthresh,
+                                                   linscale=linscale, base=np.e,
+                                                   vmin=np.nanmin(Arr), vmax=np.nanmax(Arr)))
+
+            formatter = LogFormatter(10, labelOnlyBase=False)
+            cbar_kw = dict(ticks=ticks, format=formatter)
+        elif ColorScale == 4:
+            bounds = np.arange(np.nanmin(Arr), np.nanmax(Arr), TicksSpacing)
+            norm = colors.BoundaryNorm(boundaries=bounds, ncolors=256)
+            im = ax.matshow(Arr[:, :], cmap=cmap, norm=norm)
+            cbar_kw = dict(ticks=ticks)
+        else:
+            im = ax.matshow(Arr[:, :], cmap=cmap, norm=MidpointNormalize(midpoint=midpoint))
+            cbar_kw = dict(ticks=ticks)
+
+        # Create colorbar
+        cbar = ax.figure.colorbar(im, ax=ax, shrink=Cbarlength, orientation=orientation, **cbar_kw)
+        cbar.ax.set_ylabel(cbarlabel, rotation=rotation, va="bottom", fontsize=cbarlabelsize)
+        cbar.ax.tick_params(labelsize=10)
+
+        ax.set_title(Title, fontsize=titlesize)
+        ax.set_xticklabels([])
+        ax.set_yticklabels([])
+
+        ax.set_xticks([])
+        ax.set_yticks([])
+        Indexlist = list()
+
+        if display_cellvalue:
+            for x in range(Arr.shape[0]):
+                for y in range(Arr.shape[1]):
+                    if not np.isnan(Arr[x, y]):
+                        Indexlist.append([x, y])
+            # add text for the cell values
+            Textlist = list()
+            for x in range(no_elem):
+                Textlist.append(ax.text(Indexlist[x][1], Indexlist[x][0],
+                                        round(Arr[Indexlist[x][0], Indexlist[x][1]], 2),
+                                        ha="center", va="center", color="w", fontsize=NumSize))
+        #
+        PoitsID = list()
+        if 'points' in kwargs.keys():
+            row = points.loc[:, 'row'].tolist()
+            col = points.loc[:, 'col'].tolist()
+            IDs = points.loc[:, 'id'].tolist()
+            Points = ax.scatter(col, row, color=Gaugecolor, s=Gaugesize)
+
+            for i in range(len(row)):
+                PoitsID.append(ax.text(col[i], row[i], IDs[i], ha="center",
+                                       va="center", color=IDcolor, fontsize=IDsize))
+        # Normalize the threshold to the images color range.
+        if Backgroundcolorthreshold is not None:
+            Backgroundcolorthreshold = im.norm(Backgroundcolorthreshold)
+        else:
+            Backgroundcolorthreshold = im.norm(np.nanmax(Arr)) / 2.
+
+        return fig, ax
+
+    def AnimateArray(Arr, Time, NoElem, TicksSpacing=2, Figsize=(8, 8), PlotNumbers=True,
+                     NumSize=8, Title='Total Discharge', titlesize=15, Backgroundcolorthreshold=None,
+                     cbarlabel='Discharge m3/s', cbarlabelsize=12, textcolors=("white", "black"),
+                     Cbarlength=0.75, interval=200, cmap='coolwarm_r', Textloc=[0.1, 0.2],
+                     Gaugecolor='red', Gaugesize=100, ColorScale=1, gamma=1./2., linthresh=0.0001,
+                     linscale=0.001, midpoint=0, orientation='vertical', rotation=-90, IDcolor="blue",
+                     IDsize=10, **kwargs):
+        """AnimateArray.
+
+        plot an animation for 3d arrays
+
+        Parameters
+        ----------
+            Arr : [array]
+                the array you want to animate.
+            Time : [dataframe]
+                dataframe contains the date of values.
+            NoElem : [integer]
+                Number of the cells that has values.
+            TicksSpacing : [integer], optional
+                Spacing in the colorbar ticks. The default is 2.
+            Figsize : [tuple], optional
+                figure size. The default is (8,8).
+            PlotNumbers : [bool], optional
+                True to plot the values intop of each cell. The default is True.
+            NumSize : integer, optional
+                size of the numbers plotted intop of each cells. The default is 8.
+            Title : [str], optional
+                title of the plot. The default is 'Total Discharge'.
+            titlesize : [integer], optional
+                title size. The default is 15.
+            Backgroundcolorthreshold : [float/integer], optional
+                threshold value if the value of the cell is greater, the plotted
+                numbers will be black and if smaller the plotted number will be white
+                if None given the maxvalue/2 will be considered. The default is None.
+            textcolors : TYPE, optional
+                Two colors to be used to plot the values i top of each cell. The default is ("white","black").
+            cbarlabel : str, optional
+                label of the color bar. The default is 'Discharge m3/s'.
+            cbarlabelsize : integer, optional
+                size of the color bar label. The default is 12.
+            Cbarlength : [float], optional
+                ratio to control the height of the colorbar. The default is 0.75.
+            interval : [integer], optional
+                number to controlthe speed of the animation. The default is 200.
+            cmap : [str], optional
+                color style. The default is 'coolwarm_r'.
+            Textloc : [list], optional
+                location of the date text. The default is [0.1,0.2].
+            Gaugecolor : [str], optional
+                color of the points. The default is 'red'.
+            Gaugesize : [integer], optional
+                size of the points. The default is 100.
+            IDcolor : [str]
+                the ID of the Point.The default is "blue".
+            IDsize : [integer]
+                size of the ID text. The default is 10.
+            ColorScale : integer, optional
+                there are 5 options to change the scale of the colors. The default is 1.
+                1- ColorScale 1 is the normal scale
+                2- ColorScale 2 is the power scale
+                3- ColorScale 3 is the SymLogNorm scale
+                4- ColorScale 4 is the PowerNorm scale
+                5- ColorScale 5 is the BoundaryNorm scale
+                ------------------------------------------------------------------
+                gamma : [float], optional
+                    value needed for option 2 . The default is 1./2..
+                linthresh : [float], optional
+                    value needed for option 3. The default is 0.0001.
+                linscale : [float], optional
+                    value needed for option 3. The default is 0.001.
+                midpoint : [float], optional
+                    value needed for option 5. The default is 0.
+                ------------------------------------------------------------------
+            orientation : [string], optional
+                orintation of the colorbar horizontal/vertical. The default is 'vertical'.
+            rotation : [number], optional
+                rotation of the colorbar label. The default is -90.
+            IDcolor : []
+
+            rotation : []
+
+            gamma : []
+
+            linthresh : []
+
+            midpoint : []
+
+            linscale : []
+
+            **kwargs : [dict]
+                keys:
+                    Points : [dataframe].
+                        dataframe contains two columns 'cell_row', and cell_col to
+                        plot the point at this location
 
         Returns
         -------
         animation.FuncAnimation.
+
+
 
         """
         fig = plt.figure(60, figsize=Figsize)
@@ -1431,8 +1631,8 @@ class Visualize:
                                                                            vmin=np.nanmin(Arr), vmax=np.nanmax(Arr)))
             cbar_kw = dict(ticks=ticks)
         elif ColorScale == 3:
-            linthresh = 1
-            linscale = 2
+            # linthresh = 1
+            # linscale = 2
             im = ax.matshow(Arr[:, :, 0], cmap=cmap, norm=colors.SymLogNorm(linthresh=linthresh,
                                                                             linscale=linscale, base=np.e,
                                                                             vmin=np.nanmin(Arr), vmax=np.nanmax(Arr)))
