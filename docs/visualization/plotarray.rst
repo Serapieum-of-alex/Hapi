@@ -35,6 +35,7 @@ Default Plot
     :linenos:
 
     vis.PlotArray(src)
+
     (<Figure size 576x576 with 2 Axes>,
      <AxesSubplot:title={'center':'Total Discharge'}>)
 
@@ -64,6 +65,8 @@ first for the size of the figure you have to pass a tuple with the width and hei
     titlesize=15
 
     vis.PlotArray(src, Figsize=Figsize, Title=Title, titlesize=titlesize)
+
+
     (<Figure size 576x576 with 2 Axes>,
     <AxesSubplot:title={'center':'Flow Accumulation map'}>)
 
@@ -98,6 +101,8 @@ Color Bar
     vis.PlotArray(src, Cbarlength=Cbarlength, orientation=orientation,
                   cbarlabelsize=cbarlabelsize, cbarlabel=cbarlabel, rotation=rotation,
                   TicksSpacing=TicksSpacing)
+
+
     (<Figure size 576x576 with 2 Axes>,
     <AxesSubplot:title={'center':'Total Discharge'}>)
 
@@ -128,10 +133,12 @@ Color Schame
 
 .. code-block:: py
     :linenos:
+
     # for normal linear scale
     ColorScale = 1
     cmap='terrain'
     vis.PlotArray(src, ColorScale=ColorScale,cmap=cmap, TicksSpacing=TicksSpacing)
+
     (<Figure size 576x576 with 2 Axes>,
     <AxesSubplot:title={'center':'Total Discharge'}>)
 
@@ -145,13 +152,16 @@ Power Scale
 
 .. code-block:: py
     :linenos:
+
     ColorScale = 2
     gamma=0.5
 
     vis.PlotArray(src, ColorScale=ColorScale, cmap=cmap, gamma=gamma,
                   TicksSpacing=TicksSpacing)
+
     vis.PlotArray(src, ColorScale=ColorScale, cmap=cmap, gamma=0.4,
               TicksSpacing=TicksSpacing)
+
     vis.PlotArray(src, ColorScale=ColorScale, cmap=cmap, gamma=0.2,
               TicksSpacing=TicksSpacing)
 
@@ -170,11 +180,13 @@ SymLogNorm scale
 
 .. code-block:: py
     :linenos:
+
     ColorScale = 3
     linscale=0.001
     linthresh=0.0001
     vis.PlotArray(src, ColorScale=ColorScale, linscale=linscale, linthresh=linthresh,
                   cmap=cmap, TicksSpacing=TicksSpacing)
+
 
     (<Figure size 576x576 with 2 Axes>,
     <AxesSubplot:title={'center':'Total Discharge'}>)
@@ -188,6 +200,7 @@ PowerNorm scale
 
 .. code-block:: py
     :linenos:
+
     ColorScale = 4
     vis.PlotArray(src, ColorScale=ColorScale,
               cmap=cmap, TicksSpacing=TicksSpacing)
@@ -208,6 +221,7 @@ Color scale 5
     midpoint=20
     vis.PlotArray(src, ColorScale=ColorScale, midpoint=midpoint,
                   cmap=cmap, TicksSpacing=TicksSpacing)
+
 
     (<Figure size 576x576 with 2 Axes>,
     <AxesSubplot:title={'center':'Total Discharge'}>)
@@ -252,7 +266,7 @@ if you have points that you want to display in the map you can read it into a da
 in condition that it has two columns "x", "y" which are the coordinates of the points of theand they have to be
 in the same coordinate system as the raster
 
-## read the points
+- read the points
 
 .. code-block:: py
     :linenos:
@@ -261,7 +275,7 @@ in the same coordinate system as the raster
     points = pd.read_csv(pointsPath)
 
 
-## plot the points
+- plot the points
 
 .. code-block:: py
     :linenos:
