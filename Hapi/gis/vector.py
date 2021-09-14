@@ -4,10 +4,7 @@ Created on Sun Jul 01 17:07:40 2018
 
 @author: Mostafa
 """
-#%links
 
-
-#%library
 import numpy as np
 import geopandas as gpd
 from shapely.geometry.multipolygon import MultiPolygon
@@ -23,13 +20,9 @@ import pandas as pd
 import warnings
 
 
-# functions
+class Vector:
+    """Vector
 
-class Vector():
-    """
-    ================
-        Vector
-    ================
     Vector class contains different methods to deal with shapefiles
 
     Methods:
@@ -58,18 +51,20 @@ class Vector():
 
     @staticmethod
     def GetXYCoords(geometry, coord_type):
-        """
-        ====================================================
-            getXYCoords(geometry, coord_type)
-        ====================================================
+        """getXYCoords.
+
         Returns either x or y coordinates from  geometry coordinate sequence.
          Used with LineString and Polygon geometries.
-         inputs:
+
+         inputs
+         ------
              1- geometry:
                   [Geometry object of type LineString] the geometry of a shpefile
              2- coord_type:
                  [string] either "x" or "y"
-         outpus:
+
+         outpus
+         ------
              1-array:
                  contains x coordinates or y coordinates of all edges of the shapefile
         """
@@ -81,17 +76,17 @@ class Vector():
 
     @staticmethod
     def GetPointCoords(geometry,coord_type):
-        """
-        ========================================================
-            GetPointCoords(geometry,coord_type)
-        ========================================================
+        """GetPointCoords
+
         Returns Coordinates of Point object.
-        inputs:
+        inputs
+        ------
             1- geometry:
                 [Shapely Point object] the geometry of a shpefile
             2- coord_type:
                 [string] either "x" or "y"
-        outpus:
+        outpus
+        ------
             1-array:
                 contains x coordinates or y coordinates of all edges of the shapefile
         """
@@ -103,17 +98,19 @@ class Vector():
 
     @staticmethod
     def GetLineCoords(geometry,coord_type):
-        """
-        ====================================================
-            getLineCoords(geometry)
-        ====================================================
+        """getLineCoords
+
         Returns Coordinates of Linestring object.
-        inputs:
+
+        inputs
+        ------
             1- geometry:
                  [Shapely Linestring object] the geometry of a shpefile
             2- coord_type:
                 [string] either "x" or "y"
-        outpus:
+
+        outpus
+        ------
             1-array:
                 contains x coordinates or y coordinates of all edges of the shapefile
         """
@@ -122,17 +119,18 @@ class Vector():
 
     @staticmethod
     def GetPolyCoords(geometry,coord_type):
-        """
-        =====================================================
-             getPolyCoords(geometry,coord_type)
-        =====================================================
+        """getPolyCoords.
+
         Returns Coordinates of Polygon using the Exterior of the Polygon.
-        inputs:
+        inputs
+        ------
             1- geometry:
              [Shapely polygon object] the geometry of a shpefile
             2- coord_type:
                  [string] either "x" or "y"
-        outpus:
+
+        outpus
+        ------
             1-array:
                 contains x coordinates or y coordinates of all edges of the shapefile
         """
@@ -144,15 +142,15 @@ class Vector():
 
     @staticmethod
     def Explode(dataframe_row):
-        """
-        ==============================================
-            explode(indata)
-        ==============================================
+        """Explode.
+
         explode function converts the multipolygon into a polygons
-        Inputs:
+        inputs
+        ------
             1- dataframe_row: (data frame series)
                 the dataframe row that its geometry type is Multipolygon
-        outputs:
+        outputs
+        -------
             1- outdf
                 the dataframe of the created polygons
         """
@@ -173,24 +171,24 @@ class Vector():
 
     @staticmethod
     def MultiGeomHandler(multi_geometry, coord_type, geom_type):
-        """
-        # =============================================================================
-        #     multiGeomHandler(multi_geometry, coord_type, geom_type)
-        # =============================================================================
+        """multiGeomHandler
+
         Function for handling multi-geometries. Can be MultiPoint, MultiLineString or MultiPolygon.
         Returns a list of coordinates where all parts of Multi-geometries are merged into a single list.
         Individual geometries are separated with np.nan which is how Bokeh wants them.
         # Bokeh documentation regarding the Multi-geometry issues can be found here (it is an open issue)
         # https://github.com/bokeh/bokeh/issues/2321
 
-        inputs:
+        inputs
+        ------
             1- multi_geometry (geometry)
              the geometry of a shpefile
             2- coord_type (string)
              "string" either "x" or "y"
             3- geom_type (string)
                 "MultiPoint" or "MultiLineString" or "MultiPolygon"
-        outpus:
+        outpus
+        ------
             1-array:
              contains x coordinates or y coordinates of all edges of the shapefile
         """
@@ -210,34 +208,33 @@ class Vector():
                         coord_arrays= np.concatenate([coord_arrays,Vector.GetLineCoords(part,coord_type)]) #,np.nan
 
         elif geom_type=="MultiPolygon":
-            if i ==0:
-    #            coord_arrays= getPolyCoords(part,coord_type)#,np.nan)
-                multi_2_single=Vector.Explode(multi_geometry)
-                for j in range(len(multi_2_single)):
-                    if j ==0:
-                        coord_arrays= Vector.GetPolyCoords(multi_2_single[j],coord_type)#,np.nan)
-                    else:
+            for i, part in enumerate(multi_geometry):
+                if i == 0:
+        #            coord_arrays= getPolyCoords(part,coord_type)#,np.nan)
+                    multi_2_single=Vector.Explode(multi_geometry)
+                    for j in range(len(multi_2_single)):
+                        if j ==0:
+                            coord_arrays= Vector.GetPolyCoords(multi_2_single[j],coord_type)#,np.nan)
+                        else:
+                            coord_arrays= np.concatenate([coord_arrays,Vector.GetPolyCoords(multi_2_single[j],coord_type)]) #,np.nan
+                else:
+                    # explode the multipolygon into polygons
+                    multi_2_single=Vector.Explode(part)
+                    for j in range(len(multi_2_single)):
                         coord_arrays= np.concatenate([coord_arrays,Vector.GetPolyCoords(multi_2_single[j],coord_type)]) #,np.nan
-            else:
-                # explode the multipolygon into polygons
-                multi_2_single=Vector.Explode(part)
-                for j in range(len(multi_2_single)):
-                    coord_arrays= np.concatenate([coord_arrays,Vector.GetPolyCoords(multi_2_single[j],coord_type)]) #,np.nan
             # return the coordinates
             return coord_arrays
 
 
     @staticmethod
     def GetCoords(row, geom_col, coord_type):
-        """
-        ======================================================
-            getCoords(row, geom_col, coord_type)
-        ======================================================
+        """getCoords.
+
         Returns coordinates ('x' or 'y') of a geometry (Point, LineString or Polygon)
         as a list (if geometry is Points, LineString or Polygon). Can handle also
         MultiGeometries but not MultiPolygon.
 
-        inputs:
+        inputs
             1- row:
                 [dataframe] a whole rwo of the dataframe
             2- geom_col"
@@ -276,7 +273,7 @@ class Vector():
         XY function takes a geodataframe and process the geometry column and return
         the x and y coordinates of all the votrices
 
-        Inputs:
+        inputs
             1- input_dataframe:[geodataframe]
                 geodataframe contains the Shapely geometry object in a column name
                 "geometry"
@@ -326,7 +323,7 @@ class Vector():
         ======================================================================
         this function creates a polygon from coordinates
 
-        inputs:
+        inputs
         ----------
             coords :
                 [List] list of tuples [(x1,y1),(x2,y2)]
@@ -372,22 +369,20 @@ class Vector():
 
     @staticmethod
     def CreatePoint(coords):
-        """
-        =============================================
-            CreatePoint(coords)
-        =============================================
+        """CreatePoint
+
         CreatePoint takes a list of tuples of coordinates and convert it into
         a list of Shapely point object
 
-        Inputs:
+        inputs
         ----------
-            1-coords:
-            [List] list of tuples [(x1,y1),(x2,y2)] or [(long1,lat1),(long2,lat1)]
+            1-coords : [List]
+                list of tuples [(x1,y1),(x2,y2)] or [(long1,lat1),(long2,lat1)]
 
         Outputs:
         ----------
-            1-points:
-            [List] list of Shaply point objects [Point,Point]
+            1-points : [List]
+                list of Shaply point objects [Point,Point]
 
         Examples:
         ----------
@@ -409,14 +404,12 @@ class Vector():
 
     @staticmethod
     def CombineGeometrics(Path1,Path2, Save=False, SavePath= None):
-        """
-        ============================================
-            CombineGeometrics(Path1,Path2)
-        ============================================
+        """CombineGeometrics
+
         CombineGeometrics reads two shapefiles and combine them into one
         shapefile
 
-        Inputs:
+        inputs
         ----------
             1-Path1:
                 [String] a path includng the name of the shapefile and extention like
@@ -485,14 +478,12 @@ class Vector():
 
     @staticmethod
     def GCSDistance(coords_1,coords_2):
-        """
-        =====================================================================
-          GCS_distance(coords_1,coords_2)
-        =====================================================================
+        """GCS_distance
+
         this function calculates the distance between two points that have
         geographic coordinate system
 
-        inputs:
+        inputs
         ----------
             1-coord_1:
                 tuple of (long, lat) of the first point
@@ -502,37 +493,39 @@ class Vector():
         Output:
         ----------
             1-distance between the two points
+
+        example:
+        -------
+            coords_1 = (52.2296756, 21.0122287)
+            coords_2 = (52.406374, 16.9251681)
+
         """
         import geopy.distance
 
-    #    coords_1 = (52.2296756, 21.0122287)
-    #    coords_2 = (52.406374, 16.9251681)
-
-        dist=geopy.distance.vincenty(coords_1, coords_2).m
+        dist = geopy.distance.vincenty(coords_1, coords_2).m
 
         return dist
 
 
     @staticmethod
-    def ReprojectPoints(lat,lon,from_epsg=4326,to_epsg=3857,precision=6):
-        """
-        =====================================================================
-          reproject_points(lat, lng, from_epsg=4326,to_epsg=3857)
-        =====================================================================
+    def ReprojectPoints(lat, lon, from_epsg=4326, to_epsg=3857, precision=6):
+        """reproject_points
+
         this function change the projection of the coordinates from a coordinate system
         to another (default from GCS to web mercator used by google maps)
 
-        Inputs:
+        inputs
         ----------
-            1- lat:
+            1- lat: [list]
                 list of latitudes of the points
-            2- lng:
+            2- lon: [list]
                 list of longitude of the points
-            3- from_epsg:
-                integer reference number to the projection of the points (https://epsg.io/)
-            4- to_epsg:
-                integer reference number to the new projection of the points (https://epsg.io/)
-
+            3- from_epsg: [integer]
+                reference number to the projection of the points (https://epsg.io/)
+            4- to_epsg: [integer]
+                reference number to the new projection of the points (https://epsg.io/)
+            5- precision: [integer]
+                number of decimal places
         outputs:
         ----------
             1-y:
@@ -575,7 +568,7 @@ class Vector():
         this function change the projection of the coordinates from a coordinate system
         to another (default from GCS to web mercator used by google maps)
 
-        Inputs:
+        inputs
         ----------
             1- lat:
                 list of latitudes of the points
@@ -626,7 +619,7 @@ class Vector():
         AddSpatialReference takes GeoPandas DataFrame and set the coordinate system
         based on the given epsg input
 
-        Inputs:
+        inputs
             1-GpdDF:
                 [geopandas.geodataframe.GeoDataFrame] geopandas dataframe
             2-epsg:
@@ -665,7 +658,7 @@ class Vector():
         PolygonCenterPoint function takes the a geodata frame of polygons and and
         returns the center of each polygon
 
-        Inputs:
+        inputs
             1-PolygonDataFrame:
                 [geopandas.geodataframe.GeoDataFrame] GeoDataframe containing
                 all the polygons you want to get the center point
@@ -747,7 +740,7 @@ class Vector():
         this function takes a polygon geometry and creates a ashapefile and save it
         (https://gis.stackexchange.com/a/52708/8104)
 
-        inputs:
+        inputs
         ----------
             1-geometry:
                 polygon, point, or lines or multi

@@ -31,7 +31,7 @@ class River:
     """
 
     def __init__(self, name, version=3, start="1950-1-1", end='', days=36890,
-                 rrmstart="1950-1-1", rrmdays=36890, dto=60, dx='',
+                 rrmstart="", rrmdays=36890, dto=60, dx='',
                  leftovertopping_suffix="_left.txt",
                  rightovertopping_suffix="_right.txt", depthprefix="DepthMax",
                  durationprefix="Duration", returnperiod_prefix="ReturnPeriod",
@@ -91,7 +91,6 @@ class River:
         Returns
         -------
         None.
-
         """
         assert isinstance(start, str), "start argument has to be string"
         assert isinstance(version, int), "version argument has to be integer number"
@@ -157,8 +156,17 @@ class River:
             self.referenceindex = pd.DataFrame(index=list(range(1, days+1)))
             self.referenceindex['date'] = ref_ind[:-1]
 
-        self.rrmstart = rrmstart
-        self.rrmstart = dt.datetime.strptime(rrmstart,fmt)
+        if rrmstart == '':
+            self.rrmstart = self.start
+        else:
+            try:
+                self.rrmstart = dt.datetime.strptime(rrmstart,fmt)
+            except ValueError:
+                msg = ("plese check the fmt ({0}) you entered as it is different from the"
+                       " rrmstart data ({1})")
+                print(msg.format(fmt,rrmstart))
+                return
+
         self.rrmend = self.rrmstart + dt.timedelta(days = rrmdays)
         ref_ind = pd.date_range(self.rrmstart, self.rrmend, freq='D')
         self.rrmreferenceindex = pd.DataFrame(index=list(range(1, rrmdays+1)))
@@ -877,6 +885,10 @@ class River:
         -------
         Q : [Dataframe]
             time series of the runoff .
+            :param version:
+            :param rrmreferenceindex:
+            :param nodeid:
+            :param date_format:
 
         """
         if version < 3:
@@ -1093,10 +1105,29 @@ class River:
             DESCRIPTION.
         fmt: [string]
             format of the date. fmt="%Y-%m-%d %H:%M:%S"
+        interval: []
+
+        xs: []
+
+        xsbefore: []
+
+        xsafter: []
+
+        textlocation: []
+
+        xaxislabelsize: []
+
+        yaxislabelsize: []
+
+        nxlabels: []
+
+        plotbanhfuldepth: []
+
 
         Returns
         -------
         None.
+
 
         """
         anim = V.river1d(self, start, end, interval=interval, xs=xs,
@@ -1978,6 +2009,7 @@ class River:
         -------
             coords = np.array([[0,1],[0,0],[5,0],[5,1]])
             RV.River.PolygonGeometry(coords)
+            :param Coords:
         """
         area = 0.0
         peri = 0.0
@@ -2010,6 +2042,7 @@ class River:
         -------
             coords = np.array([[0,1],[0,0],[5,0],[5,1]])
             River.PolyArea(coords)
+            :param Coords:
         """
         area = 0.0
         for i in range(np.shape(Coords)[0]-1):
@@ -2041,6 +2074,7 @@ class River:
         -------
             coords = np.array([[0,1],[0,0],[5,0],[5,1]])
             RV.River.PolyPerimeter(coords)
+            :param Coords:
         """
         peri = 0.0
         for i in range(np.shape(Coords)[0]-1):
@@ -2565,6 +2599,7 @@ class River:
         -------
         Errors : [list]
             list of the files' names that has errors and are already corrected.
+            :param FilterValue:
         """
         DEM, SpatialRef = raster.ReadASCII(DEMpath)
         NoDataValue = SpatialRef[-1]
@@ -3302,6 +3337,10 @@ class Sub(River):
         Returns
         -------
         None.
+        :param fromxs:
+        :param toxs:
+        :param figsize:
+        :param nxlabels:
 
         """
         start = dt.datetime.strptime(start,fmt)
@@ -3690,6 +3729,8 @@ class Sub(River):
             DESCRIPTION.
         ax : TYPE
             DESCRIPTION.
+            :param rrmlinestyle:
+            :param figsize:
 
 
         """
@@ -3940,6 +3981,11 @@ class Sub(River):
         -------
         ax : TYPE
             DESCRIPTION.
+            :param hmstyle:
+            :param gaugestyle:
+            :param legendsize:
+            :param figsize:
+            :param nxlabels:
 
         """
         start = dt.datetime.strptime(start,fmt)

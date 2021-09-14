@@ -9,6 +9,7 @@ based on a source raster, perform any algebric operation on cell's values
 import os
 import re
 import sys
+import math
 import datetime as dt
 import numpy as np
 import json
@@ -119,74 +120,84 @@ class Raster:
     def __init__(self):
         pass
 
-    # @staticmethod
-    # def GetMask(raster):
-    #     """
-    #     to create a mask by knowing the stored value inside novalue cells
-
-    #     Inputs:
-    #     ----------
-    #         1- flow path lenth raster
-
-    #     Outputs:
-    #     ----------
-    #         1- mask:array with all the values in the flow path length raster
-    #         2- no_val: value stored in novalue cells
-    #     """
-    #     no_val = np.float32(raster.GetRasterBand(1).GetNoDataValue()) # get the value stores in novalue cells
-    #     mask = raster.ReadAsArray()
-    #     return mask, no_val
-
     @staticmethod
-    def AddMask(var, dem=None, mask=None, no_val=None):
+    def GetRasterData(src, band=''):
         """
-        Put a mask in the spatially distributed values
+        get the basic data inside a raster (the array and the nodatavalue)
 
-        Inputs
+        Inputs:
         ----------
-            1- var : nd_array
-                Matrix with values to be masked
-            2-cut_dem : gdal_dataset
-                Instance of the gdal raster of the catchment to be cutted with. DEM
-                overrides the mask_vals and no_val
-            3-mask_vals : nd_array
-                Mask with the no_val data
-            4-no_val : float
-                value to be defined as no_val. Will mask anything is not this value
-
-        Outputs
-        -------
-            1-var : nd_array
-                Array with masked values
+            Input: [gdal.Dataset]
+                a gdal.Dataset is a raster already been read using gdal
+            band : [integer]
+                the band you want to get its data. Default is 1
+        Outputs:
+        ----------
+            1- mask:[array]
+                array with all the values in the flow path length raster
+            2- no_val: [numeric]
+                value stored in novalue cells
         """
+        if band == '':
+            band = 1
 
-        if dem != None:
-            mask, no_val = Raster.GetRasterData(dem)
+        msg = ("please enter a valib gdal object (raster has been read "
+               "using gdal.open)"
+               )
+        assert isinstance(src, gdal.Dataset), msg
 
-        # Replace the no_data value
-        assert var.shape == mask.shape, 'Mask and data do not have the same shape'
-        var[mask == no_val] = no_val
+        # get the value stores in novalue cells
+        NoDataValue = np.float32(src.GetRasterBand(band).GetNoDataValue())
+        Data = src.GetRasterBand(band).ReadAsArray()
 
-        return var
+        return Data, NoDataValue
 
     @staticmethod
-    def GetTargets(dem):
+    def GetProjectionData(src):
+        """GetProjectionData.
+
+        GetProjectionData returns the projection details of a given gdal.Dataset
+
+        Inputs:
+        -------
+            1- src : [gdal.Dataset]
+                raster read by gdal
+
+        Returns:
+            1- epsg : [integer]
+                 integer reference number that defines the projection (https://epsg.io/)
+            2- geo : [tuple]
+                geotransform data of the upper left corner of the raster
+                (minimum lon/x, pixelsize, rotation, maximum lat/y, rotation, pixelsize).
         """
-        Returns the centres of the interpolation targets
+        geo = src.GetGeoTransform()
+        # GET PROJECTION
+        src_proj = src.GetProjection()
+        # spatial ref
+        src_epsg = osr.SpatialReference(wkt=src_proj)
+        epsg = int(src_epsg.GetAttrValue('AUTHORITY', 1))
+
+        return epsg, geo
+
+    @staticmethod
+    def GetCellCoords(dem):
+        """GetCoords.
+
+        Returns the coordinates of the cell centres (only the cells that
+        does not have nodata value)
 
         Parameters
         ----------
-        dem : gdal_Dataset
+
+        dem : [gdal_Dataset]
             Get the data from the gdal datasetof the DEM
 
         Returns
         -------
-
-        coords : nd_array [nxm - nan, 2]
+        coords : array
             Array with a list of the coordinates to be interpolated, without the Nan
-
-        mat_range : nd_array [n, m]
-            Array with all the centres of cells in the domain of the DEM (rectangular)
+        mat_range : array
+            Array with all the centres of cells in the domain of the DEM
 
         """
         # Getting data for the whole grid
@@ -197,24 +208,25 @@ class Raster:
         no_val = dem.GetRasterBand(1).GetNoDataValue()
         mask = dem.ReadAsArray()
 
-        # Adding 0.5 to get the centre
+        # Adding 0.5*cell size to get the centre
         x = np.array([x_init + xx_span*(i+0.5) for i in range(shape_dem[0])])
         y = np.array([y_init + yy_span*(i+0.5) for i in range(shape_dem[1])])
         mat_range = [[(xi, yi) for xi in x] for yi in y]
 
         # applying the mask
         coords = []
-        for i in range(len(x)):
-            for j in range(len(y)):
-                if mask[j, i] != no_val:
+        for i in range(len(x)-1):
+            for j in range(len(y)-1):
+                if math.isclose(mask[i, j], no_val, rel_tol=0.001):
                     coords.append(mat_range[j][i])
 
         return np.array(coords), np.array(mat_range)
 
     @staticmethod
     def SaveRaster(raster,path):
-        """
-        this function saves a raster to a path
+        """SaveRaster.
+
+        SaveRaster saves a raster to a path
 
         inputs:
         ----------
@@ -234,8 +246,8 @@ class Raster:
         """
         # input data validation
         # data type
-        assert type(raster) == gdal.Dataset, "src should be read using gdal (gdal dataset please read it using gdal library) "
-        assert type(path) == str, "Raster_path input should be string type"
+        assert isinstance(raster, gdal.Dataset) , "src should be read using gdal (gdal dataset please read it using gdal library) "
+        assert isinstance(path, str), "Raster_path input should be string type"
         # input values
         ext = path[-4:]
         assert ext == ".tif", "please add the extension at the end of the path input"
@@ -244,79 +256,57 @@ class Raster:
         dst_ds = driver.CreateCopy(path, raster, 0)
         dst_ds = None  # Flush the dataset to disk
 
-    @staticmethod
-    def GetRasterData(Input, band=''):
-        """
-        to create a mask by knowing the stored value inside novalue cells
-
-        Inputs:
-        ----------
-            Input: [str/gdal.Dataset]
-                path to the raster file or a gdal.Dataset
-            band : [integer]
-                the band you want to get its data. Default is 1
-        Outputs:
-        ----------
-            1- mask:array with all the values in the flow path length raster
-            2- no_val: value stored in novalue cells
-        """
-
-        if band == '':
-            band = 1
-
-        if Input == gdal.Dataset:
-            src = Input
-        else:
-            # if a path is given
-            try:
-                src = gdal.Open(Input)
-            except:
-                assert Input != None, Input + ' does not exists'
-
-        # get the value stores in novalue cells
-        NoDataValue = np.float32(src.GetRasterBand(band).GetNoDataValue())
-
-        Data = src.GetRasterBand(band).ReadAsArray()
-
-        return Data, NoDataValue
 
     @staticmethod
-    def CreateRaster(Path='', data='', geo='', EPSG='', NoDataValue=-9999):
-        """
+    def CreateRaster(Path='', arr='', geo='', EPSG='', NoDataValue=-9999):
+        """CreateRaster.
+
         CreateRaster method creates a raster from a given array and geotransform data
-        and save the figg file if a Path is given or it will return the gdal.Dataset
+        and save the tif file if a Path is given or it will return the gdal.Dataset
 
         Parameters
         ----------
-        Path : [str], optional
+        1- Path : [str], optional
             Path to save the Raster, if '' is given a memory raster will be returned. The default is ''.
-        data : [array], optional
+        2- arr : [array], optional
             numpy array. The default is ''.
-        geo : [list], optional
+        3- geo : [list], optional
             geotransform list [minimum lon, pixelsize, rotation, maximum lat, rotation,
                 pixelsize]. The default is ''.
-        projection : TYPE, optional
-            DESCRIPTION. The default is ''.
-        NoDataValue : TYPE, optional
+        4- NoDataValue : TYPE, optional
             DESCRIPTION. The default is -9999.
+        5- EPSG: [integer]
+            integer reference number to the new projection (https://epsg.io/)
+                (default 3857 the reference no of WGS84 web mercator )
 
         Returns
         -------
-        None.
+        1- dst : [gdal.Dataset/save raster to drive].
+            if a path is given the created raster will be saved to drive, if not
+            a gdal.Dataset will be returned.
 
         """
         if np.isnan(NoDataValue):
             NoDataValue = -9999
 
         if Path == '':
-            driver = gdal.GetDriverByName("MEM")
-            dst_ds = driver.Create('', int(data.shape[1]), int(data.shape[0]), 1,
-                                    gdal.GDT_Float32, ['COMPRESS=LZW'])
+            driver_type = "MEM"
+            compress = []
+            # driver = gdal.GetDriverByName("MEM")
+            # dst_ds = driver.Create('', int(arr.shape[1]), int(arr.shape[0]), 1,
+            #                         gdal.GDT_Float32, ['COMPRESS=LZW'])
         else:
-            driver = gdal.GetDriverByName("GTiff")
-            dst_ds = driver.Create(Path, int(data.shape[1]), int(data.shape[0]), 1,
-                                    gdal.GDT_Float32, ['COMPRESS=LZW'])
+            assert isinstance(Path, str), "first parameter Path should be string"
+            driver_type = "GTiff"
+            compress = ['COMPRESS=LZW']
 
+            # driver = gdal.GetDriverByName("GTiff")
+            # dst_ds = driver.Create(Path, int(arr.shape[1]), int(arr.shape[0]), 1,
+                                    # gdal.GDT_Float32, ['COMPRESS=LZW'])
+
+        driver = gdal.GetDriverByName(driver_type)
+        dst_ds = driver.Create(Path, int(arr.shape[1]), int(arr.shape[0]), 1,
+                               gdal.GDT_Float32, compress)
         srse = osr.SpatialReference()
 
         if EPSG == '':
@@ -337,9 +327,15 @@ class Raster:
                     srse.ImportFromWkt(EPSG)
 
         dst_ds.SetProjection(srse.ExportToWkt())
-        dst_ds.GetRasterBand(1).SetNoDataValue(NoDataValue)
+        try:
+            # if the nodata value gives error because of the type.
+            dst_ds.GetRasterBand(1).SetNoDataValue(NoDataValue)
+        except TypeError:
+            #TypeError: in method 'Band_SetNoDataValue', argument 2 of type 'double'
+            dst_ds.GetRasterBand(1).SetNoDataValue(np.float64(NoDataValue))
+
         dst_ds.SetGeoTransform(geo)
-        dst_ds.GetRasterBand(1).WriteArray(data)
+        dst_ds.GetRasterBand(1).WriteArray(arr)
 
         if Path == '':
             return dst_ds
@@ -349,20 +345,17 @@ class Raster:
 
     @staticmethod
     def MapAlgebra(src, fun):
-        """
-        this function executes a mathematical operation on raster array and returns
+        """MapAlgebra.
+
+        MapAlgebra executes a mathematical operation on raster array and returns
         the result
 
         inputs:
         ----------
-            1-src:
-                [gdal.dataset] source raster to get the location of the NoDataValue and
-                where it is in the array
-            2-dst:
-                [gdal.dataset] source raster to get the location of the NoDataValue and
-                where it is in the array
+            1-src : [gdal.dataset]
+                source raster to that you want to make some calculation on its values
             3-function:
-                numpy function
+                defined function that takes one input which is the cell value
 
         Example :
         ----------
@@ -372,7 +365,7 @@ class Raster:
         """
         # input data validation
         # data type
-        assert type(src) == gdal.Dataset, "src should be read using gdal (gdal dataset please read it using gdal library) "
+        assert isinstance(src, gdal.Dataset), "src should be read using gdal (gdal dataset please read it using gdal library) "
         assert callable(fun) , "second argument should be a function"
 
         src_gt = src.GetGeoTransform()
@@ -388,12 +381,12 @@ class Raster:
         # execute the function on each cell
         for i in range(src_row):
             for j in range(src_col):
-                if src_array[i,j] != noval:
+                if not math.isclose(src_array[i, j], noval, rel_tol=0.001):
                     new_array[i,j] = fun(src_array[i,j])
 
         # create the output raster
         mem_drv = gdal.GetDriverByName("MEM")
-        dst = mem_drv.Create("",src_col,src_row,1,gdalconst.GDT_Float32) #,['COMPRESS=LZW'] LZW is a lossless compression method achieve the highst compression but with lot of computation
+        dst = mem_drv.Create("", src_col, src_row, 1, gdalconst.GDT_Float32) #,['COMPRESS=LZW'] LZW is a lossless compression method achieve the highst compression but with lot of computation
 
         # set the geotransform
         dst.SetGeoTransform(src_gt)
@@ -537,7 +530,7 @@ class Raster:
         return dst
 
     @staticmethod
-    def ProjectRaster(src, to_epsg,resample_technique="Nearest", Option=2):
+    def ProjectRaster(src, to_epsg, resample_technique="Nearest", Option=2):
         """
         this function reproject a raster to any projection
         (default the WGS84 web mercator projection, without resampling)
@@ -545,26 +538,28 @@ class Raster:
 
         inputs:
         ----------
-            1- raster:
+            1- raster: [gdal object]
                 gdal dataset (src=gdal.Open("dem.tif"))
-            2-to_epsg:
-                integer reference number to the new projection (https://epsg.io/)
+            2-to_epsg: [integer]
+                reference number to the new projection (https://epsg.io/)
                 (default 3857 the reference no of WGS84 web mercator )
-            3-cell_size:
+            3-cell_size: [integer]
                 integer number to resample the raster cell size to a new cell size
                 (default empty so raster will not be resampled)
-            4- resample_technique:
-                [String] resampling technique default is "Nearest"
+            4- resample_technique: [String]
+                resampling technique default is "Nearest"
                 https://gisgeography.com/raster-resampling/
                 "Nearest" for nearest neighbour,"cubic" for cubic convolution,
                 "bilinear" for bilinear
+            4- Option : [1 or 2]
+
 
         Outputs:
         ----------
             1-raster:
                 gdal dataset (you can read it by ReadAsArray)
 
-        Ex:
+        Example :
         ----------
             projected_raster=project_dataset(src, to_epsg=3857)
         """
@@ -606,7 +601,7 @@ class Raster:
             # reads longitude fron 0 to 360 and transformation factor wont work with values
             # greater than 180
             if src_epsg.GetAttrValue('AUTHORITY',1) != str(to_epsg) :
-                if src_epsg.GetAttrValue('AUTHORITY',1)=="4326" and src_gt[0] > 180:
+                if src_epsg.GetAttrValue('AUTHORITY',1) == "4326" and src_gt[0] > 180:
                     lng_new = src_gt[0]-360
                     # transformation factors
                     tx = osr.CoordinateTransformation(src_epsg, dst_epsg)
@@ -619,8 +614,12 @@ class Raster:
                     xs = [src_gt[0], src_gt[0]+src_gt[1]*src_x]
                     ys = [src_gt[3], src_gt[3]+src_gt[5]*src_y]
 
-                    [uly,lry] , [ulx,lrx] = Vector.ReprojectPoints(ys,xs,from_epsg=int(src_epsg.GetAttrValue('AUTHORITY',1)),
-                                                   to_epsg=int(dst_epsg.GetAttrValue('AUTHORITY',1)))
+                    # print(int(src_epsg.GetAttrValue('AUTHORITY', 1)))
+                    # print(dst_epsg.GetAttrValue('AUTHORITY', 1))
+
+                    from_epsg = int(src_epsg.GetAttrValue('AUTHORITY',1))
+                    [uly,lry] , [ulx,lrx] = Vector.ReprojectPoints(ys, xs, from_epsg=from_epsg,
+                                                   to_epsg=to_epsg) #int(dst_epsg.GetAttrValue('AUTHORITY',1))
 
 
             else:
@@ -637,8 +636,9 @@ class Raster:
 
             if src_epsg.GetAttrValue('AUTHORITY',1) != str(to_epsg):
                 # transform the two points coordinates to the new crs to calculate the new cell size
-                new_ys, new_xs = Vector.ReprojectPoints(ys,xs,from_epsg=int(src_epsg.GetAttrValue('AUTHORITY',1)),
-                                                  to_epsg=int(dst_epsg.GetAttrValue('AUTHORITY',1)),precision=6)
+                from_epsg = int(src_epsg.GetAttrValue('AUTHORITY',1))
+                new_ys, new_xs = Vector.ReprojectPoints(ys, xs, from_epsg=from_epsg,
+                                                  to_epsg=to_epsg, precision=6) #int(dst_epsg.GetAttrValue('AUTHORITY',1))
                 # new_xs, new_ys= Vector.ReprojectPoints_2(ys,xs,from_epsg=int(src_epsg.GetAttrValue('AUTHORITY',1)),
                 #                                  to_epsg=int(dst_epsg.GetAttrValue('AUTHORITY',1)))
             else:
@@ -872,10 +872,57 @@ class Raster:
         dst.FlushCache()
         dst = None
 
+
+    @staticmethod
+    def MatchNoDataValueArr(arr, src=None, mask=None, no_val=None):
+        """
+        match the nodatavalue from a given src raster/mask array to a an array
+
+        Inputs
+        ----------
+            1- var : array
+                arr with values to be masked
+            2-dem : gdal_dataset
+                Instance of the gdal raster of the catchment to be cutted with. DEM
+                overrides the mask_vals and no_val
+            3-mask_vals : nd_array
+                Mask with the no_val data
+            4-no_val : float
+                value to be defined as no_val. Will mask anything is not this value
+
+        Outputs
+        -------
+            1-var : nd_array
+                Array with masked values
+        """
+        assert isinstance(arr, np.ndarray), " first parameter have to be numpy array "
+
+        if src is not None:
+            assert isinstance(src, gdal.Dataset), " src keyword parameter have to be of type gdal.Dataset "
+            mask, no_val = Raster.GetRasterData(src)
+        else:
+            # src is None
+            if mask is None or no_val is None:
+                assert False, " You have to either give the src parameter or the mask and the no_val parameter"
+            else:
+                assert isinstance(mask, np.ndarray), " mask keyword parameter have to be of type np.ndarray "
+
+        # Replace the no_data value
+        assert arr.shape == mask.shape, 'Mask and data do not have the same shape'
+
+        for i in range(arr.shape[0]):
+            for j in range(arr.shape[1]):
+                if math.isclose(mask[i, j], no_val, rel_tol=0.001):
+                    arr[i, j] = no_val
+
+        return arr
+
+
     @staticmethod
     def MatchNoDataValue(src, dst):
-        """
-        this function matches the location of nodata value from src raster to dst
+        """MatchNoDataValue.
+
+        MatchNoDataValue matches the location of nodata value from src raster to dst
         raster, Both rasters have to have the same dimensions (no of rows & columns)
         so MatchRasterAlignment should be used prior to this function to align both
         rasters
@@ -898,8 +945,8 @@ class Raster:
         """
         # input data validation
         # data type
-        assert type(src)==gdal.Dataset, "src should be read using gdal (gdal dataset please read it using gdal library) "
-        assert type(dst)==gdal.Dataset, "dst should be read using gdal (gdal dataset please read it using gdal library) "
+        assert isinstance(src, gdal.Dataset), "src should be read using gdal (gdal dataset please read it using gdal library) "
+        assert isinstance(dst, gdal.Dataset), "dst should be read using gdal (gdal dataset please read it using gdal library) "
 
         src_gt = src.GetGeoTransform()
         src_proj = src.GetProjection()
@@ -963,8 +1010,9 @@ class Raster:
 
     @staticmethod
     def ChangeNoDataValue(src,dst):
-        """
-        this function changes the value of nodata value in a dst raster to be like
+        """ChangeNoDataValue.
+
+        ChangeNoDataValue changes the cells of nodata value in a dst raster to match
         a src raster.
 
         inputs:
@@ -998,7 +1046,13 @@ class Raster:
     #    dst_epsg = int(dst_sref.GetAttrValue('AUTHORITY',1))
 
         dst_array = dst.ReadAsArray()
-        dst_array[dst_array==dst_noval]=src_noval
+
+        for i in range(dst_array.shape[0]):
+            for j in range(dst_array.shape[1]):
+                if math.isclose(dst_array[i, j], dst_noval, rel_tol=0.001):
+                    dst_array[i, j] = src_noval
+
+        # dst_array[dst_array==dst_noval]=src_noval
 
         mem_drv=gdal.GetDriverByName("MEM")
         dst=mem_drv.Create("",dst_col,dst_row,1,gdalconst.GDT_Float32) #,['COMPRESS=LZW'] LZW is a lossless compression method achieve the highst compression but with lot of computation
@@ -1016,7 +1070,7 @@ class Raster:
         return dst
 
     @staticmethod
-    def MatchRasterAlignment(RasterA,RasterB):
+    def MatchRasterAlignment(RasterA, RasterB):
         """
         this function matches the coordinate system and the number of of rows & columns
         between two rasters
@@ -1794,7 +1848,6 @@ class Raster:
 
         Inputs:
         =========
-
             1-path:
                 [String] path to the folder containing the ASCII files
 
@@ -2131,7 +2184,6 @@ class Raster:
         ----------
             prec_path="00inputs/meteodata/4000/prec"
             prec=ReadRastersFolder(prec_path)
-
         """
         # input data validation
         # data type
@@ -2153,11 +2205,11 @@ class Raster:
         if WithOrder:
             try:
                 filesNo = [int(i.split("_")[0]) for i in files]
-            except:
-                ErrorMsg = """please include a number at the beginning of the
-                rasters name to indicate the order of the raster please use the
-                Inputs.RenameFiles method to solve this issue and don't include
-                any other files in the folder with the rasters"""
+            except ValueError:
+                ErrorMsg = ("please include a number at the beginning of the"
+                "rasters name to indicate the order of the rasters. to do so please"
+                "use the Inputs.RenameFiles method to solve this issue and don't "
+                "include any other files in the folder with the rasters")
                 assert False, ErrorMsg
 
 

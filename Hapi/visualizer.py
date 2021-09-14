@@ -1335,7 +1335,7 @@ class Visualize:
 
     def PlotArray(src, Figsize=(8, 8), Title='Total Discharge', titlesize=15,
                   Cbarlength=0.75, orientation='vertical', cbarlabelsize=12,
-                  cbarlabel='Color bar label', rotation=-90, TicksSpacing=2,
+                  cbarlabel='Color bar label', rotation=-90, TicksSpacing=5,
                   NumSize=8, ColorScale=1, cmap='coolwarm_r', gamma=0.5,
                   linscale=0.001, linthresh=0.0001, midpoint=0, display_cellvalue=False,
                   Backgroundcolorthreshold=None,
