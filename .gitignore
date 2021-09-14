@@ -35,3 +35,6 @@ Hapi/hm.py
 HAPI_Nile.egg-info/PKG-INFO
 docs/.vscode/
 Examples/data/hydrodynamic model/H-2010-01-01.csv
+Examples/data/Hapi.qgz
+Examples/data/GIS/Hapi_GIS_Data/rasterexample.tif
+Examples/data/GIS/Hapi_GIS_Data/fillrasterexample.tif

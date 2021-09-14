@@ -155,21 +155,47 @@ Example :
     new_raster=MapAlgebra(A,func)
 """
 def func1(val):
-    if val > 20 :
+    if val < 20 :
         val =  1
-    elif val > 40 :
+    elif val < 40 :
         val = 2
-    elif val >  60 :
+    elif val <  60 :
         val = 3
-    elif val > 80 :
+    elif val < 80 :
         val = 4
-    elif val > 100 :
+    elif val < 100 :
         val = 5
     else:
         val = 0
     return val
 dst = Raster.MapAlgebra(src, func1)
-vis.PlotArray(dst, Title="Flow Accumulation", ColorScale=1, TicksSpacing=1)
+vis.PlotArray(dst, Title="Classes", ColorScale=4, TicksSpacing=1)
+#%%
+"""RasterFill.
+
+RasterFill takes a raster and fill it with one value
+
+
+inputs:
+----------
+    1- src : [gdal.dataset]
+        source raster
+    2- Val: [numeric]
+        numeric value
+    3- SaveTo : [str]
+        path including the extension (.tif)
+
+Returns:
+--------
+    1- raster : [saved on disk]
+        the raster will be saved directly to the path you provided.
+"""
+path = datapath + "/fillrasterexample.tif"
+Raster.RasterFill(src, 1, SaveTo=path)
+
+"now the resulted raster is saved to disk"
+dst = gdal.Open(path)
+vis.PlotArray(dst, Title="Flow Accumulation")
 #%% read the points
 points = pd.read_csv(pointsPath)
 points['row'] = np.nan

@@ -402,31 +402,28 @@ class Raster:
 
     @staticmethod
     def RasterFill(src, Val, SaveTo):
-        """
-        this function executes a mathematical operation on raster array and returns
-        the result
+        """RasterFill.
+
+        RasterFill takes a raster and fill it with one value
+
 
         inputs:
         ----------
-            1-src:
-                [gdal.dataset] source raster to get the location of the NoDataValue and
-                where it is in the array
-            2-dst:
-                [gdal.dataset] source raster to get the location of the NoDataValue and
-                where it is in the array
-            3-function:
-                numpy function
+            1- src : [gdal.dataset]
+                source raster
+            2- Val: [numeric]
+                numeric value
+            3- SaveTo : [str]
+                path including the extension (.tif)
 
-        Example :
-        ----------
-            A=gdal.Open(evap.tif)
-            func=np.abs
-            new_raster=MapAlgebra(A,func)
+        Returns:
+        --------
+            1- raster : [saved on disk]
+                the raster will be saved directly to the path you provided.
         """
         # input data validation
         # data type
-        assert type(src) == gdal.Dataset, "src should be read using gdal (gdal dataset please read it using gdal library) "
-        # assert callable(fun) , "second argument should be a function"
+        assert isinstance(src, gdal.Dataset) , "src should be read using gdal (gdal dataset please read it using gdal library) "
 
         NoDataVal = src.GetRasterBand(1).GetNoDataValue()
         src_array = src.ReadAsArray()
@@ -435,13 +432,19 @@ class Raster:
             NoDataVal = np.nan
 
         if  not np.isnan(NoDataVal):
-            if src_array.dtype == np.float32:
-                src_array[src_array != np.float32(NoDataVal)] = Val
-            else:
-                src_array[src_array != np.float64(NoDataVal)] = Val
+
+            for i in range(src_array.shape[0]):
+                for j in range(src_array.shape[1]):
+                    if not math.isclose(src_array[i, j], NoDataVal, rel_tol=0.001):
+                        src_array[i,j] = Val
+            # if src_array.dtype == np.float32:
+            #     src_array[src_array != np.float32(NoDataVal)] = Val
+            # else:
+            #     src_array[src_array != np.float64(NoDataVal)] = Val
         else:
             src_array[~np.isnan(src_array)] = Val
-
+        # TODO : make this function returns the resulted raster
+        #  if the SaveTo parameter is empty
         Raster.RasterLike(src,src_array,SaveTo,pixel_type=1)
 
     @staticmethod
