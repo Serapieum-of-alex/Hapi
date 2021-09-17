@@ -133,9 +133,9 @@ class Raster:
                 the band you want to get its data. Default is 1
         Outputs:
         ----------
-            1- mask:[array]
+            1- array : [array]
                 array with all the values in the flow path length raster
-            2- no_val: [numeric]
+            2- no_val : [numeric]
                 value stored in novalue cells
         """
         if band == '':
@@ -449,41 +449,37 @@ class Raster:
 
     @staticmethod
     def ResampleRaster(src, cell_size, resample_technique="Nearest"):
-        """
+        """ResampleRaster.
+
         this function reproject a raster to any projection
         (default the WGS84 web mercator projection, without resampling)
         The function returns a GDAL in-memory file object, where you can ReadAsArray etc.
 
         inputs:
         ----------
-            1- raster:
-                gdal dataset (src=gdal.Open("dem.tif"))
-            2-to_epsg:
-                integer reference number to the new projection (https://epsg.io/)
-                (default 3857 the reference no of WGS84 web mercator )
-            3-cell_size:
-                integer number to resample the raster cell size to a new cell size
+            1- raster : [gdal.Dataset]
+                 gdal raster (src=gdal.Open("dem.tif"))
+            3-cell_size : [integer]
+                 new cell size to resample the raster.
                 (default empty so raster will not be resampled)
-            4- resample_technique:
-                [String] resampling technique default is "Nearest"
+            4- resample_technique : [String]
+                resampling technique default is "Nearest"
                 https://gisgeography.com/raster-resampling/
                 "Nearest" for nearest neighbour,"cubic" for cubic convolution,
                 "bilinear" for bilinear
 
         Outputs:
         ----------
-            1-raster:
-                gdal dataset (you can read it by ReadAsArray)
-
-        Ex:
-        ----------
-        projected_raster=project_dataset(src, to_epsg=3857)
-
+            1-raster : [gdal.Dataset]
+                 gdal object (you can read it by ReadAsArray)
         """
         # input data validation
         # data type
-        assert type(src) == gdal.Dataset, "src should be read using gdal (gdal dataset please read it using gdal library) "
-        assert type(resample_technique) == str ," please enter correct resample_technique more information see docmentation "
+        msg = "src should be read using gdal (gdal dataset please read it using gdal library) "
+        assert isinstance(src, gdal.Dataset), msg
+
+        msg = " please enter correct resample_technique more information see docmentation "
+        assert isinstance(resample_technique, str), msg
 
         if resample_technique == "Nearest":
             resample_technique = gdal.GRA_NearestNeighbour
@@ -493,7 +489,6 @@ class Raster:
             resample_technique = gdal.GRA_Bilinear
 
     #    # READ THE RASTER
-    #    src = gdal.Open(inputspath+"dem_4km.tif")
         # GET PROJECTION
         src_proj = src.GetProjection()
         # GET THE GEOTRANSFORM
@@ -510,17 +505,22 @@ class Raster:
         ulx = src_gt[0]
         uly = src_gt[3]
         # transform the right lower corner point
-        lrx = src_gt[0] + src_gt[1]*src_x
-        lry = src_gt[3] + src_gt[5]*src_y
+        lrx = src_gt[0] + src_gt[1] * src_x
+        lry = src_gt[3] + src_gt[5] * src_y
 
-        pixel_spacing=cell_size
+        pixel_spacing = cell_size
+        # new geotransform
+        new_geo = (src_gt[0], pixel_spacing, src_gt[2], src_gt[3], src_gt[4], -1*pixel_spacing)
         # create a new raster
         mem_drv = gdal.GetDriverByName("MEM")
-        dst = mem_drv.Create("",int(np.round(abs(lrx-ulx)/pixel_spacing)),int(np.round(abs(uly-lry)/pixel_spacing)),
-                           1,gdalconst.GDT_Float32,['COMPRESS=LZW']) # LZW is a lossless compression method achieve the highst compression but with lot of computation
+        cols = int(np.round(abs(lrx-ulx)/pixel_spacing))
+        rows = int(np.round(abs(uly-lry)/pixel_spacing))
+        dst = mem_drv.Create("", cols, rows , 1, gdalconst.GDT_Float32)
+        # ['COMPRESS=LZW']
+        # LZW is a lossless compression method achieve the highst compression but with lot of computation
 
         # set the geotransform
-        dst.SetGeoTransform(src_gt)
+        dst.SetGeoTransform(new_geo)
         # set the projection
         dst.SetProjection(src_epsg.ExportToWkt())
         # set the no data value
@@ -528,14 +528,16 @@ class Raster:
         # initialize the band with the nodata value instead of 0
         dst.GetRasterBand(1).Fill(src.GetRasterBand(1).GetNoDataValue())
         # perform the projection & resampling
-        gdal.ReprojectImage(src,dst,src_epsg.ExportToWkt(),src_epsg.ExportToWkt(),resample_technique)
+        gdal.ReprojectImage(src, dst, src_epsg.ExportToWkt(), src_epsg.ExportToWkt(),
+                            resample_technique)
 
         return dst
 
     @staticmethod
     def ProjectRaster(src, to_epsg, resample_technique="Nearest", Option=2):
-        """
-        this function reproject a raster to any projection
+        """ProjectRaster.
+
+        ProjectRaster reprojects a raster to any projection
         (default the WGS84 web mercator projection, without resampling)
         The function returns a GDAL in-memory file object, where you can ReadAsArray etc.
 
@@ -546,10 +548,7 @@ class Raster:
             2-to_epsg: [integer]
                 reference number to the new projection (https://epsg.io/)
                 (default 3857 the reference no of WGS84 web mercator )
-            3-cell_size: [integer]
-                integer number to resample the raster cell size to a new cell size
-                (default empty so raster will not be resampled)
-            4- resample_technique: [String]
+            3- resample_technique: [String]
                 resampling technique default is "Nearest"
                 https://gisgeography.com/raster-resampling/
                 "Nearest" for nearest neighbour,"cubic" for cubic convolution,
@@ -568,9 +567,9 @@ class Raster:
         """
         # input data validation
         # data type
-        assert type(src) == gdal.Dataset, "src should be read using gdal (gdal dataset please read it using gdal library) "
-        assert type(to_epsg) == int, "please enter correct integer number for to_epsg more information https://epsg.io/"
-        assert type(resample_technique) == str, " please enter correct resample_technique more information see docmentation "
+        assert isinstance(src, gdal.Dataset), "src should be read using gdal (gdal dataset please read it using gdal library) "
+        assert isinstance(to_epsg, int), "please enter correct integer number for to_epsg more information https://epsg.io/"
+        assert isinstance(resample_technique, str), " please enter correct resample_technique more information see docmentation "
 
         if resample_technique == "Nearest":
             resample_technique = gdal.GRA_NearestNeighbour
@@ -599,13 +598,12 @@ class Raster:
             dst_epsg = osr.SpatialReference()
             dst_epsg.ImportFromEPSG(to_epsg)
 
-
             # in case the source crs is GCS and longitude is in the west hemisphere gdal
             # reads longitude fron 0 to 360 and transformation factor wont work with values
             # greater than 180
             if src_epsg.GetAttrValue('AUTHORITY',1) != str(to_epsg) :
                 if src_epsg.GetAttrValue('AUTHORITY',1) == "4326" and src_gt[0] > 180:
-                    lng_new = src_gt[0]-360
+                    lng_new = src_gt[0] - 360
                     # transformation factors
                     tx = osr.CoordinateTransformation(src_epsg, dst_epsg)
                     # transform the right upper corner point
@@ -617,14 +615,9 @@ class Raster:
                     xs = [src_gt[0], src_gt[0]+src_gt[1]*src_x]
                     ys = [src_gt[3], src_gt[3]+src_gt[5]*src_y]
 
-                    # print(int(src_epsg.GetAttrValue('AUTHORITY', 1)))
-                    # print(dst_epsg.GetAttrValue('AUTHORITY', 1))
-
                     from_epsg = int(src_epsg.GetAttrValue('AUTHORITY',1))
                     [uly,lry] , [ulx,lrx] = Vector.ReprojectPoints(ys, xs, from_epsg=from_epsg,
-                                                   to_epsg=to_epsg) #int(dst_epsg.GetAttrValue('AUTHORITY',1))
-
-
+                                                   to_epsg=to_epsg)
             else:
                 ulx = src_gt[0]
                 uly = src_gt[3]
@@ -652,8 +645,10 @@ class Raster:
 
             # create a new raster
             mem_drv = gdal.GetDriverByName("MEM")
-            dst = mem_drv.Create("",int(np.round(abs(lrx-ulx)/pixel_spacing)),int(np.round(abs(uly-lry)/pixel_spacing)),
-                               1,gdalconst.GDT_Float32) #['COMPRESS=LZW'] LZW is a lossless compression method achieve the highst compression but with lot of computation
+            cols = int(np.round(abs(lrx-ulx)/pixel_spacing))
+            rows = int(np.round(abs(uly-lry)/pixel_spacing))
+            dst = mem_drv.Create("", cols, rows, 1, gdalconst.GDT_Float32)
+            #['COMPRESS=LZW'] LZW is a lossless compression method achieve the highst compression but with lot of computation
 
             # new geotransform
             new_geo = (ulx, pixel_spacing, src_gt[2], uly, src_gt[4], np.sign(src_gt[-1])*pixel_spacing)
@@ -669,72 +664,73 @@ class Raster:
             gdal.ReprojectImage(src,dst,src_epsg.ExportToWkt(),dst_epsg.ExportToWkt(),resample_technique)
 
         else:
-            dst = gdal.Warp('',src,dstSRS="EPSG:"+str(to_epsg),format='VRT')
+            dst = gdal.Warp('',src, dstSRS="EPSG:"+str(to_epsg), format='VRT')
 
         return dst
 
-
+    # TODO: merge ReprojectDataset and ProjectRaster they are almost the same
+    # TODO: still needs to be tested
     @staticmethod
     def ReprojectDataset(src, to_epsg=3857, cell_size=[], resample_technique="Nearest"):
-        """
-        this function reproject and resample a raster to any projection
+        """ReprojectDataset.
+
+        ReprojectDataset reprojects and resamples a folder of rasters to any projection
         (default the WGS84 web mercator projection, without resampling)
-        The function returns a GDAL in-memory file object, where you can ReadAsArray etc.
 
         inputs:
-        ----------
-            1- raster:
-                gdal dataset (src=gdal.Open("dem.tif"))
-            2-to_epsg:
-                integer reference number to the new projection (https://epsg.io/)
+        -------
+            1- raster : [gdal dataset]
+                gdal dataset object (src=gdal.Open("dem.tif"))
+            2-to_epsg : [integer]
+                 reference number to the new projection (https://epsg.io/)
                 (default 3857 the reference no of WGS84 web mercator )
-            3-cell_size:
-                integer number to resample the raster cell size to a new cell size
+            3-cell_size : [integer]
+                 number to resample the raster cell size to a new cell size
                 (default empty so raster will not be resampled)
-            4- resample_technique:
-                [String] resampling technique default is "Nearest"
+            4- resample_technique : [String]
+                resampling technique default is "Nearest"
                 https://gisgeography.com/raster-resampling/
                 "Nearest" for nearest neighbour,"cubic" for cubic convolution,
                 "bilinear" for bilinear
 
         Outputs:
-        ----------
-            1-raster:
-                gdal dataset (you can read it by ReadAsArray)
+        --------
+            1-raster : []
+                 a GDAL in-memory file object, where you can ReadAsArray etc.
         """
         # input data validation
         # type of inputs
-        assert type(src)==gdal.Dataset, "src should be read using gdal (gdal dataset please read it using gdal library) "
-        assert type(to_epsg)==int,"please enter correct integer number for to_epsg more information https://epsg.io/"
-        assert type(resample_technique)== str ," please enter correct resample_technique more information see docmentation "
-        if cell_size != []:
-            assert type(cell_size)== int or type(cell_size)== float , "please enter an integer or float cell size"
+        assert isinstance(src, gdal.Dataset), "src should be read using gdal (gdal dataset please read it using gdal library) "
+        assert isinstance(to_epsg, int), "please enter correct integer number for to_epsg more information https://epsg.io/"
+        assert isinstance(resample_technique, str), " please enter correct resample_technique more information see docmentation "
 
-        if resample_technique=="Nearest":
-            resample_technique=gdal.GRA_NearestNeighbour
-        elif resample_technique=="cubic":
-            resample_technique=gdal.GRA_Cubic
-        elif resample_technique=="bilinear":
-            resample_technique=gdal.GRA_Bilinear
+        if cell_size != []:
+            assert isinstance(cell_size, int) or isinstance(cell_size, float) , "please enter an integer or float cell size"
+
+        if resample_technique == "Nearest":
+            resample_technique = gdal.GRA_NearestNeighbour
+        elif resample_technique == "cubic":
+            resample_technique = gdal.GRA_Cubic
+        elif resample_technique == "bilinear":
+            resample_technique = gdal.GRA_Bilinear
 
     #    # READ THE RASTER
-    #    src = gdal.Open(inputspath+"dem_4km.tif")
         # GET PROJECTION
-        src_proj=src.GetProjection()
+        src_proj = src.GetProjection()
         # GET THE GEOTRANSFORM
-        src_gt=src.GetGeoTransform()
+        src_gt = src.GetGeoTransform()
         # GET NUMBER OF columns
-        src_x=src.RasterXSize
+        src_x = src.RasterXSize
         # get number of rows
-        src_y=src.RasterYSize
+        src_y = src.RasterYSize
         # number of bands
     #    src_bands=src.RasterCount
         # spatial ref
-        src_epsg=osr.SpatialReference(wkt=src_proj)
+        src_epsg = osr.SpatialReference(wkt=src_proj)
 
         # distination
         # spatial ref
-        dst_epsg=osr.SpatialReference()
+        dst_epsg = osr.SpatialReference()
         dst_epsg.ImportFromEPSG(to_epsg)
         # transformation factors
         tx = osr.CoordinateTransformation(src_epsg,dst_epsg)
@@ -742,42 +738,45 @@ class Raster:
         # incase the source crs is GCS and longitude is in the west hemisphere gdal
         # reads longitude fron 0 to 360 and transformation factor wont work with valeus
         # greater than 180
-        if src_epsg.GetAttrValue('AUTHORITY',1)=="4326" and src_gt[0] > 180:
-            lng_new=src_gt[0]-360
+        if src_epsg.GetAttrValue('AUTHORITY',1) == "4326" and src_gt[0] > 180:
+            lng_new = src_gt[0] - 360
             # transform the right upper corner point
             (ulx,uly,ulz) = tx.TransformPoint(lng_new, src_gt[3])
             # transform the right lower corner point
-            (lrx,lry,lrz)=tx.TransformPoint(lng_new+src_gt[1]*src_x,
+            (lrx,lry,lrz) = tx.TransformPoint(lng_new+src_gt[1]*src_x,
                                             src_gt[3]+src_gt[5]*src_y)
         else:
             # transform the right upper corner point
             (ulx,uly,ulz) = tx.TransformPoint(src_gt[0], src_gt[3])
             # transform the right lower corner point
-            (lrx,lry,lrz)=tx.TransformPoint(src_gt[0]+src_gt[1]*src_x,
+            (lrx,lry,lrz) = tx.TransformPoint(src_gt[0]+src_gt[1]*src_x,
                                             src_gt[3]+src_gt[5]*src_y)
 
-        if cell_size ==[]:
+        if cell_size == []:
         # the result raster has the same pixcel size as the source
             # check if the coordinate system is GCS convert the distance from angular to metric
-            if src_epsg.GetAttrValue('AUTHORITY',1)=="4326":
+            if src_epsg.GetAttrValue('AUTHORITY',1) == "4326":
                 coords_1 = (src_gt[3], src_gt[0])
                 coords_2 = (src_gt[3], src_gt[0]+src_gt[1])
     #            pixel_spacing=geopy.distance.vincenty(coords_1, coords_2).m
                 pixel_spacing = Vector.GCSDistance(coords_1, coords_2)
             else:
-                pixel_spacing=src_gt[1]
+                pixel_spacing = src_gt[1]
         else:
-            assert (cell_size > 1),"please enter cell size greater than 1"
+            # if src_epsg.GetAttrValue('AUTHORITY', 1) != "4326":
+            #     assert (cell_size > 1), "please enter cell size greater than 1"
         # if the user input a cell size resample the raster
-            pixel_spacing=cell_size
+            pixel_spacing = cell_size
 
         # create a new raster
-        mem_drv=gdal.GetDriverByName("MEM")
-        dst=mem_drv.Create("",int(np.round(abs(lrx-ulx)/pixel_spacing)),int(np.round(abs(uly-lry)/pixel_spacing)),
-                           1,gdalconst.GDT_Float32) # ['COMPRESS=LZW'] LZW is a lossless compression method achieve the highst compression but with lot of computation
+        mem_drv = gdal.GetDriverByName("MEM")
+        cols = int(np.round(abs(lrx-ulx)/pixel_spacing))
+        rows = int(np.round(abs(uly-lry)/pixel_spacing))
+        dst = mem_drv.Create("", cols, rows, 1, gdalconst.GDT_Float32)
+        # ['COMPRESS=LZW'] LZW is a lossless compression method achieve the highst compression but with lot of computation
 
         # new geotransform
-        new_geo=(ulx,pixel_spacing,src_gt[2],uly,src_gt[4],-pixel_spacing)
+        new_geo = (ulx, pixel_spacing, src_gt[2], uly, src_gt[4], -pixel_spacing)
         # set the geotransform
         dst.SetGeoTransform(new_geo)
         # set the projection
@@ -791,24 +790,26 @@ class Raster:
 
         return dst
 
+    # TODO: check an example as it did not work
     @staticmethod
     def RasterLike(src, array, path, pixel_type=1):
-        """
+        """RasterLike.
+
         RasterLike method creates a Geotiff raster like another input raster, new raster
         will have the same projection, coordinates or the top left corner of the original
         raster, cell size, nodata velue, and number of rows and columns
         the raster and the dem should have the same number of columns and rows
 
         inputs:
-        ----------
-            1- src:
-                [gdal.dataset] source raster to get the spatial information
-            2- array:
-                [numpy array]to store in the new raster
-            3- path:
-                [String] path to save the new raster including new raster name and extension (.tif)
-            4-pixel_type:
-                [integer] type of the data to be stored in the pixels,default is 1 (float32)
+        -------
+            1- src : [gdal.dataset]
+                source raster to get the spatial information
+            2- array : [numpy array]
+                to store in the new raster
+            3- path : [String]
+                path to save the new raster including new raster name and extension (.tif)
+            4-pixel_type : [integer]
+                type of the data to be stored in the pixels,default is 1 (float32)
                 for example pixel type of flow direction raster is unsigned integer
                 1 for float32
                 2 for float64
@@ -818,7 +819,7 @@ class Raster:
                 6 for integer 32
 
         outputs:
-        ----------
+        --------
             1- save the new raster to the given path
 
         Ex:
@@ -830,10 +831,10 @@ class Raster:
         """
         # input data validation
         # data type
-        assert type(src) == gdal.Dataset, "src should be read using gdal (gdal dataset please read it using gdal library) "
-        assert type(array) == np.ndarray, "array should be of type numpy array"
-        assert type(path) == str, "Raster_path input should be string type"
-        assert type(pixel_type) == int, "pixel type input should be integer type please check documentations"
+        assert isinstance(src, gdal.Dataset) , "src should be read using gdal (gdal dataset please read it using gdal library) "
+        assert isinstance(array, np.ndarray), "array should be of type numpy array"
+        assert isinstance(path, str), "Raster_path input should be string type"
+        assert isinstance(pixel_type, int), "pixel type input should be integer type please check documentations"
         # input values
     #    assert os.path.exists(path), path+ " you have provided does not exist"
         ext = path[-4:]
@@ -878,24 +879,26 @@ class Raster:
 
     @staticmethod
     def MatchNoDataValueArr(arr, src=None, mask=None, no_val=None):
-        """
-        match the nodatavalue from a given src raster/mask array to a an array
+        """MatchNoDataValueArr.
 
-        Inputs
-        ----------
-            1- var : array
-                arr with values to be masked
-            2-dem : gdal_dataset
-                Instance of the gdal raster of the catchment to be cutted with. DEM
-                overrides the mask_vals and no_val
-            3-mask_vals : nd_array
-                Mask with the no_val data
-            4-no_val : float
+        MatchNoDataValueArr matchs the nodatavalue from a given src raster/mask array to a an array
+
+        Inputs:
+        -------
+            1-var : [array]
+                arr with values to be masked/replaced with the nodata value of
+                another raster.
+            2-src : [gdal_dataset]
+                Instance of the gdal raster to be used to crop/clip the array. src
+                overrides the mask and no_val.
+            3-mask : [nd_array]
+                array with the no_val data
+            4-no_val : [float]
                 value to be defined as no_val. Will mask anything is not this value
 
         Outputs
         -------
-            1-var : nd_array
+            1-var : [nd_array]
                 Array with masked values
         """
         assert isinstance(arr, np.ndarray), " first parameter have to be numpy array "
@@ -1120,7 +1123,7 @@ class Raster:
     #    gt_src_epsg.GetAttrValue('AUTHORITY',1)
 
         # unite the crs
-        data_src = Raster.ProjectRaster(RasterB,int(gt_src_epsg.GetAttrValue('AUTHORITY',1)))
+        data_src = Raster.ProjectRaster(RasterB, int(gt_src_epsg.GetAttrValue('AUTHORITY',1)))
 
         # create a new raster
         mem_drv=gdal.GetDriverByName("MEM")
