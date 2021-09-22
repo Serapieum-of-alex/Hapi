@@ -1333,7 +1333,7 @@ class Visualize:
         ax1.grid()
 
 
-    def PlotArray(src, Figsize=(8, 8), Title='Total Discharge', titlesize=15,
+    def PlotArray(src, nodataval=np.nan, Figsize=(8, 8), Title='Total Discharge', titlesize=15,
                   Cbarlength=0.75, orientation='vertical', cbarlabelsize=12,
                   cbarlabel='Color bar label', rotation=-90, TicksSpacing=5,
                   NumSize=8, ColorScale=1, cmap='coolwarm_r', gamma=0.5,
@@ -1347,8 +1347,11 @@ class Visualize:
 
         Parameters
         ----------
-            1-src : [array/gdal.Dataset]
+            src : [array/gdal.Dataset]
                 the array/gdal raster you want to plot.
+            nodataval : [numeric]
+                value used to fill cells out of the domain. Optional, Default is np.nan
+                needed only in case of plotting array
             Figsize : [tuple], optional
                 figure size. The default is (8,8).
             Title : [str], optional
@@ -1423,10 +1426,7 @@ class Visualize:
         if isinstance(src, gdal.Dataset):
             Arr, nodataval = Raster.GetRasterData(src)
             Arr = Arr.astype(np.float32)
-            for i in range(np.shape(Arr)[0]):
-                for j in range(np.shape(Arr)[1]):
-                    if math.isclose(Arr[i, j], nodataval, rel_tol=0.001):
-                        Arr[i, j] = np.nan
+            Arr[np.isclose(Arr, nodataval, rtol=0.001)] = np.nan
 
             no_elem = np.size(Arr[:, :]) - np.count_nonzero((Arr[np.isnan(Arr)]))
 
@@ -1436,12 +1436,19 @@ class Visualize:
                 points['col'] = np.nan
                 # to locte the points in the array
                 points.loc[:, ['row', 'col']] = GC.NearestCell(src, points[['x', 'y']][:]).values
-        elif isinstance(src, np.array):
+        elif isinstance(src, np.ndarray):
             Arr = src
+            Arr[np.isclose(Arr, nodataval, rtol=0.001)] = np.nan
+            no_elem = np.size(Arr[:, :]) - np.count_nonzero((Arr[np.isnan(Arr)]))
 
         fig = plt.figure(60, figsize=Figsize)
         ax = fig.add_subplot()
-        ticks = np.arange(np.nanmin(Arr), np.nanmax(Arr), TicksSpacing)
+
+        if np.mod(np.nanmax(Arr), TicksSpacing) == 0:
+            ticks = np.arange(np.nanmin(Arr), np.nanmax(Arr)+TicksSpacing, TicksSpacing)
+        else:
+            ticks = np.arange(np.nanmin(Arr), np.nanmax(Arr), TicksSpacing)
+            ticks = np.append(ticks,[int(np.nanmax(Arr)/TicksSpacing) * TicksSpacing + TicksSpacing])
 
         if ColorScale == 1:
             im = ax.matshow(Arr[:, :], cmap=cmap, vmin=np.nanmin(Arr),
@@ -1454,8 +1461,6 @@ class Visualize:
                                                   vmax=np.nanmax(Arr)))
             cbar_kw = dict(ticks=ticks)
         elif ColorScale == 3:
-            # linthresh = 1
-            # linscale = 2
             im = ax.matshow(Arr[:, :], cmap=cmap,
                             norm=colors.SymLogNorm(linthresh=linthresh,
                                                    linscale=linscale, base=np.e,
@@ -1464,7 +1469,7 @@ class Visualize:
             formatter = LogFormatter(10, labelOnlyBase=False)
             cbar_kw = dict(ticks=ticks, format=formatter)
         elif ColorScale == 4:
-            bounds = np.arange(np.nanmin(Arr), np.nanmax(Arr), TicksSpacing)
+            bounds = ticks#np.arange(np.nanmin(Arr), np.nanmax(Arr), TicksSpacing)
             norm = colors.BoundaryNorm(boundaries=bounds, ncolors=256)
             im = ax.matshow(Arr[:, :], cmap=cmap, norm=norm)
             cbar_kw = dict(ticks=ticks)
