@@ -5,8 +5,6 @@ Created on Sat Mar 14 16:36:01 2020
 @author: mofarrag
 """
 import os
-
-import gdal
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
@@ -20,8 +18,6 @@ from matplotlib.ticker import LogFormatter
 from collections import OrderedDict
 from scipy.stats import gumbel_r
 from Hapi.statistics.statisticaltools import StatisticalTools as ST
-from Hapi.gis.raster import Raster
-from Hapi.gis.giscatchment import GISCatchment as GC
 
 hours = list(range(1, 25))
 
@@ -118,7 +114,7 @@ class Visualize:
         return Visualize.MarkerStyleList[Style]
 
 
-    def GroundSurface(self, Sub, fromxs='', toxs='',floodplain=False,
+    def GroundSurface(self, Sub, fromxs='', toxs='', floodplain=False,
                       plotlateral=False, nxlabels=10,
                       figsize=(20,10), LateralsColor='red',
                       LaterlasLineWidth=1, option=1, size=50):
@@ -237,7 +233,7 @@ class Visualize:
                             textlocation=(1,1), LateralsColor='#3D59AB',
                             LaterlasLineWidth=1, xaxislabelsize=10,
                             yaxislabelsize=10, nxlabels=10, xticklabelsize=8,
-                            Lastsegment=True):
+                            Lastsegment=True, floodplain=True):
         """WaterSurfaceProfile.
 
         Plot water surface profile
@@ -434,7 +430,15 @@ class Visualize:
             ax4.plot(Sub.xsname, Sub.crosssections['gl'] +
                                  Sub.crosssections['dbf'], 'k', linewidth=2,
                                     label='Bankful depth')
-
+        
+        if floodplain:
+            fpl = Sub.crosssections['gl'] + Sub.crosssections['dbf'] + Sub.crosssections['hl']
+            fpr = Sub.crosssections['gl'] + Sub.crosssections['dbf'] + Sub.crosssections['hr']
+            ax4.plot(Sub.xsname, fpl, 'b-.', linewidth=2, 
+                      label='Floodplain left')
+            ax4.plot(Sub.xsname, fpr, 'r-.', linewidth=2, 
+                      label='Floodplain right')
+            
         ax4.set_title("Water surface Profile Simulation", fontsize=15)
         ax4.legend(fontsize=15)
         ax4.set_xlabel("Profile", fontsize=yaxislabelsize)
@@ -556,7 +560,7 @@ class Visualize:
                                 LateralsColor='#3D59AB',
                                 LaterlasLineWidth=1, xaxislabelsize=10,
                                 yaxislabelsize=10, nxlabels=20,
-                                xticklabelsize=8):
+                                xticklabelsize=8, floodplain=True):
         """WaterSurfaceProfile1Min.
 
         Plot water surface profile for 1 min data
@@ -604,13 +608,9 @@ class Visualize:
         ax1 = fig2.add_subplot(gs[0, 2:6])
 
         if fromxs == '':
-            # xs = 0
-            # plot the whole sub-basin
             fromxs = Sub.xsname[0]
             toxs = Sub.xsname[-1]
         else:
-            # xs = 1
-            # not the whole sub-basin
             if fromxs < Sub.xsname[0]:
                 fromxs = Sub.xsname[0]
 
@@ -726,7 +726,15 @@ class Visualize:
             ax4.plot(Sub.xsname, Sub.crosssections['gl'] + 
                      Sub.crosssections['dbf'], 'k', linewidth=2,
                      label='Bankful depth')
-
+        
+        if floodplain:
+            fpl = Sub.crosssections['gl'] + Sub.crosssections['dbf'] + Sub.crosssections['hl']
+            fpr = Sub.crosssections['gl'] + Sub.crosssections['dbf'] + Sub.crosssections['hr']
+            ax4.plot(Sub.xsname, fpl, 'b-.', linewidth=2, 
+                      label='Floodplain left')
+            ax4.plot(Sub.xsname, fpr, 'r-.', linewidth=2, 
+                      label='Floodplain right')
+            
         ax4.set_title("Water surface Profile Simulation", fontsize=15)
         ax4.legend(fontsize=10)
         ax4.set_xlabel("Profile", fontsize=10)
@@ -830,9 +838,10 @@ class Visualize:
         return anim
 
 
-    def river1d(self, Sub, start, end, interval=0.00002, xs=0, xsbefore=10,
-                xsafter=10, fmt="%Y-%m-%d", textlocation=2, xaxislabelsize=15,
-                yaxislabelsize=15, nxlabels=50, plotbanhfuldepth=False):
+    def river1d(self, Sub, start, end, interval=0.00002, xs=0,
+                xsbefore=10, xsafter=10, fmt="%Y-%m-%d", textlocation=2,
+                xaxislabelsize=15, yaxislabelsize=15, nxlabels=50, 
+                plotbanhfuldepth=False):
         """river1d.
 
         plot river 1D
@@ -1332,7 +1341,7 @@ class Visualize:
 
         ax1.grid()
 
-
+    
     def PlotArray(src, nodataval=np.nan, Figsize=(8, 8), Title='Total Discharge', titlesize=15,
                   Cbarlength=0.75, orientation='vertical', cbarlabelsize=12,
                   cbarlabel='Color bar label', rotation=-90, TicksSpacing=5,
@@ -1519,12 +1528,13 @@ class Visualize:
             Backgroundcolorthreshold = im.norm(np.nanmax(Arr)) / 2.
 
         return fig, ax
-
+    
+    
     def AnimateArray(Arr, Time, NoElem, TicksSpacing=2, Figsize=(8, 8), PlotNumbers=True,
                      NumSize=8, Title='Total Discharge', titlesize=15, Backgroundcolorthreshold=None,
                      cbarlabel='Discharge m3/s', cbarlabelsize=12, textcolors=("white", "black"),
                      Cbarlength=0.75, interval=200, cmap='coolwarm_r', Textloc=[0.1, 0.2],
-                     Gaugecolor='red', Gaugesize=100, ColorScale=1, gamma=1./2., linthresh=0.0001,
+                     Gaugecolor='red', Gaugesize=100, ColorScale=1, gamma=0.5, linthresh=0.0001,
                      linscale=0.001, midpoint=0, orientation='vertical', rotation=-90, IDcolor="blue",
                      IDsize=10, **kwargs):
         """AnimateArray.
@@ -1533,94 +1543,80 @@ class Visualize:
 
         Parameters
         ----------
-            Arr : [array]
-                the array you want to animate.
-            Time : [dataframe]
-                dataframe contains the date of values.
-            NoElem : [integer]
-                Number of the cells that has values.
-            TicksSpacing : [integer], optional
-                Spacing in the colorbar ticks. The default is 2.
-            Figsize : [tuple], optional
-                figure size. The default is (8,8).
-            PlotNumbers : [bool], optional
-                True to plot the values intop of each cell. The default is True.
-            NumSize : integer, optional
-                size of the numbers plotted intop of each cells. The default is 8.
-            Title : [str], optional
-                title of the plot. The default is 'Total Discharge'.
-            titlesize : [integer], optional
-                title size. The default is 15.
-            Backgroundcolorthreshold : [float/integer], optional
-                threshold value if the value of the cell is greater, the plotted
-                numbers will be black and if smaller the plotted number will be white
-                if None given the maxvalue/2 will be considered. The default is None.
-            textcolors : TYPE, optional
-                Two colors to be used to plot the values i top of each cell. The default is ("white","black").
-            cbarlabel : str, optional
-                label of the color bar. The default is 'Discharge m3/s'.
-            cbarlabelsize : integer, optional
-                size of the color bar label. The default is 12.
-            Cbarlength : [float], optional
-                ratio to control the height of the colorbar. The default is 0.75.
-            interval : [integer], optional
-                number to controlthe speed of the animation. The default is 200.
-            cmap : [str], optional
-                color style. The default is 'coolwarm_r'.
-            Textloc : [list], optional
-                location of the date text. The default is [0.1,0.2].
-            Gaugecolor : [str], optional
-                color of the points. The default is 'red'.
-            Gaugesize : [integer], optional
-                size of the points. The default is 100.
-            IDcolor : [str]
-                the ID of the Point.The default is "blue".
-            IDsize : [integer]
-                size of the ID text. The default is 10.
-            ColorScale : integer, optional
-                there are 5 options to change the scale of the colors. The default is 1.
-                1- ColorScale 1 is the normal scale
-                2- ColorScale 2 is the power scale
-                3- ColorScale 3 is the SymLogNorm scale
-                4- ColorScale 4 is the PowerNorm scale
-                5- ColorScale 5 is the BoundaryNorm scale
-                ------------------------------------------------------------------
-                gamma : [float], optional
-                    value needed for option 2 . The default is 1./2..
-                linthresh : [float], optional
-                    value needed for option 3. The default is 0.0001.
-                linscale : [float], optional
-                    value needed for option 3. The default is 0.001.
-                midpoint : [float], optional
-                    value needed for option 5. The default is 0.
-                ------------------------------------------------------------------
-            orientation : [string], optional
-                orintation of the colorbar horizontal/vertical. The default is 'vertical'.
-            rotation : [number], optional
-                rotation of the colorbar label. The default is -90.
-            IDcolor : []
-
-            rotation : []
-
-            gamma : []
-
-            linthresh : []
-
-            midpoint : []
-
-            linscale : []
-
-            **kwargs : [dict]
-                keys:
-                    Points : [dataframe].
-                        dataframe contains two columns 'cell_row', and cell_col to
-                        plot the point at this location
+        Arr : [array]
+            the array you want to animate.
+        Time : [dataframe]
+            dataframe contains the date of values.
+        NoElem : [integer]
+            Number of the cells that has values.
+        TicksSpacing : [integer], optional
+            Spacing in the colorbar ticks. The default is 2.
+        Figsize : [tuple], optional
+            figure size. The default is (8,8).
+        PlotNumbers : [bool], optional
+            True to plot the values intop of each cell. The default is True.
+        NumSize : integer, optional
+            size of the numbers plotted intop of each cells. The default is 8.
+        Title : [str], optional
+            title of the plot. The default is 'Total Discharge'.
+        titlesize : [integer], optional
+            title size. The default is 15.
+        Backgroundcolorthreshold : [float/integer], optional
+            threshold value if the value of the cell is greater, the plotted
+            numbers will be black and if smaller the plotted number will be white
+            if None given the maxvalue/2 will be considered. The default is None.
+        textcolors : TYPE, optional
+            Two colors to be used to plot the values i top of each cell. The default is ("white","black").
+        cbarlabel : str, optional
+            label of the color bar. The default is 'Discharge m3/s'.
+        cbarlabelsize : integer, optional
+            size of the color bar label. The default is 12.
+        Cbarlength : [float], optional
+            ratio to control the height of the colorbar. The default is 0.75.
+        interval : [integer], optional
+            number to controlthe speed of the animation. The default is 200.
+        cmap : [str], optional
+            color style. The default is 'coolwarm_r'.
+        Textloc : [list], optional
+            location of the date text. The default is [0.1,0.2].
+        Gaugecolor : [str], optional
+            color of the points. The default is 'red'.
+        Gaugesize : [integer], optional
+            size of the points. The default is 100.
+        IDcolor : [str]
+            the ID of the Point.The default is "blue".
+        IDsize : [integer]
+            size of the ID text. The default is 10.
+        ColorScale : integer, optional
+            there are 5 options to change the scale of the colors. The default is 1.
+            1- ColorScale 1 is the normal scale
+            2- ColorScale 2 is the power scale
+            3- ColorScale 3 is the SymLogNorm scale
+            4- ColorScale 4 is the PowerNorm scale
+            5- ColorScale 5 is the BoundaryNorm scale
+            ------------------------------------------------------------------
+            gamma : [float], optional
+                value needed for option 2 . The default is 1./2..
+            linthresh : [float], optional
+                value needed for option 3. The default is 0.0001.
+            linscale : [float], optional
+                value needed for option 3. The default is 0.001.
+            midpoint : [float], optional
+                value needed for option 5. The default is 0.
+            ------------------------------------------------------------------
+        orientation : [string], optional
+            orintation of the colorbar horizontal/vertical. The default is 'vertical'.
+        rotation : [number], optional
+            rotation of the colorbar label. The default is -90.
+        **kwargs : [dict]
+            keys:
+                Points : [dataframe].
+                    dataframe contains two columns 'cell_row', and cell_col to
+                    plot the point at this location
 
         Returns
         -------
         animation.FuncAnimation.
-
-
 
         """
         fig = plt.figure(60, figsize=Figsize)
@@ -1636,8 +1632,6 @@ class Visualize:
                                                                            vmin=np.nanmin(Arr), vmax=np.nanmax(Arr)))
             cbar_kw = dict(ticks=ticks)
         elif ColorScale == 3:
-            # linthresh = 1
-            # linscale = 2
             im = ax.matshow(Arr[:, :, 0], cmap=cmap, norm=colors.SymLogNorm(linthresh=linthresh,
                                                                             linscale=linscale, base=np.e,
                                                                             vmin=np.nanmin(Arr), vmax=np.nanmax(Arr)))

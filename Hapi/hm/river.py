@@ -31,7 +31,7 @@ class River:
     """
 
     def __init__(self, name, version=3, start="1950-1-1", end='', days=36890,
-                 rrmstart="", rrmdays=36890, dto=60, dx='',
+                 rrmstart="1950-1-1", rrmdays=36890, dto=60, dx='',
                  leftovertopping_suffix="_left.txt",
                  rightovertopping_suffix="_right.txt", depthprefix="DepthMax",
                  durationprefix="Duration", returnperiod_prefix="ReturnPeriod",
@@ -166,7 +166,7 @@ class River:
                        " rrmstart data ({1})")
                 print(msg.format(fmt,rrmstart))
                 return
-
+            
         self.rrmend = self.rrmstart + dt.timedelta(days = rrmdays)
         ref_ind = pd.date_range(self.rrmstart, self.rrmend, freq='D')
         self.rrmreferenceindex = pd.DataFrame(index=list(range(1, rrmdays+1)))
@@ -885,10 +885,6 @@ class River:
         -------
         Q : [Dataframe]
             time series of the runoff .
-            :param version:
-            :param rrmreferenceindex:
-            :param nodeid:
-            :param date_format:
 
         """
         if version < 3:
@@ -1105,6 +1101,7 @@ class River:
             DESCRIPTION.
         fmt: [string]
             format of the date. fmt="%Y-%m-%d %H:%M:%S"
+
         interval: []
 
         xs: []
@@ -1123,11 +1120,9 @@ class River:
 
         plotbanhfuldepth: []
 
-
         Returns
         -------
         None.
-
 
         """
         anim = V.river1d(self, start, end, interval=interval, xs=xs,
@@ -2009,7 +2004,6 @@ class River:
         -------
             coords = np.array([[0,1],[0,0],[5,0],[5,1]])
             RV.River.PolygonGeometry(coords)
-            :param Coords:
         """
         area = 0.0
         peri = 0.0
@@ -2042,7 +2036,6 @@ class River:
         -------
             coords = np.array([[0,1],[0,0],[5,0],[5,1]])
             River.PolyArea(coords)
-            :param Coords:
         """
         area = 0.0
         for i in range(np.shape(Coords)[0]-1):
@@ -2074,7 +2067,6 @@ class River:
         -------
             coords = np.array([[0,1],[0,0],[5,0],[5,1]])
             RV.River.PolyPerimeter(coords)
-            :param Coords:
         """
         peri = 0.0
         for i in range(np.shape(Coords)[0]-1):
@@ -2599,7 +2591,6 @@ class River:
         -------
         Errors : [list]
             list of the files' names that has errors and are already corrected.
-            :param FilterValue:
         """
         DEM, SpatialRef = raster.ReadASCII(DEMpath)
         NoDataValue = SpatialRef[-1]
@@ -2683,7 +2674,8 @@ class River:
                 os.remove(Saveto + "/"  + fname)
 
         return Errors
-
+            
+        
     def ListAttributes(self):
         """ListAttributes.
 
@@ -2843,7 +2835,7 @@ class Sub(River):
 
         start = self.IndexToDate(fromday)
         end = self.IndexToDate(today+1)
-
+        
         if not hasattr(self, "XSHydrographs") :
             self.XSHydrographs = pd.DataFrame(
                             index=pd.date_range(start,end,freq = 'H')[:-1])
@@ -3337,10 +3329,6 @@ class Sub(River):
         Returns
         -------
         None.
-        :param fromxs:
-        :param toxs:
-        :param figsize:
-        :param nxlabels:
 
         """
         start = dt.datetime.strptime(start,fmt)
@@ -3599,6 +3587,48 @@ class Sub(River):
         return self.Laterals[USgauge].sum(axis=1).to_frame()
 
 
+    def GetTotalFlow(self, gaugexs):
+        """GetTotalFlow.
+        
+        GetTotalFlow extracts all the laterals upstream of a certain xs and 
+        also extracts the Upstream/BS hydrograph.
+
+        Parameters
+        ----------
+        gaugexs : [integer]
+            id of the cross section.
+
+        Returns
+        -------
+        TotalFlow : [dataframe attribute]
+            dataframe containing the total upstream hydrograph for the location 
+            of the given xs, the column name is "total"
+        """
+        # Sum the laterals and the BC/US hydrograph
+        
+        assert hasattr(self, "Laterals"), "Please read the lateral flows first"
+        Laterals = self.GetLaterals(gaugexs)
+        s1 = Laterals.index[0]
+        e1 = Laterals.index[-1]
+        
+        if hasattr(self, "BC") and not isinstance(self.BC, bool):
+            s2 = self.BC.index[0]
+            s = max(s1, s2)    
+            e2 = self.BC.index[-1]
+            e = min(e1, e2)
+            
+            self.TotalFlow = pd.DataFrame(index=pd.date_range(s,e,freq="D"))
+            self.TotalFlow.loc[s:e,'total'] = Laterals.loc[s:e,0].values + self.BC.loc[s:e,self.BC.columns[0]].values
+        elif hasattr(self, "USHydrographs"):
+            s2 = self.USHydrographs.index[0]
+            s = max(s1, s2)    
+            e2 = self.USHydrographs.index[-1]
+            e = min(e1, e2)
+            
+            self.TotalFlow = pd.DataFrame(index=pd.date_range(s,e,freq="D"))
+            self.TotalFlow.loc[s:e,'total'] = Laterals.loc[s:e, 0].values + self.USHydrographs.loc[s:e,'total'].values
+
+
     def H2Q(self, Q):
         """H2Q.
         
@@ -3637,6 +3667,7 @@ class Sub(River):
     def PlotQ(self, Calib, gaugexs, start, end, stationname, gaugename,
               segment_xs, plotlaterals=True, latcolor=(0.3, 0, 0), latorder=4,
               latstyle=9, plotus=True, ushcolor="grey", ushorder=7, ushstyle=7,
+              plottotal=True, totalcolor='k', totalorder=6, totalstyle=4,
               specificxs=False, xscolor=(164/255,70/255,159/255), xsorder=1, xslinestyle=3,
               plotrrm=True, rrmcolor="green", rrmorder=3, rrmlinestyle=6,
               rrm2color=(227/255, 99/255, 80/255), rrm2linesytle=8,
@@ -3729,8 +3760,6 @@ class Sub(River):
             DESCRIPTION.
         ax : TYPE
             DESCRIPTION.
-            :param rrmlinestyle:
-            :param figsize:
 
 
         """
@@ -3764,6 +3793,11 @@ class Sub(River):
                     ax.plot(Laterals.loc[start:end,0], label="Laterals", zorder=latorder,
                             linewidth=linewidth, linestyle=V.LineStyle(latstyle),
                             color=latcolor)
+                if plottotal:
+                    # total flow
+                    ax.plot(self.TotalFlow.loc[start:end,'total'], label="US/BC + Laterals", zorder=totalorder,
+                                linewidth=linewidth, linestyle=V.LineStyle(totalstyle),
+                                color=totalcolor)
 
             # US hydrograph
             if self.usnode != [] and plotus :
@@ -3771,6 +3805,7 @@ class Sub(River):
                         label="US Hydrograph",zorder=ushorder,
                         linewidth=linewidth, linestyle=V.LineStyle(ushstyle),
                         color=ushcolor)
+            
             # Gauge
             if plotgauge:
                 # plot the gauge data
@@ -3981,11 +4016,6 @@ class Sub(River):
         -------
         ax : TYPE
             DESCRIPTION.
-            :param hmstyle:
-            :param gaugestyle:
-            :param legendsize:
-            :param figsize:
-            :param nxlabels:
 
         """
         start = dt.datetime.strptime(start,fmt)
@@ -3996,10 +4026,8 @@ class Sub(River):
             GaugeStart = Calib.GaugesTable[Calib.GaugesTable['xsid'] == gaugexs]['WLstart']
             GaugeEnd = Calib.GaugesTable[Calib.GaugesTable['xsid'] == gaugexs]['WLend']
             
-            if GaugeStart.values == 0:
-                print("The XS you provided does not exist in the GaugesTable")
-                plotgauge = False
-            else:
+            
+            try:
                 GaugeStart = GaugeStart.values[0]
                 GaugeEnd = GaugeEnd.values[0]
 
@@ -4011,6 +4039,9 @@ class Sub(River):
                     print("Availabel data for the gauge starts from" + str(GaugeEnd))
                     print("Out of Gauge dates")
                     plotgauge = False
+            except IndexError:
+                print("The XS you provided does not exist in the GaugesTable")
+                plotgauge = False    
 
         fig, ax = plt.subplots(ncols=1, nrows=1, figsize=figsize)
 
@@ -4056,12 +4087,15 @@ class Sub(River):
             start = dt.datetime.strptime(start,fmt)
         if type(start) == str:
             end = dt.datetime.strptime(end,fmt)
-
-        GaugeStart = Calib.GaugesTable[
-                    Calib.GaugesTable['xsid'] == gaugexs]['WLstart'].values[0]
-        GaugeEnd = Calib.GaugesTable[
-                    Calib.GaugesTable['xsid'] == gaugexs]['WLend'].values[0]
-
+        try:
+            GaugeStart = Calib.GaugesTable[
+                        Calib.GaugesTable['xsid'] == gaugexs]['WLstart'].values[0]
+            GaugeEnd = Calib.GaugesTable[
+                        Calib.GaugesTable['xsid'] == gaugexs]['WLend'].values[0]
+        except IndexError:
+            print("The XS you provided does not exist in the GaugesTable")
+            return
+            
         if type(GaugeStart) ==  int:
             print("No water level data for this river segment")
             return
