@@ -16,6 +16,7 @@ import pandas as pd
 RasterAPath = datapath + "/acc4000.tif"
 RasterBPath = datapath + "/dem_100_f.tif"
 pointsPath = datapath + "/points.csv"
+alligned_rasater = datapath + "/Evaporation_ECMWF_ERA-Interim_mm_daily_2009.01.01.tif"
 #%% read the raster
 src = gdal.Open(RasterAPath)
 vis.PlotArray(src, Title="Flow Accumulation")
@@ -309,7 +310,7 @@ Outputs:
 # print("New EPSG - " + str(newepsg))
 # print("New Geotransform - " + str(newgeo))
 # vis.PlotArray(dst, Title="Flow Accumulation")
-#%%
+#%% RasterLike
 """RasterLike.
 
 RasterLike method creates a Geotiff raster like another input raster, new raster
@@ -346,18 +347,115 @@ Ex:
     name="rain.tif"
     RasterLike(src,data,name)
 """
-# src2 = gdal.Open(RasterBPath)
-# vis.PlotArray(src2, Title="Elevation", ColorScale=2, TicksSpacing=300)
-# epsg, geo = Raster.GetProjectionData(src2)
-# arr2, _ = Raster.GetRasterData(src2)
-# """
-# the previous rasater has a cell size of 100 m, if we want to create a raster from the previous raster
-# DEM similar to the properties of the flow accumulation raster in the previous example
-# """
-# path = datapath + "/rasterlike.tif"
-# Raster.RasterLike(src,arr2,path, )
-#%%
+"""
+If we have made some calculation on raster array and we want to save the array back in the raster
+"""
+arr2 = np.ones(shape=arr.shape, dtype=np.float64) * nodataval
+arr2[~ np.isclose(arr, nodataval, rtol=0.001)] = 5
 
+path = datapath + "/rasterlike.tif"
+Raster.RasterLike(src,arr2,path, )
+dst = gdal.Open(path)
+vis.PlotArray(dst, Title="Flow Accumulation", ColorScale=1)
+#%% CropAlligned
+"""if you have an array and you want clip/crop it using another raster/array"""
+
+"""CropAlligned.
+
+CropAlligned clip/crop (matches the location of nodata value from src raster to dst
+raster), Both rasters have to have the same dimensions (no of rows & columns)
+so MatchRasterAlignment should be used prior to this function to align both
+rasters
+
+inputs:
+-------
+    1-src : [gdal.dataset/np.ndarray]
+        raster you want to clip/store NoDataValue in its cells
+        exactly the same like mask raster
+    2-mask : [gdal.dataset/np.ndarray]
+        mask raster to get the location of the NoDataValue and
+        where it is in the array
+    3-mask_noval : [numeric]
+        in case the mask is np.ndarray, the mask_noval have to be given.
+Outputs:
+--------
+    1- dst:
+        [gdal.dataset] the second raster with NoDataValue stored in its cells
+        exactly the same like src raster
+"""
+# crop array using a raster
+dst = gdal.Open(alligned_rasater)
+dst_arr, dst_nodataval = Raster.GetRasterData(dst)
+vis.PlotArray(dst_arr, nodataval=dst_nodataval,Title="Before Cropping-Evapotranspiration", ColorScale=1,
+              TicksSpacing=0.01)
+dst_arr_cropped = Raster.CropAlligned(dst_arr, src)
+vis.PlotArray(dst_arr_cropped, nodataval=nodataval,Title="Cropped array", ColorScale=1,
+              TicksSpacing=0.01)
+#%% clip raster using another raster while preserving the alignment
+"""
+cropping rasters may  change the alignment of the cells and to keep the alignment during cropping a raster
+we will crop the same previous raster but will give the input to the function as a gdal.dataset object 
+"""
+dst_cropped = Raster.CropAlligned(dst, src)
+vis.PlotArray(dst_cropped, Title="Cropped raster", ColorScale=1,
+              TicksSpacing=0.01)
+#%% crop raster using array
+"""
+we can also crop a raster using an array in condition that we enter the value of the nodata stored in the 
+array
+we can repeat the previous example but 
+"""
+dst_cropped = Raster.CropAlligned(dst, arr, mask_noval=nodataval)
+vis.PlotArray(dst_cropped,Title="Cropped array", ColorScale=1,
+              TicksSpacing=0.01)
+#%% clip a folder of rasters using another raster while preserving the alignment
+"""
+you can perform the previous step on multiple rasters using the 
+"""
+"""MatchDataNoValuecells.
+
+CropAlignedFolder matches the location of nodata value from src raster to dst
+raster
+Raster A is where the NoDatavalue will be taken and the location of this value
+B_input_path is path to the folder where Raster B exist where  we need to put
+the NoDataValue of RasterA in RasterB at the same locations
+
+Inputs:
+----------
+    1- Mask_path:
+        [String] path to the source raster/mask to get the NoData value and it location in the array
+        A_path should include the name of the raster and the extension like "data/dem.tif"
+    2- src_dir:
+        [String] path of the folder of the rasters you want to set Nodata Value
+        on the same location of NodataValue of Raster A, the folder should
+        not have any other files except the rasters
+    3- new_B_path:
+        [String] [String] path where new rasters are going to be saved with exact
+        same old names
+
+Outputs:
+----------
+    1- new rasters have the values from rasters in B_input_path with the NoDataValue in the same
+    locations like raster A
+
+Example:
+----------
+    dem_path="01GIS/inputs/4000/acc4000.tif"
+    temp_in_path="03Weather_Data/new/4km/temp/"
+    temp_out_path="03Weather_Data/new/4km_f/temp/"
+    MatchDataNoValuecells(dem_path,temp_in_path,temp_out_path)
+
+"""
+
+#%%
+# "clip raster by another raster"
+# # 4000 m resolution
+# srcA = gdal.Open(RasterAPath)
+# vis.PlotArray(srcA, Title="Cropped Raster", ColorScale=1, TicksSpacing=300)
+# # 100 m resolution
+# dstB = gdal.Open(RasterBPath)
+# dst = Raster.MatchNoDataValue(srcA, dstB, reproject=True)
+# vis.PlotArray(dst, Title="Cropped Raster", ColorScale=1, TicksSpacing=300)
 #%% read the points
 points = pd.read_csv(pointsPath)
 points['row'] = np.nan
