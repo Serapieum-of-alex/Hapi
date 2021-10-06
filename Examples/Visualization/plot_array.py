@@ -5,7 +5,8 @@ from Hapi.visualizer import Visualize as vis
 import gdal
 import pandas as pd
 #%% Paths
-RasterAPath = "data/GIS/Hapi_GIS_Data/acc4000.tif"
+RasterAPath = "data/GIS/Hapi_GIS_Data/dem_100_f.tif"
+RasterBPath = "data/GIS/Hapi_GIS_Data/acc4000.tif"
 pointsPath = "data/GIS/Hapi_GIS_Data/points.csv"
 """ 
 to plot the array you need to read the raster using gdal 
@@ -33,8 +34,8 @@ Title : [str], optional
 titlesize : [integer], optional
         title size. The default is 15. 
 """
-Figsize=(8, 8)
-Title='Flow Accumulation map'
+Figsize = (8, 8)
+Title = "DEM"
 titlesize=15
 
 vis.PlotArray(src, Figsize=Figsize, Title=Title, titlesize=titlesize)
@@ -57,9 +58,9 @@ TicksSpacing : [integer], optional
 Cbarlength=0.75
 orientation='vertical'
 cbarlabelsize=12
-cbarlabel= 'cbar label'
-rotation=-20
-TicksSpacing=10
+cbarlabel= 'Elevation'
+rotation=-80
+TicksSpacing=500
 """
 rotation : [number], optional
     rotation of the colorbar label. The default is -90.
@@ -125,6 +126,14 @@ vis.PlotArray(src, ColorScale=ColorScale,
 ColorScale = 5
 midpoint=20
 vis.PlotArray(src, ColorScale=ColorScale, midpoint=midpoint,
+              cmap=cmap, TicksSpacing=TicksSpacing)
+#%%
+src = gdal.Open(RasterBPath)
+arr = src.ReadAsArray()
+#%% PowerNorm scale
+ColorScale = 4
+TicksSpacing=10
+vis.PlotArray(src, ColorScale=ColorScale,
               cmap=cmap, TicksSpacing=TicksSpacing)
 #%%
 """
