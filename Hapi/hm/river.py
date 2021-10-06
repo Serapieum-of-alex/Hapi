@@ -198,7 +198,7 @@ class River:
         # convert the index into date
         return self.referenceindex.loc[index, 'date']
 
-    
+
     def DateToIndex(self, date, fmt="%Y-%m-%d"):
         """DateToIndex.
 
@@ -3025,7 +3025,6 @@ class Sub(River):
 
         if location == 2 :
             assert not path2=='', "path2 argument has to be given fot the location of the 2nd rainfall run-off time series"
-        
 
         if location == 1:
             self.RRM[station_id] = self.ReadRRMResults(self.version, self.rrmreferenceindex,
@@ -3354,9 +3353,11 @@ class Sub(River):
             toxs = self.lastxs
             xss.append(toxs)
             
+        # if fromxs == '':
+        #     xslist = self.xsname[spacing:self.xsno:spacing]
+        # else:
         fromxs = self.xsname.index(fromxs)
         toxs = self.xsname.index(toxs)
-        
         xslist = self.xsname[fromxs:toxs+1:spacing]
         
         xslist = xslist + xss
@@ -3420,16 +3421,28 @@ class Sub(River):
             if type(self.usnode) == list:
                 for i in range(len(self.usnode)):
                     Nodeid = self.usnode[i]
-                    self.USHydrographs[Nodeid]  = self.ReadRRMResults(self.version, self.rrmreferenceindex,
-                                                                    path, Nodeid, fromday, today,
-                                                                    date_format)[Nodeid]
+                    try:
+                        self.USHydrographs[Nodeid]  = self.ReadRRMResults(self.version, self.rrmreferenceindex,
+                                                                        path, Nodeid, fromday, today,
+                                                                        date_format)[Nodeid]
+                    except FileNotFoundError:
+                        msg = (" the Path - " + path + " does not contain the routed hydrographs for the the "
+                                                       "segment - " + str(Nodeid))
+                        print(msg)
+                        return
 
             #there is one upstream segment
         elif self.usnode != []:
             Nodeid = self.usnode[0]
-            self.USHydrographs[Nodeid] = self.ReadRRMResults(self.version, self.rrmreferenceindex,
-                                                                   path, Nodeid, fromday, today,
-                                                                    date_format)[Nodeid]
+            try :
+                self.USHydrographs[Nodeid] = self.ReadRRMResults(self.version, self.rrmreferenceindex,
+                                                                       path, Nodeid, fromday, today,
+                                                                        date_format)[Nodeid]
+            except FileNotFoundError:
+                msg = (" the Path - " + path + " does not contain the routed hydrographs for the "
+                                               "segment - " + str(Nodeid))
+                print(msg)
+                return
         else:
             print("the Segment Does not have any Upstream Segments")
             return
@@ -3572,7 +3585,7 @@ class Sub(River):
                 self.Laterals.loc[:,i] = IF.Laterals.loc[fromday:today,i]
 
             self.Laterals['total'] = self.Laterals.sum(axis=1)
-            
+
             if hasattr(IF, "RRMProgression"):
                 self.RRMProgression = pd.DataFrame(index = pd.date_range(fromday, today, freq='D'),
                                          columns=self.LateralsTable)
@@ -3625,8 +3638,12 @@ class Sub(River):
         
         assert hasattr(self, "Laterals"), "Please read the lateral flows first"
         Laterals = self.GetLaterals(gaugexs)
-        s1 = Laterals.index[0]
-        e1 = Laterals.index[-1]
+        try:
+            s1 = Laterals.index[0]
+            e1 = Laterals.index[-1]
+        except IndexError:
+            print("there are no laterals for the given segment")
+            return
         
         if hasattr(self, "BC") and not isinstance(self.BC, bool):
             s2 = self.BC.index[0]
@@ -3812,17 +3829,26 @@ class Sub(River):
                             color=latcolor)
                 if plottotal:
                     # total flow
-                    ax.plot(self.TotalFlow.loc[start:end,'total'], label="US/BC + Laterals", zorder=totalorder,
-                                linewidth=linewidth, linestyle=V.LineStyle(totalstyle),
-                                color=totalcolor)
+                    try:
+                        ax.plot(self.TotalFlow.loc[start:end,'total'], label="US/BC + Laterals", zorder=totalorder,
+                                    linewidth=linewidth, linestyle=V.LineStyle(totalstyle),
+                                    color=totalcolor)
+                    except AttributeError:
+                        print("there are no totalFlow for this segment please use the 'GetTotalFlow' method to create it")
 
             # US hydrograph
             if self.usnode != [] and plotus :
-                ax.plot(self.USHydrographs.loc[start:end,'total'],
-                        label="US Hydrograph",zorder=ushorder,
-                        linewidth=linewidth, linestyle=V.LineStyle(ushstyle),
-                        color=ushcolor)
-            
+                try :
+                    ax.plot(self.USHydrographs.loc[start:end,'total'],
+                            label="US Hydrograph",zorder=ushorder,
+                            linewidth=linewidth, linestyle=V.LineStyle(ushstyle),
+                            color=ushcolor)
+                except KeyError:
+                    msg = ("Please read the routed hydrograph of the upstream segments using the "
+                           "'ReadUSHydrograph' method")
+                    
+                    print(msg)
+
             # Gauge
             if plotgauge:
                 # plot the gauge data
@@ -3873,7 +3899,7 @@ class Sub(River):
             start, end = ax.get_xlim()
             if type(xlabels) == int:
                 ax.xaxis.set_ticks(np.linspace(start, end, xlabels))
-        
+
         if type(ylabels) != bool :
             start, end = ax.get_ylim()
             if type(ylabels) == int:
@@ -3894,7 +3920,8 @@ class Sub(River):
         plt.tight_layout()
 
         return fig, ax
-    
+
+   
     
     def PlotRRMProgression(self, specificxs, start, end,
               plotlaterals=True, latcolor=(0.3, 0, 0), latorder=4, latstyle=9,
@@ -4081,7 +4108,6 @@ class Sub(River):
         return fig, ax
 
 
-
     def CalculateQMetrics(self, Calib, stationname, startError, endError, gaugexs,
                           GaugeStart, GaugeEnd,Filter=False, fmt="%Y-%m-%d"):
         """CalculateQMetrics.
@@ -4246,7 +4272,7 @@ class Sub(River):
             try:
                 GaugeStart = GaugeStart.values[0]
                 GaugeEnd = GaugeEnd.values[0]
-                
+
                 if GaugeStart > start and  GaugeStart > end:
                     print("Availabel data for the gauge starts from " + str(GaugeStart))
                     print("The period you provided is between " + str(start) + " and " + str(end))
