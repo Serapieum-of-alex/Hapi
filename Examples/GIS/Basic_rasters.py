@@ -16,6 +16,7 @@ import pandas as pd
 RasterAPath = datapath + "/acc4000.tif"
 RasterBPath = datapath + "/dem_100_f.tif"
 pointsPath = datapath + "/points.csv"
+aligned_raster_folder = datapath + "/alligned_rasters/"
 alligned_rasater = datapath + "/Evaporation_ECMWF_ERA-Interim_mm_daily_2009.01.01.tif"
 #%% read the raster
 src = gdal.Open(RasterAPath)
@@ -138,6 +139,53 @@ Returns
 
 src = Raster.CreateRaster(arr=arr, geo=geo, EPSG=str(epsg), NoDataValue=nodataval)
 vis.PlotArray(src, Title="Flow Accumulation")
+#%% RasterLike
+"""RasterLike.
+
+RasterLike method creates a Geotiff raster like another input raster, new raster
+will have the same projection, coordinates or the top left corner of the original
+raster, cell size, nodata velue, and number of rows and columns
+the raster and the dem should have the same number of columns and rows
+
+inputs:
+-------
+    1- src : [gdal.dataset]
+        source raster to get the spatial information
+    2- array:
+        [numpy array]to store in the new raster
+    3- path : [String]
+        path to save the new raster including new raster name and extension (.tif)
+    4- pixel_type : [integer]
+        type of the data to be stored in the pixels,default is 1 (float32)
+        for example pixel type of flow direction raster is unsigned integer
+        1 for float32
+        2 for float64
+        3 for Unsigned integer 16
+        4 for Unsigned integer 32
+        5 for integer 16
+        6 for integer 32
+
+outputs:
+--------
+    1- save the new raster to the given path
+
+Ex:
+----------
+    data=np.load("RAIN_5k.npy")
+    src=gdal.Open("DEM.tif")
+    name="rain.tif"
+    RasterLike(src,data,name)
+"""
+"""
+If we have made some calculation on raster array and we want to save the array back in the raster
+"""
+arr2 = np.ones(shape=arr.shape, dtype=np.float64) * nodataval
+arr2[~ np.isclose(arr, nodataval, rtol=0.001)] = 5
+
+path = datapath + "/rasterlike.tif"
+Raster.RasterLike(src,arr2,path, )
+dst = gdal.Open(path)
+vis.PlotArray(dst, Title="Flow Accumulation", ColorScale=1)
 #%%
 """MapAlgebra.
 
@@ -194,7 +242,8 @@ Returns:
         the raster will be saved directly to the path you provided.
 """
 path = datapath + "/fillrasterexample.tif"
-Raster.RasterFill(src, 1, SaveTo=path)
+value = 20
+Raster.RasterFill(src, value, SaveTo=path)
 
 "now the resulted raster is saved to disk"
 dst = gdal.Open(path)
@@ -226,7 +275,7 @@ Outputs:
 """
 print("Original Cell Size =" + str(geo[1]))
 cell_size = 100
-dst = Raster.ResampleRaster(src, cell_size, resample_technique="Nearest")
+dst = Raster.ResampleRaster(src, cell_size, resample_technique="bilinear")
 
 dst_arr,_ = Raster.GetRasterData(dst)
 _, newgeo = Raster.GetProjectionData(dst)
@@ -270,6 +319,7 @@ newepsg, newgeo = Raster.GetProjectionData(dst)
 print("New EPSG - " + str(newepsg))
 print("New Geotransform - " + str(newgeo))
 """Option 2"""
+print("Option 2")
 dst = Raster.ProjectRaster(src, to_epsg=to_epsg, Option=2)
 newepsg, newgeo = Raster.GetProjectionData(dst)
 print("New EPSG - " + str(newepsg))
@@ -310,53 +360,6 @@ Outputs:
 # print("New EPSG - " + str(newepsg))
 # print("New Geotransform - " + str(newgeo))
 # vis.PlotArray(dst, Title="Flow Accumulation")
-#%% RasterLike
-"""RasterLike.
-
-RasterLike method creates a Geotiff raster like another input raster, new raster
-will have the same projection, coordinates or the top left corner of the original
-raster, cell size, nodata velue, and number of rows and columns
-the raster and the dem should have the same number of columns and rows
-
-inputs:
--------
-    1- src : [gdal.dataset]
-        source raster to get the spatial information
-    2- array:
-        [numpy array]to store in the new raster
-    3- path : [String]
-        path to save the new raster including new raster name and extension (.tif)
-    4- pixel_type : [integer]
-        type of the data to be stored in the pixels,default is 1 (float32)
-        for example pixel type of flow direction raster is unsigned integer
-        1 for float32
-        2 for float64
-        3 for Unsigned integer 16
-        4 for Unsigned integer 32
-        5 for integer 16
-        6 for integer 32
-
-outputs:
---------
-    1- save the new raster to the given path
-
-Ex:
-----------
-    data=np.load("RAIN_5k.npy")
-    src=gdal.Open("DEM.tif")
-    name="rain.tif"
-    RasterLike(src,data,name)
-"""
-"""
-If we have made some calculation on raster array and we want to save the array back in the raster
-"""
-arr2 = np.ones(shape=arr.shape, dtype=np.float64) * nodataval
-arr2[~ np.isclose(arr, nodataval, rtol=0.001)] = 5
-
-path = datapath + "/rasterlike.tif"
-Raster.RasterLike(src,arr2,path, )
-dst = gdal.Open(path)
-vis.PlotArray(dst, Title="Flow Accumulation", ColorScale=1)
 #%% CropAlligned
 """if you have an array and you want clip/crop it using another raster/array"""
 
@@ -410,9 +413,9 @@ vis.PlotArray(dst_cropped,Title="Cropped array", ColorScale=1,
               TicksSpacing=0.01)
 #%% clip a folder of rasters using another raster while preserving the alignment
 """
-you can perform the previous step on multiple rasters using the 
+you can perform the previous step on multiple rasters using the CropAlignedFolder 
 """
-"""MatchDataNoValuecells.
+"""CropAlignedFolder.
 
 CropAlignedFolder matches the location of nodata value from src raster to dst
 raster
@@ -446,7 +449,32 @@ Example:
     MatchDataNoValuecells(dem_path,temp_in_path,temp_out_path)
 
 """
+saveto = datapath + "/crop_aligned_folder/"
+Raster.CropAlignedFolder(src, aligned_raster_folder, saveto)
+#%%
+"""Crop.
 
+crop method crops a raster sing another raster.
+
+Parameters:
+-----------
+    1-src: [string/gdal.Dataset]
+        the raster you want to crop as a path or a gdal object
+    2- Mask : [string/gdal.Dataset]
+        the raster you want to use as a mask to crop other raster,
+        the mask can be also a path or a gdal object.
+    3- OutputPath : [string]
+        if you want to save the cropped raster directly to disk
+        enter the value of the OutputPath as the path.
+    3- Save : [boolen]
+        True if you want to save the cropped raster directly to disk.
+Output:
+-------
+    1- dst : [gdal.Dataset]
+        the cropped raster will be returned, if the Save parameter was True,
+        the cropped raster will also be saved to disk in the OutputPath
+        directory.
+"""
 #%%
 # "clip raster by another raster"
 # # 4000 m resolution
