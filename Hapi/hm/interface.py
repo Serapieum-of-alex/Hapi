@@ -114,7 +114,7 @@ class Interface(River):
             with segment id as a column name and a column 'total' contains the
             sum of all the hydrographs.
         """
-        errmsg = """Please read the lateras table first using the 
+        errmsg = """Please read the laterals table first using the 
         'ReadLateralsTable' method """
         assert hasattr(self, 'LateralsTable'), '{0}'.format(errmsg)
         self.Laterals = pd.DataFrame()
@@ -142,6 +142,60 @@ class Interface(River):
             end = self.ReferenceIndex.loc[today,'date']
 
             self.Laterals.index = pd.date_range(start, end, freq = 'D')
+    
+    def ReadRRMProgression(self, fromday= '', today='', path='',
+                          date_format="'%Y-%m-%d'"):
+        """ReadRRMProgression.
+        
+        read the routed hydrograph by mHM at the location of the lateral 
+        cross-sections 
+        
+        Parameters
+        ----------
+        1-fromday : [integer], optional
+                the day you want to read the result from, the first day is 1 not zero.The default is ''.
+        2-today : [integer], optional
+                the day you want to read the result to.
+        3-path : [String], optional
+            path to read the results from. The default is ''.
+        4-date_format : "TYPE, optional
+            DESCRIPTION. The default is "'%Y-%m-%d'".
+
+        Returns
+        -------
+        1-USHydrographs : [dataframe attribute].
+            dataframe contains the hydrograph of each of the upstream segments
+            with segment id as a column name and a column 'total' contains the
+            sum of all the hydrographs.
+        """
+        errmsg = """Please read the laterals table first using the 
+        'ReadLateralsTable' method """
+        assert hasattr(self, 'LateralsTable'), '{0}'.format(errmsg)
+        self.RRMProgression = pd.DataFrame()
+
+        if len(self.LateralsTable) > 0:
+
+            for i in range(len(self.LateralsTable)):
+                NodeID = self.LateralsTable.loc[i,'xsid']
+                fname = "lf_xsid" + str(NodeID)
+
+                self.RRMProgression[NodeID]  = self.ReadRRMResults(self.version,
+                                                             self.ReferenceIndex,
+                                                             path, fname, fromday,
+                                                             today,
+                                                             date_format)[fname].tolist()
+                print("RRM Progression file " + fname + " is read")
+
+            # self.RRMProgression['total'] = self.Laterals.sum(axis=1)
+            if fromday == '':
+                fromday = 1
+            if today == '':
+                today = len(self.RRMProgression[self.RRMProgression.columns[0]])
+
+            start = self.ReferenceIndex.loc[fromday,'date']
+            end = self.ReferenceIndex.loc[today,'date']
+
+            self.RRMProgression.index = pd.date_range(start, end, freq = 'D')
 
     def ReadBoundaryConditionsTable(self, path, prefix='bc_xsid', 
                                     suffix='.txt'):

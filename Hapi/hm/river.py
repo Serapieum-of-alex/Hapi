@@ -198,7 +198,7 @@ class River:
         # convert the index into date
         return self.referenceindex.loc[index, 'date']
 
-
+    
     def DateToIndex(self, date, fmt="%Y-%m-%d"):
         """DateToIndex.
 
@@ -274,7 +274,11 @@ class River:
         if isinstance(date, str):
             date = dt.datetime.strptime(date, fmt)
         return np.where(self.referenceindex['date'] == date)[0][0]+1
-
+    
+    @staticmethod
+    def round(number,roundto):
+        return (round(number / roundto) * roundto)
+    
     def Read1DConfigFile(self, path):
         """Read1DConfigFile.
 
@@ -3021,6 +3025,7 @@ class Sub(River):
 
         if location == 2 :
             assert not path2=='', "path2 argument has to be given fot the location of the 2nd rainfall run-off time series"
+        
 
         if location == 1:
             self.RRM[station_id] = self.ReadRRMResults(self.version, self.rrmreferenceindex,
@@ -3331,8 +3336,16 @@ class Sub(River):
         None.
 
         """
-        start = dt.datetime.strptime(start,fmt)
-        end = dt.datetime.strptime(end,fmt)
+        if start == '':
+            start = self.firstday
+        else:
+            start = dt.datetime.strptime(start, fmt)
+
+        if end == '':
+            end = self.lastday
+        else:
+            end = dt.datetime.strptime(end, fmt)
+        
         
         if fromxs == '':
             fromxs = self.firstxs
@@ -3341,11 +3354,9 @@ class Sub(River):
             toxs = self.lastxs
             xss.append(toxs)
             
-        # if fromxs == '':
-        #     xslist = self.xsname[spacing:self.xsno:spacing]
-        # else:
         fromxs = self.xsname.index(fromxs)
         toxs = self.xsname.index(toxs)
+        
         xslist = self.xsname[fromxs:toxs+1:spacing]
         
         xslist = xslist + xss
@@ -3504,7 +3515,7 @@ class Sub(River):
         """GetFlow.
         
         Extract the lateral flow and boundary condition (if exist) time series 
-        of the sub-segmentfrom the whole river data.
+        of the segment from the whole river data.
 
         Parameters
         ----------
@@ -3561,6 +3572,12 @@ class Sub(River):
                 self.Laterals.loc[:,i] = IF.Laterals.loc[fromday:today,i]
 
             self.Laterals['total'] = self.Laterals.sum(axis=1)
+            
+            if hasattr(IF, "RRMProgression"):
+                self.RRMProgression = pd.DataFrame(index = pd.date_range(fromday, today, freq='D'),
+                                         columns=self.LateralsTable)
+                for i in self.LateralsTable:
+                    self.RRMProgression.loc[:,i] = IF.RRMProgression.loc[fromday:today,i]
         else:
             self.LateralsTable = []
             self.Laterals = pd.DataFrame()
@@ -3591,7 +3608,7 @@ class Sub(River):
         """GetTotalFlow.
         
         GetTotalFlow extracts all the laterals upstream of a certain xs and 
-        also extracts the Upstream/BS hydrograph.
+        also extracts the Upstream/BC hydrograph.
 
         Parameters
         ----------
@@ -3674,7 +3691,7 @@ class Sub(River):
               plotgauge=True, gaugecolor="#DC143C", gaugeorder=5, gaugestyle=7,
               hmcolor="#004c99",  hmorder=6,
               linewidth=4, figsize=(6, 5),
-              fmt="%Y-%m-%d", nxlabels=False):
+              fmt="%Y-%m-%d", xlabels=False, ylabels=False):
         """PlotQ.
 
         plot the hydrograph at the  gauge location for the hm, rrm  (at two
@@ -3852,9 +3869,22 @@ class Sub(River):
                 ax.plot(self.RRM.loc[Calib.CalibrationQ.index[0]:Calib.CalibrationQ.index[-1],stationname],
                         label="RRM")
 
-        if type(nxlabels) != bool :
+        if type(xlabels) != bool :
             start, end = ax.get_xlim()
-            ax.xaxis.set_ticks(np.linspace(start,end,nxlabels))
+            if type(xlabels) == int:
+                ax.xaxis.set_ticks(np.linspace(start, end, xlabels))
+        
+        if type(ylabels) != bool :
+            start, end = ax.get_ylim()
+            if type(ylabels) == int:
+                if start < 0 :
+                    start = 0
+                ax.yaxis.set_ticks(np.linspace(start, end, ylabels))
+            else:
+                start = self.round(start,ylabels[0])
+                end = self.round(end,ylabels[0])
+                
+                ax.yaxis.set_ticks(np.arange(start, end, ylabels[0]))
 
         ax.set_title("Discharge - " + gaugename, fontsize = 20)
 
@@ -3864,6 +3894,192 @@ class Sub(River):
         plt.tight_layout()
 
         return fig, ax
+    
+    
+    def PlotRRMProgression(self, specificxs, start, end,
+              plotlaterals=True, latcolor=(0.3, 0, 0), latorder=4, latstyle=9,
+              plotus=True, ushcolor="grey", ushorder=7, ushstyle=7,
+              plottotal=True, totalcolor='k', totalorder=6, totalstyle=11,
+              plotrrm=True, rrmorder=3, rrmcolor=(227/255, 99/255, 80/255),
+              plotrim=True, hmorder=6, hmcolor="#004c99", rrmlinesytle=8,
+              linewidth=4, figsize=(6, 5),
+              fmt="%Y-%m-%d", xlabels=False, ylabels=False):
+        """PlotRRMProgression.
+
+        plot the hydrograph at the  gauge location for the hm, rrm  (at two
+        location is availabe), sum of all laterals, upstream hydrograph,
+        boundary condition hydrograph and the gauge time series.
+
+        Parameters
+        ----------
+        Calib : [Calibration object]
+            DESCRIPTION.
+        gaugexs : integer
+            the xsid of the gauge.
+        start : [string]
+            start date of the plot.
+        end : [string]
+            end date of the plot.
+        stationname : [string]
+            station name.
+        gaugename : TYPE
+            DESCRIPTION.
+        segment_xs : TYPE
+            DESCRIPTION.
+        plotlaterals : TYPE, optional
+            DESCRIPTION. The default is True.
+        plotus : TYPE, optional
+            DESCRIPTION. The default is True.
+        specificxs : TYPE, optional
+            DESCRIPTION. The default is False.
+        plotrrm : TYPE, optional
+            DESCRIPTION. The default is True.
+        plotgauge : TYPE, optional
+            DESCRIPTION. The default is True.
+        hmcolor : TYPE, optional
+            DESCRIPTION. The default is "#004c99".
+        gaugecolor : TYPE, optional
+            DESCRIPTION. The default is "#DC143C".
+        bccolor : TYPE, optional
+            DESCRIPTION. The default is "grey".
+        rrmcolor : TYPE, optional
+            DESCRIPTION. The default is "green".
+        latcolor : TYPE, optional
+            DESCRIPTION. The default is (0.3,0,0).
+        xscolor : TYPE, optional
+            DESCRIPTION. The default is "grey".
+        linewidth : TYPE, optional
+            DESCRIPTION. The default is 4.
+        hmorder : TYPE, optional
+            DESCRIPTION. The default is 6.
+        gaugeorder : TYPE, optional
+            DESCRIPTION. The default is 5.
+        rrmorder : TYPE, optional
+            DESCRIPTION. The default is 4.
+        bcorder : TYPE, optional
+            DESCRIPTION. The default is 7.
+        ushorder : TYPE, optional
+            DESCRIPTION. The default is 2.
+        xsorder : TYPE, optional
+            DESCRIPTION. The default is 1.
+        fmt: [string]
+            format of the date. fmt="%Y-%m-%d %H:%M:%S"
+        nxlabels : TYPE, optional
+            DESCRIPTION. The default is False.
+        rrm2color: []
+            Description
+        gaugestyle: []
+            Description
+        rrm2linesytle: []
+            Description
+        ushstyle: []
+            Description
+        xslinestyle: []
+            Description
+        latorder: []
+            Description
+        ushcolor: []
+            Description
+        latstyle: []
+            Description
+
+        Returns
+        -------
+        fig : TYPE
+            DESCRIPTION.
+        ax : TYPE
+            DESCRIPTION.
+
+
+        """
+        start = dt.datetime.strptime(start, fmt)
+        end = dt.datetime.strptime(end, fmt)
+
+        fig, ax = plt.subplots(ncols=1, nrows=1, figsize=figsize)
+
+
+        # laterals
+        if plotlaterals:
+            Laterals = self.GetLaterals(specificxs)
+
+            # BC
+            if type(self.BC) != bool:
+                ax.plot(self.BC.loc[start:end,self.BC.columns[0]],
+                        label = "BC",zorder=ushorder,
+                        linewidth=linewidth, linestyle=V.LineStyle(ushstyle),
+                        color=ushcolor)
+            # Laterals
+            if len(self.LateralsTable) > 0:
+                ax.plot(Laterals.loc[start:end,0], 
+                        label="Laterals Sum \n up to - XS-" + str(specificxs), 
+                        zorder=latorder,
+                        linewidth=linewidth, linestyle=V.LineStyle(latstyle),
+                        color=latcolor)
+            if plottotal:
+                # total flow
+                self.GetTotalFlow(specificxs)
+                ax.plot(self.TotalFlow.loc[start:end,'total'], label="US/BC \n+ Laterals", zorder=totalorder,
+                            linewidth=linewidth, linestyle=V.LineStyle(totalstyle),
+                            color=totalcolor)
+
+        # US hydrograph
+        if self.usnode != [] and plotus :
+            ax.plot(self.USHydrographs.loc[start:end,'total'],
+                    label="US Hydrograph",zorder=ushorder,
+                    linewidth=linewidth, linestyle=V.LineStyle(ushstyle),
+                    color=ushcolor)
+        
+        # specific XS
+        if plotrim :
+            # first extract the time series of the given xs
+            self.Read1DResult(xsid=specificxs)
+            # plot the xs
+            ax.plot(self.XSHydrographs.loc[start:end,specificxs],
+                    label="RIM",
+                    zorder=hmorder, linewidth=linewidth, linestyle=V.LineStyle(6),
+                    color = hmcolor)
+        # RRM
+        # if plotrrm:
+        if hasattr(self, "RRMProgression"):
+            try:
+                ax.plot(self.RRMProgression.loc[start:end,specificxs], label="mHM",
+                        zorder=rrmorder, linewidth=linewidth,
+                        linestyle = V.LineStyle(rrmlinesytle), color = rrmcolor)
+            except KeyError:
+                print(" XS "+ str(specificxs)+"does not exist in the  'RRMProgression'")
+        else:
+            msg = ("please read the RRM hydrographs using the 'ReadRRMProgression'"
+                   "in the interface module")
+            print(msg)
+                              
+        
+
+        if type(xlabels) != bool :
+            start, end = ax.get_xlim()
+            if type(xlabels) == int:
+                ax.xaxis.set_ticks(np.linspace(start, end, xlabels))
+        
+        if type(ylabels) != bool :
+            start, end = ax.get_ylim()
+            if type(ylabels) == int:
+                if start < 0 :
+                    start = 0
+                ax.yaxis.set_ticks(np.linspace(start, end, ylabels))
+            else:
+                start = self.round(start,ylabels[0])
+                end = self.round(end,ylabels[0])
+                
+                ax.yaxis.set_ticks(np.arange(start, end, ylabels[0]))
+                
+        ax.set_title("XS - " + str(specificxs), fontsize = 20)
+
+        ax.legend(fontsize = 12)
+        ax.set_xlabel("Time", fontsize = 12)
+        ax.set_ylabel("Discharge m3/s", fontsize = 12)
+        plt.tight_layout()
+
+        return fig, ax
+
 
 
     def CalculateQMetrics(self, Calib, stationname, startError, endError, gaugexs,
@@ -4030,7 +4246,7 @@ class Sub(River):
             try:
                 GaugeStart = GaugeStart.values[0]
                 GaugeEnd = GaugeEnd.values[0]
-
+                
                 if GaugeStart > start and  GaugeStart > end:
                     print("Availabel data for the gauge starts from " + str(GaugeStart))
                     print("The period you provided is between " + str(start) + " and " + str(end))
@@ -4039,7 +4255,7 @@ class Sub(River):
                     print("Availabel data for the gauge starts from" + str(GaugeEnd))
                     print("Out of Gauge dates")
                     plotgauge = False
-            except IndexError:
+            except (IndexError, TypeError):
                 print("The XS you provided does not exist in the GaugesTable")
                 plotgauge = False    
 
