@@ -5,10 +5,10 @@ Created on Sat Mar 14 16:36:01 2020
 @author: mofarrag
 """
 import os
+import gdal
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-from matplotlib import gridspec
-from matplotlib import animation
+from matplotlib import gridspec, animation
 import numpy as np
 import pandas as pd
 import datetime as dt
@@ -18,6 +18,8 @@ from matplotlib.ticker import LogFormatter
 from collections import OrderedDict
 from scipy.stats import gumbel_r
 from Hapi.statistics.statisticaltools import StatisticalTools as ST
+from Hapi.gis.raster import Raster
+from Hapi.gis.giscatchment import GISCatchment as GC
 
 hours = list(range(1, 25))
 
@@ -1450,7 +1452,7 @@ class Visualize:
             Arr[np.isclose(Arr, nodataval, rtol=0.001)] = np.nan
             no_elem = np.size(Arr[:, :]) - np.count_nonzero((Arr[np.isnan(Arr)]))
 
-        fig = plt.figure(60, figsize=Figsize)
+        fig = plt.figure(figsize=Figsize)#60,
         ax = fig.add_subplot()
 
         if np.mod(np.nanmax(Arr), TicksSpacing) == 0:
