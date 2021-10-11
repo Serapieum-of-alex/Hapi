@@ -18,7 +18,7 @@ from osgeo import osr
 from fiona.crs import from_epsg
 import pandas as pd
 import warnings
-
+import json
 
 class Vector:
     """Vector
@@ -263,6 +263,11 @@ class Vector:
         # Multi geometries
         else:
             return list(Vector.MultiGeomHandler(geom,coord_type,gtype))
+
+    def GetFeatures(gdf):
+        """Function to parse features from GeoDataFrame in such a
+         manner that rasterio wants them"""
+        return [json.loads(gdf.to_json())['features'][0]['geometry']]
 
     @staticmethod
     def XY(input_dataframe):
