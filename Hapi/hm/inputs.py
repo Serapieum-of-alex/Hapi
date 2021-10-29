@@ -16,14 +16,11 @@ import zipfile
 from matplotlib import gridspec
 
 from Hapi.statistics.statisticaltools import StatisticalTools as ST
-from Hapi.statistics.statisticaltools import Gumbel, GEV
+from Hapi.statistics.distributions import Gumbel, GEV
 
-class Inputs():
+class Inputs:
 
-    """
-    =======================================
-        HMInputs
-    =======================================
+    """Inputs.
 
     Methods
         1- ExtractHydrologicalInputs
