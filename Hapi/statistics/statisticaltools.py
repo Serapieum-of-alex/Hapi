@@ -5,18 +5,11 @@ Created on Thu May 17 04:26:42 2018
 @author: Mostafa
 """
 
-
-#%library
 import numpy as np
-# import pandas as pd
-import scipy.optimize as so
-from scipy.stats import gumbel_r, norm, genextreme
 
-class StatisticalTools():
-    """
-    ==============================
-        StatisticalTools
-    ==============================
+class StatisticalTools:
+    """StatisticalTools.
+
     StatisticalTools different statistical and interpolation tools
 
     """
@@ -25,10 +18,8 @@ class StatisticalTools():
 
     @staticmethod
     def IDW(raster,coordinates,data,No_data_cells=False):
-        """
-        =======================================================================
-         IDW(flp,coordinates,prec_data):
-        =======================================================================
+        """IDW.
+
         this function generates distributred values from reading at stations
         using inverse distance weighting method
 
@@ -103,10 +94,8 @@ class StatisticalTools():
 
     @staticmethod
     def ISDW(raster,coordinates,data,No_data_cells=False):
-        """
-        # =============================================================================
-        #  ISDW(flp,coordinates,prec_data):
-        # =============================================================================
+        """ISDW.
+
         this function generates distributred values from reading at stations using
         inverse squared distance weighting method
 
@@ -173,38 +162,38 @@ class StatisticalTools():
                     if not np.isnan(coox[i,j]): # calculate only if the coox is not nan
                         sp_dist[i,j,t]=np.sum(inverseDist[i,j,:]*data[t,:])/denominator[i,j]
         # change the type to float 32
-        sp_dist=sp_dist.astype(np.float32)
+        sp_dist = sp_dist.astype(np.float32)
 
         return sp_dist
     
     
     @staticmethod
-    def Normalizer(x):
-        """
-        ================================================
-           Normalizer(x, maxx, minn)
-        ================================================
+    def Normalize(x):
+        """Normalizer
+
         to normalize values between 0 and 1
 
-        Inputs :
-            1-x:
-                [List] list of values
+        Inputs:
+        -------
+            1-x : [List]
+                list of values
         Outputs:
-            1-
-            [List] list of normalized values
+        -------
+            1- normalized numbers : [List]
+                list of normalized values
         """
+        x = np.array(x)
         DataMax = max(x)
         DataMin = min(x)
-
-        return [i - DataMin/(DataMax-DataMin) for i in x]
+        N = (x - DataMin )/ (DataMax - DataMin)
+        # [i - DataMin / (DataMax - DataMin) for i in x]
+        return N
     
     
     @staticmethod
     def Standardize(x):
-        """
-        ================================================
-           Standardize(x)
-        ================================================
+        """Standardize.
+
         to standardize (make the average equals 1 and the standard deviation
         equals 0)
 
@@ -215,17 +204,18 @@ class StatisticalTools():
             1-
             [List] list of normalized values
         """
+        x = np.array(x)
+
         mean = np.mean(x)
         std = np.std(x)
-
-        return [i - mean/(std) for i in x]
+        s = (x - mean) / std
+        # [i - mean / (std) for i in x]
+        return s
     
     @staticmethod
     def Rescale(OldValue, OldMin, OldMax, NewMin, NewMax):
-        """
-        ===================================================================
-            Rescale(OldValue,OldMin,OldMax,NewMin,NewMax)
-        ===================================================================
+        """Rescale.
+
         Rescale nethod rescales a value between two boundaries to a new value 
         bewteen two other boundaries
         inputs:
@@ -253,10 +243,8 @@ class StatisticalTools():
     
     @staticmethod
     def LogarithmicRescale(x, min_old, max_old, min_new, max_new):
-        """
-        ===================================================================
-             LogarithmicRescale(x,min_old,max_old,min_new, max_new)
-        ===================================================================
+        """LogarithmicRescale.
+
         this function transform the value between two normal values to a logarithmic scale
         between logarithmic value of both boundaries
             np.log(base)(number) = power
@@ -297,10 +285,8 @@ class StatisticalTools():
         
     @staticmethod
     def InvLogarithmicRescale(x, min_old, max_old, min_new, max_new, base=np.e):
-        """
-        ===================================================================
-             LogarithmicRescale(x,min_old,max_old,min_new, max_new)
-        ===================================================================
+        """LogarithmicRescale.
+
         this function transform the value between two normal values to a logarithmic scale
         between logarithmic value of both boundaries
             np.log(base)(number) = power
@@ -323,235 +309,13 @@ class StatisticalTools():
         # get the boundaries of the logarithmic scale
 
         min_old_power = np.power(base, min_old)
-
         max_old_power = np.power(base, max_old)
-
         x_power = np.power(base, x)
-        
 
         y = int(np.round(StatisticalTools.Rescale(x_power, min_old_power, max_old_power, 
                                                   min_new, max_new)))
-
         return y
-    
-    
+
+    @staticmethod
     def Round(number,roundto):
         return (round(number / roundto) * roundto)
-
-    @staticmethod
-    def Weibul(data, option=1):
-        """
-        =========================================
-          Weibul(data,option)
-        =========================================
-        Weibul method to calculate the cumulative distribution function or
-        return period.
-
-        Parameters
-        ----------
-        data : [list/array]
-            list/array of the data.
-        option : [1/2]
-            1 to calculate the cumulative distribution function cdf or
-            2 to calculate the return period.default=1
-
-        Returns
-        -------
-        CDF/T: [list]
-            list of cumulative distribution function or return period.
-        """
-        data.sort()
-
-        if option==1:
-            CDF = [j/(len(data)+1) for j in range(1,len(data)+1)]
-            return CDF
-        else:
-            CDF = [j/(len(data)+1) for j in range(1,len(data)+1)]
-            T = [1/(1-j) for j in CDF]
-            return T
-
-
-
-class Gumbel():
-
-    def __init__(self):
-        pass
-
-    @staticmethod
-    def Pdf(x, loc, scale):
-        """
-        ========================================================================
-          Returns the value of Gumbel's pdf with parameters loc and scale at x .
-        ========================================================================
-
-        Parameters
-        ----------
-        x : TYPE
-            data.
-        loc : TYPE
-            DESCRIPTION.
-        scale : TYPE
-            DESCRIPTION.
-
-        Returns
-        -------
-        TYPE
-            DESCRIPTION.
-
-        """
-        z = (x - loc)/scale
-
-        return (1./scale) * (np.exp(-(z + (np.exp(-z)))))
-
-    @staticmethod
-    def Cdf(x, loc, scale):
-        """
-        Returns the value of Gumbel's cdf with parameters loc and scale at x.
-        """
-        return np.exp(-np.exp(-(x-loc)/scale))
-
-    @staticmethod
-    def ObjectiveFn(p, x): #, threshold
-
-        threshold=p[0]
-        loc=p[1]
-        scale=p[2]
-
-        x1=x[x<threshold]
-        nx2=len(x[x>=threshold])
-        # pdf with a scaled pdf
-        # L1 is pdf based
-        L1=(-np.log((Gumbel.Pdf(x1, loc, scale)/scale))).sum()
-        # L2 is cdf based
-        L2=(-np.log(1-Gumbel.Cdf(threshold, loc, scale)))*nx2
-        #print x1, nx2, L1, L2
-        return L1+L2
-
-    @staticmethod
-    def EstimateParameter(data, ObjFunc, threshold):
-        """
-        There are two likelihood functions (L1 and L2), one for values above some
-        threshold (x>=C) and one for values below (x < C), now the likeliest parameters
-        are those at the max value of mutiplication between two functions max(L1*L2).
-
-        In this case the L1 is still the product of multiplication of probability
-        density function's values at xi, but the L2 is the probability that threshold
-        value C will be exceeded (1-F(C)).
-
-        Parameters
-        ----------
-        data : TYPE
-            DESCRIPTION.
-        threshold : TYPE
-            DESCRIPTION.
-
-        Returns
-        -------
-        Param : TYPE
-            DESCRIPTION.
-
-        Example:
-            from Hapi.statisticaltools import StatisticalTools as ST
-            Param_dist = Gumbel.EstimateParameter(data, threshold)
-
-        """
-        # obj_func = lambda p, x: (-np.log(Gumbel.Pdf(x, p[0], p[1]))).sum()
-        # #first we make a simple Gumbel fit
-        # Par1 = so.fmin(obj_func, [0.5,0.5], args=(np.array(data),))
-        Par1 = gumbel_r.fit(data)
-        #then we use the result as starting value for your truncated Gumbel fit
-        Param = so.fmin(ObjFunc, [threshold, Par1[0], Par1[1]],  args=(np.array(data),),
-                        maxiter=500, maxfun=500)
-        # Param_dist = [Param[1], Param[2]]
-
-        return Param
-
-    @staticmethod
-    def ProbapilityPlot(param, cdf, data, SignificanceLevel):
-        """
-        ===================================================================
-            ProbapilityPlot(param, cdf, data, SignificanceLevel)
-        ===================================================================
-        this method calculates the theoretical values based on the Gumbel distribution
-        parameters, theoretical cdf (or weibul), and calculate the confidence interval.
-
-        Parameters
-        ----------
-        param : [list]
-            list of the distribution parameters [loc, scale].
-        cdf : [list]
-            theoretical cdf calculated using weibul or using the distribution cdf function.
-        data : [list/array]
-            list of the values.
-        SignificanceLevel : [float]
-            value between 0 and 1.
-
-        Returns
-        -------
-        Qth : [list]
-            theoretical generated values based on the theoretical cdf calculated from
-            weibul or the distribution parameters.
-        Qupper : [list]
-            upper bound coresponding to the confidence interval.
-        Qlower : [list]
-            lower bound coresponding to the confidence interval.
-        """
-
-        Qth = [param[0] - param[1]*(np.log(-np.log(j))) for j in cdf]
-        Y = [-np.log(-np.log(j)) for j in cdf]
-        StdError = [(param[1]/np.sqrt(len(data))) * np.sqrt(1.1087+0.5140*j+0.6079*j**2) for j in Y]
-        v = norm.ppf(1-SignificanceLevel/2)
-        Qupper = [Qth[j] + v * StdError[j] for j in range(len(data))]
-        Qlower = [Qth[j] - v * StdError[j] for j in range(len(data))]
-
-        return Qth, Qupper, Qlower
-
-
-class GEV():
-
-    def __init__():
-        pass
-
-    @staticmethod
-    def ProbapilityPlot(param, cdf, data, SignificanceLevel):
-        """
-        still not finished
-        the equations are the same of the gumbel dist and have to be changed to
-        GEV equations
-        ===================================================================
-            ProbapilityPlot(param, cdf, data, SignificanceLevel)
-        ===================================================================
-        this method calculates the theoretical values based on the Gumbel distribution
-        parameters, theoretical cdf (or weibul), and calculate the confidence interval.
-
-        Parameters
-        ----------
-        param : [list]
-            list of the distribution parameters [loc, scale].
-        cdf : [list]
-            theoretical cdf calculated using weibul or using the distribution cdf function.
-        data : [list/array]
-            list of the values.
-        SignificanceLevel : [float]
-            value between 0 and 1.
-
-        Returns
-        -------
-        Qth : [list]
-            theoretical generated values based on the theoretical cdf calculated from
-            weibul or the distribution parameters.
-        Qupper : [list]
-            upper bound coresponding to the confidence interval.
-        Qlower : [list]
-            lower bound coresponding to the confidence interval.
-        """
-
-        # Qth = [param[0] - param[1]*(np.log(-np.log(j))) for j in cdf]
-        Qth = genextreme.ppf(cdf, c=param[0], loc=param[1], scale=param[2])
-        Y = [-np.log(-np.log(j)) for j in cdf]
-        StdError = [(param[1]/np.sqrt(len(data))) * np.sqrt(1.1087+0.5140*j+0.6079*j**2) for j in Y]
-        v = norm.ppf(1-SignificanceLevel/2)
-        Qupper = [Qth[j] + v * StdError[j] for j in range(len(data))]
-        Qlower = [Qth[j] - v * StdError[j] for j in range(len(data))]
-
-        return Qth, Qupper, Qlower
