@@ -9,5 +9,5 @@ os.chdir("F:/01Algorithms/Hydrology/HAPI/Examples/")
 
 
 from Hapi.gis.raster import Raster
-Path = "data/GIS/raster folder/"
+Path = "data/GIS/raster-folder/"
 F = Raster.ReadRastersFolder(Path, WithOrder=True)

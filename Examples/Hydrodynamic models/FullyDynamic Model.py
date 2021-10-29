@@ -3,6 +3,7 @@ path = "F:/01Algorithms/Hydrology/HAPI/Examples/"
 #%% create the River object
 start = "2010-1-1 00:00:00"
 end = "2010-1-1 05:00:00"
+# rrmstart="1950-1-1 00:00:00"
 # dx in meter
 dx = 20
 # dt in sec
@@ -26,7 +27,7 @@ Test.preissmann(start, end, fmt="%Y-%m-%d %H:%M:%S", maxiteration=5,
                    beta=1, epsi=0.5, theta=0.55)
 print("Stability Factor = " +str(Test.stabilityfactor.min()))
 #%% Visualization
-plotstart = "2010-01-01 00:00:00"
-plotend = "2010-1-1 05:00:00"
+start = "2010-01-01 00:00:00"
+end = "2010-1-1 05:00:00"
 # ffmpegPath = "F:/Users/mofarrag/.matplotlib/ffmpeg-4.4-full_build/bin/ffmpeg.exe"
-anim = Test.animatefloodwave(start=plotstart, end=plotend, interval=2, textlocation=-1)
+anim = Test.animatefloodwave(start=start, end=end, interval=2, textlocation=-1)

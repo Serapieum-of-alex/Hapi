@@ -592,6 +592,44 @@ src = gdal.Open(alligned_rasater)
 dst = Raster.Clip2(alligned_rasater, Basinshp, save=False, output_path=None)
 # vis.PlotArray(dst, Title="After Cropping-Evapotranspiration by a shapefile", ColorScale=1,
 #               TicksSpacing=0.01)
+#%% ReadASCII.
+"""ReadASCII.
+
+ReadASCII reads an ASCII file
+
+Inputs:
+    1-ASCIIFileName:
+        [String] name of the ASCII file you want to convert and the name
+        should include the extension ".asc"
+
+    2-pixel_type:
+        [Integer] type of the data to be stored in the pixels,default is 1 (float32)
+        for example pixel type of flow direction raster is unsigned integer
+        1 for float32
+        2 for float64
+        3 for Unsigned integer 16
+        4 for Unsigned integer 32
+        5 for integer 16
+        6 for integer 32
+Outputs:
+    1-ASCIIValues:
+        [numpy array] 2D arrays containing the values stored in the ASCII
+        file
+
+    2-ASCIIDetails:
+        [List] list of the six spatial information of the ASCII file
+        [ASCIIRows, ASCIIColumns, XLowLeftCorner, YLowLeftCorner,
+        CellSize, NoValue]
+Example:
+    Elevation_values,DEMSpatialDetails = ReadASCII("dem.asc",1)
+"""
+path = r"F:\02Case-studies\ClimXtreme\rim_base_data\setup\rhine\inputs\2d\dem_rhine.asc"
+arr, details = Raster.ReadASCII(path, pixel_type=1)
+vis.PlotArray(arr, details[-1], Title="Cropped Raster", ColorScale=2,
+              TicksSpacing=200)
+arr[~ np.isclose(arr,details[-1], rtol=0.001)] = 0.03
+path2 = r"F:\02Case-studies\ClimXtreme\rim_base_data\setup\rhine\inputs\2d\roughness.asc"
+Raster.WriteASCII(path2, details, arr)
 #%% read the points
 points = pd.read_csv(pointsPath)
 points['row'] = np.nan
