@@ -16,11 +16,14 @@ import zipfile
 from matplotlib import gridspec
 
 from Hapi.statistics.statisticaltools import StatisticalTools as ST
-from Hapi.statistics.distributions import Gumbel, GEV
+from Hapi.statistics.statisticaltools import Gumbel, GEV
 
-class Inputs:
+class Inputs():
 
-    """Inputs.
+    """
+    =======================================
+        HMInputs
+    =======================================
 
     Methods
         1- ExtractHydrologicalInputs
@@ -97,30 +100,34 @@ class Inputs:
             SWIMData.loc[:,i + (ignoreColumns)].to_csv(SavePath + "/" + str(Nodes.loc[i,0]) + ".txt",
                         header = None, index = None)
 
-    def StatisticalProperties(self, PathNodes, PathTS, StartDate, WarmUpPeriod, SavePlots, SavePath,
-                              SeparateFiles = False, Filter = False, Distibution = "GEV", EstimateParameters=False,
-                              Quartile=0, RIMResults = False, SignificanceLevel=0.1):
-        """
-        =============================================================================
-          StatisticalProperties(PathNodes, PathTS, StartDate, WarmUpPeriod, SavePlots, SavePath,
-                              SeparateFiles = False, Filter = False, RIMResults = False)
-        =============================================================================
 
-        StatisticalProperties method reads the SWIM output file (.dat file) that
-        contains the time series of discharge for some computational nodes
-        and calculate some statistical properties
+    def StatisticalProperties(self, ComputationalNodes, TSdirectory, start, WarmUpPeriod,
+                              SavePlots, SavePath, SeparateFiles=False,
+                              Filter=False, Distibution="GEV",
+                              EstimateParameters=False, Quartile=0,
+                              RIMResults=False, SignificanceLevel=0.1):
+        """StatisticalProperties.
 
-        the code assumes that the time series are of a daily temporal resolution, and
-        that the hydrological year is 1-Nov/31-Oct (Petrow and Merz, 2009, JoH).
+
+        StatisticalProperties method reads the discharge hydrographs of rainfall 
+        runoff model and hydraulic model for some computational nodes and 
+        calculate some statistical properties.
+
+        the code assumes that the time series are of a daily temporal resolution, 
+        and that the hydrological year is 1-Nov/31-Oct 
+        (Petrow and Merz, 2009, JoH).
+        
+        for the rainfall runoff model the time series is written in the files 
+        as one column without a date column.
 
         Parameters
         ----------
-            1-PathNodes : [String]
-                the name of the file which contains the ID of the computational
+            1-PathNodes : [String/list]
+                The file/list which contains the ID of the computational
                 nodes you want to do the statistical analysis for, the ObservedFile
                 should contain the discharge time series of these nodes in order.
-            2-PathTS : [String]
-                the name of the SWIM result file (the .dat file).
+            2-path : [String]
+                The directory where the time series files exist.
             3-StartDate : [string]
                 the begining date of the time series.
             4-WarmUpPeriod : [integer]
@@ -149,27 +156,34 @@ class Inputs:
                 median, 75%, 95%, max, t_beg, t_end, nyr, q1.5, q2, q5, q10, q25, q50,
                 q100, q200, q500.
         """
-
-        ComputationalNodes = np.loadtxt(PathNodes, dtype=np.uint16)
+        if isinstance(ComputationalNodes, str):
+            ComputationalNodes = np.loadtxt(ComputationalNodes, dtype=np.uint16)
+        elif isinstance(ComputationalNodes, list):
+            ComputationalNodes = ComputationalNodes
+        else:
+            raise TypeError("ComputationalNodes should be either a path or a list")
+            
         # hydrographs
         if SeparateFiles:
             TS = pd.DataFrame()
+            # for the hydraulic model results
             if RIMResults:
                 for i in range(len(ComputationalNodes)):
-                    TS.loc[:,int(ComputationalNodes[i])] =  self.ReadRIMResult(PathTS + "/" +
+                    TS.loc[:,int(ComputationalNodes[i])] =  self.ReadRIMResult(TSdirectory + "/" +
                                   str(int(ComputationalNodes[i])) + '.txt')
+            # for the rainfall runoff results.
             else:
                 for i in range(len(ComputationalNodes)):
-                    TS.loc[:,int(ComputationalNodes[i])] = np.loadtxt(PathTS + "/" +
+                    TS.loc[:,int(ComputationalNodes[i])] = np.loadtxt(TSdirectory + "/" +
                               str(int(ComputationalNodes[i])) + '.txt') #,skiprows = 0
 
-            StartDate = dt.datetime.strptime(StartDate,"%Y-%m-%d")
+            StartDate = dt.datetime.strptime(start,"%Y-%m-%d")
             EndDate = StartDate + dt.timedelta(days = TS.shape[0]-1)
             ind = pd.date_range(StartDate,EndDate)
             TS.index = ind
         else:
-            TS = pd.read_csv(PathTS , delimiter = r'\s+', header = None)
-            StartDate = dt.datetime.strptime(StartDate,"%Y-%m-%d")
+            TS = pd.read_csv(TSdirectory , delimiter = r'\s+', header = None)
+            StartDate = dt.datetime.strptime(start,"%Y-%m-%d")
             EndDate = StartDate + dt.timedelta(days = TS.shape[0]-1)
             TS.index = pd.date_range(StartDate,EndDate, freq="D")
             # delete the first two columns
@@ -253,12 +267,13 @@ class Inputs:
             amax.sort()
             # calculate the F (Exceedence probability based on weibul)
             cdf_Weibul = ST.Weibul(amax)
-            # Gumbel.ProbapilityPlot method calculates the theoretical values based on the Gumbel distribution
+            # Gumbel.ProbapilityPlot method calculates the theoretical values 
+            # based on the Gumbel distribution
             # parameters, theoretical cdf (or weibul), and calculate the confidence interval
             if Distibution == "GEV":
                 Qth, Qupper, Qlower = GEV.ProbapilityPlot(param_dist, cdf_Weibul,
                                                              amax, SignificanceLevel)
-                                # to calculate the F theoretical
+                # to calculate the F theoretical
                 Qx = np.linspace(0, 1.5*float(amax.max()), 10000)
                 pdf_fitted = genextreme.pdf(Qx, param_dist[0], loc=param_dist[2], scale=param_dist[2])
                 cdf_fitted = genextreme.cdf(Qx, param_dist[0], loc=param_dist[1], scale=param_dist[2])
@@ -276,24 +291,26 @@ class Inputs:
                 gs = gridspec.GridSpec(nrows = 1, ncols = 2, figure = fig )
                 # Plot the histogram and the fitted distribution, save it for each gauge.
                 ax1 = fig.add_subplot(gs[0,0])
-                ax1.plot(Qx, pdf_fitted, 'r-')
-                ax1.hist(amax, density=True)
+                ax1.plot(Qx, pdf_fitted, 'r-', label="Fitted distribution")
+                ax1.hist(amax, density=True, label="Observed data")
                 ax1.set_xlabel('Annual Discharge(m3/s)', fontsize= 15)
                 ax1.set_ylabel('pdf', fontsize= 15)
 
                 ax2 = fig.add_subplot(gs[0,1])
-                ax2.plot(Qx,cdf_fitted,'r-')
-                ax2.plot(amax,cdf_Weibul,'.-')
+                ax2.plot(Qx,cdf_fitted,'r-', label="Fitted distribution")
+                ax2.plot(amax,cdf_Weibul,'.-', label="Observed data")
                 ax2.set_xlabel('Annual Discharge(m3/s)', fontsize= 15)
                 ax2.set_ylabel('cdf', fontsize= 15)
-
+                plt.legend(fontsize=15, framealpha=1)
                 plt.savefig(SavePath + "/" + "Figures/" + str(i) + '.png', format='png')
                 plt.close()
 
                 fig = plt.figure(70, figsize = (10,8) )
                 plt.plot(Qth, amax,'d',color='#606060', markersize = 12,
-                         label='Gumbel Distribution')
-                plt.plot(Qth, Qth,'^-.',color="#3D59AB", label = "Weibul plotting position")
+                         label= ' Observed')
+                plt.plot(Qth, Qth,'^-.',color="#3D59AB", 
+                         label=Distibution+' Distribution')
+                
                 if Distibution != "GEV":
                     plt.plot(Qth, Qlower,'*--', color="#DC143C",markersize = 12,
                              label = 'Lower limit (' + str(int((1-SignificanceLevel)*100)) +" % CI)")
@@ -324,7 +341,7 @@ class Inputs:
 
             # Print for prompt and check progress.
             print("Gauge", i, "done.")
-        #
+        
         # Output file
         StatisticalPr.to_csv(SavePath + "/" + "Statistical Properties.csv")
         self.StatisticalPr = StatisticalPr

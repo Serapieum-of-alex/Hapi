@@ -10,7 +10,7 @@ import pandas as pd
 import numpy as np
 import datetime as dt
 from bisect import bisect
-from scipy.stats import gumbel_r
+from scipy.stats import gumbel_r, genextreme
 import matplotlib.pyplot as plt
 import zipfile
 
@@ -501,7 +501,7 @@ class River:
                 self.dsbc.loc[:, :] = BC.loc[:, :].resample(self.freq).mean().interpolate('linear')
 
 
-    def ReadSubDailyResults(self, start, end, fmt="%Y-%m-%d"):
+    def ReadSubDailyResults(self, start, end, fmt="%Y-%m-%d", Lastsegment=False):
         """ReadSubDailyResults.
 
         Read Sub-Daily Results
@@ -559,10 +559,13 @@ class River:
             # read results for each day
             for i in list2:
                 path = self.oneminresultpath + "{0}/" + str(self.id) + "-{0}-" + str(i) + '.txt'
-                hh = np.transpose(np.loadtxt(path.format("h"), dtype=np.float16))[:, :-1]
+                hh = np.transpose(np.loadtxt(path.format("h"), dtype=np.float16))
                 print(path.format("h") + "- file is read")
-                qq = np.transpose(np.loadtxt(path.format("q"), dtype=np.float16))[:, :-1]
+                qq = np.transpose(np.loadtxt(path.format("q"), dtype=np.float16))
                 print(path.format("q") + " file is read")
+                if not Lastsegment:
+                    hh = hh[:, :-1]
+                    qq = qq[:, :-1]
                 # add the bed level to the water depth
                 hh = hh + self.crosssections['gl'].values
                 # assign the sub-daily results in the big dataframe 
@@ -1327,7 +1330,7 @@ class River:
         self.US = []
         self.Trace2(id, self.US)
 
-    def StatisticalProperties(self, path, Filter = True):
+    def StatisticalProperties(self, path, Filter=True, Distibution="GEV"):
         """StatisticalProperties.
 
         StatisticalProperties method reads the parameters of the distribution and
@@ -1376,13 +1379,19 @@ class River:
             self.SP = NewSP
         # calculate the 2, 5, 10, 15, 20 return period doscharge
         T = np.array([2, 5, 10, 15, 20, 50, 100, 200, 500, 1000, 5000])
-        self.SP = self.SP.assign(RP2 = 0, RP5 = 0, RP10 = 0, RP15 = 0, RP20 = 0, RP50 = 0,
-                                 RP100 = 0, RP200 = 0, RP500 = 0, RP1000 = 0,
-                                 RP5000 = 0)
+        self.SP = self.SP.assign(RP2=0, RP5=0, RP10=0, RP15=0, RP20=0, RP50=0,
+                                 RP100=0, RP200=0, RP500=0, RP1000=0,
+                                 RP5000=0)
         F = 1 - (1/T)
         for i in range(len(self.SP)):
-            if self.SP.loc[i,'loc'] != -1:
-                self.SP.loc[i,self.SP.keys()[3:].tolist()] = gumbel_r.ppf(F,loc=self.SP.loc[i,'loc'],
+            if self.SP.loc[i,'loc'] != -1 :
+                if Distibution == "GEV":
+                    self.SP.loc[i,self.SP.keys()[4:].tolist()] = genextreme.ppf(F, 
+                                                                    self.SP.loc[i,'c'], 
+                                                                    loc=self.SP.loc[i,'loc'], 
+                                                                    scale=self.SP.loc[i,'scale']).tolist()
+                else:
+                    self.SP.loc[i,self.SP.keys()[3:].tolist()] = gumbel_r.ppf(F,loc=self.SP.loc[i,'loc'],
                                                                           scale=self.SP.loc[i,'scale']).tolist()
 
     def GetReturnPeriod(self, Subid, Q):
