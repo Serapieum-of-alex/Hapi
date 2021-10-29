@@ -1671,9 +1671,10 @@ class Raster:
         return array
 
     @staticmethod
-    def ReadASCII(ASCIIFile,pixel_type=1):
-        """
-        This function reads an ASCII file the spatial information
+    def ReadASCII(ASCIIFile, pixel_type=1):
+        """ReadASCII.
+
+        ReadASCII reads an ASCII file
 
         Inputs:
             1-ASCIIFileName:
@@ -1703,8 +1704,8 @@ class Raster:
         """
         # input data validation
         # data type
-        assert type(ASCIIFile) == str, "ASCIIFile input should be string type"
-        assert type(pixel_type)== int, "pixel type input should be integer type please check documentations"
+        assert isinstance(ASCIIFile, str), "ASCIIFile input should be string type"
+        assert isinstance(pixel_type, int), "pixel type input should be integer type please check documentations"
 
         # input values
         ASCIIExt=ASCIIFile[-4:]
@@ -1712,24 +1713,23 @@ class Raster:
         assert os.path.exists(ASCIIFile), "ASCII file path you have provided does not exist"
 
         ### read the ASCII file
-
         File  = open (ASCIIFile)
         Wholefile = File.readlines()
         File.close()
 
-        ASCIIColumns = int(Wholefile[0].split()[1])
-        ASCIIRows = int(Wholefile[1].split()[1])
+        cols = int(Wholefile[0].split()[1])
+        rows = int(Wholefile[1].split()[1])
 
-        XLeftSide = int(float(Wholefile[2].split()[1]))
-        YLowerSide = int(float(Wholefile[3].split()[1]))
-        CellSize = int(Wholefile[4].split()[1])
-        NoValue = int(Wholefile[5].split()[1])
+        XLeftSide = float(Wholefile[2].split()[1])
+        YLowerSide = float(Wholefile[3].split()[1])
+        CellSize = float(Wholefile[4].split()[1])
+        NoValue = float(Wholefile[5].split()[1])
 
-        ASCIIValues = np.ones((ASCIIRows,ASCIIColumns), dtype = np.float32)
+        arr = np.ones((rows,cols), dtype = np.float32)
         try:
-            for i in range(ASCIIRows):
+            for i in range(rows):
                 x = Wholefile[6+i].split()
-                ASCIIValues[i,:] = list(map(float, x ))
+                arr[i,:] = list(map(float, x ))
         except:
             try:
                 for j in range(len(x)):
@@ -1738,17 +1738,17 @@ class Raster:
                 print("Error reading the ARCII file please check row " + str(i+6+1) +", column " + str(j))
                 print("A value of " + x[j] + " , is stored in the ASCII file ")
 
-        ASCIIDetails = [ASCIIRows, ASCIIColumns, XLeftSide , YLowerSide,
+        geotransform = [rows, cols, XLeftSide , YLowerSide,
                         CellSize, NoValue]
 
-        return ASCIIValues, ASCIIDetails
+        return arr, geotransform
 
     @staticmethod
     def StringSpace(Inp):
         return str(Inp) + "  "
 
     @staticmethod
-    def WriteASCII(ASCIIFile, ASCIIDetails, ASCIIValues):
+    def WriteASCII(ASCIIFile, geotransform, arr):
         """
         This function reads an ASCII file the spatial information
 
@@ -1773,10 +1773,10 @@ class Raster:
         """
         # input data validation
         # data type
-        assert type(ASCIIFile) == str, "ASCIIFile input should be string type"
+        assert isinstance(ASCIIFile, str), "ASCIIFile input should be string type"
 
         # input values
-        ASCIIExt=ASCIIFile[-4:]
+        ASCIIExt = ASCIIFile[-4:]
         assert ASCIIExt == ".asc", "please add the extension at the end of the path input"
     #    assert os.path.exists(ASCIIFile), "ASCII file path you have provided does not exist"
 
@@ -1788,16 +1788,16 @@ class Raster:
             print("please check" + ASCIIFile)
 
         # write the the ASCII file details
-        File.write('ncols         ' + str(ASCIIDetails[1])+ "\n")
-        File.write('nrows         ' + str(ASCIIDetails[0])+ "\n")
-        File.write('xllcorner     ' + str(ASCIIDetails[2])+ "\n")
-        File.write('yllcorner     ' + str(ASCIIDetails[3])+ "\n")
-        File.write('cellsize      ' + str(ASCIIDetails[4])+ "\n")
-        File.write('NODATA_value  ' + str(ASCIIDetails[5])+ "\n")
+        File.write('ncols         ' + str(geotransform[1])+ "\n")
+        File.write('nrows         ' + str(geotransform[0])+ "\n")
+        File.write('xllcorner     ' + str(geotransform[2])+ "\n")
+        File.write('yllcorner     ' + str(geotransform[3])+ "\n")
+        File.write('cellsize      ' + str(geotransform[4])+ "\n")
+        File.write('NODATA_value  ' + str(geotransform[5])+ "\n")
 
         # write the array
-        for i in range(np.shape(ASCIIValues)[0]):
-            File.writelines(list(map(Raster.StringSpace,ASCIIValues[i,:])))
+        for i in range(np.shape(arr)[0]):
+            File.writelines(list(map(Raster.StringSpace,arr[i,:])))
             File.write("\n")
 
         File.close()
