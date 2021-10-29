@@ -36,7 +36,8 @@ class DistParameters:
 
     def __init__(self, raster, no_parameters, no_lumped_par=0, lumped_par_pos=[],
                  Lake = 0, Snow=0, HRUs=0, Function=1, Kub=1, Klb= 50, Maskingum=False):
-        """
+        """DistParameters.
+
         To initiate the DistParameters class you have to provide the Flow Acc
         raster
 
@@ -367,7 +368,7 @@ class DistParameters:
         return k
 
 
-    def par2d_lumpedK1_lake(self,par_g,no_parameters_lake):#,kub,klb
+    def par2d_lumpedK1_lake(self, par_g, no_parameters_lake):#,kub,klb
         """
         par2d_lumpedK1_lake method takes a list of parameters and distribute
         them horizontally on number of cells given by a raster

@@ -21,10 +21,8 @@ from Hapi.gis.raster import Raster as raster
 
 class Inputs:
 
-    """
-    ========================
-        Inputs
-    ========================
+    """Inputs.
+
     Inputs class contains methods to prepare the inputs for the distributed
     hydrological model
 
@@ -43,10 +41,8 @@ class Inputs:
 
     @staticmethod
     def PrepareInputs(Rasteri,InputFolder,FolderName):
-        """
-        ================================================================
-            PrepareInputs(Raster,InputFolder,FolderName)
-        ================================================================
+        """PrepareInputs.
+
         this function prepare downloaded raster data to have the same align and
         nodatavalue from a GIS raster (DEM, flow accumulation, flow direction raster)
         and return a folder with the output rasters with a name "New_Rasters"
@@ -55,13 +51,14 @@ class Inputs:
             1-Raster:
                 [String] path to the spatial information source raster to get the spatial information
                 (coordinate system, no of rows & columns) A_path should include the name of the raster
-                and the extension like "data/dem.tif"
+                and the extension like "data/dem.tif".
             2-InputFolder:
                 [String] path of the folder of the rasters you want to adjust their
                 no of rows, columns and resolution (alignment) like raster A
-                the folder should not have any other files except the rasters
+                the folder should not have any other files except the rasters.
             3-FolderName:
-                [String] name to create a folder to store resulted rasters
+                [String] name to create a folder to store resulted rasters.
+
         Example:
             Ex1:
                 dem_path="01GIS/inputs/4000/acc4000.tif"
@@ -85,7 +82,7 @@ class Inputs:
             shutil.rmtree(os.path.join(os.environ['TEMP']+"/AllignedRasters"))
             os.makedirs(os.path.join(os.environ['TEMP'],"AllignedRasters"))
 
-        temp=os.environ['TEMP']+"/AllignedRasters/"
+        temp = os.environ['TEMP']+"/AllignedRasters/"
 
         # match alignment
         print("First alligned files will be created in a folder 'AllignedRasters' in the Temp folder in you environment variable")
@@ -93,21 +90,22 @@ class Inputs:
         # create new folder in the current directory for alligned and nodatavalue matched cells
         try:
             os.makedirs(os.path.join(os.getcwd(),FolderName))
-        except WindowsError:
-            assert False, "please The function is trying to create a folder with a name "+ str(FolderName) +" to complete the process if there is a folder with the same name please rename it to other name"
+        except (WindowsError, FileExistsError):
+            msg = ("please The function is trying to create a folder with a name "+ str(FolderName) +" to complete the "
+                    "process if there is a folder with the same name please rename it to other name")
+            assert False, msg
         # match nodata value
         print("second matching NoDataValue from the DEM raster too all raster will be created in the outputpath")
-        raster.MatchDataNoValuecells(Rasteri,temp,FolderName+"/")
+        raster.CropAlignedFolder(temp, Rasteri, FolderName+"/")
         # delete the processing folder from temp
         shutil.rmtree(temp)
 
 
     @staticmethod
     def ExtractParametersBoundaries(Basin):
-        """
-        =====================================================
-            ExtractParametersBoundaries(Basin)
-        =====================================================
+        """ExtractParametersBoundaries.
+
+        ExtractParametersBoundaries
 
         Parameters
         ----------
@@ -166,10 +164,8 @@ class Inputs:
 
     @staticmethod
     def ExtractParameters(src,scenario, AsRaster=False, SaveTo=''):
-        """
-        =====================================================
-            ExtractParameters(Basin)
-        =====================================================
+        """ExtractParameters.
+
         ExtractParameters method extracts the parameter rasters at the location
         of the source raster, there are 12 set of parameters 10 sets of parameters
         (Beck et al., (2016)) and the max, min and average of all sets
@@ -232,10 +228,8 @@ class Inputs:
 
     @staticmethod
     def CreateLumpedInputs(Path):
-        """
-        =========================================================
-             CreateLumpedInputs(Path)
-        =========================================================
+        """CreateLumpedInputs.
+
         CreateLumpedInputs method generate a lumped parameters from
         distributed parameters by taking the average
         Parameters
@@ -268,7 +262,8 @@ class Inputs:
 
     @staticmethod
     def RenameFiles(Path, Prefix='', fmt='%Y.%m.%d', freq='daily'):
-        """
+        """RenameFiles.
+
         RenameFiles method takes the path to a folder where you want to put a number
         at the begining of the raster names indicating the order of the raster based on
         its date
@@ -324,10 +319,8 @@ class Inputs:
 
     @staticmethod
     def changetext2time(string):
-        """
-        ============================================================
-            changetext2time(string)
-        ============================================================
+        """changetext2time.
+
         this functions changes the date from a string to a date time format
         """
         time=dt.datetime(int(string[:4]),int(string[5:7]),int(string[8:10]),
@@ -337,10 +330,8 @@ class Inputs:
 
     @staticmethod
     def ReadExcelData(path,years,months):
-        """
-        ===========================================================
-            ReadExcelData(path,years,months)
-        ===========================================================
+        """ReadExcelData.
+
         this function reads data listed in excel sheet with years and months are
         listed as columns and days are listed in the first row
         year month 1 2 3 4 5 6 7 8 9 .....................31
