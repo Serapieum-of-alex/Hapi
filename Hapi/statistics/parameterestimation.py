@@ -294,12 +294,12 @@ class Lmoments:
             return para
 
     @staticmethod
-    def Gumbel(xmom):
+    def Gumbel(mom):
         EU = 0.577215664901532861
-        if xmom[1] <= 0:
+        if mom[1] <= 0:
             raise ValueError("L-Moments Invalid")
         else:
-            para2 = xmom[1]/np.log(2)
-            para1 = xmom[0]-EU*para2
+            para2 = mom[1]/np.log(2)
+            para1 = mom[0]-EU*para2
             para = [para1, para2]
             return para
