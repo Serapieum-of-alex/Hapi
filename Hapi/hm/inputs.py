@@ -16,14 +16,11 @@ import zipfile
 from matplotlib import gridspec
 
 from Hapi.statistics.statisticaltools import StatisticalTools as ST
-from Hapi.statistics.statisticaltools import Gumbel, GEV
+from Hapi.statistics.distributions import Gumbel, GEV, PlottingPosition
 
-class Inputs():
+class Inputs:
 
-    """
-    =======================================
-        HMInputs
-    =======================================
+    """Inputs.
 
     Methods
         1- ExtractHydrologicalInputs
@@ -41,7 +38,7 @@ class Inputs():
 
     def ExtractHydrologicalInputs(self, WeatherGenerator, FilePrefix, realization,
                                   path, SWIMNodes, SavePath):
-        """
+        """ExtractHydrologicalInputs.
 
 
         Parameters
@@ -103,9 +100,9 @@ class Inputs():
 
     def StatisticalProperties(self, ComputationalNodes, TSdirectory, start, WarmUpPeriod,
                               SavePlots, SavePath, SeparateFiles=False,
-                              Filter=False, Distibution="GEV",
+                              Filter=False, Distibution="GEV", method='lmoments',
                               EstimateParameters=False, Quartile=0,
-                              RIMResults=False, SignificanceLevel=0.1):
+                              Results=False, SignificanceLevel=0.1):
         """StatisticalProperties.
 
 
@@ -145,7 +142,7 @@ class Inputs():
                 model did not run or gaps in the observed data if these gap days
                 are filled with a specific value and you want to ignore it here
                 give Filter = Value you want
-            9-RIMResults: [Bool]
+            9-Results: [Bool]
                 If the files are results form RIM or observed, as the format
                 differes between the two. default [False]
 
@@ -167,7 +164,7 @@ class Inputs():
         if SeparateFiles:
             TS = pd.DataFrame()
             # for the hydraulic model results
-            if RIMResults:
+            if Results:
                 for i in range(len(ComputationalNodes)):
                     TS.loc[:,int(ComputationalNodes[i])] =  self.ReadRIMResult(TSdirectory + "/" +
                                   str(int(ComputationalNodes[i])) + '.txt')
@@ -228,6 +225,7 @@ class Inputs():
 
             if type(Filter) != bool:
                 amax = amax[amax != Filter]
+
             if EstimateParameters:
                 # estimate the parameters through an optimization
                 # alpha = (np.sqrt(6) / np.pi) * amax.std()
@@ -243,10 +241,16 @@ class Inputs():
             else:
                 # estimate the parameters through an maximum liklehood method
                 if Distibution == "GEV":
-                    param_dist = genextreme.fit(amax)
+                    dist = GEV(amax)
+                    # defult parameter estimation method is maximum liklihood method
+                    param_dist = dist.EstimateParameter(method=method)
+                    # param_dist = genextreme.fit(amax)
                 else:
                     # A gumbel distribution is fitted to the annual maxima
-                    param_dist = gumbel_r.fit(amax)
+                    # param_dist = gumbel_r.fit(amax)
+                    dist = Gumbel(amax)
+                    # defult parameter estimation method is maximum liklihood method
+                    param_dist = dist.EstimateParameter(method=method)
 
             if Distibution == "GEV":
                 DistributionPr.loc[i,'c'] = param_dist[0]
@@ -259,68 +263,31 @@ class Inputs():
             # Return periods from the fitted distribution are stored.
             # get the Discharge coresponding to the return periods
             if Distibution == "GEV":
-                Qrp = genextreme.ppf(F, param_dist[0], loc=param_dist[1], scale=param_dist[2])
+                Qrp = dist.TheporeticalEstimate(param_dist[0], param_dist[1], param_dist[2], F)
+                # Qrp = genextreme.ppf(F, param_dist[0], loc=param_dist[1], scale=param_dist[2])
             else:
-                Qrp = gumbel_r.ppf(F,loc=param_dist[0], scale=param_dist[1])
+                Qrp = dist.TheporeticalEstimate(param_dist[0], param_dist[1], F)
+                # Qrp = gumbel_r.ppf(F,loc=param_dist[0], scale=param_dist[1])
+
             # to get the Non Exceedance probability for a specific Value
             # sort the amax
             amax.sort()
             # calculate the F (Exceedence probability based on weibul)
-            cdf_Weibul = ST.Weibul(amax)
+            cdf_Weibul = PlottingPosition.Weibul(amax)
             # Gumbel.ProbapilityPlot method calculates the theoretical values 
             # based on the Gumbel distribution
             # parameters, theoretical cdf (or weibul), and calculate the confidence interval
-            if Distibution == "GEV":
-                Qth, Qupper, Qlower = GEV.ProbapilityPlot(param_dist, cdf_Weibul,
-                                                             amax, SignificanceLevel)
-                # to calculate the F theoretical
-                Qx = np.linspace(0, 1.5*float(amax.max()), 10000)
-                pdf_fitted = genextreme.pdf(Qx, param_dist[0], loc=param_dist[2], scale=param_dist[2])
-                cdf_fitted = genextreme.cdf(Qx, param_dist[0], loc=param_dist[1], scale=param_dist[2])
-            else:
-                Qth, Qupper, Qlower = Gumbel.ProbapilityPlot(param_dist, cdf_Weibul,
-                                                             amax, SignificanceLevel)
-                # gumbel_r.interval(SignificanceLevel)
-                # to calculate the F theoretical
-                Qx = np.linspace(0, 1.5*float(amax.max()), 10000)
-                pdf_fitted = gumbel_r.pdf(Qx, loc=param_dist[0], scale=param_dist[1])
-                cdf_fitted = gumbel_r.cdf(Qx, loc=param_dist[0], scale=param_dist[1])
-            # then calculate the the T (return period) T = 1/(1-F)
             if SavePlots :
-                fig = plt.figure(60, figsize = (20,10) )
-                gs = gridspec.GridSpec(nrows = 1, ncols = 2, figure = fig )
-                # Plot the histogram and the fitted distribution, save it for each gauge.
-                ax1 = fig.add_subplot(gs[0,0])
-                ax1.plot(Qx, pdf_fitted, 'r-', label="Fitted distribution")
-                ax1.hist(amax, density=True, label="Observed data")
-                ax1.set_xlabel('Annual Discharge(m3/s)', fontsize= 15)
-                ax1.set_ylabel('pdf', fontsize= 15)
+                if Distibution == "GEV":
+                    fig, ax = dist.ProbapilityPlot(param_dist[0], param_dist[1], param_dist[2],
+                                                   cdf_Weibul, alpha=0.1)
+                else:
+                    fig, ax = dist.ProbapilityPlot(param_dist[0], param_dist[1], cdf_Weibul, alpha=0.1)
 
-                ax2 = fig.add_subplot(gs[0,1])
-                ax2.plot(Qx,cdf_fitted,'r-', label="Fitted distribution")
-                ax2.plot(amax,cdf_Weibul,'.-', label="Observed data")
-                ax2.set_xlabel('Annual Discharge(m3/s)', fontsize= 15)
-                ax2.set_ylabel('cdf', fontsize= 15)
-                plt.legend(fontsize=15, framealpha=1)
-                plt.savefig(SavePath + "/" + "Figures/" + str(i) + '.png', format='png')
+                fig[0].savefig(SavePath + "/" + "Figures/" + str(i) + '.png', format='png')
                 plt.close()
 
-                fig = plt.figure(70, figsize = (10,8) )
-                plt.plot(Qth, amax,'d',color='#606060', markersize = 12,
-                         label= ' Observed')
-                plt.plot(Qth, Qth,'^-.',color="#3D59AB", 
-                         label=Distibution+' Distribution')
-                
-                if Distibution != "GEV":
-                    plt.plot(Qth, Qlower,'*--', color="#DC143C",markersize = 12,
-                             label = 'Lower limit (' + str(int((1-SignificanceLevel)*100)) +" % CI)")
-                    plt.plot(Qth, Qupper,'*--', color="#DC143C", markersize = 12,
-                             label = 'Upper limit (' + str(int((1-SignificanceLevel)*100)) + " % CI)")
-
-                plt.legend(fontsize=15, framealpha=1)
-                plt.xlabel('Theoretical Annual Discharge(m3/s)', fontsize= 15)
-                plt.ylabel('Annual Discharge(m3/s)', fontsize= 15)
-                plt.savefig(SavePath + "/" + "Figures/F-" + str(i) + '.png', format='png')
+                fig[1].savefig(SavePath + "/" + "Figures/F-" + str(i) + '.png', format='png')
                 plt.close()
 
             StatisticalPr.loc[i, 'mean'] = QTS.mean()

@@ -24,6 +24,10 @@ data = [15.999737471905252, 16.105716234887431, 17.947809230275304, 16.147752064
          17.897236722220281, 16.626465201654593, 16.196548622931672, 16.013794215070927, 16.30367884232831,
          17.182106070966608, 18.984566931768452, 16.885737663740024, 16.088051117522948, 15.790480003140173,
          18.160947973898388, 18.318158853376037]
+
+data2 = [144,213,219,242,285,287,295,304,322,337,349,373,374,378,382,383,405,446,452,453,490,505,512,
+         540,540,542,542,549,555,556,565,568,623,634,645,664,683,683,690,703,740,753,800,801,822,856,
+         863,967,981,1100,1160,1190,1190,1250]
 #%%
 Gdist = Gumbel(data)
 # defult parameter estimation method is maximum liklihood method
@@ -53,7 +57,7 @@ Qth = Gdist.TheporeticalEstimate(loc, scale, cdf_Weibul)
 # calculate the confidence interval
 upper, lower = Gdist.ConfidenceInterval(loc, scale, cdf_Weibul, alpha=0.1)
 # ProbapilityPlot can estimate the Qth and the lower and upper confidence interval in the process of plotting
-Gdist.ProbapilityPlot(loc, scale, cdf_Weibul, alpha=0.1)
+fig, ax = Gdist.ProbapilityPlot(loc, scale, cdf_Weibul, alpha=0.1)
 #%%
 """
 if you want to focus only on high values, you can use a threshold to make the code focus on what is higher 
@@ -116,5 +120,3 @@ LB     = CI["LB"]
 UB     = CI["UB"]
 #%%
 Gevdist.ProbapilityPlot(shape, loc, scale, cdf_Weibul,func=func, n_samples=len(data))
-#%%
-

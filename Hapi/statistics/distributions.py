@@ -421,8 +421,6 @@ class GEV:
 
         Parameters
         ----------
-        x : [array]
-            data.
         shape : [numeric]
             shape parameter.
         loc : [numeric]
@@ -447,20 +445,36 @@ class GEV:
         for i in range(len(ts)):
             z = (ts[i] - loc) / scale
             if shape == 0:
-                pdf.append((1 / scale) * (np.exp(-(z + (np.exp(-z))))))
+                val = np.exp(-(z + np.exp(-z)))
+                pdf.append((1 / scale) * val)
                 continue
+
             y = 1 - shape * z
             if y > ninf:
-                logY = -np.log(y) / shape
-                pdf.append((1 / scale) * np.exp(-(1 - shape) * logY - np.exp(-logY)))
+                # np.log(y) = ln(y)
+                # ln is the inverse of e
+                lnY = (-1/ shape) * np.log(y)
+                val = np.exp(-(1 - shape) * lnY - np.exp(-lnY))
+                pdf.append((1 / scale) * val)
                 continue
+
+            # y = 1 + shape * z
+            # if y > ninf:
+            #     # np.log(y) = ln(y)
+            #     # ln is the inverse of e
+            #     Q = y ** (-1 / shape)
+            #     val = np.power(Q,1 + shape) * np.exp(-Q)
+            #     pdf.append((1 / scale) * val)
+            #     continue
+
             if shape < 0:
                 pdf.append(0)
                 continue
-            pdf.append(1)
+            pdf.append(0)
+            # pdf.append(1)
 
         if len(pdf) == 1:
-            f = pdf[0]
+            pdf = pdf[0]
 
         if plot_figure:
             Qx = np.linspace(float(self.data_sorted[0]), 1.5 * float(self.data_sorted[-1]), 10000)
@@ -572,7 +586,10 @@ class GEV:
 
         if Test:
             self.ks()
-            self.chisquare()
+            try:
+                self.chisquare()
+            except ValueError :
+                print("chisquare test failed")
 
         return Param
 
