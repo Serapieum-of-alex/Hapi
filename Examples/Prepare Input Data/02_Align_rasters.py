@@ -8,7 +8,8 @@ currunt_work_directory = Hapi/Example
 
 """
 import os
-import sys
+
+# import sys
 
 os.chdir("F:/01Algorithms/Hydrology/HAPI/Examples")
 rootpath = os.path.abspath(os.getcwd())

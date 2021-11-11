@@ -11,7 +11,7 @@ import gdal
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from scipy.stats import genextreme, gumbel_r
+from scipy.stats import gumbel_r  # genextreme,
 
 # from Hapi.statistics.statisticaltools import StatisticalTools as ST
 from Hapi.statistics.distributions import GEV, Gumbel, PlottingPosition

@@ -1,14 +1,9 @@
-"""
-Created on Wed Jun 10 00:32:28 2020
-
-@author: mofarrag
-"""
 from IPython import get_ipython
-
-get_ipython().magic("reset -f")
-import os
-
 from osgeo import gdal, gdalconst, ogr
+
+# get_ipython().magic("reset -f")
+# import os
+
 
 # os.chdir("")
 

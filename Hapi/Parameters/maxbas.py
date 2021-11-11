@@ -4,12 +4,12 @@ Created on Sat Feb  3 02:04:13 2018
 @author: Mostafa
 """
 #% links
-from IPython import get_ipython  # to reset the variable explorer each time
+# from IPython import get_ipython  # to reset the variable explorer each time
 
-get_ipython().magic("reset -f")
-import os
+# get_ipython().magic("reset -f")
+# import os
 
-import HBV_explicit
+# import HBV_explicit
 import matplotlib.pyplot as plt
 #%% library
 import numpy as np

@@ -4,9 +4,9 @@ Created on Wed Jul 11 05:32:05 2018
 @author: Mostafa
 """
 #%links
-from IPython import get_ipython  # to reset the variable explorer each time
+# from IPython import get_ipython  # to reset the variable explorer each time
 
-get_ipython().magic("reset -f")
+# get_ipython().magic("reset -f")
 import os
 
 # Comp =
@@ -23,8 +23,9 @@ import numpy as np
 from scipy.stats import norm
 
 # functions
-from Hapi.distparameters import DistParameters as DP
-from Hapi.giscatchment import GISCatchment as GC
+from Hapi.rrm.distparameters import DistParameters as DP
+
+# from Hapi.giscatchment import GISCatchment as GC
 
 # import matplotlib.pyplot as plt
 

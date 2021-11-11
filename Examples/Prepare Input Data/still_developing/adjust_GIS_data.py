@@ -15,11 +15,13 @@ os.chdir("F:/02Case studies/Coello/HAPI/Data")
 # sys.path.append("C:/Users/Mostafa/Desktop/My Files/thesis/My Thesis/Data_and_Models/Interface/Distributed_Hydrological_model/HBV_distributed/function")
 
 import gdal
-#%library
-import numpy as np
 
 # functions
-import Hapi.raster as GIS
+import Hapi.gis.raster as GIS
+
+#%library
+# import numpy as np
+
 
 #%%
 FD = gdal.Open("00inputs/GIS/4000/fd4000.tif")

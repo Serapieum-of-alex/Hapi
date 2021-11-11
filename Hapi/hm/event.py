@@ -4,13 +4,16 @@ Created on Tue Feb  4 14:57:30 2020
 @author: mofarrag
 """
 import datetime as dt
-import os
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
 from Hapi.gis.raster import Raster
+
+# import os
+
+
 
 
 class Event:
@@ -117,7 +120,7 @@ class Event:
     # method
     def IndexToDate(self):
         # convert the index into date
-        dateFn = lambda x: self.ReferenceIndex.loc[x, "date"]
+        dateFn = lambda i: self.ReferenceIndex.loc[i, "date"]
         # get the date the column 'id'
         date = self.EventIndex.loc[:, "id"].to_frame().applymap(dateFn)
         self.EventIndex["date"] = date

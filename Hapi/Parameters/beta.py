@@ -4,17 +4,18 @@ Created on Tue Mar 13 00:51:22 2018
 @author: Mostafa
 """
 #%links
-from IPython import get_ipython  # to reset the variable explorer each time
+# from IPython import get_ipython  # to reset the variable explorer each time
 
-get_ipython().magic("reset -f")
-import os
-import sys
+# get_ipython().magic("reset -f")
+# import os
+# import sys
 from collections import OrderedDict
 
 import matplotlib.pyplot as plt
 #%%library
 import numpy as np
-from matplotlib.transforms import blended_transform_factory
+
+# from matplotlib.transforms import blended_transform_factory
 
 # os.chdir("")
 

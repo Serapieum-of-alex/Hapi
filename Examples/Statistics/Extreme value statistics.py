@@ -5,19 +5,20 @@ Created on Wed Sep  9 23:31:11 2020
 """
 # from IPython import get_ipython
 # get_ipython().magic("reset -f")
-import os
+# import os
 
 # import scipy.optimize as so
-import matplotlib.pyplot as plt
-import numpy as np
-from matplotlib import gridspec
-from scipy import stats as stats
-from scipy.stats import genextreme, gumbel_r, norm
+# import matplotlib.pyplot as plt
+# import numpy as np
+# from matplotlib import gridspec
+# from scipy import stats as stats
+# from scipy.stats import genextreme, gumbel_r, norm
 
 # from Hapi.statistics.statisticaltools import StatisticalTools as ST
 from Hapi.statistics.distributions import (GEV, ConfidenceInterval, Gumbel,
                                            PlottingPosition)
-from Hapi.statistics.statisticaltools import StatisticalTools as st
+
+# from Hapi.statistics.statisticaltools import StatisticalTools as st
 
 data = [
     15.999737471905252,

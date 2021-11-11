@@ -11,10 +11,12 @@ os.chdir("F:/01Algorithms/Hydrology/HAPI/Examples")
 import gdal
 import matplotlib.pyplot as plt
 import osr
-import rasterio
-from rasterio.plot import show
 
 from Hapi.gis.raster import Raster
+
+# import rasterio
+# from rasterio.plot import show
+
 
 #%%
 RasterApath = "data/GIS/DEM5km_Rhine_burned_acc.tif"

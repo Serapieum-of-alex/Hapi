@@ -8,8 +8,8 @@ import os
 Comp = "F:/Users/mofarrag/"
 os.chdir(Comp + "/Coello/HAPI/Data")
 # from gdalconst import GA_ReadOnly
-import osr
-from osgeo import gdal, gdalconst
+# import osr
+# from osgeo import gdal, gdalconst
 
 from Hapi.gis.raster import Raster
 
