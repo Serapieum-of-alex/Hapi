@@ -8,12 +8,19 @@ repos:
         name: "[py -  check] validate yaml"
     -   id: trailing-whitespace
         name: "[file -  check] validate yaml"
--   repo: https://github.com/psf/black
-    rev: 19.3b0
-    hooks:
-    -   id: black
-#- repo: https://github.com/pre-commit/mirrors-isort
-#  rev: v5.7.0
+#-   repo: https://github.com/psf/black
+#    rev: 19.3b0
+#    hooks:
+#    -   id: black
+- repo: https://github.com/pre-commit/mirrors-isort
+  rev: v5.7.0
+  hooks:
+    - id: isort
+      name: "[py   - format] isort"
+
+#- repo: https://github.com/ambv/black
+#  rev: 20.8b1
 #  hooks:
-#    - id: isort
-#      name: "[py   - format] isort"
+#    - id: black
+#      name: "[py   - format] black"
+#      language_version: python3.8

@@ -59,7 +59,7 @@ class Routing:
         pars[11]=x
         p2[0]=1  # hourly time step
         q_routed = Routing.muskingum(q_uz,q_uz[0],pars[10],pars[11],p2[0])
-       """
+        """
         c1 = (dt - 2 * k * x) / (2 * k * (1 - x) + dt)
         c2 = (dt + 2 * k * x) / (2 * k * (1 - x) + dt)
         c3 = (2 * k * (1 - x) - dt) / (2 * k * (1 - x) + dt)
@@ -106,7 +106,7 @@ class Routing:
         pars[11]=x
         p2[0]=1  # hourly time step
         q_routed = Routing.muskingum(q_uz,q_uz[0],pars[10],pars[11],p2[0])
-       """
+        """
         c1 = (dt - 2 * k * x) / (2 * k * (1 - x) + dt)
         c2 = (dt + 2 * k * x) / (2 * k * (1 - x) + dt)
         c3 = (2 * k * (1 - x) - dt) / (2 * k * (1 - x) + dt)

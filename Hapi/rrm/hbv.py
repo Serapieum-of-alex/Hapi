@@ -463,21 +463,15 @@ def StepRun(p, v, St, snow=0):  # p2,
     elif snow == 0:
         ltt = 1.0  # less than utt and less than lowest temp to prevent sf formation
         utt = (
-            2.0
-        )  # very low but it does not matter as temp is 25 so it is greater than 2
+            2.0  # very low but it does not matter as temp is 25 so it is greater than 2
+        )
         rfcf = p[0]  # 1.0 #p[16] # all precipitation becomes rainfall
         sfcf = 0.00001  # there is no snow
         # snow function
-        ttm = (
-            1
-        )  # should be very low lower than lowest temp as temp is 25 all the time so it does not matter
-        cfmax = (
-            0.00001
-        )  # as there is no melting  and sp+sf=zero all the time so it doesn't matter the value of cfmax
+        ttm = 1  # should be very low lower than lowest temp as temp is 25 all the time so it does not matter
+        cfmax = 0.00001  # as there is no melting  and sp+sf=zero all the time so it doesn't matter the value of cfmax
         cwh = 0.00001  # as sp is always zero it doesn't matter all wc will go as inf
-        cfr = (
-            0.000001
-        )  # as temp > ttm all the time so it doesn't matter the value of cfr but put it zero
+        cfr = 0.000001  # as temp > ttm all the time so it doesn't matter the value of cfr but put it zero
         # soil function
         fc = p[1]
         beta = p[2]

@@ -11,12 +11,10 @@ currunt_work_directory = Hapi/Example
 """
 
 import gdal
-
 # library
 import numpy as np
 
 from Hapi.inputs import Inputs
-
 # functions
 from Hapi.raster import Raster
 

@@ -815,50 +815,50 @@ class DistParameters:
 
     def SaveParameters(self, Path):
         """
-        SaveParameters method takes generated parameters by the calibration algorithm,
-        distributed them with a given function and save them as a rasters
+         SaveParameters method takes generated parameters by the calibration algorithm,
+         distributed them with a given function and save them as a rasters
 
-        Inputs:
+         Inputs:
+         ----------
+             1-DistParFn:
+                 [function] function to distribute the parameters (all functions are
+                 in Hapi.DistParameters )
+             2-raster:
+                 [gdal.dataset] raster to get the spatial information
+             3-Par
+                 [list or numpy ndarray] parameters as 1D array or list
+             4-no_parameters:
+                 [int] number of the parameters in the conceptual model
+             5-snow:
+                 [integer] number to define whether to take parameters of
+                 the conceptual model with snow subroutine or without
+             5-kub:
+                 [numeric] upper bound for k parameter in muskingum function
+             6-klb:
+                 [numeric] lower bound for k parameter in muskingum function
+              7-Path:
+                  [string] path to the folder you want to save the parameters in
+                  default value is None (parameters are going to be saved in the
+                  current directory)
+
+         Outputs:
+         ----------
+              Rasters for parameters of the distributed model
+
+        Examples:
         ----------
-            1-DistParFn:
-                [function] function to distribute the parameters (all functions are
-                in Hapi.DistParameters )
-            2-raster:
-                [gdal.dataset] raster to get the spatial information
-            3-Par
-                [list or numpy ndarray] parameters as 1D array or list
-            4-no_parameters:
-                [int] number of the parameters in the conceptual model
-            5-snow:
-                [integer] number to define whether to take parameters of
-                the conceptual model with snow subroutine or without
-            5-kub:
-                [numeric] upper bound for k parameter in muskingum function
-            6-klb:
-                [numeric] lower bound for k parameter in muskingum function
-             7-Path:
-                 [string] path to the folder you want to save the parameters in
-                 default value is None (parameters are going to be saved in the
-                 current directory)
+             DemPath = path+"GIS/4000/dem4000.tif"
+             raster=gdal.Open(DemPath)
+             ParPath = "par15_7_2018.txt"
+             par=np.loadtxt(ParPath)
+             klb=0.5
+             kub=1
+             no_parameters=12
+             DistParFn=DP.par3dLumped
+             Path="parameters/"
+             snow=0
 
-        Outputs:
-        ----------
-             Rasters for parameters of the distributed model
-
-       Examples:
-       ----------
-            DemPath = path+"GIS/4000/dem4000.tif"
-            raster=gdal.Open(DemPath)
-            ParPath = "par15_7_2018.txt"
-            par=np.loadtxt(ParPath)
-            klb=0.5
-            kub=1
-            no_parameters=12
-            DistParFn=DP.par3dLumped
-            Path="parameters/"
-            snow=0
-
-            SaveParameters(DistParFn, raster, par, no_parameters,snow ,kub, klb,Path)
+             SaveParameters(DistParFn, raster, par, no_parameters,snow ,kub, klb,Path)
         """
         assert type(Path) == str, "path should be of type string"
         assert os.path.exists(Path), Path + " you have provided does not exist"

@@ -16,12 +16,8 @@ from scipy import stats as stats
 from scipy.stats import genextreme, gumbel_r, norm
 
 # from Hapi.statistics.statisticaltools import StatisticalTools as ST
-from Hapi.statistics.distributions import (
-    GEV,
-    ConfidenceInterval,
-    Gumbel,
-    PlottingPosition,
-)
+from Hapi.statistics.distributions import (GEV, ConfidenceInterval, Gumbel,
+                                           PlottingPosition)
 from Hapi.statistics.statisticaltools import StatisticalTools as st
 
 data = [

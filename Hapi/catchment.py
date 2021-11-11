@@ -539,9 +539,10 @@ class Catchment:
         self.LumpedModel = LumpedModel
         self.CatArea = CatArea
 
-        assert len(InitialCond) == 5, (
-            "state variables are 5 and the given initial values are "
-            + str(len(InitialCond))
+        assert (
+            len(InitialCond) == 5
+        ), "state variables are 5 and the given initial values are " + str(
+            len(InitialCond)
         )
 
         self.InitialCond = InitialCond

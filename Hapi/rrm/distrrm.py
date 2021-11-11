@@ -85,9 +85,11 @@ class DistributedRRM:
             for y in range(Model.cols):
                 # only for cells in the domain
                 if not np.isnan(Model.FlowAccArr[x, y]):
-                    Model.quz[x, y, :], Model.qlz[x, y, :], Model.statevariables[
-                        x, y, :, :
-                    ] = Model.LumpedModel.Simulate(
+                    (
+                        Model.quz[x, y, :],
+                        Model.qlz[x, y, :],
+                        Model.statevariables[x, y, :, :],
+                    ) = Model.LumpedModel.Simulate(
                         prec=Model.Prec[x, y, :],
                         temp=Model.Temp[x, y, :],
                         et=Model.ET[x, y, :],

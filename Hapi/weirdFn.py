@@ -7,7 +7,6 @@ Created on Wed Jul 18 23:55:20 2018
 
 
 import datetime
-
 #%library
 import pickle
 

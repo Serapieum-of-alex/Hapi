@@ -13,11 +13,9 @@ import numpy as np
 import ogr
 import pandas as pd
 from fiona.crs import from_epsg
-
 # from osgeo import ogr
 from osgeo import osr
 from pyproj import Proj, transform
-
 # from shapely.geometry.polygon import Polygon
 from shapely.geometry import Point, Polygon
 from shapely.geometry.multipolygon import MultiPolygon
@@ -281,7 +279,7 @@ class Vector:
 
     def GetFeatures(gdf):
         """Function to parse features from GeoDataFrame in such a
-         manner that rasterio wants them"""
+        manner that rasterio wants them"""
         return [json.loads(gdf.to_json())["features"][0]["geometry"]]
 
     @staticmethod

@@ -194,9 +194,7 @@ def raster_upload():
 
 
 def warning1():
-    """
-
-    """
+    """"""
     javacode = """
     function myFunction() {
                             alert("I am an alert box!");

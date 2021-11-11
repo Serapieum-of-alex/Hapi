@@ -680,7 +680,6 @@ import sys
 # data has been written to it
 #%%
 from osgeo import gdal, gdalnumeric, ogr, osr
-
 # import Image, ImageDraw
 # from PIL.Image import core as Image
 from PIL import Image, ImageDraw
@@ -691,9 +690,9 @@ gdal.UseExceptions()
 
 def world2Pixel(geoMatrix, x, y):
     """
-  Uses a gdal geomatrix (gdal.GetGeoTransform()) to calculate
-  the pixel location of a geospatial coordinate
-  """
+    Uses a gdal geomatrix (gdal.GetGeoTransform()) to calculate
+    the pixel location of a geospatial coordinate
+    """
     ulX = geoMatrix[0]
     ulY = geoMatrix[3]
     xDist = geoMatrix[1]
@@ -744,10 +743,10 @@ def OpenArray(array, prototype_ds=None, xoff=0, yoff=0):
 
 def histogram(a, bins=range(0, 256)):
     """
-  Histogram function for multi-dimensional array.
-  a = array
-  bins = range of numbers to match
-  """
+    Histogram function for multi-dimensional array.
+    a = array
+    bins = range of numbers to match
+    """
     fa = a.flat
     n = gdalnumeric.searchsorted(gdalnumeric.sort(fa), bins)
     n = gdalnumeric.concatenate([n, [len(fa)]])
@@ -757,8 +756,8 @@ def histogram(a, bins=range(0, 256)):
 
 def stretch(a):
     """
-  Performs a histogram stretch on a gdalnumeric array image.
-  """
+    Performs a histogram stretch on a gdalnumeric array image.
+    """
     hist = histogram(a)
     im = arrayToImage(a)
     lut = []

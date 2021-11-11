@@ -469,7 +469,7 @@ class Visualize:
             s=50,
         )
 
-        q_line, = ax1.plot([], [], linewidth=5)
+        (q_line,) = ax1.plot([], [], linewidth=5)
         ax1.grid()
 
         ### BC
@@ -483,7 +483,7 @@ class Visualize:
         ax2.set_title("BC - Q", fontsize=20)
         ax2.legend(["Q"], fontsize=15)
 
-        bc_q_line, = ax2.plot([], [], linewidth=5)
+        (bc_q_line,) = ax2.plot([], [], linewidth=5)
         bc_q_point = ax2.scatter([], [], s=300)
         ax2.grid()
 
@@ -497,7 +497,7 @@ class Visualize:
         ax3.set_title("BC - H", fontsize=20)
         ax3.legend(["WL"], fontsize=10)
 
-        bc_h_line, = ax3.plot([], [], linewidth=5)
+        (bc_h_line,) = ax3.plot([], [], linewidth=5)
         bc_h_point = ax3.scatter([], [], s=300)
         ax3.grid()
 
@@ -604,8 +604,8 @@ class Visualize:
             fontsize=20,
         )
 
-        wl_line, = ax4.plot([], [], linewidth=5)
-        hLline, = ax4.plot([], [], linewidth=5)
+        (wl_line,) = ax4.plot([], [], linewidth=5)
+        (hLline,) = ax4.plot([], [], linewidth=5)
 
         gs.update(wspace=0.2, hspace=0.2, top=0.96, bottom=0.1, left=0.05, right=0.96)
         # animation
@@ -855,7 +855,7 @@ class Visualize:
         else:
             ax1.set_ylim(0, int(Sub.q.max().max()))
 
-        q_line, = ax1.plot([], [], linewidth=5)
+        (q_line,) = ax1.plot([], [], linewidth=5)
         ax1.grid()
 
         ### BC
@@ -872,7 +872,7 @@ class Visualize:
         ax2.set_title("BC - Q", fontsize=20)
         ax2.legend(["Q"], fontsize=15)
 
-        bc_q_line, = ax2.plot([], [], linewidth=5)
+        (bc_q_line,) = ax2.plot([], [], linewidth=5)
         bc_q_point = ax2.scatter([], [], s=150)
         ax2.grid()
 
@@ -887,7 +887,7 @@ class Visualize:
         ax3.set_title("BC - H", fontsize=20)
         ax3.legend(["WL"], fontsize=10)
 
-        bc_h_line, = ax3.plot([], [], linewidth=5)
+        (bc_h_line,) = ax3.plot([], [], linewidth=5)
         bc_h_point = ax3.scatter([], [], s=150)
 
         ax3.grid()
@@ -1006,8 +1006,8 @@ class Visualize:
         #                             Sub.crosssections['xsid'] == toxs, 'gl'].values + 1),
         #                             fontsize=20)
 
-        wl_line, = ax4.plot([], [], linewidth=5)
-        hLline, = ax4.plot([], [], linewidth=5)
+        (wl_line,) = ax4.plot([], [], linewidth=5)
+        (hLline,) = ax4.plot([], [], linewidth=5)
 
         gs.update(wspace=0.2, hspace=0.2, top=0.96, bottom=0.1, left=0.05, right=0.96)
         # animation
@@ -1182,7 +1182,7 @@ class Visualize:
             ax1.set_title("USBC - H (m)", fontsize=20)
         # ax1.legend(["Q"], fontsize=10)
         ax1.set_xlim(1, 25)
-        usbc_line, = ax1.plot([], [], linewidth=5)
+        (usbc_line,) = ax1.plot([], [], linewidth=5)
         # usbc_point = ax1.scatter([], [], s=150)
         ax1.grid()
 
@@ -1217,7 +1217,7 @@ class Visualize:
         # ax2.set_ylabel('Discharge (m3/s)', fontsize=yaxislabelsize, labelpad=0.5)
         ax2.legend(["Discharge"], fontsize=15)
 
-        q_line, = ax2.plot([], [], linewidth=5)
+        (q_line,) = ax2.plot([], [], linewidth=5)
         ax2.grid()
 
         ### BC
@@ -1237,7 +1237,7 @@ class Visualize:
 
         # ax3.legend(["WL"], fontsize=10)
 
-        dsbc_line, = ax3.plot([], [], linewidth=5)
+        (dsbc_line,) = ax3.plot([], [], linewidth=5)
         # dsbc_point = ax3.scatter([], [], s=300)
         ax3.grid()
 
@@ -1312,7 +1312,7 @@ class Visualize:
                 fontsize=20,
             )
 
-        wl_line, = ax4.plot([], [], linewidth=5)
+        (wl_line,) = ax4.plot([], [], linewidth=5)
 
         gs.update(wspace=0.2, hspace=0.2, top=0.96, bottom=0.1, left=0.05, right=0.96)
         # animation

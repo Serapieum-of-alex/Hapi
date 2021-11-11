@@ -551,8 +551,8 @@ def Simulate(prec, temp, et, ll_temp, par, init_st=None, q_init=None, snow=0):
     elif snow == 0:
         # assert len(par) >= 11, "current version of HBV (without snow) takes 11 parameter you have entered "+str(len(par))
         tt = (
-            2.0
-        )  # very low but it does not matter as temp is 25 so it is greater than 2
+            2.0  # very low but it does not matter as temp is 25 so it is greater than 2
+        )
         rfcf = par[0]  # 1.0 #par[16] # all precipitation becomes rainfall
         sfcf = 0.00001  # there is no snow
         # snow function

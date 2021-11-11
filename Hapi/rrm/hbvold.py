@@ -420,22 +420,14 @@ def _step_run(p, p2, v, St, extra_out=False):
     # picipitation function
 
     ltt = 1.0  # p[0] # less than utt and less than lowest temp to prevent sf formation
-    utt = (
-        2.0
-    )  # p[1]  #very low but it does not matter as temp is 25 so it is greater than 2
+    utt = 2.0  # p[1]  #very low but it does not matter as temp is 25 so it is greater than 2
     rfcf = 1.0  # p[16] # all precipitation becomes rainfall
     sfcf = 0.00001  # p[17] # there is no snow
     # snow function
-    ttm = (
-        1
-    )  # p[2] #should be very low lower than lowest temp as temp is 25 all the time so it does not matter
-    cfmax = (
-        0.00001
-    )  # p[3] as there is no melting  and sp+sf=zero all the time so it doesn't matter the value of cfmax
+    ttm = 1  # p[2] #should be very low lower than lowest temp as temp is 25 all the time so it does not matter
+    cfmax = 0.00001  # p[3] as there is no melting  and sp+sf=zero all the time so it doesn't matter the value of cfmax
     cwh = 0.00001  # p[12] as sp is always zero it doesn't matter all wc will go as inf
-    cfr = (
-        0.000001
-    )  # p[13] as temp > ttm all the time so it doesn't matter the value of cfr but put it zero
+    cfr = 0.000001  # p[13] as temp > ttm all the time so it doesn't matter the value of cfr but put it zero
     # soil function
     fc = p[0]
     beta = p[1]

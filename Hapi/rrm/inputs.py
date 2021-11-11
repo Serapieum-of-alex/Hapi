@@ -5,7 +5,6 @@ Created on Wed May 16 03:50:00 2018
 @author: Mostafa
 """
 import datetime as dt
-
 #%library
 import os
 import shutil
@@ -14,7 +13,6 @@ import numpy as np
 import pandas as pd
 import rasterio
 from rasterio.plot import show
-
 # from datetime import datetime
 # import geopandas as gpd
 from rasterstats import zonal_stats

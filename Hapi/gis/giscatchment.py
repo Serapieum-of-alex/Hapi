@@ -266,14 +266,20 @@ class GISCatchment:
         j = no_columns - 1
         if not np.isnan(elev[i, j]):
             slopes[i, j, 2] = (
-                (elev_sinkless[i, j] - elev_sinkless[i - 1, j]) / distances[2]
-            )  # slope with cell to the top
+                elev_sinkless[i, j] - elev_sinkless[i - 1, j]
+            ) / distances[
+                2
+            ]  # slope with cell to the top
             slopes[i, j, 3] = (
-                (elev_sinkless[i, j] - elev_sinkless[i - 1, j - 1]) / distances[3]
-            )  # slope with cell to the top left
+                elev_sinkless[i, j] - elev_sinkless[i - 1, j - 1]
+            ) / distances[
+                3
+            ]  # slope with cell to the top left
             slopes[i, j, 4] = (
-                (elev_sinkless[i, j] - elev_sinkless[i, j - 1]) / distances[4]
-            )  # slope with cell to the left
+                elev_sinkless[i, j] - elev_sinkless[i, j - 1]
+            ) / distances[
+                4
+            ]  # slope with cell to the left
 
             flow_direction[i, j] = np.where(
                 slopes[i, j, :] == np.nanmax(slopes[i, j, :])
@@ -285,22 +291,30 @@ class GISCatchment:
             for j in [0]:
                 if not np.isnan(elev[i, j]):
                     slopes[i, j, 0] = (
-                        (elev_sinkless[i, j] - elev_sinkless[i, j + 1]) / distances[0]
-                    )  # slope with cell to the right
+                        elev_sinkless[i, j] - elev_sinkless[i, j + 1]
+                    ) / distances[
+                        0
+                    ]  # slope with cell to the right
                     slopes[i, j, 1] = (
-                        (elev_sinkless[i, j] - elev_sinkless[i - 1, j + 1])
-                        / distances[1]
-                    )  # slope with cell to the top right
+                        elev_sinkless[i, j] - elev_sinkless[i - 1, j + 1]
+                    ) / distances[
+                        1
+                    ]  # slope with cell to the top right
                     slopes[i, j, 2] = (
-                        (elev_sinkless[i, j] - elev_sinkless[i - 1, j]) / distances[2]
-                    )  # slope with cell to the top
+                        elev_sinkless[i, j] - elev_sinkless[i - 1, j]
+                    ) / distances[
+                        2
+                    ]  # slope with cell to the top
                     slopes[i, j, 6] = (
-                        (elev_sinkless[i, j] - elev_sinkless[i + 1, j]) / distances[6]
-                    )  # slope with cell to the bottom
+                        elev_sinkless[i, j] - elev_sinkless[i + 1, j]
+                    ) / distances[
+                        6
+                    ]  # slope with cell to the bottom
                     slopes[i, j, 7] = (
-                        (elev_sinkless[i, j] - elev_sinkless[i + 1, j + 1])
-                        / distances[7]
-                    )  # slope with cell to the bottom right
+                        elev_sinkless[i, j] - elev_sinkless[i + 1, j + 1]
+                    ) / distances[
+                        7
+                    ]  # slope with cell to the bottom right
                     # get the flow direction index
 
                     flow_direction[i, j] = np.where(
@@ -313,22 +327,30 @@ class GISCatchment:
             for j in [no_columns - 1]:
                 if not np.isnan(elev[i, j]):
                     slopes[i, j, 2] = (
-                        (elev_sinkless[i, j] - elev_sinkless[i - 1, j]) / distances[2]
-                    )  # slope with cell to the top
+                        elev_sinkless[i, j] - elev_sinkless[i - 1, j]
+                    ) / distances[
+                        2
+                    ]  # slope with cell to the top
                     slopes[i, j, 3] = (
-                        (elev_sinkless[i, j] - elev_sinkless[i - 1, j - 1])
-                        / distances[3]
-                    )  # slope with cell to the top left
+                        elev_sinkless[i, j] - elev_sinkless[i - 1, j - 1]
+                    ) / distances[
+                        3
+                    ]  # slope with cell to the top left
                     slopes[i, j, 4] = (
-                        (elev_sinkless[i, j] - elev_sinkless[i, j - 1]) / distances[4]
-                    )  # slope with cell to the left
+                        elev_sinkless[i, j] - elev_sinkless[i, j - 1]
+                    ) / distances[
+                        4
+                    ]  # slope with cell to the left
                     slopes[i, j, 5] = (
-                        (elev_sinkless[i, j] - elev_sinkless[i + 1, j - 1])
-                        / distances[5]
-                    )  # slope with cell to the bottom left
+                        elev_sinkless[i, j] - elev_sinkless[i + 1, j - 1]
+                    ) / distances[
+                        5
+                    ]  # slope with cell to the bottom left
                     slopes[i, j, 6] = (
-                        (elev_sinkless[i, j] - elev_sinkless[i + 1, j]) / distances[6]
-                    )  # slope with cell to the bottom
+                        elev_sinkless[i, j] - elev_sinkless[i + 1, j]
+                    ) / distances[
+                        6
+                    ]  # slope with cell to the bottom
                     # get the flow direction index
 
                     flow_direction[i, j] = np.where(

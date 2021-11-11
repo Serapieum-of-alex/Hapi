@@ -634,8 +634,8 @@ class Event:
 
     def ListAttributes(self):
         """
-            Print Attributes List
-            """
+        Print Attributes List
+        """
 
         print("\n")
         print(

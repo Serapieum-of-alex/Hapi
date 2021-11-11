@@ -15,7 +15,6 @@ os.chdir(Comp + "/Coello/Hapi/Model/")
 
 import Hapi.rrm.hbv_bergestrom92 as HBV
 from Hapi.catchment import Catchment
-
 # import numpy as np
 from Hapi.run import Run
 

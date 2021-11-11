@@ -19,7 +19,6 @@ os.chdir(
 # sys.path.append("C:/Users/Mostafa/Desktop/My Files/thesis/My Thesis/Data_and_Models/Interface/Distributed_Hydrological_model/HBV_distributed/function")
 
 import gdal
-
 #%library
 import numpy as np
 from scipy.stats import norm
