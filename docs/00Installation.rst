@@ -8,7 +8,7 @@ Please install Hapi in a Virtual environment so that its requirements don't tamp
 conda
 ----------
 the easiest way to install ``Hapi`` is using ``conda`` package manager. ``Hapi`` is available in the `conda-forge <https://conda-forge.org/>`_ channel. To install
-you can use the following command: 
+you can use the following command:
 
 + ``conda install -c conda-forge hapi``
 

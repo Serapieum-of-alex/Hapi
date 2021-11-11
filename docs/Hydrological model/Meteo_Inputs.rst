@@ -9,7 +9,7 @@ The required inputs for the distributed model is divided into Meteorological, GI
 
 Meteorological Inputs
 ########
-To be able to run the hydrologic simulation with Hapi the following meteorological inputs are required 
+To be able to run the hydrologic simulation with Hapi the following meteorological inputs are required
 
 	- rainfall
 
@@ -36,7 +36,7 @@ CHRIPS data are uploaded into a ftp server therefore and can be downloaded throu
 
 - First import the class from the remotesensing module
 
-	
+
 		from Hapi.remotesensing import CHIRPS
 
 - Create the object with the following information
@@ -55,20 +55,20 @@ CHRIPS data are uploaded into a ftp server therefore and can be downloaded throu
 	Path = "directory to save the data"
 	Coello = CHIRPS(StartDate=StartDate, EndDate=EndDate, Time=Time,
     	    	latlim=lat , lonlim=lon, Path=Path)
-	
 
-- Call the `Download` method 
+
+- Call the `Download` method
 
 .. code:: py
 
 	Coello.Download()
-	
+
 - A Progress bar will appear and be updated with percent of the download
 
 	.. image:: /img/progress.png
 	    :width: 400pt
 
-	
+
 
 - If the period is long and the Download method can run in parallel, to activate the parallel mode enter the number of cores with the keyword argument `cores`
 
@@ -91,13 +91,13 @@ The ERA-Interim data assimilation and forecast suite produces:
 - The RemoteSensing and the ECMWF classes can retrieve  the data from the ECMWF servers, if you are registered and setup the API Key in your machine
 
 
-so inorder to be able to use the following code to download ECMWF data you need to 
+so inorder to be able to use the following code to download ECMWF data you need to
 - register and setup your account in the `ECMWF website <https://apps.ecmwf.int/registration/>`_.
 
 -  Install ECMWF key `instruction are here <https://confluence.ecmwf.int/display/WEBAPI/Access+ECMWF+Public+Datasets#AccessECMWFPublicDatasets-key](https://confluence.ecmwf.int/display/WEBAPI/Access+ECMWF+Public+Datasets#AccessECMWFPublicDatasets-key>`_.
 
 - ERA-Interim data set has a lot of meteorological variables which you can download
-- You need to provide the name of the variable using the `Variables` object 
+- You need to provide the name of the variable using the `Variables` object
 - `Variables` contains the tame of the variable you need to give to the `ECMWF` object to get and the unit and description
 
 .. code:: py

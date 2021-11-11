@@ -1,11 +1,11 @@
-GISpy contains all gis functions and 
+GISpy contains all gis functions and
 
 Inputs (preparation_functions):
     1-PrepareInputs
     2-changetext2time
     3-rescale
-    4-mycolor    
-    
+    4-mycolor
+
 DistParameters(DHBV_functions):
     1-saveobj
     2-loadobj
@@ -27,21 +27,21 @@ java_functions:
     2-upload_stations
     3-raster_upload
     4-warning1
-    
+
 Performance_criteria:
     1-rmse
     2-rmseHF (fuzzy weighting schemes)
     3-rmseLF (fuzzy weighting schemes)
-    4-KGE 
+    4-KGE
     5-WB
     6-nse
 
 Routing:
     1-muskingum
-    
+
 RUN:
     1-RunModel
-    
+
 
 Calibration:
     1-RunCalibration
@@ -49,8 +49,7 @@ Calibration:
 statistical_tools:
     1-IDW
     2-ISDW
-    
+
 Wrapper:
     1-Dist_model_lake
     2-Dist_model
-    

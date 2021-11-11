@@ -4,13 +4,13 @@ Created on Tue May 22 09:01:55 2018
 @author: Mostafa
 """
 # documentation format
-__author__ = 'Mostafa Farrag'
-__version__ = '1.0.5'
+__author__ = "Mostafa Farrag"
+__version__ = "1.0.5"
 
-__docformat__ = 'restructuredtext'
+__docformat__ = "restructuredtext"
 
 # Let users know if they're missing any of our hard dependencies
-hard_dependencies = () #("numpy", "pandas", "gdal")
+hard_dependencies = ()  # ("numpy", "pandas", "gdal")
 missing_dependencies = []
 
 for dependency in hard_dependencies:
@@ -20,16 +20,16 @@ for dependency in hard_dependencies:
         missing_dependencies.append(dependency)
 
 if missing_dependencies:
-    raise ImportError(
-        "Missing required dependencies {0}".format(missing_dependencies))
+    raise ImportError("Missing required dependencies {0}".format(missing_dependencies))
 
 # del hard_dependencies, dependency, missing_dependencies
 
-def configuration(parent_package='',top_path=None):
+
+def configuration(parent_package="", top_path=None):
 
     from numpy.distutils.misc_util import Configuration
 
-    config = Configuration(None,parent_package,top_path)
+    config = Configuration(None, parent_package, top_path)
     config.set_options(
         ignore_setup_xxx_py=True,
         assume_default_configuration=True,
@@ -37,29 +37,27 @@ def configuration(parent_package='',top_path=None):
         quiet=True,
     )
 
-    config.add_subpackage('statistics')
-    config.add_subpackage('rrm')
-    config.add_subpackage('rs')
-    config.add_subpackage('hm')
-    config.add_subpackage('gis')
+    config.add_subpackage("statistics")
+    config.add_subpackage("rrm")
+    config.add_subpackage("rs")
+    config.add_subpackage("hm")
+    config.add_subpackage("gis")
 
     return config
 
 
-import Hapi.gis
-import Hapi.rrm
-import Hapi.run
-import Hapi.hm
-import Hapi.statistics
-import Hapi.rs
-
 import Hapi.catchment
-import Hapi.weirdFn
+import Hapi.gis
+import Hapi.hm
 import Hapi.java_functions
+import Hapi.rrm
+import Hapi.rs
+import Hapi.run
+import Hapi.statistics
 import Hapi.visualizer
+import Hapi.weirdFn
 
-
-#import Hapi.saintvenant
+# import Hapi.saintvenant
 # module level doc-string
 __doc__ = """
 Hapi - Hydrological library for Python

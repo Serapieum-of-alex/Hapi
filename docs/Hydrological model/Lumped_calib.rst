@@ -92,4 +92,3 @@ To calibrate the HBV lumped model inside Hapi you need to follow the same steps 
 	print("Objective Function = " + str(round(cal_parameters[0],2)))
 	print("Parameters are " + str(cal_parameters[1]))
 	print("Time = " + str(round(cal_parameters[2]['time']/60,2)) + " min")
-

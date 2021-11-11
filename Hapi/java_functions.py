@@ -9,10 +9,6 @@ Created on Thu May 10 16:45:09 2018
 #%library
 
 
-
-
-
-
 def javaupload():
     """
     # =============================================================================
@@ -21,7 +17,7 @@ def javaupload():
     this function takes no argument and return a script (string) of java code to
     be used in upload buttons
     """
-    javaupload_code="""
+    javaupload_code = """
     //function 1
     function read_file(filename)
         {
@@ -67,6 +63,7 @@ def javaupload():
     """
     return javaupload_code
 
+
 def upload_stations():
     """
     # =============================================================================
@@ -75,7 +72,7 @@ def upload_stations():
     this function takes no argument and return a script (string) of java code to
     be used in upload buttons
     """
-    javaupload_code="""
+    javaupload_code = """
     //function 1
     function read_file(filename)
         {
@@ -124,7 +121,7 @@ def upload_stations():
 
 
 def raster_upload():
-    rasteruploader_code="""
+    rasteruploader_code = """
     //function 1
     function read_file(filename)
         {
@@ -195,11 +192,12 @@ def raster_upload():
     """
     return rasteruploader_code
 
+
 def warning1():
     """
 
     """
-    javacode="""
+    javacode = """
     function myFunction() {
                             alert("I am an alert box!");
                             }

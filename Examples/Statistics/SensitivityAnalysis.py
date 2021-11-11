@@ -11,11 +11,12 @@ import pandas as pd
 
 # functions
 import Hapi.rrm.hbv_bergestrom92 as HBVLumped
-from Hapi.run import Run
+import Hapi.statistics.performancecriteria as PC
 from Hapi.catchment import Catchment
 from Hapi.rrm.routing import Routing
-import Hapi.statistics.performancecriteria as PC
+from Hapi.run import Run
 from Hapi.statistics.sensitivityanalysis import SensitivityAnalysis as SA
+
 Parameterpath = Path + "/data/Lumped/Coello_Lumped2021-03-08_muskingum.txt"
 Path = Path + "/data/Lumped/"
 #%%
@@ -31,31 +32,31 @@ Coello.ReadLumpedInputs(Path + "meteo_data-MSWEP.csv")
 CatArea = 1530
 # temporal resolution
 # [Snow pack, Soil moisture, Upper zone, Lower Zone, Water content]
-InitialCond = [0,10,10,10,0]
+InitialCond = [0, 10, 10, 10, 0]
 
 Coello.ReadLumpedModel(HBVLumped, CatArea, InitialCond)
 
 ### parameters
- # no snow subroutine
+# no snow subroutine
 Snow = 0
 # if routing using Maxbas True, if Muskingum False
 Maxbas = False
 Coello.ReadParameters(Parameterpath, Snow, Maxbas=Maxbas)
 
-parameters = pd.read_csv(Parameterpath, index_col = 0, header = None)
-parameters.rename(columns={1:'value'}, inplace=True)
+parameters = pd.read_csv(Parameterpath, index_col=0, header=None)
+parameters.rename(columns={1: "value"}, inplace=True)
 
-UB = pd.read_csv(Path + "/UB-1-Muskinguk.txt", index_col = 0, header = None)
+UB = pd.read_csv(Path + "/UB-1-Muskinguk.txt", index_col=0, header=None)
 parnames = UB.index
 UB = UB[1].tolist()
-LB = pd.read_csv(Path + "/LB-1-Muskinguk.txt", index_col = 0, header = None)
+LB = pd.read_csv(Path + "/LB-1-Muskinguk.txt", index_col=0, header=None)
 LB = LB[1].tolist()
 Coello.ReadParametersBounds(UB, LB, Snow)
 
 # observed flow
 Coello.ReadDischargeGauges(Path + "Qout_c.csv", fmt="%Y-%m-%d")
 ### Routing
-Route=1
+Route = 1
 # RoutingFn=Routing.TriangularRouting2
 RoutingFn = Routing.Muskingum
 #%%
@@ -66,17 +67,17 @@ Metrics = dict()
 
 Qobs = Coello.QGauges[Coello.QGauges.columns[0]]
 
-Metrics['RMSE'] = PC.RMSE(Qobs, Coello.Qsim['q'])
-Metrics['NSE'] = PC.NSE(Qobs, Coello.Qsim['q'])
-Metrics['NSEhf'] = PC.NSEHF(Qobs, Coello.Qsim['q'])
-Metrics['KGE'] = PC.KGE(Qobs, Coello.Qsim['q'])
-Metrics['WB'] = PC.WB(Qobs, Coello.Qsim['q'])
+Metrics["RMSE"] = PC.RMSE(Qobs, Coello.Qsim["q"])
+Metrics["NSE"] = PC.NSE(Qobs, Coello.Qsim["q"])
+Metrics["NSEhf"] = PC.NSEHF(Qobs, Coello.Qsim["q"])
+Metrics["KGE"] = PC.KGE(Qobs, Coello.Qsim["q"])
+Metrics["WB"] = PC.WB(Qobs, Coello.Qsim["q"])
 
-print("RMSE= " + str(round(Metrics['RMSE'],2)))
-print("NSE= " + str(round(Metrics['NSE'],2)))
-print("NSEhf= " + str(round(Metrics['NSEhf'],2)))
-print("KGE= " + str(round(Metrics['KGE'],2)))
-print("WB= " + str(round(Metrics['WB'],2)))
+print("RMSE= " + str(round(Metrics["RMSE"], 2)))
+print("NSE= " + str(round(Metrics["NSE"], 2)))
+print("NSEhf= " + str(round(Metrics["NSEhf"], 2)))
+print("KGE= " + str(round(Metrics["KGE"], 2)))
+print("WB= " + str(round(Metrics["WB"], 2)))
 #%%
 """
 first the SensitivityAnalysis method takes 4 arguments :
@@ -115,24 +116,25 @@ Each parameter has a disctionary with two keys 0: list of parameters woth relati
 1: list of parameter values
 """
 # For Type 1
-def WrapperType1(Randpar,Route, RoutingFn, Qobs):
+def WrapperType1(Randpar, Route, RoutingFn, Qobs):
     Coello.Parameters = Randpar
 
     Run.RunLumped(Coello, Route, RoutingFn)
-    rmse = PC.RMSE(Qobs, Coello.Qsim['q'])
+    rmse = PC.RMSE(Qobs, Coello.Qsim["q"])
     return rmse
 
+
 # For Type 2
-def WrapperType2(Randpar,Route, RoutingFn, Qobs):
+def WrapperType2(Randpar, Route, RoutingFn, Qobs):
     Coello.Parameters = Randpar
 
     Run.RunLumped(Coello, Route, RoutingFn)
-    rmse = PC.RMSE(Qobs, Coello.Qsim['q'])
-    return rmse, Coello.Qsim['q']
+    rmse = PC.RMSE(Qobs, Coello.Qsim["q"])
+    return rmse, Coello.Qsim["q"]
 
 
 Type = 2
-if Type ==1:
+if Type == 1:
     fn = WrapperType1
 elif Type == 2:
     fn = WrapperType2
@@ -140,19 +142,35 @@ elif Type == 2:
 Positions = [10]
 
 
-Sen = SA(parameters,Coello.LB, Coello.UB, fn, Positions, 5, Type=Type)
+Sen = SA(parameters, Coello.LB, Coello.UB, fn, Positions, 5, Type=Type)
 Sen.OAT(Route, RoutingFn, Qobs)
 #%%
-From = ''
-To = ''
-if Type ==1:
-    fig, ax1 = Sen.Sobol(RealValues=False, Title="Sensitivity Analysis of the RMSE to models parameters",
-              xlabel = "Maxbas Values", ylabel="RMSE", From=From, To=To,xlabel2='Time',
-              ylabel2='Discharge m3/s', spaces=[None,None,None,None,None,None])
-elif Type ==2:
-    fig, (ax1,ax2) = Sen.Sobol(RealValues=False, Title="Sensitivity Analysis of the RMSE to models parameters",
-              xlabel = "Maxbas Values", ylabel="RMSE", From=From, To=To,xlabel2='Time',
-              ylabel2='Discharge m3/s', spaces=[None,None,None,None,None,None])
+From = ""
+To = ""
+if Type == 1:
+    fig, ax1 = Sen.Sobol(
+        RealValues=False,
+        Title="Sensitivity Analysis of the RMSE to models parameters",
+        xlabel="Maxbas Values",
+        ylabel="RMSE",
+        From=From,
+        To=To,
+        xlabel2="Time",
+        ylabel2="Discharge m3/s",
+        spaces=[None, None, None, None, None, None],
+    )
+elif Type == 2:
+    fig, (ax1, ax2) = Sen.Sobol(
+        RealValues=False,
+        Title="Sensitivity Analysis of the RMSE to models parameters",
+        xlabel="Maxbas Values",
+        ylabel="RMSE",
+        From=From,
+        To=To,
+        xlabel2="Time",
+        ylabel2="Discharge m3/s",
+        spaces=[None, None, None, None, None, None],
+    )
     From = 0
     To = len(Qobs.values)
-    ax2.plot(Qobs.values[From:To], label='Observed', color='red')
+    ax2.plot(Qobs.values[From:To], label="Observed", color="red")

@@ -18,7 +18,7 @@ requirements:
 
   host:
     - python >=2.7
-    - pip  
+    - pip
     - numpy
     - affine
     - fiona
@@ -68,7 +68,7 @@ requirements:
 test:
   imports:
     - Hapi
-    
+
 about:
   home: https://github.com/MAfarrag/HAPI
   license: BSD-3-Clause

@@ -1,5 +1,5 @@
 def hello():
-    print('world')
+    print("world")
 
 
 class Foo:
@@ -7,10 +7,11 @@ class Foo:
 
 
 def baz():
-    print('this is not tested')
+    print("this is not tested")
+
 
 def branch(cond1, cond2):
     if cond1:
-        print('condition tested both ways')
+        print("condition tested both ways")
     if cond2:
-        print('condition not tested both ways')
+        print("condition not tested both ways")

@@ -1,8 +1,8 @@
-
 import numpy as np
 import scipy as sp
 
 ninf = 1e-5
+
 
 class Lmoments:
     """
@@ -16,6 +16,7 @@ class Lmoments:
     λ4 = α0 - 12α1 + 30α2 - 20α3 = 20β3 - 30β2 + 12β1 - β0
 
     """
+
     def __init__(self, data):
         self.data = data
         pass
@@ -154,9 +155,7 @@ class Lmoments:
         coefl3 = 1.0 / 3 * 1.0 / self.comb(n, 3)
         xtrans = []
         for i in range(0, n):
-            coeftemp = (comb3[i] -
-                        2 * comb1[i] * comb2[i] +
-                        comb4[i])
+            coeftemp = comb3[i] - 2 * comb1[i] * comb2[i] + comb4[i]
             xtrans.append(coeftemp * x[i])
 
         l3 = coefl3 * sum(xtrans) / l2
@@ -178,10 +177,9 @@ class Lmoments:
         coefl4 = 1.0 / 4 * 1.0 / self.comb(n, 4)
         xtrans = []
         for i in range(0, n):
-            coeftemp = (comb5[i] -
-                        3 * comb3[i] * comb2[i] +
-                        3 * comb1[i] * comb4[i] -
-                        comb6[i])
+            coeftemp = (
+                comb5[i] - 3 * comb3[i] * comb2[i] + 3 * comb1[i] * comb4[i] - comb6[i]
+            )
             xtrans.append(coeftemp * x[i])
 
         l4 = coefl4 * sum(xtrans) / l2
@@ -201,11 +199,13 @@ class Lmoments:
         coefl5 = 1.0 / 5 * 1.0 / self.comb(n, 5)
         xtrans = []
         for i in range(0, n):
-            coeftemp = (comb7[i] -
-                        4 * comb5[i] * comb2[i] +
-                        6 * comb3[i] * comb4[i] -
-                        4 * comb1[i] * comb6[i] +
-                        comb8[i])
+            coeftemp = (
+                comb7[i]
+                - 4 * comb5[i] * comb2[i]
+                + 6 * comb3[i] * comb4[i]
+                - 4 * comb1[i] * comb6[i]
+                + comb8[i]
+            )
             xtrans.append(coeftemp * x[i])
 
         l5 = coefl5 * sum(xtrans) / l2
@@ -246,7 +246,9 @@ class Lmoments:
             raise ValueError("L-Moments Invalid")
 
         if T3 <= 0:
-            G = (A0 + T3 * (A1 + T3 * (A2 + T3 * (A3 + T3 * A4)))) / (1 + T3 * (B1 + T3 * (B2 + T3 * B3)))
+            G = (A0 + T3 * (A1 + T3 * (A2 + T3 * (A3 + T3 * A4)))) / (
+                1 + T3 * (B1 + T3 * (B2 + T3 * B3))
+            )
             if T3 >= -0.8:
                 shape = G
                 GAM = np.exp(sp.special.gammaln(1 + G))
@@ -299,7 +301,7 @@ class Lmoments:
         if mom[1] <= 0:
             raise ValueError("L-Moments Invalid")
         else:
-            para2 = mom[1]/np.log(2)
-            para1 = mom[0]-EU*para2
+            para2 = mom[1] / np.log(2)
+            para1 = mom[0] - EU * para2
             para = [para1, para2]
             return para

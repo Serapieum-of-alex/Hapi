@@ -8,6 +8,7 @@ Created on Sun May 16 18:33:09 2021
 # import pandas as pd
 # import datetime as dt
 from Hapi.hm.river import River
+
 path = "F:/01Algorithms/Hydrology/HAPI/Examples/"
 #%% create the River object
 start = "2010-1-1 00:00:00"
@@ -15,14 +16,17 @@ end = "2010-1-1 05:00:00"
 # dx in meter
 dx = 1000
 # dt in sec
-dto = 1*60
+dto = 1 * 60
 
-Test = River("Test", version=4, start=start, end=end, dto=dto, dx=dx, fmt="%Y-%m-%d %H:%M:%S")
+Test = River(
+    "Test", version=4, start=start, end=end, dto=dto, dx=dx, fmt="%Y-%m-%d %H:%M:%S"
+)
 Test.oneminresultpath = path + "/data/hydrodynamic model/"
 #%% Read Input Data
 Test.ReadCrossSections(path + "/data/hydrodynamic model/xs.csv")
-Test.ReadBoundaryConditions(path=path + "/data/hydrodynamic model/BCQ-constant.txt",
-                            fmt="%Y-%m-%d %H:%M:%S")
+Test.ReadBoundaryConditions(
+    path=path + "/data/hydrodynamic model/BCQ-constant.txt", fmt="%Y-%m-%d %H:%M:%S"
+)
 Test.Laterals = False
 Test.LateralsQ = 0
 Test.icq = 50

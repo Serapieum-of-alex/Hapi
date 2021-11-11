@@ -1,10 +1,10 @@
 ******************************
 Distributed Hydrological Model
 ******************************
-After preparing all the meteorological, GIS inputs required for the model, and Extracting the parameters for the catchment 
+After preparing all the meteorological, GIS inputs required for the model, and Extracting the parameters for the catchment
 
 .. code-block:: py
-    
+
     import numpy as np
     import datetime as dt
     import gdal
@@ -28,12 +28,12 @@ After preparing all the meteorological, GIS inputs required for the model, and E
     Snow = 0
 
     # Create the model object and read the input data
-    
+
     Sdate = '2009-01-01'
     Edate = '2011-12-31'
     name = "Coello"
     Coello = Calibration(name, Sdate, Edate, SpatialResolution = "Distributed")
-    
+
     # Meteorological & GIS Data
     Coello.ReadRainfall(PrecPath)
     Coello.ReadTemperature(TempPath)

@@ -1,9 +1,10 @@
-import numpy as np
 import numbers
+
+import numpy as np
 from sklearn.metrics import r2_score
 
 
-def RMSE(Qobs,Qsim):
+def RMSE(Qobs, Qsim):
     """
     Root Mean Squared Error. Metric for the estimation of performance of the
     hydrological model.
@@ -21,15 +22,15 @@ def RMSE(Qobs,Qsim):
             [float] RMSE value
     """
     # convert Qobs & Qsim into arrays
-    Qobs=np.array(Qobs)
-    Qsim=np.array(Qsim)
+    Qobs = np.array(Qobs)
+    Qsim = np.array(Qsim)
 
-    rmse = np.sqrt(np.average((np.array(Qobs)-np.array(Qsim))** 2), dtype = np.float64)
+    rmse = np.sqrt(np.average((np.array(Qobs) - np.array(Qsim)) ** 2), dtype=np.float64)
 
     return rmse
 
 
-def RMSEHF(Qobs,Qsim,WStype,N,alpha):
+def RMSEHF(Qobs, Qsim, WStype, N, alpha):
     """
     Weighted Root mean square Error for High flow
 
@@ -51,45 +52,58 @@ def RMSEHF(Qobs,Qsim,WStype,N,alpha):
     """
     # input data validation
     # data type
-    assert type(WStype)== int, "Weighting scheme should be an integer number between 1 and 4 and you entered "+str(WStype)
-    assert isinstance(alpha, numbers.Number), "alpha should be a number and between 0 & 1"
+    assert type(WStype) == int, (
+        "Weighting scheme should be an integer number between 1 and 4 and you entered "
+        + str(WStype)
+    )
+    assert isinstance(
+        alpha, numbers.Number
+    ), "alpha should be a number and between 0 & 1"
     assert isinstance(N, numbers.Number), "N should be a number and between 0 & 1"
     # Input values
-    assert 1 <= WStype <= 4, "Weighting scheme should be an integer number between 1 and 4 you have enters " + str(WStype)
-    assert N >= 0 , "Weighting scheme Power should be positive number you have entered "+ str(N)
-    assert 0 < alpha < 1, "alpha should be float number and between 0 & 1 you have entered " + str(alpha)
+    assert 1 <= WStype <= 4, (
+        "Weighting scheme should be an integer number between 1 and 4 you have enters "
+        + str(WStype)
+    )
+    assert (
+        N >= 0
+    ), "Weighting scheme Power should be positive number you have entered " + str(N)
+    assert (
+        0 < alpha < 1
+    ), "alpha should be float number and between 0 & 1 you have entered " + str(alpha)
 
     # convert Qobs & Qsim into arrays
-    Qobs=np.array(Qobs)
-    Qsim=np.array(Qsim)
+    Qobs = np.array(Qobs)
+    Qsim = np.array(Qsim)
 
+    Qmax = max(Qobs)
+    h = Qobs / Qmax  # rational Discharge
 
-    Qmax=max(Qobs)
-    h=Qobs/Qmax # rational Discharge
-
-    if WStype==1:
-         w = h**N        # rational Discharge power N
-    elif WStype==2: #-------------------------------------------------------------N is not in the equation
-        w=(h/alpha)**N
-        w[h>alpha] = 1
-    elif WStype==3:
+    if WStype == 1:
+        w = h ** N  # rational Discharge power N
+    elif (
+        WStype == 2
+    ):  # -------------------------------------------------------------N is not in the equation
+        w = (h / alpha) ** N
+        w[h > alpha] = 1
+    elif WStype == 3:
         w = np.zeros(np.size(h))  # zero for h < alpha and 1 for h > alpha
-        w[h>alpha] = 1
-    elif WStype==4:
+        w[h > alpha] = 1
+    elif WStype == 4:
         w = np.zeros(np.size(h))  # zero for h < alpha and 1 for h > alpha
-        w[h>alpha] = 1
-    else:                      # sigmoid function
-        w=1/(1+np.exp(-10*h+5))
+        w[h > alpha] = 1
+    else:  # sigmoid function
+        w = 1 / (1 + np.exp(-10 * h + 5))
 
-    a= (Qobs-Qsim)**2
-    b=a*w
-    c=sum(b)
-    error=np.sqrt(c/len(Qobs))
+    a = (Qobs - Qsim) ** 2
+    b = a * w
+    c = sum(b)
+    error = np.sqrt(c / len(Qobs))
 
     return error
 
 
-def RMSELF(Qobs,Qsim,WStype,N,alpha):
+def RMSELF(Qobs, Qsim, WStype, N, alpha):
     """
     Weighted Root mean square Error for low flow
 
@@ -107,49 +121,60 @@ def RMSELF(Qobs,Qsim,WStype,N,alpha):
     """
     # input data validation
     # data type
-    assert type(WStype)== int, "Weighting scheme should be an integer number between 1 and 4 and you entered "+str(WStype)
-    assert isinstance(alpha, numbers.Number), "alpha should be a number and between 0 & 1"
+    assert type(WStype) == int, (
+        "Weighting scheme should be an integer number between 1 and 4 and you entered "
+        + str(WStype)
+    )
+    assert isinstance(
+        alpha, numbers.Number
+    ), "alpha should be a number and between 0 & 1"
     assert isinstance(N, numbers.Number), "N should be a number and between 0 & 1"
     # Input values
-    assert 1 <= WStype <= 4, "Weighting scheme should be an integer number between 1 and 4 you have enters " + str(WStype)
-    assert N >= 0 , "Weighting scheme Power should be positive number you have entered "+ str(N)
-    assert 0 < alpha < 1, "alpha should be float number and between 0 & 1 you have entered " + str(alpha)
+    assert 1 <= WStype <= 4, (
+        "Weighting scheme should be an integer number between 1 and 4 you have enters "
+        + str(WStype)
+    )
+    assert (
+        N >= 0
+    ), "Weighting scheme Power should be positive number you have entered " + str(N)
+    assert (
+        0 < alpha < 1
+    ), "alpha should be float number and between 0 & 1 you have entered " + str(alpha)
 
     # convert Qobs & Qsim into arrays
     Qobs = np.array(Qobs)
     Qsim = np.array(Qsim)
 
-
     Qmax = max(Qobs)  # rational Discharge power N
-    l = (Qmax-Qobs)/Qmax
+    l = (Qmax - Qobs) / Qmax
 
-    if WStype==1:
-         w = l**N
-    elif WStype==2: #------------------------------- N is not in the equation
-#        w=1-l*((0.50 - alpha)**N)
-        w =((1/(alpha**2))*(1-l)**2)-((2/alpha)*(1-l))+1
-        w[1-l> alpha]=0
-    elif WStype==3:   # the same like WStype 2
-#        w=1-l*((0.50 - alpha)**N)
-        w =((1/(alpha**2))*(1-l)**2)-((2/alpha)*(1-l))+1
-        w[1-l> alpha]=0
-    elif WStype==4:
-    #        w = 1-l*(0.50 - alpha)
-        w = 1 - ((1-l)/alpha)
-        w[1-l>alpha] = 0
-    else:                     # sigmoid function
-#        w=1/(1+np.exp(10*h-5))
-        w = 1/(1+np.exp(-10*l+5))
+    if WStype == 1:
+        w = l ** N
+    elif WStype == 2:  # ------------------------------- N is not in the equation
+        #        w=1-l*((0.50 - alpha)**N)
+        w = ((1 / (alpha ** 2)) * (1 - l) ** 2) - ((2 / alpha) * (1 - l)) + 1
+        w[1 - l > alpha] = 0
+    elif WStype == 3:  # the same like WStype 2
+        #        w=1-l*((0.50 - alpha)**N)
+        w = ((1 / (alpha ** 2)) * (1 - l) ** 2) - ((2 / alpha) * (1 - l)) + 1
+        w[1 - l > alpha] = 0
+    elif WStype == 4:
+        #        w = 1-l*(0.50 - alpha)
+        w = 1 - ((1 - l) / alpha)
+        w[1 - l > alpha] = 0
+    else:  # sigmoid function
+        #        w=1/(1+np.exp(10*h-5))
+        w = 1 / (1 + np.exp(-10 * l + 5))
 
-    a = (Qobs-Qsim)**2
-    b = a*w
+    a = (Qobs - Qsim) ** 2
+    b = a * w
     c = sum(b)
-    error = np.sqrt(c/len(Qobs))
+    error = np.sqrt(c / len(Qobs))
 
     return error
 
 
-def KGE(Qobs,Qsim):
+def KGE(Qobs, Qsim):
     """
     (Gupta et al. 2009) have showed the limitation of using a single error
     function to measure the efficiency of calculated flow and showed that
@@ -169,16 +194,16 @@ def KGE(Qobs,Qsim):
     Qobs = np.array(Qobs)
     Qsim = np.array(Qsim)
 
-    c = np.corrcoef(Qobs,Qsim)[0][1]
-    alpha = np.std(Qsim)/np.std(Qobs)
-    beta = np.mean(Qsim)/np.mean(Qobs)
+    c = np.corrcoef(Qobs, Qsim)[0][1]
+    alpha = np.std(Qsim) / np.std(Qobs)
+    beta = np.mean(Qsim) / np.mean(Qobs)
 
-    kge = 1-np.sqrt(((c-1)**2)+((alpha-1)**2)+((beta-1)**2))
+    kge = 1 - np.sqrt(((c - 1) ** 2) + ((alpha - 1) ** 2) + ((beta - 1) ** 2))
 
     return kge
 
 
-def WB(Qobs,Qsim):
+def WB(Qobs, Qsim):
     """
     The mean cumulative error measures how much the model succeed to reproduce
     the stream flow volume correctly. This error allows error compensation from
@@ -198,7 +223,7 @@ def WB(Qobs,Qsim):
     """
     Qobssum = np.sum(Qobs)
     Qsimsum = np.sum(Qsim)
-    wb = 100*(1-np.abs(1-(Qsimsum/Qobssum)))
+    wb = 100 * (1 - np.abs(1 - (Qsimsum / Qobssum)))
 
     return wb
 
@@ -227,12 +252,12 @@ def NSE(Qobs, Qsim):
         error=NSE(Qobs,Qout)
     """
     # convert Qobs & Qsim into arrays
-    Qobs=np.array(Qobs)
-    Qsim=np.array(Qsim)
+    Qobs = np.array(Qobs)
+    Qsim = np.array(Qsim)
 
-    a=sum((Qobs-Qsim)**2)
-    b=sum((Qobs-np.average(Qobs))**2)
-    e=1-(a/b)
+    a = sum((Qobs - Qsim) ** 2)
+    b = sum((Qobs - np.average(Qobs)) ** 2)
+    e = 1 - (a / b)
 
     return e
 
@@ -267,16 +292,17 @@ def NSEHF(Qobs, Qsim):
         error=NSE(Qobs,Qout)
     """
     # convert Qobs & Qsim into arrays
-    Qobs=np.array(Qobs)
-    Qsim=np.array(Qsim)
+    Qobs = np.array(Qobs)
+    Qsim = np.array(Qsim)
 
-    a=sum(Qobs*(Qobs-Qsim)**2)
-    b=sum(Qobs*(Qobs-np.average(Qobs))**2)
-    e=1-(a/b)
+    a = sum(Qobs * (Qobs - Qsim) ** 2)
+    b = sum(Qobs * (Qobs - np.average(Qobs)) ** 2)
+    e = 1 - (a / b)
 
     return e
 
-def MBE (Qobs, Qsim):
+
+def MBE(Qobs, Qsim):
     """
     MBE (mean bias error)
     MBE = (Qsim - Qobs)/n
@@ -297,7 +323,8 @@ def MBE (Qobs, Qsim):
 
     return (np.array(Qsim) - np.array(Qobs)).mean()
 
-def MAE (Qobs, Qsim):
+
+def MAE(Qobs, Qsim):
     """
     MAE (mean absolute error)
     MAE = |(Qobs - Qsim)|/n
@@ -318,14 +345,16 @@ def MAE (Qobs, Qsim):
 
     return np.abs(np.array(Qobs) - np.array(Qsim)).mean()
 
-def PearsonCorre(Qobs,Qsim):
+
+def PearsonCorre(Qobs, Qsim):
     """
     Pearson correlation coefficient r2 is independent of the magnitude of the numbers;
     it is sensitive to relative changes only.
     """
-    return (np.corrcoef(np.array(Qobs),np.array(Qsim))[0][1])**2
+    return (np.corrcoef(np.array(Qobs), np.array(Qsim))[0][1]) ** 2
 
-def R2(Qobs,Qsim):
+
+def R2(Qobs, Qsim):
     """
     the coefficient of determination measures how well the predicted
     values match (and not just follow) the observed values.
@@ -343,4 +372,4 @@ def R2(Qobs,Qsim):
     on the magnitude of the numbers (unlike r² peason correlation coefficient).
     """
 
-    return  r2_score(np.array(Qobs),np.array(Qsim))
+    return r2_score(np.array(Qobs), np.array(Qsim))

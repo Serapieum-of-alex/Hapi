@@ -6,4 +6,3 @@ Statistics Tutorials
     :maxdepth: 1
 
     statistics/Sensitivity_Analysis.rst
-    

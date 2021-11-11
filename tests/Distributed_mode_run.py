@@ -6,9 +6,10 @@ Created on Sun Jun 24 21:02:34 2018
 """
 Comp = "F:/01Algorithms/Hydrology/HAPI/Examples"
 
-from Hapi.run import Run
-from Hapi.catchment import Catchment
 import Hapi.rrm.hbv_bergestrom92 as HBV
+from Hapi.catchment import Catchment
+from Hapi.run import Run
+
 #%% Paths
 Path = Comp + "/data/distributed/coello"
 PrecPath = Path + "/prec"
@@ -20,7 +21,7 @@ FlowDPath = Path + "/GIS/fd4000.tif"
 ParPathRun = Path + "/Parameter set-Avg/"
 #%% Meteorological data
 AreaCoeff = 1530
-InitialCond = [0,5,5,5,0]
+InitialCond = [0, 5, 5, 5, 0]
 Snow = 0
 """
 Create the model object and read the input data
@@ -28,7 +29,7 @@ Create the model object and read the input data
 start = "2009-01-01"
 end = "2009-04-10"
 name = "Coello"
-Coello = Catchment(name, start, end, SpatialResolution = "Distributed")
+Coello = Catchment(name, start, end, SpatialResolution="Distributed")
 Coello.ReadRainfall(PrecPath)
 Coello.ReadTemperature(TempPath)
 Coello.ReadET(Evap_Path)
@@ -38,9 +39,9 @@ Coello.ReadFlowDir(FlowDPath)
 Coello.ReadParameters(ParPathRun, Snow)
 Coello.ReadLumpedModel(HBV, AreaCoeff, InitialCond)
 #%% Gauges
-Coello.ReadGaugeTable(Path+"/stations/gauges.csv", FlowAccPath)
-GaugesPath = Path+"/stations/"
-Coello.ReadDischargeGauges(GaugesPath, column='id', fmt="%Y-%m-%d")
+Coello.ReadGaugeTable(Path + "/stations/gauges.csv", FlowAccPath)
+GaugesPath = Path + "/stations/"
+Coello.ReadDischargeGauges(GaugesPath, column="id", fmt="%Y-%m-%d")
 #%% Run the model
 """
 Outputs:
@@ -62,19 +63,19 @@ Outputs:
 """
 Run.RunHapi(Coello)
 #%% calculate performance criteria
-Coello.ExtractDischarge(Factor=Coello.GaugesTable['area ratio'].tolist())
+Coello.ExtractDischarge(Factor=Coello.GaugesTable["area ratio"].tolist())
 
 for i in range(len(Coello.GaugesTable)):
-    gaugeid = Coello.GaugesTable.loc[i,'id']
+    gaugeid = Coello.GaugesTable.loc[i, "id"]
     print("----------------------------------")
-    print("Gauge - " +str(gaugeid))
-    print("RMSE= " + str(round(Coello.Metrics.loc['RMSE',gaugeid],2)))
-    print("NSE= " + str(round(Coello.Metrics.loc['NSE',gaugeid],2)))
-    print("NSEhf= " + str(round(Coello.Metrics.loc['NSEhf',gaugeid],2)))
-    print("KGE= " + str(round(Coello.Metrics.loc['KGE',gaugeid],2)))
-    print("WB= " + str(round(Coello.Metrics.loc['WB',gaugeid],2)))
-    print("Pearson CC= " + str(round(Coello.Metrics.loc['Pearson-CC',gaugeid],2)))
-    print("R2 = " + str(round(Coello.Metrics.loc['R2',gaugeid],2)))
+    print("Gauge - " + str(gaugeid))
+    print("RMSE= " + str(round(Coello.Metrics.loc["RMSE", gaugeid], 2)))
+    print("NSE= " + str(round(Coello.Metrics.loc["NSE", gaugeid], 2)))
+    print("NSEhf= " + str(round(Coello.Metrics.loc["NSEhf", gaugeid], 2)))
+    print("KGE= " + str(round(Coello.Metrics.loc["KGE", gaugeid], 2)))
+    print("WB= " + str(round(Coello.Metrics.loc["WB", gaugeid], 2)))
+    print("Pearson CC= " + str(round(Coello.Metrics.loc["Pearson-CC", gaugeid], 2)))
+    print("R2 = " + str(round(Coello.Metrics.loc["R2", gaugeid], 2)))
 #%% plot
 gaugei = 5
 plotstart = "2009-01-01"
@@ -174,18 +175,38 @@ animation.FuncAnimation.
 plotstart = "2009-01-01"
 plotend = "2009-02-01"
 
-Anim = Coello.PlotDistributedResults(plotstart, plotend, Figsize=(9,9), Option = 1,threshold=160, PlotNumbers=True,
-                                TicksSpacing = 5,Interval = 200, Gauges=True, cmap='inferno', Textloc=[0.1,0.2],
-                                Gaugecolor='red',ColorScale = 1, IDcolor='blue', IDsize=25)
+Anim = Coello.PlotDistributedResults(
+    plotstart,
+    plotend,
+    Figsize=(9, 9),
+    Option=1,
+    threshold=160,
+    PlotNumbers=True,
+    TicksSpacing=5,
+    Interval=200,
+    Gauges=True,
+    cmap="inferno",
+    Textloc=[0.1, 0.2],
+    Gaugecolor="red",
+    ColorScale=1,
+    IDcolor="blue",
+    IDsize=25,
+)
 
 #%%
 SaveTo = Path + "/results/anim.gif"
-Coello.SaveAnimation(VideoFormat="gif",Path=SaveTo,SaveFrames=3)
+Coello.SaveAnimation(VideoFormat="gif", Path=SaveTo, SaveFrames=3)
 #%% Save the result into rasters
 
 StartDate = "2009-01-01"
 EndDate = "2009-04-10"
-Prefix = 'Qtot_'
+Prefix = "Qtot_"
 SaveTo = Path + "/results/"
-Coello.SaveResults(FlowAccPath, Result=1, StartDate=StartDate, EndDate=EndDate,
-                    Path=SaveTo, Prefix=Prefix)
+Coello.SaveResults(
+    FlowAccPath,
+    Result=1,
+    StartDate=StartDate,
+    EndDate=EndDate,
+    Path=SaveTo,
+    Prefix=Prefix,
+)

@@ -5,9 +5,11 @@ Created on Sun Apr 29 17:17:54 2018
 @author: Mostafa
 """
 import numpy as np
+
 from Hapi.rrm import hbv_lake
 from Hapi.rrm.distrrm import DistributedRRM as distrrm
 from Hapi.rrm.routing import Routing as routing
+
 
 class Wrapper:
     """
@@ -21,6 +23,7 @@ class Wrapper:
         4- FW1Withlake
         5- Lumped
     """
+
     def __init__(self):
         pass
 
@@ -92,9 +95,8 @@ class Wrapper:
 
         # Model.qout = Model.qout[:-1]
 
-
     @staticmethod
-    def RRMWithlake(Model, Lake,ll_temp=None, q_0=None):
+    def RRMWithlake(Model, Lake, ll_temp=None, q_0=None):
         """
         RRMWithlake connects three modules the lake, the distributed
         ranfall-runoff module and spatial routing module
@@ -116,43 +118,59 @@ class Wrapper:
 
         """
 
-        plake = Lake.MeteoData[:,0]
-        et = Lake.MeteoData[:,1]
-        t = Lake.MeteoData[:,2]
-        tm = Lake.MeteoData[:,3]
+        plake = Lake.MeteoData[:, 0]
+        et = Lake.MeteoData[:, 1]
+        t = Lake.MeteoData[:, 2]
+        tm = Lake.MeteoData[:, 3]
 
         # lake simulation
-        Lake.Qlake, _ = hbv_lake.simulate(plake, t, et, Lake.Parameters,
-                                      [Model.Timef, Lake.CatArea, Lake.LakeArea],
-                                      Lake.StageDischargeCurve, 0,
-                                      init_st=Lake.InitialCond,
-                                      ll_temp=tm, lake_sim=True)
+        Lake.Qlake, _ = hbv_lake.simulate(
+            plake,
+            t,
+            et,
+            Lake.Parameters,
+            [Model.Timef, Lake.CatArea, Lake.LakeArea],
+            Lake.StageDischargeCurve,
+            0,
+            init_st=Lake.InitialCond,
+            ll_temp=tm,
+            lake_sim=True,
+        )
         # qlake is in m3/sec
         # lake routing
-        Lake.QlakeR = routing.Muskingum_V(Lake.Qlake, Lake.Qlake[0], Lake.Parameters[11],
-                                  Lake.Parameters[12], Model.Timef)
+        Lake.QlakeR = routing.Muskingum_V(
+            Lake.Qlake,
+            Lake.Qlake[0],
+            Lake.Parameters[11],
+            Lake.Parameters[12],
+            Model.Timef,
+        )
 
         # subcatchment
         distrrm.RunLumpedRRM(Model)
 
         # routing lake discharge with DS cell k & x and adding to cell Q
-        qlake = routing.Muskingum_V(Lake.QlakeR,Lake.QlakeR[0],
-                                   Model.Parameters[Lake.OutflowCell[0],Lake.OutflowCell[1],10],
-                                   Model.Parameters[Lake.OutflowCell[0],Lake.OutflowCell[1],11],
-                                   Model.Timef)
+        qlake = routing.Muskingum_V(
+            Lake.QlakeR,
+            Lake.QlakeR[0],
+            Model.Parameters[Lake.OutflowCell[0], Lake.OutflowCell[1], 10],
+            Model.Parameters[Lake.OutflowCell[0], Lake.OutflowCell[1], 11],
+            Model.Timef,
+        )
 
-        qlake = np.append(qlake,qlake[-1])
+        qlake = np.append(qlake, qlake[-1])
         # both lake & Quz are in m3/s
-        Model.quz[Lake.OutflowCell[0],Lake.OutflowCell[1],:] = Model.quz[Lake.OutflowCell[0],Lake.OutflowCell[1],:] + qlake
+        Model.quz[Lake.OutflowCell[0], Lake.OutflowCell[1], :] = (
+            Model.quz[Lake.OutflowCell[0], Lake.OutflowCell[1], :] + qlake
+        )
 
         # run the GIS part to rout from cell to another
         distrrm.SpatialRouting(Model)
 
         # Model.qout = Model.qout[:-1]
 
-
     @staticmethod
-    def FW1(Model,ll_temp=None, q_0=None):
+    def FW1(Model, ll_temp=None, q_0=None):
         """
         FW1 connects two module :
             1- The distributed rainfall-runoff module
@@ -177,16 +195,19 @@ class Wrapper:
 
         distrrm.DistMaxbas1(Model)
 
-        qlz1 = np.array([np.nansum(Model.qlz[:,:,i]) for i in range(Model.TS)]) # average of all cells (not routed mm/timestep)
-        quz1 = np.array([np.nansum(Model.quz[:,:,i]) for i in range(Model.TS)]) # average of all cells (routed mm/timestep)
+        qlz1 = np.array(
+            [np.nansum(Model.qlz[:, :, i]) for i in range(Model.TS)]
+        )  # average of all cells (not routed mm/timestep)
+        quz1 = np.array(
+            [np.nansum(Model.quz[:, :, i]) for i in range(Model.TS)]
+        )  # average of all cells (routed mm/timestep)
 
         Model.qout = qlz1 + quz1
 
         Model.qout = Model.qout[:-1]
 
-
     @staticmethod
-    def FW1Withlake(Model, Lake,ll_temp=None, q_0=None):
+    def FW1Withlake(Model, Lake, ll_temp=None, q_0=None):
         """
         FW1 connects two module :
             1- The distributed rainfall-runoff module
@@ -210,37 +231,58 @@ class Wrapper:
 
         """
 
-        plake = Lake.MeteoData[:,0]
-        et = Lake.MeteoData[:,1]
-        t = Lake.MeteoData[:,2]
-        tm = Lake.MeteoData[:,3]
+        plake = Lake.MeteoData[:, 0]
+        et = Lake.MeteoData[:, 1]
+        t = Lake.MeteoData[:, 2]
+        tm = Lake.MeteoData[:, 3]
 
         # lake simulation
-        Lake.Qlake, _ = hbv_lake.simulate(plake, t, et, Lake.Parameters,
-                                      [Model.Timef, Lake.CatArea, Lake.LakeArea],
-                                      Lake.StageDischargeCurve, 0,
-                                      init_st=Lake.InitialCond,
-                                      ll_temp=tm, lake_sim=True)
+        Lake.Qlake, _ = hbv_lake.simulate(
+            plake,
+            t,
+            et,
+            Lake.Parameters,
+            [Model.Timef, Lake.CatArea, Lake.LakeArea],
+            Lake.StageDischargeCurve,
+            0,
+            init_st=Lake.InitialCond,
+            ll_temp=tm,
+            lake_sim=True,
+        )
 
         # qlake is in m3/sec
         # lake routing
-        Lake.QlakeR = routing.muskingum(Lake.Qlake, Lake.Qlake[0], Lake.Parameters[11],
-                                  Lake.Parameters[12], Model.Timef)
+        Lake.QlakeR = routing.muskingum(
+            Lake.Qlake,
+            Lake.Qlake[0],
+            Lake.Parameters[11],
+            Lake.Parameters[12],
+            Model.Timef,
+        )
 
         # subcatchment
         distrrm.RunLumpedRRM(Model)
 
         distrrm.DistMAXBAS(Model)
 
-        qlz1 = np.array([np.nansum(Model.qlz[:,:,i]) for i in range(Model.Parameters.shape[2]+1)]) # average of all cells (not routed mm/timestep)
-        quz1 = np.array([np.nansum(Model.quz[:,:,i]) for i in range(Model.Parameters.shape[2]+1)]) # average of all cells (routed mm/timestep)
+        qlz1 = np.array(
+            [
+                np.nansum(Model.qlz[:, :, i])
+                for i in range(Model.Parameters.shape[2] + 1)
+            ]
+        )  # average of all cells (not routed mm/timestep)
+        quz1 = np.array(
+            [
+                np.nansum(Model.quz[:, :, i])
+                for i in range(Model.Parameters.shape[2] + 1)
+            ]
+        )  # average of all cells (routed mm/timestep)
 
         qout = qlz1 + quz1
 
         # qout = (qlz1 + quz1) * Model.CatArea / (Model.Timef* 3.6)
 
         Model.qout = qout[:-1] + Lake.QlakeR
-
 
     @staticmethod
     def Lumped(Model, Routing=0, RoutingFn=[]):
@@ -282,32 +324,45 @@ class Wrapper:
             snow=0
         """
         ### input data validation
-        assert callable(RoutingFn) , "routing function should be of type callable (function that takes arguments)"
+        assert callable(
+            RoutingFn
+        ), "routing function should be of type callable (function that takes arguments)"
 
         # data
-        p = Model.data[:,0]
-        et = Model.data[:,1]
-        t = Model.data[:,2]
-        tm = Model.data[:,3]
+        p = Model.data[:, 0]
+        et = Model.data[:, 1]
+        t = Model.data[:, 2]
+        tm = Model.data[:, 3]
 
         # from the conceptual model calculate the upper and lower response mm/time step
-        Model.quz, Model.qlz, Model.statevariables = Model.LumpedModel.Simulate(p, t, et, tm,
-                                                     Model.Parameters,
-                                                     init_st = Model.InitialCond,
-                                                     q_init = Model.q_init,
-                                                     snow = Model.Snow)
+        Model.quz, Model.qlz, Model.statevariables = Model.LumpedModel.Simulate(
+            p,
+            t,
+            et,
+            tm,
+            Model.Parameters,
+            init_st=Model.InitialCond,
+            q_init=Model.q_init,
+            snow=Model.Snow,
+        )
         # q mm , area sq km  (1000**2)/1000/f/60/60 = 1/(3.6*f)
         # if daily tfac=24 if hourly tfac=1 if 15 min tfac=0.25
-        Model.quz = Model.quz*Model.CatArea/Model.conversionfactor
-        Model.qlz = Model.qlz*Model.CatArea/Model.conversionfactor
+        Model.quz = Model.quz * Model.CatArea / Model.conversionfactor
+        Model.qlz = Model.qlz * Model.CatArea / Model.conversionfactor
 
         Model.Qsim = Model.quz + Model.qlz
 
         if Routing != 0 and Model.Maxbas:
             Model.Qsim = RoutingFn(np.array(Model.Qsim[:-1]), Model.Parameters[-1])
         elif Routing != 0:
-            Model.Qsim = RoutingFn(np.array(Model.Qsim[:-1]), Model.Qsim[0],
-                                   Model.Parameters[-2], Model.Parameters[-1], Model.dt)
+            Model.Qsim = RoutingFn(
+                np.array(Model.Qsim[:-1]),
+                Model.Qsim[0],
+                Model.Parameters[-2],
+                Model.Parameters[-1],
+                Model.dt,
+            )
 
-if __name__=='__main__':
+
+if __name__ == "__main__":
     print("Wrapper")

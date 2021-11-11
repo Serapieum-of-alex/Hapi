@@ -3,11 +3,11 @@ name: hapi
 channels:
   - conda-forge
 dependencies:
-  - python  
+  - python
   - pip
   - matplotlib
-  - gdal  
-  - proj  
+  - gdal
+  - proj
   - affine
   - fiona
   - pandas

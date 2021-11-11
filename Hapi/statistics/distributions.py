@@ -1,23 +1,23 @@
+import warnings
+from collections import OrderedDict
 
+import matplotlib.pyplot as plt
 import numpy as np
 import scipy as sp
-import matplotlib.pyplot as plt
+import scipy.optimize as so
 from matplotlib import gridspec
 from numpy import ndarray
 from numpy.random import randint
-from collections import OrderedDict
-import scipy.optimize as so
-from scipy.stats import gumbel_r, norm, genextreme, ks_2samp, chisquare
+from scipy.stats import chisquare, genextreme, gumbel_r, ks_2samp, norm
+
+from Hapi.statistics.parameterestimation import Lmoments
 from Hapi.statistics.statisticaltools import StatisticalTools as st
 from Hapi.warnings import InstabilityWarning
-from Hapi.statistics.parameterestimation import Lmoments
-
-import warnings
 
 ninf = 1e-5
 
-class PlottingPosition:
 
+class PlottingPosition:
     def __init__(self):
         pass
 
@@ -54,11 +54,11 @@ class PlottingPosition:
     @staticmethod
     def Returnperiod(F):
         F = np.array(F)
-        T = 1 / (1-F)
+        T = 1 / (1 - F)
         return T
 
-class Gumbel:
 
+class Gumbel:
     def __init__(self, data):
         """
         data : [list]
@@ -77,8 +77,17 @@ class Gumbel:
 
         pass
 
-    def pdf(self, loc, scale, plot_figure=False, figsize=(6, 5), xlabel='Actual data',
-            ylabel='pdf', fontsize=15, actualdata=True):
+    def pdf(
+        self,
+        loc,
+        scale,
+        plot_figure=False,
+        figsize=(6, 5),
+        xlabel="Actual data",
+        ylabel="pdf",
+        fontsize=15,
+        actualdata=True,
+    ):
         """pdf.
 
         Returns the value of Gumbel's pdf with parameters loc and scale at x .
@@ -103,21 +112,39 @@ class Gumbel:
         else:
             ts = actualdata
 
-        z = (ts - loc)/scale
-        pdf = (1. / scale) * (np.exp(-(z + (np.exp(-z)))))
-
+        z = (ts - loc) / scale
+        pdf = (1.0 / scale) * (np.exp(-(z + (np.exp(-z)))))
+        # gumbel_r.pdf(data, loc=loc, scale=scale)
         if plot_figure:
-            Qx = np.linspace(float(self.data_sorted[0]), 1.5 * float(self.data_sorted[-1]), 10000)
+            Qx = np.linspace(
+                float(self.data_sorted[0]), 1.5 * float(self.data_sorted[-1]), 10000
+            )
             pdf_fitted = self.pdf(loc, scale, actualdata=Qx)
 
-            fig, ax = plot.pdf(Qx, pdf_fitted, self.data_sorted, figsize=figsize,
-                               xlabel=xlabel, ylabel=ylabel, fontsize=fontsize)
+            fig, ax = plot.pdf(
+                Qx,
+                pdf_fitted,
+                self.data_sorted,
+                figsize=figsize,
+                xlabel=xlabel,
+                ylabel=ylabel,
+                fontsize=fontsize,
+            )
             return pdf, fig, ax
         else:
             return pdf
 
-    def cdf(self, loc, scale, plot_figure=False, figsize=(6, 5), xlabel='data',
-            ylabel='cdf', fontsize=15, actualdata=True):
+    def cdf(
+        self,
+        loc,
+        scale,
+        plot_figure=False,
+        figsize=(6, 5),
+        xlabel="data",
+        ylabel="cdf",
+        fontsize=15,
+        actualdata=True,
+    ):
         """cdf.
 
         cdf calculates the value of Gumbel's cdf with parameters loc and scale at x.
@@ -137,17 +164,27 @@ class Gumbel:
         else:
             ts = actualdata
 
-        z = (ts - loc)/scale
+        z = (ts - loc) / scale
         cdf = np.exp(-np.exp(-z))
 
         if plot_figure:
-            Qx = np.linspace(float(self.data_sorted[0]), 1.5 * float(self.data_sorted[-1]), 10000)
+            Qx = np.linspace(
+                float(self.data_sorted[0]), 1.5 * float(self.data_sorted[-1]), 10000
+            )
             cdf_fitted = self.cdf(loc, scale, actualdata=Qx)
 
             cdf_Weibul = PlottingPosition.Weibul(self.data_sorted)
 
-            fig, ax = plot.cdf(Qx, cdf_fitted, self.data_sorted, cdf_Weibul,
-                               figsize=figsize, xlabel=xlabel, ylabel=ylabel, fontsize=fontsize)
+            fig, ax = plot.cdf(
+                Qx,
+                cdf_fitted,
+                self.data_sorted,
+                cdf_Weibul,
+                figsize=figsize,
+                xlabel=xlabel,
+                ylabel=ylabel,
+                fontsize=fontsize,
+            )
 
             return cdf, fig, ax
         else:
@@ -165,17 +202,17 @@ class Gumbel:
         loc = p[1]
         scale = p[2]
 
-        x1 = x[x<threshold]
-        nx2 = len(x[x>=threshold])
+        x1 = x[x < threshold]
+        nx2 = len(x[x >= threshold])
         # pdf with a scaled pdf
         # L1 is pdf based
-        L1 = (-np.log((Gumbel.pdf(x1, loc, scale)/scale))).sum()
+        L1 = (-np.log((Gumbel.pdf(x1, loc, scale) / scale))).sum()
         # L2 is cdf based
-        L2 = (-np.log(1-Gumbel.cdf(threshold, loc, scale)))*nx2
-        #print x1, nx2, L1, L2
-        return L1+L2
+        L2 = (-np.log(1 - Gumbel.cdf(threshold, loc, scale))) * nx2
+        # print x1, nx2, L1, L2
+        return L1 + L2
 
-    def EstimateParameter(self, method="mle", ObjFunc=None, threshold=None,Test=True):
+    def EstimateParameter(self, method="mle", ObjFunc=None, threshold=None, Test=True):
         """EstimateParameter.
 
         EstimateParameter estimate the distribution parameter based on MLM
@@ -208,21 +245,28 @@ class Gumbel:
         # #first we make a simple Gumbel fit
         # Par1 = so.fmin(obj_func, [0.5,0.5], args=(np.array(data),))
         method = method.lower()
-        if not method in ['mle', 'mm', 'lmoments', 'optimization']:
-            raise ValueError(method + "value should be 'mle', 'mm', 'lmoments' or 'optimization'")
-        if method == 'mle' or method == 'mm':
+        if not method in ["mle", "mm", "lmoments", "optimization"]:
+            raise ValueError(
+                method + "value should be 'mle', 'mm', 'lmoments' or 'optimization'"
+            )
+        if method == "mle" or method == "mm":
             Param = gumbel_r.fit(self.data, method=method)
-        elif method == 'lmoments':
+        elif method == "lmoments":
             LM = Lmoments(self.data)
             LMU = LM.Lmom()
             Param = Lmoments.Gumbel(LMU)
-        elif method == 'optimization':
+        elif method == "optimization":
             if ObjFunc is None or threshold is None:
                 raise TypeError("threshold should be numeric value")
             Param = gumbel_r.fit(self.data, method=method)
-            #then we use the result as starting value for your truncated Gumbel fit
-            Param = so.fmin(ObjFunc, [threshold, Param[0], Param[1]],  args=(self.data,),
-                            maxiter=500, maxfun=500)
+            # then we use the result as starting value for your truncated Gumbel fit
+            Param = so.fmin(
+                ObjFunc,
+                [threshold, Param[0], Param[1]],
+                args=(self.data,),
+                maxiter=500,
+                maxfun=500,
+            )
             Param = [Param[1], Param[2]]
 
         self.loc = Param[0]
@@ -278,9 +322,11 @@ class Gumbel:
             Pvalue : [numeric]
                 IF Pvalue < signeficance level ------ reject the null hypotethis
         """
-        if not hasattr(self,'loc') or not hasattr(self,'scale') :
-            raise ValueError("Value of loc/scale parameter is unknown please use "
-                             "'EstimateParameter' to obtain them")
+        if not hasattr(self, "loc") or not hasattr(self, "scale"):
+            raise ValueError(
+                "Value of loc/scale parameter is unknown please use "
+                "'EstimateParameter' to obtain them"
+            )
         Qth = self.TheporeticalEstimate(self.loc, self.scale, self.cdf_Weibul)
 
         test = ks_2samp(self.data, Qth)
@@ -296,11 +342,12 @@ class Gumbel:
         print("P value = " + str(test.pvalue))
         return test.statistic, test.pvalue
 
-
     def chisquare(self):
-        if not hasattr(self,'loc') or not hasattr(self,'scale') :
-            raise ValueError("Value of loc/scale parameter is unknown please use "
-                             "'EstimateParameter' to obtain them")
+        if not hasattr(self, "loc") or not hasattr(self, "scale"):
+            raise ValueError(
+                "Value of loc/scale parameter is unknown please use "
+                "'EstimateParameter' to obtain them"
+            )
 
         Qth = self.TheporeticalEstimate(self.loc, self.scale, self.cdf_Weibul)
 
@@ -338,15 +385,28 @@ class Gumbel:
 
         Qth = self.TheporeticalEstimate(loc, scale, F)
         Y = [-np.log(-np.log(j)) for j in F]
-        StdError = [(scale / np.sqrt(len(self.data))) * np.sqrt(1.1087 + 0.5140 * j + 0.6079 * j ** 2) for j in Y]
+        StdError = [
+            (scale / np.sqrt(len(self.data)))
+            * np.sqrt(1.1087 + 0.5140 * j + 0.6079 * j ** 2)
+            for j in Y
+        ]
         v = norm.ppf(1 - alpha / 2)
         Qupper = [Qth[j] + v * StdError[j] for j in range(len(self.data))]
         Qlower = [Qth[j] - v * StdError[j] for j in range(len(self.data))]
         return Qupper, Qlower
 
-    def ProbapilityPlot(self, loc, scale, F, alpha=0.1, fig1size=(10, 5),
-                        fig2size=(6, 6), xlabel='Actual data', ylabel='cdf',
-                        fontsize=15):
+    def ProbapilityPlot(
+        self,
+        loc,
+        scale,
+        F,
+        alpha=0.1,
+        fig1size=(10, 5),
+        fig2size=(6, 6),
+        xlabel="Actual data",
+        ylabel="cdf",
+        fontsize=15,
+    ):
         """ProbapilityPlot.
 
         ProbapilityPlot method calculates the theoretical values based on the Gumbel distribution
@@ -379,13 +439,28 @@ class Gumbel:
         Qth = self.TheporeticalEstimate(loc, scale, F)
         Qupper, Qlower = self.ConfidenceInterval(loc, scale, F, alpha)
 
-        Qx = np.linspace(float(self.data_sorted[0]), 1.5 * float(self.data_sorted[-1]), 10000)
+        Qx = np.linspace(
+            float(self.data_sorted[0]), 1.5 * float(self.data_sorted[-1]), 10000
+        )
         pdf_fitted = self.pdf(loc, scale, actualdata=Qx)
         cdf_fitted = self.cdf(loc, scale, actualdata=Qx)
 
-        fig, ax = plot.details(Qx, Qth, self.data, pdf_fitted, cdf_fitted, F, Qlower,
-             Qupper, alpha, fig1size=fig1size, fig2size=fig2size,
-             xlabel=xlabel, ylabel=ylabel, fontsize=fontsize)
+        fig, ax = plot.details(
+            Qx,
+            Qth,
+            self.data,
+            pdf_fitted,
+            cdf_fitted,
+            F,
+            Qlower,
+            Qupper,
+            alpha,
+            fig1size=fig1size,
+            fig2size=fig2size,
+            xlabel=xlabel,
+            ylabel=ylabel,
+            fontsize=fontsize,
+        )
 
         return fig, ax
 
@@ -412,9 +487,18 @@ class GEV:
         self.chi_Pvalue = None
         pass
 
-
-    def pdf(self, shape, loc, scale, plot_figure=False, figsize=(6, 5), xlabel='Actual data',
-            ylabel='pdf', fontsize=15, actualdata=True):
+    def pdf(
+        self,
+        shape,
+        loc,
+        scale,
+        plot_figure=False,
+        figsize=(6, 5),
+        xlabel="Actual data",
+        ylabel="pdf",
+        fontsize=15,
+        actualdata=True,
+    ):
         """pdf.
 
         Returns the value of GEV's pdf with parameters loc and scale at x .
@@ -453,7 +537,7 @@ class GEV:
             if y > ninf:
                 # np.log(y) = ln(y)
                 # ln is the inverse of e
-                lnY = (-1/ shape) * np.log(y)
+                lnY = (-1 / shape) * np.log(y)
                 val = np.exp(-(1 - shape) * lnY - np.exp(-lnY))
                 pdf.append((1 / scale) * val)
                 continue
@@ -476,19 +560,38 @@ class GEV:
         if len(pdf) == 1:
             pdf = pdf[0]
 
+        # genextreme.pdf(data, loc=loc, scale=scale, c=shape)
         if plot_figure:
-            Qx = np.linspace(float(self.data_sorted[0]), 1.5 * float(self.data_sorted[-1]), 10000)
+            Qx = np.linspace(
+                float(self.data_sorted[0]), 1.5 * float(self.data_sorted[-1]), 10000
+            )
             pdf_fitted = self.pdf(shape, loc, scale, actualdata=Qx)
 
-            fig, ax = plot.pdf(Qx, pdf_fitted, self.data_sorted, figsize=figsize,
-                               xlabel=xlabel, ylabel=ylabel, fontsize=fontsize)
+            fig, ax = plot.pdf(
+                Qx,
+                pdf_fitted,
+                self.data_sorted,
+                figsize=figsize,
+                xlabel=xlabel,
+                ylabel=ylabel,
+                fontsize=fontsize,
+            )
             return pdf, fig, ax
         else:
             return pdf
 
-
-    def cdf(self, shape, loc, scale, plot_figure=False, figsize=(6, 5), xlabel='Actual data',
-            ylabel='cdf', fontsize=15, actualdata=True):
+    def cdf(
+        self,
+        shape,
+        loc,
+        scale,
+        plot_figure=False,
+        figsize=(6, 5),
+        xlabel="Actual data",
+        ylabel="cdf",
+        fontsize=15,
+        actualdata=True,
+    ):
         """
         Returns the value of Gumbel's cdf with parameters loc and scale at x.
         """
@@ -507,9 +610,9 @@ class GEV:
         else:
             y = 1 - shape * z
             cdf = list()
-            for i in range(0,len(y)):
+            for i in range(0, len(y)):
                 if y[i] > ninf:
-                    logY = -np.log(y[i])/shape
+                    logY = -np.log(y[i]) / shape
                     cdf.append(np.exp(-np.exp(-logY)))
                 elif shape < 0:
                     cdf.append(0)
@@ -517,13 +620,23 @@ class GEV:
                     cdf.append(1)
 
         if plot_figure:
-            Qx = np.linspace(float(self.data_sorted[0]), 1.5 * float(self.data_sorted[-1]), 10000)
+            Qx = np.linspace(
+                float(self.data_sorted[0]), 1.5 * float(self.data_sorted[-1]), 10000
+            )
             cdf_fitted = self.cdf(shape, loc, scale, actualdata=Qx)
 
             cdf_Weibul = PlottingPosition.Weibul(self.data_sorted)
 
-            fig, ax = plot.cdf(Qx, cdf_fitted, self.data_sorted, cdf_Weibul,
-                          figsize=figsize, xlabel=xlabel, ylabel=ylabel, fontsize=fontsize)
+            fig, ax = plot.cdf(
+                Qx,
+                cdf_fitted,
+                self.data_sorted,
+                cdf_Weibul,
+                figsize=figsize,
+                xlabel=xlabel,
+                ylabel=ylabel,
+                fontsize=fontsize,
+            )
             return cdf, fig, ax
         else:
             return cdf
@@ -561,23 +674,30 @@ class GEV:
         # #first we make a simple Gumbel fit
         # Par1 = so.fmin(obj_func, [0.5,0.5], args=(np.array(data),))
         method = method.lower()
-        if not method in ['mle', 'mm', 'lmoments', 'optimization']:
-            raise ValueError(method + "value should be 'mle', 'mm', 'lmoments' or 'optimization'")
+        if not method in ["mle", "mm", "lmoments", "optimization"]:
+            raise ValueError(
+                method + "value should be 'mle', 'mm', 'lmoments' or 'optimization'"
+            )
 
-        if method == 'mle' or method == 'mm':
+        if method == "mle" or method == "mm":
             Param = genextreme.fit(self.data, method=method)
-        elif method == 'lmoments':
+        elif method == "lmoments":
             LM = Lmoments(self.data)
             LMU = LM.Lmom()
             Param = Lmoments.GEV(LMU)
-        elif method == 'optimization':
+        elif method == "optimization":
             if ObjFunc is None or threshold is None:
                 raise TypeError("ObjFunc and threshold should be numeric value")
 
             Param = genextreme.fit(self.data, method=method)
-            #then we use the result as starting value for your truncated Gumbel fit
-            Param = so.fmin(ObjFunc, [threshold, Param[0], Param[1], Param[2]],  args=(self.data,),
-                            maxiter=500, maxfun=500)
+            # then we use the result as starting value for your truncated Gumbel fit
+            Param = so.fmin(
+                ObjFunc,
+                [threshold, Param[0], Param[1], Param[2]],
+                args=(self.data,),
+                maxiter=500,
+                maxfun=500,
+            )
             Param = [Param[1], Param[2], Param[3]]
 
         self.shape = Param[0]
@@ -588,7 +708,7 @@ class GEV:
             self.ks()
             try:
                 self.chisquare()
-            except ValueError :
+            except ValueError:
                 print("chisquare test failed")
 
         return Param
@@ -651,10 +771,14 @@ class GEV:
             Pvalue : [numeric]
                 IF Pvalue < signeficance level ------ reject the null hypotethis
         """
-        if not hasattr(self,'loc') or not hasattr(self,'scale') :
-            raise ValueError("Value of loc/scale parameter is unknown please use "
-                             "'EstimateParameter' to obtain them")
-        Qth = self.TheporeticalEstimate(self.shape, self.loc, self.scale, self.cdf_Weibul)
+        if not hasattr(self, "loc") or not hasattr(self, "scale"):
+            raise ValueError(
+                "Value of loc/scale parameter is unknown please use "
+                "'EstimateParameter' to obtain them"
+            )
+        Qth = self.TheporeticalEstimate(
+            self.shape, self.loc, self.scale, self.cdf_Weibul
+        )
 
         test = ks_2samp(self.data, Qth)
         self.Dstatic = test.statistic
@@ -670,11 +794,15 @@ class GEV:
         return test.statistic, test.pvalue
 
     def chisquare(self):
-        if not hasattr(self,'loc') or not hasattr(self,'scale') :
-            raise ValueError("Value of loc/scale parameter is unknown please use "
-                             "'EstimateParameter' to obtain them")
+        if not hasattr(self, "loc") or not hasattr(self, "scale"):
+            raise ValueError(
+                "Value of loc/scale parameter is unknown please use "
+                "'EstimateParameter' to obtain them"
+            )
 
-        Qth = self.TheporeticalEstimate(self.shape, self.loc, self.scale, self.cdf_Weibul)
+        Qth = self.TheporeticalEstimate(
+            self.shape, self.loc, self.scale, self.cdf_Weibul
+        )
 
         test = chisquare(st.Standardize(Qth), st.Standardize(self.data))
         self.chistatic = test.statistic
@@ -685,9 +813,17 @@ class GEV:
 
         return test.statistic, test.pvalue
 
-
-    def ConfidenceInterval(self, shape, loc, scale, F, alpha=0.1, statfunction=np.average,
-                           n_samples=100, ** kargs):
+    def ConfidenceInterval(
+        self,
+        shape,
+        loc,
+        scale,
+        F,
+        alpha=0.1,
+        statfunction=np.average,
+        n_samples=100,
+        **kargs
+    ):
         """ConfidenceInterval.
 
         Parameters:
@@ -712,18 +848,35 @@ class GEV:
             raise ValueError("Scale Parameter is negative")
 
         Param = [shape, loc, scale]
-        CI = ConfidenceInterval.BootStrap(self.data, statfunction=statfunction,
-                                          gevfit=Param, F=F, alpha=alpha,
-                                          n_samples=n_samples, ** kargs)
+        CI = ConfidenceInterval.BootStrap(
+            self.data,
+            statfunction=statfunction,
+            gevfit=Param,
+            F=F,
+            alpha=alpha,
+            n_samples=n_samples,
+            **kargs
+        )
         Qlower = CI["LB"]
         Qupper = CI["UB"]
 
         return Qupper, Qlower
 
-
-    def ProbapilityPlot(self, shape, loc, scale, F, alpha=0.1, func=None,
-                        n_samples=100, fig1size=(10, 5), fig2size=(6, 6),
-                        xlabel='Actual data', ylabel='cdf', fontsize=15):
+    def ProbapilityPlot(
+        self,
+        shape,
+        loc,
+        scale,
+        F,
+        alpha=0.1,
+        func=None,
+        n_samples=100,
+        fig1size=(10, 5),
+        fig2size=(6, 6),
+        xlabel="Actual data",
+        ylabel="cdf",
+        fontsize=15,
+    ):
         """ProbapilityPlot.
 
         ProbapilityPlot method calculates the theoretical values based on the Gumbel distribution
@@ -766,24 +919,39 @@ class GEV:
         Qth = self.TheporeticalEstimate(shape, loc, scale, F)
         func = ConfidenceInterval.GEVfunc
         Param_dist = [shape, loc, scale]
-        CI = ConfidenceInterval.BootStrap(self.data, statfunction=func, gevfit=Param_dist,
-                                          n_samples=n_samples, F=F)
+        CI = ConfidenceInterval.BootStrap(
+            self.data, statfunction=func, gevfit=Param_dist, n_samples=n_samples, F=F
+        )
         Qlower = CI["LB"]
         Qupper = CI["UB"]
 
-        Qx = np.linspace(float(self.data_sorted[0]), 1.5 * float(self.data_sorted[-1]), 10000)
+        Qx = np.linspace(
+            float(self.data_sorted[0]), 1.5 * float(self.data_sorted[-1]), 10000
+        )
         pdf_fitted = self.pdf(shape, loc, scale, actualdata=Qx)
         cdf_fitted = self.cdf(shape, loc, scale, actualdata=Qx)
 
-        fig, ax = plot.details(Qx, Qth, self.data, pdf_fitted, cdf_fitted, F, Qlower,
-             Qupper, alpha, fig1size=(10, 5), fig2size=(6, 6),
-             xlabel='Actual data', ylabel='cdf', fontsize=15)
+        fig, ax = plot.details(
+            Qx,
+            Qth,
+            self.data,
+            pdf_fitted,
+            cdf_fitted,
+            F,
+            Qlower,
+            Qupper,
+            alpha,
+            fig1size=(10, 5),
+            fig2size=(6, 6),
+            xlabel="Actual data",
+            ylabel="cdf",
+            fontsize=15,
+        )
 
         return fig, ax
 
 
 class ConfidenceInterval:
-
     def __init__():
         pass
 
@@ -797,8 +965,7 @@ class ConfidenceInterval:
         for _ in range(n_samples):
             yield randint(data.shape[0], size=(data.shape[0],))
 
-    def BootStrap(data, statfunction=np.average, alpha=0.05,
-                     n_samples=100,**kargs):
+    def BootStrap(data, statfunction=np.average, alpha=0.05, n_samples=100, **kargs):
         """
         Calculate confidence intervals using parametric bootstrap and the
         percentil interval method
@@ -826,17 +993,28 @@ class ConfidenceInterval:
         # Instead, we can generate just the indexes, and then apply the statfun
         # to those indexes.
         bootindexes = ConfidenceInterval.BSIndexes(tdata[0], n_samples)
-        stat = np.array([statfunction(*(x[indexes] for x in tdata), **kargs) for indexes in bootindexes])
+        stat = np.array(
+            [
+                statfunction(*(x[indexes] for x in tdata), **kargs)
+                for indexes in bootindexes
+            ]
+        )
         stat.sort(axis=0)
 
         # Percentile Interval Method
         avals = alphas
-        nvals = np.round((n_samples - 1) * avals).astype('int')
+        nvals = np.round((n_samples - 1) * avals).astype("int")
 
         if np.any(nvals == 0) or np.any(nvals == n_samples - 1):
-            warnings.warn("Some values used extremal samples; results are probably unstable.", InstabilityWarning)
+            warnings.warn(
+                "Some values used extremal samples; results are probably unstable.",
+                InstabilityWarning,
+            )
         elif np.any(nvals < 10) or np.any(nvals >= n_samples - 10):
-            warnings.warn("Some values used top 10 low/high samples; results may be unstable.", InstabilityWarning)
+            warnings.warn(
+                "Some values used top 10 low/high samples; results may be unstable.",
+                InstabilityWarning,
+            )
 
         if nvals.ndim == 1:
             # All nvals are the same. Simple broadcasting
@@ -850,18 +1028,18 @@ class ConfidenceInterval:
         UB = out[0, 3:]
         LB = out[1, 3:]
         params = OrderedDict()
-        params['shape'] = (out[0, 0], out[1, 0])
-        params['location'] = (out[0, 1], out[1, 1])
-        params['scale'] = (out[0, 2], out[1, 3])
+        params["shape"] = (out[0, 0], out[1, 0])
+        params["location"] = (out[0, 1], out[1, 1])
+        params["scale"] = (out[0, 2], out[1, 3])
 
-        return {'LB': LB, 'UB': UB, 'params': params}
+        return {"LB": LB, "UB": UB, "params": params}
 
     # The function to bootstrap
     @staticmethod
     def GEVfunc(data, **kwargs):
 
-        gevfit = kwargs['gevfit']
-        F = kwargs['F']
+        gevfit = kwargs["gevfit"]
+        F = kwargs["F"]
         shape = gevfit[0]
         loc = gevfit[1]
         scale = gevfit[2]
@@ -891,64 +1069,103 @@ class plot:
     def __init__(self):
         pass
 
-    def pdf(Qx, pdf_fitted, data_sorted, figsize=(6, 5), xlabel='Actual data',
-            ylabel='pdf', fontsize=15):
+    def pdf(
+        Qx,
+        pdf_fitted,
+        data_sorted,
+        figsize=(6, 5),
+        xlabel="Actual data",
+        ylabel="pdf",
+        fontsize=15,
+    ):
 
         fig = plt.figure(figsize=figsize)
         # gs = gridspec.GridSpec(nrows=1, ncols=2, figure=fig)
         # Plot the histogram and the fitted distribution, save it for each gauge.
         ax = fig.add_subplot()
-        ax.plot(Qx, pdf_fitted, 'r-')
+        ax.plot(Qx, pdf_fitted, "r-")
         ax.hist(data_sorted, density=True)
         ax.set_xlabel(xlabel, fontsize=fontsize)
         ax.set_ylabel(ylabel, fontsize=fontsize)
         return fig, ax
 
     @staticmethod
-    def cdf(Qx, cdf_fitted, data_sorted, cdf_Weibul, figsize=(6, 5), xlabel='Actual data',
-            ylabel='cdf', fontsize=15):
+    def cdf(
+        Qx,
+        cdf_fitted,
+        data_sorted,
+        cdf_Weibul,
+        figsize=(6, 5),
+        xlabel="Actual data",
+        ylabel="cdf",
+        fontsize=15,
+    ):
 
         fig = plt.figure(figsize=figsize)
         ax = fig.add_subplot()
-        ax.plot(Qx, cdf_fitted, 'r-', label='Fitted distribution')
-        ax.plot(data_sorted, cdf_Weibul, '.-', label='Weibul plotting position')
+        ax.plot(Qx, cdf_fitted, "r-", label="Fitted distribution")
+        ax.plot(data_sorted, cdf_Weibul, ".-", label="Weibul plotting position")
         ax.set_xlabel(xlabel, fontsize=fontsize)
         ax.set_ylabel(ylabel, fontsize=fontsize)
         plt.legend(fontsize=fontsize, framealpha=1)
         return fig, ax
 
     @staticmethod
-    def details(Qx, Qth, Qact, pdf, cdf_fitted, F, Qlower,
-             Qupper, alpha, fig1size=(10, 5), fig2size=(6, 6),
-            xlabel='Actual data', ylabel='cdf', fontsize=15):
+    def details(
+        Qx,
+        Qth,
+        Qact,
+        pdf,
+        cdf_fitted,
+        F,
+        Qlower,
+        Qupper,
+        alpha,
+        fig1size=(10, 5),
+        fig2size=(6, 6),
+        xlabel="Actual data",
+        ylabel="cdf",
+        fontsize=15,
+    ):
 
         fig1 = plt.figure(figsize=fig1size)
         gs = gridspec.GridSpec(nrows=1, ncols=2, figure=fig1)
         # Plot the histogram and the fitted distribution, save it for each gauge.
         ax1 = fig1.add_subplot(gs[0, 0])
-        ax1.plot(Qx, pdf, 'r-')
+        ax1.plot(Qx, pdf, "r-")
         ax1.hist(Qact, density=True)
         ax1.set_xlabel(xlabel, fontsize=fontsize)
-        ax1.set_ylabel('pdf', fontsize=fontsize)
+        ax1.set_ylabel("pdf", fontsize=fontsize)
 
         ax2 = fig1.add_subplot(gs[0, 1])
-        ax2.plot(Qx, cdf_fitted, 'r-')
+        ax2.plot(Qx, cdf_fitted, "r-")
         Qact.sort()
-        ax2.plot(Qact, F, '.-')
+        ax2.plot(Qact, F, ".-")
         ax2.set_xlabel(xlabel, fontsize=fontsize)
         ax2.set_ylabel(ylabel, fontsize=15)
 
         fig2 = plt.figure(figsize=fig2size)
-        plt.plot(Qth, Qact, 'd', color='#606060', markersize=12,
-                 label='Actual Data')
-        plt.plot(Qth, Qth, '^-.', color="#3D59AB", label="Theoretical Data")
+        plt.plot(Qth, Qact, "d", color="#606060", markersize=12, label="Actual Data")
+        plt.plot(Qth, Qth, "^-.", color="#3D59AB", label="Theoretical Data")
 
-        plt.plot(Qth, Qlower, '*--', color="#DC143C", markersize=12,
-                 label='Lower limit (' + str(int((1 - alpha) * 100)) + " % CI)")
-        plt.plot(Qth, Qupper, '*--', color="#DC143C", markersize=12,
-                 label='Upper limit (' + str(int((1 - alpha) * 100)) + " % CI)")
+        plt.plot(
+            Qth,
+            Qlower,
+            "*--",
+            color="#DC143C",
+            markersize=12,
+            label="Lower limit (" + str(int((1 - alpha) * 100)) + " % CI)",
+        )
+        plt.plot(
+            Qth,
+            Qupper,
+            "*--",
+            color="#DC143C",
+            markersize=12,
+            label="Upper limit (" + str(int((1 - alpha) * 100)) + " % CI)",
+        )
         plt.legend(fontsize=fontsize, framealpha=1)
-        plt.xlabel('Theoretical Values', fontsize=fontsize)
-        plt.ylabel('Actual Values', fontsize=fontsize)
+        plt.xlabel("Theoretical Values", fontsize=fontsize)
+        plt.ylabel("Actual Values", fontsize=fontsize)
 
         return [fig1, fig2], [ax1, ax2]

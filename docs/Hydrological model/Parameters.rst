@@ -10,7 +10,7 @@ Based on Beck et al., (2016) there is 10 sets of global parameters which are der
 Extract Distributed Parameters
 ----------
 
-The only input we need to extract parameters to our catchment is the DEM or any raster that has the full extent and allignment of the catchment and use the `Inputs` object to select the set of parameters we want 
+The only input we need to extract parameters to our catchment is the DEM or any raster that has the full extent and allignment of the catchment and use the `Inputs` object to select the set of parameters we want
 
 - import the class from the inputs module
 
@@ -23,7 +23,7 @@ The only input we need to extract parameters to our catchment is the DEM or any 
 	dem_path = "../../data/GIS/Hapi_GIS_Data/acc4000.tif"
 	outputpath = "../../data/parameters/03/"
 
-- call the `ExtractParameters` method 
+- call the `ExtractParameters` method
 
 .. code:: py
 
@@ -36,7 +36,7 @@ Extract Calibration boundaries for the Parameters
 
 You will find the following example in the `ExtractParametersBounds.py` file under the folder `/Examples/Create Inputs`. There is no need for copy paste work.
 
-To Extract the parameters range needed for the Calibration you have to prepare a shapefile of the catchment you are developing a distributed model and read it using `geopandas`, 
+To Extract the parameters range needed for the Calibration you have to prepare a shapefile of the catchment you are developing a distributed model and read it using `geopandas`,
 
 .. code:: py
 

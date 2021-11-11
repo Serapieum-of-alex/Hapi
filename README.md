@@ -36,33 +36,33 @@ Current release info
 ![Hapi](/docs/img/Hapi4.png) ![Hapi](/docs/img/name.png)
 
 
-Hapi - Hydrological library for Python 
+Hapi - Hydrological library for Python
 =====================================================================
-**Hapi** is an open-source Python Framework for building raster-based conceptual distributed hydrological models using HBV96 lumped 
-model & Muskingum routing method at a catchment scale (Farrag & Corzo, 2021), Hapi gives a high degree of flexibility to all components of the model 
+**Hapi** is an open-source Python Framework for building raster-based conceptual distributed hydrological models using HBV96 lumped
+model & Muskingum routing method at a catchment scale (Farrag & Corzo, 2021), Hapi gives a high degree of flexibility to all components of the model
 (spatial discretization - cell size, temporal resolution, parameterization approaches and calibration (Farrag et al., 2021)).
 
 
 ![1](/docs/img/Picture1.png)  ![2](/docs/img/Picture2.png)
 
-Hapi 
+Hapi
 
 Main Features
 -------------
   - Modified version of HBV96 hydrological model (Bergström, 1992) with 15 parameters in case of considering
    snow processes, and 10 parameters without snow, in addition to 2 parameters of Muskingum routing method
-  - Remote sensing module to download the meteorological inputs required for the hydrologic model simulation (ECMWF) 
-  - GIS modules to enable the modeler to fully prepare the meteorological inputs and do all the preprocessing 
-    needed to build the model (align rasters with the DEM), in addition to various methods to manipulate and 
+  - Remote sensing module to download the meteorological inputs required for the hydrologic model simulation (ECMWF)
+  - GIS modules to enable the modeler to fully prepare the meteorological inputs and do all the preprocessing
+    needed to build the model (align rasters with the DEM), in addition to various methods to manipulate and
     convert different forms of distributed data (rasters, NetCDF, shapefiles)
-  - Sensitivity analysis module based on the concept of one-at-a-time OAT and analysis of the interaction among 
+  - Sensitivity analysis module based on the concept of one-at-a-time OAT and analysis of the interaction among
     model parameters using the Sobol concept ((Rusli et al., 2015)) and a visualization
-  - Statistical module containing interpolation methods for generating distributed data from gauge data, some 
+  - Statistical module containing interpolation methods for generating distributed data from gauge data, some
     distribution for frequency analysis and Maximum likelihood method for distribution parameter estimation.
   - Visualization module for animating the results of the distributed model, and the meteorological inputs
-  - Optimization module, for calibrating the model based on the Harmony search method 
+  - Optimization module, for calibrating the model based on the Harmony search method
 
-The recent version of Hapi (Hapi 1.0.1) integrates the global hydrological parameters obtained by Beck et al., (2016), 
+The recent version of Hapi (Hapi 1.0.1) integrates the global hydrological parameters obtained by Beck et al., (2016),
 to reduce model complexity and uncertainty of parameters.
 
 Future work
@@ -126,5 +126,3 @@ Quick start
 ```
 
 [other code samples](https://hapi-hm.readthedocs.io/en/latest/?badge=latest)
-
-

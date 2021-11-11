@@ -25,7 +25,7 @@ provider:
   linux: travis
 #  osx: travis
 #  win: travis
-  
+
 skip_render:
   - README.md
   - LICENSE.txt

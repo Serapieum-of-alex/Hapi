@@ -14,10 +14,10 @@ Created on Sun Jun 24 21:02:34 2018
 import numpy as np
 import pandas as pd
 
-
-from Hapi.rrm.wrapper import Wrapper
 from Hapi.catchment import Catchment
 from Hapi.hm.saintvenant import SaintVenant
+from Hapi.rrm.wrapper import Wrapper
+
 
 class Run(Catchment):
     """
@@ -38,7 +38,6 @@ class Run(Catchment):
 
     def __init__(self):
         pass
-
 
     def RunHapi(self):
         """
@@ -99,15 +98,29 @@ class Run(Catchment):
         # assert type(self.FlowDir)==gdal.Dataset, "flow_direct should be read using gdal (gdal dataset please read it using gdal library) "
 
         # input dimensions
-        [fd_rows,fd_cols] = self.FlowDirArr.shape
-        assert fd_rows == self.rows and fd_cols == self.cols, "all input data should have the same number of rows"
+        [fd_rows, fd_cols] = self.FlowDirArr.shape
+        assert (
+            fd_rows == self.rows and fd_cols == self.cols
+        ), "all input data should have the same number of rows"
 
         # input dimensions
-        assert np.shape(self.Prec)[0] == self.rows and np.shape(self.ET)[0] == self.rows and np.shape(self.Temp)[0] == self.rows and np.shape(self.Parameters)[0] == self.rows, "all input data should have the same number of rows"
-        assert np.shape(self.Prec)[1] == self.cols and np.shape(self.ET)[1] == self.cols and np.shape(self.Temp)[1] == self.cols and np.shape(self.Parameters)[1] == self.cols, "all input data should have the same number of columns"
-        assert np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2], "all meteorological input data should have the same length"
+        assert (
+            np.shape(self.Prec)[0] == self.rows
+            and np.shape(self.ET)[0] == self.rows
+            and np.shape(self.Temp)[0] == self.rows
+            and np.shape(self.Parameters)[0] == self.rows
+        ), "all input data should have the same number of rows"
+        assert (
+            np.shape(self.Prec)[1] == self.cols
+            and np.shape(self.ET)[1] == self.cols
+            and np.shape(self.Temp)[1] == self.cols
+            and np.shape(self.Parameters)[1] == self.cols
+        ), "all input data should have the same number of columns"
+        assert (
+            np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2]
+        ), "all meteorological input data should have the same length"
 
-        #run the model
+        # run the model
         Wrapper.RRMModel(self)
 
         print("Model Run has finished")
@@ -171,24 +184,47 @@ class Run(Catchment):
         # assert type(self.FlowDir)==gdal.Dataset, "flow_direct should be read using gdal (gdal dataset please read it using gdal library) "
 
         # input dimensions
-        [fd_rows,fd_cols] = self.FlowDirArr.shape
-        assert fd_rows == self.rows and fd_cols == self.cols, "all input data should have the same number of rows"
+        [fd_rows, fd_cols] = self.FlowDirArr.shape
+        assert (
+            fd_rows == self.rows and fd_cols == self.cols
+        ), "all input data should have the same number of rows"
 
         # input dimensions
-        assert np.shape(self.Prec)[0] == self.rows and np.shape(self.ET)[0] == self.rows and np.shape(self.Temp)[0] == self.rows and np.shape(self.Parameters)[0] == self.rows, "all input data should have the same number of rows"
-        assert np.shape(self.Prec)[1] == self.cols and np.shape(self.ET)[1] == self.cols and np.shape(self.Temp)[1] == self.cols and np.shape(self.Parameters)[1] == self.cols, "all input data should have the same number of columns"
-        assert np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2], "all meteorological input data should have the same length"
+        assert (
+            np.shape(self.Prec)[0] == self.rows
+            and np.shape(self.ET)[0] == self.rows
+            and np.shape(self.Temp)[0] == self.rows
+            and np.shape(self.Parameters)[0] == self.rows
+        ), "all input data should have the same number of rows"
+        assert (
+            np.shape(self.Prec)[1] == self.cols
+            and np.shape(self.ET)[1] == self.cols
+            and np.shape(self.Temp)[1] == self.cols
+            and np.shape(self.Parameters)[1] == self.cols
+        ), "all input data should have the same number of columns"
+        assert (
+            np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2]
+        ), "all meteorological input data should have the same length"
 
-        assert np.shape(self.BankfullDepth)[0] == self.rows and np.shape(self.RiverWidth)[0] == self.rows and np.shape(self.RiverRoughness)[0] == self.rows and np.shape(self.FloodPlainRoughness)[0] == self.rows, "all input data should have the same number of rows"
-        assert np.shape(self.BankfullDepth)[1] == self.cols and np.shape(self.RiverWidth)[1] == self.cols and np.shape(self.RiverRoughness)[1] == self.cols and np.shape(self.FloodPlainRoughness)[1] == self.cols, "all input data should have the same number of columns"
+        assert (
+            np.shape(self.BankfullDepth)[0] == self.rows
+            and np.shape(self.RiverWidth)[0] == self.rows
+            and np.shape(self.RiverRoughness)[0] == self.rows
+            and np.shape(self.FloodPlainRoughness)[0] == self.rows
+        ), "all input data should have the same number of rows"
+        assert (
+            np.shape(self.BankfullDepth)[1] == self.cols
+            and np.shape(self.RiverWidth)[1] == self.cols
+            and np.shape(self.RiverRoughness)[1] == self.cols
+            and np.shape(self.FloodPlainRoughness)[1] == self.cols
+        ), "all input data should have the same number of columns"
 
-        #run the model
+        # run the model
         Wrapper.RRMModel(self)
         print("RRM has finished")
         SV = SaintVenant()
         SV.KinematicRaster(self)
         print("1D model Run has finished")
-
 
     def RunHAPIwithLake(self, Lake):
         """
@@ -242,22 +278,39 @@ class Run(Catchment):
                                               FlowAccPath,FlowDPath,ParPath,p2)
         """
         # input dimensions
-        [fd_rows,fd_cols] = self.FlowDirArr.shape
-        assert fd_rows == self.rows and fd_cols == self.cols, "all input data should have the same number of rows"
+        [fd_rows, fd_cols] = self.FlowDirArr.shape
+        assert (
+            fd_rows == self.rows and fd_cols == self.cols
+        ), "all input data should have the same number of rows"
 
         # input dimensions
-        assert np.shape(self.Prec)[0] == self.rows and np.shape(self.ET)[0] == self.rows and np.shape(self.Temp)[0] == self.rows and np.shape(self.Parameters)[0] == self.rows, "all input data should have the same number of rows"
-        assert np.shape(self.Prec)[1] == self.cols and np.shape(self.ET)[1] == self.cols and np.shape(self.Temp)[1] == self.cols and np.shape(self.Parameters)[1] == self.cols, "all input data should have the same number of columns"
-        assert np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2], "all meteorological input data should have the same length"
+        assert (
+            np.shape(self.Prec)[0] == self.rows
+            and np.shape(self.ET)[0] == self.rows
+            and np.shape(self.Temp)[0] == self.rows
+            and np.shape(self.Parameters)[0] == self.rows
+        ), "all input data should have the same number of rows"
+        assert (
+            np.shape(self.Prec)[1] == self.cols
+            and np.shape(self.ET)[1] == self.cols
+            and np.shape(self.Temp)[1] == self.cols
+            and np.shape(self.Parameters)[1] == self.cols
+        ), "all input data should have the same number of columns"
+        assert (
+            np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2]
+        ), "all meteorological input data should have the same length"
 
-        assert np.shape(Lake.MeteoData)[0] == np.shape(self.Prec)[2], "Lake meteorological data has to have the same length as the distributed raster data"
-        assert np.shape(Lake.MeteoData)[1] >= 3, "Lake Meteo data has to have at least three columns rain, ET, and Temp"
+        assert (
+            np.shape(Lake.MeteoData)[0] == np.shape(self.Prec)[2]
+        ), "Lake meteorological data has to have the same length as the distributed raster data"
+        assert (
+            np.shape(Lake.MeteoData)[1] >= 3
+        ), "Lake Meteo data has to have at least three columns rain, ET, and Temp"
 
-        #run the model
+        # run the model
         Wrapper.RRMWithlake(self, Lake)
 
         print("Model Run has finished")
-
 
     def RunFW1(self):
         """
@@ -313,17 +366,28 @@ class Run(Catchment):
         # input data validation
 
         # input dimensions
-        assert np.shape(self.Prec)[0] == self.rows and np.shape(self.ET)[0] == self.rows and np.shape(self.Temp)[0] == self.rows and np.shape(self.Parameters)[0] == self.rows, "all input data should have the same number of rows"
-        assert np.shape(self.Prec)[1] == self.cols and np.shape(self.ET)[1] == self.cols and np.shape(self.Temp)[1] == self.cols and np.shape(self.Parameters)[1] == self.cols, "all input data should have the same number of columns"
-        assert np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2], "all meteorological input data should have the same length"
+        assert (
+            np.shape(self.Prec)[0] == self.rows
+            and np.shape(self.ET)[0] == self.rows
+            and np.shape(self.Temp)[0] == self.rows
+            and np.shape(self.Parameters)[0] == self.rows
+        ), "all input data should have the same number of rows"
+        assert (
+            np.shape(self.Prec)[1] == self.cols
+            and np.shape(self.ET)[1] == self.cols
+            and np.shape(self.Temp)[1] == self.cols
+            and np.shape(self.Parameters)[1] == self.cols
+        ), "all input data should have the same number of columns"
+        assert (
+            np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2]
+        ), "all meteorological input data should have the same length"
 
-        #run the model
+        # run the model
         Wrapper.FW1(self)
 
         print("Model Run has finished")
 
-
-    def RunFW1withLake(self,Lake):
+    def RunFW1withLake(self, Lake):
         """
         =======================================================================
             RunDistwithLake(PrecPath, Evap_Path, TempPath, DemPath, FlowAccPath, FlowDPath, ParPath, p2)
@@ -377,17 +441,31 @@ class Run(Catchment):
         # input data validation
 
         # input dimensions
-        assert np.shape(self.Prec)[0] == self.rows and np.shape(self.ET)[0] == self.rows and np.shape(self.Temp)[0] == self.rows and np.shape(self.Parameters)[0] == self.rows, "all input data should have the same number of rows"
-        assert np.shape(self.Prec)[1] == self.cols and np.shape(self.ET)[1] == self.cols and np.shape(self.Temp)[1] == self.cols and np.shape(self.Parameters)[1] == self.cols, "all input data should have the same number of columns"
-        assert np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2], "all meteorological input data should have the same length"
+        assert (
+            np.shape(self.Prec)[0] == self.rows
+            and np.shape(self.ET)[0] == self.rows
+            and np.shape(self.Temp)[0] == self.rows
+            and np.shape(self.Parameters)[0] == self.rows
+        ), "all input data should have the same number of rows"
+        assert (
+            np.shape(self.Prec)[1] == self.cols
+            and np.shape(self.ET)[1] == self.cols
+            and np.shape(self.Temp)[1] == self.cols
+            and np.shape(self.Parameters)[1] == self.cols
+        ), "all input data should have the same number of columns"
+        assert (
+            np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2]
+        ), "all meteorological input data should have the same length"
 
-        assert np.shape(Lake.MeteoData)[0] == np.shape(self.Prec)[2], "Lake meteorological data has to have the same length as the distributed raster data"
-        assert np.shape(Lake.MeteoData)[1] >= 3, "Lake Meteo data has to have at least three columns rain, ET, and Temp"
+        assert (
+            np.shape(Lake.MeteoData)[0] == np.shape(self.Prec)[2]
+        ), "Lake meteorological data has to have the same length as the distributed raster data"
+        assert (
+            np.shape(Lake.MeteoData)[1] >= 3
+        ), "Lake Meteo data has to have at least three columns rain, ET, and Temp"
 
-        #run the model
+        # run the model
         Wrapper.FW1Withlake(self, Lake)
-
-
 
     def RunLumped(self, Route=0, RoutingFn=[]):
         """
@@ -436,13 +514,14 @@ class Run(Catchment):
         else:
             ind = pd.date_range(self.StartDate, self.EndDate, freq="H")
 
-        Qsim = pd.DataFrame(index = ind)
+        Qsim = pd.DataFrame(index=ind)
 
         Wrapper.Lumped(self, Route, RoutingFn)
-        Qsim['q'] = self.Qsim
+        Qsim["q"] = self.Qsim
         self.Qsim = Qsim[:]
 
         print("Model Run has finished")
 
-if __name__=='__main__':
+
+if __name__ == "__main__":
     print("Run")

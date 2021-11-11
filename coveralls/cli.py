@@ -42,54 +42,55 @@ from .api import Coveralls
 from .exception import CoverallsException
 from .version import __version__
 
-
-log = logging.getLogger('coveralls')
+log = logging.getLogger("coveralls")
 
 
 def main(argv=None):
     options = docopt.docopt(__doc__, argv=argv, version=__version__)
-    if options['debug']:
-        options['--verbose'] = True
+    if options["debug"]:
+        options["--verbose"] = True
 
-    level = logging.DEBUG if options['--verbose'] else logging.INFO
+    level = logging.DEBUG if options["--verbose"] else logging.INFO
     log.addHandler(logging.StreamHandler())
     log.setLevel(level)
 
-    token_required = not options['debug'] and not options['--output']
+    token_required = not options["debug"] and not options["--output"]
 
     try:
-        coverallz = Coveralls(token_required,
-                              config_file=options['--rcfile'],
-                              service_name=options['--service'])
+        coverallz = Coveralls(
+            token_required,
+            config_file=options["--rcfile"],
+            service_name=options["--service"],
+        )
 
-        if options['--merge']:
-            coverallz.merge(options['--merge'])
+        if options["--merge"]:
+            coverallz.merge(options["--merge"])
 
-        if options['debug']:
-            log.info('Testing coveralls-python...')
+        if options["debug"]:
+            log.info("Testing coveralls-python...")
             coverallz.wear(dry_run=True)
             return
 
-        if options['--output']:
-            log.info('Write coverage report to file...')
-            coverallz.save_report(options['--output'])
+        if options["--output"]:
+            log.info("Write coverage report to file...")
+            coverallz.save_report(options["--output"])
             return
 
-        if options['--finish']:
-            log.info('Finishing parallel jobs...')
+        if options["--finish"]:
+            log.info("Finishing parallel jobs...")
             coverallz.parallel_finish()
-            log.info('Done')
+            log.info("Done")
             return
 
-        log.info('Submitting coverage to coveralls.io...')
+        log.info("Submitting coverage to coveralls.io...")
         result = coverallz.wear()
 
-        log.info('Coverage submitted!')
+        log.info("Coverage submitted!")
         log.debug(result)
-        log.info(result['message'])
-        log.info(result['url'])
+        log.info(result["message"])
+        log.info(result["url"])
     except KeyboardInterrupt:  # pragma: no cover
-        log.info('Aborted')
+        log.info("Aborted")
     except CoverallsException as e:
         log.exception(e)
         sys.exit(1)

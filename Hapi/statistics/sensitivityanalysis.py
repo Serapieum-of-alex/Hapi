@@ -4,12 +4,15 @@ Created on Mon Mar 29 21:32:29 2021
 
 @author: mofarrag
 """
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+
 import Hapi.visualizer as V
+
 Vis = V.Visualize(1)
 
-class SensitivityAnalysis():
+
+class SensitivityAnalysis:
     """
     ==============================
         SensitivityAnalysis
@@ -21,6 +24,7 @@ class SensitivityAnalysis():
         2- Sobol
 
     """
+
     def __init__(self, Parameter, LB, UB, Function, Positions=[], NoValues=5, Type=1):
         """
         =============================================================================
@@ -63,8 +67,12 @@ class SensitivityAnalysis():
         self.LB = LB
         self.UB = UB
 
-        assert len(self.Parameter) == len(self.LB) == len(self.UB) , "Length of the boundary shoulf be of the same length as the length of the parameters"
-        assert callable(Function) , "function should be of type callable (function that takes arguments)"
+        assert (
+            len(self.Parameter) == len(self.LB) == len(self.UB)
+        ), "Length of the boundary shoulf be of the same length as the length of the parameters"
+        assert callable(
+            Function
+        ), "function should be of type callable (function that takes arguments)"
         self.Function = Function
 
         self.NoValues = NoValues
@@ -77,8 +85,7 @@ class SensitivityAnalysis():
             self.NoPar = len(Positions)
             self.Positions = Positions
 
-
-    def OAT(self, *args,**kwargs):
+    def OAT(self, *args, **kwargs):
         """
         ======================================================================
            OAT(Parameter, LB, UB, Function,*args,**kwargs)
@@ -110,34 +117,36 @@ class SensitivityAnalysis():
 
         """
 
-        self.sen={}
+        self.sen = {}
 
         for i in range(self.NoPar):
             k = self.Positions[i]
             if self.Type == 1:
-                self.sen[self.Parameter.index[k]]=[[],[],[]]
+                self.sen[self.Parameter.index[k]] = [[], [], []]
             else:
-                self.sen[self.Parameter.index[k]]=[[],[],[],[]]
+                self.sen[self.Parameter.index[k]] = [[], [], [], []]
             # generate 5 random values between the high and low parameter bounds
-            rand_value = np.linspace(self.LB[k],self.UB[k],self.NoValues)
+            rand_value = np.linspace(self.LB[k], self.UB[k], self.NoValues)
             # add the value of the calibrated parameter and sort the values
-            rand_value = np.sort(np.append(rand_value,self.Parameter['value'][k]))
+            rand_value = np.sort(np.append(rand_value, self.Parameter["value"][k]))
             # store the relative values of the parameters in the first list in the dict
-            self.sen[self.Parameter.index[k]][0] = [((h)/self.Parameter['value'][k]) for h in rand_value]
+            self.sen[self.Parameter.index[k]][0] = [
+                ((h) / self.Parameter["value"][k]) for h in rand_value
+            ]
 
-            Randpar = self.Parameter['value'].tolist()
+            Randpar = self.Parameter["value"].tolist()
             for j in range(len(rand_value)):
                 Randpar[k] = rand_value[j]
                 # args = list(args)
                 # args.insert(Position,Randpar)
                 if self.Type == 1:
-                    metric = self.Function(Randpar,*args,**kwargs)
+                    metric = self.Function(Randpar, *args, **kwargs)
                 else:
-                    metric, CalculatedValues= self.Function(Randpar,*args,**kwargs)
+                    metric, CalculatedValues = self.Function(Randpar, *args, **kwargs)
                     self.sen[self.Parameter.index[k]][3].append(CalculatedValues)
                 try:
                     # store the metric value in the second list in the dict
-                    self.sen[self.Parameter.index[k]][1].append(round(metric,3))
+                    self.sen[self.Parameter.index[k]][1].append(round(metric, 3))
                 except TypeError:
                     message = """the Given Function returns more than one value,
                     the function should return only one value for Type=1, or
@@ -145,15 +154,24 @@ class SensitivityAnalysis():
                     """
                     assert False, message
                 # store the real values of the parameter in the third list in the dict
-                self.sen[self.Parameter.index[k]][2].append(round(rand_value[j],4))
-                print( str(k)+'-'+self.Parameter.index[k]+' -'+ str(j))
-                print(round(metric,3))
+                self.sen[self.Parameter.index[k]][2].append(round(rand_value[j], 4))
+                print(str(k) + "-" + self.Parameter.index[k] + " -" + str(j))
+                print(round(metric, 3))
 
-
-    def Sobol(self, RealValues=False, Title='',  #CalculatedValues=False,
-              xlabel='xlabel', ylabel='Metric values', labelfontsize=12,
-              From='', To='',Title2='', xlabel2='xlabel2', ylabel2='ylabel2',
-              spaces=[None,None,None,None,None,None]):
+    def Sobol(
+        self,
+        RealValues=False,
+        Title="",  # CalculatedValues=False,
+        xlabel="xlabel",
+        ylabel="Metric values",
+        labelfontsize=12,
+        From="",
+        To="",
+        Title2="",
+        xlabel2="xlabel2",
+        ylabel2="ylabel2",
+        spaces=[None, None, None, None, None, None],
+    ):
         """
         =============================================================================
              Sobol(RealValues=False, CalculatedValues=False, Title='',
@@ -209,41 +227,63 @@ class SensitivityAnalysis():
             for i in range(self.NoPar):
                 k = self.Positions[i]
                 if RealValues:
-                    ax.plot(self.sen[self.Parameter.index[k]][2],self.sen[self.Parameter.index[k]][1],
-                             Vis.MarkerStyle(k),linewidth=3,markersize=10, label=self.Parameter.index[k])
+                    ax.plot(
+                        self.sen[self.Parameter.index[k]][2],
+                        self.sen[self.Parameter.index[k]][1],
+                        Vis.MarkerStyle(k),
+                        linewidth=3,
+                        markersize=10,
+                        label=self.Parameter.index[k],
+                    )
                 else:
-                    ax.plot(self.sen[self.Parameter.index[k]][0],self.sen[self.Parameter.index[k]][1],
-                             Vis.MarkerStyle(k),linewidth=3,markersize=10, label=self.Parameter.index[k])
+                    ax.plot(
+                        self.sen[self.Parameter.index[k]][0],
+                        self.sen[self.Parameter.index[k]][1],
+                        Vis.MarkerStyle(k),
+                        linewidth=3,
+                        markersize=10,
+                        label=self.Parameter.index[k],
+                    )
 
+            ax.set_title(Title, fontsize=12)
+            ax.set_xlabel(xlabel, fontsize=12)
+            ax.set_ylabel(ylabel, fontsize=12)
 
-            ax.set_title(Title,fontsize=12)
-            ax.set_xlabel(xlabel,fontsize=12)
-            ax.set_ylabel(ylabel,fontsize=12)
-
-            ax.tick_params(axis='both', which='major', labelsize=labelfontsize)
+            ax.tick_params(axis="both", which="major", labelsize=labelfontsize)
 
             ax.legend(fontsize=12)
             plt.tight_layout()
             return fig, ax
-        else : #self.Type == 2 and CalculatedValues
+        else:  # self.Type == 2 and CalculatedValues
             try:
-                fig, (ax1,ax2) = plt.subplots(ncols=1, nrows=2, figsize=(8, 6))
+                fig, (ax1, ax2) = plt.subplots(ncols=1, nrows=2, figsize=(8, 6))
 
                 for i in range(self.NoPar):
-                # for i in range(len(self.sen[self.Parameter.index[0]][0])):
+                    # for i in range(len(self.sen[self.Parameter.index[0]][0])):
                     k = self.Positions[i]
                     if RealValues:
-                        ax1.plot(self.sen[self.Parameter.index[k]][2],self.sen[self.Parameter.index[k]][1],
-                                 Vis.MarkerStyle(k), linewidth=3,markersize=10, label=self.Parameter.index[k])
+                        ax1.plot(
+                            self.sen[self.Parameter.index[k]][2],
+                            self.sen[self.Parameter.index[k]][1],
+                            Vis.MarkerStyle(k),
+                            linewidth=3,
+                            markersize=10,
+                            label=self.Parameter.index[k],
+                        )
                     else:
-                        ax1.plot(self.sen[self.Parameter.index[k]][0],self.sen[self.Parameter.index[k]][1],
-                                 Vis.MarkerStyle(k), linewidth=3,markersize=10, label=self.Parameter.index[k])
+                        ax1.plot(
+                            self.sen[self.Parameter.index[k]][0],
+                            self.sen[self.Parameter.index[k]][1],
+                            Vis.MarkerStyle(k),
+                            linewidth=3,
+                            markersize=10,
+                            label=self.Parameter.index[k],
+                        )
 
-
-                ax1.set_title(Title,fontsize=12)
-                ax1.set_xlabel(xlabel,fontsize=12)
-                ax1.set_ylabel(ylabel,fontsize=12)
-                ax1.tick_params(axis='both', which='major', labelsize=labelfontsize)
+                ax1.set_title(Title, fontsize=12)
+                ax1.set_xlabel(xlabel, fontsize=12)
+                ax1.set_ylabel(ylabel, fontsize=12)
+                ax1.tick_params(axis="both", which="major", labelsize=labelfontsize)
 
                 ax1.legend(fontsize=12)
 
@@ -251,44 +291,59 @@ class SensitivityAnalysis():
                     k = self.Positions[i]
                     # for j in range(self.NoValues):
                     for j in range(len(self.sen[self.Parameter.index[k]][0])):
-                        if From == '':
+                        if From == "":
                             From = 0
-                        if To == '':
+                        if To == "":
                             To = len(self.sen[self.Parameter.index[k]][3][j].values)
 
-                        ax2.plot(self.sen[self.Parameter.index[k]][3][j].values[From:To],
-                                 label=self.sen[self.Parameter.index[k]][2][j])
+                        ax2.plot(
+                            self.sen[self.Parameter.index[k]][3][j].values[From:To],
+                            label=self.sen[self.Parameter.index[k]][2][j],
+                        )
 
                 # ax2.legend(fontsize=12)
                 box = ax2.get_position()
-                ax2.set_position([box.x0, box.y0,box.width*0.8,box.height])
-                ax2.legend(loc=6, fancybox=True, bbox_to_anchor = (1.015,0.5))
+                ax2.set_position([box.x0, box.y0, box.width * 0.8, box.height])
+                ax2.legend(loc=6, fancybox=True, bbox_to_anchor=(1.015, 0.5))
 
-                ax2.set_title(Title2,fontsize=12)
-                ax2.set_xlabel(xlabel2,fontsize=12)
-                ax2.set_ylabel(ylabel2,fontsize=12)
+                ax2.set_title(Title2, fontsize=12)
+                ax2.set_xlabel(xlabel2, fontsize=12)
+                ax2.set_ylabel(ylabel2, fontsize=12)
 
-                plt.subplots_adjust(left=spaces[0], bottom=spaces[1], right=spaces[2],
-                                    top=spaces[3], wspace=spaces[4], hspace=spaces[5])
+                plt.subplots_adjust(
+                    left=spaces[0],
+                    bottom=spaces[1],
+                    right=spaces[2],
+                    top=spaces[3],
+                    wspace=spaces[4],
+                    hspace=spaces[5],
+                )
 
             except ValueError:
-                assert False, "to plot Calculated Values you should choose Type==2 in the sentivivity object"
+                assert (
+                    False
+                ), "to plot Calculated Values you should choose Type==2 in the sentivivity object"
 
             plt.tight_layout()
-            return fig, (ax1,ax2)
-
+            return fig, (ax1, ax2)
 
     def ListAttributes(self):
         """
         Print Attributes List
         """
 
-        print('\n')
-        print('Attributes List of: ' + repr(self.__dict__['name']) + ' - ' + self.__class__.__name__ + ' Instance\n')
+        print("\n")
+        print(
+            "Attributes List of: "
+            + repr(self.__dict__["name"])
+            + " - "
+            + self.__class__.__name__
+            + " Instance\n"
+        )
         self_keys = list(self.__dict__.keys())
         self_keys.sort()
         for key in self_keys:
-            if key != 'name':
-                print(str(key) + ' : ' + repr(self.__dict__[key]))
+            if key != "name":
+                print(str(key) + " : " + repr(self.__dict__[key]))
 
-        print('\n')
+        print("\n")

@@ -10,10 +10,11 @@ currunt_work_directory = Hapi/Example
 """
 # import os
 import numpy as np
+
 from Hapi.gis.raster import Raster as R
 
 Path = "data/GIS/ZonalStatistics/"
-SavePath  = Path
+SavePath = Path
 BaseMapF = Path + "Polygons.tif"
 
 
@@ -22,16 +23,21 @@ Compressed = True
 OccupiedCellsOnly = False
 
 # one map
-ExtractedValues, NonZeroCells = R.OverlayMap(Path+"data/Map1.zip", BaseMapF,
-                                             ExcludedValue, Compressed,OccupiedCellsOnly)
+ExtractedValues, NonZeroCells = R.OverlayMap(
+    Path + "data/Map1.zip", BaseMapF, ExcludedValue, Compressed, OccupiedCellsOnly
+)
 
 MapPrefix = "Map"
 # several maps
-ExtractedValues, NonZeroCells = R.OverlayMaps(Path+"data", BaseMapF, MapPrefix,
-                                              ExcludedValue, Compressed,OccupiedCellsOnly)
+ExtractedValues, NonZeroCells = R.OverlayMaps(
+    Path + "data", BaseMapF, MapPrefix, ExcludedValue, Compressed, OccupiedCellsOnly
+)
 
 # save extracted values in different files
 Polygons = list(ExtractedValues.keys())
 for i in range(len(Polygons)):
-    np.savetxt(SavePath +"/" + str(Polygons[i]) + ".txt",
-               ExtractedValues[Polygons[i]],fmt="%4.2f")
+    np.savetxt(
+        SavePath + "/" + str(Polygons[i]) + ".txt",
+        ExtractedValues[Polygons[i]],
+        fmt="%4.2f",
+    )

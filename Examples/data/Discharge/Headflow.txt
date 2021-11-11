@@ -1,14 +1,14 @@
-# Project: Coello, Colombia                                                                                            
-# Author: Peter Droogers, p.droogers@futurewater.nl                                                                                             
-# Date: May-2014       
+# Project: Coello, Colombia
+# Author: Peter Droogers, p.droogers@futurewater.nl
+# Date: May-2014
 # Data: Headflow per catchment, origin Laurène Bouaziz (Deltares)
 # Unit: mm / month
 
-$DateFormat = yyyy/m/d                                                                                          
-$DecimalSymbol = .                                                                                              
-                                                                                                
+$DateFormat = yyyy/m/d
+$DecimalSymbol = .
+
 # Col  1 - 5 catchments as defined in WEAP
-                                                                                                
+
 #YYYY/MM/DD	1	2	3	4	5
 1980/01/01	0.9250	1.2044	0.4576	1.0002	0.0000
 1980/01/02	1.3705	1.7938	0.7588	2.0215	1.0127

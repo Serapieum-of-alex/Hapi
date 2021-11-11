@@ -1,4 +1,6 @@
-import os, sys
+import os
+import sys
+
 os.chdir("F:/01Algorithms/Hydrology/HAPI/Examples")
 rootpath = os.path.abspath(os.getcwd())
 # sys.path.append(rootpath + "/src")
@@ -6,13 +8,15 @@ datapath = os.path.join(rootpath, "data/GIS/Hapi_GIS_Data")
 datapath2 = os.path.join(rootpath, "data/GIS")
 os.chdir(rootpath)
 
-from Hapi.gis.raster import Raster
-from Hapi.gis.giscatchment import GISCatchment as GC
-from Hapi.visualizer import Visualize as vis
 import gdal
+import geopandas as gpd
 import numpy as np
 import pandas as pd
-import geopandas as gpd
+
+from Hapi.gis.giscatchment import GISCatchment as GC
+from Hapi.gis.raster import Raster
+from Hapi.visualizer import Visualize as vis
+
 #%% Paths
 RasterAPath = datapath + "/acc4000.tif"
 RasterBPath = datapath + "/dem_100_f.tif"
@@ -23,7 +27,7 @@ soilmappath = datapath + "/soil_raster.tif"
 Basinshp = datapath + "/basins.shp"
 #%%
 """
-you need to define the TEMP path in your environment variable as some of the metods in the raster 
+you need to define the TEMP path in your environment variable as some of the metods in the raster
 module do some preprocessing in the TEMP path
 
 also if you have installed qgis define the directory to the bin folder inside the installation directory
@@ -114,11 +118,11 @@ EX:
     SaveRaster(raster,output_path)
 """
 path = datapath + "/rasterexample.tif"
-Raster.SaveRaster(src,path)
+Raster.SaveRaster(src, path)
 #%% CreateRaster
 """
-We will recreate the raster that we have already read using the 'GetRasterData' method at the 
-top from the array and the projection data we obtained using the 'GetProjectionData' method 
+We will recreate the raster that we have already read using the 'GetRasterData' method at the
+top from the array and the projection data we obtained using the 'GetProjectionData' method
 """
 
 """CreateRaster.
@@ -191,10 +195,10 @@ Ex:
 If we have made some calculation on raster array and we want to save the array back in the raster
 """
 arr2 = np.ones(shape=arr.shape, dtype=np.float64) * nodataval
-arr2[~ np.isclose(arr, nodataval, rtol=0.001)] = 5
+arr2[~np.isclose(arr, nodataval, rtol=0.001)] = 5
 
 path = datapath + "/rasterlike.tif"
-Raster.RasterLike(src,arr2,path, )
+Raster.RasterLike(src, arr2, path)
 dst = gdal.Open(path)
 vis.PlotArray(dst, Title="Flow Accumulation", ColorScale=1)
 #%%
@@ -216,20 +220,24 @@ Example :
     func=np.abs
     new_raster=MapAlgebra(A,func)
 """
+
+
 def func1(val):
-    if val < 20 :
-        val =  1
-    elif val < 40 :
+    if val < 20:
+        val = 1
+    elif val < 40:
         val = 2
-    elif val <  60 :
+    elif val < 60:
         val = 3
-    elif val < 80 :
+    elif val < 80:
         val = 4
-    elif val < 100 :
+    elif val < 100:
         val = 5
     else:
         val = 0
     return val
+
+
 dst = Raster.MapAlgebra(src, func1)
 vis.PlotArray(dst, Title="Classes", ColorScale=4, TicksSpacing=1)
 #%%
@@ -288,7 +296,7 @@ print("Original Cell Size =" + str(geo[1]))
 cell_size = 100
 dst = Raster.ResampleRaster(src, cell_size, resample_technique="bilinear")
 
-dst_arr,_ = Raster.GetRasterData(dst)
+dst_arr, _ = Raster.GetRasterData(dst)
 _, newgeo = Raster.GetProjectionData(dst)
 print("New cell size is " + str(newgeo[1]))
 vis.PlotArray(dst, Title="Flow Accumulation")
@@ -400,31 +408,39 @@ Outputs:
 # crop array using a raster
 dst = gdal.Open(alligned_rasater)
 dst_arr, dst_nodataval = Raster.GetRasterData(dst)
-vis.PlotArray(dst_arr, nodataval=dst_nodataval,Title="Before Cropping-Evapotranspiration", ColorScale=1,
-              TicksSpacing=0.01)
+vis.PlotArray(
+    dst_arr,
+    nodataval=dst_nodataval,
+    Title="Before Cropping-Evapotranspiration",
+    ColorScale=1,
+    TicksSpacing=0.01,
+)
 dst_arr_cropped = Raster.CropAlligned(dst_arr, src)
-vis.PlotArray(dst_arr_cropped, nodataval=nodataval,Title="Cropped array", ColorScale=1,
-              TicksSpacing=0.01)
+vis.PlotArray(
+    dst_arr_cropped,
+    nodataval=nodataval,
+    Title="Cropped array",
+    ColorScale=1,
+    TicksSpacing=0.01,
+)
 #%% clip raster using another raster while preserving the alignment
 """
 cropping rasters may  change the alignment of the cells and to keep the alignment during cropping a raster
-we will crop the same previous raster but will give the input to the function as a gdal.dataset object 
+we will crop the same previous raster but will give the input to the function as a gdal.dataset object
 """
 dst_cropped = Raster.CropAlligned(dst, src)
-vis.PlotArray(dst_cropped, Title="Cropped raster", ColorScale=1,
-              TicksSpacing=0.01)
+vis.PlotArray(dst_cropped, Title="Cropped raster", ColorScale=1, TicksSpacing=0.01)
 #%% crop raster using array
 """
-we can also crop a raster using an array in condition that we enter the value of the nodata stored in the 
+we can also crop a raster using an array in condition that we enter the value of the nodata stored in the
 array
-we can repeat the previous example but 
+we can repeat the previous example but
 """
 dst_cropped = Raster.CropAlligned(dst, arr, mask_noval=nodataval)
-vis.PlotArray(dst_cropped,Title="Cropped array", ColorScale=1,
-              TicksSpacing=0.01)
+vis.PlotArray(dst_cropped, Title="Cropped array", ColorScale=1, TicksSpacing=0.01)
 #%% clip a folder of rasters using another raster while preserving the alignment
 """
-you can perform the previous step on multiple rasters using the CropAlignedFolder 
+you can perform the previous step on multiple rasters using the CropAlignedFolder
 """
 """CropAlignedFolder.
 
@@ -497,15 +513,13 @@ epsg, geotransform = Raster.GetProjectionData(soil_raster)
 print("Before alignment EPSG = " + str(epsg))
 print("Before alignment Geotransform = " + str(geotransform))
 # cell_size = geotransform[1]
-vis.PlotArray(soil_raster, Title="To be aligned", ColorScale=1,
-              TicksSpacing=1)
+vis.PlotArray(soil_raster, Title="To be aligned", ColorScale=1, TicksSpacing=1)
 
 soil_aligned = Raster.MatchRasterAlignment(src, soil_raster)
 New_epsg, New_geotransform = Raster.GetProjectionData(soil_aligned)
 print("After alignment EPSG = " + str(New_epsg))
 print("After alignment Geotransform = " + str(New_geotransform))
-vis.PlotArray(soil_aligned, Title="After alignment", ColorScale=1,
-              TicksSpacing=1)
+vis.PlotArray(soil_aligned, Title="After alignment", ColorScale=1, TicksSpacing=1)
 #%%
 """Crop.
 
@@ -534,8 +548,7 @@ RasterA = gdal.Open(alligned_rasater)
 epsg, geotransform = Raster.GetProjectionData(RasterA)
 print("Raster EPSG = " + str(epsg))
 print("Raster Geotransform = " + str(geotransform))
-vis.PlotArray(RasterA, Title="Raster to be cropped", ColorScale=1,
-              TicksSpacing=1)
+vis.PlotArray(RasterA, Title="Raster to be cropped", ColorScale=1, TicksSpacing=1)
 """
 We will use the soil raster from the previous example as a mask
 so the projection is different between the raster and the mask and the cell size is also different
@@ -545,8 +558,7 @@ dst = Raster.Crop(RasterA, soil_raster)
 dst_epsg, dst_geotransform = Raster.GetProjectionData(dst)
 print("resulted EPSG = " + str(dst_epsg))
 print("resulted Geotransform = " + str(dst_geotransform))
-vis.PlotArray(dst, Title="Cropped Raster", ColorScale=1,
-              TicksSpacing=1)
+vis.PlotArray(dst, Title="Cropped Raster", ColorScale=1, TicksSpacing=1)
 #%%
 # src_aligned = gdal.Open(alligned_rasater)
 # # arr, nodataval = Raster.GetRasterData(src_aligned)
@@ -625,29 +637,33 @@ Example:
 """
 path = r"F:\02Case-studies\ClimXtreme\rim_base_data\setup\rhine\inputs\2d\dem_rhine.asc"
 arr, details = Raster.ReadASCII(path, pixel_type=1)
-vis.PlotArray(arr, details[-1], Title="Cropped Raster", ColorScale=2,
-              TicksSpacing=200)
-arr[~ np.isclose(arr,details[-1], rtol=0.001)] = 0.03
-path2 = r"F:\02Case-studies\ClimXtreme\rim_base_data\setup\rhine\inputs\2d\roughness.asc"
+vis.PlotArray(arr, details[-1], Title="Cropped Raster", ColorScale=2, TicksSpacing=200)
+arr[~np.isclose(arr, details[-1], rtol=0.001)] = 0.03
+path2 = (
+    r"F:\02Case-studies\ClimXtreme\rim_base_data\setup\rhine\inputs\2d\roughness.asc"
+)
 Raster.WriteASCII(path2, details, arr)
 #%% read the points
 points = pd.read_csv(pointsPath)
-points['row'] = np.nan
-points['col'] = np.nan
-points.loc[:,['row', 'col']] = GC.NearestCell(src,points[['x','y']][:]).values
+points["row"] = np.nan
+points["col"] = np.nan
+points.loc[:, ["row", "col"]] = GC.NearestCell(src, points[["x", "y"]][:]).values
 #%%
 
 from osgeo import ogr, osr
+
 band = dst.GetRasterBand(1)
 src_proj = dst.GetProjection()
 src_epsg = osr.SpatialReference(wkt=src_proj)
 
 # create a new vector dataset and layer in it
-drv = ogr.GetDriverByName('ESRI Shapefile')
-outfile = drv.CreateDataSource(datapath + r'\polygonizedRaster.shp')
-outlayer = outfile.CreateLayer('polygonized raster', srs = src_epsg, geom_type=ogr.wkbMultiPolygon)
+drv = ogr.GetDriverByName("ESRI Shapefile")
+outfile = drv.CreateDataSource(datapath + r"\polygonizedRaster.shp")
+outlayer = outfile.CreateLayer(
+    "polygonized raster", srs=src_epsg, geom_type=ogr.wkbMultiPolygon
+)
 # add a new field ‘DN’ to the layer for storing the raster values for each of the polygons
-newField = ogr.FieldDefn('DN', ogr.OFTReal)
+newField = ogr.FieldDefn("DN", ogr.OFTReal)
 outlayer.CreateField(newField)
 # call Polygonize(...) and provide the band and the output layer as parameters plus a few additional parameters needed
 gdal.Polygonize(band, None, outlayer, 0, [])
@@ -657,32 +673,37 @@ gdal.Polygonize(band, None, outlayer, 0, [])
 # The last parameter allows for passing additional options to the function but we do not make use of this,
 # so we provide an empty list.
 outfile = None
+import os
+import sys
+
 # The second line "outfile = None" is for closing the new shapefile and making sure that all
 # data has been written to it
 #%%
 from osgeo import gdal, gdalnumeric, ogr, osr
+
 # import Image, ImageDraw
 # from PIL.Image import core as Image
-from PIL import ImageDraw, Image
+from PIL import Image, ImageDraw
 
-import os, sys
-#Exceptions will get raised on anything >= gdal.CE_Failure
+# Exceptions will get raised on anything >= gdal.CE_Failure
 gdal.UseExceptions()
 
+
 def world2Pixel(geoMatrix, x, y):
-  """
+    """
   Uses a gdal geomatrix (gdal.GetGeoTransform()) to calculate
   the pixel location of a geospatial coordinate
   """
-  ulX = geoMatrix[0]
-  ulY = geoMatrix[3]
-  xDist = geoMatrix[1]
-  yDist = geoMatrix[5]
-  # rtnX = geoMatrix[2]
-  # rtnY = geoMatrix[4]
-  pixel = int((x - ulX) / xDist)
-  line = int((ulY - y) / xDist)
-  return (pixel, line)
+    ulX = geoMatrix[0]
+    ulY = geoMatrix[3]
+    xDist = geoMatrix[1]
+    yDist = geoMatrix[5]
+    # rtnX = geoMatrix[2]
+    # rtnY = geoMatrix[4]
+    pixel = int((x - ulX) / xDist)
+    line = int((ulY - y) / xDist)
+    return (pixel, line)
+
 
 # This function will convert the rasterized clipper shapefile
 # to a mask for use within GDAL.
@@ -691,63 +712,66 @@ def imageToArray(i):
     Converts a Python Imaging Library array to a
     gdalnumeric image.
     """
-    a = gdalnumeric.fromstring(i.tostring(),'b')
-    a.shape=i.im.size[1], i.im.size[0]
+    a = gdalnumeric.fromstring(i.tostring(), "b")
+    a.shape = i.im.size[1], i.im.size[0]
     return a
+
 
 def arrayToImage(a):
     """
     Converts a gdalnumeric array to a
     Python Imaging Library Image.
     """
-    i = Image.fromstring('L',(a.shape[1],a.shape[0]),
-            (a.astype('b')).tostring())
+    i = Image.fromstring("L", (a.shape[1], a.shape[0]), (a.astype("b")).tostring())
     return i
+
 
 #
 #  EDIT: this is basically an overloaded
 #  version of the gdal_array.OpenArray passing in xoff, yoff explicitly
 #  so we can pass these params off to CopyDatasetInfo
 #
-def OpenArray( array, prototype_ds = None, xoff=0, yoff=0 ):
-    ds = gdal.Open( gdalnumeric.GetArrayFilename(array) )
+def OpenArray(array, prototype_ds=None, xoff=0, yoff=0):
+    ds = gdal.Open(gdalnumeric.GetArrayFilename(array))
 
     if ds is not None and prototype_ds is not None:
-        if type(prototype_ds).__name__ == 'str':
-            prototype_ds = gdal.Open( prototype_ds )
+        if type(prototype_ds).__name__ == "str":
+            prototype_ds = gdal.Open(prototype_ds)
         if prototype_ds is not None:
-            gdalnumeric.CopyDatasetInfo( prototype_ds, ds, xoff=xoff, yoff=yoff )
+            gdalnumeric.CopyDatasetInfo(prototype_ds, ds, xoff=xoff, yoff=yoff)
     return ds
 
-def histogram(a, bins=range(0,256)):
-  """
+
+def histogram(a, bins=range(0, 256)):
+    """
   Histogram function for multi-dimensional array.
   a = array
   bins = range of numbers to match
   """
-  fa = a.flat
-  n = gdalnumeric.searchsorted(gdalnumeric.sort(fa), bins)
-  n = gdalnumeric.concatenate([n, [len(fa)]])
-  hist = n[1:]-n[:-1]
-  return hist
+    fa = a.flat
+    n = gdalnumeric.searchsorted(gdalnumeric.sort(fa), bins)
+    n = gdalnumeric.concatenate([n, [len(fa)]])
+    hist = n[1:] - n[:-1]
+    return hist
+
 
 def stretch(a):
-  """
+    """
   Performs a histogram stretch on a gdalnumeric array image.
   """
-  hist = histogram(a)
-  im = arrayToImage(a)
-  lut = []
-  for b in range(0, len(hist), 256):
-    # step size
-    step = reduce(operator.add, hist[b:b+256]) / 255
-    # create equalization lookup table
-    n = 0
-    for i in range(256):
-      lut.append(n / step)
-      n = n + hist[i+b]
-  im = im.point(lut)
-  return imageToArray(im)
+    hist = histogram(a)
+    im = arrayToImage(a)
+    lut = []
+    for b in range(0, len(hist), 256):
+        # step size
+        step = reduce(operator.add, hist[b : b + 256]) / 255
+        # create equalization lookup table
+        n = 0
+        for i in range(256):
+            lut.append(n / step)
+            n = n + hist[i + b]
+    im = im.point(lut)
+    return imageToArray(im)
 
 
 shapefile_path = Basinshp
@@ -764,7 +788,7 @@ geoTrans = srcImage.GetGeoTransform()
 
 # Create an OGR layer from a boundary shapefile
 shapef = ogr.Open(shapefile_path)
-lyr = shapef.GetLayer( os.path.split( os.path.splitext( shapefile_path )[0] )[1] )
+lyr = shapef.GetLayer(os.path.split(os.path.splitext(shapefile_path)[0])[1])
 poly = lyr.GetNextFeature()
 
 # Convert the layer extent to image pixel coordinates
@@ -782,9 +806,9 @@ clip = srcArray[ulY:lrY, ulX:lrX]
 #
 # EDIT: create pixel offset to pass to new image Projection info
 #
-xoffset =  ulX
-yoffset =  ulY
-print("Xoffset, Yoffset = ( %f, %f )" % ( xoffset, yoffset ))
+xoffset = ulX
+yoffset = ulY
+print("Xoffset, Yoffset = ( %f, %f )" % (xoffset, yoffset))
 
 # Create a new geomatrix for the image
 geoTrans = list(geoTrans)
@@ -799,10 +823,10 @@ pixels = []
 geom = poly.GetGeometryRef()
 pts = geom.GetGeometryRef(0)
 for p in range(pts.GetPointCount()):
-  points.append((pts.GetX(p), pts.GetY(p)))
+    points.append((pts.GetX(p), pts.GetY(p)))
 
 for p in points:
-  pixels.append(world2Pixel(geoTrans, p[0], p[1]))
+    pixels.append(world2Pixel(geoTrans, p[0], p[1]))
 
 rasterPoly = Image.new("L", (pxWidth, pxHeight), 1)
 rasterize = ImageDraw.Draw(rasterPoly)
@@ -815,7 +839,7 @@ clip = gdalnumeric.choose(mask, (clip, 0)).astype(gdalnumeric.uint8)
 # This image has 3 bands so we stretch each one to make them
 # visually brighter
 for i in range(3):
-  clip[i,:,:] = stretch(clip[i,:,:])
+    clip[i, :, :] = stretch(clip[i, :, :])
 
 # Save new tiff
 #
@@ -830,11 +854,11 @@ for i in range(3):
 #
 ###
 #
-gtiffDriver = gdal.GetDriverByName( 'GTiff' )
+gtiffDriver = gdal.GetDriverByName("GTiff")
 if gtiffDriver is None:
     raise ValueError("Can't find GeoTiff Driver")
-gtiffDriver.CreateCopy( "OUTPUT.tif",
-    OpenArray( clip, prototype_ds=raster_path, xoff=xoffset, yoff=yoffset )
+gtiffDriver.CreateCopy(
+    "OUTPUT.tif", OpenArray(clip, prototype_ds=raster_path, xoff=xoffset, yoff=yoffset)
 )
 
 # Save as an 8-bit jpeg for an easy, quick preview

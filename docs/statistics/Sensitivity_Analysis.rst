@@ -1,7 +1,7 @@
 ******************************
 Sensetivity Analysis (OAT)
 ******************************
-OAT sensitivity analysis is a tool that is based 
+OAT sensitivity analysis is a tool that is based
 
 One of the simplest and most common approaches of sensitivity analysis is that of changing one-factor-at-a-time (OAT), to see what effect this produces on the output.
 
@@ -12,11 +12,11 @@ OAT customarily involves
 Sensitivity may then be measured by monitoring changes in the output. This appears a logical approach as any change observed in the output will unambiguously be due to the single parameter changed. Furthermore, by changing one parameter at a time, one can keep all other parameters fixed to their central or baseline values. This increases the comparability of the results (all 'effects' are computed with reference to the same central point in space)
 
 
-If we want to check the sensitivity of the HBV hydrological model performance to predict stream flow to each parameter, the One-At-a Time sensitivity analysis is agreat meathod that helps in this area 
+If we want to check the sensitivity of the HBV hydrological model performance to predict stream flow to each parameter, the One-At-a Time sensitivity analysis is agreat meathod that helps in this area
 OAT fixes the value of all parameters and change the value of one parameter within boundaries each time to check the result of the given function based on different values of one of the inputs
 
-First of all to run the HBV lumped model which we need to test its 
-performance (based on RMSE error) based on a defined range for each parameter 
+First of all to run the HBV lumped model which we need to test its
+performance (based on RMSE error) based on a defined range for each parameter
 
 Steps:
     * Run the model with the baseline parameter :ref:`1`
@@ -118,7 +118,7 @@ at the first position, and then list all the other arguments required for your f
 
 the following defined function contains two inner function that calculates discharge for lumped HBV model and calculates the RMSE of the calculated discharge.
 
-the first function `RUN.RunLumped` takes some arguments we need to pass it through the `OAT` method 
+the first function `RUN.RunLumped` takes some arguments we need to pass it through the `OAT` method
 [ConceptualModel,data,p2,init_st,snow,Routing, RoutingFn] with the same order in the defined function "wrapper"
 
 the second function is RMSE takes the calculated discharge from the first function and measured discharge array
@@ -128,7 +128,7 @@ to define the argument of the "wrapper" function
 2- the first function arguments with the same order (except that the parameter argument is taken out and placed at the first potition step-1)
 3- list the argument of the second function with the same order that the second function takes them
 
-There are two types of wrappers 
+There are two types of wrappers
 - The first one returns one value (performance metric)
 
 .. code-block:: py
@@ -192,7 +192,7 @@ Display the result with the SOBOL plot
     :width: 400pt
     :align: center
 
-The second type 
+The second type
 ----------------
 
 - The second wrapper returns two values (the performance metric and the calculated output from the model)

@@ -11,11 +11,13 @@ runoff at known locations based on given performance function
 
 
 """
+import datetime as dt
+
 import numpy as np
 import pandas as pd
-import datetime as dt
-from Oasis.optimization import Optimization
 from Oasis.harmonysearch import HSapi
+from Oasis.optimization import Optimization
+
 from Hapi.catchment import Catchment
 from Hapi.rrm.wrapper import Wrapper
 
@@ -38,8 +40,16 @@ class Calibration(Catchment):
 
     """
 
-    def __init__(self, name, StartDate, EndDate, fmt="%Y-%m-%d", SpatialResolution = 'Lumped',
-                 TemporalResolution = "Daily", RouteRiver="Muskingum"):
+    def __init__(
+        self,
+        name,
+        StartDate,
+        EndDate,
+        fmt="%Y-%m-%d",
+        SpatialResolution="Lumped",
+        TemporalResolution="Daily",
+        RouteRiver="Muskingum",
+    ):
         """
         =============================================================================
          Calibration(name, StartDate, EndDate, fmt="%Y-%m-%d", SpatialResolution = 'Lumped',
@@ -69,8 +79,8 @@ class Calibration(Catchment):
 
         """
         self.name = name
-        self.StartDate = dt.datetime.strptime(StartDate,fmt)
-        self.EndDate = dt.datetime.strptime(EndDate,fmt)
+        self.StartDate = dt.datetime.strptime(StartDate, fmt)
+        self.EndDate = dt.datetime.strptime(EndDate, fmt)
         self.SpatialResolution = SpatialResolution
         self.TemporalResolution = TemporalResolution
 
@@ -79,13 +89,13 @@ class Calibration(Catchment):
         if TemporalResolution == "Daily":
             self.dt = 1  # 24
             self.conversionfactor = conversionfactor * 1
-            self.Index = pd.date_range(self.StartDate, self.EndDate, freq = "D" )
+            self.Index = pd.date_range(self.StartDate, self.EndDate, freq="D")
         elif TemporalResolution == "Hourly":
             self.dt = 1  # 24
             self.conversionfactor = conversionfactor * 1 / 24
-            self.Index = pd.date_range(self.StartDate, self.EndDate, freq = "H" )
+            self.Index = pd.date_range(self.StartDate, self.EndDate, freq="H")
         else:
-            #TODO calculate the teporal resolution factor
+            # TODO calculate the teporal resolution factor
             # q mm , area sq km  (1000**2)/1000/f/60/60 = 1/(3.6*f)
             # if daily tfac=24 if hourly tfac=1 if 15 min tfac=0.25
             self.Tfactor = 24
@@ -93,8 +103,7 @@ class Calibration(Catchment):
         self.RouteRiver = RouteRiver
         pass
 
-
-    def ReadObjectiveFn(self,OF,args):
+    def ReadObjectiveFn(self, OF, args):
         """
         ==============================================================
             ReadObjectiveFn(OF,args)
@@ -116,16 +125,15 @@ class Calibration(Catchment):
 
         """
         # check objective_function
-        assert callable(OF) , "The Objective function should be a function"
+        assert callable(OF), "The Objective function should be a function"
         self.OF = OF
 
-        if args == None :
+        if args == None:
             args = []
 
         self.OFArgs = args
 
         print("Objective function is read successfully")
-
 
     def ExtractDischarge(self, Factor=None):
         """
@@ -147,23 +155,23 @@ class Calibration(Catchment):
         None.
 
         """
-        self.Qsim = np.zeros((self.TS-1,len(self.GaugesTable)))
+        self.Qsim = np.zeros((self.TS - 1, len(self.GaugesTable)))
         # error = 0
         for i in range(len(self.GaugesTable)):
-            Xind = int(self.GaugesTable.loc[self.GaugesTable.index[i],"cell_row"])
-            Yind = int(self.GaugesTable.loc[self.GaugesTable.index[i],"cell_col"])
+            Xind = int(self.GaugesTable.loc[self.GaugesTable.index[i], "cell_row"])
+            Yind = int(self.GaugesTable.loc[self.GaugesTable.index[i], "cell_col"])
             # gaugeid = self.GaugesTable.loc[self.GaugesTable.index[i],"id"]
 
             # Quz = self.quz_routed[Xind,Yind,:-1]
             # Qlz = self.qlz_translated[Xind,Yind,:-1]
             # self.Qsim[:,i] = Quz + Qlz
 
-            Qsim = np.reshape(self.Qtot[Xind,Yind,:-1],self.TS-1)
+            Qsim = np.reshape(self.Qtot[Xind, Yind, :-1], self.TS - 1)
 
             if Factor is not None:
-                self.Qsim[:,i] = Qsim * Factor[i]
+                self.Qsim[:, i] = Qsim * Factor[i]
             else:
-                self.Qsim[:,i] = Qsim
+                self.Qsim[:, i] = Qsim
 
             # Qobs = Coello.QGauges.loc[:,gaugeid]
             # error = error + OF(Qobs, Qsim)
@@ -238,13 +246,25 @@ class Calibration(Catchment):
         """
         # input dimensions
         # [rows,cols] = self.FlowAcc.ReadAsArray().shape
-        [fd_rows,fd_cols] = self.FlowDirArr.shape
-        assert fd_rows == self.rows and fd_cols == self.cols, "all input data should have the same number of rows"
+        [fd_rows, fd_cols] = self.FlowDirArr.shape
+        assert (
+            fd_rows == self.rows and fd_cols == self.cols
+        ), "all input data should have the same number of rows"
 
         # input dimensions
-        assert np.shape(self.Prec)[0] == self.rows and np.shape(self.ET)[0] == self.rows and np.shape(self.Temp)[0] == self.rows, "all input data should have the same number of rows"
-        assert np.shape(self.Prec)[1] == self.cols and np.shape(self.ET)[1] == self.cols and np.shape(self.Temp)[1] == self.cols, "all input data should have the same number of columns"
-        assert np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2], "all meteorological input data should have the same length"
+        assert (
+            np.shape(self.Prec)[0] == self.rows
+            and np.shape(self.ET)[0] == self.rows
+            and np.shape(self.Temp)[0] == self.rows
+        ), "all input data should have the same number of rows"
+        assert (
+            np.shape(self.Prec)[1] == self.cols
+            and np.shape(self.ET)[1] == self.cols
+            and np.shape(self.Temp)[1] == self.cols
+        ), "all input data should have the same number of columns"
+        assert (
+            np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2]
+        ), "all meteorological input data should have the same length"
 
         # basic inputs
         # check if all inputs are included
@@ -260,32 +280,38 @@ class Calibration(Catchment):
         assert type(ApiObjArgs) == dict, "store_history should be 0 or 1"
         assert type(ApiSolveArgs) == dict, "history_fname should be of type string "
 
-        print('Calibration starts')
+        print("Calibration starts")
         ### calculate the objective function
         def opt_fun(par):
             try:
                 # distribute the parameters
-                SpatialVarFun.Function(par) #, kub=SpatialVarFun.Kub, klb=SpatialVarFun.Klb
+                SpatialVarFun.Function(
+                    par
+                )  # , kub=SpatialVarFun.Kub, klb=SpatialVarFun.Klb
                 self.Parameters = SpatialVarFun.Par3d
-                #run the model
+                # run the model
                 Wrapper.RRMModel(self)
                 # calculate performance of the model
                 try:
-                    error = self.OF(self.QGauges, *[self.GaugesTable]) #self.qout, self.quz_routed, self.qlz_translated,
+                    error = self.OF(
+                        self.QGauges, *[self.GaugesTable]
+                    )  # self.qout, self.quz_routed, self.qlz_translated,
                     f = list(range(9, len(par), SpatialVarFun.no_parameters))
                     g = list()
                     for i in range(len(f)):
                         k = par[f[i]]
-                        x = par[f[i]+1]
-                        g.append(2 * k * x /self.dt)
+                        x = par[f[i] + 1]
+                        g.append(2 * k * x / self.dt)
                         g.append((2 * k * (1 - x)) / self.dt)
 
-                except TypeError: # if no of inputs less than what the function needs
-                    assert False, "the objective function you have entered needs more inputs please enter then in a list as *args"
+                except TypeError:  # if no of inputs less than what the function needs
+                    assert (
+                        False
+                    ), "the objective function you have entered needs more inputs please enter then in a list as *args"
 
                 # print error
                 if printError != 0:
-                    print(round(error,3))
+                    print(round(error, 3))
                     print(par)
 
                 fail = 0
@@ -297,35 +323,39 @@ class Calibration(Catchment):
             return error, g, fail
 
         ### define the optimization components
-        opt_prob = Optimization('HBV Calibration', opt_fun)
+        opt_prob = Optimization("HBV Calibration", opt_fun)
         for i in range(len(self.LB)):
-            opt_prob.addVar('x{0}'.format(i), type='c', lower=self.LB[i], upper=self.UB[i])
+            opt_prob.addVar(
+                "x{0}".format(i), type="c", lower=self.LB[i], upper=self.UB[i]
+            )
 
-        opt_prob.addObj('f')
+        opt_prob.addObj("f")
 
         for i in range(SpatialVarFun.no_elem):
-            opt_prob.addCon('g'+str(i)+"-1", 'i')
-            opt_prob.addCon('g'+str(i)+"-2", 'i')
+            opt_prob.addCon("g" + str(i) + "-1", "i")
+            opt_prob.addCon("g" + str(i) + "-2", "i")
 
         print(opt_prob)
 
-        opt_engine = HSapi(pll_type=pll_type , options=ApiObjArgs)
+        opt_engine = HSapi(pll_type=pll_type, options=ApiObjArgs)
 
+        store_sol = ApiSolveArgs["store_sol"]
+        display_opts = ApiSolveArgs["display_opts"]
+        store_hst = ApiSolveArgs["store_hst"]
+        hot_start = ApiSolveArgs["hot_start"]
 
-        store_sol = ApiSolveArgs['store_sol']
-        display_opts = ApiSolveArgs['display_opts']
-        store_hst = ApiSolveArgs['store_hst']
-        hot_start = ApiSolveArgs['hot_start']
-
-
-        res = opt_engine(opt_prob, store_sol=store_sol, display_opts=display_opts,
-                         store_hst=store_hst, hot_start=hot_start)
+        res = opt_engine(
+            opt_prob,
+            store_sol=store_sol,
+            display_opts=display_opts,
+            store_hst=store_hst,
+            hot_start=hot_start,
+        )
 
         self.Parameters = res[1]
         self.OFvalue = res[0]
 
         return res
-
 
     def FW1Calibration(self, SpatialVarFun, OptimizationArgs, printError=None):
         """
@@ -397,9 +427,19 @@ class Calibration(Catchment):
         # assert fd_rows == self.rows and fd_cols == self.cols, "all input data should have the same number of rows"
 
         # input dimensions
-        assert np.shape(self.Prec)[0] == self.rows and np.shape(self.ET)[0] == self.rows and np.shape(self.Temp)[0] == self.rows, "all input data should have the same number of rows"
-        assert np.shape(self.Prec)[1] == self.cols and np.shape(self.ET)[1] == self.cols and np.shape(self.Temp)[1] == self.cols, "all input data should have the same number of columns"
-        assert np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2], "all meteorological input data should have the same length"
+        assert (
+            np.shape(self.Prec)[0] == self.rows
+            and np.shape(self.ET)[0] == self.rows
+            and np.shape(self.Temp)[0] == self.rows
+        ), "all input data should have the same number of rows"
+        assert (
+            np.shape(self.Prec)[1] == self.cols
+            and np.shape(self.ET)[1] == self.cols
+            and np.shape(self.Temp)[1] == self.cols
+        ), "all input data should have the same number of columns"
+        assert (
+            np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2]
+        ), "all meteorological input data should have the same length"
 
         # basic inputs
         # check if all inputs are included
@@ -415,25 +455,29 @@ class Calibration(Catchment):
         assert type(ApiObjArgs) == dict, "store_history should be 0 or 1"
         assert type(ApiSolveArgs) == dict, "history_fname should be of type string "
 
-        print('Calibration starts')
+        print("Calibration starts")
         ### calculate the objective function
         def opt_fun(par):
             try:
                 # distribute the parameters
-                SpatialVarFun.Function(par)#, kub=SpatialVarFun.Kub, klb=SpatialVarFun.Klb, Maskingum=SpatialVarFun.Maskingum
+                SpatialVarFun.Function(
+                    par
+                )  # , kub=SpatialVarFun.Kub, klb=SpatialVarFun.Klb, Maskingum=SpatialVarFun.Maskingum
                 self.Parameters = SpatialVarFun.Par3d
-                #run the model
+                # run the model
                 Wrapper.FW1(self)
                 # calculate performance of the model
                 try:
                     # error = self.OF(self.QGauges, self.qout, self.quz_routed, self.qlz_translated,*[self.GaugesTable])
-                    error = self.OF(self.QGauges, self.qout,*[self.GaugesTable])
-                except TypeError: # if no of inputs less than what the function needs
-                    assert False, "the objective function you have entered needs more inputs please enter then in a list as *args"
+                    error = self.OF(self.QGauges, self.qout, *[self.GaugesTable])
+                except TypeError:  # if no of inputs less than what the function needs
+                    assert (
+                        False
+                    ), "the objective function you have entered needs more inputs please enter then in a list as *args"
 
                 # print error
                 if printError != 0:
-                    print(round(error,3))
+                    print(round(error, 3))
                     print(par)
 
                 fail = 0
@@ -444,29 +488,33 @@ class Calibration(Catchment):
             return error, [], fail
 
         ### define the optimization components
-        opt_prob = Optimization('HBV Calibration', opt_fun)
+        opt_prob = Optimization("HBV Calibration", opt_fun)
         for i in range(len(self.LB)):
-            opt_prob.addVar('x{0}'.format(i), type='c', lower=self.LB[i], upper=self.UB[i])
+            opt_prob.addVar(
+                "x{0}".format(i), type="c", lower=self.LB[i], upper=self.UB[i]
+            )
 
         print(opt_prob)
 
-        opt_engine = HSapi(pll_type=pll_type , options=ApiObjArgs)
+        opt_engine = HSapi(pll_type=pll_type, options=ApiObjArgs)
 
+        store_sol = ApiSolveArgs["store_sol"]
+        display_opts = ApiSolveArgs["display_opts"]
+        store_hst = ApiSolveArgs["store_hst"]
+        hot_start = ApiSolveArgs["hot_start"]
 
-        store_sol = ApiSolveArgs['store_sol']
-        display_opts = ApiSolveArgs['display_opts']
-        store_hst = ApiSolveArgs['store_hst']
-        hot_start = ApiSolveArgs['hot_start']
-
-
-        res = opt_engine(opt_prob, store_sol=store_sol, display_opts=display_opts,
-                         store_hst=store_hst, hot_start=hot_start)
+        res = opt_engine(
+            opt_prob,
+            store_sol=store_sol,
+            display_opts=display_opts,
+            store_hst=store_hst,
+            hot_start=hot_start,
+        )
 
         self.Parameters = res[1]
         self.OFvalue = res[0]
 
         return res
-
 
     def LumpedCalibration(self, Basic_inputs, OptimizationArgs, printError=None):
         """
@@ -536,12 +584,14 @@ class Calibration(Catchment):
         """
         # basic inputs
         # check if all inputs are included
-        assert all(["Route","RoutingFn"][i] in Basic_inputs.keys() for i in range(2)), "Basic_inputs should contain ['p2','init_st','UB','LB'] "
+        assert all(
+            ["Route", "RoutingFn"][i] in Basic_inputs.keys() for i in range(2)
+        ), "Basic_inputs should contain ['p2','init_st','UB','LB'] "
 
         Route = Basic_inputs["Route"]
         RoutingFn = Basic_inputs["RoutingFn"]
-        if 'InitialValues' in Basic_inputs.keys():
-            InitialValues = Basic_inputs['InitialValues']
+        if "InitialValues" in Basic_inputs.keys():
+            InitialValues = Basic_inputs["InitialValues"]
         else:
             InitialValues = []
 
@@ -557,23 +607,35 @@ class Calibration(Catchment):
 
         # assert history_fname[-4:] == ".txt", "history_fname should be txt file please change extension or add .txt ad the end of the history_fname"
 
-        print('Calibration starts')
+        print("Calibration starts")
         ### calculate the objective function
         def opt_fun(par):
             try:
                 # parameters
                 self.Parameters = par
-                #run the model
+                # run the model
                 Wrapper.Lumped(self, Route, RoutingFn)
                 # calculate performance of the model
                 try:
-                    error = self.OF(self.QGauges[self.QGauges.columns[-1]],self.Qsim,*self.OFArgs)
-                    g = [2*par[-2]*par[-1]/self.dt, (2*par[-2]*(1-par[-1]))/self.dt]
-                except TypeError: # if no of inputs less than what the function needs
-                    assert False, "the objective function you have entered needs more inputs please enter then in a list as *args"
+                    error = self.OF(
+                        self.QGauges[self.QGauges.columns[-1]], self.Qsim, *self.OFArgs
+                    )
+                    g = [
+                        2 * par[-2] * par[-1] / self.dt,
+                        (2 * par[-2] * (1 - par[-1])) / self.dt,
+                    ]
+                except TypeError:  # if no of inputs less than what the function needs
+                    assert (
+                        False
+                    ), "the objective function you have entered needs more inputs please enter then in a list as *args"
 
                 if printError != 0:
-                    print("Error = " + str(round(error,3)) + " Inequality Const = " + str(np.round(g,2)))
+                    print(
+                        "Error = "
+                        + str(round(error, 3))
+                        + " Inequality Const = "
+                        + str(np.round(g, 2))
+                    )
                     # print(par)
                 fail = 0
             except:
@@ -583,36 +645,49 @@ class Calibration(Catchment):
             return error, g, fail
 
         ### define the optimization components
-        opt_prob = Optimization('HBV Calibration', opt_fun)
+        opt_prob = Optimization("HBV Calibration", opt_fun)
 
         if InitialValues != []:
             for i in range(len(self.LB)):
-                opt_prob.addVar('x{0}'.format(i), type='c', lower=self.LB[i], upper=self.UB[i], value=InitialValues[i])
+                opt_prob.addVar(
+                    "x{0}".format(i),
+                    type="c",
+                    lower=self.LB[i],
+                    upper=self.UB[i],
+                    value=InitialValues[i],
+                )
         else:
             for i in range(len(self.LB)):
-                opt_prob.addVar('x{0}'.format(i), type='c', lower=self.LB[i], upper=self.UB[i])
+                opt_prob.addVar(
+                    "x{0}".format(i), type="c", lower=self.LB[i], upper=self.UB[i]
+                )
 
-        opt_prob.addObj('f')
+        opt_prob.addObj("f")
 
-        opt_prob.addCon('g1','i')
-        opt_prob.addCon('g2','i')
+        opt_prob.addCon("g1", "i")
+        opt_prob.addCon("g2", "i")
         # print(opt_prob)
-        opt_engine = HSapi(pll_type=pll_type , options=ApiObjArgs)
+        opt_engine = HSapi(pll_type=pll_type, options=ApiObjArgs)
 
         # parse the ApiSolveArgs inputs
         # availablekeys = ['store_sol',"display_opts","store_hst","hot_start"]
-        store_sol = ApiSolveArgs['store_sol']
-        display_opts = ApiSolveArgs['display_opts']
-        store_hst = ApiSolveArgs['store_hst']
-        hot_start = ApiSolveArgs['hot_start']
+        store_sol = ApiSolveArgs["store_sol"]
+        display_opts = ApiSolveArgs["display_opts"]
+        store_hst = ApiSolveArgs["store_hst"]
+        hot_start = ApiSolveArgs["hot_start"]
 
         # for i in range(len(availablekeys)):
-            # if availablekeys[i] in ApiSolveArgs.keys():
-                # exec(availablekeys[i] + "=" + str(ApiSolveArgs[availablekeys[i]]))
-            # print(availablekeys[i] + " = " + str(ApiSolveArgs[availablekeys[i]]))
+        # if availablekeys[i] in ApiSolveArgs.keys():
+        # exec(availablekeys[i] + "=" + str(ApiSolveArgs[availablekeys[i]]))
+        # print(availablekeys[i] + " = " + str(ApiSolveArgs[availablekeys[i]]))
 
-        res = opt_engine(opt_prob, store_sol=store_sol, display_opts=display_opts,
-                         store_hst=store_hst, hot_start=hot_start)
+        res = opt_engine(
+            opt_prob,
+            store_sol=store_sol,
+            display_opts=display_opts,
+            store_hst=store_hst,
+            hot_start=hot_start,
+        )
 
         self.OFvalue = res[0]
         self.Parameters = res[1]
@@ -624,15 +699,22 @@ class Calibration(Catchment):
         Print Attributes List
         """
 
-        print('\n')
-        print('Attributes List of: ' + repr(self.__dict__['name']) + ' - ' + self.__class__.__name__ + ' Instance\n')
+        print("\n")
+        print(
+            "Attributes List of: "
+            + repr(self.__dict__["name"])
+            + " - "
+            + self.__class__.__name__
+            + " Instance\n"
+        )
         self_keys = list(self.__dict__.keys())
         self_keys.sort()
         for key in self_keys:
-            if key != 'name':
-                print(str(key) + ' : ' + repr(self.__dict__[key]))
+            if key != "name":
+                print(str(key) + " : " + repr(self.__dict__[key]))
 
-        print('\n')
+        print("\n")
 
-if __name__=='__main__':
+
+if __name__ == "__main__":
     print("Calibration")

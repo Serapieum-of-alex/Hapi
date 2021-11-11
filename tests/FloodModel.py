@@ -8,18 +8,21 @@ Created on Sun Jun 24 21:02:34 2018
 # from IPython import get_ipython   # to reset the variable explorer each time
 # get_ipython().magic('reset -f')
 import os
+
 Comp = "F:/02Case studies/"
 # Comp = "F:/Users/mofarrag/"
-os.chdir(Comp+ "/Coello/Hapi/Model/")
+os.chdir(Comp + "/Coello/Hapi/Model/")
+
+import Hapi.rrm.hbv_bergestrom92 as HBV
+from Hapi.catchment import Catchment
 
 # import numpy as np
 from Hapi.run import Run
-from Hapi.catchment import Catchment
-import Hapi.rrm.hbv_bergestrom92 as HBV
+
 #%% Paths
 path = Comp + "/Coello/Hapi/Data/00inputs/"
 # PrecPath = path + "meteodata/4000/calib/prec" #
-PrecPath = path + "meteodata/4000/calib/prec-CPC-NOAA" #
+PrecPath = path + "meteodata/4000/calib/prec-CPC-NOAA"  #
 # PrecPath = path + "meteodata/4000/calib/prec-MSWEP" #
 Evap_Path = path + "meteodata/4000/calib/evap"
 TempPath = path + "meteodata/4000/calib/temp"
@@ -40,7 +43,7 @@ RouteRiver = "Kinematic"
 
 #%% Meteorological data
 AreaCoeff = 1530
-InitialCond = [0,5,5,5,0]
+InitialCond = [0, 5, 5, 5, 0]
 Snow = 0
 """
 Create the model object and read the input data
@@ -48,12 +51,16 @@ Create the model object and read the input data
 start = "2009-01-01"
 end = "2011-12-31"
 name = "Coello"
-Coello = Catchment(name, start, end, SpatialResolution = "Distributed", RouteRiver=RouteRiver)
+Coello = Catchment(
+    name, start, end, SpatialResolution="Distributed", RouteRiver=RouteRiver
+)
 
 
 Coello.ReadFlowAcc(FlowAccPath)
 Coello.ReadFlowDir(FlowDPath)
-Coello.ReadRiverGeometry(DEMF, BankfullDepthF, RiverWidthF, RiverRoughnessF, FloodPlainRoughnessF)
+Coello.ReadRiverGeometry(
+    DEMF, BankfullDepthF, RiverWidthF, RiverRoughnessF, FloodPlainRoughnessF
+)
 
 Coello.ReadParameters(ParPathRun, Snow)
 Coello.ReadRainfall(PrecPath)
@@ -61,9 +68,9 @@ Coello.ReadTemperature(TempPath)
 Coello.ReadET(Evap_Path)
 Coello.ReadLumpedModel(HBV, AreaCoeff, InitialCond)
 #%% Gauges
-Coello.ReadGaugeTable(path+"Discharge/stations/gauges.csv", FlowAccPath)
-GaugesPath = path+"Discharge/stations/"
-Coello.ReadDischargeGauges(GaugesPath, column='id', fmt="%Y-%m-%d")
+Coello.ReadGaugeTable(path + "Discharge/stations/gauges.csv", FlowAccPath)
+GaugesPath = path + "Discharge/stations/"
+Coello.ReadDischargeGauges(GaugesPath, column="id", fmt="%Y-%m-%d")
 #%% Run the model
 """
 Outputs:
@@ -85,19 +92,19 @@ Outputs:
 """
 Run.RunFloodModel(Coello)
 #%% calculate performance criteria
-Coello.ExtractDischarge(Factor=Coello.GaugesTable['area ratio'].tolist())
+Coello.ExtractDischarge(Factor=Coello.GaugesTable["area ratio"].tolist())
 
 for i in range(len(Coello.GaugesTable)):
-    gaugeid = Coello.GaugesTable.loc[i,'id']
+    gaugeid = Coello.GaugesTable.loc[i, "id"]
     print("----------------------------------")
-    print("Gauge - " +str(gaugeid))
-    print("RMSE= " + str(round(Coello.Metrics.loc['RMSE',gaugeid],2)))
-    print("NSE= " + str(round(Coello.Metrics.loc['NSE',gaugeid],2)))
-    print("NSEhf= " + str(round(Coello.Metrics.loc['NSEhf',gaugeid],2)))
-    print("KGE= " + str(round(Coello.Metrics.loc['KGE',gaugeid],2)))
-    print("WB= " + str(round(Coello.Metrics.loc['WB',gaugeid],2)))
-    print("Pearson CC= " + str(round(Coello.Metrics.loc['Pearson-CC',gaugeid],2)))
-    print("R2 = " + str(round(Coello.Metrics.loc['R2',gaugeid],2)))
+    print("Gauge - " + str(gaugeid))
+    print("RMSE= " + str(round(Coello.Metrics.loc["RMSE", gaugeid], 2)))
+    print("NSE= " + str(round(Coello.Metrics.loc["NSE", gaugeid], 2)))
+    print("NSEhf= " + str(round(Coello.Metrics.loc["NSEhf", gaugeid], 2)))
+    print("KGE= " + str(round(Coello.Metrics.loc["KGE", gaugeid], 2)))
+    print("WB= " + str(round(Coello.Metrics.loc["WB", gaugeid], 2)))
+    print("Pearson CC= " + str(round(Coello.Metrics.loc["Pearson-CC", gaugeid], 2)))
+    print("R2 = " + str(round(Coello.Metrics.loc["R2", gaugeid], 2)))
 #%% plot
 gaugei = 5
 plotstart = "2009-01-01"
@@ -197,19 +204,39 @@ animation.FuncAnimation.
 plotstart = "2009-01-01"
 plotend = "2009-02-01"
 
-Anim = Coello.PlotDistributedResults(plotstart, plotend, Figsize=(9,9), Option = 1,threshold=160, PlotNumbers=True,
-                                TicksSpacing = 5,Interval = 200, Gauges=True, cmap='inferno', Textloc=[0.1,0.2],
-                                Gaugecolor='red',ColorScale = 1, IDcolor='blue', IDsize=25)
+Anim = Coello.PlotDistributedResults(
+    plotstart,
+    plotend,
+    Figsize=(9, 9),
+    Option=1,
+    threshold=160,
+    PlotNumbers=True,
+    TicksSpacing=5,
+    Interval=200,
+    Gauges=True,
+    cmap="inferno",
+    Textloc=[0.1, 0.2],
+    Gaugecolor="red",
+    ColorScale=1,
+    IDcolor="blue",
+    IDsize=25,
+)
 
 #%%
 Path = SaveTo + "anim.gif"
-Coello.SaveAnimation(VideoFormat="gif",Path=Path,SaveFrames=3)
+Coello.SaveAnimation(VideoFormat="gif", Path=Path, SaveFrames=3)
 #%% Save the result into rasters
 
 StartDate = "2009-01-01"
 EndDate = "2010-04-20"
-Prefix = 'Qtot_'
+Prefix = "Qtot_"
 
-Coello.SaveResults(FlowAccPath, Result=1, StartDate=StartDate, EndDate=EndDate,
-                    Path="F:/02Case studies/", Prefix=Prefix)
+Coello.SaveResults(
+    FlowAccPath,
+    Result=1,
+    StartDate=StartDate,
+    EndDate=EndDate,
+    Path="F:/02Case studies/",
+    Prefix=Prefix,
+)
 # Hapi/Model/results/Coello/

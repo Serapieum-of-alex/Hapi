@@ -12,7 +12,7 @@ You don't need to copy and paste the code in this page you can find it in the ex
 OverlayMap one map
 -----------------------------------
 
-The `OverlayMap` function takes two ascii files the `BaseMap` which is the raster/asc file of the polygons and the secon is the asc file you want to extract its values. 
+The `OverlayMap` function takes two ascii files the `BaseMap` which is the raster/asc file of the polygons and the secon is the asc file you want to extract its values.
 
 
 .. code:: py
@@ -46,7 +46,7 @@ The `OverlayMap` function takes two ascii files the `BaseMap` which is the raste
             and the second column is the number of cells in each map.
     """
 
-To extract the 
+To extract the
 
 .. code:: py
 
@@ -74,7 +74,7 @@ The `OverlayMaps` function takes path to the folder where more than one map exis
 
 both methods `OverlayMap` and `OverlayMaps` returns the values as a `dict`, the difference is in the number of cells `OverlayMaps` returns a single integer number while `OverlayMap` returns a `dataframe` with two columns the first in the map name and the second is the number of occupied cell in each map.
 
-Save extracted values 
+Save extracted values
 ===================
 
 .. code:: py

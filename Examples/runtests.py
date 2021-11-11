@@ -1,7 +1,6 @@
-from project import branch
-from project import hello
+from project import branch, hello
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     hello()
     branch(False, True)
     branch(True, True)

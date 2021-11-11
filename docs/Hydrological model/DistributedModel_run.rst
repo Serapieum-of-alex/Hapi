@@ -117,7 +117,7 @@ Read Meteorological Inputs
 2- Lumped Model
 -------------------
 
-- Get the Lumpde conceptual model you want to couple it with the distributed routing module which in our case HBV 
+- Get the Lumpde conceptual model you want to couple it with the distributed routing module which in our case HBV
 	and define the initial condition, and catchment area.
 
 .. code-block:: py
@@ -163,7 +163,7 @@ Read Meteorological Inputs
 - the result of the simulation will be stored as attributes in the Catchment object as follow
 
 .. code-block:: py
-    
+
     Outputs:
         1-statevariables: [numpy attribute]
             4D array (rows,cols,time,states) states are [sp,wc,sm,uz,lv]
@@ -209,7 +209,7 @@ Read Meteorological Inputs
 5-Visualization
 -------------------
 
-- Firts type of visualization we can do with the results is to compare the gauge hydrograph with the simulatied hydrographs 
+- Firts type of visualization we can do with the results is to compare the gauge hydrograph with the simulatied hydrographs
 - Call the `PlotHydrograph` method and provide the period you want to visualize with the order of the gauge
 
 .. code-block:: py
@@ -339,15 +339,15 @@ Read Meteorological Inputs
 
 - to save the animation
 
-	- Please visit https://ffmpeg.org/ and download a version of ffmpeg compitable with your operating system 
+	- Please visit https://ffmpeg.org/ and download a version of ffmpeg compitable with your operating system
 	- Copy the content of the folder and paste it in the "c:/user/.matplotlib/ffmpeg-static/"
 	or
 
-	- define the path where the downloaded folder "ffmpeg-static" exist to matplotlib using the following lines 
+	- define the path where the downloaded folder "ffmpeg-static" exist to matplotlib using the following lines
 
 .. code-block:: py
     import matplotlib as mpl
-    mpl.rcParams['animation.ffmpeg_path'] = "path where you saved the ffmpeg.exe/ffmpeg.exe" 
+    mpl.rcParams['animation.ffmpeg_path'] = "path where you saved the ffmpeg.exe/ffmpeg.exe"
 
 
 .. code-block:: py
@@ -359,7 +359,7 @@ Read Meteorological Inputs
 7-Save the result into rasters
 ----------------------------------
 
-- To save the results as rasters provide the period and the path 
+- To save the results as rasters provide the period and the path
 
 .. code-block:: py
 

@@ -12,12 +12,13 @@
 
 # General information about the project.
 project = u"Hapi"
-author = 'Mostafa Farrag'
+author = "Mostafa Farrag"
 
-#copyright = u"2013-2019, "
+# copyright = u"2013-2019, "
 
 
-import sys, os
+import os
+import sys
 
 # import sphinx_rtd_theme
 
@@ -36,9 +37,9 @@ sys.path.insert(0, os.path.abspath("../Examples"))
 # If your extensions are in another directory, add it here. If the
 # directory is relative to the documentation root, use
 # os.path.abspath to make it absolute, like shown here.
-sys.path.append(os.path.abspath('sphinxext'))
+sys.path.append(os.path.abspath("sphinxext"))
 
-#import Hapi
+# import Hapi
 
 
 # -- General configuration -----------------------------------------------------
@@ -62,7 +63,7 @@ autosectionlabel_prefix_document = True
 
 todo_include_todos = True
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['templates']
+templates_path = ["templates"]
 
 # The suffix of source filenames.
 source_suffix = ".rst"
@@ -72,7 +73,6 @@ source_suffix = ".rst"
 
 # The master toctree document.
 master_doc = "index"
-
 
 
 # The version info for the project you're documenting, acts as replacement for
@@ -151,7 +151,7 @@ html_logo = "images/Hapi.png"
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["static"]
 #
-#html_context = {
+# html_context = {
 #    'css_files': [
 #        '_static/theme_overrides.css',  # override wide tables in RTD theme
 #        ],
@@ -213,7 +213,7 @@ latex_documents = [
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
-#latex_logo = "_static/logo.png"
+# latex_logo = "_static/logo.png"
 
 # For "manual" documents, if this is true, then toplevel headings are parts,
 # not chapters.
@@ -269,15 +269,15 @@ texinfo_documents = [
 # texinfo_show_urls = 'footnote'
 
 autodoc_mock_imports = [
-#    "osgeo.gdal",
-#    "osgeo.gdalconst",
-#    "osgeo",
-#    "osgeo.ogr",
-#    "cftime",
-#    "xarray",
-#    "netCDF4",
-#    "netCDF4_utils",
-#    "netcdftime",
-#    "pyproj",
-#    "Hapi.version",
+    #    "osgeo.gdal",
+    #    "osgeo.gdalconst",
+    #    "osgeo",
+    #    "osgeo.ogr",
+    #    "cftime",
+    #    "xarray",
+    #    "netCDF4",
+    #    "netCDF4_utils",
+    #    "netcdftime",
+    #    "pyproj",
+    #    "Hapi.version",
 ]

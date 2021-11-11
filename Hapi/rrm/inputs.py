@@ -4,20 +4,24 @@ Created on Wed May 16 03:50:00 2018
 
 @author: Mostafa
 """
+import datetime as dt
+
 #%library
 import os
-import datetime as dt
-import numpy as np
 import shutil
+
+import numpy as np
 import pandas as pd
-# from datetime import datetime
-# import geopandas as gpd
-from rasterstats import zonal_stats
 import rasterio
 from rasterio.plot import show
 
+# from datetime import datetime
+# import geopandas as gpd
+from rasterstats import zonal_stats
+
 import Hapi
 from Hapi.gis.raster import Raster as raster
+
 
 class Inputs:
 
@@ -36,11 +40,12 @@ class Inputs:
         7- ReadExcelData
         8- ListAttributes
     """
+
     def __init__(self):
         pass
 
     @staticmethod
-    def PrepareInputs(Rasteri,InputFolder,FolderName):
+    def PrepareInputs(Rasteri, InputFolder, FolderName):
         """PrepareInputs.
 
         this function prepare downloaded raster data to have the same align and
@@ -72,34 +77,41 @@ class Inputs:
         """
         # input data validation
         # data type
-        assert type(FolderName)== str, "FolderName input should be string type"
+        assert type(FolderName) == str, "FolderName input should be string type"
         # create a new folder for new created alligned rasters in temp
         # check if you can create the folder
         try:
-            os.makedirs(os.path.join(os.environ['TEMP'],"AllignedRasters"))
-        except WindowsError :
+            os.makedirs(os.path.join(os.environ["TEMP"], "AllignedRasters"))
+        except WindowsError:
             # if not able to create the folder delete the folder with the same name and create one empty
-            shutil.rmtree(os.path.join(os.environ['TEMP']+"/AllignedRasters"))
-            os.makedirs(os.path.join(os.environ['TEMP'],"AllignedRasters"))
+            shutil.rmtree(os.path.join(os.environ["TEMP"] + "/AllignedRasters"))
+            os.makedirs(os.path.join(os.environ["TEMP"], "AllignedRasters"))
 
-        temp = os.environ['TEMP']+"/AllignedRasters/"
+        temp = os.environ["TEMP"] + "/AllignedRasters/"
 
         # match alignment
-        print("First alligned files will be created in a folder 'AllignedRasters' in the Temp folder in you environment variable")
-        raster.MatchDataAlignment(Rasteri,InputFolder,temp)
+        print(
+            "First alligned files will be created in a folder 'AllignedRasters' in the Temp folder in you environment variable"
+        )
+        raster.MatchDataAlignment(Rasteri, InputFolder, temp)
         # create new folder in the current directory for alligned and nodatavalue matched cells
         try:
-            os.makedirs(os.path.join(os.getcwd(),FolderName))
+            os.makedirs(os.path.join(os.getcwd(), FolderName))
         except (WindowsError, FileExistsError):
-            msg = ("please The function is trying to create a folder with a name "+ str(FolderName) +" to complete the "
-                    "process if there is a folder with the same name please rename it to other name")
+            msg = (
+                "please The function is trying to create a folder with a name "
+                + str(FolderName)
+                + " to complete the "
+                "process if there is a folder with the same name please rename it to other name"
+            )
             assert False, msg
         # match nodata value
-        print("second matching NoDataValue from the DEM raster too all raster will be created in the outputpath")
-        raster.CropAlignedFolder(temp, Rasteri, FolderName+"/")
+        print(
+            "second matching NoDataValue from the DEM raster too all raster will be created in the outputpath"
+        )
+        raster.CropAlignedFolder(temp, Rasteri, FolderName + "/")
         # delete the processing folder from temp
         shutil.rmtree(temp)
-
 
     @staticmethod
     def ExtractParametersBoundaries(Basin):
@@ -126,10 +138,26 @@ class Inputs:
         """
         ParametersPath = os.path.dirname(Hapi.__file__)
         ParametersPath = ParametersPath + "/Parameters"
-        ParamList = ["01_tt", "02_rfcf","03_sfcf","04_cfmax","05_cwh","06_cfr",
-                     "07_fc","08_beta","09_etf","10_lp","11_k0","12_k1","13_k2",
-                     "14_uzl","15_perc", "16_maxbas","17_K_muskingum",
-                     "18_x_muskingum"]
+        ParamList = [
+            "01_tt",
+            "02_rfcf",
+            "03_sfcf",
+            "04_cfmax",
+            "05_cwh",
+            "06_cfr",
+            "07_fc",
+            "08_beta",
+            "09_etf",
+            "10_lp",
+            "11_k0",
+            "12_k1",
+            "13_k2",
+            "14_uzl",
+            "15_perc",
+            "16_maxbas",
+            "17_K_muskingum",
+            "18_x_muskingum",
+        ]
 
         raster = rasterio.open(ParametersPath + "/max/" + ParamList[0] + ".tif")
         Basin = Basin.to_crs(crs=raster.crs)
@@ -139,7 +167,9 @@ class Inputs:
             raster = rasterio.open(ParametersPath + "/max/" + ParamList[i] + ".tif")
             array = raster.read(1)
             affine = raster.transform
-            UB.append(zonal_stats(Basin, array, affine=affine, stats=['max'])[0]['max']) #stats=['min', 'max', 'mean', 'median', 'majority']
+            UB.append(
+                zonal_stats(Basin, array, affine=affine, stats=["max"])[0]["max"]
+            )  # stats=['min', 'max', 'mean', 'median', 'majority']
 
         # min values
         LB = list()
@@ -147,23 +177,22 @@ class Inputs:
             raster = rasterio.open(ParametersPath + "/min/" + ParamList[i] + ".tif")
             array = raster.read(1)
             affine = raster.transform
-            LB.append(zonal_stats(Basin, array, affine=affine, stats=['min'])[0]['min'])
+            LB.append(zonal_stats(Basin, array, affine=affine, stats=["min"])[0]["min"])
 
-        Par = pd.DataFrame(index = ParamList)
+        Par = pd.DataFrame(index=ParamList)
 
-        Par['UB'] = UB
-        Par['LB'] = LB
+        Par["UB"] = UB
+        Par["LB"] = LB
         # plot the given basin with the parameters raster
         ax = show((raster, 1), with_bounds=True)
-        Basin.plot(facecolor='None', edgecolor='blue', linewidth=2, ax=ax)
+        Basin.plot(facecolor="None", edgecolor="blue", linewidth=2, ax=ax)
         # ax.set_xbound([Basin.bounds.loc[0,'minx']-10,Basin.bounds.loc[0,'maxx']+10])
         # ax.set_ybound([Basin.bounds.loc[0,'miny']-1, Basin.bounds.loc[0,'maxy']+1])
 
         return Par
 
-
     @staticmethod
-    def ExtractParameters(src,scenario, AsRaster=False, SaveTo=''):
+    def ExtractParameters(src, scenario, AsRaster=False, SaveTo=""):
         """ExtractParameters.
 
         ExtractParameters method extracts the parameter rasters at the location
@@ -198,10 +227,26 @@ class Inputs:
         """
         ParametersPath = os.path.dirname(Hapi.__file__)
         ParametersPath = ParametersPath + "/Parameters/" + scenario
-        ParamList = ["01_tt", "02_rfcf","03_sfcf","04_cfmax","05_cwh","06_cfr",
-                     "07_fc","08_beta","09_etf","10_lp","11_k0","12_k1","13_k2",
-                     "14_uzl","15_perc", "16_maxbas","17_K_muskingum",
-                     "18_x_muskingum"]
+        ParamList = [
+            "01_tt",
+            "02_rfcf",
+            "03_sfcf",
+            "04_cfmax",
+            "05_cwh",
+            "06_cfr",
+            "07_fc",
+            "08_beta",
+            "09_etf",
+            "10_lp",
+            "11_k0",
+            "12_k1",
+            "13_k2",
+            "14_uzl",
+            "15_perc",
+            "16_maxbas",
+            "17_K_muskingum",
+            "18_x_muskingum",
+        ]
 
         if not AsRaster:
             raster = rasterio.open(ParametersPath + "/" + ParamList[0] + ".tif")
@@ -212,19 +257,21 @@ class Inputs:
                 raster = rasterio.open(ParametersPath + "/" + ParamList[i] + ".tif")
                 array = raster.read(1)
                 affine = raster.transform
-                Par.append(zonal_stats(src, array, affine=affine, stats=['max'])[0]['max']) #stats=['min', 'max', 'mean', 'median', 'majority']
+                Par.append(
+                    zonal_stats(src, array, affine=affine, stats=["max"])[0]["max"]
+                )  # stats=['min', 'max', 'mean', 'median', 'majority']
 
             # plot the given basin with the parameters raster
 
             # Plot DEM
             ax = show((raster, 1), with_bounds=True)
-            src.plot(facecolor='None', edgecolor='blue', linewidth=2, ax=ax)
+            src.plot(facecolor="None", edgecolor="blue", linewidth=2, ax=ax)
             # ax.set_xbound([Basin.bounds.loc[0,'minx']-10,Basin.bounds.loc[0,'maxx']+10])
             # ax.set_ybound([Basin.bounds.loc[0,'miny']-1, Basin.bounds.loc[0,'maxy']+1])
 
             return Par
         else:
-            Inputs.PrepareInputs(src,ParametersPath+ "/",SaveTo)
+            Inputs.PrepareInputs(src, ParametersPath + "/", SaveTo)
 
     @staticmethod
     def CreateLumpedInputs(Path):
@@ -248,20 +295,20 @@ class Inputs:
         # check wether the path exists or not
         assert os.path.exists(Path), Path + " you have provided does not exist"
         # check wether the folder has the rasters or not
-        assert len(os.listdir(Path)) > 0, Path+" folder you have provided is empty"
+        assert len(os.listdir(Path)) > 0, Path + " folder you have provided is empty"
         # read data
         data = raster.ReadRastersFolder(Path)
         # get the No data value from the first raster in the folder
         _, NoDataValue = raster.GetRasterData(Input=Path + "/" + os.listdir(Path)[0])
-        data[data == NoDataValue ] = np.nan
+        data[data == NoDataValue] = np.nan
 
-        data = np.nanmean(data,axis=0)
+        data = np.nanmean(data, axis=0)
         data = data.mean(0)
 
         return data
 
     @staticmethod
-    def RenameFiles(Path, Prefix='', fmt='%Y.%m.%d', freq='daily'):
+    def RenameFiles(Path, Prefix="", fmt="%Y.%m.%d", freq="daily"):
         """RenameFiles.
 
         RenameFiles method takes the path to a folder where you want to put a number
@@ -288,32 +335,54 @@ class Inputs:
         """
 
         files = os.listdir(Path)
-        if "desktop.ini" in files: files.remove("desktop.ini")
+        if "desktop.ini" in files:
+            files.remove("desktop.ini")
 
         # get the date
         dates_str = [files[i].split("_")[-1][:-4] for i in range(len(files))]
         dates = [dt.datetime.strptime(dates_str[i], fmt) for i in range(len(files))]
 
-        if freq == 'daily':
-            new_date_str = [str(i.year) + '_' + str(i.month) + '_' + str(i.day) for i in dates]
-        elif freq == 'hourly':
-            new_date_str = [str(i.year) + '_' + str(i.month) + '_' + str(i.day) + '_' + str(i.hour) for i in dates]
+        if freq == "daily":
+            new_date_str = [
+                str(i.year) + "_" + str(i.month) + "_" + str(i.day) for i in dates
+            ]
+        elif freq == "hourly":
+            new_date_str = [
+                str(i.year) + "_" + str(i.month) + "_" + str(i.day) + "_" + str(i.hour)
+                for i in dates
+            ]
         else:
-            new_date_str = [str(i.year) + '_' + str(i.month) + '_' + str(i.day) + '_' + str(i.hour) + '_' + str(i.minute) for i in dates]
+            new_date_str = [
+                str(i.year)
+                + "_"
+                + str(i.month)
+                + "_"
+                + str(i.day)
+                + "_"
+                + str(i.hour)
+                + "_"
+                + str(i.minute)
+                for i in dates
+            ]
 
         df = pd.DataFrame()
-        df['files'] = files
-        df['DateStr'] = new_date_str
-        df['dates'] = dates
-        df.sort_values('dates', inplace=True)
+        df["files"] = files
+        df["DateStr"] = new_date_str
+        df["dates"] = dates
+        df.sort_values("dates", inplace=True)
         df.reset_index(inplace=True)
-        df['order'] = [i for i in range(len(files))]
+        df["order"] = [i for i in range(len(files))]
 
         # df['new_names'] = [str(df.loc[i,'order']) + "_"+ df.loc[i,'files'] for i in range(len(files))]
-        df['new_names'] = [str(df.loc[i, 'order']) + "_" + Prefix + "_" + df.loc[i, 'DateStr'] + '.tif' for i in range(len(files))]
+        df["new_names"] = [
+            str(df.loc[i, "order"]) + "_" + Prefix + "_" + df.loc[i, "DateStr"] + ".tif"
+            for i in range(len(files))
+        ]
         # rename the files
         for i in range(len(files)):
-            os.rename(Path + "/" + df.loc[i,'files'], Path + "/" + df.loc[i,'new_names'])
+            os.rename(
+                Path + "/" + df.loc[i, "files"], Path + "/" + df.loc[i, "new_names"]
+            )
 
     # def LoadParameters():
 
@@ -323,13 +392,18 @@ class Inputs:
 
         this functions changes the date from a string to a date time format
         """
-        time=dt.datetime(int(string[:4]),int(string[5:7]),int(string[8:10]),
-                      int(string[11:13]),int(string[14:16]),int(string[17:]))
+        time = dt.datetime(
+            int(string[:4]),
+            int(string[5:7]),
+            int(string[8:10]),
+            int(string[11:13]),
+            int(string[14:16]),
+            int(string[17:]),
+        )
         return time
 
-
     @staticmethod
-    def ReadExcelData(path,years,months):
+    def ReadExcelData(path, years, months):
         """ReadExcelData.
 
         this function reads data listed in excel sheet with years and months are
@@ -356,33 +430,38 @@ class Inputs:
             Q=ReadExcelData(path+"Discharge/Qout.xlsx",years,months)
         """
 
-        Qout=pd.read_excel(path)
-        Q=[]
-    #    years=[2009,2010,2011]#,2012,2013]
-    #    months=[1,2,3,4,5,6,7,8,9,10,11,12]
+        Qout = pd.read_excel(path)
+        Q = []
+        #    years=[2009,2010,2011]#,2012,2013]
+        #    months=[1,2,3,4,5,6,7,8,9,10,11,12]
         for year in years:
             for month in months:
-                row=Qout[Qout['year'] == year][Qout['month'] == month]
-                row=row.drop(['year','month'], axis=1)
-                row=row.values.tolist()[0]
-                Q=Q+row
+                row = Qout[Qout["year"] == year][Qout["month"] == month]
+                row = row.drop(["year", "month"], axis=1)
+                row = row.values.tolist()[0]
+                Q = Q + row
 
-        Q=[Q[i] for i in range(len(Q)) if not np.isnan(Q[i])]
+        Q = [Q[i] for i in range(len(Q)) if not np.isnan(Q[i])]
 
         return Q
-
 
     def ListAttributes(self):
         """
         Print Attributes List
         """
 
-        print('\n')
-        print('Attributes List of: ' + repr(self.__dict__['name']) + ' - ' + self.__class__.__name__ + ' Instance\n')
+        print("\n")
+        print(
+            "Attributes List of: "
+            + repr(self.__dict__["name"])
+            + " - "
+            + self.__class__.__name__
+            + " Instance\n"
+        )
         self_keys = list(self.__dict__.keys())
         self_keys.sort()
         for key in self_keys:
-            if key != 'name':
-                print(str(key) + ' : ' + repr(self.__dict__[key]))
+            if key != "name":
+                print(str(key) + " : " + repr(self.__dict__[key]))
 
-        print('\n')
+        print("\n")

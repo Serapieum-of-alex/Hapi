@@ -2,11 +2,9 @@ import logging
 import os
 
 from coverage import __version__
-from coverage.misc import NoSource
-from coverage.misc import NotPython
+from coverage.misc import NoSource, NotPython
 
-
-log = logging.getLogger('coveralls.reporter')
+log = logging.getLogger("coveralls.reporter")
 
 
 class CoverallReporter:
@@ -47,7 +45,10 @@ class CoverallReporter:
         #     if str(e) != 'No data to report.':
         #         raise
 
-        from coverage.files import FnmatchMatcher, prep_patterns  # pylint: disable=import-outside-toplevel
+        from coverage.files import (  # pylint: disable=import-outside-toplevel
+            FnmatchMatcher,
+            prep_patterns,
+        )
 
         # get_analysis_to_report starts here; changes marked with TODOs
         file_reporters = cov._get_file_reporters(None)  # pylint: disable=W0212
@@ -55,13 +56,13 @@ class CoverallReporter:
 
         if config.report_include:
             matcher = FnmatchMatcher(prep_patterns(config.report_include))
-            file_reporters = [fr for fr in file_reporters
-                              if matcher.match(fr.filename)]
+            file_reporters = [fr for fr in file_reporters if matcher.match(fr.filename)]
 
         if config.report_omit:
             matcher = FnmatchMatcher(prep_patterns(config.report_omit))
-            file_reporters = [fr for fr in file_reporters
-                              if not matcher.match(fr.filename)]
+            file_reporters = [
+                fr for fr in file_reporters if not matcher.match(fr.filename)
+            ]
 
         # TODO: deprecate changes
         # if not file_reporters:
@@ -74,7 +75,7 @@ class CoverallReporter:
                 if not config.ignore_errors:
                     # TODO: deprecate changes
                     # raise
-                    log.warning('No source for %s', fr.filename)
+                    log.warning("No source for %s", fr.filename)
             except NotPython:
                 # Only report errors for .py files, and only if we didn't
                 # explicitly suppress those errors.
@@ -82,15 +83,12 @@ class CoverallReporter:
                 # should_be_python() method.
                 if fr.should_be_python():
                     if config.ignore_errors:
-                        msg = "Couldn't parse Python file '{}'".format(
-                            fr.filename)
-                        cov._warn(msg,  # pylint: disable=W0212
-                                  slug='couldnt-parse')
+                        msg = "Couldn't parse Python file '{}'".format(fr.filename)
+                        cov._warn(msg, slug="couldnt-parse")  # pylint: disable=W0212
                     else:
                         # TODO: deprecate changes
                         # raise
-                        log.warning('Source file is not python %s',
-                                    fr.filename)
+                        log.warning("Source file is not python %s", fr.filename)
             else:
                 # TODO: deprecate changes (well, this one is fine /shrug)
                 # yield (fr, analysis)
@@ -105,7 +103,10 @@ class CoverallReporter:
         """
         # pylint: disable=too-many-branches
         try:
-            from coverage.report import Reporter  # pylint: disable=import-outside-toplevel
+            from coverage.report import (
+                Reporter,
+            )  # pylint: disable=import-outside-toplevel
+
             self.reporter = Reporter(cov, conf)
         except ImportError:  # coverage >= 5.0
             return self.report5(cov)
@@ -117,13 +118,12 @@ class CoverallReporter:
                 self.parse_file(cu, analyzed)
             except NoSource:
                 if not self.reporter.config.ignore_errors:
-                    log.warning('No source for %s', cu.filename)
+                    log.warning("No source for %s", cu.filename)
             except NotPython:
                 # Only report errors for .py files, and only if we didn't
                 # explicitly suppress those errors.
-                if (cu.should_be_python()
-                        and not self.reporter.config.ignore_errors):
-                    log.warning('Source file is not python %s', cu.filename)
+                if cu.should_be_python() and not self.reporter.config.ignore_errors:
+                    log.warning("Source file is not python %s", cu.filename)
 
         return self.coverage
 
@@ -160,7 +160,7 @@ class CoverallReporter:
         if not analysis.has_arcs():
             return None
 
-        if not hasattr(analysis, 'branch_lines'):
+        if not hasattr(analysis, "branch_lines"):
             # N.B. switching to the public method analysis.missing_branch_arcs
             # would work for half of what we need, but there doesn't seem to be
             # an equivalent analysis.executed_branch_arcs
@@ -184,22 +184,19 @@ class CoverallReporter:
         """Generate data for single file."""
         filename = cu.relative_filename()
         # ensure results are properly merged between platforms
-        posix_filename = filename.replace(os.path.sep, '/')
+        posix_filename = filename.replace(os.path.sep, "/")
 
         source = analysis.file_reporter.source()
 
         token_lines = analysis.file_reporter.source_token_lines()
-        coverage_lines = [self.get_hits(i, analysis)
-                          for i, _ in enumerate(token_lines, 1)]
+        coverage_lines = [
+            self.get_hits(i, analysis) for i, _ in enumerate(token_lines, 1)
+        ]
 
-        results = {
-            'name': posix_filename,
-            'source': source,
-            'coverage': coverage_lines,
-        }
+        results = {"name": posix_filename, "source": source, "coverage": coverage_lines}
 
         branches = self.get_arcs(analysis)
         if branches:
-            results['branches'] = branches
+            results["branches"] = branches
 
         self.coverage.append(results)

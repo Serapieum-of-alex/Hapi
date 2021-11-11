@@ -5,12 +5,15 @@ Created on Fri May 15 19:30:03 2020
 @author: mofarrag
 """
 from IPython import get_ipython
+
 get_ipython().magic("reset -f")
-import os
 # os.chdir("F:/02Case studies/Rhine/base_data/GIS/Layers/DEM/srtm/srtms")
 import glob
-import Hapi.gis.raster as Raster
+import os
+
 from rasterio.plot import show
+
+import Hapi.gis.raster as Raster
 
 # File and folder paths
 dirpath = "F:/02Case studies/Rhine/base_data/GIS/Layers/DEM/srtm/srtms"
@@ -27,4 +30,4 @@ dem_fps = glob.glob(filelist)
 dst, dst_meta = Raster.Mosaic(dem_fps, Save=True, Path=out_fp)
 
 # Plot the result
-show(dst, cmap='terrain')
+show(dst, cmap="terrain")

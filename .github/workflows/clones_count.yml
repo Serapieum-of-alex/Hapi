@@ -1,6 +1,6 @@
 name: GitHub Clone Count for 14 days at every 8 hours
 
-# Controls when the action will run. 
+# Controls when the action will run.
 on:
   schedule:
     - cron: "0 */8 * * *"
@@ -32,7 +32,7 @@ jobs:
           git config --global user.name "GitHub Action"
           git config --global user.email "action@github.com"
           git commit -m "Automated clone.json update"
-          
+
       - name: Push
         uses: ad-m/github-push-action@master
         with:

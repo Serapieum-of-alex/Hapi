@@ -8,7 +8,9 @@ Make sure the working directory is set to the examples folder in the Hapi repo"
 currunt_work_directory = Hapi/Example
 
 """
-import os, sys
+import os
+import sys
+
 os.chdir("F:/01Algorithms/Hydrology/HAPI/Examples")
 rootpath = os.path.abspath(os.getcwd())
 # sys.path.append(rootpath + "/src")
@@ -17,6 +19,7 @@ datapath2 = os.path.join(rootpath, "data/GIS")
 os.chdir(rootpath)
 
 from Hapi.rrm.inputs import Inputs
+
 #%%
 
 """

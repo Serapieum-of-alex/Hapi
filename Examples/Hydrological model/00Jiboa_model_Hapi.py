@@ -8,29 +8,33 @@ wher the catchment is consisted os a ustream lake and a volcanic area
 # from IPython import get_ipython
 # get_ipython().magic('reset -f')
 import os
+
 os.chdir("F:/02Case studies/El Salvador")
 
-import numpy as np
 import datetime as dt
-from Hapi.run import Run
-from Hapi.catchment import Catchment, Lake
+
+import numpy as np
+
 import Hapi.hbv as HBV
 import Hapi.hbv_lake as HBVLake
 import Hapi.performancecriteria as Pf
+from Hapi.catchment import Catchment, Lake
+from Hapi.run import Run
+
 #%% Paths
 res = 4000
 """
 paths to meteorological data
 """
-PrecPath = "inputs/Hapi/meteodata/"+str(res)+"/calib/prec_clipped"
-Evap_Path = "inputs/Hapi/meteodata/"+str(res)+"/calib/evap_clipped"
-TempPath = "inputs/Hapi/meteodata/"+str(res)+"/calib/temp_clipped"
-FlowAccPath = "inputs/Hapi/GIS/"+str(res)+"_matched/acc"+str(res)+".tif"
-FlowDPath = "inputs/Hapi/GIS/"+str(res)+"_matched/fd"+str(res)+".tif"
-ParPath = "inputs/Hapi/meteodata/"+str(res)+"/parameters/"
+PrecPath = "inputs/Hapi/meteodata/" + str(res) + "/calib/prec_clipped"
+Evap_Path = "inputs/Hapi/meteodata/" + str(res) + "/calib/evap_clipped"
+TempPath = "inputs/Hapi/meteodata/" + str(res) + "/calib/temp_clipped"
+FlowAccPath = "inputs/Hapi/GIS/" + str(res) + "_matched/acc" + str(res) + ".tif"
+FlowDPath = "inputs/Hapi/GIS/" + str(res) + "_matched/fd" + str(res) + ".tif"
+ParPath = "inputs/Hapi/meteodata/" + str(res) + "/parameters/"
 # Lake
 LakeMeteoPath = "inputs/Hapi/meteodata/lakedata.csv"
-LakeParametersPath = "inputs/Hapi/meteodata/"+str(res)+"/Lakeparameters.txt"
+LakeParametersPath = "inputs/Hapi/meteodata/" + str(res) + "/Lakeparameters.txt"
 GaugesPath = "inputs/Hapi/meteodata/Gauges/"
 SaveTo = "results/"
 #%% Distributed Model Object
@@ -39,12 +43,18 @@ AreaCoeff = 227.31
 InitialCond = np.loadtxt("inputs/Hapi/meteodata/Initia-jiboa.txt", usecols=0).tolist()
 Snow = 0
 
-Sdate = '2012-06-14 19:00:00'
+Sdate = "2012-06-14 19:00:00"
 # Edate = '2014-11-17 00:00:00'
-Edate = '2013-12-23 00:00:00'
+Edate = "2013-12-23 00:00:00"
 name = "Jiboa"
-Jiboa = Catchment(name, Sdate, Edate, SpatialResolution = "Distributed",
-              TemporalResolution = "Hourly", fmt='%Y-%m-%d %H:%M:%S')
+Jiboa = Catchment(
+    name,
+    Sdate,
+    Edate,
+    SpatialResolution="Distributed",
+    TemporalResolution="Hourly",
+    fmt="%Y-%m-%d %H:%M:%S",
+)
 Jiboa.ReadRainfall(PrecPath)
 Jiboa.ReadTemperature(TempPath)
 Jiboa.ReadET(Evap_Path)
@@ -59,22 +69,27 @@ lake meteorological data
 """
 # where the lake discharges its flow (give the indices of the cell)
 if res == 4000:
-    OutflowCell = [2,1]    # 4km
-elif res==2000:
-    OutflowCell = [4,2]    # 2km
+    OutflowCell = [2, 1]  # 4km
+elif res == 2000:
+    OutflowCell = [4, 2]  # 2km
 elif res == 1000:
-    OutflowCell = [10,4]    # 1km
+    OutflowCell = [10, 4]  # 1km
 elif res == 500:
-    OutflowCell = [19,10]    # 500m
+    OutflowCell = [19, 10]  # 500m
 
-Sdate = '2012.06.14 19:00:00'
+Sdate = "2012.06.14 19:00:00"
 # Edate = '2014.11.17 00:00:00'
-Edate = '2013.12.23 00:00:00'
+Edate = "2013.12.23 00:00:00"
 
-JiboaLake = Lake(StartDate=Sdate, EndDate=Edate, fmt='%Y.%m.%d %H:%M:%S',
-                 TemporalResolution="Hourly", Split=True)
+JiboaLake = Lake(
+    StartDate=Sdate,
+    EndDate=Edate,
+    fmt="%Y.%m.%d %H:%M:%S",
+    TemporalResolution="Hourly",
+    Split=True,
+)
 
-JiboaLake.ReadMeteoData(LakeMeteoPath,fmt='%d.%m.%Y %H:%M')
+JiboaLake.ReadMeteoData(LakeMeteoPath, fmt="%d.%m.%Y %H:%M")
 JiboaLake.ReadParameters(LakeParametersPath)
 
 
@@ -83,46 +98,54 @@ LakeInitCond = np.loadtxt("inputs/Hapi/meteodata/Initia-lake.txt", usecols=0).to
 LakeCatArea = 133.98
 LakeArea = 70.64
 Snow = 0
-JiboaLake.ReadLumpedModel(HBVLake, LakeCatArea, LakeArea, LakeInitCond,
-                          OutflowCell, StageDischargeCurve, Snow)
+JiboaLake.ReadLumpedModel(
+    HBVLake, LakeCatArea, LakeArea, LakeInitCond, OutflowCell, StageDischargeCurve, Snow
+)
 #%% Gauges
-Date1 = '14.06.2012 19:00'
-Date2 = '23.12.2013 00:00'
-Jiboa.ReadGaugeTable(GaugesPath+"GaugesTable.csv",FlowAccPath)
-Jiboa.ReadDischargeGauges(GaugesPath, column='id', fmt='%d.%m.%Y %H:%M',
-                          Split=True, Date1=Date1, Date2=Date2)
+Date1 = "14.06.2012 19:00"
+Date2 = "23.12.2013 00:00"
+Jiboa.ReadGaugeTable(GaugesPath + "GaugesTable.csv", FlowAccPath)
+Jiboa.ReadDischargeGauges(
+    GaugesPath, column="id", fmt="%d.%m.%Y %H:%M", Split=True, Date1=Date1, Date2=Date2
+)
 #%% run the model
 Run.RunHAPIwithLake(Jiboa, JiboaLake)
 #%% calculate some metrics
 Jiboa.ExtractDischarge(OnlyOutlet=True)
 
 for i in range(len(Jiboa.GaugesTable)):
-    gaugeid = Jiboa.GaugesTable.loc[i,'id']
+    gaugeid = Jiboa.GaugesTable.loc[i, "id"]
     print("----------------------------------")
-    print("Gauge - " +str(gaugeid))
-    print("RMSE= " + str(round(Jiboa.Metrics.loc['RMSE',gaugeid],2)))
-    print("NSE= " + str(round(Jiboa.Metrics.loc['NSE',gaugeid],2)))
-    print("NSEhf= " + str(round(Jiboa.Metrics.loc['NSEhf',gaugeid],2)))
-    print("KGE= " + str(round(Jiboa.Metrics.loc['KGE',gaugeid],2)))
-    print("WB= " + str(round(Jiboa.Metrics.loc['WB',gaugeid],2)))
-    print("Pearson CC= " + str(round(Jiboa.Metrics.loc['Pearson-CC',gaugeid],2)))
-    print("R2 = " + str(round(Jiboa.Metrics.loc['R2',gaugeid],2)))
+    print("Gauge - " + str(gaugeid))
+    print("RMSE= " + str(round(Jiboa.Metrics.loc["RMSE", gaugeid], 2)))
+    print("NSE= " + str(round(Jiboa.Metrics.loc["NSE", gaugeid], 2)))
+    print("NSEhf= " + str(round(Jiboa.Metrics.loc["NSEhf", gaugeid], 2)))
+    print("KGE= " + str(round(Jiboa.Metrics.loc["KGE", gaugeid], 2)))
+    print("WB= " + str(round(Jiboa.Metrics.loc["WB", gaugeid], 2)))
+    print("Pearson CC= " + str(round(Jiboa.Metrics.loc["Pearson-CC", gaugeid], 2)))
+    print("R2 = " + str(round(Jiboa.Metrics.loc["R2", gaugeid], 2)))
 #%%
-Qobs = Jiboa.QGauges[Jiboa.GaugesTable.loc[0,'id']]
+Qobs = Jiboa.QGauges[Jiboa.GaugesTable.loc[0, "id"]]
 
-gaugeid = Jiboa.GaugesTable.loc[0,'id']
+gaugeid = Jiboa.GaugesTable.loc[0, "id"]
 
 WS = {}
-WS['type'] = 1
-WS['N'] = 3
-ModelMetrics=dict()
-ModelMetrics['Calib_RMSEHF'] = round(Pf.RMSEHF(Qobs,Jiboa.Qsim[gaugeid],WS['type'],WS['N'],0.75),3)
-ModelMetrics['Calib_RMSELF'] = round(Pf.RMSELF(Qobs,Jiboa.Qsim[gaugeid],WS['type'],WS['N'],0.75),3)
-ModelMetrics['Calib_NSEHf'] = round(Pf.NSE(Qobs,Jiboa.Qsim[gaugeid]),3)
-ModelMetrics['Calib_NSELf'] = round(Pf.NSE(np.log(Qobs),np.log(Jiboa.Qsim[gaugeid])),3)
-ModelMetrics['Calib_RMSE'] = round(Pf.RMSE(Qobs,Jiboa.Qsim[gaugeid]),3)
-ModelMetrics['Calib_KGE'] = round(Pf.KGE(Qobs,Jiboa.Qsim[gaugeid]),3)
-ModelMetrics['Calib_WB'] = round(Pf.WB(Qobs,Jiboa.Qsim[gaugeid]),3)
+WS["type"] = 1
+WS["N"] = 3
+ModelMetrics = dict()
+ModelMetrics["Calib_RMSEHF"] = round(
+    Pf.RMSEHF(Qobs, Jiboa.Qsim[gaugeid], WS["type"], WS["N"], 0.75), 3
+)
+ModelMetrics["Calib_RMSELF"] = round(
+    Pf.RMSELF(Qobs, Jiboa.Qsim[gaugeid], WS["type"], WS["N"], 0.75), 3
+)
+ModelMetrics["Calib_NSEHf"] = round(Pf.NSE(Qobs, Jiboa.Qsim[gaugeid]), 3)
+ModelMetrics["Calib_NSELf"] = round(
+    Pf.NSE(np.log(Qobs), np.log(Jiboa.Qsim[gaugeid])), 3
+)
+ModelMetrics["Calib_RMSE"] = round(Pf.RMSE(Qobs, Jiboa.Qsim[gaugeid]), 3)
+ModelMetrics["Calib_KGE"] = round(Pf.KGE(Qobs, Jiboa.Qsim[gaugeid]), 3)
+ModelMetrics["Calib_WB"] = round(Pf.WB(Qobs, Jiboa.Qsim[gaugeid]), 3)
 
 print(ModelMetrics)
 #%% plot
@@ -232,16 +255,32 @@ animation.FuncAnimation.
 plotstart = "2012-07-20"
 plotend = "2012-08-20"
 
-Anim = Jiboa.PlotDistributedResults(plotstart, plotend, Figsize=(8,8), Option = 6,threshold=160, PlotNumbers=False,
-                                TicksSpacing = 10,Interval = 10, Gauges=False, cmap='inferno', Textloc=[0.6,0.8],
-                                Gaugecolor='red', ColorScale = 2, IDcolor='blue', IDsize=25,gamma=0.08)
+Anim = Jiboa.PlotDistributedResults(
+    plotstart,
+    plotend,
+    Figsize=(8, 8),
+    Option=6,
+    threshold=160,
+    PlotNumbers=False,
+    TicksSpacing=10,
+    Interval=10,
+    Gauges=False,
+    cmap="inferno",
+    Textloc=[0.6, 0.8],
+    Gaugecolor="red",
+    ColorScale=2,
+    IDcolor="blue",
+    IDsize=25,
+    gamma=0.08,
+)
 #%%
 Path = SaveTo + "anim.mov"
-Jiboa.SaveAnimation(VideoFormat="mov",Path=Path,SaveFrames=3)
+Jiboa.SaveAnimation(VideoFormat="mov", Path=Path, SaveFrames=3)
 #%% Save Results
 StartDate = "2012-07-20"
 EndDate = "2012-08-20"
 
 Path = SaveTo + "Lumped_Parameters_" + str(dt.datetime.now())[0:10] + "_"
-Jiboa.SaveResults(Result=1, StartDate=StartDate, EndDate=EndDate, Path=Path, FlowAccPath = FlowAccPath)
-
+Jiboa.SaveResults(
+    Result=1, StartDate=StartDate, EndDate=EndDate, Path=Path, FlowAccPath=FlowAccPath
+)
