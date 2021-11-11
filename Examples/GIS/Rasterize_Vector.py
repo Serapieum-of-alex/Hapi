@@ -1,4 +1,4 @@
-from IPython import get_ipython
+# from IPython import get_ipython
 from osgeo import gdal, gdalconst, ogr
 
 # get_ipython().magic("reset -f")
