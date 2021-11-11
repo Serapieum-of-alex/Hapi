@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Jun  9 22:15:47 2020
-
-@author: mofarrag
-"""
 """
 Make sure the working directory is set to the examples folder in the Hapi repo"
 currunt_work_directory = Hapi/Example
@@ -15,7 +9,7 @@ import geopandas as gpd
 
 # import numpy as np
 # import pandas as pd
-from Hapi.inputs import Inputs as IN
+from Hapi.rrm.inputs import Inputs as IN
 
 BasinF = "data/GIS/Hapi_GIS_Data/BasinExtractParameters.shp"
 SaveTo = "data/parameters"

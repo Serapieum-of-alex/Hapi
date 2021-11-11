@@ -1,8 +1,3 @@
-"""
-Created on Sun Jun 24 21:02:34 2018
-
-@author: Mostafa
-"""
 Comp = "F:/01Algorithms/Hydrology/HAPI/Examples"
 import datetime as dt
 

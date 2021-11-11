@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # sphinx-quickstart on Wed April 23 2021.
 #

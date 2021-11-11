@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 GISpy contains python functions to handle raster data align them together
 based on a source raster, perform any algebric operation on cell's values

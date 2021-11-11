@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 this code creates the max and min values of the parameters from the 10 scenarios
 of the HBV

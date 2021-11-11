@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 DistParameters contains functions that is responible for distributing parameters
 spatially (totally distributed, totally distriby-uted with some parameters lumped,

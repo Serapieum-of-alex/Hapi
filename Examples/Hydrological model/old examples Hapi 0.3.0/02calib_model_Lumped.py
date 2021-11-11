@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 This code is developed to calibrate the HBV model in a lumped spatial representation
 using

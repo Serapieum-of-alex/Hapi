@@ -8,7 +8,40 @@ repos:
         name: "[py -  check] validate yaml"
     -   id: trailing-whitespace
         name: "[file -  check] validate yaml"
-#-   repo: https://github.com/psf/black
+    -   id: check-added-large-files
+        name: "[file -  check] large file"
+        args: [ --maxkb=5000 ]
+    -   id: check-docstring-first
+        name: "[py   -  check] docstring first"
+        files: /Examples
+        types : [file, python ]
+    -   id: check-json
+        name: "[json -  check] validate json"
+    -   id: check-merge-conflict
+        name: "[git  -  check] merge conflict"
+    -   id: debug-statements
+        name: "[py   -  check] debug statements"
+    -   id: detect-private-key
+        name: "[cred -  check] private keys"
+    -   id: fix-encoding-pragma
+        name: "[file - format] coding pragma"
+        args: [ --remove ]
+    -   id: mixed-line-ending
+        name: "[file - format] mixed line ending"
+        args: [ --fix=auto ]
+    -   id: pretty-format-json
+        name: "[json - format] pretty json"
+        args: [ --autofix,
+                --indent=4,
+                --no-sort-keys ]
+    -   id: requirements-txt-fixer
+        name: "[reqs - format] fix requirements.txt"
+
+
+
+
+
+    #-   repo: https://github.com/psf/black
 #    rev: 19.3b0
 #    hooks:
 #    -   id: black

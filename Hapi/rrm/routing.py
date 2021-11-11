@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Routing File contains all Routing functions
 1- Muskingum cunge
