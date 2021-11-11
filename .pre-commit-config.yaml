@@ -7,7 +7,8 @@ repos:
     -   id: end-of-file-fixer
         name: "[py -  check] validate yaml"
     -   id: trailing-whitespace
-        name: "[file -  check] validate yaml"
+        name: "[file - format] trim trailing whitespace"
+        args: [ --markdown-linebreak-ext=md ]
     -   id: check-added-large-files
         name: "[file -  check] large file"
         args: [ --maxkb=5000 ]
@@ -39,17 +40,23 @@ repos:
 
 
 
-
-
+# TODO : uncheck later and fix all the problems of line too long
+#-   repo: https://gitlab.com/pycqa/flake8
+#    rev: 3.8.4
+#    hooks:
+#      - id: flake8
+#        name: "[py   - check] flake8"
+#        language_version: python3.8
+# TODO : this hook does not fix the files
     #-   repo: https://github.com/psf/black
 #    rev: 19.3b0
 #    hooks:
 #    -   id: black
-- repo: https://github.com/pre-commit/mirrors-isort
-  rev: v5.7.0
-  hooks:
-    - id: isort
-      name: "[py   - format] isort"
+-   repo: https://github.com/pre-commit/mirrors-isort
+    rev: v5.7.0
+    hooks:
+      - id: isort
+        name: "[py   - format] isort"
 
 #- repo: https://github.com/ambv/black
 #  rev: 20.8b1
