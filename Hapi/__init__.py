@@ -37,7 +37,7 @@ def configuration(parent_package="", top_path=None):
         quiet=True,
     )
 
-    config.add_subpackage("statistics")
+    # config.add_subpackage("statistics")
     config.add_subpackage("rrm")
     config.add_subpackage("rs")
     config.add_subpackage("hm")

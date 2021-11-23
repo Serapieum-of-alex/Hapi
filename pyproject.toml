@@ -4,6 +4,10 @@ version = "1.0.5"
 description = "Hydrological and Hydrodynamic modelling tool"
 authors = ["Mostafa Farrag <moah.farag@gmail.com>"]
 
+[[tool.poetry.source]]
+name = "my-custom-repo"  # This name will be used in the configuration to retreive the proper credentials
+url = "https://my.customrepo.com/simple/"  # URL used to download your packages from
+
 [tool.poetry.dependencies]
 python = ">=3.7.1,<3.10"
 pandas = "<=1.3.2,<1.3.4"
@@ -17,9 +21,9 @@ scikit-image = "^0.18.3"
 joblib = "^1.1.0"
 ecmwf-api-client = "^1.6.1"
 pyproj = "^3.2.1"
-# gdal = ">=3.1.4,<3.3.3"
 proj = "^0.2.0"
 Shapely = "^1.8.0"
+gdal = ">=3.1.4,<3.3.3"
 
 [tool.poetry.dev-dependencies]
 

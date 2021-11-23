@@ -19,10 +19,8 @@ from Hapi.gis.raster import Raster
 
 
 class RemoteSensing:
-    """
-    =====================================================
-        RemoteSensing
-    =====================================================
+    """RemoteSensing.
+
     RemoteSensing class contains methods to download ECMWF data
 
     Methods:

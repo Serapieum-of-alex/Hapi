@@ -13,11 +13,11 @@ from bisect import bisect
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from HapiSM import performancecriteria as Pf
 from scipy.stats import genextreme, gumbel_r
 
 from Hapi.gis.raster import Raster as raster
 from Hapi.hm.saintvenant import SaintVenant
-from Hapi.statistics import performancecriteria as Pf
 from Hapi.visualizer import Visualize as V
 
 hours = list(range(1, 25))

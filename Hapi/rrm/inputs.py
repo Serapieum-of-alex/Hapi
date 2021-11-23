@@ -4,7 +4,6 @@ Created on Wed May 16 03:50:00 2018
 @author: Mostafa
 """
 import datetime as dt
-#%library
 import os
 import shutil
 

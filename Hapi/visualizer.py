@@ -15,13 +15,13 @@ import matplotlib.colors as colors
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from HapiSM.statisticaltools import StatisticalTools as ST
 from matplotlib import animation, gridspec
 from matplotlib.ticker import LogFormatter
 from scipy.stats import gumbel_r
 
 from Hapi.gis.giscatchment import GISCatchment as GC
 from Hapi.gis.raster import Raster
-from Hapi.statistics.statisticaltools import StatisticalTools as ST
 
 hours = list(range(1, 25))
 
