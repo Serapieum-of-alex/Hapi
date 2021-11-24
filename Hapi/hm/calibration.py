@@ -1,6 +1,5 @@
-from typing import List, Optional, Union
-
 import datetime as dt
+from typing import List, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -51,6 +50,18 @@ class Calibration(River):
         Ref_ind = pd.date_range(self.start, self.end, freq="D")
         self.ReferenceIndex = pd.DataFrame(index=list(range(1, days + 1)))
         self.ReferenceIndex["date"] = Ref_ind[:-1]
+        self.QHM = None
+        self.QRRM = None
+        self.GaugesTable = None
+        self.WLGauges = None
+        self.WLHM = None
+        self.CalibrationQ = None
+        self.CalibrationWL = None
+        self.AnnualMaxObsQ = None
+        self.AnnualMaxObsWL = None
+        self.AnnualMaxRRM = None
+        self.AnnualMaxRIMQ = None
+        self.AnnualMaxRIMWL = None
 
 
     def ReadGaugesTable(self, Path):
@@ -226,6 +237,7 @@ class Calibration(River):
                 self.GaugesTable.loc[i, "Qstart"] = st1
                 self.GaugesTable.loc[i, "Qend"] = end1
 
+
     def ReadRRM(self, path, start, end, column="oid", fmt="%Y-%m-%d"):
         """ReadRRM.
 
@@ -344,8 +356,16 @@ class Calibration(River):
 
         # fill non modelled time steps with zeros
         for i in range(len(self.GaugesTable[column])):
-            
-            
+            f = self.ReadRRMResults(
+                self.version,
+                self.rrmreferenceindex,
+                path,
+                QHM.columns[i],
+                fromday='',
+                today='',
+                date_format=fmt,
+            )
+
             f = np.loadtxt(path + str(int(QHM.columns[i])) + ".txt", delimiter=",", skiprows=0)
             f1 = list(range(int(f[0, 0]), int(f[-1, 0]) + 1))
             f2 = list()
@@ -812,6 +832,7 @@ class Calibration(River):
         # self.slope.loc[self.slope['id']==Segmenti, 'slope'] = AvgSlope
         self.slope.loc[self.slope["id"] == Segmenti, "slope"] = BC_slope
 
+
     def SmoothBedLevel(self, segmenti):
         """SmoothXS
 
@@ -1016,11 +1037,13 @@ class Calibration(River):
         ----------
         segmenti : [Integer]
             segment ID.
+        height : []
 
         Returns
         -------
         crosssections: [dataframe attribute]
             the "b" column in the crosssections attribute will be smoothed
+
 
         """
         g = self.crosssections.loc[self.crosssections["id"] == segmenti, :].index[0]
@@ -1035,6 +1058,7 @@ class Calibration(River):
         segment.index = range(g, g + len(segment))
         # copy back the segment to the whole XS df
         self.crosssections.loc[self.crosssections["id"] == segmenti, :] = segment
+
 
     def SmoothMaxSlope(self, segmenti, SlopePercentThreshold=1.5):
         """SmoothMaxSlope.

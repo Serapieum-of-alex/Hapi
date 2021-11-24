@@ -4,16 +4,19 @@ River Module.
 river module to read the river data and do hydraulic analysisf or each segment
 
 """
+
 import datetime as dt
 import os
 import sys
 import zipfile
 from bisect import bisect
+from typing import Union  # List, Optional,
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from HapiSM import performancecriteria as Pf
+from pandas.core.frame import DataFrame as df
 from scipy.stats import genextreme, gumbel_r
 
 from Hapi.gis.raster import Raster as raster
@@ -21,7 +24,7 @@ from Hapi.hm.saintvenant import SaintVenant
 from Hapi.visualizer import Visualize as V
 
 hours = list(range(1, 25))
-
+# hours = list(range(0,25))
 
 class River:
     """River.
@@ -33,24 +36,24 @@ class River:
 
     def __init__(
         self,
-        name,
-        version=3,
-        start="1950-1-1",
-        end="",
-        days=36890,
-        rrmstart="1950-1-1",
-        rrmdays=36890,
-        dto=60,
-        dx="",
-        leftovertopping_suffix="_left.txt",
-        rightovertopping_suffix="_right.txt",
-        depthprefix="DepthMax",
-        durationprefix="Duration",
-        returnperiod_prefix="ReturnPeriod",
-        compressed=True,
-        onedresultpath="",
-        twodresultpath="",
-        fmt="%Y-%m-%d",
+        name: str,
+        version: int=3,
+        start: str="1950-1-1",
+        end: Union[int, str]="",
+        days: int=36890,
+        rrmstart: str="1950-1-1",
+        rrmdays: int=36890,
+        dto: int=60,
+        dx: Union[int, str]="",
+        leftovertopping_suffix: str="_left.txt",
+        rightovertopping_suffix: str="_right.txt",
+        depthprefix: str="DepthMax",
+        durationprefix: str="Duration",
+        returnperiod_prefix: str="ReturnPeriod",
+        compressed: str=True,
+        onedresultpath: str="",
+        twodresultpath: str="",
+        fmt: str="%Y-%m-%d",
     ):
         """River.
 
@@ -196,7 +199,31 @@ class River:
 
         self.indsub = pd.date_range(self.start, self.end, freq=self.freq)
 
-    def IndexToDate(self, index):
+        self.USHydrographs = None
+        self.crosssections = None
+        self.xsno = None
+        self.xsname = None
+        self.QBCmin = None
+        self.HBCmin = None
+        self.h = None
+        self.q = None
+        self.from_beginning = None
+        self.firstdayresults = None
+        self.lastday = None
+        self.daylist = None
+        self.id = None
+        self.QBC = None
+        self.HBC = None
+        self.usbc = None
+        self.dsbc = None
+        self.Result1D = None
+        self.Q = None
+        self.H = None
+        self.slope = None
+        self.EventIndex = None
+        self.enddays = None
+
+    def IndexToDate(self, index:int):
         """IndexToDate.
 
         IndexToDate takes an integer number and returns the date coresponding
@@ -218,7 +245,8 @@ class River:
         # convert the index into date
         return self.referenceindex.loc[index, "date"]
 
-    def DateToIndex(self, date, fmt="%Y-%m-%d"):
+    def DateToIndex(self, date:Union[dt.datetime, str],
+                    fmt: str="%Y-%m-%d"):
         """DateToIndex.
 
         DateToIndex takes a date and returns a the order of the days in the
@@ -252,7 +280,7 @@ class River:
             )
             sys.exit
 
-    def IndexToDateRRM(self, index):
+    def IndexToDateRRM(self, index: int):
         """IndexToDateRRM.
 
         IndexToDate takes an integer number and returns the date coresponding
@@ -274,7 +302,7 @@ class River:
         # convert the index into date
         return self.referenceindex.loc[index, "date"]
 
-    def DateToIndexRRM(self, date, fmt="%Y-%m-%d"):
+    def DateToIndexRRM(self, date: Union[str, dt.datetime], fmt: str="%Y-%m-%d"):
         """DateToIndexRRM.
 
         DateToIndex takes a date and returns a the order of the days in the
@@ -301,7 +329,7 @@ class River:
     def round(number, roundto):
         return round(number / roundto) * roundto
 
-    def Read1DConfigFile(self, path):
+    def Read1DConfigFile(self, path: str):
         """Read1DConfigFile.
 
         Read the configuration file
@@ -422,7 +450,7 @@ class River:
             CalcReturnPerion=CalcReturnPerion,
         )
 
-    def ReadCrossSections(self, path):
+    def ReadCrossSections(self, path: str):
         """ReadCrossSections.
 
         Read crossSections file
@@ -442,7 +470,8 @@ class River:
             self.xsname = self.crosssections["xsid"].tolist()
 
     def ReadBoundaryConditions(
-        self, start="", end="", path="", fmt="%Y-%m-%d", ds=False, dsbcpath=""
+            self, start: str="", end: str="", path: str="", fmt: str="%Y-%m-%d",
+            ds: bool=False, dsbcpath: str=""
     ):
         """ReadBoundaryConditions.
 
@@ -551,7 +580,8 @@ class River:
                     BC.loc[:, :].resample(self.freq).mean().interpolate("linear")
                 )
 
-    def ReadSubDailyResults(self, start, end, fmt="%Y-%m-%d", Lastsegment=False):
+    def ReadSubDailyResults(self, start: str, end: str, fmt: str="%Y-%m-%d",
+                            Lastsegment: bool=False):
         """ReadSubDailyResults.
 
         Read Sub-Daily Results
@@ -571,6 +601,7 @@ class River:
             DESCRIPTION.
         fmt: [string]
             format of the date. fmt="%Y-%m-%d %H:%M:%S"
+        Lastsegment : [bool]
 
         Returns
         -------
@@ -747,13 +778,11 @@ class River:
         # Cross section data
         xsname = data["xs"][data["day"] == data["day"][1]][data["hour"] == 1].tolist()
 
-        if FillMissing == True:
+        if FillMissing:
             # check if there is missing days (Q was < threshold so the model didn't run)
             # fill these values with 0
             days = list(set(data["day"]))
             days.sort()
-            # hours = list(range(0,25))
-            hours = list(range(1, 25))
 
             missing_days = list()
             for i in range(days[0], days[-1]):
@@ -879,7 +908,7 @@ class River:
             FileList = os.listdir(path + "/" + FolderNames[i])[fromf:tof]
             # tof is only renewed if it is equal to ''
             tof = ""
-            if FilterbyName == True:
+            if FilterbyName:
                 filter1 = int(FolderNames[i].split("(")[1].split("-")[0])
                 filter2 = int(FolderNames[i].split("(")[1].split("-")[1].split(")")[0])
 
@@ -910,7 +939,7 @@ class River:
                     first = "one" + FileList[j].split(".")[0]
                     go = True
 
-                if go == True:
+                if go:
                     # get the updated list of variable names
                     variables = locals()
 
@@ -922,7 +951,7 @@ class River:
                             delimiter=r"\s+",
                         )
 
-                        if FilterbyName == True:
+                        if FilterbyName:
                             temp_df = temp_df[temp_df[0] >= filter1]
                             temp_df = temp_df[temp_df[0] <= filter2]
                         # check whether the variable exist or not
@@ -958,12 +987,18 @@ class River:
                 print("Saving " + var[3:] + ".txt")
                 path = Savepath + "/" + var[3:] + ".txt"
                 exec(var + ".to_csv(path ,index= None, sep = ' ', header = None)")
-        
-        
+
+
     @staticmethod
     def ReadRRMResults(
-        version, rrmreferenceindex, path, nodeid, fromday, today, date_format="%d_%m_%Y"
-    ):
+            version: int,
+            rrmreferenceindex,
+            path: str,
+            nodeid: int,
+            fromday: Union[int, str],
+            today: Union[int, str],
+            date_format: str ="%d_%m_%Y"
+    ) -> df:
         """ReadRRMResults.
 
         ReadRRMResults is a static method to read the results of the rainfall-runoff
@@ -971,15 +1006,20 @@ class River:
 
         Parameters
         ----------
+        version: []
+
+        rrmreferenceindex: []
+
         path : [String]
             path to the result files.
-        Nodeid : [Integer]
+        nodeid : [Integer]
             the id given the the sub-basin .
         fromday : [integer], optional
                 the day you want to read the result from, the first day is 1 not zero.The default is ''.
         today : [integer], optional
                 the day you want to read the result to.
-
+        date_format: [str]
+            format of the date string
         Returns
         -------
         Q : [Dataframe]
@@ -1028,7 +1068,7 @@ class River:
 
         return Q
 
-    def kinematicwave(self, start="", end="", fmt="%Y-%m-%d"):
+    def kinematicwave(self, start: str="", end: str="", fmt: str="%Y-%m-%d"):
         """kinematicwave.
 
         kinematicwave apply the kinematic wave approximation of the shallow
@@ -1077,13 +1117,13 @@ class River:
 
     def preissmann(
         self,
-        start="",
-        end="",
-        fmt="%Y-%m-%d",
-        maxiteration=10,
-        beta=1,
-        epsi=0.5,
-        theta=0.5,
+        start: str="",
+        end: str="",
+        fmt: str="%Y-%m-%d",
+        maxiteration: int=10,
+        beta: int=1,
+        epsi: float=0.5,
+        theta: float=0.5,
     ):
         """preissmann.
 
@@ -1147,7 +1187,7 @@ class River:
         )
         saintpreis.preissmann(self)
 
-    def storagecell(self, start="", end="", fmt="%Y-%m-%d"):
+    def storagecell(self, start: str="", end: str="", fmt: str="%Y-%m-%d"):
         """storagecell.
 
         kinematicwave apply the kinematic wave approximation of the shallow
@@ -1197,15 +1237,15 @@ class River:
         self,
         start,
         end,
-        interval=0.00002,
-        xs=0,
-        xsbefore=10,
-        xsafter=10,
-        fmt="%Y-%m-%d %H:%M:%S",
-        textlocation=2,
-        xaxislabelsize=15,
-        yaxislabelsize=15,
-        nxlabels=50,
+        interval: float=0.00002,
+        xs: int=0,
+        xsbefore: int=10,
+        xsafter: int=10,
+        fmt: str="%Y-%m-%d %H:%M:%S",
+        textlocation: float=2,
+        xaxislabelsize: float=15,
+        yaxislabelsize: float=15,
+        nxlabels: float=50,
         plotbanhfuldepth=False,
     ):
         """animatefloodwave.
@@ -1260,7 +1300,7 @@ class River:
         )
         return anim
 
-    def SaveResult(self, path, fmt="%.3f"):
+    def SaveResult(self, path: str):  #, fmt="%.3f"):
         """SaveResult.
 
         Save Result
@@ -1296,7 +1336,7 @@ class River:
                 delimiter=",",
             )
 
-    def Slope(self, path):
+    def Slope(self, path: str):
         """Slope.
 
         Slope
@@ -2329,8 +2369,7 @@ class River:
         Parameters
         ----------
             1-Coords : [array]
-                numpy array in the shape of (n*2) where n is the number of
-                points
+                numpy array in the shape of (n*2) where n is the number of points
 
         Returns
         -------
@@ -2376,8 +2415,7 @@ class River:
         Parameters
         ----------
             1-Coords : [array]
-                numpy array in the shape of (n*2) where n is the number of
-                points
+                numpy array in the shape of (n*2) where n is the number of points
 
         Returns
         -------
@@ -2413,8 +2451,7 @@ class River:
         Parameters
         ----------
             1-Coords : [array]
-                numpy array in the shape of (n*2) where n is the number of
-                points
+                numpy array in the shape of (n*2) where n is the number of points
 
         Returns
         -------
@@ -3769,7 +3806,7 @@ class Sub(River):
     # River.Read1DResult(self,self.id, fromday, today, FillMissing)
 
     def SaveHydrograph(self, xsid: int,
-                       path: str = "", 
+                       path: str = "",
                        Option: int = 1
                        ):
         """Save Hydrograph.
@@ -3922,9 +3959,9 @@ class Sub(River):
         return fig, ax
 
 
-    def ReadUSHydrograph(self, fromday: str="", 
-                         today: str="", 
-                         path: str="", 
+    def ReadUSHydrograph(self, fromday: [str, int]="",
+                         today: Union[str, int]="",
+                         path: str="",
                          date_format: str="'%Y-%m-%d'"):
         """ReadUSHydrograph.
 
@@ -3970,16 +4007,14 @@ class Sub(River):
                         )[Nodeid]
                     except FileNotFoundError:
                         msg = (
-                            " the Path - "
-                            + path
-                            + " does not contain the routed hydrographs for the the "
-                            "segment - " + str(Nodeid)
+                            f" the Path - {path} does not contain the routed hydrographs for the the "
+                            f"segment - {Nodeid}"
                         )
                         print(msg)
                         return
 
             # there is one upstream segment
-        elif self.usnode != []:
+        elif self.usnode:
             Nodeid = self.usnode[0]
             try:
                 self.USHydrographs[Nodeid] = self.ReadRRMResults(
@@ -4033,7 +4068,7 @@ class Sub(River):
         USHydrographs : [array].
             array of the hydrograph
         """
-        self.USHydrographs = np.zeros(shape=(River.notimesteps))
+        self.USHydrographs = np.zeros(shape=River.notimesteps)
 
         if len(self.usnode) > 1:
             # there is more than one upstream segment
@@ -4047,7 +4082,7 @@ class Sub(River):
                         + River.RoutedQ[:, River.Segments.index(Nodeid)]
                     )
             # there is one upstream segment
-        elif self.usnode != []:
+        elif self.usnode:
             Nodeid = self.usnode[0]
             River.Segments.index(Nodeid)
             self.USHydrographs = (
