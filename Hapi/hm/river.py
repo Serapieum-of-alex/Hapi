@@ -958,7 +958,8 @@ class River:
                 print("Saving " + var[3:] + ".txt")
                 path = Savepath + "/" + var[3:] + ".txt"
                 exec(var + ".to_csv(path ,index= None, sep = ' ', header = None)")
-
+        
+        
     @staticmethod
     def ReadRRMResults(
         version, rrmreferenceindex, path, nodeid, fromday, today, date_format="%d_%m_%Y"
@@ -3767,7 +3768,10 @@ class Sub(River):
     # def Read1DResult1Donly(self,path):
     # River.Read1DResult(self,self.id, fromday, today, FillMissing)
 
-    def SaveHydrograph(self, xsid, path="", Option=1):
+    def SaveHydrograph(self, xsid: int,
+                       path: str = "", 
+                       Option: int = 1
+                       ):
         """Save Hydrograph.
 
         SaveHydrograph method saves the hydrograph of any cross-section in
@@ -3821,7 +3825,9 @@ class Sub(River):
 
         f.to_csv(
             path + str(self.id) + ".txt", index=False, float_format="%.3f"
-        )  # header = None ,
+        )
+
+
 
     def PlotHydrographProgression(
         self,
@@ -3915,7 +3921,11 @@ class Sub(River):
 
         return fig, ax
 
-    def ReadUSHydrograph(self, fromday="", today="", path="", date_format="'%Y-%m-%d'"):
+
+    def ReadUSHydrograph(self, fromday: str="", 
+                         today: str="", 
+                         path: str="", 
+                         date_format: str="'%Y-%m-%d'"):
         """ReadUSHydrograph.
 
         Read the hydrograph of the upstream segment.

@@ -1,3 +1,5 @@
+from typing import List, Optional, Union
+
 import datetime as dt
 
 import numpy as np
@@ -49,6 +51,7 @@ class Calibration(River):
         Ref_ind = pd.date_range(self.start, self.end, freq="D")
         self.ReferenceIndex = pd.DataFrame(index=list(range(1, days + 1)))
         self.ReferenceIndex["date"] = Ref_ind[:-1]
+
 
     def ReadGaugesTable(self, Path):
         """ReadGaugesTable.
@@ -265,17 +268,18 @@ class Calibration(River):
             )
         self.QRRM = QSWIM
 
+
     def ReadHMQ(
         self,
-        path,
-        start,
-        days,
-        novalue,
-        addHQ2=False,
-        shift=False,
-        shiftsteps=0,
-        column="oid",
-        fmt="%Y-%m-%d",
+        path: str,
+        start: Union[str, dt.datetime],
+        days: int,
+        novalue: float,
+        addHQ2: bool = False,
+        shift: bool =False,
+        shiftsteps: int = 0,
+        column: str = "oid",
+        fmt: str = "%Y-%m-%d",
     ):
         """ReadRIMQ.
 
@@ -340,7 +344,9 @@ class Calibration(River):
 
         # fill non modelled time steps with zeros
         for i in range(len(self.GaugesTable[column])):
-            f = np.loadtxt(path + str(int(QHM.columns[i])) + ".txt", delimiter=",")
+            
+            
+            f = np.loadtxt(path + str(int(QHM.columns[i])) + ".txt", delimiter=",", skiprows=0)
             f1 = list(range(int(f[0, 0]), int(f[-1, 0]) + 1))
             f2 = list()
 
@@ -373,8 +379,9 @@ class Calibration(River):
 
         self.QHM = QHM[:]
 
+
     def ReadHMWL(
-        self, path, start, days, novalue, shift=False, shiftsteps=0, column="oid"
+        self, path: str, start, days, novalue, shift=False, shiftsteps=0, column="oid"
     ):
         """ReadRIMWL
 
@@ -440,7 +447,7 @@ class Calibration(River):
 
         self.WLHM = WLHM[:]
 
-    def ReadCalirationResult(self, subid, path=""):
+    def ReadCalirationResult(self, subid, path: str=""):
         """ReadCalirationResult.
 
         ReadCalirationResult method reads the 1D results and fill the missing
