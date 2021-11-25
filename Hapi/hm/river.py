@@ -2836,7 +2836,7 @@ class River:
 
         self.HQ = HQ[:, :]
 
-    def GetDays(self, fromday, today):
+    def GetDays(self, fromday: int, today: int):
         """GetDays.
 
         GetDays method check if input days exist in the 1D result data
@@ -3172,7 +3172,7 @@ class Sub(River):
 
         self.referenceindex = River.referenceindex
 
-        if hasattr(River, "rrmreferenceindex"):
+        if isinstance(River.rrmreferenceindex, DataFrame):
             self.rrmreferenceindex = River.rrmreferenceindex
 
         self.onedresultpath = River.onedresultpath
@@ -3226,7 +3226,8 @@ class Sub(River):
 
 
     def Read1DResult(
-        self, fromday="", today="", FillMissing=True, addHQ2=False, path="", xsid=""
+            self, fromday: Union[int, str]="", today: Union[int, str]="",
+            FillMissing=True, addHQ2=False, path="", xsid: Union[int, str]=""
     ):
         """Read1DResult.
 
@@ -3430,9 +3431,8 @@ class Sub(River):
                 dictionary with ['NegQ', 'NegXS', 'NegQind'] as keys
         """
         if TS == "hourly":
-            assert hasattr(
-                self, "Result1D"
-            ), "please use the Result1D method to read the result of this sub-basin first"
+            assert isinstance(self.Result1D, DataFrame), ("please use the Result1D method to read the "
+                                                          "result of this sub-basin first")
 
             if self.Result1D["q"].min() < 0:
                 print("NegativeDischarge")
@@ -3484,9 +3484,9 @@ class Sub(River):
         fromday: Union[int, str]="",
         today: Union[int, str]="",
         path: str="",
-        date_format="%d_%m_%Y",
-        location=1,
-        path2="",
+        date_format = "%d_%m_%Y",
+        location = 1,
+        path2 = "",
     ):
         """ReadRRMHydrograph.
 
@@ -3511,10 +3511,10 @@ class Sub(River):
                 (hydrograph)with columns ['id', Nodeid ]
 
         """
-        if not hasattr(self, "RRM"):
+        if not isinstance(self.RRM, DataFrame):
             self.RRM = pd.DataFrame()
 
-        if location == 2 and not hasattr(self, "RRM2"):
+        if location == 2 and not isinstance(self.RRM2, DataFrame):
             # create a dataframe for the 2nd time series of the rainfall runoff
             # model at the second location
             self.RRM2 = pd.DataFrame()
@@ -3571,7 +3571,8 @@ class Sub(River):
         self.RRM2.index = pd.date_range(start, end, freq="D")
         # get the simulated hydrograph and add the cutted HQ2
 
-    def Resample(self, xsid, ColumnName, fromday="", today="", Delete=False):
+    def Resample(self, xsid, ColumnName, fromday: Union[int, str]="",
+                 today: Union[int, str]="", Delete=False):
         """Resample.
 
         Resample method extract the value at the last hour of the dat
@@ -4154,7 +4155,8 @@ class Sub(River):
         self.AreaPerHigh = AreaPerHigh[:, :]
         self.AreaPerLow = AreaPerLow[:, :]
 
-    def GetFlow(self, IF, fromday="", today="", date_format="%d_%m_%Y"):
+
+    def GetFlow(self, IF, fromday: Union[int, str]="", today: Union[int, str]="", date_format="%d_%m_%Y"):
         """GetFlow.
 
         Extract the lateral flow and boundary condition (if exist) time series
@@ -4180,12 +4182,11 @@ class Sub(River):
         Laterals : [dataframe attribute].
             dataframe containing a column for each cross section that has a lateral.
         """
-        assert hasattr(
-            IF, "BC"
-        ), "the boundary condition does not exist you have to read it first"
-        assert hasattr(
-            IF, "Laterals"
-        ), "the Laterals does not exist you have to read it first"
+        assert isinstance(IF.BC, DataFrame), ("the boundary condition does not exist "
+                                              "you have to read it first using the "
+                                              "'ReadBoundaryConditions' method in the interface model")
+        assert isinstance(IF.Laterals), ("the Laterals does not exist you have to read it first"
+                                         "using the 'ReadLaterals' method in the interface model")
 
         if fromday == "":
             fromday = IF.BC.index[0]
@@ -4205,7 +4206,7 @@ class Sub(River):
         if len(bcids) == 0:
             self.BC = False
         elif len(bcids) > 1:
-            assert False, "There are more than one BC for this Sub-basin"
+            raise ValueError("There are more than one BC for this Sub-basin")
         else:
             self.BC = IF.BC.loc[fromday:today, bcids[0]].to_frame()
 
@@ -4256,8 +4257,11 @@ class Sub(River):
             upstream of a given xsid.
 
         """
+        msg = "please read the Laterals Table and the LAterals first"
+        assert isinstance(self.LateralsTable, DataFrame) and isinstance(self.Laterals, DataFrame), msg
         USgauge = self.LateralsTable[: bisect(self.LateralsTable, xsid)]
         return self.Laterals[USgauge].sum(axis=1).to_frame()
+
 
     def GetTotalFlow(self, gaugexs: int):
         """GetTotalFlow.
@@ -4278,7 +4282,7 @@ class Sub(River):
         """
         # Sum the laterals and the BC/US hydrograph
 
-        assert self.Laterals, "Please read the lateral flows first"
+        assert isinstance(self.Laterals, DataFrame), "Please read the lateral flows first"
         Laterals = self.GetLaterals(gaugexs)
         try:
             s1 = Laterals.index[0]
@@ -4287,7 +4291,7 @@ class Sub(River):
             print("there are no laterals for the given segment")
             return
 
-        if self.BC and not isinstance(self.BC, bool):
+        if isinstance(self.BC, DataFrame):
             s2 = self.BC.index[0]
             s = max(s1, s2)
             e2 = self.BC.index[-1]
@@ -4298,7 +4302,7 @@ class Sub(River):
                 Laterals.loc[s:e, 0].values
                 + self.BC.loc[s:e, self.BC.columns[0]].values
             )
-        elif self.USHydrographs:
+        elif isinstance(self.USHydrographs, DataFrame):
             s2 = self.USHydrographs.index[0]
             s = max(s1, s2)
             e2 = self.USHydrographs.index[-1]
@@ -4498,10 +4502,14 @@ class Sub(River):
 
             # laterals
             if plotlaterals:
-                Laterals = self.GetLaterals(gaugexs)
+                try:
+                    Laterals = self.GetLaterals(gaugexs)
+                except AssertionError:
+                    print("please read the laterals first to be able to plot it")
 
                 # BC
-                if type(self.BC) != bool:
+
+                if isinstance(self.BC, DataFrame) :
                     ax.plot(
                         self.BC.loc[start:end, self.BC.columns[0]],
                         label="BC",
@@ -4511,7 +4519,7 @@ class Sub(River):
                         color=ushcolor,
                     )
                 # Laterals
-                if len(self.LateralsTable) > 0:
+                if isinstance(self.LateralsTable, list) and len(self.LateralsTable) > 0:
                     ax.plot(
                         Laterals.loc[start:end, 0],
                         label="Laterals",
@@ -4568,7 +4576,7 @@ class Sub(River):
                 )
 
             # specific XS
-            if type(specificxs) != bool:
+            if not isinstance(specificxs, bool) :
                 # first extract the time series of the given xs
                 self.Read1DResult(xsid=specificxs)
                 # plot the xs
@@ -4582,7 +4590,7 @@ class Sub(River):
                 )
             # RRM
             if plotrrm:
-                if hasattr(self, "RRM"):
+                if isinstance(self.RRM, DataFrame):
                     try:
                         ax.plot(
                             self.RRM.loc[start:end, stationname],
@@ -4597,7 +4605,7 @@ class Sub(River):
                             f" Station {gaugename} does not have the first RRM discharge time series"
                         )
 
-                if hasattr(self, "RRM2"):
+                if isinstance(self.RRM2, DataFrame):
                     try:
                         ax.plot(
                             self.RRM2.loc[start:end, stationname],
@@ -4612,7 +4620,7 @@ class Sub(River):
                             f" Station {gaugename} does not have a second RRM discharge time series"
                         )
 
-        elif hasattr(Calib, "CalibrationQ"):
+        elif isinstance(Calib.CalibrationQ, DataFrame):
             # plot if you read the data using ReadCalirationResult
             ax.plot(
                 Calib.CalibrationQ[segment_xs],

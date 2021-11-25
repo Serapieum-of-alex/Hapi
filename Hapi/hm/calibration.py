@@ -335,13 +335,13 @@ class Calibration(River):
             msg = "please read the HQ file first using ReturnPeriod method"
             assert hasattr(self, "RP"), msg
 
-        if isinstance(start, str):
-            start = dt.datetime.strptime(start, fmt)
+        # if isinstance(start, str):
+        #     start = dt.datetime.strptime(start, fmt)
 
-        end = start + dt.timedelta(days=days - 1)
-        ind = pd.date_range(start, end)
+        # end = start + dt.timedelta(days=days - 1)
+        # ind = pd.date_range(start, end)
         QHM = pd.DataFrame(
-            index=ind,
+            # index=ind,
             columns=self.GaugesTable.loc[
                 self.GaugesTable["discharge"] == 1, column
             ].tolist(),
@@ -349,16 +349,16 @@ class Calibration(River):
 
         # for RIM1.0 don't fill with -9 as the empty days will be filled
         # with 0 so to get the event days we have to filter 0 and -9
-        if self.version == 1:
-            QHM.loc[:, :] = 0
-        else:
-            QHM.loc[:, :] = novalue
+        # if self.version == 1:
+        #     QHM.loc[:, :] = 0
+        # else:
+        #     QHM.loc[:, :] = novalue
 
         # fill non modelled time steps with zeros
         for i in range(len(self.GaugesTable[column])):
             f = self.ReadRRMResults(
                 self.version,
-                self.rrmreferenceindex,
+                self.ReferenceIndex,
                 path,
                 QHM.columns[i],
                 fromday='',

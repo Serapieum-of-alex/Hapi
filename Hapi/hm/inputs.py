@@ -6,6 +6,7 @@ Created on Sat Feb 15 22:51:02 2020
 import datetime as dt
 import os
 import zipfile
+from typing import Union
 
 import gdal
 import matplotlib.pyplot as plt
@@ -102,19 +103,19 @@ class Inputs:
 
     def StatisticalProperties(
         self,
-        ComputationalNodes,
-        TSdirectory,
-        start,
-        WarmUpPeriod,
-        SavePlots,
-        SavePath,
-        SeparateFiles=False,
-        Filter=False,
-        Distibution="GEV",
-        method="lmoments",
-        EstimateParameters=False,
-        Quartile=0,
-        Results=False,
+        ComputationalNodes: Union[str, list],
+        TSdirectory: str,
+        start: str,
+        WarmUpPeriod: int,
+        SavePlots: bool,
+        SavePath: str,
+        SeparateFiles: bool=False,
+        Filter: Union[bool, float, int]=False,
+        Distibution: str="GEV",
+        method: str="lmoments",
+        EstimateParameters: bool=False,
+        Quartile: float=0,
+        Results: bool=False,
         SignificanceLevel=0.1,
     ):
         """StatisticalProperties.
@@ -241,9 +242,14 @@ class Inputs:
         # and as columns all the output names.
         StatisticalPr = pd.DataFrame(np.nan, index=ComputationalNodes, columns=col_csv)
         StatisticalPr.index.name = "ID"
-        DistributionPr = pd.DataFrame(
-            np.nan, index=ComputationalNodes, columns=["loc", "scale"]
-        )
+        if Distibution == "GEV":
+            DistributionPr = pd.DataFrame(
+                np.nan, index=ComputationalNodes, columns=["c", "loc", "scale", "D-static", "P-Value"]
+            )
+        else:
+            DistributionPr = pd.DataFrame(
+                np.nan, index=ComputationalNodes, columns=["loc", "scale", "D-static", "P-Value"]
+            )
         DistributionPr.index.name = "ID"
         # required return periods
         T = [1.5, 2, 5, 10, 25, 50, 50, 100, 200, 500, 1000]
@@ -292,6 +298,7 @@ class Inputs:
                     # defult parameter estimation method is maximum liklihood method
                     param_dist = dist.EstimateParameter(method=method)
 
+            DistributionPr.loc[i,"D-static"], DistributionPr.loc[i,"P-Value"] = dist.ks()
             if Distibution == "GEV":
                 DistributionPr.loc[i, "c"] = param_dist[0]
                 DistributionPr.loc[i, "loc"] = param_dist[1]
@@ -364,9 +371,9 @@ class Inputs:
             print("Gauge", i, "done.")
 
         # Output file
-        StatisticalPr.to_csv(SavePath + "/" + "Statistical Properties.csv")
+        StatisticalPr.to_csv(f"{SavePath}/Statistical Properties.csv", float_format="%.4f")
         self.StatisticalPr = StatisticalPr
-        DistributionPr.to_csv(SavePath + "/" + "DistributionProperties.csv")
+        DistributionPr.to_csv(f"{SavePath}/DistributionProperties.csv" , float_format="%.4f")
         self.DistributionPr = DistributionPr
 
     def WriteHQFile(self, NoNodes, StatisticalPropertiesFile, SaveTo):
