@@ -23,7 +23,7 @@ ecmwf-api-client = "^1.6.1"
 pyproj = "^3.2.1"
 proj = "^0.2.0"
 Shapely = "^1.8.0"
-gdal = ">=3.1.4,<3.3.3"
+gdal = "^3.3.3"
 loguru = "^0.5.3"
 
 [tool.poetry.dev-dependencies]
