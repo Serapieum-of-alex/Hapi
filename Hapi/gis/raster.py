@@ -17,11 +17,15 @@ import sys
 import time
 import zipfile
 
-import gdal
+try :
+    from osgeo import gdal, gdalconst, ogr, osr
+except ImportError:
+    import gdal
+    import osr
+
 import geopandas as gpd
 import netCDF4
 import numpy as np
-import osr
 import pandas as pd
 import pyproj
 import rasterio
@@ -30,7 +34,6 @@ import rasterio.merge
 # import glob
 import scipy.interpolate
 import scipy.misc as misc
-from osgeo import gdalconst, ogr
 from pyproj import Proj, transform
 
 from Hapi.gis.vector import Vector

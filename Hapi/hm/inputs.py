@@ -7,7 +7,11 @@ import datetime as dt
 import os
 import zipfile
 
-import gdal
+try :
+    from osgeo import gdal
+except ImportError:
+    import gdal
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd

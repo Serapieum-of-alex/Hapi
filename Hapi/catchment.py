@@ -11,7 +11,11 @@ import math
 import os
 from types import ModuleType
 
-import gdal
+try :
+    from osgeo import gdal
+except ImportError:
+    import gdal
+
 import geopandas as gpd
 import matplotlib.dates as dates
 import matplotlib.pyplot as plt

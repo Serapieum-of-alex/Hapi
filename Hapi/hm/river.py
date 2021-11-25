@@ -2366,6 +2366,7 @@ class River:
 
         return area, peri
 
+
     @staticmethod
     def PolyArea(Coords):
         """PolyArea.
@@ -2388,6 +2389,7 @@ class River:
             coords = np.array([[0,1],[0,0],[5,0],[5,1]])
             River.PolyArea(coords)
         """
+        Coords = np.array(Coords)
         area = 0.0
         for i in range(np.shape(Coords)[0] - 1):
             # cros multiplication

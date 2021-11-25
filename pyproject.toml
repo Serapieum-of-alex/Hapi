@@ -17,9 +17,19 @@ scikit-image = "^0.18.3"
 joblib = "^1.1.0"
 ecmwf-api-client = "^1.6.1"
 pyproj = "^3.2.1"
-# gdal = ">=3.1.4,<3.3.3"
 proj = "^0.2.0"
 Shapely = "^1.8.0"
+pytest = "^6.2.5"
+Fiona = "^1.8.20"
+geopandas = "^0.10.2"
+rasterio = "^1.2.10"
+rasterstats = "^0.16.0"
+oasis = "^0.1.3"
+ffmpeg-python = "^0.2.0"
+gdal = ">=3.1.4,<3.3.4"
+# gdal = { file = "/home/mostafa/Downloads/GDAL-3.3.3-cp39-cp39-win32.whl" }
+pre-commit = "^2.15.0"
+
 
 [tool.poetry.dev-dependencies]
 

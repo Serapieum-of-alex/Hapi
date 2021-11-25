@@ -9,11 +9,15 @@ import warnings
 
 import geopandas as gpd
 import numpy as np
-import ogr
+
+try :
+    from osgeo import ogr, osr
+except ImportError:
+    import ogr
+    import osr
+
 import pandas as pd
 from fiona.crs import from_epsg
-# from osgeo import ogr
-from osgeo import osr
 from pyproj import Proj, transform
 # from shapely.geometry.polygon import Polygon
 from shapely.geometry import Point, Polygon
@@ -151,13 +155,8 @@ class Vector:
                 the dataframe of the created polygons
         """
         row = dataframe_row
-        outdf = gpd.GeoDataFrame()  # columns=dataframe_row.columns
-        #    for idx, row in enumerate(dataframe_row):#dataframe_row.iterrows():
-        #            if type(row.geometry) == Polygon:
-        #                outdf = outdf.append(row,ignore_index=True)
-        #            if type(row.geometry) == MultiPolygon:
-        multdf = gpd.GeoDataFrame()  # columns=dataframe_row.columns
-        #    recs = len(row.geometry)
+        outdf = gpd.GeoDataFrame()
+        multdf = gpd.GeoDataFrame()
         recs = len(row)
         multdf = multdf.append([row] * recs, ignore_index=True)
         for geom in range(recs):
@@ -176,16 +175,16 @@ class Vector:
 
         inputs
         ------
-            1- multi_geometry (geometry)
-             the geometry of a shpefile
-            2- coord_type (string)
-             "string" either "x" or "y"
-            3- geom_type (string)
+            1- multi_geometry :[geometry]
+                the geometry of a shpefile
+            2- coord_type : [string]
+                "string" either "x" or "y"
+            3- geom_type : [string]
                 "MultiPoint" or "MultiLineString" or "MultiPolygon"
         outpus
         ------
-            1-array:
-             contains x coordinates or y coordinates of all edges of the shapefile
+            1-array: [ndarray]
+                contains x coordinates or y coordinates of all edges of the shapefile
         """
         if geom_type == "MultiPoint" or geom_type == "MultiLineString":
             for i, part in enumerate(multi_geometry):
@@ -194,37 +193,35 @@ class Vector:
                     if geom_type == "MultiPoint":
                         coord_arrays = Vector.GetPointCoords(
                             part, coord_type
-                        )  # ,np.nan)
+                        )
                     elif geom_type == "MultiLineString":
-                        #                coord_arrays= np.append(getLineCoords(part,coord_type))#,np.nan)
                         coord_arrays = Vector.GetLineCoords(part, coord_type)
                 else:
                     if geom_type == "MultiPoint":
                         coord_arrays = np.concatenate(
                             [coord_arrays, Vector.GetPointCoords(part, coord_type)]
-                        )  # ,np.nan
+                        )
                     elif geom_type == "MultiLineString":
                         coord_arrays = np.concatenate(
                             [coord_arrays, Vector.GetLineCoords(part, coord_type)]
-                        )  # ,np.nan
+                        )
 
         elif geom_type == "MultiPolygon":
             for i, part in enumerate(multi_geometry):
                 if i == 0:
-                    #            coord_arrays= getPolyCoords(part,coord_type)#,np.nan)
                     multi_2_single = Vector.Explode(multi_geometry)
                     for j in range(len(multi_2_single)):
                         if j == 0:
                             coord_arrays = Vector.GetPolyCoords(
                                 multi_2_single[j], coord_type
-                            )  # ,np.nan)
+                            )
                         else:
                             coord_arrays = np.concatenate(
                                 [
                                     coord_arrays,
                                     Vector.GetPolyCoords(multi_2_single[j], coord_type),
                                 ]
-                            )  # ,np.nan
+                            )
                 else:
                     # explode the multipolygon into polygons
                     multi_2_single = Vector.Explode(part)
@@ -234,7 +231,7 @@ class Vector:
                                 coord_arrays,
                                 Vector.GetPolyCoords(multi_2_single[j], coord_type),
                             ]
-                        )  # ,np.nan
+                        )
             # return the coordinates
             return coord_arrays
 
@@ -283,10 +280,8 @@ class Vector:
 
     @staticmethod
     def XY(input_dataframe):
-        """
-        ===================================================
-          XY(input_dataframe)
-        ===================================================
+        """XY.
+
         XY function takes a geodataframe and process the geometry column and return
         the x and y coordinates of all the votrices
 
@@ -313,8 +308,6 @@ class Vector:
         # if the Geometry of type MultiPolygon
         # explode the multi_polygon into polygon
         for idx, row in input_dataframe.iterrows():
-            #        if type(row.geometry) == Polygon:
-            #            outdf = outdf.append(row,ignore_index=True)
             if type(row.geometry) == MultiPolygon:
                 # create a new geodataframe
                 multdf = gpd.GeoDataFrame()  # columns=indf.columns
@@ -341,10 +334,8 @@ class Vector:
 
     @staticmethod
     def CreatePolygon(coords, Type=1):
-        """
-        ======================================================================
-            create_polygon(coords)
-        ======================================================================
+        """create_polygon.
+
         this function creates a polygon from coordinates
 
         inputs
@@ -582,10 +573,8 @@ class Vector:
 
     @staticmethod
     def ReprojectPoints_2(lat, lng, from_epsg=4326, to_epsg=3857):
-        """
-        ======================================================================
-         reproject_points(lat,lng, from_epsg=4326,to_epsg=3857):
-        ======================================================================
+        """reproject_points.
+
         this function change the projection of the coordinates from a coordinate system
         to another (default from GCS to web mercator used by google maps)
 
@@ -634,10 +623,8 @@ class Vector:
 
     @staticmethod
     def AddSpatialReference(GpdDF, epsg):
-        """
-        =======================================================
-            AddSpatialReference(GpdDF, epsg)
-        =======================================================
+        """AddSpatialReference.
+
         AddSpatialReference takes GeoPandas DataFrame and set the coordinate system
         based on the given epsg input
 
@@ -673,10 +660,8 @@ class Vector:
 
     @staticmethod
     def PolygonCenterPoint(PolygonDataFrame, Save=False, SavePath=None):
-        """
-        ======================================================================
-            PolygonCenterPoint(PolygonDataFrame, Save=False, SavePath)
-        ======================================================================
+        """PolygonCenterPoint.
+
         PolygonCenterPoint function takes the a geodata frame of polygons and and
         returns the center of each polygon
 
@@ -760,10 +745,8 @@ class Vector:
 
     @staticmethod
     def WriteShapefile(poly, out_shp):
-        """
-        =====================================================================
-           write_shapefile(poly, out_shp):
-        =====================================================================
+        """write_shapefile.
+
         this function takes a polygon geometry and creates a ashapefile and save it
         (https://gis.stackexchange.com/a/52708/8104)
 
