@@ -6,6 +6,7 @@ based on a source raster, perform any algebric operation on cell's values
 """
 
 import datetime as dt
+
 # import subprocess
 # import tarfile
 import gzip
@@ -13,24 +14,28 @@ import json
 import os
 import re
 import sys
+
 # import datetime as dt
 import time
 import zipfile
 
-import gdal
+try:
+    import gdal
+except ModuleNotFoundError:
+    from osgeo import gdal, osr, gdalconst, ogr
+
 import geopandas as gpd
 import netCDF4
 import numpy as np
-import osr
 import pandas as pd
 import pyproj
 import rasterio
 import rasterio.mask
 import rasterio.merge
+
 # import glob
 import scipy.interpolate
 import scipy.misc as misc
-from osgeo import gdalconst, ogr
 from pyproj import Proj, transform
 
 from Hapi.gis.vector import Vector

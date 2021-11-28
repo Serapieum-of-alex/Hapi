@@ -9,7 +9,11 @@ import math
 import os
 from collections import OrderedDict
 
-import gdal
+try:
+    import gdal
+except ModuleNotFoundError:
+    from osgeo import gdal
+
 import matplotlib as mpl
 import matplotlib.colors as colors
 import matplotlib.pyplot as plt

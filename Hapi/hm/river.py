@@ -15,7 +15,6 @@ import numpy as np
 import pandas as pd
 from HapiSM import performancecriteria as Pf
 from pandas.core.frame import DataFrame
-from pandas.core.frame import DataFrame as df
 from scipy.stats import genextreme, gumbel_r
 
 from Hapi.gis.raster import Raster as raster
@@ -1030,7 +1029,7 @@ class River:
             fromday: Union[int, str],
             today: Union[int, str],
             date_format: str ="%d_%m_%Y"
-    ) -> df:
+    ) -> DataFrame:
         """ReadRRMResults.
 
         ReadRRMResults is a static method to read the results of the rainfall-runoff
@@ -1126,7 +1125,7 @@ class River:
         else:
             end = dt.datetime.strptime(end, fmt)
 
-        ind = pd.date_range(start, end, freq=self.freq)
+        # ind = pd.date_range(start, end, freq=self.freq)
 
         # TODO to be checked later now for testing
         # self.from_beginning = self.indsub[np.where(self.indsub == start)[0][0]]
@@ -1194,7 +1193,7 @@ class River:
         else:
             end = dt.datetime.strptime(end, fmt)
 
-        ind = pd.date_range(start, end, freq=self.freq)
+        # ind = pd.date_range(start, end, freq=self.freq)
 
         # TODO to be checked later now for testing
         # self.from_beginning = self.indsub[np.where(self.indsub == start)[0][0]]
@@ -1244,7 +1243,7 @@ class River:
             end = self.end
         else:
             end = dt.datetime.strptime(end, fmt)
-        ind = pd.date_range(start, end, freq=self.freq)
+        # ind = pd.date_range(start, end, freq=self.freq)
 
         # TODO to be checked later now for testing
         # self.from_beginning = self.indsub[np.where(self.indsub == start)[0][0]]
@@ -1278,7 +1277,7 @@ class River:
         xaxislabelsize: float=15,
         yaxislabelsize: float=15,
         nxlabels: float=50,
-        plotbanhfuldepth=False,
+        # plotbanhfuldepth=False,
     ):
         """animatefloodwave.
 
@@ -1308,8 +1307,6 @@ class River:
         yaxislabelsize: []
 
         nxlabels: []
-
-        plotbanhfuldepth: []
 
         Returns
         -------
@@ -1455,7 +1452,8 @@ class River:
             self.rivernetwork = rivernetwork[:]
             self.Segments = self.rivernetwork["id"].tolist()
 
-    def TraceSegment(self, id):
+
+    def TraceSegment(self, sub_id):
         """TraceSegment.
 
         Trace method takes sub basin id and trace it to get the upstream and
@@ -1464,7 +1462,7 @@ class River:
 
         Parameters
         ----------
-            1- Subid : TYPE
+            1- sub_id : TYPE
                 DESCRIPTION.
 
         Returns
@@ -1479,13 +1477,13 @@ class River:
         """
         if self.version == 1 or self.version == 2:
             DS = int(
-                self.rivernetwork["ds"][np.where(self.rivernetwork["id"] == id)[0][0]]
+                self.rivernetwork["ds"][np.where(self.rivernetwork["id"] == sub_id)[0][0]]
             )
             US = int(
-                self.rivernetwork["us"][np.where(self.rivernetwork["id"] == id)[0][0]]
+                self.rivernetwork["us"][np.where(self.rivernetwork["id"] == sub_id)[0][0]]
             )
         else:
-            US = self.rivernetwork["us"][np.where(self.rivernetwork["id"] == id)[0][0]]
+            US = self.rivernetwork["us"][np.where(self.rivernetwork["id"] == sub_id)[0][0]]
             for i in range(len(self.rivernetwork)):
                 if id in self.rivernetwork.loc[i, "us"]:
                     DS = self.rivernetwork.loc[i, "id"]
@@ -1495,14 +1493,14 @@ class River:
 
         return US, DS
 
-    def Trace2(self, id, US):
+    def Trace2(self, sub_id, US):
         """Trace2.
 
         trace the river network
 
         Parameters
         ----------
-        id : TYPE
+        sub_id : TYPE
             DESCRIPTION.
         US : TYPE
             DESCRIPTION.
@@ -1513,20 +1511,20 @@ class River:
 
         """
         # trace the given segment
-        US1, _ = self.TraceSegment(id)
+        US1, _ = self.TraceSegment(sub_id)
         if len(US1) > 0:
             for i in range(len(US1)):
                 US.append(US1[i])
                 self.Trace2(US1[i], US)
 
-    def Trace(self, id):
+    def Trace(self, sub_id):
         """Trace.
 
         Trace method takes the id of the segment and trace it upstream
 
         Parameters
         ----------
-        id : TYPE
+        sub_id : TYPE
             DESCRIPTION.
 
         Returns
@@ -1536,7 +1534,7 @@ class River:
             attribute.
         """
         self.US = []
-        self.Trace2(id, self.US)
+        self.Trace2(sub_id, self.US)
 
     def StatisticalProperties(self, path, Filter=True, Distibution="GEV"):
         """StatisticalProperties.
@@ -2561,7 +2559,7 @@ class River:
         Ycoords.append(yl)
         Zcoords.append(BankLeftLevel)
         # 8 points cross sections
-        if dbf != False:
+        if dbf:
             # point 2
             Xcoords.append(xl)
             Ycoords.append(yl)
@@ -2846,8 +2844,8 @@ class River:
 
             Table[i, 8] = Table[i, 5] * ((Table[i, 5] / Table[i, 6]) ** (2.0 / 3.0))
 
-            Table[i, 7] = (1.0 / geom["m"]) * Table[i, 7] * (abs(So) ** (0.5))
-            Table[i, 8] = (1.0 / geom["m"]) * Table[i, 8] * (abs(So) ** (0.5))
+            Table[i, 7] = (1.0 / geom["m"]) * Table[i, 7] * (abs(So) ** 0.5)
+            Table[i, 8] = (1.0 / geom["m"]) * Table[i, 8] * (abs(So) ** 0.5)
 
             # total discharge
             Table[i, 9] = Table[i, 7] + Table[i, 8]
@@ -3020,6 +3018,8 @@ class River:
             the name prefix that distinguish the maps you want to correct from
             other maps in the same folder, like the first part of the name you
             use to name all files.
+        FilterValue: []
+
         Saveto : [String]
             path to where you will save the corrected files.
 
@@ -3139,8 +3139,8 @@ class Sub(River):
     represent a segment of the river
     """
 
-    def __init__(self, id: int, River, RunModel: bool=False):
-        self.id = id
+    def __init__(self, sub_id: int, River, RunModel: bool=False):
+        self.id = sub_id
         self.RIM = River.name
         self.version = River.version
         self.freq = River.freq
@@ -3488,7 +3488,7 @@ class Sub(River):
             assert hasattr(
                 self, "q"
             ), "please use the Result1D method to read the result of this sub-basin first"
-            NegQmin = pd.DataFrame()
+            # NegQmin = pd.DataFrame()
             NegQmin = self.q
             NegQmin.loc[:, "date"] = self.q.index[:]
             NegQmin.index = range(len(NegQmin.index))
@@ -4723,30 +4723,29 @@ class Sub(River):
         specificxs,
         start,
         end,
-        plotlaterals=True,
-        latcolor=(0.3, 0, 0),
-        latorder=4,
-        latstyle=9,
-        plotus=True,
-        ushcolor="grey",
-        ushorder=7,
-        ushstyle=7,
-        plottotal=True,
-        totalcolor="k",
-        totalorder=6,
-        totalstyle=11,
-        plotrrm=True,
-        rrmorder=3,
-        rrmcolor=(227 / 255, 99 / 255, 80 / 255),
-        plotrim=True,
-        hmorder=6,
-        hmcolor="#004c99",
-        rrmlinesytle=8,
+        plotlaterals: bool=True,
+        latcolor: Union[str, tuple]=(0.3, 0, 0),
+        latorder: int=4,
+        latstyle: int=9,
+        plotus: bool=True,
+        ushcolor: Union[str, tuple]="grey",
+        ushorder: int=7,
+        ushstyle: int=7,
+        plottotal: bool=True,
+        totalcolor: Union[str, tuple]="k",
+        totalorder: int=6,
+        totalstyle: int=11,
+        rrmorder: int=3,
+        rrmcolor: Union[str, tuple]=(227 / 255, 99 / 255, 80 / 255),
+        plothm: bool=True,
+        hmorder: int=6,
+        hmcolor: Union[str, tuple]="#004c99",
+        rrmlinesytle: int=8,
         linewidth=4,
-        figsize=(6, 5),
-        fmt="%Y-%m-%d",
-        xlabels=False,
-        ylabels=False,
+        figsize: tuple=(6, 5),
+        fmt: str="%Y-%m-%d",
+        xlabels: Union[int, bool, list]=False,
+        ylabels: Union[int, bool, list]=False,
     ):
         """PlotRRMProgression.
 
@@ -4756,69 +4755,35 @@ class Sub(River):
 
         Parameters
         ----------
-        Calib : [Calibration object]
-            DESCRIPTION.
-        gaugexs : integer
+        specificxs : integer
             the xsid of the gauge.
         start : [string]
             start date of the plot.
         end : [string]
             end date of the plot.
-        stationname : [string]
-            station name.
-        gaugename : TYPE
-            DESCRIPTION.
-        segment_xs : TYPE
-            DESCRIPTION.
         plotlaterals : TYPE, optional
             DESCRIPTION. The default is True.
         plotus : TYPE, optional
             DESCRIPTION. The default is True.
         specificxs : TYPE, optional
             DESCRIPTION. The default is False.
-        plotrrm : TYPE, optional
-            DESCRIPTION. The default is True.
-        plotgauge : TYPE, optional
-            DESCRIPTION. The default is True.
         hmcolor : TYPE, optional
             DESCRIPTION. The default is "#004c99".
-        gaugecolor : TYPE, optional
-            DESCRIPTION. The default is "#DC143C".
-        bccolor : TYPE, optional
-            DESCRIPTION. The default is "grey".
         rrmcolor : TYPE, optional
             DESCRIPTION. The default is "green".
         latcolor : TYPE, optional
             DESCRIPTION. The default is (0.3,0,0).
-        xscolor : TYPE, optional
-            DESCRIPTION. The default is "grey".
         linewidth : TYPE, optional
             DESCRIPTION. The default is 4.
         hmorder : TYPE, optional
             DESCRIPTION. The default is 6.
-        gaugeorder : TYPE, optional
-            DESCRIPTION. The default is 5.
         rrmorder : TYPE, optional
             DESCRIPTION. The default is 4.
-        bcorder : TYPE, optional
-            DESCRIPTION. The default is 7.
         ushorder : TYPE, optional
             DESCRIPTION. The default is 2.
-        xsorder : TYPE, optional
-            DESCRIPTION. The default is 1.
         fmt: [string]
             format of the date. fmt="%Y-%m-%d %H:%M:%S"
-        nxlabels : TYPE, optional
-            DESCRIPTION. The default is False.
-        rrm2color: []
-            Description
-        gaugestyle: []
-            Description
-        rrm2linesytle: []
-            Description
         ushstyle: []
-            Description
-        xslinestyle: []
             Description
         latorder: []
             Description
@@ -4826,7 +4791,24 @@ class Sub(River):
             Description
         latstyle: []
             Description
-
+        xlabels: [int, bool]
+            default is False.
+        ylabels: [int, bool]
+            default is False.
+        figsize: [tuple]
+            default is (6, 5).
+        rrmlinesytle: [int]
+            default is 8
+        plottotal: [bool]
+            default is True.
+        totalcolor: [str, tuple]
+            default is "k".
+        totalorder: [int]
+            default is 6.
+        totalstyle: [int]
+            default is 11.
+        plothm: [bool]
+            default is True.
         Returns
         -------
         fig : TYPE
@@ -4889,7 +4871,7 @@ class Sub(River):
             )
 
         # specific XS
-        if plotrim:
+        if plothm:
             # first extract the time series of the given xs
             self.Read1DResult(xsid=specificxs)
             # plot the xs
@@ -4955,8 +4937,7 @@ class Sub(River):
         Calib,
         stationname,
         startError,
-        endError,
-        gaugexs,
+        endError, #gaugexs,
         GaugeStart,
         GaugeEnd,
         Filter=False,
@@ -4975,8 +4956,6 @@ class Sub(River):
         startError : TYPE
             DESCRIPTION.
         endError : TYPE
-            DESCRIPTION.
-        gaugexs : TYPE
             DESCRIPTION.
         GaugeStart : TYPE
             DESCRIPTION.
@@ -5068,24 +5047,23 @@ class Sub(River):
     def PlotWL(
         self,
         Calib,
-        start,
-        end,
-        gaugexs,
+        start: str,
+        end: str,
+        gaugexs: int,
         stationname,
         gaugename,
-        Filter=False,
-        gaugecolor="#DC143C",
-        hmcolor="#004c99",
-        linewidth=2,
-        hmorder=1,
-        gaugeorder=0,
-        hmstyle=6,
-        gaugestyle=0,
+        gaugecolor: Union[tuple, str]="#DC143C",
+        hmcolor: Union[tuple, str]="#004c99",
+        linewidth: Union[int, float]=2,
+        hmorder: int=1,
+        gaugeorder: int=0,
+        hmstyle: int=6,
+        gaugestyle: int=0,
         plotgauge=True,
-        fmt="%Y-%m-%d",
-        legendsize=15,
-        figsize=(6, 5),
-        nxlabels=4,
+        fmt: str="%Y-%m-%d",
+        legendsize: Union[int, float]=15,
+        figsize: tuple=(6, 5),
+        nxlabels: int=4,
     ):
         """Plot water level surface.
 
@@ -5105,8 +5083,6 @@ class Sub(River):
             DESCRIPTION.
         gaugename : TYPE
             DESCRIPTION.
-        Filter : TYPE, optional
-            DESCRIPTION. The default is False.
         gaugecolor : TYPE, optional
             DESCRIPTION. The default is "#DC143C".
         hmcolor : TYPE, optional
@@ -5121,6 +5097,15 @@ class Sub(River):
             DESCRIPTION. The default is True.
         fmt: [string]
             format of the date. fmt="%Y-%m-%d %H:%M:%S"
+        hmstyle: [int]
+            default is 6
+        gaugestyle: [int]
+            default is 0.
+        legendsize: [int, float]
+            default is 15.
+        figsize: tuple=(6, 5),
+        nxlabels: [int]
+            default is 4.
 
         Returns
         -------
@@ -5340,7 +5325,7 @@ class Sub(River):
         ExtractedValues = [j for j in ExtractedValues if j < filter2]
         # plot
         fig, ax1 = plt.subplots(figsize=(10, 8))
-        ax1.hist(self.ExtractedValues, bins=15, alpha=0.4)  # width = 0.2,
+        ax1.hist(ExtractedValues, bins=15, alpha=0.4)  # width = 0.2,
         ax1.set_ylabel("Frequency RIM1.0", fontsize=15)
         ax1.yaxis.label.set_color("#27408B")
         ax1.set_xlabel("Depth Ranges (m)", fontsize=15)

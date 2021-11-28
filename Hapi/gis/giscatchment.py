@@ -11,7 +11,7 @@ import pandas as pd
 try:
     import gdal
 except ModuleNotFoundError:
-    print("failed to import gdal")
+    from osgeo import gdal
 
 from Hapi.gis.raster import Raster as raster
 

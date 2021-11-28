@@ -8,10 +8,15 @@ import os
 import zipfile
 from typing import Union
 
-import gdal
+try:
+    import gdal
+except ModuleNotFoundError:
+    from osgeo import gdal
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+
 # from HapiSM.statisticaltools import StatisticalTools as ST
 from HapiSM.distributions import GEV, Gumbel, PlottingPosition
 from scipy.stats import gumbel_r  # genextreme,

@@ -1,5 +1,5 @@
 import datetime as dt
-from typing import List, Optional, Union
+from typing import Union  # List, Optional,
 
 import numpy as np
 import pandas as pd
@@ -16,7 +16,8 @@ class Calibration(River):
 
     """
 
-    def __init__(self, name, version=3, start: Union[str, dt.datetime]="1950-1-1", days=36890, fmt="%Y-%m-%d"):
+    def __init__(self, name: str, version: int=3, start: Union[str, dt.datetime]="1950-1-1",
+                 days=36890, fmt="%Y-%m-%d"):
         """HMCalibration.
 
         To instantiate the HMCalibration object you have to provide the

@@ -11,7 +11,11 @@ import math
 import os
 from types import ModuleType
 
-import gdal
+try:
+    import gdal
+except ModuleNotFoundError:
+    from osgeo import gdal
+
 import geopandas as gpd
 import HapiSM.performancecriteria as PC
 import matplotlib.dates as dates

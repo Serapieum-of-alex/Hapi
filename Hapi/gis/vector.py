@@ -9,12 +9,11 @@ import warnings
 
 import geopandas as gpd
 import numpy as np
-import ogr
 import pandas as pd
 from fiona.crs import from_epsg
-# from osgeo import ogr
-from osgeo import osr
+from osgeo import ogr, osr
 from pyproj import Proj, transform
+
 # from shapely.geometry.polygon import Polygon
 from shapely.geometry import Point, Polygon
 from shapely.geometry.multipolygon import MultiPolygon
