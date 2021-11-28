@@ -6,7 +6,6 @@ river module to read the river data and do hydraulic analysisf or each segment
 """
 import datetime as dt
 import os
-import sys
 import zipfile
 from bisect import bisect
 from typing import Union  # List, Optional,
@@ -198,6 +197,30 @@ class River:
 
         self.indsub = pd.date_range(self.start, self.end, freq=self.freq)
 
+        self.wd = None
+        self.XSF = None
+        self.LateralsF = None
+        self.BCF = None
+        self.RiverNetworkF = None
+        self.SlopeF = None
+        self.NoSeg = None
+        self.CalibrationF = None
+        self.Coupling1D2DF = None
+        self.RunMode =None
+        self.Subid = None
+        self.Customized_BC_F = None
+        self.ResultsDetails = None
+        self.RRMTemporalResolution = None
+        self.HMTemporalResolution = None
+        self.TS = None
+        self.SimStartIndex = None
+        self.SimEndIndex = None
+        self.SimStart = None
+        self.SimEnd= None
+        self.OneDTempR = None
+        self.D1 = None
+        self.D2 = None
+
         self.USHydrographs = None
         self.crosssections = None
         self.xsno = None
@@ -279,12 +302,11 @@ class River:
         try:
             return np.where(self.referenceindex["date"] == date)[0][0] + 1
         except:
-            print(f"The input date {date} is out of the range")
-            print(
+            raise ValueError(f"The input date {date} is out of the range"
                 f"Simulation is between {self.referenceindex.loc[1, 'date']} and "
                 f"{self.referenceindex.loc[len(self.referenceindex), 'date']}"
-            )
-            sys.exit
+        )
+
 
     def IndexToDateRRM(self, index: int):
         """IndexToDateRRM.
@@ -455,6 +477,7 @@ class River:
             CalcInundationDuration=CalcInundationDuration,
             CalcReturnPerion=CalcReturnPerion,
         )
+
 
     def ReadCrossSections(self, path: str):
         """ReadCrossSections.
@@ -1003,7 +1026,7 @@ class River:
             version: int,
             rrmreferenceindex,
             path: str,
-            nodeid: int,
+            nodeid: Union[int, str],
             fromday: Union[int, str],
             today: Union[int, str],
             date_format: str ="%d_%m_%Y"
@@ -1318,8 +1341,6 @@ class River:
         ----------
         path : TYPE
             DESCRIPTION.
-        fmt : TYPE, optional
-            DESCRIPTION. The default is '%.3f'.
 
         Returns
         -------
@@ -3219,10 +3240,10 @@ class Sub(River):
         self.AreaPerHigh = None
         self.AreaPerLow = None
         self.TotalFlow = None
-        self.RRMProgression = None
-        self.LateralsTable = None
-        self.Laterals = None
-        self.Result1D = None
+        self.RRMProgression = None # DataFrame
+        self.LateralsTable = None #list
+        self.Laterals = None # DataFrame
+        self.Result1D = None # DataFrame
 
 
     def Read1DResult(
@@ -3844,7 +3865,8 @@ class Sub(River):
         xsid : [integer]
             the id of the cross section.
         path : [string], optional
-            path to the directory where you want to save the file to. The
+            path to the directory where you want to save the file to. if not given
+            the files are going to be saved in the 'CustomizedRunspath' path, The
             default is ''.
         Option : [integer]
             1 to write water level results, 2 to write water depth results
@@ -3889,15 +3911,15 @@ class Sub(River):
 
     def PlotHydrographProgression(
         self,
-        xss,
-        start,
-        end,
-        fromxs="",
-        toxs="",
-        linewidth=4,
-        spacing=5,
-        figsize=(7, 5),
-        nxlabels: bool=False,
+        xss: list,
+        start: str,
+        end: str,
+        fromxs: Union[str, int]="",
+        toxs: Union[str, int]="",
+        linewidth: int=4,
+        spacing: int=5,
+        figsize: tuple=(7, 5),
+        xlabels: Union[bool, int]=False,
         fmt="%Y-%m-%d",
     ):
         """PlotHydrographProgression.
@@ -3914,10 +3936,18 @@ class Sub(River):
             DESCRIPTION.
         end : TYPE
             DESCRIPTION.
+        fromxs: [str, int]
+            default "".
+        toxs: [str, int]
+            default is ""
         linewidth : [integer], optional
             width of the plots. The default is 4.
         spacing : [integer]
             hydrographs are going to be plots every spacing. The default is 5.
+        figsize: [tuple]
+            default is (7, 5).
+        xlabels: [bool, int]
+            defaulr is False.
         fmt: [string]
             format of the date. fmt="%Y-%m-%d %H:%M:%S"
         Returns
@@ -3942,9 +3972,6 @@ class Sub(River):
             toxs = self.lastxs
             xss.append(toxs)
 
-        # if fromxs == '':
-        #     xslist = self.xsname[spacing:self.xsno:spacing]
-        # else:
         fromxs = self.xsname.index(fromxs)
         toxs = self.xsname.index(toxs)
         xslist = self.xsname[fromxs : toxs + 1 : spacing]
@@ -3972,9 +3999,10 @@ class Sub(River):
         ax.legend(fontsize=10, loc="best")
         ax.set_xlabel("Time", fontsize=10)
         ax.set_ylabel("Discharge m3/s", fontsize=10)
-        if type(nxlabels) != bool:
+        if type(xlabels) != bool:
             start, end = ax.get_xlim()
-            ax.xaxis.set_ticks(np.linspace(start, end, nxlabels))
+            ax.xaxis.set_ticks(np.linspace(start, end, xlabels))
+
         plt.tight_layout()
 
         return fig, ax
@@ -4026,6 +4054,7 @@ class Sub(River):
                             today,
                             date_format,
                         )[Nodeid]
+                        print(f"the US hydrograph '{Nodeid}' has been read")
                     except FileNotFoundError:
                         msg = (
                             f" the Path - {path} does not contain the routed hydrographs for the the "
@@ -4047,12 +4076,11 @@ class Sub(River):
                     today,
                     date_format,
                 )[Nodeid]
+                print(f"the US hydrograph '{Nodeid}' has been read")
             except FileNotFoundError:
                 msg = (
-                    " the Path - "
-                    + path
-                    + " does not contain the routed hydrographs for the "
-                    "segment - " + str(Nodeid)
+                    f"The Path - {path} does not contain the routed hydrographs for the "
+                    f"segment - {Nodeid}"
                 )
                 print(msg)
                 return
@@ -4062,10 +4090,8 @@ class Sub(River):
 
         self.USHydrographs["total"] = self.USHydrographs.sum(axis=1)
         if fromday == "":
-            # fromday = 1
             fromday = self.USHydrographs.index[0]
         if today == "":
-            # today = len(self.USHydrographs[Nodeid])
             today = self.USHydrographs.index[-1]
 
         start = self.referenceindex.loc[fromday, "date"]
@@ -4185,7 +4211,7 @@ class Sub(River):
         assert isinstance(IF.BC, DataFrame), ("the boundary condition does not exist "
                                               "you have to read it first using the "
                                               "'ReadBoundaryConditions' method in the interface model")
-        assert isinstance(IF.Laterals), ("the Laterals does not exist you have to read it first"
+        assert isinstance(IF.Laterals, DataFrame), ("the Laterals does not exist you have to read it first"
                                          "using the 'ReadLaterals' method in the interface model")
 
         if fromday == "":
@@ -4226,7 +4252,7 @@ class Sub(River):
 
             self.Laterals["total"] = self.Laterals.sum(axis=1)
 
-            if hasattr(IF, "RRMProgression"):
+            if isinstance(IF.RRMProgression, DataFrame):
                 self.RRMProgression = pd.DataFrame(
                     index=pd.date_range(fromday, today, freq="D"),
                     columns=self.LateralsTable,
@@ -4239,7 +4265,7 @@ class Sub(River):
             self.LateralsTable = []
             self.Laterals = pd.DataFrame()
 
-    def GetLaterals(self, xsid):
+    def GetLaterals(self, xsid: int):
         """GetLaterals.
 
         GetLaterals method gets the sum of the laterals of all the cross sections
@@ -4258,7 +4284,7 @@ class Sub(River):
 
         """
         msg = "please read the Laterals Table and the LAterals first"
-        assert isinstance(self.LateralsTable, DataFrame) and isinstance(self.Laterals, DataFrame), msg
+        assert isinstance(self.LateralsTable, list) and isinstance(self.Laterals, DataFrame), msg
         USgauge = self.LateralsTable[: bisect(self.LateralsTable, xsid)]
         return self.Laterals[USgauge].sum(axis=1).to_frame()
 
@@ -4313,6 +4339,8 @@ class Sub(River):
                 Laterals.loc[s:e, 0].values
                 + self.USHydrographs.loc[s:e, "total"].values
             )
+        print(f"Total flow for the XS-{gaugexs} has been calculated")
+
 
     def H2Q(self, Q):
         """H2Q.
@@ -4358,38 +4386,38 @@ class Sub(River):
         gaugename: Union[str, int],
         segment_xs: str,
         plotlaterals: bool=True,
-        latcolor: tuple=(0.3, 0, 0),
+        latcolor: Union[str, tuple]=(0.3, 0, 0),
         latorder: int=4,
         latstyle: int=9,
         plotus: bool=True,
-        ushcolor: str="grey",
+        ushcolor: Union[str, tuple]="grey",
         ushorder: int=7,
         ushstyle: int=7,
         plottotal: bool=True,
-        totalcolor: str="k",
+        totalcolor: Union[str, tuple]="k",
         totalorder: int=6,
         totalstyle: int=4,
         specificxs: bool=False,
-        xscolor: tuple=(164 / 255, 70 / 255, 159 / 255),
+        xscolor: Union[str, tuple]=(164 / 255, 70 / 255, 159 / 255),
         xsorder: int=1,
         xslinestyle: int=3,
         plotrrm: bool=True,
-        rrmcolor: str="green",
+        rrmcolor: Union[str, tuple]="green",
         rrmorder: int=3,
         rrmlinestyle: int=6,
-        rrm2color: tuple=(227 / 255, 99 / 255, 80 / 255),
+        rrm2color: Union[str, tuple]=(227 / 255, 99 / 255, 80 / 255),
         rrm2linesytle: int=8,
         plotgauge: bool=True,
-        gaugecolor: str="#DC143C",
+        gaugecolor: Union[str, tuple]="#DC143C",
         gaugeorder: int=5,
         gaugestyle: int=7,
-        hmcolor: str="#004c99",
+        hmcolor: Union[str, tuple]="#004c99",
         hmorder: int=6,
         linewidth: int=4,
         figsize: tuple=(6, 5),
         fmt: str="%Y-%m-%d",
-        xlabels: Union[bool, int]=False,
-        ylabels: Union[bool, int]=False,
+        xlabels: Union[bool, int, list]=False,
+        ylabels: Union[bool, int, list]=False,
     ):
         """PlotQ.
 
@@ -4427,8 +4455,6 @@ class Sub(River):
             DESCRIPTION. The default is "#004c99".
         gaugecolor : TYPE, optional
             DESCRIPTION. The default is "#DC143C".
-        bccolor : TYPE, optional
-            DESCRIPTION. The default is "grey".
         rrmcolor : TYPE, optional
             DESCRIPTION. The default is "green".
         latcolor : TYPE, optional
@@ -4443,15 +4469,15 @@ class Sub(River):
             DESCRIPTION. The default is 5.
         rrmorder : TYPE, optional
             DESCRIPTION. The default is 4.
-        bcorder : TYPE, optional
-            DESCRIPTION. The default is 7.
         ushorder : TYPE, optional
             DESCRIPTION. The default is 2.
         xsorder : TYPE, optional
             DESCRIPTION. The default is 1.
         fmt: [string]
             format of the date. fmt="%Y-%m-%d %H:%M:%S"
-        nxlabels : TYPE, optional
+        xlabels : [bool, int], optional
+            DESCRIPTION. The default is False.
+        ylabels : [bool, int], optional
             DESCRIPTION. The default is False.
         rrm2color: []
             Description
@@ -4469,7 +4495,18 @@ class Sub(River):
             Description
         latstyle: []
             Description
-
+        plottotal: [bool]
+            default is True.
+        totalcolor: [str, tuple]
+            default is "k".
+        totalorder: [int]
+            default is 6.
+        totalstyle: [int]
+            default is 4.
+        rrmlinestyle: [int]
+            default is 6.
+        figsize: [tuple]
+            default is (6, 5).
         Returns
         -------
         fig : TYPE
@@ -4649,14 +4686,19 @@ class Sub(River):
                     label="RRM",
                 )
 
-        if type(xlabels) != bool:
+        if not isinstance(xlabels, bool):
             start, end = ax.get_xlim()
-            if type(xlabels) == int:
+            if isinstance(xlabels, int):
                 ax.xaxis.set_ticks(np.linspace(start, end, xlabels))
+            else:
+                start = self.round(start, xlabels[0])
+                end = self.round(end, xlabels[0])
 
-        if type(ylabels) != bool:
+                ax.yaxis.set_ticks(np.arange(start, end, xlabels[0]))
+
+        if not isinstance(ylabels, bool):
             start, end = ax.get_ylim()
-            if type(ylabels) == int:
+            if isinstance(ylabels, int):
                 if start < 0:
                     start = 0
                 ax.yaxis.set_ticks(np.linspace(start, end, ylabels))

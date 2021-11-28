@@ -41,6 +41,11 @@ class Interface(River):
         Ref_ind = pd.date_range(self.start, self.end, freq="D")
         self.ReferenceIndex = pd.DataFrame(index=list(range(1, days + 1)))
         self.ReferenceIndex["date"] = Ref_ind[:-1]
+
+        self.LateralsTable = None
+        self.RRMProgression = None
+        self.BCTable = None
+        self.BC = None
         pass
 
     def ReadLateralsTable(self, path, prefix="lf_xsid", suffix=".txt"):
