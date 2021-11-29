@@ -29,6 +29,7 @@ ffmpeg-python = "^0.2.0"
 gdal = ">=3.1.4,<3.3.4"
 # gdal = { file = "/home/mostafa/Downloads/GDAL-3.3.3-cp39-cp39-win32.whl" }
 pre-commit = "^2.15.0"
+geopy = "^2.2.0"
 
 
 [tool.poetry.dev-dependencies]

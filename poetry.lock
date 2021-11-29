@@ -247,6 +247,14 @@ python-versions = ">=3.6.0"
 numpy = ["numpy (>1.0.0)"]
 
 [[package]]
+name = "geographiclib"
+version = "1.52"
+description = "The geodesic routines from GeographicLib"
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "geopandas"
 version = "0.10.2"
 description = "Geographic pandas extensions"
@@ -261,6 +269,26 @@ pyproj = ">=2.2.0"
 shapely = ">=1.6"
 
 [[package]]
+name = "geopy"
+version = "2.2.0"
+description = "Python Geocoding Toolbox"
+category = "main"
+optional = false
+python-versions = ">=3.5"
+
+[package.dependencies]
+geographiclib = ">=1.49,<2"
+
+[package.extras]
+aiohttp = ["aiohttp"]
+dev = ["async-generator", "coverage", "flake8 (>=3.8.0,<3.9.0)", "isort (>=5.6.0,<5.7.0)", "pytest-aiohttp", "pytest (>=3.10)", "readme-renderer", "sphinx", "sphinx-issues", "sphinx-rtd-theme (>=0.5.0)"]
+dev-docs = ["readme-renderer", "sphinx", "sphinx-issues", "sphinx-rtd-theme (>=0.5.0)"]
+dev-lint = ["async-generator", "flake8 (>=3.8.0,<3.9.0)", "isort (>=5.6.0,<5.7.0)"]
+dev-test = ["async-generator", "coverage", "pytest-aiohttp", "pytest (>=3.10)", "sphinx"]
+requests = ["urllib3 (>=1.24.2)", "requests (>=2.16.2)"]
+timezone = ["pytz"]
+
+[[package]]
 name = "identify"
 version = "2.4.0"
 description = "File identification library for Python"
@@ -273,7 +301,7 @@ license = ["ukkonen"]
 
 [[package]]
 name = "imageio"
-version = "2.12.0"
+version = "2.13.0"
 description = "Library for reading and writing a wide range of image, video, scientific, and volumetric data formats."
 category = "main"
 optional = false
@@ -915,7 +943,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7.1,<3.10"
-content-hash = "8bf1e3fb2adee1fa7f9fb0b9a0f5a56c09e126660ef00ca30a944b6f9678410a"
+content-hash = "1a11bda061985e9407f0906470f2d262b631126af98c1968d32f7439fcaa332e"
 
 [metadata.files]
 affine = [
@@ -1029,17 +1057,25 @@ future = [
 gdal = [
     {file = "GDAL-3.3.3.tar.gz", hash = "sha256:3dc9cc43d046e35907824808361f5b8140e5613d8f13d21aeaa8a53afbf4fa4f"},
 ]
+geographiclib = [
+    {file = "geographiclib-1.52-py3-none-any.whl", hash = "sha256:8f441c527b0b8a26cd96c965565ff0513d1e4d9952b704bf449409e5015c77b7"},
+    {file = "geographiclib-1.52.tar.gz", hash = "sha256:ac400d672b8954b0306bca890b088bb8ba2a757dc8133cca0b878f34b33b2740"},
+]
 geopandas = [
     {file = "geopandas-0.10.2-py2.py3-none-any.whl", hash = "sha256:1722853464441b603d9be3d35baf8bde43831424a891e82a8545eb8997b65d6c"},
     {file = "geopandas-0.10.2.tar.gz", hash = "sha256:efbf47e70732e25c3727222019c92b39b2e0a66ebe4fe379fbe1aa43a2a871db"},
+]
+geopy = [
+    {file = "geopy-2.2.0-py3-none-any.whl", hash = "sha256:8f1f949082b964385de61fcc3a667a6a9a6e242beb1ae8972449f164b2ba0e89"},
+    {file = "geopy-2.2.0.tar.gz", hash = "sha256:58b7edf526b8c32e33126570b5f4fcdfaa29d4416506064777ae8d84cd103fdd"},
 ]
 identify = [
     {file = "identify-2.4.0-py2.py3-none-any.whl", hash = "sha256:eba31ca80258de6bb51453084bff4a923187cd2193b9c13710f2516ab30732cc"},
     {file = "identify-2.4.0.tar.gz", hash = "sha256:a33ae873287e81651c7800ca309dc1f84679b763c9c8b30680e16fbfa82f0107"},
 ]
 imageio = [
-    {file = "imageio-2.12.0-py3-none-any.whl", hash = "sha256:21752efef07d38d920d2adfbf5acac1ad12efa4859c48de6237a87567cda9854"},
-    {file = "imageio-2.12.0.tar.gz", hash = "sha256:c416dd68328ace8536ff333cbb8927954036be56e201fed416e53e8f95e08a6c"},
+    {file = "imageio-2.13.0-py3-none-any.whl", hash = "sha256:136588af191e94fe6dff6ffee419dc5ad80d3d5c4f5e908110b24d90ba5bc0d5"},
+    {file = "imageio-2.13.0.tar.gz", hash = "sha256:efb700a12bc6ef13d2e540469a05489f2c09051f148388dce6036811b4cbec69"},
 ]
 importlib-metadata = [
     {file = "importlib_metadata-4.8.2-py3-none-any.whl", hash = "sha256:53ccfd5c134223e497627b9815d5030edf77d2ed573922f7a0b8f8bb81a1c100"},
