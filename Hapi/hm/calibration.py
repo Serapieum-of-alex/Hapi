@@ -1,4 +1,5 @@
 import datetime as dt
+from typing import Union  # List, Optional,
 
 import numpy as np
 import pandas as pd
@@ -15,7 +16,8 @@ class Calibration(River):
 
     """
 
-    def __init__(self, name, version=3, start="1950-1-1", days=36890, fmt="%Y-%m-%d"):
+    def __init__(self, name: str, version: int=3, start: Union[str, dt.datetime]="1950-1-1",
+                 days=36890, fmt="%Y-%m-%d"):
         """HMCalibration.
 
         To instantiate the HMCalibration object you have to provide the
@@ -41,23 +43,37 @@ class Calibration(River):
         """
         self.name = name
         self.version = version
-
-        self.start = dt.datetime.strptime(start, fmt)
+        if isinstance(start, str):
+            self.start = dt.datetime.strptime(start, fmt)
         self.end = self.start + dt.timedelta(days=days)
         self.days = days
 
         Ref_ind = pd.date_range(self.start, self.end, freq="D")
         self.ReferenceIndex = pd.DataFrame(index=list(range(1, days + 1)))
         self.ReferenceIndex["date"] = Ref_ind[:-1]
+        self.QHM = None
+        self.QRRM = None
+        self.GaugesTable = None
+        self.QGauges = None
+        self.WLGauges = None
+        self.WLHM = None
+        self.CalibrationQ = None
+        self.CalibrationWL = None
+        self.AnnualMaxObsQ = None
+        self.AnnualMaxObsWL = None
+        self.AnnualMaxRRM = None
+        self.AnnualMaxRIMQ = None
+        self.AnnualMaxRIMWL = None
 
-    def ReadGaugesTable(self, Path):
+
+    def ReadGaugesTable(self, path: str):
         """ReadGaugesTable.
 
         ReadGaugesTable reads the table of the gauges
 
         Parameters
         ----------
-        Path : [String]
+        path : [String]
             the path to the text file of the gauges table.
 
         Returns
@@ -66,9 +82,13 @@ class Calibration(River):
             the table will be read in a dataframe attribute
 
         """
-        self.GaugesTable = pd.read_csv(Path)
+        self.GaugesTable = pd.read_csv(path)
 
-    def ReadObservedWL(self, path, start, end, novalue, column="oid", fmt="%Y-%m-%d"):
+
+    def ReadObservedWL(self, path: str, start: Union[str, dt.datetime],
+                       end: Union[str, dt.datetime], novalue: Union[int, float],
+                       column="oid", fmt="%Y-%m-%d", file_extension: str=".txt",
+                       gauge_date_format="%Y-%m-%d"):
         """ReadObservedWL.
 
         read the water level data of the gauges.
@@ -106,59 +126,97 @@ class Calibration(River):
         if isinstance(end, str):
             end = dt.datetime.strptime(end, fmt)
 
-        ind = pd.date_range(start, end)
         columns = self.GaugesTable[column].tolist()
 
-        WLGauges = pd.DataFrame(index=ind)
-        # WLGaugesf.loc[:,:] = NoValue
-        WLGauges.loc[:, 0] = ind
+        ind = pd.date_range(start, end)
+        Gauges = pd.DataFrame(index=ind)
+        Gauges.loc[:, 0] = ind
         print("Reading water level gauges data")
         for i in range(len(columns)):
             if self.GaugesTable.loc[i, "waterlevel"] == 1:
                 name = self.GaugesTable.loc[i, column]
                 try:
                     f = pd.read_csv(
-                        path + str(int(name)) + ".txt", delimiter=",", header=None
+                        path + str(int(name)) + file_extension, delimiter=",", header=0
                     )
-                    print(str(i) + "-" + path + str(int(name)) + ".txt is read")
+                    f.columns = [0, 1]
+                    f[0] = f[0].map(lambda x: dt.datetime.strptime(x, gauge_date_format))
+                    # sort by date as some values are missed up
+                    f.sort_values(by=[0], ascending=True, inplace=True)
+                    # filter to the range we want
+                    f = f.loc[f[0] >= ind[0], :]
+                    f = f.loc[f[0] <= ind[-1], :]
+                    # reindex
+                    f.index = list(range(len(f)))
+                    # add datum and convert to meter
+                    f.loc[f[1] != novalue, 1] = (
+                                                        f.loc[f[1] != novalue, 1] / 100
+                                                ) + self.GaugesTable.loc[i, "datum(m)"]
+                    f = f.rename(columns={1: columns[i]})
+
+                    # use merge as there are some gaps in the middle
+                    Gauges = Gauges.merge(f, on=0, how="left", sort=False)
+
+                    print(f"{i} - {path}{name}{file_extension} is read")
 
                 except FileNotFoundError:
-                    print(str(i) + "-" + path + str(int(name)) + ".txt has a problem")
+                    print(f"{i} - {path}{name}{file_extension} has a problem")
                     return
 
-                f[0] = f[0].map(datafn)
-                # sort by date as some values are missed up
-                f.sort_values(by=[0], ascending=True, inplace=True)
-                # filter to the range we want
-                f = f.loc[f[0] >= ind[0], :]
-                f = f.loc[f[0] <= ind[-1], :]
-                # reindex
-                f.index = list(range(len(f)))
-                # add datum and convert to meter
-                f.loc[f[1] != novalue, 1] = (
-                    f.loc[f[1] != novalue, 1] / 100
-                ) + self.GaugesTable.loc[i, "datum(m)"]
-                f = f.rename(columns={1: columns[i]})
+        Gauges.replace(to_replace=np.nan, value=novalue, inplace=True)
+        Gauges.index = ind
+        del Gauges[0]
+        self.WLGauges = Gauges
 
-                # use merge as there are some gaps in the middle
-                WLGauges = WLGauges.merge(f, on=0, how="left", sort=False)
-
-        WLGauges.replace(to_replace=np.nan, value=novalue, inplace=True)
-        WLGauges.index = ind
-        del WLGauges[0]
-        self.WLGauges = WLGauges
-
-        # GaugesTable.index = GaugesTable['id'].tolist()
         self.GaugesTable["WLstart"] = 0
         self.GaugesTable["WLend"] = 0
         for i in range(len(columns)):
             if self.GaugesTable.loc[i, "waterlevel"] == 1:
-                st1 = WLGauges[columns[i]][WLGauges[columns[i]] != novalue].index[0]
-                end1 = WLGauges[columns[i]][WLGauges[columns[i]] != novalue].index[-1]
+                st1 = self.WLGauges[columns[i]][self.WLGauges[columns[i]] != novalue].index[0]
+                end1 = self.WLGauges[columns[i]][self.WLGauges[columns[i]] != novalue].index[-1]
                 self.GaugesTable.loc[i, "WLstart"] = st1
                 self.GaugesTable.loc[i, "WLend"] = end1
 
-    def ReadObservedQ(self, path, start, end, novalue, column="oid", fmt="%Y-%m-%d"):
+    # @staticmethod
+    # def readfile(path,date_format):
+    #
+    #     ind = pd.date_range(start, end)
+    #     Gauges = pd.DataFrame(index=ind)
+    #     Gauges.loc[:, 0] = ind
+    #     print("Reading discharge gauges data")
+    #     for i in range(len(self.GaugesTable)):
+    #         if self.GaugesTable.loc[i, "discharge"] == 1:
+    #             name = self.GaugesTable.loc[i, column]
+    #             try:
+    #                 f = pd.read_csv(path, delimiter=",", header=0)
+    #                 print(f"{i} - {path} is read")
+    #
+    #             except FileNotFoundError:
+    #                 print(f"{i} - {path} has a problem")
+    #                 return
+    #             f.columns = [0, 1]
+    #             f[0] = f[0].map(lambda x: dt.datetime.strptime(x, date_format))
+    #             # sort by date as some values are missed up
+    #             f.sort_values(by=[0], ascending=True, inplace=True)
+    #             # filter to the range we want
+    #             f = f.loc[f[0] >= ind[0], :]
+    #             f = f.loc[f[0] <= ind[-1], :]
+    #             # reindex
+    #             f.index = list(range(len(f)))
+    #             f = f.rename(columns={1: name})
+    #
+    #             # use merge as there are some gaps in the middle
+    #             Gauges = Gauges.merge(f, on=0, how="left", sort=False)
+    #
+    #     Gauges.replace(to_replace=np.nan, value=novalue, inplace=True)
+    #     Gauges.index = ind
+    #     del Gauges[0]
+
+
+    def ReadObservedQ(self, path: str, start: Union[str, dt.datetime],
+                      end: Union[str, dt.datetime], novalue: Union[int, float],
+                      column: str="oid", fmt: str="%Y-%m-%d", file_extension: str=".txt",
+                      gauge_date_format="%Y-%m-%d"):
         """ReadObservedQ.
 
         ReadObservedQ method reads discharge data and store it in a dataframe
@@ -195,35 +253,63 @@ class Calibration(River):
             end = dt.datetime.strptime(end, fmt)
 
         ind = pd.date_range(start, end)
-        QGauges = pd.DataFrame(index=ind)
+        Gauges = pd.DataFrame(index=ind)
+        Gauges.loc[:, 0] = ind
         print("Reading discharge gauges data")
         for i in range(len(self.GaugesTable)):
             if self.GaugesTable.loc[i, "discharge"] == 1:
                 name = self.GaugesTable.loc[i, column]
                 try:
-                    QGauges.loc[:, int(name)] = np.loadtxt(
-                        path + str(int(name)) + ".txt"
-                    )  # ,skiprows = 0
-                    print(str(i) + "-" + path + str(int(name)) + ".txt is read")
+                    f = pd.read_csv(
+                        path + str(int(name)) + file_extension, delimiter=",", header=0
+                    )
+                    print(f"{i} - {path}{name}{file_extension} is read")
 
                 except FileNotFoundError:
-                    print(str(i) + "-" + path + str(int(name)) + ".txt has a problem")
+                    print(f"{i} - {path}{name}{file_extension} has a problem")
                     return
+                f.columns = [0,1]
+                f[0] = f[0].map(lambda x: dt.datetime.strptime(x, gauge_date_format))
+                # sort by date as some values are missed up
+                f.sort_values(by=[0], ascending=True, inplace=True)
+                # filter to the range we want
+                f = f.loc[f[0] >= ind[0], :]
+                f = f.loc[f[0] <= ind[-1], :]
+                # reindex
+                f.index = list(range(len(f)))
+                f = f.rename(columns={1: name})
 
-        self.QGauges = QGauges
+                # use merge as there are some gaps in the middle
+                Gauges = Gauges.merge(f, on=0, how="left", sort=False)
 
+        Gauges.replace(to_replace=np.nan, value=novalue, inplace=True)
+        Gauges.index = ind
+        del Gauges[0]
+        # try:
+        #     QGauges.loc[:, int(name)] = np.loadtxt(
+        #         path + str(int(name)) + file_extension
+        #     )  # ,skiprows = 0
+        #
+        #     print(f"{i} - {path}{name}{file_extension} is read")
+        # except FileNotFoundError:
+        #     print(f"{i} - {path}{name}{file_extension} has a problem")
+        #     return
+        # name = self.GaugesTable.loc[i, column]
+
+        self.QGauges = Gauges
         self.GaugesTable["Qstart"] = 0
         self.GaugesTable["Qend"] = 0
 
         for i in range(len(self.GaugesTable)):
             if self.GaugesTable.loc[i, "discharge"] == 1:
                 ii = self.GaugesTable.loc[i, column]
-                st1 = QGauges[ii][QGauges[ii] != novalue].index[0]
-                end1 = QGauges[ii][QGauges[ii] != novalue].index[-1]
+                st1 = self.QGauges[ii][self.QGauges[ii] != novalue].index[0]
+                end1 = self.QGauges[ii][self.QGauges[ii] != novalue].index[-1]
                 self.GaugesTable.loc[i, "Qstart"] = st1
                 self.GaugesTable.loc[i, "Qend"] = end1
 
-    def ReadRRM(self, path, start, end, column="oid", fmt="%Y-%m-%d"):
+
+    def ReadRRM(self, path: str, start: Union[str, dt.datetime], end: Union[str, dt.datetime], column="oid", fmt="%Y-%m-%d"):
         """ReadRRM.
 
         ReadRRM method reads the discharge results of the rainfall runoff
@@ -265,17 +351,18 @@ class Calibration(River):
             )
         self.QRRM = QSWIM
 
+
     def ReadHMQ(
         self,
-        path,
-        start,
-        days,
-        novalue,
-        addHQ2=False,
-        shift=False,
-        shiftsteps=0,
-        column="oid",
-        fmt="%Y-%m-%d",
+        path: str,
+        start: Union[str, dt.datetime],
+        days: int,
+        novalue: Union[int, float],
+        addHQ2: bool = False,
+        shift: bool =False,
+        shiftsteps: int = 0,
+        column: str = "oid",
+        fmt: str = "%Y-%m-%d",
     ):
         """ReadRIMQ.
 
@@ -319,13 +406,13 @@ class Calibration(River):
             msg = "please read the HQ file first using ReturnPeriod method"
             assert hasattr(self, "RP"), msg
 
-        if isinstance(start, str):
-            start = dt.datetime.strptime(start, fmt)
+        # if isinstance(start, str):
+        #     start = dt.datetime.strptime(start, fmt)
 
-        end = start + dt.timedelta(days=days - 1)
-        ind = pd.date_range(start, end)
+        # end = start + dt.timedelta(days=days - 1)
+        # ind = pd.date_range(start, end)
         QHM = pd.DataFrame(
-            index=ind,
+            # index=ind,
             columns=self.GaugesTable.loc[
                 self.GaugesTable["discharge"] == 1, column
             ].tolist(),
@@ -333,14 +420,24 @@ class Calibration(River):
 
         # for RIM1.0 don't fill with -9 as the empty days will be filled
         # with 0 so to get the event days we have to filter 0 and -9
-        if self.version == 1:
-            QHM.loc[:, :] = 0
-        else:
-            QHM.loc[:, :] = novalue
+        # if self.version == 1:
+        #     QHM.loc[:, :] = 0
+        # else:
+        #     QHM.loc[:, :] = novalue
 
         # fill non modelled time steps with zeros
         for i in range(len(self.GaugesTable[column])):
-            f = np.loadtxt(path + str(int(QHM.columns[i])) + ".txt", delimiter=",")
+            f = self.ReadRRMResults(
+                self.version,
+                self.ReferenceIndex,
+                path,
+                QHM.columns[i],
+                fromday='',
+                today='',
+                date_format=fmt,
+            )
+
+            f = np.loadtxt(path + str(int(QHM.columns[i])) + ".txt", delimiter=",", skiprows=0)
             f1 = list(range(int(f[0, 0]), int(f[-1, 0]) + 1))
             f2 = list()
 
@@ -373,8 +470,9 @@ class Calibration(River):
 
         self.QHM = QHM[:]
 
+
     def ReadHMWL(
-        self, path, start, days, novalue, shift=False, shiftsteps=0, column="oid"
+        self, path: str, start: Union[str, dt.datetime], days, novalue: Union[int, float], shift=False, shiftsteps=0, column="oid"
     ):
         """ReadRIMWL
 
@@ -440,7 +538,7 @@ class Calibration(River):
 
         self.WLHM = WLHM[:]
 
-    def ReadCalirationResult(self, subid, path=""):
+    def ReadCalirationResult(self, subid, path: str=""):
         """ReadCalirationResult.
 
         ReadCalirationResult method reads the 1D results and fill the missing
@@ -805,6 +903,7 @@ class Calibration(River):
         # self.slope.loc[self.slope['id']==Segmenti, 'slope'] = AvgSlope
         self.slope.loc[self.slope["id"] == Segmenti, "slope"] = BC_slope
 
+
     def SmoothBedLevel(self, segmenti):
         """SmoothXS
 
@@ -999,7 +1098,7 @@ class Calibration(River):
         # copy back the segment to the whole XS df
         self.crosssections.loc[self.crosssections["id"] == segmenti, :] = segment
 
-    def DownWardBedLevel(self, segmenti, height):
+    def DownWardBedLevel(self, segmenti: int, height: Union[int, float]):
         """SmoothBedWidth.
 
         SmoothBedWidth method smoothes the Bed Width the in the cross section
@@ -1009,11 +1108,13 @@ class Calibration(River):
         ----------
         segmenti : [Integer]
             segment ID.
+        height : []
 
         Returns
         -------
         crosssections: [dataframe attribute]
             the "b" column in the crosssections attribute will be smoothed
+
 
         """
         g = self.crosssections.loc[self.crosssections["id"] == segmenti, :].index[0]
@@ -1028,6 +1129,7 @@ class Calibration(River):
         segment.index = range(g, g + len(segment))
         # copy back the segment to the whole XS df
         self.crosssections.loc[self.crosssections["id"] == segmenti, :] = segment
+
 
     def SmoothMaxSlope(self, segmenti, SlopePercentThreshold=1.5):
         """SmoothMaxSlope.

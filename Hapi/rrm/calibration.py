@@ -22,11 +22,7 @@ from Hapi.rrm.wrapper import Wrapper
 
 
 class Calibration(Catchment):
-
-    """
-    ================================
-          Calibration
-    ================================
+    """Calibration.
 
     Calibration class contains to connect the parameter spatial distribution
     function with the with both component of the spatial representation of the
@@ -516,10 +512,8 @@ class Calibration(Catchment):
         return res
 
     def LumpedCalibration(self, Basic_inputs, OptimizationArgs, printError=None):
-        """
-        =======================================================================
-            RunCalibration(ConceptualModel, data,parameters, p2, init_st, snow, Routing=0, RoutingFn=[], objective_function, printError=None, *args):
-        =======================================================================
+        """RunCalibration.
+
         this function runs the calibration algorithm for the Lumped conceptual hydrological model
 
         Inputs:

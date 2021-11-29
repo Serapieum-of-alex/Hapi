@@ -8,11 +8,16 @@ into rasters
 """
 import datetime as dt
 import math
+
 # import numbers
 import os
 
-import gdal
 import numpy as np
+
+try:
+    import gdal
+except ModuleNotFoundError:
+    from osgeo import gdal
 
 from Hapi.gis.giscatchment import GISCatchment as GC
 from Hapi.gis.raster import Raster

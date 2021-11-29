@@ -6,22 +6,22 @@ river module to read the river data and do hydraulic analysisf or each segment
 """
 import datetime as dt
 import os
-import sys
 import zipfile
 from bisect import bisect
+from typing import Union  # List, Optional,
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from HapiSM import performancecriteria as Pf
+from pandas.core.frame import DataFrame
 from scipy.stats import genextreme, gumbel_r
 
 from Hapi.gis.raster import Raster as raster
 from Hapi.hm.saintvenant import SaintVenant
-from Hapi.statistics import performancecriteria as Pf
 from Hapi.visualizer import Visualize as V
 
 hours = list(range(1, 25))
-
 
 class River:
     """River.
@@ -33,24 +33,24 @@ class River:
 
     def __init__(
         self,
-        name,
-        version=3,
-        start="1950-1-1",
-        end="",
-        days=36890,
-        rrmstart="1950-1-1",
-        rrmdays=36890,
-        dto=60,
-        dx="",
-        leftovertopping_suffix="_left.txt",
-        rightovertopping_suffix="_right.txt",
-        depthprefix="DepthMax",
-        durationprefix="Duration",
-        returnperiod_prefix="ReturnPeriod",
-        compressed=True,
-        onedresultpath="",
-        twodresultpath="",
-        fmt="%Y-%m-%d",
+        name: str,
+        version: int=3,
+        start: str="1950-1-1",
+        end: Union[int, str]="",
+        days: int=36890,
+        rrmstart: str="1950-1-1",
+        rrmdays: int=36890,
+        dto: int=60,
+        dx: Union[int, str]="",
+        leftovertopping_suffix: str="_left.txt",
+        rightovertopping_suffix: str="_right.txt",
+        depthprefix: str="DepthMax",
+        durationprefix: str="Duration",
+        returnperiod_prefix: str="ReturnPeriod",
+        compressed: str=True,
+        onedresultpath: str="",
+        twodresultpath: str="",
+        fmt: str="%Y-%m-%d",
     ):
         """River.
 
@@ -196,7 +196,63 @@ class River:
 
         self.indsub = pd.date_range(self.start, self.end, freq=self.freq)
 
-    def IndexToDate(self, index):
+        self.wd = None
+        self.XSF = None
+        self.LateralsF = None
+        self.BCF = None
+        self.RiverNetworkF = None
+        self.SlopeF = None
+        self.NoSeg = None
+        self.CalibrationF = None
+        self.Coupling1D2DF = None
+        self.RunMode =None
+        self.Subid = None
+        self.Customized_BC_F = None
+        self.ResultsDetails = None
+        self.RRMTemporalResolution = None
+        self.HMTemporalResolution = None
+        self.TS = None
+        self.SimStartIndex = None
+        self.SimEndIndex = None
+        self.SimStart = None
+        self.SimEnd= None
+        self.OneDTempR = None
+        self.D1 = None
+        self.D2 = None
+
+        self.USHydrographs = None
+        self.crosssections = None
+        self.xsno = None
+        self.xsname = None
+        self.QBCmin = None
+        self.HBCmin = None
+        self.h = None
+        self.q = None
+        self.from_beginning = None
+        self.firstdayresults = None
+        self.lastday = None
+        self.daylist = None
+        self.id = None
+        self.QBC = None
+        self.HBC = None
+        self.usbc = None
+        self.dsbc = None
+        self.Result1D = None
+        self.Q = None
+        self.H = None
+        self.slope = None
+        self.EventIndex = None
+        self.enddays = None
+        self.rivernetwork = None
+        self.SP = None
+        self.CustomizedRunspath = None
+        self.Segments = None
+        self.RP = None
+        self.SP = None
+        self.rrmpath = None
+
+
+    def IndexToDate(self, index:int):
         """IndexToDate.
 
         IndexToDate takes an integer number and returns the date coresponding
@@ -218,7 +274,9 @@ class River:
         # convert the index into date
         return self.referenceindex.loc[index, "date"]
 
-    def DateToIndex(self, date, fmt="%Y-%m-%d"):
+
+    def DateToIndex(self, date:Union[dt.datetime, str],
+                    fmt: str="%Y-%m-%d"):
         """DateToIndex.
 
         DateToIndex takes a date and returns a the order of the days in the
@@ -243,16 +301,13 @@ class River:
         try:
             return np.where(self.referenceindex["date"] == date)[0][0] + 1
         except:
-            print("The input date " + str(date) + " is out of the range")
-            print(
-                "Simulation is between "
-                + str(self.referenceindex.loc[1, "date"])
-                + " and "
-                + str(self.referenceindex.loc[len(self.referenceindex), "date"])
-            )
-            sys.exit
+            raise ValueError(f"The input date {date} is out of the range"
+                f"Simulation is between {self.referenceindex.loc[1, 'date']} and "
+                f"{self.referenceindex.loc[len(self.referenceindex), 'date']}"
+        )
 
-    def IndexToDateRRM(self, index):
+
+    def IndexToDateRRM(self, index: int):
         """IndexToDateRRM.
 
         IndexToDate takes an integer number and returns the date coresponding
@@ -274,7 +329,7 @@ class River:
         # convert the index into date
         return self.referenceindex.loc[index, "date"]
 
-    def DateToIndexRRM(self, date, fmt="%Y-%m-%d"):
+    def DateToIndexRRM(self, date: Union[str, dt.datetime], fmt: str="%Y-%m-%d"):
         """DateToIndexRRM.
 
         DateToIndex takes a date and returns a the order of the days in the
@@ -301,7 +356,7 @@ class River:
     def round(number, roundto):
         return round(number / roundto) * roundto
 
-    def Read1DConfigFile(self, path):
+    def Read1DConfigFile(self, path: str):
         """Read1DConfigFile.
 
         Read the configuration file
@@ -422,7 +477,8 @@ class River:
             CalcReturnPerion=CalcReturnPerion,
         )
 
-    def ReadCrossSections(self, path):
+
+    def ReadCrossSections(self, path: str):
         """ReadCrossSections.
 
         Read crossSections file
@@ -442,7 +498,8 @@ class River:
             self.xsname = self.crosssections["xsid"].tolist()
 
     def ReadBoundaryConditions(
-        self, start="", end="", path="", fmt="%Y-%m-%d", ds=False, dsbcpath=""
+            self, start: str="", end: str="", path: str="", fmt: str="%Y-%m-%d",
+            ds: bool=False, dsbcpath: str=""
     ):
         """ReadBoundaryConditions.
 
@@ -551,7 +608,8 @@ class River:
                     BC.loc[:, :].resample(self.freq).mean().interpolate("linear")
                 )
 
-    def ReadSubDailyResults(self, start, end, fmt="%Y-%m-%d", Lastsegment=False):
+    def ReadSubDailyResults(self, start: str, end: str, fmt: str="%Y-%m-%d",
+                            Lastsegment: bool=False):
         """ReadSubDailyResults.
 
         Read Sub-Daily Results
@@ -571,6 +629,7 @@ class River:
             DESCRIPTION.
         fmt: [string]
             format of the date. fmt="%Y-%m-%d %H:%M:%S"
+        Lastsegment : [bool]
 
         Returns
         -------
@@ -580,7 +639,7 @@ class River:
 
         """
         if self.version == 4:
-            hasattr(self, "crosssections"), "please read the cross sections first"
+            assert self.crosssections, "please read the cross sections first"
         if isinstance(start, str):
             start = dt.datetime.strptime(start, fmt)
 
@@ -689,7 +748,10 @@ class River:
                 self.firstdayresults, self.lastday, freq="D"
             )
 
-    def Read1DResult(self, Subid, fromday="", today="", path="", FillMissing=False):
+    def Read1DResult(self, Subid: int,
+                     fromday: Union[int, str]="",
+                     today: Union[int, str]="",
+                     path: str="", FillMissing: bool=False):
         """Read1DResult.
 
         Read-1D Result
@@ -747,19 +809,17 @@ class River:
         # Cross section data
         xsname = data["xs"][data["day"] == data["day"][1]][data["hour"] == 1].tolist()
 
-        if FillMissing == True:
+        if FillMissing:
             # check if there is missing days (Q was < threshold so the model didn't run)
             # fill these values with 0
             days = list(set(data["day"]))
             days.sort()
-            # hours = list(range(0,25))
-            hours = list(range(1, 25))
 
             missing_days = list()
             for i in range(days[0], days[-1]):
                 if i not in days:
                     missing_days.append(i)
-                    print("day = " + str(i) + " is missing")
+                    print(f"day = {i} is missing")
 
             if len(missing_days) > 0:
                 if len(missing_days) > 10000:
@@ -871,7 +931,7 @@ class River:
             fromf = 0
 
         for i in range(len(FolderNames)):
-            print(str(i) + "-" + FolderNames[i])
+            print(f"{i} - {FolderNames[i]}")
 
             if tof == "":
                 tof = len(os.listdir(path + "/" + FolderNames[i]))
@@ -879,7 +939,7 @@ class River:
             FileList = os.listdir(path + "/" + FolderNames[i])[fromf:tof]
             # tof is only renewed if it is equal to ''
             tof = ""
-            if FilterbyName == True:
+            if FilterbyName:
                 filter1 = int(FolderNames[i].split("(")[1].split("-")[0])
                 filter2 = int(FolderNames[i].split("(")[1].split("-")[1].split(")")[0])
 
@@ -888,7 +948,7 @@ class River:
                 go = False
 
                 if Left and FileList[j].split(".")[0].endswith("_left"):
-                    print(str(i) + "-" + str(j) + "-" + FileList[j])
+                    print(f"{i} - {j} -  {FileList[j]}")
                     # create data frame for the sub-basin
                     first = "L" + FileList[j].split(".")[0]
                     go = True
@@ -910,7 +970,7 @@ class River:
                     first = "one" + FileList[j].split(".")[0]
                     go = True
 
-                if go == True:
+                if go:
                     # get the updated list of variable names
                     variables = locals()
 
@@ -922,7 +982,7 @@ class River:
                             delimiter=r"\s+",
                         )
 
-                        if FilterbyName == True:
+                        if FilterbyName:
                             temp_df = temp_df[temp_df[0] >= filter1]
                             temp_df = temp_df[temp_df[0] <= filter2]
                         # check whether the variable exist or not
@@ -959,10 +1019,17 @@ class River:
                 path = Savepath + "/" + var[3:] + ".txt"
                 exec(var + ".to_csv(path ,index= None, sep = ' ', header = None)")
 
+
     @staticmethod
     def ReadRRMResults(
-        version, rrmreferenceindex, path, nodeid, fromday, today, date_format="%d_%m_%Y"
-    ):
+            version: int,
+            rrmreferenceindex,
+            path: str,
+            nodeid: Union[int, str],
+            fromday: Union[int, str],
+            today: Union[int, str],
+            date_format: str ="%d_%m_%Y"
+    ) -> DataFrame:
         """ReadRRMResults.
 
         ReadRRMResults is a static method to read the results of the rainfall-runoff
@@ -970,15 +1037,20 @@ class River:
 
         Parameters
         ----------
+        version: []
+
+        rrmreferenceindex: []
+
         path : [String]
             path to the result files.
-        Nodeid : [Integer]
+        nodeid : [Integer]
             the id given the the sub-basin .
         fromday : [integer], optional
                 the day you want to read the result from, the first day is 1 not zero.The default is ''.
         today : [integer], optional
                 the day you want to read the result to.
-
+        date_format: [str]
+            format of the date string
         Returns
         -------
         Q : [Dataframe]
@@ -1027,7 +1099,7 @@ class River:
 
         return Q
 
-    def kinematicwave(self, start="", end="", fmt="%Y-%m-%d"):
+    def kinematicwave(self, start: str="", end: str="", fmt: str="%Y-%m-%d"):
         """kinematicwave.
 
         kinematicwave apply the kinematic wave approximation of the shallow
@@ -1053,7 +1125,7 @@ class River:
         else:
             end = dt.datetime.strptime(end, fmt)
 
-        ind = pd.date_range(start, end, freq=self.freq)
+        # ind = pd.date_range(start, end, freq=self.freq)
 
         # TODO to be checked later now for testing
         # self.from_beginning = self.indsub[np.where(self.indsub == start)[0][0]]
@@ -1076,13 +1148,13 @@ class River:
 
     def preissmann(
         self,
-        start="",
-        end="",
-        fmt="%Y-%m-%d",
-        maxiteration=10,
-        beta=1,
-        epsi=0.5,
-        theta=0.5,
+        start: str="",
+        end: str="",
+        fmt: str="%Y-%m-%d",
+        maxiteration: int=10,
+        beta: int=1,
+        epsi: float=0.5,
+        theta: float=0.5,
     ):
         """preissmann.
 
@@ -1121,7 +1193,7 @@ class River:
         else:
             end = dt.datetime.strptime(end, fmt)
 
-        ind = pd.date_range(start, end, freq=self.freq)
+        # ind = pd.date_range(start, end, freq=self.freq)
 
         # TODO to be checked later now for testing
         # self.from_beginning = self.indsub[np.where(self.indsub == start)[0][0]]
@@ -1146,7 +1218,7 @@ class River:
         )
         saintpreis.preissmann(self)
 
-    def storagecell(self, start="", end="", fmt="%Y-%m-%d"):
+    def storagecell(self, start: str="", end: str="", fmt: str="%Y-%m-%d"):
         """storagecell.
 
         kinematicwave apply the kinematic wave approximation of the shallow
@@ -1171,7 +1243,7 @@ class River:
             end = self.end
         else:
             end = dt.datetime.strptime(end, fmt)
-        ind = pd.date_range(start, end, freq=self.freq)
+        # ind = pd.date_range(start, end, freq=self.freq)
 
         # TODO to be checked later now for testing
         # self.from_beginning = self.indsub[np.where(self.indsub == start)[0][0]]
@@ -1196,16 +1268,16 @@ class River:
         self,
         start,
         end,
-        interval=0.00002,
-        xs=0,
-        xsbefore=10,
-        xsafter=10,
-        fmt="%Y-%m-%d %H:%M:%S",
-        textlocation=2,
-        xaxislabelsize=15,
-        yaxislabelsize=15,
-        nxlabels=50,
-        plotbanhfuldepth=False,
+        interval: float=0.00002,
+        xs: int=0,
+        xsbefore: int=10,
+        xsafter: int=10,
+        fmt: str="%Y-%m-%d %H:%M:%S",
+        textlocation: float=2,
+        xaxislabelsize: float=15,
+        yaxislabelsize: float=15,
+        nxlabels: float=50,
+        # plotbanhfuldepth=False,
     ):
         """animatefloodwave.
 
@@ -1236,8 +1308,6 @@ class River:
 
         nxlabels: []
 
-        plotbanhfuldepth: []
-
         Returns
         -------
         None.
@@ -1259,7 +1329,7 @@ class River:
         )
         return anim
 
-    def SaveResult(self, path, fmt="%.3f"):
+    def SaveResult(self, path: str):  #, fmt="%.3f"):
         """SaveResult.
 
         Save Result
@@ -1268,8 +1338,6 @@ class River:
         ----------
         path : TYPE
             DESCRIPTION.
-        fmt : TYPE, optional
-            DESCRIPTION. The default is '%.3f'.
 
         Returns
         -------
@@ -1295,7 +1363,7 @@ class River:
                 delimiter=",",
             )
 
-    def Slope(self, path):
+    def Slope(self, path: str):
         """Slope.
 
         Slope
@@ -1308,7 +1376,8 @@ class River:
 
         Returns
         -------
-        None.
+            slope: [DataFrame]
+                dataframe of the boundary condition segments that has slope
 
         """
         if self.version == 1 or self.version == 2:
@@ -1371,9 +1440,6 @@ class River:
                 rivernetwork.loc[i - 1, rivernetwork.columns[2]] = [
                     int(j) for j in wholefile[i][:-1].split(",")[2:]
                 ]
-                # rivernetwork.loc[i - 1, rivernetwork.columns[0:2].tolist()] = [int(j) for j in
-                #                                                                wholefile[i].split(',')[0:2]]
-                # rivernetwork.loc[i-1,rivernetwork.columns[2]] = [int(j) for j in wholefile[i].split(',')[2:]]
             # last line does not have the \n at the end
             i = len(wholefile) - 1
             rivernetwork.loc[i - 1, rivernetwork.columns[0:2].tolist()] = [
@@ -1386,7 +1452,8 @@ class River:
             self.rivernetwork = rivernetwork[:]
             self.Segments = self.rivernetwork["id"].tolist()
 
-    def TraceSegment(self, id):
+
+    def TraceSegment(self, sub_id):
         """TraceSegment.
 
         Trace method takes sub basin id and trace it to get the upstream and
@@ -1395,7 +1462,7 @@ class River:
 
         Parameters
         ----------
-            1- Subid : TYPE
+            1- sub_id : TYPE
                 DESCRIPTION.
 
         Returns
@@ -1410,13 +1477,13 @@ class River:
         """
         if self.version == 1 or self.version == 2:
             DS = int(
-                self.rivernetwork["ds"][np.where(self.rivernetwork["id"] == id)[0][0]]
+                self.rivernetwork["ds"][np.where(self.rivernetwork["id"] == sub_id)[0][0]]
             )
             US = int(
-                self.rivernetwork["us"][np.where(self.rivernetwork["id"] == id)[0][0]]
+                self.rivernetwork["us"][np.where(self.rivernetwork["id"] == sub_id)[0][0]]
             )
         else:
-            US = self.rivernetwork["us"][np.where(self.rivernetwork["id"] == id)[0][0]]
+            US = self.rivernetwork["us"][np.where(self.rivernetwork["id"] == sub_id)[0][0]]
             for i in range(len(self.rivernetwork)):
                 if id in self.rivernetwork.loc[i, "us"]:
                     DS = self.rivernetwork.loc[i, "id"]
@@ -1426,14 +1493,14 @@ class River:
 
         return US, DS
 
-    def Trace2(self, id, US):
+    def Trace2(self, sub_id, US):
         """Trace2.
 
         trace the river network
 
         Parameters
         ----------
-        id : TYPE
+        sub_id : TYPE
             DESCRIPTION.
         US : TYPE
             DESCRIPTION.
@@ -1444,20 +1511,20 @@ class River:
 
         """
         # trace the given segment
-        US1, _ = self.TraceSegment(id)
+        US1, _ = self.TraceSegment(sub_id)
         if len(US1) > 0:
             for i in range(len(US1)):
                 US.append(US1[i])
                 self.Trace2(US1[i], US)
 
-    def Trace(self, id):
+    def Trace(self, sub_id):
         """Trace.
 
         Trace method takes the id of the segment and trace it upstream
 
         Parameters
         ----------
-        id : TYPE
+        sub_id : TYPE
             DESCRIPTION.
 
         Returns
@@ -1467,7 +1534,7 @@ class River:
             attribute.
         """
         self.US = []
-        self.Trace2(id, self.US)
+        self.Trace2(sub_id, self.US)
 
     def StatisticalProperties(self, path, Filter=True, Distibution="GEV"):
         """StatisticalProperties.
@@ -1498,12 +1565,9 @@ class River:
         self.SP = pd.read_csv(path, delimiter=",")  # ,header = None,skiprows = 0
 
         if Filter:
-            assert hasattr(
-                self, "slope"
-            ), "please read the Guide file with the Slope Method as this method uses the the Subid in the guide file as id"
-            assert hasattr(
-                self, "rivernetwork"
-            ), "Please read the Tracefile.txt with the RiverNetwork method data "
+            assert self.slope, ("please read the Guide file with the Slope Method as this "
+                                "method uses the the Subid in the guide file as id")
+            assert self.rivernetwork, "Please read the Tracefile.txt with the RiverNetwork method data "
             # filter all the computational nodes in the file to those only
             # exist in the slope attribute (the nodes in the guide file)
             NewSP = pd.DataFrame(columns=["id", "loc", "scale"])
@@ -1572,9 +1636,7 @@ class River:
                 parameters of the distribution for the catchment.
 
         """
-        assert hasattr(
-            self, "SP"
-        ), "Please read the statistical properties file for the catchment first"
+        assert self.SP, "Please read the statistical properties file for the catchment first"
 
         try:
             loc = np.where(self.SP["id"] == Subid)[0][0]
@@ -1603,9 +1665,7 @@ class River:
             DESCRIPTION.
 
         """
-        assert hasattr(
-            self, "SP"
-        ), "Please read the statistical properties file for the catchment first"
+        assert self.SP, "Please read the statistical properties file for the catchment first"
         assert (
             "id" in self.SP.columns
         ), "the SP dataframe should have a column 'id' containing the id of the gauges"
@@ -1722,7 +1782,7 @@ class River:
                     i, ColumnName
                 ] * (slope) ** (1 / 2)
 
-            if hasattr(self, "SP"):
+            if self.SP:
                 RP = self.GetReturnPeriod(
                     self.crosssections.loc[i, "id"],
                     self.crosssections.loc[i, ColumnName],
@@ -1753,12 +1813,8 @@ class River:
             to fill the cross section after raising the dikes to the objective
             return period.
         """
-        assert hasattr(
-            self, "SP"
-        ), "Please read the statistical properties file first using StatisticalProperties method"
-        assert hasattr(
-            self, "crosssections"
-        ), "please read the cross section data first with the method CrossSections"
+        assert self.SP, "Please read the statistical properties file first using StatisticalProperties method"
+        assert self.crosssections, "please read the cross section data first with the method CrossSections"
         assert CurrentRP in self.crosssections.columns, (
             CurrentRP
             + " in not in the cross section data please use GetCapacity method to calculate the current return perion "
@@ -2328,8 +2384,7 @@ class River:
         Parameters
         ----------
             1-Coords : [array]
-                numpy array in the shape of (n*2) where n is the number of
-                points
+                numpy array in the shape of (n*2) where n is the number of points
 
         Returns
         -------
@@ -2376,8 +2431,7 @@ class River:
         Parameters
         ----------
             1-Coords : [array]
-                numpy array in the shape of (n*2) where n is the number of
-                points
+                numpy array in the shape of (n*2) where n is the number of points
 
         Returns
         -------
@@ -2414,8 +2468,7 @@ class River:
         Parameters
         ----------
             1-Coords : [array]
-                numpy array in the shape of (n*2) where n is the number of
-                points
+                numpy array in the shape of (n*2) where n is the number of points
 
         Returns
         -------
@@ -2508,7 +2561,7 @@ class River:
         Ycoords.append(yl)
         Zcoords.append(BankLeftLevel)
         # 8 points cross sections
-        if dbf != False:
+        if dbf:
             # point 2
             Xcoords.append(xl)
             Ycoords.append(yl)
@@ -2793,8 +2846,8 @@ class River:
 
             Table[i, 8] = Table[i, 5] * ((Table[i, 5] / Table[i, 6]) ** (2.0 / 3.0))
 
-            Table[i, 7] = (1.0 / geom["m"]) * Table[i, 7] * (abs(So) ** (0.5))
-            Table[i, 8] = (1.0 / geom["m"]) * Table[i, 8] * (abs(So) ** (0.5))
+            Table[i, 7] = (1.0 / geom["m"]) * Table[i, 7] * (abs(So) ** 0.5)
+            Table[i, 8] = (1.0 / geom["m"]) * Table[i, 8] * (abs(So) ** 0.5)
 
             # total discharge
             Table[i, 9] = Table[i, 7] + Table[i, 8]
@@ -2804,7 +2857,7 @@ class River:
 
         self.HQ = HQ[:, :]
 
-    def GetDays(self, fromday, today):
+    def GetDays(self, fromday: int, today: int):
         """GetDays.
 
         GetDays method check if input days exist in the 1D result data
@@ -2967,6 +3020,8 @@ class River:
             the name prefix that distinguish the maps you want to correct from
             other maps in the same folder, like the first part of the name you
             use to name all files.
+        FilterValue: []
+
         Saveto : [String]
             path to where you will save the corrected files.
 
@@ -3086,33 +3141,33 @@ class Sub(River):
     represent a segment of the river
     """
 
-    def __init__(self, id, River, RunModel=False):
-        self.id = id
+    def __init__(self, sub_id: int, River, RunModel: bool=False):
+        self.id = sub_id
         self.RIM = River.name
         self.version = River.version
         self.freq = River.freq
         self.dt = River.dt
-        if hasattr(River, "rightovertopping_suffix"):
+        if River.rightovertopping_suffix:
             self.rightovertopping_suffix = River.rightovertopping_suffix
-        if hasattr(River, "leftovertopping_suffix"):
+        if River.leftovertopping_suffix:
             self.leftovertopping_suffix = River.leftovertopping_suffix
-        if hasattr(River, "depthprefix"):
+        if River.depthprefix:
             self.depthprefix = River.depthprefix
-        if hasattr(River, "durationprefix"):
+        if River.durationprefix:
             self.durationprefix = River.durationprefix
-        if hasattr(River, "returnperiod_prefix"):
+        if River.returnperiod_prefix:
             self.returnperiod_prefix = River.returnperiod_prefix
-        if hasattr(River, "compressed"):
+        if River.compressed:
             self.compressed = River.compressed
-        if hasattr(River, "twodresultpath"):
+        if River.twodresultpath:
             self.twodresultpath = River.twodresultpath
-        if hasattr(River, "CustomizedRunspath"):
+        if River.CustomizedRunspath:
             self.CustomizedRunspath = River.CustomizedRunspath
-        if hasattr(River, "usbcpath"):
+        if River.usbcpath:
             self.usbcpath = River.usbcpath
-        if hasattr(River, "oneminresultpath"):
+        if River.oneminresultpath:
             self.oneminresultpath = River.oneminresultpath
-        if hasattr(River, "usbcpath"):
+        if River.usbcpath:
             self.usbcpath = River.usbcpath
         # filter the whole cross section file and get the cross section of the segment
         if self.version == 1 or self.version == 2:
@@ -3139,37 +3194,63 @@ class Sub(River):
         self.xsno = len(self.xsname)
 
         self.referenceindex = River.referenceindex
-        if hasattr(River, "rrmreferenceindex"):
+
+        if isinstance(River.rrmreferenceindex, DataFrame):
             self.rrmreferenceindex = River.rrmreferenceindex
 
         self.onedresultpath = River.onedresultpath
 
-        if hasattr(River, "slope") and self.id in River.slope["id"].tolist():
+        if isinstance(River.slope, DataFrame) and self.id in River.slope["id"].tolist():
             # if self.version == 1 or self.version == 2 :
             self.slope = River.slope[River.slope["id"] == id]["slope"].tolist()[0]
             # else:
             # self.slope = River.slope[River.slope['id']==id]['slope'].tolist()[0]
 
-        if hasattr(River, "rivernetwork"):
+        if isinstance(River.rivernetwork, DataFrame):
             self.usnode, self.dsnode = River.TraceSegment(id)
 
-        if hasattr(River, "RP"):
+        if isinstance(River.RP, DataFrame):
             self.RP = River.RP.loc[
-                River.RP["node"] == self.usnode, ["HQ2", "HQ10", "HQ100"]
+                River.RP["node"] == self.usnode, ["HQ2","HQ10","HQ100"]
             ]
 
-        if hasattr(River, "SP"):
+        if isinstance(River.SP, DataFrame):
             self.SP = River.SP.loc[River.SP["id"] == self.id, :]
             self.SP.index = list(range(len(self.SP)))
 
-        if hasattr(River, "rrmpath"):
+        if River.rrmpath:
             self.rrmpath = River.rrmpath
 
         # Create dictionary to store any extracted values from maps
         self.ExtractedValues = dict()
+        self.XSHydrographs = None
+        self.NegQmin = None
+        self.Negative = None
+        self.XSWaterLevel = None
+        self.XSWaterDepth = None
+        self.RRM = None
+        self.RRM2 = None
+        self.ResampledQ = None
+        self.ResampledWL = None
+        self.ResampledH = None
+        self.Qrp = None
+        self.DetailedOvertoppingLeft = None
+        self.DetailedOvertoppingRight = None
+        self.AllOvertoppingVSXS = None
+        self.AllOvertoppingVSTime = None
+        self.BC = None
+        self.AreaPerHigh = None
+        self.AreaPerLow = None
+        self.TotalFlow = None
+        self.RRMProgression = None # DataFrame
+        self.LateralsTable = None #list
+        self.Laterals = None # DataFrame
+        self.Result1D = None # DataFrame
+
 
     def Read1DResult(
-        self, fromday="", today="", FillMissing=True, addHQ2=False, path="", xsid=""
+            self, fromday: Union[int, str]="", today: Union[int, str]="",
+            FillMissing=True, addHQ2=False, path="", xsid: Union[int, str]=""
     ):
         """Read1DResult.
 
@@ -3215,7 +3296,7 @@ class Sub(River):
                 the last day in the 1D result
         """
         # if the results are not read yet read it
-        if not hasattr(self, "Result1D"):
+        if not isinstance(self.Result1D, DataFrame):
             River.Read1DResult(
                 self, self.id, fromday, today, path=path, FillMissing=FillMissing
             )
@@ -3228,7 +3309,7 @@ class Sub(River):
         start = self.IndexToDate(fromday)
         end = self.IndexToDate(today + 1)
 
-        if not hasattr(self, "XSHydrographs"):
+        if not isinstance(self.XSHydrographs, DataFrame):
             self.XSHydrographs = pd.DataFrame(
                 index=pd.date_range(start, end, freq="H")[:-1]
             )
@@ -3325,7 +3406,7 @@ class Sub(River):
             self.firstdayresults, self.lastday, freq="D"
         )
 
-    def ExtractXS(self, xsid, addHQ2=False, WaterLevel=True):
+    def ExtractXS(self, xsid: int, addHQ2: bool=False, WaterLevel: bool=True):
         """ExtractXS.
 
         ExtractXS method extracts the hydrodraph and water levels of a specific
@@ -3342,9 +3423,7 @@ class Sub(River):
         -------
         None.
         """
-        assert hasattr(
-            self, "Result1D"
-        ), "please use the Read1DResult method to read the results first"
+        assert isinstance(self.Result1D, DataFrame), "please use the Read1DResult method to read the results first"
         # assert hasattr(self,"RP"), "please use the Read1DResult method to read the results first"
         if addHQ2:
             self.XSHydrographs[xsid] = (
@@ -3361,7 +3440,8 @@ class Sub(River):
                 self.Result1D["xs"] == xsid
             ].values
 
-    def CheckNegativeQ(self, plot=False, TS="hourly"):
+
+    def CheckNegativeQ(self, plot: bool=False, TS: str="hourly"):
         """CheckNegativeQ.
 
         CheckNegativeQ check whether there are any negative discharge values
@@ -3374,9 +3454,8 @@ class Sub(River):
                 dictionary with ['NegQ', 'NegXS', 'NegQind'] as keys
         """
         if TS == "hourly":
-            assert hasattr(
-                self, "Result1D"
-            ), "please use the Result1D method to read the result of this sub-basin first"
+            assert isinstance(self.Result1D, DataFrame), ("please use the Result1D method to read the "
+                                                          "result of this sub-basin first")
 
             if self.Result1D["q"].min() < 0:
                 print("NegativeDischarge")
@@ -3411,7 +3490,7 @@ class Sub(River):
             assert hasattr(
                 self, "q"
             ), "please use the Result1D method to read the result of this sub-basin first"
-            NegQmin = pd.DataFrame()
+            # NegQmin = pd.DataFrame()
             NegQmin = self.q
             NegQmin.loc[:, "date"] = self.q.index[:]
             NegQmin.index = range(len(NegQmin.index))
@@ -3424,13 +3503,13 @@ class Sub(River):
 
     def ReadRRMHydrograph(
         self,
-        station_id,
-        fromday="",
-        today="",
-        path="",
-        date_format="%d_%m_%Y",
-        location=1,
-        path2="",
+        station_id: int,
+        fromday: Union[int, str]="",
+        today: Union[int, str]="",
+        path: str="",
+        date_format = "%d_%m_%Y",
+        location = 1,
+        path2 = "",
     ):
         """ReadRRMHydrograph.
 
@@ -3455,10 +3534,10 @@ class Sub(River):
                 (hydrograph)with columns ['id', Nodeid ]
 
         """
-        if not hasattr(self, "RRM"):
+        if not isinstance(self.RRM, DataFrame):
             self.RRM = pd.DataFrame()
 
-        if location == 2 and not hasattr(self, "RRM2"):
+        if location == 2 and not isinstance(self.RRM2, DataFrame):
             # create a dataframe for the 2nd time series of the rainfall runoff
             # model at the second location
             self.RRM2 = pd.DataFrame()
@@ -3515,7 +3594,8 @@ class Sub(River):
         self.RRM2.index = pd.date_range(start, end, freq="D")
         # get the simulated hydrograph and add the cutted HQ2
 
-    def Resample(self, xsid, ColumnName, fromday="", today="", Delete=False):
+    def Resample(self, xsid, ColumnName, fromday: Union[int, str]="",
+                 today: Union[int, str]="", Delete=False):
         """Resample.
 
         Resample method extract the value at the last hour of the dat
@@ -3566,19 +3646,19 @@ class Sub(River):
         if ColumnName == "q" and not hasattr(self, "ResampledQ"):
             self.ResampledQ = pd.DataFrame(index=ind)
         elif ColumnName == "q":
-            if Delete == True:
+            if Delete:
                 del self.ResampledQ
 
         if ColumnName == "wl" and not hasattr(self, "ResampledWL"):
             self.ResampledWL = pd.DataFrame(index=ind)
         elif ColumnName == "wl":
-            if Delete == True:
+            if Delete:
                 del self.ResampledWL
 
         if ColumnName == "h" and not hasattr(self, "ResampledH"):
             self.ResampledH = pd.DataFrame(index=ind)
         elif ColumnName == "h":
-            if Delete == True:
+            if Delete:
                 del self.ResampledH
 
         Q = self.Result1D[self.Result1D["xs"] == xsid][self.Result1D["hour"] == 24]
@@ -3769,7 +3849,10 @@ class Sub(River):
     # def Read1DResult1Donly(self,path):
     # River.Read1DResult(self,self.id, fromday, today, FillMissing)
 
-    def SaveHydrograph(self, xsid, path="", Option=1):
+    def SaveHydrograph(self, xsid: int,
+                       path: str = "",
+                       Option: int = 1
+                       ):
         """Save Hydrograph.
 
         SaveHydrograph method saves the hydrograph of any cross-section in
@@ -3784,7 +3867,8 @@ class Sub(River):
         xsid : [integer]
             the id of the cross section.
         path : [string], optional
-            path to the directory where you want to save the file to. The
+            path to the directory where you want to save the file to. if not given
+            the files are going to be saved in the 'CustomizedRunspath' path, The
             default is ''.
         Option : [integer]
             1 to write water level results, 2 to write water depth results
@@ -3798,7 +3882,7 @@ class Sub(River):
                 "please enter the value of the CustomizedRunspath or use "
                 " the path argument to specify where to save the file"
             )
-            assert hasattr(self, "CustomizedRunspath"), msg
+            assert self.CustomizedRunspath, msg
             path = self.CustomizedRunspath
 
         saveDS = self.XSHydrographs[xsid].resample("D").last().to_frame()
@@ -3823,19 +3907,21 @@ class Sub(River):
 
         f.to_csv(
             path + str(self.id) + ".txt", index=False, float_format="%.3f"
-        )  # header = None ,
+        )
+
+
 
     def PlotHydrographProgression(
         self,
-        xss,
-        start,
-        end,
-        fromxs="",
-        toxs="",
-        linewidth=4,
-        spacing=5,
-        figsize=(7, 5),
-        nxlabels=False,
+        xss: list,
+        start: str,
+        end: str,
+        fromxs: Union[str, int]="",
+        toxs: Union[str, int]="",
+        linewidth: int=4,
+        spacing: int=5,
+        figsize: tuple=(7, 5),
+        xlabels: Union[bool, int]=False,
         fmt="%Y-%m-%d",
     ):
         """PlotHydrographProgression.
@@ -3852,10 +3938,18 @@ class Sub(River):
             DESCRIPTION.
         end : TYPE
             DESCRIPTION.
+        fromxs: [str, int]
+            default "".
+        toxs: [str, int]
+            default is ""
         linewidth : [integer], optional
             width of the plots. The default is 4.
         spacing : [integer]
             hydrographs are going to be plots every spacing. The default is 5.
+        figsize: [tuple]
+            default is (7, 5).
+        xlabels: [bool, int]
+            defaulr is False.
         fmt: [string]
             format of the date. fmt="%Y-%m-%d %H:%M:%S"
         Returns
@@ -3880,9 +3974,6 @@ class Sub(River):
             toxs = self.lastxs
             xss.append(toxs)
 
-        # if fromxs == '':
-        #     xslist = self.xsname[spacing:self.xsno:spacing]
-        # else:
         fromxs = self.xsname.index(fromxs)
         toxs = self.xsname.index(toxs)
         xslist = self.xsname[fromxs : toxs + 1 : spacing]
@@ -3910,14 +4001,19 @@ class Sub(River):
         ax.legend(fontsize=10, loc="best")
         ax.set_xlabel("Time", fontsize=10)
         ax.set_ylabel("Discharge m3/s", fontsize=10)
-        if type(nxlabels) != bool:
+        if type(xlabels) != bool:
             start, end = ax.get_xlim()
-            ax.xaxis.set_ticks(np.linspace(start, end, nxlabels))
+            ax.xaxis.set_ticks(np.linspace(start, end, xlabels))
+
         plt.tight_layout()
 
         return fig, ax
 
-    def ReadUSHydrograph(self, fromday="", today="", path="", date_format="'%Y-%m-%d'"):
+
+    def ReadUSHydrograph(self, fromday: [str, int]="",
+                         today: Union[str, int]="",
+                         path: str="",
+                         date_format: str="'%Y-%m-%d'"):
         """ReadUSHydrograph.
 
         Read the hydrograph of the upstream segment.
@@ -3960,18 +4056,17 @@ class Sub(River):
                             today,
                             date_format,
                         )[Nodeid]
+                        print(f"the US hydrograph '{Nodeid}' has been read")
                     except FileNotFoundError:
                         msg = (
-                            " the Path - "
-                            + path
-                            + " does not contain the routed hydrographs for the the "
-                            "segment - " + str(Nodeid)
+                            f" the Path - {path} does not contain the routed hydrographs for the the "
+                            f"segment - {Nodeid}"
                         )
                         print(msg)
                         return
 
             # there is one upstream segment
-        elif self.usnode != []:
+        elif self.usnode:
             Nodeid = self.usnode[0]
             try:
                 self.USHydrographs[Nodeid] = self.ReadRRMResults(
@@ -3983,12 +4078,11 @@ class Sub(River):
                     today,
                     date_format,
                 )[Nodeid]
+                print(f"the US hydrograph '{Nodeid}' has been read")
             except FileNotFoundError:
                 msg = (
-                    " the Path - "
-                    + path
-                    + " does not contain the routed hydrographs for the "
-                    "segment - " + str(Nodeid)
+                    f"The Path - {path} does not contain the routed hydrographs for the "
+                    f"segment - {Nodeid}"
                 )
                 print(msg)
                 return
@@ -3998,10 +4092,8 @@ class Sub(River):
 
         self.USHydrographs["total"] = self.USHydrographs.sum(axis=1)
         if fromday == "":
-            # fromday = 1
             fromday = self.USHydrographs.index[0]
         if today == "":
-            # today = len(self.USHydrographs[Nodeid])
             today = self.USHydrographs.index[-1]
 
         start = self.referenceindex.loc[fromday, "date"]
@@ -4025,7 +4117,7 @@ class Sub(River):
         USHydrographs : [array].
             array of the hydrograph
         """
-        self.USHydrographs = np.zeros(shape=(River.notimesteps))
+        self.USHydrographs = np.zeros(shape=River.notimesteps)
 
         if len(self.usnode) > 1:
             # there is more than one upstream segment
@@ -4039,7 +4131,7 @@ class Sub(River):
                         + River.RoutedQ[:, River.Segments.index(Nodeid)]
                     )
             # there is one upstream segment
-        elif self.usnode != []:
+        elif self.usnode:
             Nodeid = self.usnode[0]
             River.Segments.index(Nodeid)
             self.USHydrographs = (
@@ -4091,7 +4183,8 @@ class Sub(River):
         self.AreaPerHigh = AreaPerHigh[:, :]
         self.AreaPerLow = AreaPerLow[:, :]
 
-    def GetFlow(self, IF, fromday="", today="", date_format="%d_%m_%Y"):
+
+    def GetFlow(self, IF, fromday: Union[int, str]="", today: Union[int, str]="", date_format="%d_%m_%Y"):
         """GetFlow.
 
         Extract the lateral flow and boundary condition (if exist) time series
@@ -4117,12 +4210,11 @@ class Sub(River):
         Laterals : [dataframe attribute].
             dataframe containing a column for each cross section that has a lateral.
         """
-        assert hasattr(
-            IF, "BC"
-        ), "the boundary condition does not exist you have to read it first"
-        assert hasattr(
-            IF, "Laterals"
-        ), "the Laterals does not exist you have to read it first"
+        assert isinstance(IF.BC, DataFrame), ("the boundary condition does not exist "
+                                              "you have to read it first using the "
+                                              "'ReadBoundaryConditions' method in the interface model")
+        assert isinstance(IF.Laterals, DataFrame), ("the Laterals does not exist you have to read it first"
+                                         "using the 'ReadLaterals' method in the interface model")
 
         if fromday == "":
             fromday = IF.BC.index[0]
@@ -4142,7 +4234,7 @@ class Sub(River):
         if len(bcids) == 0:
             self.BC = False
         elif len(bcids) > 1:
-            assert False, "There are more than one BC for this Sub-basin"
+            raise ValueError("There are more than one BC for this Sub-basin")
         else:
             self.BC = IF.BC.loc[fromday:today, bcids[0]].to_frame()
 
@@ -4162,7 +4254,7 @@ class Sub(River):
 
             self.Laterals["total"] = self.Laterals.sum(axis=1)
 
-            if hasattr(IF, "RRMProgression"):
+            if isinstance(IF.RRMProgression, DataFrame):
                 self.RRMProgression = pd.DataFrame(
                     index=pd.date_range(fromday, today, freq="D"),
                     columns=self.LateralsTable,
@@ -4175,7 +4267,7 @@ class Sub(River):
             self.LateralsTable = []
             self.Laterals = pd.DataFrame()
 
-    def GetLaterals(self, xsid):
+    def GetLaterals(self, xsid: int):
         """GetLaterals.
 
         GetLaterals method gets the sum of the laterals of all the cross sections
@@ -4193,10 +4285,13 @@ class Sub(River):
             upstream of a given xsid.
 
         """
+        msg = "please read the Laterals Table and the LAterals first"
+        assert isinstance(self.LateralsTable, list) and isinstance(self.Laterals, DataFrame), msg
         USgauge = self.LateralsTable[: bisect(self.LateralsTable, xsid)]
         return self.Laterals[USgauge].sum(axis=1).to_frame()
 
-    def GetTotalFlow(self, gaugexs):
+
+    def GetTotalFlow(self, gaugexs: int):
         """GetTotalFlow.
 
         GetTotalFlow extracts all the laterals upstream of a certain xs and
@@ -4215,7 +4310,7 @@ class Sub(River):
         """
         # Sum the laterals and the BC/US hydrograph
 
-        assert hasattr(self, "Laterals"), "Please read the lateral flows first"
+        assert isinstance(self.Laterals, DataFrame), "Please read the lateral flows first"
         Laterals = self.GetLaterals(gaugexs)
         try:
             s1 = Laterals.index[0]
@@ -4224,7 +4319,7 @@ class Sub(River):
             print("there are no laterals for the given segment")
             return
 
-        if hasattr(self, "BC") and not isinstance(self.BC, bool):
+        if isinstance(self.BC, DataFrame):
             s2 = self.BC.index[0]
             s = max(s1, s2)
             e2 = self.BC.index[-1]
@@ -4235,7 +4330,7 @@ class Sub(River):
                 Laterals.loc[s:e, 0].values
                 + self.BC.loc[s:e, self.BC.columns[0]].values
             )
-        elif hasattr(self, "USHydrographs"):
+        elif isinstance(self.USHydrographs, DataFrame):
             s2 = self.USHydrographs.index[0]
             s = max(s1, s2)
             e2 = self.USHydrographs.index[-1]
@@ -4246,6 +4341,8 @@ class Sub(River):
                 Laterals.loc[s:e, 0].values
                 + self.USHydrographs.loc[s:e, "total"].values
             )
+        print(f"Total flow for the XS-{gaugexs} has been calculated")
+
 
     def H2Q(self, Q):
         """H2Q.
@@ -4284,45 +4381,45 @@ class Sub(River):
     def PlotQ(
         self,
         Calib,
-        gaugexs,
-        start,
-        end,
-        stationname,
-        gaugename,
-        segment_xs,
-        plotlaterals=True,
-        latcolor=(0.3, 0, 0),
-        latorder=4,
-        latstyle=9,
-        plotus=True,
-        ushcolor="grey",
-        ushorder=7,
-        ushstyle=7,
-        plottotal=True,
-        totalcolor="k",
-        totalorder=6,
-        totalstyle=4,
-        specificxs=False,
-        xscolor=(164 / 255, 70 / 255, 159 / 255),
-        xsorder=1,
-        xslinestyle=3,
-        plotrrm=True,
-        rrmcolor="green",
-        rrmorder=3,
-        rrmlinestyle=6,
-        rrm2color=(227 / 255, 99 / 255, 80 / 255),
-        rrm2linesytle=8,
-        plotgauge=True,
-        gaugecolor="#DC143C",
-        gaugeorder=5,
-        gaugestyle=7,
-        hmcolor="#004c99",
-        hmorder=6,
-        linewidth=4,
-        figsize=(6, 5),
-        fmt="%Y-%m-%d",
-        xlabels=False,
-        ylabels=False,
+        gaugexs: int,
+        start: str,
+        end: str,
+        stationname: int,
+        gaugename: Union[str, int],
+        segment_xs: str,
+        plotlaterals: bool=True,
+        latcolor: Union[str, tuple]=(0.3, 0, 0),
+        latorder: int=4,
+        latstyle: int=9,
+        plotus: bool=True,
+        ushcolor: Union[str, tuple]="grey",
+        ushorder: int=7,
+        ushstyle: int=7,
+        plottotal: bool=True,
+        totalcolor: Union[str, tuple]="k",
+        totalorder: int=6,
+        totalstyle: int=4,
+        specificxs: bool=False,
+        xscolor: Union[str, tuple]=(164 / 255, 70 / 255, 159 / 255),
+        xsorder: int=1,
+        xslinestyle: int=3,
+        plotrrm: bool=True,
+        rrmcolor: Union[str, tuple]="green",
+        rrmorder: int=3,
+        rrmlinestyle: int=6,
+        rrm2color: Union[str, tuple]=(227 / 255, 99 / 255, 80 / 255),
+        rrm2linesytle: int=8,
+        plotgauge: bool=True,
+        gaugecolor: Union[str, tuple]="#DC143C",
+        gaugeorder: int=5,
+        gaugestyle: int=7,
+        hmcolor: Union[str, tuple]="#004c99",
+        hmorder: int=6,
+        linewidth: int=4,
+        figsize: tuple=(6, 5),
+        fmt: str="%Y-%m-%d",
+        xlabels: Union[bool, int, list]=False,
+        ylabels: Union[bool, int, list]=False,
     ):
         """PlotQ.
 
@@ -4360,8 +4457,6 @@ class Sub(River):
             DESCRIPTION. The default is "#004c99".
         gaugecolor : TYPE, optional
             DESCRIPTION. The default is "#DC143C".
-        bccolor : TYPE, optional
-            DESCRIPTION. The default is "grey".
         rrmcolor : TYPE, optional
             DESCRIPTION. The default is "green".
         latcolor : TYPE, optional
@@ -4376,15 +4471,15 @@ class Sub(River):
             DESCRIPTION. The default is 5.
         rrmorder : TYPE, optional
             DESCRIPTION. The default is 4.
-        bcorder : TYPE, optional
-            DESCRIPTION. The default is 7.
         ushorder : TYPE, optional
             DESCRIPTION. The default is 2.
         xsorder : TYPE, optional
             DESCRIPTION. The default is 1.
         fmt: [string]
             format of the date. fmt="%Y-%m-%d %H:%M:%S"
-        nxlabels : TYPE, optional
+        xlabels : [bool, int], optional
+            DESCRIPTION. The default is False.
+        ylabels : [bool, int], optional
             DESCRIPTION. The default is False.
         rrm2color: []
             Description
@@ -4402,7 +4497,18 @@ class Sub(River):
             Description
         latstyle: []
             Description
-
+        plottotal: [bool]
+            default is True.
+        totalcolor: [str, tuple]
+            default is "k".
+        totalorder: [int]
+            default is 6.
+        totalstyle: [int]
+            default is 4.
+        rrmlinestyle: [int]
+            default is 6.
+        figsize: [tuple]
+            default is (6, 5).
         Returns
         -------
         fig : TYPE
@@ -4430,17 +4536,19 @@ class Sub(River):
                 )
             except KeyError:
                 print(
-                    "the xs given -"
-                    + str(gaugexs)
-                    + "- does not exist in the river segment"
+                    f"the xs given -{gaugexs} - does not exist in the river segment"
                 )
 
             # laterals
             if plotlaterals:
-                Laterals = self.GetLaterals(gaugexs)
+                try:
+                    Laterals = self.GetLaterals(gaugexs)
+                except AssertionError:
+                    print("please read the laterals first to be able to plot it")
 
                 # BC
-                if type(self.BC) != bool:
+
+                if isinstance(self.BC, DataFrame) :
                     ax.plot(
                         self.BC.loc[start:end, self.BC.columns[0]],
                         label="BC",
@@ -4450,7 +4558,7 @@ class Sub(River):
                         color=ushcolor,
                     )
                 # Laterals
-                if len(self.LateralsTable) > 0:
+                if isinstance(self.LateralsTable, list) and len(self.LateralsTable) > 0:
                     ax.plot(
                         Laterals.loc[start:end, 0],
                         label="Laterals",
@@ -4507,7 +4615,7 @@ class Sub(River):
                 )
 
             # specific XS
-            if type(specificxs) != bool:
+            if not isinstance(specificxs, bool) :
                 # first extract the time series of the given xs
                 self.Read1DResult(xsid=specificxs)
                 # plot the xs
@@ -4521,7 +4629,7 @@ class Sub(River):
                 )
             # RRM
             if plotrrm:
-                if hasattr(self, "RRM"):
+                if isinstance(self.RRM, DataFrame):
                     try:
                         ax.plot(
                             self.RRM.loc[start:end, stationname],
@@ -4533,12 +4641,10 @@ class Sub(River):
                         )
                     except KeyError:
                         print(
-                            " Station "
-                            + gaugename
-                            + "does not have the first RRM discharge time series"
+                            f" Station {gaugename} does not have the first RRM discharge time series"
                         )
 
-                if hasattr(self, "RRM2"):
+                if isinstance(self.RRM2, DataFrame):
                     try:
                         ax.plot(
                             self.RRM2.loc[start:end, stationname],
@@ -4550,12 +4656,10 @@ class Sub(River):
                         )
                     except KeyError:
                         print(
-                            " Station "
-                            + gaugename
-                            + "does not have a second RRM discharge time series"
+                            f" Station {gaugename} does not have a second RRM discharge time series"
                         )
 
-        elif hasattr(Calib, "CalibrationQ"):
+        elif isinstance(Calib.CalibrationQ, DataFrame):
             # plot if you read the data using ReadCalirationResult
             ax.plot(
                 Calib.CalibrationQ[segment_xs],
@@ -4584,14 +4688,19 @@ class Sub(River):
                     label="RRM",
                 )
 
-        if type(xlabels) != bool:
+        if not isinstance(xlabels, bool):
             start, end = ax.get_xlim()
-            if type(xlabels) == int:
+            if isinstance(xlabels, int):
                 ax.xaxis.set_ticks(np.linspace(start, end, xlabels))
+            else:
+                start = self.round(start, xlabels[0])
+                end = self.round(end, xlabels[0])
 
-        if type(ylabels) != bool:
+                ax.yaxis.set_ticks(np.arange(start, end, xlabels[0]))
+
+        if not isinstance(ylabels, bool):
             start, end = ax.get_ylim()
-            if type(ylabels) == int:
+            if isinstance(ylabels, int):
                 if start < 0:
                     start = 0
                 ax.yaxis.set_ticks(np.linspace(start, end, ylabels))
@@ -4600,6 +4709,7 @@ class Sub(River):
                 end = self.round(end, ylabels[0])
 
                 ax.yaxis.set_ticks(np.arange(start, end, ylabels[0]))
+
 
         ax.set_title("Discharge - " + gaugename, fontsize=20)
 
@@ -4615,30 +4725,29 @@ class Sub(River):
         specificxs,
         start,
         end,
-        plotlaterals=True,
-        latcolor=(0.3, 0, 0),
-        latorder=4,
-        latstyle=9,
-        plotus=True,
-        ushcolor="grey",
-        ushorder=7,
-        ushstyle=7,
-        plottotal=True,
-        totalcolor="k",
-        totalorder=6,
-        totalstyle=11,
-        plotrrm=True,
-        rrmorder=3,
-        rrmcolor=(227 / 255, 99 / 255, 80 / 255),
-        plotrim=True,
-        hmorder=6,
-        hmcolor="#004c99",
-        rrmlinesytle=8,
+        plotlaterals: bool=True,
+        latcolor: Union[str, tuple]=(0.3, 0, 0),
+        latorder: int=4,
+        latstyle: int=9,
+        plotus: bool=True,
+        ushcolor: Union[str, tuple]="grey",
+        ushorder: int=7,
+        ushstyle: int=7,
+        plottotal: bool=True,
+        totalcolor: Union[str, tuple]="k",
+        totalorder: int=6,
+        totalstyle: int=11,
+        rrmorder: int=3,
+        rrmcolor: Union[str, tuple]=(227 / 255, 99 / 255, 80 / 255),
+        plothm: bool=True,
+        hmorder: int=6,
+        hmcolor: Union[str, tuple]="#004c99",
+        rrmlinesytle: int=8,
         linewidth=4,
-        figsize=(6, 5),
-        fmt="%Y-%m-%d",
-        xlabels=False,
-        ylabels=False,
+        figsize: tuple=(6, 5),
+        fmt: str="%Y-%m-%d",
+        xlabels: Union[int, bool, list]=False,
+        ylabels: Union[int, bool, list]=False,
     ):
         """PlotRRMProgression.
 
@@ -4648,69 +4757,35 @@ class Sub(River):
 
         Parameters
         ----------
-        Calib : [Calibration object]
-            DESCRIPTION.
-        gaugexs : integer
+        specificxs : integer
             the xsid of the gauge.
         start : [string]
             start date of the plot.
         end : [string]
             end date of the plot.
-        stationname : [string]
-            station name.
-        gaugename : TYPE
-            DESCRIPTION.
-        segment_xs : TYPE
-            DESCRIPTION.
         plotlaterals : TYPE, optional
             DESCRIPTION. The default is True.
         plotus : TYPE, optional
             DESCRIPTION. The default is True.
         specificxs : TYPE, optional
             DESCRIPTION. The default is False.
-        plotrrm : TYPE, optional
-            DESCRIPTION. The default is True.
-        plotgauge : TYPE, optional
-            DESCRIPTION. The default is True.
         hmcolor : TYPE, optional
             DESCRIPTION. The default is "#004c99".
-        gaugecolor : TYPE, optional
-            DESCRIPTION. The default is "#DC143C".
-        bccolor : TYPE, optional
-            DESCRIPTION. The default is "grey".
         rrmcolor : TYPE, optional
             DESCRIPTION. The default is "green".
         latcolor : TYPE, optional
             DESCRIPTION. The default is (0.3,0,0).
-        xscolor : TYPE, optional
-            DESCRIPTION. The default is "grey".
         linewidth : TYPE, optional
             DESCRIPTION. The default is 4.
         hmorder : TYPE, optional
             DESCRIPTION. The default is 6.
-        gaugeorder : TYPE, optional
-            DESCRIPTION. The default is 5.
         rrmorder : TYPE, optional
             DESCRIPTION. The default is 4.
-        bcorder : TYPE, optional
-            DESCRIPTION. The default is 7.
         ushorder : TYPE, optional
             DESCRIPTION. The default is 2.
-        xsorder : TYPE, optional
-            DESCRIPTION. The default is 1.
         fmt: [string]
             format of the date. fmt="%Y-%m-%d %H:%M:%S"
-        nxlabels : TYPE, optional
-            DESCRIPTION. The default is False.
-        rrm2color: []
-            Description
-        gaugestyle: []
-            Description
-        rrm2linesytle: []
-            Description
         ushstyle: []
-            Description
-        xslinestyle: []
             Description
         latorder: []
             Description
@@ -4718,7 +4793,24 @@ class Sub(River):
             Description
         latstyle: []
             Description
-
+        xlabels: [int, bool]
+            default is False.
+        ylabels: [int, bool]
+            default is False.
+        figsize: [tuple]
+            default is (6, 5).
+        rrmlinesytle: [int]
+            default is 8
+        plottotal: [bool]
+            default is True.
+        totalcolor: [str, tuple]
+            default is "k".
+        totalorder: [int]
+            default is 6.
+        totalstyle: [int]
+            default is 11.
+        plothm: [bool]
+            default is True.
         Returns
         -------
         fig : TYPE
@@ -4781,7 +4873,7 @@ class Sub(River):
             )
 
         # specific XS
-        if plotrim:
+        if plothm:
             # first extract the time series of the given xs
             self.Read1DResult(xsid=specificxs)
             # plot the xs
@@ -4847,8 +4939,7 @@ class Sub(River):
         Calib,
         stationname,
         startError,
-        endError,
-        gaugexs,
+        endError, #gaugexs,
         GaugeStart,
         GaugeEnd,
         Filter=False,
@@ -4867,8 +4958,6 @@ class Sub(River):
         startError : TYPE
             DESCRIPTION.
         endError : TYPE
-            DESCRIPTION.
-        gaugexs : TYPE
             DESCRIPTION.
         GaugeStart : TYPE
             DESCRIPTION.
@@ -4960,24 +5049,23 @@ class Sub(River):
     def PlotWL(
         self,
         Calib,
-        start,
-        end,
-        gaugexs,
+        start: str,
+        end: str,
+        gaugexs: int,
         stationname,
         gaugename,
-        Filter=False,
-        gaugecolor="#DC143C",
-        hmcolor="#004c99",
-        linewidth=2,
-        hmorder=1,
-        gaugeorder=0,
-        hmstyle=6,
-        gaugestyle=0,
+        gaugecolor: Union[tuple, str]="#DC143C",
+        hmcolor: Union[tuple, str]="#004c99",
+        linewidth: Union[int, float]=2,
+        hmorder: int=1,
+        gaugeorder: int=0,
+        hmstyle: int=6,
+        gaugestyle: int=0,
         plotgauge=True,
-        fmt="%Y-%m-%d",
-        legendsize=15,
-        figsize=(6, 5),
-        nxlabels=4,
+        fmt: str="%Y-%m-%d",
+        legendsize: Union[int, float]=15,
+        figsize: tuple=(6, 5),
+        nxlabels: int=4,
     ):
         """Plot water level surface.
 
@@ -4997,8 +5085,6 @@ class Sub(River):
             DESCRIPTION.
         gaugename : TYPE
             DESCRIPTION.
-        Filter : TYPE, optional
-            DESCRIPTION. The default is False.
         gaugecolor : TYPE, optional
             DESCRIPTION. The default is "#DC143C".
         hmcolor : TYPE, optional
@@ -5013,6 +5099,15 @@ class Sub(River):
             DESCRIPTION. The default is True.
         fmt: [string]
             format of the date. fmt="%Y-%m-%d %H:%M:%S"
+        hmstyle: [int]
+            default is 6
+        gaugestyle: [int]
+            default is 0.
+        legendsize: [int, float]
+            default is 15.
+        figsize: tuple=(6, 5),
+        nxlabels: [int]
+            default is 4.
 
         Returns
         -------
@@ -5035,16 +5130,13 @@ class Sub(River):
                 GaugeEnd = GaugeEnd.values[0]
 
                 if GaugeStart > start and GaugeStart > end:
-                    print("Availabel data for the gauge starts from " + str(GaugeStart))
+                    print(f"Availabel data for the gauge starts from {GaugeStart}")
                     print(
-                        "The period you provided is between "
-                        + str(start)
-                        + " and "
-                        + str(end)
+                        f"The period you provided is between {start} and {end}"
                     )
                     plotgauge = False
                 elif GaugeEnd < start and GaugeStart < end:
-                    print("Availabel data for the gauge starts from" + str(GaugeEnd))
+                    print(f"Availabel data for the gauge starts from {GaugeEnd}")
                     print("Out of Gauge dates")
                     plotgauge = False
             except (IndexError, TypeError):
@@ -5080,7 +5172,6 @@ class Sub(River):
 
         start, end = ax.get_xlim()
         ax.xaxis.set_ticks(np.linspace(start, end, nxlabels))
-        # xlabels = ["1990-01-01","1990-11-13","1991-11-15","1992-11-16"]
         # ax1.set_xticklabels(xlabels)
 
         ax.set_title("Water Level - " + gaugename, fontsize=20)
@@ -5092,7 +5183,8 @@ class Sub(River):
         return ax
 
     def CalculateWLMetrics(
-        self, Calib, stationname, start, end, gaugexs, Filter=False, fmt="%Y-%m-%d"
+        self, Calib, stationname: int, start: Union[dt.datetime, str], end: Union[dt.datetime, str]
+            , gaugexs: int, Filter: bool=False, fmt: str="%Y-%m-%d"
     ):
         """CalculateWLMetrics.
 
@@ -5235,7 +5327,7 @@ class Sub(River):
         ExtractedValues = [j for j in ExtractedValues if j < filter2]
         # plot
         fig, ax1 = plt.subplots(figsize=(10, 8))
-        ax1.hist(self.ExtractedValues, bins=15, alpha=0.4)  # width = 0.2,
+        ax1.hist(ExtractedValues, bins=15, alpha=0.4)  # width = 0.2,
         ax1.set_ylabel("Frequency RIM1.0", fontsize=15)
         ax1.yaxis.label.set_color("#27408B")
         ax1.set_xlabel("Depth Ranges (m)", fontsize=15)
@@ -5243,7 +5335,7 @@ class Sub(River):
 
         ax1.tick_params(axis="y", color="#27408B")
 
-    def PlotBC(self, date, fmt="%Y-%m-%d"):
+    def PlotBC(self, date: str, fmt: str="%Y-%m-%d"):
         """PlotBC.
 
         plot the boundary condition discharge and water depth
