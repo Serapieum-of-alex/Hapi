@@ -39,3 +39,5 @@ Examples/data/Hapi.qgz
 Examples/data/GIS/Hapi_GIS_Data/rasterexample.tif
 Examples/data/GIS/Hapi_GIS_Data/fillrasterexample.tif
 Examples/data/GIS/Hapi_GIS_Data/rasterlike.tif
+
+.idea/.gitignore
