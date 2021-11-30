@@ -17,12 +17,12 @@ except ImportError:
     import gdal
 
 import geopandas as gpd
+import HapiSM.performancecriteria as PC
 import matplotlib.dates as dates
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-import Hapi.statistics.performancecriteria as PC
 from Hapi.gis.giscatchment import GISCatchment as GC
 from Hapi.gis.raster import Raster
 from Hapi.visualizer import Visualize as Vis

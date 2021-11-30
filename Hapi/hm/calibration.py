@@ -17,7 +17,7 @@ class Calibration(River):
     """
 
     def __init__(self, name: str, version: int=3, start: Union[str, dt.datetime]="1950-1-1",
-                 days=36890, fmt="%Y-%m-%d"):
+                 days=36890, fmt="%Y-%m-%d", rrmstart: str="", rrmdays: int=36890,):
         """HMCalibration.
 
         To instantiate the HMCalibration object you have to provide the
@@ -36,6 +36,12 @@ class Calibration(River):
             (default number of days are equivalent to 100 years)
         fmt : [str]
             format of the given dates. The default is "%Y-%m-%d"
+        rrmstart : [str], optional
+            the start date of the rainfall-runoff data. The default is
+            "1950-1-1".
+        rrmdays : [integer], optional
+            the length of the data of the rainfall-runoff data in days.
+            The default is 36890.
         Returns
         -------
         None.
@@ -51,12 +57,35 @@ class Calibration(River):
         Ref_ind = pd.date_range(self.start, self.end, freq="D")
         self.ReferenceIndex = pd.DataFrame(index=list(range(1, days + 1)))
         self.ReferenceIndex["date"] = Ref_ind[:-1]
-        self.QHM = None
-        self.QRRM = None
+
+        if rrmstart == "":
+            self.rrmstart = self.start
+        else:
+            try:
+                self.rrmstart = dt.datetime.strptime(rrmstart, fmt)
+            except ValueError:
+                msg = (
+                    "plese check the fmt ({0}) you entered as it is different from the"
+                    " rrmstart data ({1})"
+                )
+                print(msg.format(fmt, rrmstart))
+                return
+
+        self.rrmend = self.rrmstart + dt.timedelta(days=rrmdays)
+        ref_ind = pd.date_range(self.rrmstart, self.rrmend, freq="D")
+        self.rrmreferenceindex = pd.DataFrame(index=list(range(1, rrmdays + 1)))
+        self.rrmreferenceindex["date"] = ref_ind[:-1]
+
+        self.QHM = None #ReadHMQ
+        self.WLHM = None #ReadHMWL
+        self.QRRM = None # ReadRRM
+        self.QRRM2 = None # ReadRRM
+        self.RRM_Gauges = [] # ReadRRM
+
         self.GaugesTable = None
         self.QGauges = None
         self.WLGauges = None
-        self.WLHM = None
+
         self.CalibrationQ = None
         self.CalibrationWL = None
         self.AnnualMaxObsQ = None
@@ -309,7 +338,8 @@ class Calibration(River):
                 self.GaugesTable.loc[i, "Qend"] = end1
 
 
-    def ReadRRM(self, path: str, start: Union[str, dt.datetime], end: Union[str, dt.datetime], column="oid", fmt="%Y-%m-%d"):
+    def ReadRRM(self, path: str, fromday: Union[str, int]="", today: Union[str, int]="",
+                column="oid", fmt="%Y-%m-%d", location=1, path2=""):
         """ReadRRM.
 
         ReadRRM method reads the discharge results of the rainfall runoff
@@ -335,34 +365,83 @@ class Calibration(River):
             rainfall-runoff discharge time series stored in a dataframe with
             the columns as the gauges id and the index are the time.
         """
-        if isinstance(start, str):
-            start = dt.datetime.strptime(start, fmt)
-        if isinstance(end, str):
-            end = dt.datetime.strptime(end, fmt)
+        gauges = self.GaugesTable.loc[self.GaugesTable["discharge"] == 1, column].tolist()
 
-        ind = pd.date_range(start, end)
-        QSWIM = pd.DataFrame(index=ind)
+        self.QRRM = pd.DataFrame()
+        if location == 2:
+            # create a dataframe for the 2nd time series of the rainfall runoff
+            # model at the second location
+            self.QRRM2 = pd.DataFrame()
 
-        for i in range(len(self.GaugesTable[column])):
-            # read SWIM data
-            # only at the begining to get the length of the time series
-            QSWIM.loc[:, int(self.GaugesTable.loc[i, column])] = np.loadtxt(
-                path + str(int(self.GaugesTable.loc[i, column])) + ".txt"
-            )
-        self.QRRM = QSWIM
+        self.RRM_Gauges = []
+        if path == "":
+            path = self.rrmpath
+
+        if location == 2:
+            assert (
+                not path2 == ""
+            ), "path2 argument has to be given fot the location of the 2nd rainfall run-off time series"
+
+        if location == 1:
+            for i in range(len(gauges)):
+                station_id = gauges[i]
+                try:
+                    self.QRRM[station_id] = self.ReadRRMResults(
+                        self.version,
+                        self.rrmreferenceindex,
+                        path,
+                        station_id,
+                        fromday,
+                        today,
+                        date_format=fmt,
+                    )[station_id].tolist()
+                    print(f"{i} - {path}{station_id}.txt is read")
+                    self.RRM_Gauges.append(station_id)
+                except FileNotFoundError:
+                    print(f"{i} - {path}{station_id}.txt does not exist or have a problem")
+        else:
+            for i in range(len(gauges)):
+                station_id = gauges[i]
+                try:
+                    self.QRRM[station_id] = self.ReadRRMResults(
+                        self.version,
+                        self.rrmreferenceindex,
+                        path,
+                        station_id,
+                        fromday,
+                        today,
+                        date_format=fmt,
+                    )[station_id].tolist()
+                    self.QRRM2[station_id] = self.ReadRRMResults(
+                        self.version,
+                        self.rrmreferenceindex,
+                        path2,
+                        station_id,
+                        fromday,
+                        today,
+                        date_format=fmt,
+                    )[station_id].tolist()
+                    print(f"{i} - {path}{station_id}.txt is read")
+                    self.RRM_Gauges.append(station_id)
+                except FileNotFoundError:
+                    print(f"{i} - {path}{station_id}.txt does not exist or have a problem")
+        # print("RRM time series for the gauge " + str(station_id) + " is read")
+
+        if fromday == "":
+            fromday = 1
+        if today == "":
+            today = len(self.QRRM[self.QRRM.columns[0]])
+
+        start = self.ReferenceIndex.loc[fromday, "date"]
+        end = self.ReferenceIndex.loc[today, "date"]
+
+        self.QRRM.index = pd.date_range(start, end, freq="D")
+        self.QRRM2.index = pd.date_range(start, end, freq="D")
 
 
-    def ReadHMQ(
-        self,
-        path: str,
-        start: Union[str, dt.datetime],
-        days: int,
-        novalue: Union[int, float],
-        addHQ2: bool = False,
-        shift: bool =False,
-        shiftsteps: int = 0,
-        column: str = "oid",
-        fmt: str = "%Y-%m-%d",
+    def ReadHMQ(self, path: str, fromday: Union[str, int]="", today: Union[str, int]="",
+                novalue: Union[int, float]=-9, addHQ2: bool = False, shift: bool =False,
+                shiftsteps: int = 0, column: str = "oid", fmt: str = "%Y-%m-%d",
     ):
         """ReadRIMQ.
 
@@ -372,9 +451,9 @@ class Calibration(River):
         ----------
         path : [String]
             path to the folder where files for the gauges exist.
-        start : [datetime object/str]
+        fromday : [datetime object/str]
             starting date of the time series.
-        days : [integer]
+        today : [integer]
             length of the simulation (how many days after the start date) .
         novalue : [numeric value]
             the value used to fill the gaps in the time series or to fill the
@@ -406,17 +485,9 @@ class Calibration(River):
             msg = "please read the HQ file first using ReturnPeriod method"
             assert hasattr(self, "RP"), msg
 
-        # if isinstance(start, str):
-        #     start = dt.datetime.strptime(start, fmt)
+        gauges = self.GaugesTable.loc[self.GaugesTable["discharge"] == 1, column].tolist()
 
-        # end = start + dt.timedelta(days=days - 1)
-        # ind = pd.date_range(start, end)
-        QHM = pd.DataFrame(
-            # index=ind,
-            columns=self.GaugesTable.loc[
-                self.GaugesTable["discharge"] == 1, column
-            ].tolist(),
-        )
+        self.QHM = pd.DataFrame()
 
         # for RIM1.0 don't fill with -9 as the empty days will be filled
         # with 0 so to get the event days we have to filter 0 and -9
@@ -426,20 +497,17 @@ class Calibration(River):
         #     QHM.loc[:, :] = novalue
 
         # fill non modelled time steps with zeros
-        for i in range(len(self.GaugesTable[column])):
-            f = self.ReadRRMResults(
-                self.version,
-                self.ReferenceIndex,
-                path,
-                QHM.columns[i],
-                fromday='',
-                today='',
-                date_format=fmt,
-            )
-
-            f = np.loadtxt(path + str(int(QHM.columns[i])) + ".txt", delimiter=",", skiprows=0)
-            f1 = list(range(int(f[0, 0]), int(f[-1, 0]) + 1))
-            f2 = list()
+        for i in range(len(gauges)):
+            nodeid = gauges[i]
+            self.QHM[nodeid] = self.ReadRRMResults(self.version,
+                                                   self.ReferenceIndex,
+                                                   path,
+                                                   nodeid,
+                                                   fromday='',
+                                                   today='',
+                                                   date_format=fmt,
+                                                   )[nodeid].tolist()
+            print(f"{i} - {path}{nodeid}.txt is read")
 
             if addHQ2 and self.version == 1:
                 USnode = self.rivernetwork.loc[
@@ -451,29 +519,36 @@ class Calibration(River):
 
                 CutValue = self.RP.loc[np.where(self.RP["node"] == USnode)[0][0], "HQ2"]
 
-            for j in range(len(f1)):
-                # if the index exist in the original list
-                if f1[j] in f[:, 0]:
-                    # put the coresponding value in f2
-                    f2.append(f[np.where(f[:, 0] == f1[j])[0][0], 1])
-                else:
-                    # if it does not exist put zero
-                    if addHQ2 and self.version == 1:
-                        f2.append(CutValue)
-                    else:
-                        f2.append(0)
+            # for j in range(len(f1)):
+            #     # if the index exist in the original list
+            #     if f1[j] in f[:, 0]:
+            #         # put the coresponding value in f2
+            #         f2.append(f[np.where(f[:, 0] == f1[j])[0][0], 1])
+            #     else:
+            #         # if it does not exist put zero
+            #         if addHQ2 and self.version == 1:
+            #             f2.append(CutValue)
+            #         else:
+            #             f2.append(0)
 
-            if shift:
-                f2[shiftsteps:-1] = f2[0 : -(shiftsteps + 1)]
+            # if shift:
+            #     f2[shiftsteps:-1] = f2[0 : -(shiftsteps + 1)]
 
-            QHM.loc[ind[f1[0] - 1] : ind[f1[-1] - 1], QHM.columns[i]] = f2
+            # QHM.loc[ind[f1[0] - 1] : ind[f1[-1] - 1], QHM.columns[i]] = f2
+        if fromday == "":
+            fromday = 1
+        if today == "":
+            today = len(self.QHM[self.QHM.columns[0]])
 
-        self.QHM = QHM[:]
+        start = self.ReferenceIndex.loc[fromday, "date"]
+        end = self.ReferenceIndex.loc[today, "date"]
+
+        self.QHM.index = pd.date_range(start, end, freq="D")
 
 
-    def ReadHMWL(
-        self, path: str, start: Union[str, dt.datetime], days, novalue: Union[int, float], shift=False, shiftsteps=0, column="oid"
-    ):
+    def ReadHMWL(self, path: str, fromday: Union[str, int]="", today: Union[str, int]="",
+                 novalue: Union[int, float]=-9, shift=False, shiftsteps=0,
+                 column: str = "oid", fmt: str = "%Y-%m-%d"):
         """ReadRIMWL
 
         Parameters
@@ -506,37 +581,48 @@ class Calibration(River):
             each river segment in the catchment.
 
         """
-        end = start + dt.timedelta(days=days - 1)
-        ind = pd.date_range(start, end)
+        gauges = self.GaugesTable.loc[self.GaugesTable["waterlevel"] == 1, column].tolist()
+        self.WLHM = pd.DataFrame()
+        # WLHM.loc[:, :] = novalue
+        for i in range(len(gauges)):
+            nodeid = gauges[i]
+            self.WLHM[nodeid] = self.ReadRRMResults(self.version,
+                                                   self.ReferenceIndex,
+                                                   path,
+                                                   nodeid,
+                                                   fromday='',
+                                                   today='',
+                                                   date_format=fmt,
+                                                   )[nodeid].tolist()
+            print(f"{i} - {path}{nodeid}.txt is read")
+        # for i in range(len(WLHM.columns)):
+        #     f = np.loadtxt(path + str(int(WLHM.columns[i])) + ".txt", delimiter=",")
+        #
+        #     f1 = list(range(int(f[0, 0]), int(f[-1, 0]) + 1))
+        #     f2 = list()
+        #     for j in range(len(f1)):
+        #         # if the index exist in the original list
+        #         if f1[j] in f[:, 0]:
+        #             # put the coresponding value in f2
+        #             f2.append(f[np.where(f[:, 0] == f1[j])[0][0], 1])
+        #         else:
+        #             # if it does not exist put zero
+        #             f2.append(0)
+        #
+        #     if shift:
+        #         f2[shiftsteps:-1] = f2[0 : -(shiftsteps + 1)]
 
-        WLHM = pd.DataFrame(
-            index=ind,
-            columns=self.GaugesTable.loc[
-                self.GaugesTable["waterlevel"] == 1, column
-            ].tolist(),
-        )
-        WLHM.loc[:, :] = novalue
+            # WLHM.loc[ind[f1[0] - 1] : ind[f1[-1] - 1], WLHM.columns[i]] = f2
+        if fromday == "":
+            fromday = 1
+        if today == "":
+            today = len(self.WLHM[self.WLHM.columns[0]])
 
-        for i in range(len(WLHM.columns)):
-            f = np.loadtxt(path + str(int(WLHM.columns[i])) + ".txt", delimiter=",")
+        start = self.ReferenceIndex.loc[fromday, "date"]
+        end = self.ReferenceIndex.loc[today, "date"]
 
-            f1 = list(range(int(f[0, 0]), int(f[-1, 0]) + 1))
-            f2 = list()
-            for j in range(len(f1)):
-                # if the index exist in the original list
-                if f1[j] in f[:, 0]:
-                    # put the coresponding value in f2
-                    f2.append(f[np.where(f[:, 0] == f1[j])[0][0], 1])
-                else:
-                    # if it does not exist put zero
-                    f2.append(0)
+        self.WLHM.index = pd.date_range(start, end, freq="D")
 
-            if shift:
-                f2[shiftsteps:-1] = f2[0 : -(shiftsteps + 1)]
-
-            WLHM.loc[ind[f1[0] - 1] : ind[f1[-1] - 1], WLHM.columns[i]] = f2
-
-        self.WLHM = WLHM[:]
 
     def ReadCalirationResult(self, subid, path: str=""):
         """ReadCalirationResult.

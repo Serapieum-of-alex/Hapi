@@ -38,7 +38,7 @@ class River:
         start: str="1950-1-1",
         end: Union[int, str]="",
         days: int=36890,
-        rrmstart: str="1950-1-1",
+        rrmstart: str="",
         rrmdays: int=36890,
         dto: int=60,
         dx: Union[int, str]="",

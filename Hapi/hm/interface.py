@@ -4,6 +4,7 @@ Created on Wed Mar  3 12:40:23 2021
 @author: mofarrag
 """
 import datetime as dt
+from typing import Union
 
 import pandas as pd
 from pandas import DataFrame
@@ -101,7 +102,9 @@ class Interface(River):
                 False
             ), "Please read the cross section file first using the method 'ReadCrossSections'"
 
-    def ReadLaterals(self, fromday="", today="", path="", date_format="'%Y-%m-%d'"):
+
+    def ReadLaterals(self, fromday: Union[str, int]="", today: Union[str, int]="",
+                     path: str="", date_format: str="'%Y-%m-%d'"):
         """ReadUSHydrograph.
 
         read the upstream hydrograph
