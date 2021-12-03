@@ -12,7 +12,12 @@ import math
 import numpy as np
 import datetime as dt
 import os
-import gdal
+
+try:
+    from osgeo import gdal
+except ModuleNotFoundError:
+    import gdal
+
 from Hapi.gis.raster import Raster
 from Hapi.gis.giscatchment import GISCatchment as GC
 

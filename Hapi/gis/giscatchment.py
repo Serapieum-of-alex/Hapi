@@ -9,9 +9,10 @@ Created on Sat May 26 04:52:15 2018
 import numpy as np
 import pandas as pd
 try :
+    from osgeo import gdal
+except ModuleNotFoundError:
     import gdal
-except:
-    print("failed to import gdal")
+    
 from Hapi.gis.raster import Raster as raster
 
 #from osgeo import gdalconst

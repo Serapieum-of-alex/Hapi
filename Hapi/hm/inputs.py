@@ -10,11 +10,15 @@ import pandas as pd
 import datetime as dt
 from scipy.stats import gumbel_r, genextreme
 import matplotlib.pyplot as plt
-import gdal
+
+try:
+    from osgeo import gdal
+except ModuleNotFoundError:
+    import gdal
+
 import zipfile
 
 from matplotlib import gridspec
-
 from Hapi.statistics.statisticaltools import StatisticalTools as ST
 from Hapi.statistics.statisticaltools import Gumbel, GEV
 

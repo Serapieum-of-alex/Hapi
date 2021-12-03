@@ -12,7 +12,12 @@ import numpy as np
 import pandas as pd
 import datetime as dt
 import os
-import gdal
+
+try:
+    from osgeo import gdal
+except ModuleNotFoundError:
+    import gdal
+
 from types import ModuleType
 import matplotlib.pyplot as plt
 import matplotlib.dates as dates

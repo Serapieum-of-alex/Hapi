@@ -11,12 +11,15 @@ Created on Sun Jul 01 17:07:40 2018
 import numpy as np
 import geopandas as gpd
 from shapely.geometry.multipolygon import MultiPolygon
-import ogr
+try:
+    from osgeo import ogr, osr
+except ModuleNotFoundError:
+    import ogr
+    import osr
 #from shapely.geometry.polygon import Polygon
 from shapely.geometry import Point, Polygon
 from pyproj import Proj, transform
 # from osgeo import ogr
-from osgeo import osr
 
 from fiona.crs import from_epsg
 import pandas as pd
