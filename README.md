@@ -4,6 +4,8 @@
 [![Python Versions](https://img.shields.io/pypi/pyversions/HAPI-Nile.png)](https://img.shields.io/pypi/pyversions/HAPI-Nile)
 [![Documentation Status](https://readthedocs.org/projects/hapi-hm/badge/?version=latest)](https://hapi-hm.readthedocs.io/en/latest/?badge=latest)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
+
 
 [![GitHub Clones](https://img.shields.io/badge/dynamic/json?color=success&label=Clone&query=count&url=https://github.com/MAfarrag/Hapi/blob/master/clone.json?raw=True&logo=github)](https://github.com/MShawon/github-clone-count-badge)
 
@@ -36,39 +38,34 @@ Current release info
 ![Hapi](/docs/img/Hapi4.png) ![Hapi](/docs/img/name.png)
 
 
-Hapi - Hydrological library for Python 
+Hapi - Hydrological library for Python
 =====================================================================
-**Hapi** is an open-source Python Framework for building raster-based conceptual distributed hydrological models using HBV96 lumped 
-model & Muskingum routing method at a catchment scale (Farrag & Corzo, 2021), Hapi gives a high degree of flexibility to all components of the model 
+**Hapi** is an open-source Python Framework for building raster-based conceptual distributed hydrological models using HBV96 lumped
+model & Muskingum routing method at a catchment scale (Farrag & Corzo, 2021), Hapi gives a high degree of flexibility to all components of the model
 (spatial discretization - cell size, temporal resolution, parameterization approaches and calibration (Farrag et al., 2021)).
 
 
 ![1](/docs/img/Picture1.png)  ![2](/docs/img/Picture2.png)
 
-Hapi 
+Hapi
 
 Main Features
 -------------
   - Modified version of HBV96 hydrological model (Bergström, 1992) with 15 parameters in case of considering
    snow processes, and 10 parameters without snow, in addition to 2 parameters of Muskingum routing method
-  - Remote sensing module to download the meteorological inputs required for the hydrologic model simulation (ECMWF) 
-  - GIS modules to enable the modeler to fully prepare the meteorological inputs and do all the preprocessing 
-    needed to build the model (align rasters with the DEM), in addition to various methods to manipulate and 
+  - Remote sensing module to download the meteorological inputs required for the hydrologic model simulation (ECMWF)
+  - GIS modules to enable the modeler to fully prepare the meteorological inputs and do all the preprocessing
+    needed to build the model (align rasters with the DEM), in addition to various methods to manipulate and
     convert different forms of distributed data (rasters, NetCDF, shapefiles)
-  - Sensitivity analysis module based on the concept of one-at-a-time OAT and analysis of the interaction among 
+  - Sensitivity analysis module based on the concept of one-at-a-time OAT and analysis of the interaction among
     model parameters using the Sobol concept ((Rusli et al., 2015)) and a visualization
-  - Statistical module containing interpolation methods for generating distributed data from gauge data, some 
+  - Statistical module containing interpolation methods for generating distributed data from gauge data, some
     distribution for frequency analysis and Maximum likelihood method for distribution parameter estimation.
   - Visualization module for animating the results of the distributed model, and the meteorological inputs
-  - Optimization module, for calibrating the model based on the Harmony search method 
+  - Optimization module, for calibrating the model based on the Harmony search method
 
-The recent version of Hapi (Hapi 1.0.1) integrates the global hydrological parameters obtained by Beck et al., (2016), 
+The recent version of Hapi (Hapi 1.0.1) integrates the global hydrological parameters obtained by Beck et al., (2016),
 to reduce model complexity and uncertainty of parameters.
-
-IHE-Delft sessions
-------------------
-  - In April 14-15 we had a two days session for Masters and PhD student in IHE-Delft to explain the different modules and the distributed hydrological model in Hapi
-[Day 1](https://youtu.be/HbmUdN9ehSo) ,  [Day 2](https://youtu.be/m7kHdOFQFIY)
 
 Future work
 -------------
@@ -78,6 +75,11 @@ Future work
   - Developing a DEM processing module for generating the river network at different DEM spatial resolutions.
 
 For using Hapi please cite Farrag et al. (2021) and Farrag & Corzo (2021)
+
+IHE-Delft sessions
+------------------
+- In April 14-15 we had a two days session for Masters and PhD student in IHE-Delft to explain the different modules and the distributed hydrological model in Hapi [Day 1](https://youtu.be/HbmUdN9ehSo) ,  [Day 2](https://youtu.be/m7kHdOFQFIY)
+
 References
 -------------
 Farrag, M. & Corzo, G. (2021) MAfarrag/Hapi: Hapi. doi:10.5281/ZENODO.4662170
@@ -126,5 +128,3 @@ Quick start
 ```
 
 [other code samples](https://hapi-hm.readthedocs.io/en/latest/?badge=latest)
-
-

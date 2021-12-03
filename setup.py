@@ -1,20 +1,11 @@
 from setuptools import setup , find_packages
 
-try:    
-    import gdal
-except: 
-    print("Could not import gdal, install using conda install gdal")    
-    try:
-        import numpy
-    except:
-        print("Could not import numpy, install using conda install numpy")    
-
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(
     name='HAPI-Nile',
-    version='1.0.4',
+    version='1.0.5',
     description='Distributed Hydrological model',
     author='Mostafa Farrag',
     author_email='moah.farag@gmail.come',
@@ -31,9 +22,6 @@ setup(
     'Environment :: Console',
     'Natural Language :: English',
     'Programming Language :: Python',
-    'Programming Language :: Python :: 2.7',
-    'Programming Language :: Python :: 3.5',
-    'Programming Language :: Python :: 3.6',
     'Programming Language :: Python :: 3.7',
     'Programming Language :: Python :: 3.8',
     'Programming Language :: Python :: 3.9',
