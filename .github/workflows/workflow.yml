@@ -1,4 +1,4 @@
-name: Codecov
+name: CI
 on: [push, pull_request]
 jobs:
   run:
@@ -8,14 +8,14 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
     env:
       OS: ${{ matrix.os }}
-      PYTHON: '3.7'
+      PYTHON: '3.9'
     steps:
     - uses: actions/checkout@master
     - name: Setup Python
       uses: actions/setup-python@master
       with:
-        python-version: 3.7
-    - name: Generate coverage report
+        python-version: 3.9
+    - name: install latest version of Hapi
       run: |
         pip install pytest
         pip install pytest-cov
