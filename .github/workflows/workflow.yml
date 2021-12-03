@@ -1,20 +1,5 @@
-steps:
-- uses: actions/checkout@master
-- uses: codecov/codecov-action@v1.4.0
-  with:
-    #token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
-    files: ./coverage1.xml,./coverage2.xml # optional
-    flags: unittests # optional
-    name: codecov-umbrella # optional
-    fail_ci_if_error: true # optional (default = false)
-    verbose: true # optional (default = false)
-
-
-
-
-
-- name: Codecov
-on: [push]
+name: Codecov
+on: [push, pull_request]
 jobs:
   run:
     runs-on: ${{ matrix.os }}
@@ -38,7 +23,7 @@ jobs:
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
       with:
-        token: ${{ secrets.CODECOV_TOKEN }}
+#        token: ${{ secrets.CODECOV_TOKEN }}
         files: ./coverage1.xml,./coverage2.xml
         directory: ./coverage/reports/
         flags: unittests
