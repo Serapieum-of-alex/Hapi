@@ -12,12 +12,16 @@ import sys
 import datetime as dt
 import numpy as np
 import json
-import gdal
-import osr
+try:
+    from osgeo import gdal, osr, gdalconst, ogr
+except ModuleNotFoundError:
+    import gdal
+    import osr
+    import ogr
+    import gdalconst
+
 import pandas as pd
 import geopandas as gpd
-from osgeo import gdalconst
-
 import zipfile
 import pyproj
 import rasterio
@@ -35,7 +39,6 @@ from Hapi.gis.vector import Vector
 # import tarfile
 import gzip
 import scipy.misc as misc
-from osgeo import ogr
 # import glob
 import scipy.interpolate
 from pyproj import Proj, transform
