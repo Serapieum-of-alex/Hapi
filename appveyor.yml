@@ -6,8 +6,8 @@ version: 1.0.{build}
 # branches to build
 branches:
   # whitelist
-  only:
-    - master
+#  only:
+#    - master
   # blacklist
   except:
     - gh-pages
@@ -25,6 +25,7 @@ environment:
   - TOXENV: py37
   - TOXENV: py38
   - TOXENV: py39
+  - TOXENV: py310
 
 # Do not build on tags (GitHub, Bitbucket, GitLab, Gitea)
 #skip_tags: true
@@ -80,18 +81,14 @@ install:
   - cmd: conda update --yes -n base -c defaults conda
 #  - cmd: conda env update -name Hapi-env --file environment.yml  --prune
 #  - cmd: activate Hapi-env
-#  - cmd: pip install ecmwf-api-client
   - cmd: python -V
   - cmd: python setup.py build_ext --inplace
   - cmd: python setup.py install
 #  - cmd: conda list
   - cmd: pip install --upgrade coveralls  
-#  - cmd: sbt clean coverage test
-#  - cmd: conda install numpy --yes
-#  - cmd: conda install gdal --yes  
-  #- cmd: cd ..
+#  - cmd: sbt clean coverage test  
 
-build: off
+build: false
 # build Configuration, i.e. Debug, Release, etc.
 # to add several configurations to build matrix:
 configuration:
@@ -103,6 +100,4 @@ test_script:
 - cmd: conda list
 - cmd: python test.py
 - cmd: C:\Miniconda-x64\envs\Hapi-env\python test.py
-#- cmd: cd ./GIS
-#- cmd: python 01Reproject_points.py
-- cmd: coveralls
+#- cmd: coveralls
