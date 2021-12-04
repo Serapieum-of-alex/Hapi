@@ -72,8 +72,6 @@ install:
   # Install various dependencies
   - cmd: conda config --add channels conda-forge
   #- cmd: while read requirement; do conda install --yes $requirement; done < requirement.txt
-  #- cmd: while read requirement; do conda install --yes $requirement; done < requirement.txt
-
 #  - cmd: FOR /F "delims=~" %f in (requirement.txt) DO (conda install f --yes )
   - cmd: conda install --yes --file requirement.txt
 #  - cmd: pip install --upgrade --user pip
@@ -84,9 +82,8 @@ install:
   - cmd: python -V
   - cmd: python setup.py build_ext --inplace
   - cmd: python setup.py install
-#  - cmd: conda list
   - cmd: pip install --upgrade coveralls  
-#  - cmd: sbt clean coverage test  
+#  - cmd: sbt clean coverage test
 
 build: false
 # build Configuration, i.e. Debug, Release, etc.
