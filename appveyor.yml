@@ -6,8 +6,8 @@ version: 1.0.{build}
 # branches to build
 branches:
   # whitelist
-  only:
-    - master
+#  only:
+#    - master
   # blacklist
   except:
     - gh-pages
@@ -22,12 +22,10 @@ environment:
   CONDA_VERSION: 3
 
   matrix:
-  - TOXENV: py36
   - TOXENV: py37
   - TOXENV: py38
   - TOXENV: py39
-  - TOXENV: py35
-  - TOXENV: py27
+  - TOXENV: py310
 
 # Do not build on tags (GitHub, Bitbucket, GitLab, Gitea)
 #skip_tags: true
@@ -56,7 +54,7 @@ init:
 
 install:
   # Clone simply to get the script for setting up Windows build environment.
-
+   
   # for python 3.4 as it does not exist in conda channels
   # conda config --set restore_free_channel True
   # No need to install miniconda because appveyor comes with it.
@@ -70,12 +68,10 @@ install:
   - cmd: activate Hapi-env
   - cmd: conda clean --tarballs -y
   - cmd: conda clean --packages -y
-
+  
   # Install various dependencies
   - cmd: conda config --add channels conda-forge
   #- cmd: while read requirement; do conda install --yes $requirement; done < requirement.txt
-  #- cmd: while read requirement; do conda install --yes $requirement; done < requirement.txt
-
 #  - cmd: FOR /F "delims=~" %f in (requirement.txt) DO (conda install f --yes )
   - cmd: conda install --yes --file requirement.txt
 #  - cmd: pip install --upgrade --user pip
@@ -83,18 +79,13 @@ install:
   - cmd: conda update --yes -n base -c defaults conda
 #  - cmd: conda env update -name Hapi-env --file environment.yml  --prune
 #  - cmd: activate Hapi-env
-#  - cmd: pip install ecmwf-api-client
   - cmd: python -V
   - cmd: python setup.py build_ext --inplace
   - cmd: python setup.py install
-#  - cmd: conda list
-  - cmd: pip install --upgrade coveralls
+  - cmd: pip install --upgrade coveralls  
 #  - cmd: sbt clean coverage test
-#  - cmd: conda install numpy --yes
-#  - cmd: conda install gdal --yes
-  #- cmd: cd ..
 
-build: off
+build: false
 # build Configuration, i.e. Debug, Release, etc.
 # to add several configurations to build matrix:
 configuration:
@@ -106,6 +97,4 @@ test_script:
 - cmd: conda list
 - cmd: python test.py
 - cmd: C:\Miniconda-x64\envs\Hapi-env\python test.py
-#- cmd: cd ./GIS
-#- cmd: python 01Reproject_points.py
-- cmd: coveralls
+#- cmd: coveralls
