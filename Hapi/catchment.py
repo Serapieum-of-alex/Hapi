@@ -11,13 +11,9 @@ import math
 import os
 from types import ModuleType
 
-try :
-    from osgeo import gdal
-except ImportError:
-    import gdal
-
+from osgeo import gdal
 import geopandas as gpd
-import HapiSM.performancecriteria as PC
+import Hapi.sm.performancecriteria as PC
 import matplotlib.dates as dates
 import matplotlib.pyplot as plt
 import numpy as np

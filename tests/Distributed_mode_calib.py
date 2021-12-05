@@ -11,7 +11,7 @@ import gdal
 import numpy as np
 
 import Hapi.rrm.hbv_bergestrom92 as HBV
-import Hapi.statistics.performancecriteria as PC
+import Hapi.sm.performancecriteria as PC
 from Hapi.rrm.calibration import Calibration
 from Hapi.rrm.distparameters import DistParameters as DP
 

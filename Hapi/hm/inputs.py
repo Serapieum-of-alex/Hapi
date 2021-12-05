@@ -8,17 +8,13 @@ import os
 import zipfile
 from typing import Union
 
-try :
-    from osgeo import gdal
-except ImportError:
-    import gdal
-
+from osgeo import gdal
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-# from HapiSM.statisticaltools import StatisticalTools as ST
-from HapiSM.distributions import GEV, Gumbel, PlottingPosition
+# from Hapi.sm.statisticaltools import StatisticalTools as ST
+from Hapi.sm.distributions import GEV, Gumbel, PlottingPosition
 from scipy.stats import gumbel_r  # genextreme,
 
 # from matplotlib import gridspec

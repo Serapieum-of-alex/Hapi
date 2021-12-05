@@ -13,7 +13,7 @@ from typing import Union  # List, Optional,
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from HapiSM import performancecriteria as Pf
+from Hapi.sm import performancecriteria as Pf
 from pandas.core.frame import DataFrame
 from scipy.stats import genextreme, gumbel_r
 

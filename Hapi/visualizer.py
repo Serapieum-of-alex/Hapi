@@ -19,7 +19,7 @@ import matplotlib.colors as colors
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from HapiSM.statisticaltools import StatisticalTools as ST
+from Hapi.sm.statisticaltools import StatisticalTools as ST
 from matplotlib import animation, gridspec
 from matplotlib.ticker import LogFormatter
 from scipy.stats import gumbel_r

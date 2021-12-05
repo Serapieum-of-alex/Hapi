@@ -4,7 +4,7 @@ import datetime as dt
 import pandas as pd
 
 import Hapi.rrm.hbv_bergestrom92 as HBVLumped
-import Hapi.statistics.performancecriteria as PC
+import Hapi.sm.performancecriteria as PC
 from Hapi.rrm.calibration import Calibration
 from Hapi.rrm.routing import Routing
 from Hapi.run import Run

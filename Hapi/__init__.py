@@ -5,8 +5,8 @@ Created on Tue May 22 09:01:55 2018
 """
 # documentation format
 __author__ = "Mostafa Farrag"
-__version__ = "1.0.5"
-
+__version__ = "2.0.0"
+__email__ = 'moah.farag@gmail.com'
 __docformat__ = "restructuredtext"
 
 # Let users know if they're missing any of our hard dependencies
@@ -37,7 +37,7 @@ def configuration(parent_package="", top_path=None):
         quiet=True,
     )
 
-    # config.add_subpackage("statistics")
+    config.add_subpackage("sm")
     config.add_subpackage("rrm")
     config.add_subpackage("rs")
     config.add_subpackage("hm")
@@ -53,7 +53,7 @@ import Hapi.java_functions
 import Hapi.rrm
 import Hapi.rs
 import Hapi.run
-import Hapi.statistics
+import Hapi.sm
 import Hapi.visualizer
 import Hapi.weirdFn
 

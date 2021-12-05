@@ -8,7 +8,7 @@ import datetime as dt
 Comp = "F:/01Algorithms/Hydrology/HAPI/Examples"
 #%% Modules
 import Hapi.rrm.hbv_bergestrom92 as HBVLumped
-import Hapi.statistics.performancecriteria as PC
+import Hapi.sm.performancecriteria as PC
 from Hapi.catchment import Catchment
 from Hapi.rrm.routing import Routing
 from Hapi.run import Run

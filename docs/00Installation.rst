@@ -1,12 +1,19 @@
+.. highlight:: shell
+
+============
 Installation
 ============
 
+
+
+Stable release
+--------------
 
 Please install Hapi in a Virtual environment so that its requirements don't tamper with your system's python
 ``Hapi`` works with all Python versions
 
 conda
-----------
+-----
 the easiest way to install ``Hapi`` is using ``conda`` package manager. ``Hapi`` is available in the `conda-forge <https://conda-forge.org/>`_ channel. To install
 you can use the following command:
 
@@ -55,6 +62,36 @@ For the installation of Hapi there are two options (from the Python Package Inde
 or from Github). To install a release of Hapi from the PyPI (available from release 2018.1):
 
 + ``pip install HAPI-Nile=={release}``
+
+
+From sources
+------------
+
+
+The sources for HapiSM can be downloaded from the `Github repo`_.
+
+You can either clone the public repository:
+
+.. code-block:: console
+
+    $ git clone git://github.com/MAfarrag/HapiSM
+
+Or download the `tarball`_:
+
+.. code-block:: console
+
+    $ curl -OJL https://github.com/MAfarrag/HapiSM/tarball/master
+
+Once you have a copy of the source, you can install it with:
+
+.. code-block:: console
+
+    $ python setup.py install
+
+
+.. _Github repo: https://github.com/MAfarrag/HapiSM
+.. _tarball: https://github.com/MAfarrag/HapiSM/tarball/master
+
 
 To install directly from GitHub (from the HEAD of the master branch):
 

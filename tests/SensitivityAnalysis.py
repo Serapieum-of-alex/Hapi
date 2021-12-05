@@ -9,11 +9,11 @@ Comp = "F:/01Algorithms/Hydrology/HAPI/Examples"
 import pandas as pd
 
 import Hapi.rrm.hbv_bergestrom92 as HBVLumped
-import Hapi.statistics.performancecriteria as PC
+import Hapi.sm.performancecriteria as PC
 from Hapi.catchment import Catchment
 from Hapi.rrm.routing import Routing
 from Hapi.run import Run
-from Hapi.statistics.sensitivityanalysis import SensitivityAnalysis as SA
+from Hapi.sm.sensitivityanalysis import SensitivityAnalysis as SA
 
 #%% Paths
 Parameterpath = Comp + "/data/lumped/Coello_Lumped2021-03-08_muskingum.txt"
