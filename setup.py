@@ -1,19 +1,13 @@
 from setuptools import find_packages, setup
 
-try:
-    import gdal
-except:
-    print("Could not import gdal, install using conda install gdal")
-    try:
-        import numpy
-    except:
-        print("Could not import numpy, install using conda install numpy")
-
 with open("README.md", "r") as readme_file:
     readme = readme_file.read()
 
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
+
+with open('requirement.txt') as req_file:
+    requirements = req_file.read()
 
 test_requirements = ['pytest>=3', ]
 
@@ -27,7 +21,6 @@ setup(
     keywords=["Hydrology", "Distributed hydrological model"],
     long_description=readme + '\n\n' + history,
     long_description_content_type="text/markdown",
-    description="Statistical Analysis for hydrological model results",
     license="GNU General Public License v3",
     zip_safe=False,
     packages=find_packages(include=['Hapi', 'Hapi.*']),
