@@ -21,4 +21,4 @@ scikit-image >=0.18.3
 ecmwf-api-client >=1.6.1
 joblib >=1.1.0
 geopy >=2.2.0
-loguru =">0.5.3"
+loguru >=0.5.3

@@ -25,5 +25,6 @@ dependencies:
   - joblib >=1.1.0
   - geopy >=2.2.0
   - pip:
+      - loguru >=0.5.3
 #    - ffmpeg-python
     #- git+https://github.com/MAfarrag/HAPI.git
