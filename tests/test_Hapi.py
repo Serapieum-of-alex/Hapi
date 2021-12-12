@@ -3,8 +3,7 @@
 """Tests for `HapiSM` package."""
 
 import pytest
-
-from HapiSM import HapiSM
+import Hapi
 
 
 @pytest.fixture

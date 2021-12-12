@@ -1,1 +1,1 @@
-import gdal
+from osgeo import gdal
