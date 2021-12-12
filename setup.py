@@ -6,8 +6,7 @@ with open("README.md", "r") as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-with open('requirement.txt') as req_file:
-    requirements = req_file.read()
+requirements = [line.strip() for line in open("requirement.txt").readlines()]
 
 test_requirements = ['pytest>=3', ]
 
