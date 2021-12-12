@@ -7,6 +7,7 @@ with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
 requirements = [line.strip() for line in open("requirement.txt").readlines()]
+requirements = requirements[1:]
 
 test_requirements = ['pytest>=3', ]
 
@@ -28,7 +29,7 @@ setup(
     install_requires=requirements,
     entry_points={
         'console_scripts': [
-            'HapiSM=HapiSM.cli:main',
+            'Hapi=Hapi.cli:main',
         ],
     },
     classifiers=[
