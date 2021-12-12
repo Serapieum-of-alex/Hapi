@@ -94,7 +94,8 @@ configuration:
 
 test_script:
 - cmd: cd Examples/
-- cmd: conda list
-- cmd: python test.py
-- cmd: C:\Miniconda-x64\envs\Hapi-env\python test.py
-#- cmd: coveralls
+#- cmd: conda list
+#- cmd: python test.py
+- cmd: python -m pytest
+#- cmd: C:\Miniconda-x64\envs\Hapi-env\python test.py
+- cmd: coveralls
