@@ -128,6 +128,7 @@ def test_Sub_GetLaterals(
         interface_Laterals_folder: str,
         interface_Laterals_date_format: str,
         test_sub_GetFlow_lateralTable: List[int],
+        create_sub_instance_lastxs: int,
 ):
     River = R.River('HM', version=version)
     River.ReadCrossSections(river_cross_section_path)
@@ -144,12 +145,7 @@ def test_Sub_GetLaterals(
     IF.ReadLaterals(path=interface_Laterals_folder, date_format=interface_Laterals_date_format)
 
     Sub.GetFlow(IF)
-    Laterals = Sub.GetLaterals(gaugexs)
+    Laterals = Sub.GetLaterals(create_sub_instance_lastxs)
 
     # assert len(Sub.BC) == len(Sub.Laterals) == 80 and len(Sub.BC.columns) == 1 and len(Sub.Laterals.columns) == 4
     # assert all(elem in Sub.LateralsTable for elem in test_sub_GetFlow_lateralTable)
-
-
-
-
-

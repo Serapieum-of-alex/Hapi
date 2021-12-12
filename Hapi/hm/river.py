@@ -3183,11 +3183,15 @@ class Sub(River):
             self.oneminresultpath = River.oneminresultpath
         if River.usbcpath:
             self.usbcpath = River.usbcpath
+
+        if not isinstance(River.crosssections, DataFrame):
+            raise ValueError("please Read the cross section for the whole river with 'ReadCrossSections' "
+                             "method before creating the sub-segment instance")
         # filter the whole cross section file and get the cross section of the segment
         if self.version == 1 or self.version == 2:
-            self.crosssections = River.crosssections[River.crosssections["id"] == id]
+            self.crosssections = River.crosssections[River.crosssections["id"] == sub_id]
         else:
-            self.crosssections = River.crosssections[River.crosssections["id"] == id]
+            self.crosssections = River.crosssections[River.crosssections["id"] == sub_id]
             if RunModel:
                 self.xsid = self.crosssections.loc[:, "xsid"].values
                 self.dbf = self.crosssections.loc[:, "dbf"].values
@@ -3216,12 +3220,12 @@ class Sub(River):
 
         if isinstance(River.slope, DataFrame) and self.id in River.slope["id"].tolist():
             # if self.version == 1 or self.version == 2 :
-            self.slope = River.slope[River.slope["id"] == id]["slope"].tolist()[0]
+            self.slope = River.slope[River.slope["id"] == sub_id]["slope"].tolist()[0]
             # else:
             # self.slope = River.slope[River.slope['id']==id]['slope'].tolist()[0]
 
         if isinstance(River.rivernetwork, DataFrame):
-            self.usnode, self.dsnode = River.TraceSegment(id)
+            self.usnode, self.dsnode = River.TraceSegment(sub_id)
 
         if isinstance(River.RP, DataFrame):
             self.RP = River.RP.loc[
@@ -3419,6 +3423,7 @@ class Sub(River):
         self.referenceindex_results = pd.date_range(
             self.firstdayresults, self.lastday, freq="D"
         )
+
 
     def ExtractXS(self, xsid: int, addHQ2: bool=False, WaterLevel: bool=True):
         """ExtractXS.
@@ -4198,7 +4203,8 @@ class Sub(River):
         self.AreaPerLow = AreaPerLow[:, :]
 
 
-    def GetFlow(self, IF, fromday: Union[int, str]="", today: Union[int, str]="", date_format="%d_%m_%Y"):
+    def GetFlow(self, IF, fromday: Union[int, str]="", today: Union[int, str]="",
+                date_format="%d_%m_%Y"):
         """GetFlow.
 
         Extract the lateral flow and boundary condition (if exist) time series
@@ -4281,6 +4287,7 @@ class Sub(River):
             self.LateralsTable = []
             self.Laterals = pd.DataFrame()
 
+
     def GetLaterals(self, xsid: int):
         """GetLaterals.
 
@@ -4299,7 +4306,7 @@ class Sub(River):
             upstream of a given xsid.
 
         """
-        msg = "please read the Laterals Table and the LAterals first"
+        msg = "please read the Laterals Table and the Laterals first"
         assert isinstance(self.LateralsTable, list) and isinstance(self.Laterals, DataFrame), msg
         USgauge = self.LateralsTable[: bisect(self.LateralsTable, xsid)]
         return self.Laterals[USgauge].sum(axis=1).to_frame()

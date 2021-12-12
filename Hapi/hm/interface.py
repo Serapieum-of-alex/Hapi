@@ -132,7 +132,7 @@ class Interface(River):
         assert hasattr(self, "LateralsTable"), "{0}".format(errmsg)
         self.Laterals = pd.DataFrame()
 
-        if len(self.LateralsTable) > 0:
+        if isinstance(self.LateralsTable, DataFrame):
 
             for i in range(len(self.LateralsTable)):
                 NodeID = self.LateralsTable.loc[i, "xsid"]
@@ -159,6 +159,8 @@ class Interface(River):
             end = self.ReferenceIndex.loc[today, "date"]
 
             self.Laterals.index = pd.date_range(start, end, freq="D")
+        else:
+            print("There are no Laterals table please check")
 
     def ReadRRMProgression(
         self, fromday="", today="", path="", date_format="'%Y-%m-%d'"
@@ -253,7 +255,8 @@ class Interface(River):
         ]
 
     def ReadBoundaryConditions(
-        self, fromday="", today="", path="", date_format="'%Y-%m-%d'"
+        self, fromday: Union[str, int]="", today: Union[str, int]="", path: str="",
+            date_format: str="'%Y-%m-%d'"
     ):
         """ReadUSHydrograph.
 
@@ -277,8 +280,7 @@ class Interface(River):
             with segment id as a column name and a column 'total' contains the
             sum of all the hydrographs.
         """
-        assert hasattr(
-            self, "BCTable"
+        assert isinstance(self.BCTable, DataFrame
         ), "Please read the lateras table first using the 'ReadLateralsTable' method"
 
         # if path == '':

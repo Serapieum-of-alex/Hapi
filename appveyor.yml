@@ -93,7 +93,7 @@ configuration:
   - Release
 
 test_script:
-- cmd: cd Examples/
+#- cmd: cd Examples/
 #- cmd: conda list
 #- cmd: python test.py
 - cmd: python -m pytest -vvv --cov=Hapi

@@ -242,7 +242,7 @@ class Inputs:
         # Declare a dataframe for the output file, with as index the gaugne numbers
         # and as columns all the output names.
         StatisticalPr = pd.DataFrame(np.nan, index=ComputationalNodes, columns=col_csv)
-        StatisticalPr.index.name = "ID"
+        StatisticalPr.index.name = "id"
         if Distibution == "GEV":
             DistributionPr = pd.DataFrame(
                 np.nan, index=ComputationalNodes, columns=["c", "loc", "scale", "D-static", "P-Value"]
@@ -251,7 +251,7 @@ class Inputs:
             DistributionPr = pd.DataFrame(
                 np.nan, index=ComputationalNodes, columns=["loc", "scale", "D-static", "P-Value"]
             )
-        DistributionPr.index.name = "ID"
+        DistributionPr.index.name = "id"
         # required return periods
         T = [1.5, 2, 5, 10, 25, 50, 50, 100, 200, 500, 1000]
         T = np.array(T)
@@ -380,18 +380,18 @@ class Inputs:
     def WriteHQFile(self, NoNodes, StatisticalPropertiesFile, SaveTo):
         # Create a table of all nodes and sub-basins
         HQ = pd.DataFrame(
-            index=list(range(NoNodes)), columns=["ID", "2yrs", "10yrs", "100yrs"]
+            index=list(range(NoNodes)), columns=["id", "2yrs", "10yrs", "100yrs"]
         )
         HQ.loc[:, ["2yrs", "10yrs", "100yrs"]] = -1
-        HQ.loc[:, "ID"] = range(1, NoNodes + 1)
+        HQ.loc[:, "id"] = range(1, NoNodes + 1)
         StatisticalPr = pd.read_csv(StatisticalPropertiesFile)
         for i in range(len(StatisticalPr)):
             # i=0
-            HQ.loc[StatisticalPr.loc[i, "ID"] - 1, "2yrs"] = StatisticalPr.loc[i, "q2"]
-            HQ.loc[StatisticalPr.loc[i, "ID"] - 1, "10yrs"] = StatisticalPr.loc[
+            HQ.loc[StatisticalPr.loc[i, "id"] - 1, "2yrs"] = StatisticalPr.loc[i, "q2"]
+            HQ.loc[StatisticalPr.loc[i, "id"] - 1, "10yrs"] = StatisticalPr.loc[
                 i, "q10"
             ]
-            HQ.loc[StatisticalPr.loc[i, "ID"] - 1, "100yrs"] = StatisticalPr.loc[
+            HQ.loc[StatisticalPr.loc[i, "id"] - 1, "100yrs"] = StatisticalPr.loc[
                 i, "q100"
             ]
 
@@ -575,7 +575,7 @@ class Inputs:
                     # np.where(USnode['SubID'] == SubsID.loc[i,0])
                     try:
                         DSnode = USnode.loc[SubsID.loc[i, 0] - 1, "US"]
-                        loc = np.where(DistributionPr["ID"] == DSnode)[0][0]
+                        loc = np.where(DistributionPr["id"] == DSnode)[0][0]
                     except IndexError:
                         OtherSubLoc = np.where(
                             ReplacementSub["missing"] == SubsID.loc[i, 0]
@@ -583,7 +583,7 @@ class Inputs:
                         DSnode = USnode.loc[
                             ReplacementSub.loc[OtherSubLoc, "replacement"] - 1, "US"
                         ]
-                        loc = np.where(DistributionPr["ID"] == DSnode)[0][0]
+                        loc = np.where(DistributionPr["id"] == DSnode)[0][0]
 
                     # to get the Non Exceedance probability for a specific Value
                     F = gumbel_r.cdf(
