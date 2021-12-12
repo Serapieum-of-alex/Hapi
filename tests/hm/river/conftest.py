@@ -1,3 +1,4 @@
+from typing import List
 import pytest
 
 @pytest.fixture(scope="module")
@@ -21,6 +22,11 @@ def create_sub_instance_subid() -> int:
 @pytest.fixture(scope="module")
 def create_sub_instance_firstxs() -> int:
     return 1
+
+@pytest.fixture(scope="module")
+def test_sub_GetFlow_lateralTable() -> List[int]:
+    return [30, 50, 70]
+
 
 @pytest.fixture(scope="module")
 def create_sub_instance_lastxs() -> int:

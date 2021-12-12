@@ -1,3 +1,4 @@
+from typing import List
 import Hapi.hm.river as R
 from Hapi.hm.interface import Interface
 
@@ -33,6 +34,7 @@ def test_read_rivernetwork_method(
     River.RiverNetwork(river_network_path)
     assert len(River.rivernetwork) == 3 and len(River.rivernetwork.columns) == 3
 
+
 def test_create_sub_instance(
         create_sub_instance_subid: int,
         version: int,
@@ -50,6 +52,7 @@ def test_create_sub_instance(
     assert Sub.firstxs == create_sub_instance_firstxs and Sub.lastxs == create_sub_instance_lastxs
     assert Sub.slope
 
+
 def test_sub_GetFlow(
         create_sub_instance_subid: int,
         version: int,
@@ -64,6 +67,7 @@ def test_sub_GetFlow(
         interface_Laterals_table_path: str,
         interface_Laterals_folder: str,
         interface_Laterals_date_format: str,
+        test_sub_GetFlow_lateralTable: List[int],
 ):
     River = R.River('HM', version=version)
     River.ReadCrossSections(river_cross_section_path)
@@ -82,6 +86,7 @@ def test_sub_GetFlow(
     Sub.GetFlow(IF)
 
     assert len(Sub.BC) == len(Sub.Laterals) == 80 and len(Sub.BC.columns) == 1 and len(Sub.Laterals.columns) == 4
+    assert all(elem in Sub.LateralsTable for elem in test_sub_GetFlow_lateralTable)
 
 
 def test_Read1DResult(
@@ -107,4 +112,44 @@ def test_Read1DResult(
     assert test_Read1DResult_xsid in Sub.XSWaterLevel.columns.tolist()
     assert test_Read1DResult_xsid in Sub.XSWaterDepth.columns.tolist()
 
-    Sub.firstday == dt.datetime.strptime("1955-01-01", "%Y-%m-%d")
+
+def test_Sub_GetLaterals(
+        create_sub_instance_subid: int,
+        version: int,
+        river_cross_section_path: str,
+        river_network_path: str,
+        slope_path: str,
+        dates: list,
+        interface_bc_path: str,
+        interface_bc_folder: str,
+        interface_bc_date_format: str,
+
+        interface_Laterals_table_path: str,
+        interface_Laterals_folder: str,
+        interface_Laterals_date_format: str,
+        test_sub_GetFlow_lateralTable: List[int],
+):
+    River = R.River('HM', version=version)
+    River.ReadCrossSections(river_cross_section_path)
+    River.RiverNetwork(river_network_path)
+    River.Slope(slope_path)
+    Sub = R.Sub(create_sub_instance_subid, River)
+
+    IF = Interface('Rhine', start=dates[0])
+    IF.ReadBoundaryConditionsTable(interface_bc_path)
+    IF.ReadBoundaryConditions(path=interface_bc_folder, date_format=interface_bc_date_format)
+
+    IF.ReadCrossSections(river_cross_section_path)
+    IF.ReadLateralsTable(interface_Laterals_table_path)
+    IF.ReadLaterals(path=interface_Laterals_folder, date_format=interface_Laterals_date_format)
+
+    Sub.GetFlow(IF)
+    Laterals = Sub.GetLaterals(gaugexs)
+
+    # assert len(Sub.BC) == len(Sub.Laterals) == 80 and len(Sub.BC.columns) == 1 and len(Sub.Laterals.columns) == 4
+    # assert all(elem in Sub.LateralsTable for elem in test_sub_GetFlow_lateralTable)
+
+
+
+
+
