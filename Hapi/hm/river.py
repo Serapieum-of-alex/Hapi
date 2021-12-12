@@ -244,7 +244,7 @@ class River:
         self.EventIndex = None
         self.enddays = None
         self.rivernetwork = None
-        self.SP = None
+        self.SP = None #StatisticalProperties
         self.CustomizedRunspath = None
         self.Segments = None
         self.RP = None
@@ -1536,13 +1536,15 @@ class River:
         self.US = []
         self.Trace2(sub_id, self.US)
 
-    def StatisticalProperties(self, path, Filter=True, Distibution="GEV"):
+
+    def StatisticalProperties(self, path: str, Filter: bool=True, 
+                              Distibution: str="GEV"):
         """StatisticalProperties.
 
         StatisticalProperties method reads the parameters of the distribution and
-        calculates the the 2, 5, 10, 15, 20, 50, 100 return period discharge for each
-        sub-basin to create the parameters file use the code StatisticalProperties
-        in the 07ReturnPeriod folder
+        calculates the the 2, 5, 10, 15, 20, 50, 100, 200, 500, 1000 return 
+        period discharge for each sub-basin to create the parameters file use 
+        the code StatisticalProperties in the 07ReturnPeriod folder
 
         Parameters
         ----------
@@ -1554,7 +1556,7 @@ class River:
 
         Returns
         -------
-            1-SP:[data frame attribute]
+            1-SP: [data frame attribute]
                 containing the river computational nodes US of the sub basins
                 and estimated gumbel distribution parameters that fit the time
                 series
@@ -1605,18 +1607,20 @@ class River:
         for i in range(len(self.SP)):
             if self.SP.loc[i, "loc"] != -1:
                 if Distibution == "GEV":
-                    self.SP.loc[i, self.SP.keys()[4:].tolist()] = genextreme.ppf(
+                    self.SP.loc[i, self.SP.keys()[6:].tolist()] = genextreme.ppf(
                         F,
                         self.SP.loc[i, "c"],
                         loc=self.SP.loc[i, "loc"],
                         scale=self.SP.loc[i, "scale"],
                     ).tolist()
                 else:
-                    self.SP.loc[i, self.SP.keys()[3:].tolist()] = gumbel_r.ppf(
+                    self.SP.loc[i, self.SP.keys()[5:].tolist()] = gumbel_r.ppf(
                         F, loc=self.SP.loc[i, "loc"], scale=self.SP.loc[i, "scale"]
                     ).tolist()
 
-    def GetReturnPeriod(self, Subid, Q):
+
+    def GetReturnPeriod(self, Subid: int, Q: Union[float, int], 
+                        distribution: str="GEV"):
         """GetReturnPeriod.
 
         GetReturnPeriod method takes given discharge and using the distribution
@@ -1636,16 +1640,23 @@ class River:
                 parameters of the distribution for the catchment.
 
         """
-        assert self.SP, "Please read the statistical properties file for the catchment first"
+        assert isinstance(self.SP, DataFrame), "Please read the statistical properties file for the catchment first"
 
         try:
             loc = np.where(self.SP["id"] == Subid)[0][0]
-            F = gumbel_r.cdf(
-                Q, loc=self.SP.loc[loc, "loc"], scale=self.SP.loc[loc, "scale"]
-            )
+            if distribution =="GEV":
+                F = gumbel_r.cdf(
+                    Q, loc=self.SP.loc[loc, "loc"], scale=self.SP.loc[loc, "scale"]
+                )
+            else:
+                F = gumbel_r.cdf(
+                    Q, loc=self.SP.loc[loc, "loc"], scale=self.SP.loc[loc, "scale"]
+                )
+                
             return 1 / (1 - F)
         except:
             return -1
+
 
     def GetQForReturnPeriod(self, Subid, T):
         """GetQForReturnPeriod.
@@ -1680,6 +1691,7 @@ class River:
         except:
             return -1
 
+
     def GetBankfullDepth(self, function, ColumnName):
         """GetBankfullDepth.
 
@@ -1704,7 +1716,8 @@ class River:
             self.crosssections["b"].to_frame().applymap(function)
         )
 
-    def GetCapacity(self, ColumnName, Option=1):
+
+    def GetCapacity(self, ColumnName: str, Option: int=1):
         """GetCapacity.
 
         GetCapacity method calculates the discharge that is enough to fill the
@@ -1782,7 +1795,7 @@ class River:
                     i, ColumnName
                 ] * (slope) ** (1 / 2)
 
-            if self.SP:
+            if isinstance(self.SP, DataFrame):
                 RP = self.GetReturnPeriod(
                     self.crosssections.loc[i, "id"],
                     self.crosssections.loc[i, ColumnName],
@@ -1790,6 +1803,7 @@ class River:
                 if np.isnan(RP):
                     RP = -1
                 self.crosssections.loc[i, ColumnName + "RP"] = round(RP, 2)
+
 
     def CalibrateDike(self, ObjectiveRP, CurrentRP):
         """CalibrateDike.
