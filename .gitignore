@@ -1,8 +1,6 @@
 build/
 dist/
 HAPI_Nile.egg-info/
-Examples/data/Hapi.sublime-project
-Examples/data/Hapi.sublime-workspace
 *.pyc
 *.zip
 *.drawio
@@ -23,20 +21,12 @@ Examples/data/Hapi.sublime-workspace
 
 build_artifacts
 # conda smithy ci-skeleton end
-docs/source/HapiDocs.sublime-project
-docs/source/HapiDocs.sublime-workspace
-docs/HapiDocs.sublime-project
-docs/HapiDocs.sublime-workspace
 Hapi/hm/saintvenant.py
 Hapi/hm.py
 
 HAPI_Nile.egg-info/PKG-INFO
 docs/.vscode/
-Examples/data/hydrodynamic model/H-2010-01-01.csv
 Examples/data/Hapi.qgz
-Examples/data/GIS/Hapi_GIS_Data/rasterexample.tif
-Examples/data/GIS/Hapi_GIS_Data/fillrasterexample.tif
-Examples/data/GIS/Hapi_GIS_Data/rasterlike.tif
 
 .idea/.gitignore
 .idea/HAPI.iml

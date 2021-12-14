@@ -93,9 +93,5 @@ configuration:
   - Release
 
 test_script:
-#- cmd: cd Examples/
-#- cmd: conda list
-#- cmd: python test.py
 - cmd: python -m pytest -vvv --cov=Hapi
-#- cmd: C:\Miniconda-x64\envs\Hapi-env\python test.py
 - cmd: coveralls
