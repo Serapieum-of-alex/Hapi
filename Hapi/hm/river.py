@@ -10,6 +10,7 @@ import zipfile
 from bisect import bisect
 from typing import Union  # List, Optional,
 
+from loguru import logger
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -185,7 +186,7 @@ class River:
                     "plese check the fmt ({0}) you entered as it is different from the"
                     " rrmstart data ({1})"
                 )
-                print(msg.format(fmt, rrmstart))
+                logger.debug(msg.format(fmt, rrmstart))
                 return
 
         self.rrmend = self.rrmstart + dt.timedelta(days=rrmdays)
@@ -678,9 +679,9 @@ class River:
                     + ".txt"
                 )
                 hh = np.transpose(np.loadtxt(path.format("h"), dtype=np.float16))
-                print(path.format("h") + "- file is read")
+                logger.debug(path.format("h") + "- file is read")
                 qq = np.transpose(np.loadtxt(path.format("q"), dtype=np.float16))
-                print(path.format("q") + " file is read")
+                logger.debug(path.format("q") + " file is read")
                 if not Lastsegment:
                     hh = hh[:, :-1]
                     qq = qq[:, :-1]
@@ -819,7 +820,7 @@ class River:
             for i in range(days[0], days[-1]):
                 if i not in days:
                     missing_days.append(i)
-                    print(f"day = {i} is missing")
+                    logger.debug(f"day = {i} is missing")
 
             if len(missing_days) > 0:
                 if len(missing_days) > 10000:
@@ -840,7 +841,7 @@ class River:
                     missing_2 = [i[1] for i in missing]
                     missing_3 = [i[2] for i in missing]
 
-                print("done")
+                logger.debug("done")
                 missing = pd.DataFrame(index=range(len(missing_1)), dtype=np.float64)
 
                 #    i=0
@@ -850,7 +851,7 @@ class River:
                 #            missing.loc[i*h:(i+1)*h-1,'day'] = missing_1[i*h:(i+1)*h]
                 #            missing.loc[i*h:(i+1)*h-1,'hour'] = missing_2[i*h:(i+1)*h]
                 #            missing.loc[i*h:(i+1)*h-1,'xs']  = missing_3[i*h:(i+1)*h]
-                #            print(i)
+                #            logger.debug(i)
                 #            i=i+1
                 #
                 #        missing.loc[i*h:len(missing_1),'day'] = missing_1[i*h:len(missing_1)]
@@ -931,7 +932,7 @@ class River:
             fromf = 0
 
         for i in range(len(FolderNames)):
-            print(f"{i} - {FolderNames[i]}")
+            logger.debug(f"{i} - {FolderNames[i]}")
 
             if tof == "":
                 tof = len(os.listdir(path + "/" + FolderNames[i]))
@@ -948,13 +949,13 @@ class River:
                 go = False
 
                 if Left and FileList[j].split(".")[0].endswith("_left"):
-                    print(f"{i} - {j} -  {FileList[j]}")
+                    logger.debug(f"{i} - {j} -  {FileList[j]}")
                     # create data frame for the sub-basin
                     first = "L" + FileList[j].split(".")[0]
                     go = True
 
                 elif Right and FileList[j].split(".")[0].endswith("_right"):
-                    print(str(i) + "-" + str(j) + "-" + FileList[j])
+                    logger.debug(str(i) + "-" + str(j) + "-" + FileList[j])
                     first = "R" + FileList[j].split(".")[0]
                     go = True
 
@@ -965,7 +966,7 @@ class River:
                     and not FileList[j].split(".")[0].endswith("_right")
                     and not FileList[j].split(".")[0].endswith("_left")
                 ):
-                    print(str(i) + "-" + str(j) + "-" + FileList[j])
+                    logger.debug(str(i) + "-" + str(j) + "-" + FileList[j])
                     # create data frame for the sub-basin
                     first = "one" + FileList[j].split(".")[0]
                     go = True
@@ -1015,7 +1016,7 @@ class River:
             elif var.startswith("one"):
                 # put the dataframe in order first
                 exec(var + ".sort_values(by=[0,1,2],ascending = True, inplace = True)")
-                print("Saving " + var[3:] + ".txt")
+                logger.debug("Saving " + var[3:] + ".txt")
                 path = Savepath + "/" + var[3:] + ".txt"
                 exec(var + ".to_csv(path ,index= None, sep = ' ', header = None)")
 
@@ -1869,9 +1870,9 @@ class River:
                 < self.crosssections.loc[i, ObjectiveRP]
                 and self.crosssections.loc[i, CurrentRP] != -1
             ):
-                print("XS-" + str(self.crosssections.loc[i, "xsid"]))
-                print("Old RP = " + str(self.crosssections.loc[i, CurrentRP]))
-                print("Old H = " + str(self.crosssections.loc[i, ["zl", "zr"]].min()))
+                logger.debug("XS-" + str(self.crosssections.loc[i, "xsid"]))
+                logger.debug("Old RP = " + str(self.crosssections.loc[i, CurrentRP]))
+                logger.debug("Old H = " + str(self.crosssections.loc[i, ["zl", "zr"]].min()))
 
                 self.crosssections.loc[i, "New RP"] = self.crosssections.loc[
                     i, CurrentRP
@@ -1897,7 +1898,7 @@ class River:
                         )
 
                     H = self.crosssections.loc[i, ["zlnew", "zrnew"]].min()
-                    # print("H=" + str(H))
+                    # logger.debug("H=" + str(H))
 
                     Coords = self.GetVortices(H - BedLevel, Hl, Hr, Bl, Br, B, dbf)
                     # get the area and perimeters
@@ -1919,10 +1920,10 @@ class River:
                     )
 
                     self.crosssections.loc[i, "New RP"] = round(RP, 2)
-                    # print("New RP = "+str(RP))
-                print("New RP = " + str(round(RP, 2)))
-                print("New H = " + str(round(H, 2)))
-                print("---------------------------")
+                    # logger.debug("New RP = "+str(RP))
+                logger.debug("New RP = " + str(round(RP, 2)))
+                logger.debug("New H = " + str(round(H, 2)))
+                logger.debug("---------------------------")
 
     def Overtopping(self, OvertoppingResultpath=""):
         """Overtopping.
@@ -2913,7 +2914,7 @@ class River:
                     stop = 1
                 except:
                     Alt1 = Alt1 - 1
-                    # print(Alt1)
+                    # logger.debug(Alt1)
                     if Alt1 <= 0:
                         stop = 1
                     continue
@@ -2929,7 +2930,7 @@ class River:
                     stop = 1
                 except:
                     Alt2 = Alt2 + 1
-                    # print(Alt2)
+                    # logger.debug(Alt2)
                     if Alt2 >= data.loc[len(data) - 1, "day"]:
                         stop = 1
                     continue
@@ -2942,12 +2943,12 @@ class River:
                 + """  and the closest later day is """
                 + str(Alt2)
             )
-            print(text)
+            logger.debug(text)
 
             if abs(Alt1 - fromday) > abs(Alt2 - fromday):
                 Alt1 = Alt2
         else:
-            print("fromday you entered does exist in the data ")
+            logger.debug("fromday you entered does exist in the data ")
             # Alt1 = False
             Alt1 = fromday
 
@@ -2964,7 +2965,7 @@ class River:
                     stop = 1
                 except:
                     Alt3 = Alt3 - 1
-                    # print(Alt1)
+                    # logger.debug(Alt1)
                     if Alt3 <= 0:
                         stop = 1
                     continue
@@ -2980,7 +2981,7 @@ class River:
                     stop = 1
                 except:
                     Alt4 = Alt4 + 1
-                    # print(Alt2)
+                    # logger.debug(Alt2)
                     if Alt4 >= data.loc[len(data) - 1, "day"]:
                         Alt4 = data.loc[len(data) - 1, "day"]
                         stop = 1
@@ -2994,13 +2995,13 @@ class River:
                 + """  and the closest later day is """
                 + str(Alt4)
             )
-            print(text)
+            logger.debug(text)
 
             if abs(Alt3 - today) > abs(Alt4 - today):
                 Alt3 = Alt4
 
         else:
-            print("today you entered does exist in the data ")
+            logger.debug("today you entered does exist in the data ")
             # Alt3 = False
             Alt3 = today
 
@@ -3066,7 +3067,7 @@ class River:
                 # open the zip file
                 compressedfile = zipfile.ZipFile(Resultpath + "/" + MapsNameList[k])
             except:
-                print("Error Opening the compressed file")
+                logger.debug("Error Opening the compressed file")
                 Errors.append(MapsNameList[k][len(MapsPrefix) : -4])
                 continue
 
@@ -3074,7 +3075,7 @@ class River:
             fname = compressedfile.infolist()[0]
             # get the time step from the file name
             timestep = int(fname.filename[len(MapsPrefix) : -4])
-            print("File No = " + str(k))
+            logger.debug("File No = " + str(k))
 
             ASCIIF = compressedfile.open(fname)
             SpatialRef = ASCIIF.readlines()[:6]
@@ -3103,7 +3104,7 @@ class River:
                 Save = 1
 
             if Save == 1:
-                print("File= " + str(timestep))
+                logger.debug("File= " + str(timestep))
                 # write the new file
                 fname = MapsPrefix + str(timestep) + ".asc"
                 newfile = Saveto + "/" + fname
@@ -3132,8 +3133,8 @@ class River:
 
         Print Attributes List
         """
-        print("\n")
-        print(
+        logger.debug("\n")
+        logger.debug(
             "Attributes List of: "
             + repr(self.__dict__["name"])
             + " - "
@@ -3144,15 +3145,17 @@ class River:
         self_keys.sort()
         for key in self_keys:
             if key != "name":
-                print(str(key) + " : " + repr(self.__dict__[key]))
+                logger.debug(str(key) + " : " + repr(self.__dict__[key]))
 
-        print("\n")
+        logger.debug("\n")
 
 
 class Sub(River):
     """Sub segment object.
 
     represent a segment of the river
+    to create the Sub instance the river object has to have the cross-sections read using the
+    'ReadCrossSections' method
     """
 
     def __init__(self, sub_id: int, River, RunModel: bool=False):
@@ -3226,6 +3229,8 @@ class Sub(River):
 
         if isinstance(River.rivernetwork, DataFrame):
             self.usnode, self.dsnode = River.TraceSegment(sub_id)
+        else:
+            self.usnode, self.dsnode = [], []
 
         if isinstance(River.RP, DataFrame):
             self.RP = River.RP.loc[
@@ -3477,7 +3482,7 @@ class Sub(River):
                                                           "result of this sub-basin first")
 
             if self.Result1D["q"].min() < 0:
-                print("NegativeDischarge")
+                logger.debug("NegativeDischarge")
                 # extract -ve discharge data if exist
                 self.Negative = dict()
                 self.Negative["NegQ"] = self.Result1D[self.Result1D["q"] < 0]
@@ -3503,7 +3508,7 @@ class Sub(River):
                     plt.ylabel("Discharge m3/s", fontsize=15)
 
             else:
-                print("There is no -ve Discharge")
+                logger.debug("There is no -ve Discharge")
 
         elif TS == "1min":
             assert hasattr(
@@ -3526,9 +3531,9 @@ class Sub(River):
         fromday: Union[int, str]="",
         today: Union[int, str]="",
         path: str="",
-        date_format = "%d_%m_%Y",
-        location = 1,
-        path2 = "",
+        date_format: str = "%d_%m_%Y",
+        location: int = 1,
+        path2: str = "",
     ):
         """ReadRRMHydrograph.
 
@@ -3537,7 +3542,7 @@ class Sub(River):
 
         Parameters
         ----------
-            1-Nodeid : [Integer]
+            1-station_id : [Integer]
                 DESCRIPTION.
             2-fromday : [Integer], optional
                 start day of the period you wanrt to read its results.
@@ -3545,7 +3550,17 @@ class Sub(River):
             3-today : [Integer], optional
                 end day of the period you wanrt to read its results.
                 The default is [].
-
+            4-path: [str]
+                path to the directory where the result files. if not given the
+                river.rrmpath should be given. default is ''
+            5-date_format: [str]
+                format of the date string, default is "%d_%m_%Y"
+            6-location: [1]
+                1 if there is results for the rrm at one location, 2 if the are
+                results for the rrm at two locations. default is 1
+            6- path2: [str]
+                path where the results of the rrm at the second location, this
+                parameter is needed only in case location=2. default is ''
         Returns
         -------
             1-RRM:[data frame attribute]
@@ -3599,7 +3614,7 @@ class Sub(River):
                 date_format,
             )[station_id].tolist()
 
-        print("RRM time series for the gauge " + str(station_id) + " is read")
+        logger.debug("RRM time series for the gauge " + str(station_id) + " is read")
 
         if fromday == "":
             fromday = 1
@@ -3609,8 +3624,11 @@ class Sub(River):
         start = self.rrmreferenceindex.loc[fromday, "date"]
         end = self.rrmreferenceindex.loc[today, "date"]
 
-        self.RRM.index = pd.date_range(start, end, freq="D")
-        self.RRM2.index = pd.date_range(start, end, freq="D")
+        if location == 1:
+            self.RRM.index = pd.date_range(start, end, freq="D")
+        else:
+            self.RRM.index = pd.date_range(start, end, freq="D")
+            self.RRM2.index = pd.date_range(start, end, freq="D")
         # get the simulated hydrograph and add the cutted HQ2
 
     def Resample(self, xsid, ColumnName, fromday: Union[int, str]="",
@@ -3823,7 +3841,7 @@ class Sub(River):
                 else:
                     self.DetailedOvertoppingRight.loc[eventdays[j], self.id] = 0
         except:
-            # print("file did not open")
+            # logger.debug("file did not open")
             self.DetailedOvertoppingRight.loc[:, self.id] = 0
 
         # sum overtopping for each day
@@ -4044,7 +4062,8 @@ class Sub(River):
         2-today : [integer], optional
                 the day you want to read the result to.
         3-path : [String], optional
-            path to read the results from. The default is ''.
+            path to read the results from. if path is not given the CustomizedRunspath
+             attribute for the river instance should be given. The default is ''.
         4-date_format : "TYPE, optional
             DESCRIPTION. The default is "'%Y-%m-%d'".
 
@@ -4057,12 +4076,14 @@ class Sub(River):
         """
         self.USHydrographs = pd.DataFrame()
 
+        # assert isinstance(self.usnode, list) and len(self.usnode) > 0, "please read the us"
+
         if path == "":
             path = self.CustomizedRunspath
 
         if len(self.usnode) > 1:
             # there is more than one upstream segment
-            if type(self.usnode) == list:
+            if isinstance(self.usnode, list) :
                 for i in range(len(self.usnode)):
                     Nodeid = self.usnode[i]
                     try:
@@ -4075,13 +4096,13 @@ class Sub(River):
                             today,
                             date_format,
                         )[Nodeid]
-                        print(f"the US hydrograph '{Nodeid}' has been read")
+                        logger.debug(f"the US hydrograph '{Nodeid}' has been read")
                     except FileNotFoundError:
                         msg = (
                             f" the Path - {path} does not contain the routed hydrographs for the the "
                             f"segment - {Nodeid}"
                         )
-                        print(msg)
+                        logger.debug(msg)
                         return
 
             # there is one upstream segment
@@ -4097,16 +4118,17 @@ class Sub(River):
                     today,
                     date_format,
                 )[Nodeid]
-                print(f"the US hydrograph '{Nodeid}' has been read")
+                logger.debug(f"the US hydrograph '{Nodeid}' has been read")
             except FileNotFoundError:
                 msg = (
                     f"The Path - {path} does not contain the routed hydrographs for the "
                     f"segment - {Nodeid}"
                 )
-                print(msg)
+                logger.debug(msg)
                 return
         else:
-            print("the Segment Does not have any Upstream Segments")
+            logger.debug("the Segment Does not have any Upstream Segments, or you have "
+                         "not read the river network in the river instance")
             return
 
         self.USHydrographs["total"] = self.USHydrographs.sum(axis=1)
@@ -4119,6 +4141,7 @@ class Sub(River):
         end = self.referenceindex.loc[today, "date"]
 
         self.USHydrographs.index = pd.date_range(start, end, freq="D")
+
 
     def GetUSHydrograph(self, River):
         """GetUSHydrograph.
@@ -4337,7 +4360,7 @@ class Sub(River):
             s1 = Laterals.index[0]
             e1 = Laterals.index[-1]
         except IndexError:
-            print("there are no laterals for the given segment")
+            logger.debug("there are no laterals for the given segment")
             return
 
         if isinstance(self.BC, DataFrame):
@@ -4362,7 +4385,7 @@ class Sub(River):
                 Laterals.loc[s:e, 0].values
                 + self.USHydrographs.loc[s:e, "total"].values
             )
-        print(f"Total flow for the XS-{gaugexs} has been calculated")
+        logger.debug(f"Total flow for the XS-{gaugexs} has been calculated")
 
 
     def H2Q(self, Q):
@@ -4556,7 +4579,7 @@ class Sub(River):
                     color=hmcolor,
                 )
             except KeyError:
-                print(
+                logger.debug(
                     f"the xs given -{gaugexs} - does not exist in the river segment"
                 )
 
@@ -4565,7 +4588,7 @@ class Sub(River):
                 try:
                     Laterals = self.GetLaterals(gaugexs)
                 except AssertionError:
-                    print("please read the laterals first to be able to plot it")
+                    logger.debug("please read the laterals first to be able to plot it")
 
                 # BC
 
@@ -4600,7 +4623,7 @@ class Sub(River):
                             color=totalcolor,
                         )
                     except AttributeError:
-                        print(
+                        logger.debug(
                             "there are no totalFlow for this segment please use the 'GetTotalFlow' method to create it"
                         )
 
@@ -4621,7 +4644,7 @@ class Sub(River):
                         "'ReadUSHydrograph' method"
                     )
 
-                    print(msg)
+                    logger.debug(msg)
 
             # Gauge
             if plotgauge:
@@ -4661,7 +4684,7 @@ class Sub(River):
                             color=rrmcolor,
                         )
                     except KeyError:
-                        print(
+                        logger.debug(
                             f" Station {gaugename} does not have the first RRM discharge time series"
                         )
 
@@ -4676,7 +4699,7 @@ class Sub(River):
                             color=rrm2color,
                         )
                     except KeyError:
-                        print(
+                        logger.debug(
                             f" Station {gaugename} does not have a second RRM discharge time series"
                         )
 
@@ -4919,7 +4942,7 @@ class Sub(River):
                     color=rrmcolor,
                 )
             except KeyError:
-                print(
+                logger.debug(
                     " XS " + str(specificxs) + "does not exist in the  'RRMProgression'"
                 )
         else:
@@ -4927,7 +4950,7 @@ class Sub(River):
                 "please read the RRM hydrographs using the 'ReadRRMProgression'"
                 "in the interface module"
             )
-            print(msg)
+            logger.debug(msg)
 
         if type(xlabels) != bool:
             start, end = ax.get_xlim()
@@ -5058,12 +5081,12 @@ class Sub(River):
         wb = round(Pf.WB(Qobs, qsim), 0)
         nsehf = round(Pf.NSEHF(Qobs, qsim), 2)
         nse = round(Pf.NSE(Qobs, qsim), 2)
-        print("--------------------")
-        print("RMSE = " + str(rmse))
-        print("KGE = " + str(kge))
-        print("WB = " + str(wb))
-        print("NSEHF = " + str(nsehf))
-        print("NSE = " + str(nse))
+        logger.debug("--------------------")
+        logger.debug("RMSE = " + str(rmse))
+        logger.debug("KGE = " + str(kge))
+        logger.debug("WB = " + str(wb))
+        logger.debug("NSEHF = " + str(nsehf))
+        logger.debug("NSE = " + str(nse))
 
         return rmse, kge, wb, nsehf, nse
 
@@ -5151,17 +5174,17 @@ class Sub(River):
                 GaugeEnd = GaugeEnd.values[0]
 
                 if GaugeStart > start and GaugeStart > end:
-                    print(f"Availabel data for the gauge starts from {GaugeStart}")
-                    print(
+                    logger.debug(f"Availabel data for the gauge starts from {GaugeStart}")
+                    logger.debug(
                         f"The period you provided is between {start} and {end}"
                     )
                     plotgauge = False
                 elif GaugeEnd < start and GaugeStart < end:
-                    print(f"Availabel data for the gauge starts from {GaugeEnd}")
-                    print("Out of Gauge dates")
+                    logger.debug(f"Availabel data for the gauge starts from {GaugeEnd}")
+                    logger.debug("Out of Gauge dates")
                     plotgauge = False
             except (IndexError, TypeError):
-                print("The XS you provided does not exist in the GaugesTable")
+                logger.debug("The XS you provided does not exist in the GaugesTable")
                 plotgauge = False
 
         fig, ax = plt.subplots(ncols=1, nrows=1, figsize=figsize)
@@ -5226,11 +5249,11 @@ class Sub(River):
                 "WLend"
             ].values[0]
         except IndexError:
-            print("The XS you provided does not exist in the GaugesTable")
+            logger.debug("The XS you provided does not exist in the GaugesTable")
             return
 
         if type(GaugeStart) == int:
-            print("No water level data for this river segment")
+            logger.debug("No water level data for this river segment")
             return
 
         if Filter:
@@ -5277,7 +5300,7 @@ class Sub(River):
             # series1 = np.array(sub.ResampledWL[gaugexs])
 
         if len(obs) != len(mod) or len(mod) == 0:
-            print(
+            logger.debug(
                 "Availabel data for the gauge starts from "
                 + str(GaugeStart)
                 + " To "
@@ -5292,12 +5315,12 @@ class Sub(River):
         NSEHF = round(Pf.NSEHF(obs, mod), 2)
         NSE = round(Pf.NSE(obs, mod), 2)
 
-        print("RMSE= " + str(RMSE))
-        print("KGE= " + str(KGE))
-        print("NSEHF= " + str(NSEHF))
-        print("NSE= " + str(NSE))
-        print("MBE= " + str(MBE))
-        print("MAE= " + str(MAE))
+        logger.debug("RMSE= " + str(RMSE))
+        logger.debug("KGE= " + str(KGE))
+        logger.debug("NSEHF= " + str(NSEHF))
+        logger.debug("NSE= " + str(NSE))
+        logger.debug("MBE= " + str(MBE))
+        logger.debug("MAE= " + str(MAE))
 
         return MBE, MAE, RMSE, KGE, NSEHF, NSE
 
@@ -5392,8 +5415,8 @@ class Sub(River):
         Print Attributes List
         """
 
-        print("\n")
-        print(
+        logger.debug("\n")
+        logger.debug(
             "Attributes List of: "
             + repr(self.__dict__["name"])
             + " - "
@@ -5404,6 +5427,6 @@ class Sub(River):
         self_keys.sort()
         for key in self_keys:
             if key != "name":
-                print(str(key) + " : " + repr(self.__dict__[key]))
+                logger.debug(str(key) + " : " + repr(self.__dict__[key]))
 
-        print("\n")
+        logger.debug("\n")
