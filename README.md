@@ -24,7 +24,7 @@ Current build status
 
 [![Build Status](https://travis-ci.com/MAfarrag/Hapi.svg?branch=master)](https://travis-ci.com/MAfarrag/Hapi)
 [![Build status](https://ci.appveyor.com/api/projects/status/rys2u0l1nbmfjuww?svg=true)](https://ci.appveyor.com/project/MAfarrag/hapi)
-[![Coverage Status](https://coveralls.io/repos/github/MAfarrag/Hapi/badge.svg?branch=master)](https://coveralls.io/github/MAfarrag/Hapi?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/MAfarrag/Hapi/badge.svg?branch=hydraulic-model)](https://coveralls.io/github/MAfarrag/Hapi?branch=hydraulic-model)
 
 
 Current release info
