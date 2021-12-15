@@ -7,7 +7,7 @@
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 
 
-[![GitHub Clones](https://img.shields.io/badge/dynamic/json?color=success&label=Clone&query=count&url=https://github.com/MAfarrag/Hapi/blob/master/clone.json?raw=True&logo=github)](https://github.com/MShawon/github-clone-count-badge)
+[![GitHub Clones](https://img.shields.io/badge/dynamic/json?color=success&label=Clone&query=count&url=https://github.com/MAfarrag/Hapi/blob/master/clone.json?raw=True&logo=github)](https://github.com/MShawon/github-clone-count-badge) [![Say Thanks!](https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg)](https://saythanks.io/to/MAfarrag)
 
 Current build status
 ====================
@@ -31,6 +31,14 @@ Current build status
 ![AppVeyor tests (branch)](https://img.shields.io/appveyor/tests/MAfarrag/Ha%5Bi/hydraulic-model)
 
 
+[![Github all releases](https://img.shields.io/github/downloads/Naereen/StrapDown.js/total.svg)](https://GitHub.com/Naereen/StrapDown.js/releases/)
+
+![Profile views](https://gpvc.arturio.dev/MAfarrag)
+
+
+
+
+[![Contributors over time](https://contributor-graph-api.apiseven.com/contributors-svg?chart=contributorOverTime&repo=MAfarrag/Hapi)](https://www.apiseven.com/en/contributor-graph?chart=contributorOverTime&repo=MAfarrag/Hapi)
 
 
 Current release info
