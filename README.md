@@ -28,6 +28,7 @@ Current build status
 ![GitHub last commit](https://img.shields.io/github/last-commit/MAfarrag/Hapi)
 ![GitHub forks](https://img.shields.io/github/forks/MAfarrag/hapi?style=social)
 ![GitHub Repo stars](https://img.shields.io/github/stars/MAfarrag/Hapi?style=social)
+![AppVeyor tests (branch)](https://img.shields.io/appveyor/tests/MAfarrag/Ha%5Bi/hydraulic-model)
 
 
 Current release info
