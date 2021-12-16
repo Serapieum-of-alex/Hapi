@@ -34,6 +34,19 @@ environment:
 skip_commits:
   message: /Created.*\.(png|jpg|jpeg|bmp|gif)/      # Regex for matching commit message
 #  author: John                                      # Commit author's
+  files:
+    - .github/
+    - docs/
+    - recipe/
+    - .ci_support/
+    - .scripts/
+    - conda/
+    - mkdocs.yml
+    - conda-forge.yml
+    - README.md
+    - LICENSE.md
+    - CONTRIBUTING.md
+    - .readthedocs.yml
 
 # Including commits with particular message or from specific user
 #only_commits:
