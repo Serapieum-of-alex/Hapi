@@ -10,7 +10,7 @@ jobs:
       OS: ${{ matrix.os }}
       PYTHON: '3.9'
     steps:
-    - uses: actions/checkout@hydraulic-model
+    - uses: actions/checkout@master
     - name: Setup Python
       uses: actions/setup-python@master
       with:
