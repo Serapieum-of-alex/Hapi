@@ -3,6 +3,7 @@
 """Tests for `HapiSM` package."""
 
 import pytest
+
 import Hapi
 
 

@@ -1,10 +1,12 @@
 import Hapi.hm.calibration as RC
 
+
 def test_create_calibration_instance(
         version: int,
 
 ):
     RC.Calibration("HM", version=version)
+
 
 def test_ReadGaugesTable_method(calibration_gauges_table_path: str):
     Calib = RC.Calibration("HM", version=3)

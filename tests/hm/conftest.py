@@ -1,7 +1,9 @@
 import pytest
-from tests.hm.river.conftest import *
-from tests.hm.interface.conftest import *
+
 from tests.hm.calibration.conftest import *
+from tests.hm.interface.conftest import *
+from tests.hm.river.conftest import *
+
 
 @pytest.fixture(scope="module")
 def version() -> int:

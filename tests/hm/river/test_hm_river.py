@@ -1,6 +1,9 @@
 from typing import List
+
+import Hapi.hm.calibration as RC
 import Hapi.hm.river as R
 from Hapi.hm.interface import Interface
+
 
 def test_create_river_instance(
         dates:list,
@@ -222,12 +225,115 @@ def test_ReadUSHydrograph(
            and len(Sub.USHydrographs.columns) == len(segment3_us_subs) +1
     assert all(elem in Sub.USHydrographs.columns.tolist() for elem in segment3_us_subs)
 
-# def test_GetTotalFlow(
-#         version: int,
-#         river_cross_section_path: str,
-#         river_network_path: str,
+def test_GetTotalFlow(
+        version: int,
+        river_cross_section_path: str,
+        river_network_path: str,
+        CustomizedRunspath: str,
+        segment3: int,
+        create_sub_instance_lastxs: int,
+        dates:list,
+        interface_bc_path: str,
+        interface_bc_folder: str,
+        interface_bc_date_format: str,
+        interface_Laterals_table_path: str,
+        interface_Laterals_folder: str,
+        interface_Laterals_date_format: str,
+        test_time_series_length: int,
+):
+    River = R.River('HM', version=version)
+    River.ReadCrossSections(river_cross_section_path)
+    River.RiverNetwork(river_network_path)
+    River.CustomizedRunspath = CustomizedRunspath
+    IF = Interface('Rhine', start=dates[0])
+    IF.ReadBoundaryConditionsTable(interface_bc_path)
+    IF.ReadBoundaryConditions(path=interface_bc_folder, date_format=interface_bc_date_format)
+
+    IF.ReadCrossSections(river_cross_section_path)
+    IF.ReadLateralsTable(interface_Laterals_table_path)
+    IF.ReadLaterals(path=interface_Laterals_folder, date_format=interface_Laterals_date_format)
+
+    Sub = R.Sub(segment3, River)
+    Sub.GetFlow(IF)
+    Sub.ReadUSHydrograph()
+
+    Sub.GetTotalFlow(create_sub_instance_lastxs)
+    assert len(Sub.TotalFlow) == test_time_series_length
+    assert 'total' in Sub.TotalFlow.columns.to_list()
+
+
+def test_PlotQ(
+        version: int,
+        river_cross_section_path: str,
+        river_network_path: str,
+        CustomizedRunspath: str,
+        Read1DResult_path: str,
+        segment3: int,
+        create_sub_instance_lastxs: int,
+        dates:list,
+        interface_bc_path: str,
+        interface_bc_folder: str,
+        interface_bc_date_format: str,
+        interface_Laterals_table_path: str,
+        interface_Laterals_folder: str,
+        interface_Laterals_date_format: str,
+        calibration_gauges_table_path: str,
+        calibration_ReadObservedQ_Path: str,
+        nodatavalu: int,
+        calibration_gauges_file_extension: str,
+        gauge_date_format: str,
+        segment3_specificxs_plot: int,
+
+):
+    Calib = RC.Calibration("HM", version=version)
+    Calib.ReadGaugesTable(calibration_gauges_table_path)
+    Calib.ReadObservedQ(calibration_ReadObservedQ_Path, dates[0], dates[1],
+                        nodatavalu, file_extension=calibration_gauges_file_extension,
+                        gauge_date_format=gauge_date_format)
+
+    gaugei = 0
+    gauges = Calib.GaugesTable.loc[Calib.GaugesTable['id'] == segment3, :]
+    gauges.index = range(len(gauges))
+    stationname = gauges.loc[gaugei, 'oid']
+    gaugename = str(gauges.loc[gaugei, 'name'])
+    gaugexs = gauges.loc[gaugei, 'xsid']
+    segment_xs = str(segment3) + "_" + str(gaugexs)
+
+
+    River = R.River('HM', version=version)
+    River.ReadCrossSections(river_cross_section_path)
+    River.RiverNetwork(river_network_path)
+    River.CustomizedRunspath = CustomizedRunspath
+    River.onedresultpath = Read1DResult_path
+
+    IF = Interface('Rhine', start=dates[0])
+    IF.ReadBoundaryConditionsTable(interface_bc_path)
+    IF.ReadBoundaryConditions(path=interface_bc_folder, date_format=interface_bc_date_format)
+
+    IF.ReadCrossSections(river_cross_section_path)
+    IF.ReadLateralsTable(interface_Laterals_table_path)
+    IF.ReadLaterals(path=interface_Laterals_folder, date_format=interface_Laterals_date_format)
+
+    Sub = R.Sub(segment3, River)
+    Sub.GetFlow(IF)
+    Sub.ReadUSHydrograph()
+    Sub.Read1DResult()
+    fig, ax = Sub.PlotQ(Calib, gaugexs, dates[0], dates[1], stationname, gaugename, segment_xs,
+                        specificxs=segment3_specificxs_plot, xlabels=5, ylabels=5)
+
+
+# def test_CalculateQMetrics(
+#
 # ):
 #     River = R.River('HM', version=version)
 #     River.ReadCrossSections(river_cross_section_path)
 #     River.RiverNetwork(river_network_path)
-#     Sub = R.Sub(segment3, River)
+#
+#     # Filter = False
+#     startError = start
+#     endError = end
+#     startgauge = gauges.loc[gaugei, 'Qstart']
+#     endgauge = gauges.loc[gaugei, 'Qend']
+#
+#     Sub.CalculateQMetrics(Calib, stationname, startError, endError,  # gaugexs,
+#                           startgauge, endgauge, Filter=Filter)

@@ -1,5 +1,6 @@
 from Hapi.hm.interface import Interface
 
+
 def create_interface_instance(dates: list):
     Interface('Rhine', start=dates[0])
 

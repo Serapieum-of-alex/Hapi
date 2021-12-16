@@ -13,7 +13,7 @@ build:
   script: python -m pip install --no-deps --ignore-installed .
 
 channels:
-  - conda-forge  
+  - conda-forge
 
 requirements:
   host:

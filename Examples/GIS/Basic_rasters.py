@@ -681,6 +681,7 @@ import sys
 # data has been written to it
 #%%
 from osgeo import gdal, gdalnumeric, ogr, osr
+
 # import Image, ImageDraw
 # from PIL.Image import core as Image
 from PIL import Image, ImageDraw

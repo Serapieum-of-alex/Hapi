@@ -3,18 +3,22 @@
 Manual Calibration to calibrate the model Cross section of the hydraulic model
 """
 
+import datetime as dt
+
 # Libaries
 # from IPython import get_ipython
 # get_ipython().magic('reset -f')
 import os
-import numpy as np
+
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
-import datetime as dt
+
+import Hapi.hm.calibration as RC
 import Hapi.hm.river as R
 from Hapi.hm.interface import Interface
 from Hapi.visualizer import Visualize as V
-import Hapi.hm.calibration as RC
+
 """change directory to the processing folder inside the project folder"""
 os.chdir(r"F:\01Algorithms\Hydrology\HAPI")
 rpath = os.path.abspath(os.getcwd() + "/Examples/Hydrodynamic models/test_case")
@@ -64,7 +68,7 @@ IF.ReadBoundaryConditionsTable(rpath + "/inputs/1d/topo/boundaryconditions.txt")
 IF.ReadBoundaryConditions(path=rpath + "/inputs/1d/hydro/", date_format='%d_%m_%Y')
 # %% Sub-basin
 """ Write the Sub-ID you want to visualize its results """
-SubID = 1
+SubID = 3
 Sub = R.Sub(SubID, River)
 Sub.GetFlow(IF)
 # %% read RIM results
@@ -149,24 +153,24 @@ start = str(Sub.firstday)[:-9]
 end = str(Sub.lastday)[:-9]
 
 fig, ax = Sub.PlotQ(Calib, gaugexs, start, end, stationname, gaugename, segment_xs,
-          plotgauge=False, gaugeorder=gaugeorder, gaugestyle=12,
+          plotgauge=True, gaugeorder=gaugeorder, gaugestyle=12,
           plotlaterals=True, latorder=latorder, ushcolor='#DC143C',
           plotus=True, ushorder=ushorder, ushstyle=11,
           specificxs=specificxs, xsorder=xsorder,
-          plotrrm=False, rrm2color='orange', rrmorder=rrmorder,
+          plotrrm=True, rrm2color='orange', rrmorder=rrmorder,
           linewidth=5, figsize=(7, 6),
           hmorder=hmorder,
           xlabels=5)
-
+#%%
 # performance criteria
 Filter = False
-startError = "1952-01-01"
-endError = "2005-01-01"
+startError = start
+endError = end
 startgauge = gauges.loc[gaugei, 'Qstart']
 endgauge = gauges.loc[gaugei, 'Qend']
 
-Sub.CalculateQMetrics(Calib, stationname, startError, endError, gaugexs,
-                      startgauge, endgauge, Filter=False)
+Sub.CalculateQMetrics(Calib, stationname, startError, endError, #gaugexs,
+                      startgauge, endgauge, Filter=Filter)
 # plt.savefig(saveto + "/Segment-" + str(Sub.id) + "-" +
 #             str(gauges.loc[gaugei, 'name']) + "-Q-C-" +
             # str(dt.datetime.now())[0:11] + ".png")
@@ -378,7 +382,7 @@ plt.legend(fontsize = 20)
 
 #%% XS properties function results
 Res = ''
-table = pd.read_csv(Res+"table/"+str(SubID)+"-table.txt", 
+table = pd.read_csv(Res+"table/"+str(SubID)+"-table.txt",
                     header =None,delimiter = r'\s+')
 table.columns = ['depth','area','perimeter','A*R^(2/3)']
 table['R'] = table['area']/table['perimeter']

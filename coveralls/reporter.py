@@ -46,7 +46,9 @@ class CoverallReporter:
         #         raise
 
         from coverage.files import (  # pylint: disable=import-outside-toplevel
-            FnmatchMatcher, prep_patterns)
+            FnmatchMatcher,
+            prep_patterns,
+        )
 
         # get_analysis_to_report starts here; changes marked with TODOs
         file_reporters = cov._get_file_reporters(None)  # pylint: disable=W0212
@@ -101,8 +103,9 @@ class CoverallReporter:
         """
         # pylint: disable=too-many-branches
         try:
-            from coverage.report import \
-                Reporter  # pylint: disable=import-outside-toplevel
+            from coverage.report import (
+                Reporter,  # pylint: disable=import-outside-toplevel
+            )
 
             self.reporter = Reporter(cov, conf)
         except ImportError:  # coverage >= 5.0

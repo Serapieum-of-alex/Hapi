@@ -15,8 +15,7 @@ Created on Wed Sep  9 23:31:11 2020
 # from scipy.stats import genextreme, gumbel_r, norm
 
 # from Hapi.statistics.statisticaltools import StatisticalTools as ST
-from Hapi.sm.distributions import (GEV, ConfidenceInterval, Gumbel,
-                                  PlottingPosition)
+from Hapi.sm.distributions import GEV, ConfidenceInterval, Gumbel, PlottingPosition
 
 # from Hapi.statistics.statisticaltools import StatisticalTools as st
 

@@ -11,14 +11,14 @@ import math
 import os
 from types import ModuleType
 
-from osgeo import gdal
 import geopandas as gpd
-import Hapi.sm.performancecriteria as PC
 import matplotlib.dates as dates
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from osgeo import gdal
 
+import Hapi.sm.performancecriteria as PC
 from Hapi.gis.giscatchment import GISCatchment as GC
 from Hapi.gis.raster import Raster
 from Hapi.visualizer import Visualize as Vis

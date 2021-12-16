@@ -1,5 +1,6 @@
 import pytest
 
+
 @pytest.fixture(scope="module")
 def interface_Laterals_table_path() -> str:
     return "Examples/Hydrodynamic models/test_case/inputs/1d/topo/laterals.txt"

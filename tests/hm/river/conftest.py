@@ -1,10 +1,12 @@
 from typing import List
+
 import pytest
 
 time_series_length = 80
 laterals = [30, 50, 70]
 sub_id = 1
 sub_id_us = 3
+segment3_specificxs = 270
 us_subs = [1,2]
 first_xs = 1
 last_xs = 100
@@ -41,6 +43,10 @@ def segment3() -> int:
 @pytest.fixture(scope="module")
 def segment3_us_subs() -> List[int]:
     return us_subs
+
+@pytest.fixture(scope="module")
+def segment3_specificxs_plot() -> int:
+    return segment3_specificxs
 
 @pytest.fixture(scope="module")
 def create_sub_instance_firstxs() -> int:

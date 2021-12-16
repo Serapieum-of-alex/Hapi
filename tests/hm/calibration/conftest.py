@@ -1,5 +1,6 @@
 import pytest
 
+
 @pytest.fixture(scope="module")
 def calibration_gauges_file_extension() -> str:
     return ".csv"

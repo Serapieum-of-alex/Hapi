@@ -8,14 +8,14 @@ import os
 import zipfile
 from typing import Union
 
-from osgeo import gdal
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from osgeo import gdal
+from scipy.stats import gumbel_r  # genextreme,
 
 # from Hapi.sm.statisticaltools import StatisticalTools as ST
 from Hapi.sm.distributions import GEV, Gumbel, PlottingPosition
-from scipy.stats import gumbel_r  # genextreme,
 
 # from matplotlib import gridspec
 

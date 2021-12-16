@@ -10,16 +10,16 @@ import zipfile
 from bisect import bisect
 from typing import Union  # List, Optional,
 
-from loguru import logger
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from Hapi.sm import performancecriteria as Pf
+from loguru import logger
 from pandas.core.frame import DataFrame
 from scipy.stats import genextreme, gumbel_r
 
 from Hapi.gis.raster import Raster as raster
 from Hapi.hm.saintvenant import SaintVenant
+from Hapi.sm import performancecriteria as Pf
 from Hapi.visualizer import Visualize as V
 
 hours = list(range(1, 25))
@@ -221,7 +221,7 @@ class River:
         self.D1 = None
         self.D2 = None
 
-        self.USHydrographs = None
+        # self.USHydrographs = None
         self.crosssections = None
         self.xsno = None
         self.xsname = None
@@ -1538,13 +1538,13 @@ class River:
         self.Trace2(sub_id, self.US)
 
 
-    def StatisticalProperties(self, path: str, Filter: bool=True, 
+    def StatisticalProperties(self, path: str, Filter: bool=True,
                               Distibution: str="GEV"):
         """StatisticalProperties.
 
         StatisticalProperties method reads the parameters of the distribution and
-        calculates the the 2, 5, 10, 15, 20, 50, 100, 200, 500, 1000 return 
-        period discharge for each sub-basin to create the parameters file use 
+        calculates the the 2, 5, 10, 15, 20, 50, 100, 200, 500, 1000 return
+        period discharge for each sub-basin to create the parameters file use
         the code StatisticalProperties in the 07ReturnPeriod folder
 
         Parameters
@@ -1620,7 +1620,7 @@ class River:
                     ).tolist()
 
 
-    def GetReturnPeriod(self, Subid: int, Q: Union[float, int], 
+    def GetReturnPeriod(self, Subid: int, Q: Union[float, int],
                         distribution: str="GEV"):
         """GetReturnPeriod.
 
@@ -1653,7 +1653,7 @@ class River:
                 F = gumbel_r.cdf(
                     Q, loc=self.SP.loc[loc, "loc"], scale=self.SP.loc[loc, "scale"]
                 )
-                
+
             return 1 / (1 - F)
         except:
             return -1
@@ -3269,6 +3269,7 @@ class Sub(River):
         self.LateralsTable = None #list
         self.Laterals = None # DataFrame
         self.Result1D = None # DataFrame
+        self.USHydrographs = None
 
 
     def Read1DResult(
@@ -3318,6 +3319,9 @@ class Sub(River):
             5-lastday:[attribute]
                 the last day in the 1D result
         """
+        if path == "" and not hasattr(self, 'onedresultpath'):
+            raise ValueError("User have to either enter the value of the 'path' parameter or"
+                             " define the 'onedresultpath' parameter for the River object")
         # if the results are not read yet read it
         if not isinstance(self.Result1D, DataFrame):
             River.Read1DResult(
@@ -4353,8 +4357,7 @@ class Sub(River):
             of the given xs, the column name is "total"
         """
         # Sum the laterals and the BC/US hydrograph
-
-        assert isinstance(self.Laterals, DataFrame), "Please read the lateral flows first"
+        assert isinstance(self.Laterals, DataFrame), "Please read the lateral flows first using the 'GetFlow'"
         Laterals = self.GetLaterals(gaugexs)
         try:
             s1 = Laterals.index[0]
@@ -4374,6 +4377,7 @@ class Sub(River):
                 Laterals.loc[s:e, 0].values
                 + self.BC.loc[s:e, self.BC.columns[0]].values
             )
+            logger.debug(f"Total flow for the XS-{gaugexs} has been calculated")
         elif isinstance(self.USHydrographs, DataFrame):
             s2 = self.USHydrographs.index[0]
             s = max(s1, s2)
@@ -4385,7 +4389,10 @@ class Sub(River):
                 Laterals.loc[s:e, 0].values
                 + self.USHydrographs.loc[s:e, "total"].values
             )
-        logger.debug(f"Total flow for the XS-{gaugexs} has been calculated")
+            logger.debug(f"Total flow for the XS-{gaugexs} has been calculated")
+        else:
+            logger.debug(f"The US Hydrograph/BC of the given River segment-{self.id} is not read yet "
+                         "please use the 'ReadUSHydrograph' method to read it")
 
 
     def H2Q(self, Q):
@@ -4443,7 +4450,7 @@ class Sub(River):
         totalcolor: Union[str, tuple]="k",
         totalorder: int=6,
         totalstyle: int=4,
-        specificxs: bool=False,
+        specificxs: Union[bool, int]=False,
         xscolor: Union[str, tuple]=(164 / 255, 70 / 255, 159 / 255),
         xsorder: int=1,
         xslinestyle: int=3,
@@ -4981,13 +4988,13 @@ class Sub(River):
     def CalculateQMetrics(
         self,
         Calib,
-        stationname,
-        startError,
-        endError, #gaugexs,
-        GaugeStart,
-        GaugeEnd,
-        Filter=False,
-        fmt="%Y-%m-%d",
+        stationname: int,
+        start: str,
+        end: str, #gaugexs,
+        GaugeStart: str,
+        GaugeEnd: str,
+        Filter: bool=False,
+        fmt: str="%Y-%m-%d",
     ):
         """CalculateQMetrics.
 
@@ -4999,9 +5006,9 @@ class Sub(River):
             DESCRIPTION.
         stationname : TYPE
             DESCRIPTION.
-        startError : TYPE
+        start : [str]
             DESCRIPTION.
-        endError : TYPE
+        end : [str]
             DESCRIPTION.
         GaugeStart : TYPE
             DESCRIPTION.
@@ -5027,8 +5034,8 @@ class Sub(River):
 
         """
         QHM = pd.DataFrame()
-        startError = dt.datetime.strptime(startError, fmt)
-        endError = dt.datetime.strptime(endError, fmt)
+        startError = dt.datetime.strptime(start, fmt)
+        endError = dt.datetime.strptime(end, fmt)
 
         if Filter:
             # get the latest date of the filter date and the first date in
