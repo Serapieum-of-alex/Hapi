@@ -1,4 +1,8 @@
 from collections import OrderedDict
+from matplotlib.figure import Figure
+from matplotlib.animation import FuncAnimation
+import matplotlib.pyplot as plt
+
 
 from Hapi.visualizer import Visualize as V
 import Hapi.hm.river as R
@@ -46,7 +50,9 @@ def test_GroundSurface(
 
     Vis = V(resolution="Hourly")
     Vis.GroundSurface(Sub, floodplain=True, plotlateral=True, nxlabels=20, option=2)
+    plt.close()
     Vis.GroundSurface(Sub, floodplain=True, plotlateral=True, nxlabels=20, option=1)
+    plt.close()
 
 
 def test_CrossSections(
@@ -76,4 +82,125 @@ def test_CrossSections(
                                 toxs=plot_xs_seg3_toxs, samescale=True,
                                 textspacing=[(1, 1), (1, 4)],
                                 plottingoption=3)
+    plt.close()
+    assert isinstance(fig, Figure)
 
+# TODO: figure put how to close the animation after it finishes
+# def test_WaterSurfaceProfile(
+#         version: int,
+#         river_cross_section_path: str,
+#         river_network_path: str,
+#         dates:list,
+#         segment3: int,
+#         interface_bc_path: str,
+#         interface_bc_folder: str,
+#         interface_bc_date_format: str,
+#         interface_Laterals_table_path: str,
+#         interface_Laterals_folder: str,
+#         interface_Laterals_date_format: str,
+#         Read1DResult_path: str,
+#         usbc_path: str,
+#         animate_start: str,
+#         animate_end: str
+#
+# ):
+#     River = R.River('HM', version=version, start=dates[0])
+#     River.ReadCrossSections(river_cross_section_path)
+#     River.RiverNetwork(river_network_path)
+#     River.onedresultpath = Read1DResult_path
+#     River.usbcpath = usbc_path
+#     Sub = R.Sub(segment3, River)
+#
+#     IF = Interface('Rhine', start=dates[0])
+#     IF.ReadBoundaryConditionsTable(interface_bc_path)
+#     IF.ReadBoundaryConditions(path=interface_bc_folder, date_format=interface_bc_date_format)
+#
+#     IF.ReadCrossSections(river_cross_section_path)
+#     IF.ReadLateralsTable(interface_Laterals_table_path)
+#     IF.ReadLaterals(path=interface_Laterals_folder, date_format=interface_Laterals_date_format)
+#
+#     Sub.GetFlow(IF)
+#     Sub.Read1DResult()
+#     Sub.ReadBoundaryConditions(start=dates[0], end=dates[1])
+#
+#     Vis = V(resolution="Hourly")
+#     Anim = Vis.WaterSurfaceProfile(Sub, animate_start, animate_end, fps=2, nxlabels=5,
+#                                    xaxislabelsize=10, textlocation=(-1, -2),repeat=False)
+#     # rc('animation', html='jshtml')
+#     plt.close()
+#     assert isinstance(Anim, FuncAnimation)
+#
+#
+# def test_WaterSurfaceProfile1Min(
+#         version: int,
+#         river_cross_section_path: str,
+#         river_network_path: str,
+#         dates:list,
+#         segment3: int,
+#         interface_bc_path: str,
+#         interface_bc_folder: str,
+#         interface_bc_date_format: str,
+#         interface_Laterals_table_path: str,
+#         interface_Laterals_folder: str,
+#         interface_Laterals_date_format: str,
+#         Read1DResult_path: str,
+#         usbc_path: str,
+#         animate_start: str,
+#         animate_end: str,
+#         lastsegment: bool,
+#         subdailyresults_path: str,
+#
+# ):
+#     River = R.River('HM', version=version, start=dates[0])
+#     River.ReadCrossSections(river_cross_section_path)
+#     River.RiverNetwork(river_network_path)
+#     River.onedresultpath = Read1DResult_path
+#     River.oneminresultpath = subdailyresults_path
+#     River.usbcpath = usbc_path
+#     Sub = R.Sub(segment3, River)
+#
+#     IF = Interface('Rhine', start=dates[0])
+#     IF.ReadBoundaryConditionsTable(interface_bc_path)
+#     IF.ReadBoundaryConditions(path=interface_bc_folder, date_format=interface_bc_date_format)
+#
+#     IF.ReadCrossSections(river_cross_section_path)
+#     IF.ReadLateralsTable(interface_Laterals_table_path)
+#     IF.ReadLaterals(path=interface_Laterals_folder, date_format=interface_Laterals_date_format)
+#
+#     Sub.GetFlow(IF)
+#     Sub.Read1DResult()
+#     Sub.ReadSubDailyResults(animate_start, animate_end, Lastsegment=lastsegment)
+#     Sub.ReadBoundaryConditions(start=animate_start, end=animate_end)
+#
+#     Vis = V(resolution="Hourly")
+#     Anim = Vis.WaterSurfaceProfile1Min(Sub, animate_start, animate_end,
+#                                        interval=0.000000000000000000000000000000000001,
+#                                        repeat=False)
+#
+#     plt.close()
+#     assert isinstance(Anim, FuncAnimation)
+
+def test_Plot1minProfile(
+        version: int,
+        river_cross_section_path: str,
+        river_network_path: str,
+        dates:list,
+        segment3: int,
+        subdailyresults_path: str,
+        usbc_path: str,
+        onemin_results_dates: list,
+        lastsegment: bool
+):
+
+    River = R.River('HM', version=version, start=dates[0])
+    River.ReadCrossSections(river_cross_section_path)
+    River.RiverNetwork(river_network_path)
+    River.usbcpath = usbc_path
+    River.oneminresultpath = subdailyresults_path
+    Sub = R.Sub(segment3, River)
+    Sub.ReadSubDailyResults(onemin_results_dates[0],
+                            onemin_results_dates[1],
+                            Lastsegment=lastsegment)
+
+    Vis = V(resolution="Hourly")
+    Vis.Plot1minProfile(Sub, dates[0], nxlabels=20)

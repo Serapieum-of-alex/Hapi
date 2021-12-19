@@ -1,5 +1,6 @@
 from typing import List
 from matplotlib.figure import Figure
+import matplotlib.pyplot as plt
 
 import Hapi.hm.calibration as RC
 import Hapi.hm.river as R
@@ -322,7 +323,7 @@ def test_PlotQ(
     Sub.Read1DResult()
     fig, ax = Sub.PlotQ(Calib, gaugexs, dates[0], dates[1], stationname, gaugename, segment_xs,
                         specificxs=segment3_specificxs_plot, xlabels=5, ylabels=5)
-
+    plt.close()
     assert isinstance(fig, Figure)
 
 def test_CalculateQMetrics(
@@ -388,6 +389,7 @@ def test_PlotHydrographProgression(
     fig, ax = Sub.PlotHydrographProgression(xss, start, end, fromxs=fromxs,
                                             toxs=toxs, linewidth=2, spacing=20,
                                             figsize=(6, 4), xlabels=5)
+    plt.close()
     assert isinstance(fig, Figure)
 
 def test_PlotWL(
@@ -426,6 +428,7 @@ def test_PlotWL(
 
     Sub.PlotWL(Calib, dates[0], dates[1], gaugexs, stationname, gaugename,
                plotgauge=True)
+    plt.close()
 
 
 def test_CalculateWLMetrics(
@@ -487,6 +490,7 @@ def test_SaveHydrograph(
     # option 2
     Sub.SaveHydrograph(Sub.lastxs, Option=2)
 
+
 def test_ReadBoundaryConditions(
         version: int,
         river_cross_section_path: str,
@@ -509,3 +513,56 @@ def test_ReadBoundaryConditions(
 
     assert len(Sub.QBC) == test_time_series_length and all(elem in test_hours for elem in Sub.QBC.columns.tolist())
     assert len(Sub.HBC) == test_time_series_length and all(elem in test_hours for elem in Sub.HBC.columns.tolist())
+
+
+def test_ReadSubDailyResults(
+        version: int,
+        river_cross_section_path: str,
+        river_network_path: str,
+        dates:list,
+        segment3: int,
+        lastsegment: bool,
+        subdailyresults_path: str,
+        usbc_path: str,
+        segment3_xs_ids_list: list,
+        subdaily_no_timesteps: int,
+        onemin_results_dates: list,
+        onemin_results_len: int,
+):
+    River = R.River('HM', version=version, start=dates[0])
+    River.ReadCrossSections(river_cross_section_path)
+    River.RiverNetwork(river_network_path)
+    River.usbcpath = usbc_path
+    River.oneminresultpath = subdailyresults_path
+    Sub = R.Sub(segment3, River)
+    Sub.ReadSubDailyResults(onemin_results_dates[0],
+                            onemin_results_dates[1],
+                            Lastsegment=lastsegment)
+    assert len(Sub.h) == onemin_results_len*subdaily_no_timesteps
+    assert all(elem in Sub.h.columns.tolist() for elem in segment3_xs_ids_list)
+    assert len(Sub.q) == onemin_results_len*subdaily_no_timesteps
+    assert all(elem in Sub.q.columns.tolist() for elem in segment3_xs_ids_list)
+    assert len(Sub.QBCmin.columns) == subdaily_no_timesteps and len(Sub.QBCmin) == onemin_results_len
+    assert len(Sub.HBCmin.columns) == subdaily_no_timesteps and len(Sub.HBCmin) == onemin_results_len
+
+def test_PlotBC(
+        version: int,
+        river_cross_section_path: str,
+        river_network_path: str,
+        dates:list,
+        segment3: int,
+        lastsegment: bool,
+        subdailyresults_path: str,
+        usbc_path: str,
+        onemin_results_dates: list,
+):
+    River = R.River('HM', version=version, start=dates[0])
+    River.ReadCrossSections(river_cross_section_path)
+    River.RiverNetwork(river_network_path)
+    River.usbcpath = usbc_path
+    River.oneminresultpath = subdailyresults_path
+    Sub = R.Sub(segment3, River)
+    Sub.ReadSubDailyResults(onemin_results_dates[0],
+                            onemin_results_dates[1],
+                            Lastsegment=lastsegment)
+    Sub.PlotBC(dates[0])

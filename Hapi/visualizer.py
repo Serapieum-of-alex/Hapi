@@ -18,6 +18,8 @@ except ImportError:
 import matplotlib as mpl
 import matplotlib.colors as colors
 import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+
 import numpy as np
 import pandas as pd
 from matplotlib import animation, gridspec
@@ -95,6 +97,7 @@ class Visualize:
 
     def __init__(self, resolution: str="Hourly"):
         self.resolution = resolution
+        self.Anim = None
 
     @staticmethod
     def LineStyle(Style: Union[str, int]="loosely dotted"):
@@ -321,23 +324,24 @@ class Visualize:
     def WaterSurfaceProfile(
         self,
         Sub,
-        start,
-        end,
-        fps=100,
-        fromxs="",
-        toxs="",
-        fmt="%Y-%m-%d",
-        figsize=(20, 10),
-        textlocation=(1, 1),
-        LateralsColor="#3D59AB",
-        LaterlasLineWidth=1,
-        xaxislabelsize=10,
-        yaxislabelsize=10,
-        nxlabels=10,
-        xticklabelsize=8,
-        Lastsegment=True,
-        floodplain=True,
-    ):
+        start: Union[str, dt.datetime],
+        end: Union[str, dt.datetime],
+        fps: int=100,
+        fromxs: Union[str, int]="",
+        toxs: Union[str, int]="",
+        fmt: str="%Y-%m-%d",
+        figsize: tuple=(20, 10),
+        textlocation: tuple=(1, 1),
+        LateralsColor: Union[int, str]="#3D59AB",
+        LaterlasLineWidth: int=1,
+        xaxislabelsize: int=10,
+        yaxislabelsize: int=10,
+        nxlabels: int=10,
+        xticklabelsize: int=8,
+        Lastsegment: bool=True,
+        floodplain: bool=True,
+        repeat: bool=True,
+    ) -> FuncAnimation:
         """WaterSurfaceProfile.
 
         Plot water surface profile
@@ -377,10 +381,16 @@ class Visualize:
 
         figsize: []
 
-        Lastxs: []
+        Lastsegment: [bool]
+            Default is True.
+        floodplain: [bool]
+            Default is True.
+        repeat: [bool]
+            Defaut is True
 
         Returns
         -------
+
 
 
 
@@ -727,15 +737,14 @@ class Visualize:
                 lat,
             )
 
-        # plt.tight_layout()
-
-        Anim = animation.FuncAnimation(
+        Anim = FuncAnimation(
             fig,
             animate_q,
             init_func=init_q,
             frames=np.shape(counter)[0],
             interval=fps,
             blit=True,
+            repeat=repeat,
         )
         self.Anim = Anim
         return Anim
@@ -743,22 +752,23 @@ class Visualize:
     def WaterSurfaceProfile1Min(
         self,
         Sub,
-        start,
-        end,
-        interval=0.00002,
-        fromxs="",
-        toxs="",
-        fmt="%Y-%m-%d",
-        figsize=(20, 10),
-        textlocation=(1, 1),
-        LateralsColor="#3D59AB",
-        LaterlasLineWidth=1,
-        xaxislabelsize=10,
-        yaxislabelsize=10,
-        nxlabels=20,
-        xticklabelsize=8,
-        floodplain=True,
-    ):
+        start: Union[str, dt.datetime],
+        end: Union[str, dt.datetime],
+        interval: float=0.00002,
+        fromxs: Union[str, int]="",
+        toxs: Union[str, int]="",
+        fmt: str="%Y-%m-%d",
+        figsize: tuple=(20, 10),
+        textlocation: tuple=(1, 1),
+        LateralsColor: Union[str, tuple]="#3D59AB",
+        LaterlasLineWidth: int=1,
+        xaxislabelsize: int=10,
+        yaxislabelsize: int=10,
+        nxlabels: int=20,
+        xticklabelsize: int=8,
+        floodplain: bool=True,
+        repeat: bool=True,
+    ) -> FuncAnimation:
         """WaterSurfaceProfile1Min.
 
         Plot water surface profile for 1 min data
@@ -767,18 +777,40 @@ class Visualize:
         ----------
         Sub : TYPE
             DESCRIPTION.
-        plotstart : TYPE
+        start : TYPE
             DESCRIPTION.
-        plotend : TYPE
+        end : TYPE
             DESCRIPTION.
         interval : TYPE, optional
             DESCRIPTION. The default is 0.00002.
-        xs : TYPE, optional
-            DESCRIPTION. The default is 0.
-        xsbefore : TYPE, optional
+        fromxs : TYPE, optional
             DESCRIPTION. The default is 10.
-        xsafter : TYPE, optional
+        toxs : TYPE, optional
             DESCRIPTION. The default is 10.
+        floodplain: [bool]
+            Default is True.
+        fmt: [str]
+            Default is "%Y-%m-%d".
+        figsize: [tuple]
+            Default is (20, 10).
+        textlocation: [tuple]
+            Default is (1, 1).
+        LateralsColor: [str]
+            Default is "#3D59AB".
+        LaterlasLineWidth: [int]
+            Default is 1.
+        xaxislabelsize: [int]
+            Default is 10.
+        yaxislabelsize: [int]
+            Default is 10.
+        nxlabels: [int]
+            Default is 20.
+        xticklabelsize: [int]
+            Default is 8.
+        floodplain: bool
+            Default is True.
+        repeat: [bool]
+            Defaut is True
 
         Returns
         -------
@@ -1008,18 +1040,6 @@ class Visualize:
             fontsize=20,
         )
 
-        # if xs == 0:
-        #     day_text = ax4.annotate('',
-        #                             xy=(Sub.xsname[0],
-        #                                 Sub.crosssections['gl'].min()),
-        #                             fontsize=20)
-        # else:
-        #     day_text = ax4.annotate('',
-        #                             xy=(fromxs + textlocation,
-        #                             Sub.crosssections.loc[
-        #                             Sub.crosssections['xsid'] == toxs, 'gl'].values + 1),
-        #                             fontsize=20)
-
         (wl_line,) = ax4.plot([], [], linewidth=5)
         (hLline,) = ax4.plot([], [], linewidth=5)
 
@@ -1079,10 +1099,7 @@ class Visualize:
 
             # BC Q point (ax2)
             x = ((counter[i] - day).seconds / 60) + 1
-            # y = dt.datetime(counter[i].year, counter[i].month, counter[i].day)
-
             scatter1 = ax2.scatter(x, Sub.QBCmin[x][day], s=150)
-
             # BC h point (ax3)
             scatter2 = ax3.scatter(x, Sub.HBCmin[x][day], s=150)
 
@@ -1097,17 +1114,16 @@ class Visualize:
                 lat,
             )
 
-        # plt.tight_layout()
-
-        anim = animation.FuncAnimation(
+        anim = FuncAnimation(
             fig2,
             animate_min,
             init_func=init_min,
             frames=np.shape(counter)[0],
             interval=interval,
             blit=True,
+            repeat=repeat,
         )
-        self.anim = anim
+        self.Anim = anim
         return anim
 
     def river1d(
@@ -1397,7 +1413,7 @@ class Visualize:
 
         # plt.tight_layout()
 
-        anim = animation.FuncAnimation(
+        anim = FuncAnimation(
             fig2,
             animate_min,
             init_func=init_min,
@@ -1668,7 +1684,7 @@ class Visualize:
 
 
     def Plot1minProfile(
-        self, Sub, date, xaxislabelsize=10, nxlabels=50, fmt="%Y-%m-%d"
+        self, Sub, date: str, xaxislabelsize: int=10, nxlabels: int=50, fmt: str="%Y-%m-%d"
     ):
         """Plot1minProfile.
 
@@ -1881,7 +1897,7 @@ class Visualize:
             formatter = LogFormatter(10, labelOnlyBase=False)
             cbar_kw = dict(ticks=ticks, format=formatter)
         elif ColorScale == 4:
-            bounds = ticks  # np.arange(np.nanmin(Arr), np.nanmax(Arr), TicksSpacing)
+            bounds = ticks
             norm = colors.BoundaryNorm(boundaries=bounds, ncolors=256)
             im = ax.matshow(Arr[:, :], cmap=cmap, norm=norm)
             cbar_kw = dict(ticks=ticks)
@@ -2242,7 +2258,7 @@ class Visualize:
 
         plt.tight_layout()
         # global anim
-        anim = animation.FuncAnimation(
+        anim = FuncAnimation(
             fig,
             animate,
             init_func=init,
@@ -2767,7 +2783,7 @@ class Visualize:
 
             plt.tight_layout()
 
-        if Save == True:
+        if Save:
             plt.savefig(
                 Visualize.FigureDefaultOptions["name"] + "-hist.tif", transparent=True
             )

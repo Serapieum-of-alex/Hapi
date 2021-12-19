@@ -642,13 +642,17 @@ class River:
         """
         if self.version == 4:
             assert self.crosssections, "please read the cross sections first"
+
+        assert isinstance(self.usbcpath, str), ("please input the 'usbcpath' attribute in "
+                                               "the River or the Sub instance")
+
         if isinstance(start, str):
             start = dt.datetime.strptime(start, fmt)
 
         if isinstance(end, str):
             end = dt.datetime.strptime(end, fmt)
 
-        indmin = pd.date_range(start, end, freq=self.freq)[:-1]
+        indmin = pd.date_range(start, end + dt.timedelta(days=1), freq=self.freq)[:-1]
 
         # how many time steps per day
         nstep = (
@@ -656,7 +660,7 @@ class River:
         )
 
         # US boundary condition (for each day in a separate row)
-        index_daily = pd.date_range(start, end, freq="D")[:-1]
+        index_daily = pd.date_range(start, end + dt.timedelta(days=1), freq="D")[:-1]
         bc_q = pd.DataFrame(index=index_daily, columns=list(range(1, nstep + 1)))
         bc_h = pd.DataFrame(index=index_daily, columns=list(range(1, nstep + 1)))
 
@@ -665,7 +669,7 @@ class River:
         q = pd.DataFrame(index=indmin, columns=xsname)
 
         ii = self.DateToIndex(start)
-        ii2 = self.DateToIndex(end)
+        ii2 = self.DateToIndex(end) + 1
         list2 = list(range(ii, ii2))
 
         if self.version < 4:
@@ -708,19 +712,9 @@ class River:
             self.HBCmin = bc_h[:]
         else:
             for i in list2:
-                path = (
-                    self.oneminresultpath
-                    + "H-"
-                    + str(self.IndexToDate(i))[:10]
-                    + ".csv"
-                )
+                path = f"{self.oneminresultpath}H-{str(self.IndexToDate(i))[:10]}.csv"
                 hh = np.transpose(np.loadtxt(path, delimiter=",", dtype=np.float16))
-                path = (
-                    self.oneminresultpath
-                    + "Q-"
-                    + str(self.IndexToDate(i))[:10]
-                    + ".csv"
-                )
+                path = f"{self.oneminresultpath}Q-{str(self.IndexToDate(i))[:10]}.csv"
                 qq = np.transpose(np.loadtxt(path, delimiter=",", dtype=np.float16))
 
                 h = h + self.crosssections["bed level"].values
@@ -3185,8 +3179,8 @@ class Sub(River):
             self.usbcpath = River.usbcpath
         if River.oneminresultpath:
             self.oneminresultpath = River.oneminresultpath
-        if River.usbcpath:
-            self.usbcpath = River.usbcpath
+        # if River.usbcpath:
+        #     self.usbcpath = River.usbcpath
 
         if not isinstance(River.crosssections, DataFrame):
             raise ValueError("please Read the cross section for the whole river with 'ReadCrossSections' "
@@ -5391,6 +5385,7 @@ class Sub(River):
 
         ax1.tick_params(axis="y", color="#27408B")
 
+
     def PlotBC(self, date: str, fmt: str="%Y-%m-%d"):
         """PlotBC.
 
@@ -5419,8 +5414,6 @@ class Sub(River):
         ax2.plot(self.QBCmin.loc[date])
         ax2.set_ylabel("Q", fontsize=15)
 
-    # def CalculateHydraulics():
-    # sub.C
 
     def ListAttributes(self):
         """

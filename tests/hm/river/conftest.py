@@ -3,10 +3,12 @@ from typing import List
 import pytest
 
 
-laterals = [30, 50, 70]
+segment1_laterals = [30, 50, 70]
 sub_id = 1
 sub_id_us = 3
+segment3_lastsegment = True
 segment3_specificxs = 270
+segment3_xs_ids = list(range(201,301))
 us_subs = [1,2]
 first_xs = 1
 last_xs = 100
@@ -47,12 +49,16 @@ def segment3_specificxs_plot() -> int:
     return segment3_specificxs
 
 @pytest.fixture(scope="module")
+def segment3_xs_ids_list() -> list:
+    return segment3_xs_ids
+
+@pytest.fixture(scope="module")
 def create_sub_instance_firstxs() -> int:
     return first_xs
 
 @pytest.fixture(scope="module")
 def sub_GetFlow_lateralTable() -> List[int]:
-    return laterals
+    return segment1_laterals
 
 
 @pytest.fixture(scope="module")
@@ -103,3 +109,25 @@ def ReadRRMHydrograph_path2() -> str:
 @pytest.fixture(scope="module")
 def CustomizedRunspath() -> str:
     return "Examples/Hydrodynamic models/test_case/results/customized_results/"
+
+@pytest.fixture(scope="module")
+def lastsegment() -> bool:
+    return segment3_lastsegment
+
+@pytest.fixture(scope="module")
+def subdailyresults_path() -> str:
+    return "Examples/Hydrodynamic models/test_case/results/"
+
+@pytest.fixture(scope="module")
+def subdaily_no_timesteps() -> int:
+    return 24*60
+
+@pytest.fixture(scope="module")
+def onemin_results_dates() -> list:
+    start = "1955-01-01"
+    end = "1955-01-10"
+    return [start, end]
+
+@pytest.fixture(scope="module")
+def onemin_results_len() -> int:
+    return 10
