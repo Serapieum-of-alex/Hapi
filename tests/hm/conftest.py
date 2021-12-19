@@ -4,6 +4,8 @@ from tests.hm.calibration.conftest import *
 from tests.hm.interface.conftest import *
 from tests.hm.river.conftest import *
 
+time_series_length = 80
+hours = list(range(1,25))
 
 @pytest.fixture(scope="module")
 def version() -> int:
@@ -22,3 +24,19 @@ def rrm_start() -> str:
 @pytest.fixture(scope="module")
 def nodatavalu() -> int:
     return -9
+
+@pytest.fixture(scope="module")
+def xs_total_no() -> int:
+    return 300
+
+@pytest.fixture(scope="module")
+def xs_col_no() -> int:
+    return 16
+
+@pytest.fixture(scope="module")
+def test_time_series_length() -> int:
+    return time_series_length
+
+@pytest.fixture(scope="module")
+def test_hours() -> list:
+    return hours

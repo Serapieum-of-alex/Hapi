@@ -3,6 +3,7 @@ from typing import Union  # List, Optional,
 
 import numpy as np
 import pandas as pd
+from loguru import logger
 
 from Hapi.hm.river import River
 
@@ -929,7 +930,7 @@ class Calibration(River):
         else:
             self.AnnualMaxRIMWL = AnnualMax
 
-    def CalculateProfile(self, Segmenti, BedlevelDS, Manning, BC_slope):
+    def CalculateProfile(self, Segmenti: int, BedlevelDS: float, Manning: float, BC_slope: float):
         """CalculateProfile.
 
         CalculateProfile method takes the river segment ID and the calibration
@@ -944,6 +945,8 @@ class Calibration(River):
             the bed level of the last cross section in the segment.
         3-Manning : [float]
             manning coefficient.
+        4-BC_slope : [float]
+            slope of the BC.
 
         Returns
         -------
@@ -981,13 +984,14 @@ class Calibration(River):
             bedlevelNew[i] = bedlevel[i] + i * AverageDelta
 
         self.crosssections.loc[self.crosssections["id"] == Segmenti, "gl"] = bedlevelNew
-
         # change manning
         self.crosssections.loc[self.crosssections["id"] == Segmenti, "m"] = Manning
-
         ## change slope
-        # self.slope.loc[self.slope['id']==Segmenti, 'slope'] = AvgSlope
-        self.slope.loc[self.slope["id"] == Segmenti, "slope"] = BC_slope
+        try:
+            # self.slope.loc[self.slope['id']==Segmenti, 'slope'] = AvgSlope
+            self.slope.loc[self.slope["id"] == Segmenti, "slope"] = BC_slope
+        except AttributeError:
+            logger.debug(f"The Given river segment- {Segmenti} does not have a slope")
 
 
     def SmoothBedLevel(self, segmenti):
@@ -1010,7 +1014,7 @@ class Calibration(River):
         assert hasattr(self, "crosssections"), "{0}".format(msg)
         g = self.crosssections.loc[self.crosssections["id"] == segmenti, :].index[0]
 
-        segment = self.crosssections.loc[self.crosssections["id"] == segmenti, :]
+        segment = self.crosssections.loc[self.crosssections["id"] == segmenti, :].copy()
 
         segment.index = range(len(segment))
         segment.loc[:, "glnew"] = 0
@@ -1057,7 +1061,7 @@ class Calibration(River):
 
         g = self.crosssections.loc[self.crosssections["id"] == segmenti, :].index[0]
 
-        segment = self.crosssections.loc[self.crosssections["id"] == segmenti, :]
+        segment = self.crosssections.loc[self.crosssections["id"] == segmenti, :].copy()
         segment.index = range(len(segment))
         segment.loc[:, "banklevelnew"] = 0
         segment.loc[0, "banklevelnew"] = segment.loc[0, "banklevel"]
@@ -1082,6 +1086,7 @@ class Calibration(River):
 
         # copy back the segment to the whole XS df
         self.crosssections.loc[self.crosssections["id"] == segmenti, :] = segment
+
 
     def SmoothFloodplainHeight(self, segmenti):
         """SmoothFloodplainHeight.
@@ -1112,7 +1117,7 @@ class Calibration(River):
 
         g = self.crosssections.loc[self.crosssections["id"] == segmenti, :].index[0]
 
-        segment = self.crosssections.loc[self.crosssections["id"] == segmenti, :]
+        segment = self.crosssections.loc[self.crosssections["id"] == segmenti, :].copy()
         segment.index = range(len(segment))
 
         segment.loc[:, "fplnew"] = 0
@@ -1168,7 +1173,7 @@ class Calibration(River):
             the "b" column in the crosssections attribute will be smoothed
         """
         g = self.crosssections.loc[self.crosssections["id"] == segmenti, :].index[0]
-        segment = self.crosssections.loc[self.crosssections["id"] == segmenti, :]
+        segment = self.crosssections.loc[self.crosssections["id"] == segmenti, :].copy()
         segment.index = range(len(segment))
         segment.loc[:, "bnew"] = 0
         segment.loc[0, "bnew"] = segment.loc[0, "b"]
@@ -1183,6 +1188,7 @@ class Calibration(River):
         segment.index = range(g, g + len(segment))
         # copy back the segment to the whole XS df
         self.crosssections.loc[self.crosssections["id"] == segmenti, :] = segment
+
 
     def DownWardBedLevel(self, segmenti: int, height: Union[int, float]):
         """SmoothBedWidth.
@@ -1205,7 +1211,7 @@ class Calibration(River):
         """
         g = self.crosssections.loc[self.crosssections["id"] == segmenti, :].index[0]
 
-        segment = self.crosssections.loc[self.crosssections["id"] == segmenti, :]
+        segment = self.crosssections.loc[self.crosssections["id"] == segmenti, :].copy()
         segment.index = range(len(segment))
 
         for j in range(1, len(segment)):
@@ -1259,7 +1265,7 @@ class Calibration(River):
         """
         g = self.crosssections.loc[self.crosssections["id"] == segmenti, :].index[0]
 
-        segment = self.crosssections.loc[self.crosssections["id"] == segmenti, :]
+        segment = self.crosssections.loc[self.crosssections["id"] == segmenti, :].copy()
         segment.index = range(len(segment))
         # slope must be positive due to the smoothing
         slopes = [

@@ -1,4 +1,5 @@
 from typing import List
+from matplotlib.figure import Figure
 
 import Hapi.hm.calibration as RC
 import Hapi.hm.river as R
@@ -23,11 +24,13 @@ def test_read_slope_method(
 
 def test_read_crosssections_method(
         version: int,
-        river_cross_section_path: str
+        river_cross_section_path: str,
+        xs_total_no: int,
+        xs_col_no: int
 ):
     River = R.River('HM', version=version)
     River.ReadCrossSections(river_cross_section_path)
-    assert len(River.crosssections) == 300 and len(River.crosssections.columns) == 16
+    assert len(River.crosssections) == xs_total_no and len(River.crosssections.columns) == xs_col_no
 
 def test_read_rivernetwork_method(
         version: int,
@@ -277,18 +280,18 @@ def test_PlotQ(
         interface_Laterals_table_path: str,
         interface_Laterals_folder: str,
         interface_Laterals_date_format: str,
-        calibration_gauges_table_path: str,
-        calibration_ReadObservedQ_Path: str,
+        gauges_table_path: str,
+        ReadObservedQ_Path: str,
         nodatavalu: int,
-        calibration_gauges_file_extension: str,
+        gauges_file_extension: str,
         gauge_date_format: str,
         segment3_specificxs_plot: int,
 
 ):
     Calib = RC.Calibration("HM", version=version)
-    Calib.ReadGaugesTable(calibration_gauges_table_path)
-    Calib.ReadObservedQ(calibration_ReadObservedQ_Path, dates[0], dates[1],
-                        nodatavalu, file_extension=calibration_gauges_file_extension,
+    Calib.ReadGaugesTable(gauges_table_path)
+    Calib.ReadObservedQ(ReadObservedQ_Path, dates[0], dates[1],
+                        nodatavalu, file_extension=gauges_file_extension,
                         gauge_date_format=gauge_date_format)
 
     gaugei = 0
@@ -321,19 +324,186 @@ def test_PlotQ(
     fig, ax = Sub.PlotQ(Calib, gaugexs, dates[0], dates[1], stationname, gaugename, segment_xs,
                         specificxs=segment3_specificxs_plot, xlabels=5, ylabels=5)
 
+    assert isinstance(fig, Figure)
 
-# def test_CalculateQMetrics(
-#
+def test_CalculateQMetrics(
+        version: int,
+        dates:list,
+        river_cross_section_path: str,
+        river_network_path: str,
+        Read1DResult_path: str,
+        gauges_table_path: str,
+        ReadObservedQ_Path: str,
+        nodatavalu: int,
+        gauges_file_extension: str,
+        gauge_date_format: str,
+        segment3: int,
+
+):
+    Calib = RC.Calibration("HM", version=version)
+    Calib.ReadGaugesTable(gauges_table_path)
+    Calib.ReadObservedQ(ReadObservedQ_Path, dates[0], dates[1],
+                        nodatavalu, file_extension=gauges_file_extension,
+                        gauge_date_format=gauge_date_format)
+
+    gaugei = 0
+    gauges = Calib.GaugesTable.loc[Calib.GaugesTable['id'] == segment3, :]
+    gauges.index = range(len(gauges))
+    stationname = gauges.loc[gaugei, 'oid']
+
+    River = R.River('HM', version=version, start=dates[0])
+    River.onedresultpath = Read1DResult_path
+    River.ReadCrossSections(river_cross_section_path)
+    River.RiverNetwork(river_network_path)
+
+    Sub = R.Sub(segment3, River)
+    Sub.Read1DResult()
+
+    # without filter
+    Sub.CalculateQMetrics(Calib, stationname, Sub.lastxs)
+
+    Sub.CalculateQMetrics(Calib, stationname, Sub.lastxs, Filter=True,
+                          start=dates[0], end=dates[1])
+
+def test_PlotHydrographProgression(
+        version: int,
+        dates: list,
+        river_cross_section_path: str,
+        river_network_path: str,
+        Read1DResult_path: str,
+        segment3: int,
+):
+    River = R.River('HM', version=version, start=dates[0])
+    River.onedresultpath = Read1DResult_path
+    River.ReadCrossSections(river_cross_section_path)
+    River.RiverNetwork(river_network_path)
+
+    Sub = R.Sub(segment3, River)
+    Sub.Read1DResult()
+
+    xss = []
+    start = dates[0]
+    end = dates[1]
+    fromxs = ''
+    toxs = ''
+    fig, ax = Sub.PlotHydrographProgression(xss, start, end, fromxs=fromxs,
+                                            toxs=toxs, linewidth=2, spacing=20,
+                                            figsize=(6, 4), xlabels=5)
+    assert isinstance(fig, Figure)
+
+def test_PlotWL(
+        version: int,
+        dates: list,
+        gauges_table_path: str,
+        ReadObservedWL_Path: str,
+        nodatavalu: int,
+        gauges_file_extension: str,
+        gauge_date_format: str,
+        segment3: int,
+        river_cross_section_path: str,
+        river_network_path: str,
+        Read1DResult_path: str,
+):
+    Calib = RC.Calibration("HM", version=version)
+    Calib.ReadGaugesTable(gauges_table_path)
+    Calib.ReadObservedWL(ReadObservedWL_Path, dates[0], dates[1],
+                        nodatavalu, file_extension=gauges_file_extension,
+                        gauge_date_format=gauge_date_format)
+
+    gaugei = 0
+    gauges = Calib.GaugesTable.loc[Calib.GaugesTable['id'] == segment3, :]
+    gauges.index = range(len(gauges))
+    stationname = gauges.loc[gaugei, 'oid']
+    gaugename = str(gauges.loc[gaugei, 'name'])
+    gaugexs = gauges.loc[gaugei, 'xsid']
+
+    River = R.River('HM', version=version)
+    River.ReadCrossSections(river_cross_section_path)
+    River.RiverNetwork(river_network_path)
+    River.onedresultpath = Read1DResult_path
+
+    Sub = R.Sub(segment3, River)
+    Sub.Read1DResult()
+
+    Sub.PlotWL(Calib, dates[0], dates[1], gaugexs, stationname, gaugename,
+               plotgauge=True)
+
+
+def test_CalculateWLMetrics(
+        version: int,
+        dates:list,
+        river_cross_section_path: str,
+        river_network_path: str,
+        Read1DResult_path: str,
+        gauges_table_path: str,
+        ReadObservedWL_Path: str,
+        nodatavalu: int,
+        gauges_file_extension: str,
+        gauge_date_format: str,
+        segment3: int,
+
+):
+    Calib = RC.Calibration("HM", version=version)
+    Calib.ReadGaugesTable(gauges_table_path)
+    Calib.ReadObservedWL(ReadObservedWL_Path, dates[0], dates[1],
+                         nodatavalu, file_extension=gauges_file_extension,
+                         gauge_date_format=gauge_date_format)
+
+    gaugei = 0
+    gauges = Calib.GaugesTable.loc[Calib.GaugesTable['id'] == segment3, :]
+    gauges.index = range(len(gauges))
+    stationname = gauges.loc[gaugei, 'oid']
+
+    River = R.River('HM', version=version, start=dates[0])
+    River.onedresultpath = Read1DResult_path
+    River.ReadCrossSections(river_cross_section_path)
+    River.RiverNetwork(river_network_path)
+
+    Sub = R.Sub(segment3, River)
+    Sub.Read1DResult()
+
+    # without filter
+    Sub.CalculateWLMetrics(Calib, stationname, Sub.lastxs)
+
+    Sub.CalculateWLMetrics(Calib, stationname, Sub.lastxs,
+                          Filter=True, start=dates[0], end=dates[1])
+
+def test_SaveHydrograph(
+        version: int,
+        river_cross_section_path: str,
+        river_network_path: str,
+        CustomizedRunspath: str,
+        Read1DResult_path: str,
+        segment3: int,
+
+):
+    River = R.River('HM', version=version)
+    River.ReadCrossSections(river_cross_section_path)
+    River.RiverNetwork(river_network_path)
+    River.CustomizedRunspath = CustomizedRunspath
+    River.onedresultpath = Read1DResult_path
+    Sub = R.Sub(segment3, River)
+    Sub.Read1DResult()
+    Sub.SaveHydrograph(Sub.lastxs)
+
+# def test_ReadBoundaryConditions(
+#         version: int,
+#         river_cross_section_path: str,
+#         river_network_path: str,
+#         dates:list,
+#         Read1DResult_path: str,
+#         usbc_path: str,
+#         segment3: int,
+#         xs_total_no: int,
+#         test_hours: list
 # ):
 #     River = R.River('HM', version=version)
 #     River.ReadCrossSections(river_cross_section_path)
 #     River.RiverNetwork(river_network_path)
+#     River.onedresultpath = Read1DResult_path
+#     River.usbcpath = usbc_path
+#     Sub = R.Sub(segment3, River)
+#     Sub.Read1DResult()
+#     Sub.ReadBoundaryConditions(start=dates[0], end=dates[1])
 #
-#     # Filter = False
-#     startError = start
-#     endError = end
-#     startgauge = gauges.loc[gaugei, 'Qstart']
-#     endgauge = gauges.loc[gaugei, 'Qend']
-#
-#     Sub.CalculateQMetrics(Calib, stationname, startError, endError,  # gaugexs,
-#                           startgauge, endgauge, Filter=Filter)
+#     assert len(Sub.QBC) == xs_total_no and all(elem in test_hours for elem in Sub.HBC.columns.tolist())

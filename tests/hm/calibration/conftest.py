@@ -1,8 +1,7 @@
 import pytest
 
-
 @pytest.fixture(scope="module")
-def calibration_gauges_file_extension() -> str:
+def gauges_file_extension() -> str:
     return ".csv"
 
 
@@ -12,15 +11,31 @@ def gauge_date_format() -> str:
 
 
 @pytest.fixture(scope="module")
-def calibration_gauges_table_path() -> str:
+def gauges_table_path() -> str:
     return "Examples/Hydrodynamic models/test_case/inputs/gauges/gauges.csv"
 
 
 @pytest.fixture(scope="module")
-def calibration_ReadObservedQ_Path() -> str:
+def ReadObservedQ_Path() -> str:
     return "Examples/Hydrodynamic models/test_case/inputs/gauges/discharge/"
 
 
 @pytest.fixture(scope="module")
-def calibration_ReadObservedWL_Path() -> str:
+def ReadObservedWL_Path() -> str:
     return "Examples/Hydrodynamic models/test_case/inputs/gauges/water_level/"
+
+@pytest.fixture(scope="module")
+def calibrateProfile_DS_bedlevel() -> float:
+    return 61
+
+@pytest.fixture(scope="module")
+def calibrateProfile_mn() -> float:
+    return 0.06
+
+@pytest.fixture(scope="module")
+def calibrateProfile_slope() -> float:
+    return -0.03
+
+@pytest.fixture(scope="module")
+def DownWardBedLevel_height() -> float:
+    return 0.05

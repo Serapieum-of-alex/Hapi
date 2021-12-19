@@ -21,12 +21,13 @@ def test_ReadLaterals(
         interface_Laterals_table_path: str,
         interface_Laterals_folder: str,
         interface_Laterals_date_format: str,
+        test_time_series_length: int,
 ):
     IF = Interface('Rhine', start=dates[0])
     IF.ReadCrossSections(river_cross_section_path)
     IF.ReadLateralsTable(interface_Laterals_table_path)
     IF.ReadLaterals(path=interface_Laterals_folder, date_format=interface_Laterals_date_format)
-    assert len(IF.Laterals) == 80 and len(IF.Laterals.columns) == 10
+    assert len(IF.Laterals) == test_time_series_length and len(IF.Laterals.columns) == 10
 
 def test_ReadBoundaryConditionsTable(
         dates: list,
@@ -41,10 +42,11 @@ def test_ReadBoundaryConditions(
         dates: list,
         interface_bc_path: str,
         interface_bc_folder: str,
-        interface_bc_date_format: str
+        interface_bc_date_format: str,
+        test_time_series_length: int
 ):
     IF = Interface('Rhine', start=dates[0])
     IF.ReadBoundaryConditionsTable(interface_bc_path)
     IF.ReadBoundaryConditions(path=interface_bc_folder, date_format=interface_bc_date_format)
 
-    assert len(IF.BC) == 80 and len(IF.BC.columns) == 3
+    assert len(IF.BC) == test_time_series_length and len(IF.BC.columns) == 3

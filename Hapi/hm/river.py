@@ -8,9 +8,11 @@ import datetime as dt
 import os
 import zipfile
 from bisect import bisect
-from typing import Union  # List, Optional,
+from typing import Union, Tuple  # List, Optional,
 
 import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
+
 import numpy as np
 import pandas as pd
 from loguru import logger
@@ -243,7 +245,6 @@ class River:
         self.H = None
         self.slope = None
         self.EventIndex = None
-        self.enddays = None
         self.rivernetwork = None
         self.SP = None #StatisticalProperties
         self.CustomizedRunspath = None
@@ -551,11 +552,11 @@ class River:
             if end == "":
                 end = len(self.referenceindex_results) - 1
 
-            if type(start) == str:
+            if isinstance(start, str):
                 start = dt.datetime.strptime(start, fmt)
                 start = np.where(self.referenceindex_results == start)[0][0] + 1
 
-            if type(end) == str:
+            if isinstance(end, str):
                 end = dt.datetime.strptime(end, fmt)
                 end = np.where(self.referenceindex_results == end)[0][0] + 1
 
@@ -3912,7 +3913,7 @@ class Sub(River):
             the files are going to be saved in the 'CustomizedRunspath' path, The
             default is ''.
         Option : [integer]
-            1 to write water level results, 2 to write water depth results
+            1 to write water depth results, 2 to write water level results
         Returns
         -------
         None.
@@ -3934,12 +3935,12 @@ class Sub(River):
         f = pd.DataFrame(index=saveDS.index)
         f["date"] = ["'" + str(i)[:10] + "'" for i in saveDS.index]
         f["discharge(m3/s)"] = saveDS
+
         if Option == 1:
             val = [self.XSWaterDepth[xsid][0]] + self.XSWaterDepth[xsid].resample(
                 "D"
             ).last().values.tolist()[:-1]
             f["water depth(m)"] = val
-
         else:
             val = [self.XSWaterLevel[xsid][0]] + self.XSWaterLevel[xsid].resample(
                 "D"
@@ -3949,7 +3950,6 @@ class Sub(River):
         f.to_csv(
             path + str(self.id) + ".txt", index=False, float_format="%.3f"
         )
-
 
 
     def PlotHydrographProgression(
@@ -3964,7 +3964,7 @@ class Sub(River):
         figsize: tuple=(7, 5),
         xlabels: Union[bool, int]=False,
         fmt="%Y-%m-%d",
-    ):
+    ) -> Tuple[Figure, object]:
         """PlotHydrographProgression.
 
         plot the hydrograph for several vross section in the segment, cross
@@ -4989,11 +4989,10 @@ class Sub(River):
         self,
         Calib,
         stationname: int,
-        start: str,
-        end: str, #gaugexs,
-        GaugeStart: str,
-        GaugeEnd: str,
+        gaugexs: int,
         Filter: bool=False,
+        start: str='',
+        end: str='',
         fmt: str="%Y-%m-%d",
     ):
         """CalculateQMetrics.
@@ -5006,13 +5005,11 @@ class Sub(River):
             DESCRIPTION.
         stationname : TYPE
             DESCRIPTION.
+        gaugexs : [int]
+            DESCRIPTION.
         start : [str]
             DESCRIPTION.
         end : [str]
-            DESCRIPTION.
-        GaugeStart : TYPE
-            DESCRIPTION.
-        GaugeEnd : TYPE
             DESCRIPTION.
         Filter : TYPE, optional
             DESCRIPTION. The default is False.
@@ -5034,22 +5031,33 @@ class Sub(River):
 
         """
         QHM = pd.DataFrame()
-        startError = dt.datetime.strptime(start, fmt)
-        endError = dt.datetime.strptime(end, fmt)
+
+        try:
+            GaugeStart = Calib.GaugesTable[Calib.GaugesTable["xsid"] == gaugexs][
+                "Qstart"
+            ].values[0]
+            GaugeEnd = Calib.GaugesTable[Calib.GaugesTable["xsid"] == gaugexs][
+                "Qend"
+            ].values[0]
+        except IndexError:
+            logger.debug("The XS you provided does not exist in the GaugesTable")
+            return
 
         if Filter:
+            start = dt.datetime.strptime(start, fmt)
+            end = dt.datetime.strptime(end, fmt)
             # get the latest date of the filter date and the first date in
             # the result
             # get the earliest date of the end and the last date in the result
-            st2 = max(GaugeStart, startError, self.firstdayresults)
-            end2 = min(GaugeEnd, endError, self.enddays)
+            st2 = max(GaugeStart, start, self.firstdayresults)
+            end2 = min(GaugeEnd, end, self.lastday)
 
             # get the observed discharge
             Qobs = Calib.QGauges.loc[st2:end2, stationname]
 
             # resample the times series to average daily
             ind = pd.date_range(
-                self.firstdayresults, self.enddays + dt.timedelta(days=1), freq="h"
+                self.firstdayresults, self.lastday + dt.timedelta(days=1), freq="h"
             )[:-1]
 
             Q = self.Result1D[self.Result1D["xs"] == self.lastxs]
@@ -5103,8 +5111,8 @@ class Sub(River):
         start: str,
         end: str,
         gaugexs: int,
-        stationname,
-        gaugename,
+        stationname: str,
+        gaugename: str,
         gaugecolor: Union[tuple, str]="#DC143C",
         hmcolor: Union[tuple, str]="#004c99",
         linewidth: Union[int, float]=2,
@@ -5218,12 +5226,8 @@ class Sub(River):
                 linestyle=V.LineStyle(gaugestyle),
             )
 
-        # ax1.plot(Sub2.XSWaterLevel.loc[plotstart:plotend,gaugexs],label="step-1" + str(gaugexs),
-        #          zorder=3, linewidth=linewidth, color = 'grey')
-
         start, end = ax.get_xlim()
         ax.xaxis.set_ticks(np.linspace(start, end, nxlabels))
-        # ax1.set_xticklabels(xlabels)
 
         ax.set_title("Water Level - " + gaugename, fontsize=20)
         plt.legend(fontsize=legendsize)
@@ -5231,11 +5235,13 @@ class Sub(River):
         ax.set_ylabel("Water Level m", fontsize=15)
         plt.tight_layout()
 
-        return ax
+        return fig, ax
+
 
     def CalculateWLMetrics(
-        self, Calib, stationname: int, start: Union[dt.datetime, str], end: Union[dt.datetime, str]
-            , gaugexs: int, Filter: bool=False, fmt: str="%Y-%m-%d"
+            self, Calib, stationname: int, gaugexs: int, Filter: bool=False,
+            start: Union[dt.datetime, str]='', end: Union[dt.datetime, str]='',
+            fmt: str="%Y-%m-%d"
     ):
         """CalculateWLMetrics.
 
@@ -5244,10 +5250,6 @@ class Sub(River):
         fmt: [string]
             format of the date. fmt="%Y-%m-%d %H:%M:%S"
         """
-        if type(start) == str:
-            start = dt.datetime.strptime(start, fmt)
-        if type(start) == str:
-            end = dt.datetime.strptime(end, fmt)
         try:
             GaugeStart = Calib.GaugesTable[Calib.GaugesTable["xsid"] == gaugexs][
                 "WLstart"
@@ -5259,19 +5261,24 @@ class Sub(River):
             logger.debug("The XS you provided does not exist in the GaugesTable")
             return
 
-        if type(GaugeStart) == int:
+        if isinstance(GaugeStart, int):
             logger.debug("No water level data for this river segment")
             return
 
         if Filter:
+            if isinstance(start, str):
+                start = dt.datetime.strptime(start, fmt)
+            if isinstance(end, str):
+                end = dt.datetime.strptime(end, fmt)
+
             st2 = max(GaugeStart, start, self.firstdayresults)
-            end2 = min(GaugeEnd, end, self.enddays)
+            end2 = min(GaugeEnd, end, self.lastday)
             # observed
             obs = np.array(Calib.WLGauges.loc[st2:end2, stationname])
 
             # RIM
             ind = pd.date_range(
-                self.firstdayresults, self.enddays + dt.timedelta(days=1), freq="h"
+                self.firstdayresults, self.lastday + dt.timedelta(days=1), freq="h"
             )[:-1]
             mod = self.Result1D[self.Result1D["xs"] == self.lastxs]
             mod.index = ind

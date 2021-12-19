@@ -2,7 +2,7 @@ from typing import List
 
 import pytest
 
-time_series_length = 80
+
 laterals = [30, 50, 70]
 sub_id = 1
 sub_id_us = 3
@@ -14,9 +14,7 @@ xsid = 50
 station_id = 999666
 date_format = "'%Y-%m-%d'"
 
-@pytest.fixture(scope="module")
-def test_time_series_length() -> int:
-    return time_series_length
+
 
 @pytest.fixture(scope="module")
 def slope_path() -> str:
@@ -64,6 +62,10 @@ def create_sub_instance_lastxs() -> int:
 @pytest.fixture(scope="module")
 def Read1DResult_path() -> str:
     return "Examples/Hydrodynamic models/test_case/results/1d/"
+
+@pytest.fixture(scope="module")
+def usbc_path() -> str:
+    return "Examples/Hydrodynamic models/test_case/results/USbnd/"
 
 @pytest.fixture(scope="module")
 def Read1DResult_xsid() -> int:
