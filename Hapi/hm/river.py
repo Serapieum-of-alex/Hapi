@@ -3888,8 +3888,6 @@ class Sub(River):
             self.referenceindex.loc[eventdays[0] : eventdays[-1], "date"]
         ).tolist()
 
-    # def Read1DResult1Donly(self,path):
-    # River.Read1DResult(self,self.id, fromday, today, FillMissing)
 
     def SaveHydrograph(self, xsid: int,
                        path: str = "",

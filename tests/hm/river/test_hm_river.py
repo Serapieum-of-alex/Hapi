@@ -69,7 +69,6 @@ def test_sub_GetFlow(
         interface_bc_path: str,
         interface_bc_folder: str,
         interface_bc_date_format: str,
-
         interface_Laterals_table_path: str,
         interface_Laterals_folder: str,
         interface_Laterals_date_format: str,
@@ -485,25 +484,28 @@ def test_SaveHydrograph(
     Sub = R.Sub(segment3, River)
     Sub.Read1DResult()
     Sub.SaveHydrograph(Sub.lastxs)
+    # option 2
+    Sub.SaveHydrograph(Sub.lastxs, Option=2)
 
-# def test_ReadBoundaryConditions(
-#         version: int,
-#         river_cross_section_path: str,
-#         river_network_path: str,
-#         dates:list,
-#         Read1DResult_path: str,
-#         usbc_path: str,
-#         segment3: int,
-#         xs_total_no: int,
-#         test_hours: list
-# ):
-#     River = R.River('HM', version=version)
-#     River.ReadCrossSections(river_cross_section_path)
-#     River.RiverNetwork(river_network_path)
-#     River.onedresultpath = Read1DResult_path
-#     River.usbcpath = usbc_path
-#     Sub = R.Sub(segment3, River)
-#     Sub.Read1DResult()
-#     Sub.ReadBoundaryConditions(start=dates[0], end=dates[1])
-#
-#     assert len(Sub.QBC) == xs_total_no and all(elem in test_hours for elem in Sub.HBC.columns.tolist())
+def test_ReadBoundaryConditions(
+        version: int,
+        river_cross_section_path: str,
+        river_network_path: str,
+        dates:list,
+        Read1DResult_path: str,
+        usbc_path: str,
+        segment3: int,
+        test_time_series_length: int,
+        test_hours: list
+):
+    River = R.River('HM', version=version, start=dates[0])
+    River.ReadCrossSections(river_cross_section_path)
+    River.RiverNetwork(river_network_path)
+    River.onedresultpath = Read1DResult_path
+    River.usbcpath = usbc_path
+    Sub = R.Sub(segment3, River)
+    Sub.Read1DResult()
+    Sub.ReadBoundaryConditions(start=dates[0], end=dates[1])
+
+    assert len(Sub.QBC) == test_time_series_length and all(elem in test_hours for elem in Sub.QBC.columns.tolist())
+    assert len(Sub.HBC) == test_time_series_length and all(elem in test_hours for elem in Sub.HBC.columns.tolist())

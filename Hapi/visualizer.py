@@ -7,6 +7,7 @@ Created on Sat Mar 14 16:36:01 2020
 import datetime as dt
 import math
 import os
+from typing import Union, List
 from collections import OrderedDict
 
 try :
@@ -74,9 +75,9 @@ class Visualize:
             ("loosely dashdotdotted", (0, (3, 10, 1, 10, 1, 10))),  # 10
             ("dashdotdotted", (0, (3, 5, 1, 5, 1, 5))),  # 11
             ("densely dashdotdotted", (0, (3, 1, 1, 1, 1, 1))),  # 12
-            ("densely dashdotdottededited", (0, (6, 1, 1, 1, 1, 1))),
+            ("densely dashdotdottededited", (0, (6, 1, 1, 1, 1, 1))),# 13
         ]
-    )  # 13
+    )
 
     MarkerStyleList = [
         "--o",
@@ -92,11 +93,11 @@ class Visualize:
         "-.h",
     ]
 
-    def __init__(self, resolution="Hourly"):
-        self.resolution = "Hourly"
+    def __init__(self, resolution: str="Hourly"):
+        self.resolution = resolution
 
     @staticmethod
-    def LineStyle(Style="loosely dotted"):
+    def LineStyle(Style: Union[str, int]="loosely dotted"):
         """LineStyle.
 
         Line styles for plotting
@@ -112,7 +113,7 @@ class Visualize:
             DESCRIPTION.
 
         """
-        if type(Style) == str:
+        if isinstance(Style, str):
             try:
                 return Visualize.linestyles[Style]
             except KeyError:
@@ -126,7 +127,7 @@ class Visualize:
             return list(Visualize.linestyles.items())[Style][1]
 
     @staticmethod
-    def MarkerStyle(Style):
+    def MarkerStyle(Style: int):
         """MarkerStyle.
 
         Marker styles for plotting
@@ -149,16 +150,16 @@ class Visualize:
     def GroundSurface(
         self,
         Sub,
-        fromxs="",
-        toxs="",
-        floodplain=False,
-        plotlateral=False,
-        nxlabels=10,
-        figsize=(20, 10),
-        LateralsColor="red",
-        LaterlasLineWidth=1,
-        option=1,
-        size=50,
+        fromxs: Union[str, int]="",
+        toxs: Union[str, int]="",
+        floodplain: bool=False,
+        plotlateral: bool=False,
+        nxlabels: int=10,
+        figsize: tuple=(20, 10),
+        LateralsColor: Union[str, tuple]="red",
+        LaterlasLineWidth: int=1,
+        option: int=1,
+        size: int=50,
     ):
         """Plot the longitudinal profile of the segment.
 
@@ -166,16 +167,26 @@ class Visualize:
         ----------
         Sub : TYPE
             DESCRIPTION.
-        XSID : TYPE, optional
+        fromxs : TYPE, optional
             DESCRIPTION. The default is ''.
-        xsbefore : TYPE, optional
-            DESCRIPTION. The default is 10.
-        xsafter : TYPE, optional
-            DESCRIPTION. The default is 10.
-        FloodPlain : TYPE, optional
+        toxs : TYPE, optional
+            DESCRIPTION. The default is ''.
+        floodplain : TYPE, optional
             DESCRIPTION. The default is False.
-        PlotLateral : TYPE, optional
+        plotlateral : TYPE, optional
             DESCRIPTION. The default is False.
+        nxlabels: [int]
+            Default is 10
+        figsize: [tuple]
+            Default is (20, 10)
+        LateralsColor: [str, tuple]
+            Defaut is "red",
+        LaterlasLineWidth: [int]
+            Default is 1.
+        option: [int]
+            Default is 1
+        size: [int]
+        Default is 50.
 
         Returns
         -------
@@ -191,8 +202,7 @@ class Visualize:
 
         if toxs == "":
             toxs = Sub.xsname[-1]
-            # axGS.set_xticks(Sub.xsname)
-        # else:
+
         # not the whole sub-basin
         axGS.set_xticks(list(range(fromxs, toxs)))
         axGS.set_xticklabels(list(range(fromxs, toxs)))
@@ -228,7 +238,7 @@ class Visualize:
             axGS.plot(Sub.xsname, fpr, "r-.", linewidth=2, label="Floodplain right")
 
         if plotlateral:
-            if hasattr(Sub, "LateralsTable"):
+            if isinstance(Sub.LateralsTable, list) and len(Sub.LateralsTable) > 0:
                 if option == 1:
                     # plot location of laterals
                     for i in range(len(Sub.LateralsTable)):
@@ -299,13 +309,13 @@ class Visualize:
             start, end = axGS.get_xlim()
             label_list = [int(i) for i in np.linspace(start, end, nxlabels)]
             axGS.xaxis.set_ticks(label_list)
+
         title = "Water surface Profile Simulation Subid = {0}".format(Sub.id)
         axGS.set_title(title, fontsize=15)
         axGS.legend(fontsize=15)
         axGS.set_xlabel("Profile", fontsize=15)
         axGS.set_ylabel("Elevation m", fontsize=15)
         axGS.grid()
-
         GroundSurfacefig.tight_layout()
 
     def WaterSurfaceProfile(
@@ -1401,19 +1411,19 @@ class Visualize:
     def CrossSections(
         self,
         Sub,
-        fromxs="",
-        toxs="",
-        xsrows=3,
-        xscolumns=3,
-        bedlevel=False,
-        titlesize=15,
-        textsize=15,
-        figsize=(18, 10),
-        linewidth=6,
-        samescale=False,
-        textspacing=[(1, 1), (1, 2)],
-        plottingoption=1,
-        plotannotation=True,
+        fromxs: Union[str, int]="",
+        toxs: Union[str, int]="",
+        xsrows: int=3,
+        xscolumns: int=3,
+        bedlevel: bool=False,
+        titlesize: int=15,
+        textsize: int=15,
+        figsize: tuple=(18, 10),
+        linewidth: int=6,
+        samescale: bool=False,
+        textspacing: List[tuple]=[(1, 1), (1, 2)],
+        plottingoption: int=1,
+        plotannotation: bool=True,
     ):
         """CrossSections.
 
@@ -1423,9 +1433,9 @@ class Visualize:
         ----------
         Sub : [Object]
             Sub-object created as a sub class from River object..
-        startxs : TYPE, optional
+        fromxs : TYPE, optional
             DESCRIPTION. The default is ''.
-        endxs : TYPE, optional
+        toxs : TYPE, optional
             DESCRIPTION. The default is ''.
         xsrows : TYPE, optional
             DESCRIPTION. The default is 3.
@@ -1445,6 +1455,12 @@ class Visualize:
             1 if you want to plot the whole cross-section, 2 to execlude the
             dikes(river bankfull area and floodplain will be plotted),
             3 to plot only the bankfull area.
+        samescale: [bool]
+            Default is False.
+        textspacing: [tuple]
+            Default is [(1, 1), (1, 2)].
+        plotannotation: [bool]
+            Default is True.
 
         Returns
         -------
@@ -1539,6 +1555,7 @@ class Visualize:
             else:
                 sharex = False
                 sharey = False
+                
             fig, ax_XS = plt.subplots(
                 ncols=xscolumns,
                 nrows=xsrows,
@@ -1648,6 +1665,7 @@ class Visualize:
             )
 
         return fig, ax_XS
+
 
     def Plot1minProfile(
         self, Sub, date, xaxislabelsize=10, nxlabels=50, fmt="%Y-%m-%d"
