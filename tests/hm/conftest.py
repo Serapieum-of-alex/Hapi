@@ -1,6 +1,7 @@
 import pytest
 
 from tests.hm.calibration.conftest import *
+from tests.hm.inputs.conftest import *
 from tests.hm.interface.conftest import *
 from tests.hm.river.conftest import *
 

@@ -214,7 +214,7 @@ class Gumbel:
         return L1 + L2
 
     def EstimateParameter(self, method: str="mle", ObjFunc=None,
-                          threshold:Union[None, float]=None, Test: bool=True):
+                          threshold:Union[None, float, int]=None, Test: bool=True):
         """EstimateParameter.
 
         EstimateParameter estimate the distribution parameter based on MLM
@@ -236,6 +236,8 @@ class Gumbel:
             Value you want to consider only the greater values.
         method : [string]
             'mle', 'mm', 'lmoments', optimization
+        Test: [bool]
+            Default is True.
 
         Returns
         -------
@@ -643,7 +645,9 @@ class GEV:
         else:
             return cdf
 
-    def EstimateParameter(self, method="mle", ObjFunc=None, threshold=None, Test=True):
+    def EstimateParameter(self, method: str="mle", ObjFunc=None,
+                          threshold: Union[int, float, None]=None,
+                          Test: bool=True):
         """EstimateParameter.
 
         EstimateParameter estimate the distribution parameter based on MLM
@@ -665,6 +669,8 @@ class GEV:
             Value you want to consider only the greater values.
         method : [string]
             'mle', 'mm', 'lmoments', optimization
+        Test: bool
+            Default is True
 
         Returns
         -------
@@ -1048,7 +1054,7 @@ class ConfidenceInterval:
         loc = gevfit[1]
         scale = gevfit[2]
         # generate theoretical estimates based on a random cdf, and the dist parameters
-        sample = GEV.TheporeticalEstimate(shape, loc, scale, sp.rand(len(data)))
+        sample = GEV.TheporeticalEstimate(shape, loc, scale, np.random.rand(len(data)))
         # get parameters based on the new generated sample
         LM = Lmoments(sample)
         mum = LM.Lmom()

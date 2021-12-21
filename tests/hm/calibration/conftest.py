@@ -1,5 +1,6 @@
 import pytest
 
+
 @pytest.fixture(scope="module")
 def gauges_file_extension() -> str:
     return ".csv"

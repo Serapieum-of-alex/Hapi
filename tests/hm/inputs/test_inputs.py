@@ -1,0 +1,50 @@
+import os
+
+import Hapi.hm.calibration as RC
+import Hapi.hm.inputs as IN
+
+
+def test_ReadObservedQ(
+        gauges_table_path: str,
+        ReadObservedQ_Path: str,
+        dates: list,
+        nodatavalu: int,
+        gauges_file_extension: str,
+        gauge_date_format: str,
+        version: int,
+        Discharge_WarmUpPeriod: int,
+        Discharge_gauge_long_ts: str,
+        SavePlots: bool,
+        Statistical_analisis_path: str,
+        NoValue: int,
+        statisticalpr_columns: list,
+        distributionpr_gev_columns: list,
+):
+    Calib = RC.Calibration("HM", version=version)
+    Calib.ReadGaugesTable(gauges_table_path)
+    # Calib.ReadObservedQ(ReadObservedQ_Path, dates[0], dates[1],
+    #                     nodatavalu, file_extension=gauges_file_extension,
+    #                     gauge_date_format=gauge_date_format)
+
+    Inputs35 = IN.Inputs("Observed_Q")
+
+    computationalnodes = Calib.GaugesTable['oid'].tolist()
+
+    Inputs35.StatisticalProperties(
+        computationalnodes,
+        Discharge_gauge_long_ts,
+        dates[0],
+        Discharge_WarmUpPeriod,
+        SavePlots,
+        Statistical_analisis_path,
+        SeparateFiles=True,
+        Filter=NoValue,
+        method='lmoments',
+        file_extension=gauges_file_extension)
+
+
+    assert os.path.exists(os.path.join(Statistical_analisis_path, "Figures"))
+    assert all(elem in Inputs35.StatisticalPr.columns.tolist() for elem in statisticalpr_columns)
+    assert all(elem in Calib.GaugesTable['oid'].to_list() for elem in Inputs35.StatisticalPr.index.tolist())
+    assert all(elem in Inputs35.DistributionPr.columns.tolist() for elem in distributionpr_gev_columns)
+    assert all(elem in Calib.GaugesTable['oid'].to_list() for elem in Inputs35.DistributionPr.index.tolist())

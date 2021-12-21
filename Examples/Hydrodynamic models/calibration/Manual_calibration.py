@@ -10,7 +10,11 @@ import datetime as dt
 # get_ipython().magic('reset -f')
 import os
 
+import matplotlib
 import matplotlib.pyplot as plt
+
+matplotlib.use('TkAgg')
+
 import numpy as np
 import pandas as pd
 
@@ -53,7 +57,7 @@ River.usbcpath = rpath + "/results/USbnd/"
 River.oneminresultpath = rpath + "/results/"
 # River.twodresultpath = rpath + "/results/2d/zip/"
 River.CustomizedRunspath = rpath + "/results/customized_results/"
-River.Compressed = True
+# River.Compressed = True
 River.rrmpath = rpath + "/inputs/rrm/hm_location"
 River.Slope(RIM2Files + "/slope.csv")
 River.ReadCrossSections(RIM2Files + "/xs_same_downward-3segment.csv")
@@ -161,16 +165,16 @@ fig, ax = Sub.PlotQ(Calib, gaugexs, start, end, stationname, gaugename, segment_
           linewidth=5, figsize=(7, 6),
           hmorder=hmorder,
           xlabels=5)
-#%%
+
 # performance criteria
 Filter = False
 startError = start
 endError = end
-startgauge = gauges.loc[gaugei, 'Qstart']
-endgauge = gauges.loc[gaugei, 'Qend']
+# startgauge = gauges.loc[gaugei, 'Qstart']
+# endgauge = gauges.loc[gaugei, 'Qend']
 
-Sub.CalculateQMetrics(Calib, stationname, startError, endError, #gaugexs,
-                      startgauge, endgauge, Filter=Filter)
+Sub.CalculateQMetrics(Calib, stationname, gaugexs, Filter=Filter, start=startError, end=endError)
+
 # plt.savefig(saveto + "/Segment-" + str(Sub.id) + "-" +
 #             str(gauges.loc[gaugei, 'name']) + "-Q-C-" +
             # str(dt.datetime.now())[0:11] + ".png")
@@ -192,13 +196,13 @@ start = str(Sub.firstday)[:-9]
 end = str(Sub.lastday)[:-9]
 
 Sub.PlotWL(Calib, start, end, gaugexs, stationname, gaugename,
-               Filter=False, plotgauge=False)
+               plotgauge=True)
 
-startError = "1973-11-25"
-endError = "1976-08-21"
+startError = start
+endError = end
 
-Sub.CalculateWLMetrics(Calib, stationname, startError, endError,
-                       gaugexs, Filter=False)
+Sub.CalculateWLMetrics(Calib, stationname, gaugexs, Filter=False,
+                       start=startError, end=endError,)
 
 # plt.savefig(saveto + "/Segment-" + str(Sub.id) + "-"
 #             + str(gauges.loc[gaugei,'name']) +
@@ -275,19 +279,24 @@ fig, ax = Vis.CrossSections(Sub, bedlevel=True, fromxs=fromxs, toxs=toxs,
 """ periods of water level exceeds the bankful depth"""
 
 start = "1955-02-10"
-end = "1955-02-27"
+end = "1955-02-11"
+from matplotlib import rc
 
 Anim = Vis.WaterSurfaceProfile(Sub, start, end, fps=2,nxlabels=5,
                                fromxs=fromxs, toxs=toxs, xaxislabelsize=10,
-                               textlocation=(-1,-2))
+                               textlocation=(-1,-2), repeat=True)
+plt.close()
+# rc('animation', html='jshtml')
+# rc
 #%%
+# TODO : create a test for SaveProfileAnimation function
 ffmpegPath = "F:/Users/mofarrag/.matplotlib/ffmpeg-4.4-full_build/bin/ffmpeg.exe"
 SavePath = saveto + "/" + str(Sub.id)+"-"+str(dt.datetime.now())[:13] + ".gif"
 Vis.SaveProfileAnimation(Anim, Path=SavePath, fps=30, ffmpegPath=ffmpegPath)
 #%% Read and plot the 1 min data
 
-start = "1955-02-10"
-end = "1955-02-27"
+start = "1955-01-01"
+end = "1955-01-10"
 
 Sub.ReadSubDailyResults(start, end, Lastsegment=True)
 #%%
@@ -295,9 +304,8 @@ Sub.ReadSubDailyResults(start, end, Lastsegment=True)
 # TODO : check CheckNegativeQ makes problem
 # Sub.CheckNegativeQ(TS = '1min')
 #%% Plotting
-
-start = "1955-02-10"
-end = "1955-02-27"
+start = "1955-01-01"
+end = "1955-01-10"
 
 fromxs = ''
 toxs = ''
@@ -312,10 +320,10 @@ sub-basin at a certain time to visualise the spikes where the algorithm switches
 calculating discharge with the calculated sf or using the min Sf
 
 """
-date = "1955-02-15"
+date = "1955-01-05"
 Vis.Plot1minProfile(Sub, date, nxlabels = 20)
 #%%  plot BC
-date = "1955-02-15"
+date = "1955-01-05"
 Sub.PlotBC(date)
 #%% new table
 """

@@ -2,7 +2,6 @@ from typing import List
 
 import pytest
 
-
 segment1_laterals = [30, 50, 70]
 sub_id = 1
 sub_id_us = 3

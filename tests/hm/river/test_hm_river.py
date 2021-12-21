@@ -1,6 +1,7 @@
 from typing import List
-from matplotlib.figure import Figure
+
 import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
 
 import Hapi.hm.calibration as RC
 import Hapi.hm.river as R
@@ -566,3 +567,16 @@ def test_PlotBC(
                             onemin_results_dates[1],
                             Lastsegment=lastsegment)
     Sub.PlotBC(dates[0])
+
+
+def test_GetCapacity(
+        version: int,
+        river_cross_section_path: str,
+):
+    River = R.River('HM', version=version)
+    River.ReadCrossSections(river_cross_section_path)
+    River.GetCapacity('Qbkf')
+    assert "Slope" in River.crosssections.columns.tolist()
+    assert "Qbkf" in River.crosssections.columns.tolist()
+
+    River.GetCapacity('Qc2', Option=2)

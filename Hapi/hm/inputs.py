@@ -35,6 +35,8 @@ class Inputs:
     def __init__(self, Name, version=2):
         self.Name = Name
         self.version = version
+        self.StatisticalPr = None
+        self.DistributionPr = None
 
     def ExtractHydrologicalInputs(
         self, WeatherGenerator, FilePrefix, realization, path, SWIMNodes, SavePath
@@ -118,6 +120,8 @@ class Inputs:
         Quartile: float=0,
         Results: bool=False,
         SignificanceLevel=0.1,
+        file_extension: str = '.txt',
+        date_format: str = "%Y-%m-%d",
     ):
         """StatisticalProperties.
 
@@ -182,22 +186,27 @@ class Inputs:
             if Results:
                 for i in range(len(ComputationalNodes)):
                     TS.loc[:, int(ComputationalNodes[i])] = self.ReadRIMResult(
-                        TSdirectory + "/" + str(int(ComputationalNodes[i])) + ".txt"
+                        TSdirectory + "/" + str(int(ComputationalNodes[i])) + file_extension
                     )
             # for the rainfall runoff results.
             else:
                 for i in range(len(ComputationalNodes)):
-                    TS.loc[:, int(ComputationalNodes[i])] = np.loadtxt(
-                        TSdirectory + "/" + str(int(ComputationalNodes[i])) + ".txt"
-                    )  # ,skiprows = 0
+                    TS.loc[:, int(ComputationalNodes[i])] = pd.read_csv(
+                        TSdirectory + "/" + str(int(ComputationalNodes[i])) + file_extension,
+                        skiprows=1, header=None,
+                    )[1].tolist()
 
-            StartDate = dt.datetime.strptime(start, "%Y-%m-%d")
+                    #     np.loadtxt(
+                    #     TSdirectory + "/" + str(int(ComputationalNodes[i])) + file_extension
+                    # )  # ,skiprows = 0
+
+            StartDate = dt.datetime.strptime(start, date_format)
             EndDate = StartDate + dt.timedelta(days=TS.shape[0] - 1)
             ind = pd.date_range(StartDate, EndDate)
             TS.index = ind
         else:
             TS = pd.read_csv(TSdirectory, delimiter=r"\s+", header=None)
-            StartDate = dt.datetime.strptime(start, "%Y-%m-%d")
+            StartDate = dt.datetime.strptime(start, date_format)
             EndDate = StartDate + dt.timedelta(days=TS.shape[0] - 1)
             TS.index = pd.date_range(StartDate, EndDate, freq="D")
             # delete the first two columns
@@ -261,6 +270,11 @@ class Inputs:
         # F = [1/3, 0.5, 0.8, 0.9, 0.96, 0.98, 0.99, 0.995, 0.998]
         F = 1 - (1 / T)
         # Iteration over all the gauge numbers.
+        if SavePlots:
+            rpath = os.path.join(SavePath, "Figures")
+            if not os.path.exists(rpath):
+                os.mkdir(rpath)
+
         for i in ComputationalNodes:
             QTS = TS.loc[:, i]
             # The time series is resampled to the annual maxima, and turned into a
@@ -272,29 +286,34 @@ class Inputs:
                 amax = amax[amax != Filter]
 
             if EstimateParameters:
+                # TODO: still to be tested and prepared for GEV
                 # estimate the parameters through an optimization
                 # alpha = (np.sqrt(6) / np.pi) * amax.std()
                 # beta = amax.mean() - 0.5772 * alpha
                 # param_dist = [beta, alpha]
                 threshold = np.quantile(amax, Quartile)
                 if Distibution == "GEV":
-                    print("Still to be finished later")
-                else:
-                    param = Gumbel.EstimateParameter(
-                        amax, Gumbel.ObjectiveFn, threshold
+                    dist = GEV(amax)
+                    param_dist = dist.EstimateParameter(
+                        method='optimization',
+                        ObjFunc=Gumbel.ObjectiveFn,
+                        threshold=threshold,
                     )
-                    param_dist = [param[1], param[2]]
-
+                else:
+                    dist = Gumbel(amax)
+                    param_dist = dist.EstimateParameter(
+                        method='optimization',
+                        ObjFunc=Gumbel.ObjectiveFn,
+                        threshold=threshold,
+                    )
             else:
                 # estimate the parameters through an maximum liklehood method
                 if Distibution == "GEV":
                     dist = GEV(amax)
                     # defult parameter estimation method is maximum liklihood method
                     param_dist = dist.EstimateParameter(method=method)
-                    # param_dist = genextreme.fit(amax)
                 else:
                     # A gumbel distribution is fitted to the annual maxima
-                    # param_dist = gumbel_r.fit(amax)
                     dist = Gumbel(amax)
                     # defult parameter estimation method is maximum liklihood method
                     param_dist = dist.EstimateParameter(method=method)
@@ -314,10 +333,8 @@ class Inputs:
                 Qrp = dist.TheporeticalEstimate(
                     param_dist[0], param_dist[1], param_dist[2], F
                 )
-                # Qrp = genextreme.ppf(F, param_dist[0], loc=param_dist[1], scale=param_dist[2])
             else:
                 Qrp = dist.TheporeticalEstimate(param_dist[0], param_dist[1], F)
-                # Qrp = gumbel_r.ppf(F,loc=param_dist[0], scale=param_dist[1])
 
             # to get the Non Exceedance probability for a specific Value
             # sort the amax
@@ -334,21 +351,17 @@ class Inputs:
                         param_dist[1],
                         param_dist[2],
                         cdf_Weibul,
-                        alpha=0.1,
+                        alpha=SignificanceLevel,
                     )
                 else:
                     fig, ax = dist.ProbapilityPlot(
-                        param_dist[0], param_dist[1], cdf_Weibul, alpha=0.1
+                        param_dist[0], param_dist[1], cdf_Weibul, alpha=SignificanceLevel
                     )
 
-                fig[0].savefig(
-                    SavePath + "/" + "Figures/" + str(i) + ".png", format="png"
-                )
+                fig[0].savefig(f"{SavePath}/Figures/{i}.png", format="png")
                 plt.close()
 
-                fig[1].savefig(
-                    SavePath + "/" + "Figures/F-" + str(i) + ".png", format="png"
-                )
+                fig[1].savefig(f"{SavePath}/Figures/F-{i}.png", format="png")
                 plt.close()
 
             StatisticalPr.loc[i, "mean"] = QTS.mean()
@@ -377,7 +390,14 @@ class Inputs:
         DistributionPr.to_csv(f"{SavePath}/DistributionProperties.csv" , float_format="%.4f")
         self.DistributionPr = DistributionPr
 
-    def WriteHQFile(self, NoNodes, StatisticalPropertiesFile, SaveTo):
+    def WriteHQFile(self, NoNodes: int, StatisticalPropertiesFile:str, SaveTo:str):
+        """
+
+        :param NoNodes:
+        :param StatisticalPropertiesFile:
+        :param SaveTo:
+        :return:
+        """
         # Create a table of all nodes and sub-basins
         HQ = pd.DataFrame(
             index=list(range(NoNodes)), columns=["id", "2yrs", "10yrs", "100yrs"]
@@ -655,10 +675,7 @@ class Inputs:
 
     @staticmethod
     def ReadRIMResult(Path):
-        """
-        =======================================
-           ReadRIMResult(Path)
-        =======================================
+        """ReadRIMResult.
 
         Parameters
         ----------
@@ -697,11 +714,7 @@ class Inputs:
         USonly=1,
         HydrologicalInputsFile="",
     ):
-        """
-        =============================================================================
-            CreateTraceALL(ConfigFilePath, RIMSubsFilePath, TraceFile, USonly=1,
-                               HydrologicalInputsFile='')
-        =============================================================================
+        """CreateTraceALL.
 
         Parameters
         ----------
@@ -721,7 +734,6 @@ class Inputs:
         None.
 
         """
-
         # reading the file
         Config = pd.read_csv(ConfigFilePath, header=None)
         # process the Configuration file
@@ -786,7 +798,8 @@ class Inputs:
         #    ToSave.to_csv(SavePath + TraceFile,header = None, index = None)
 
     def ListAttributes(self):
-        """
+        """ListAttributes.
+
         Print Attributes List
         """
 

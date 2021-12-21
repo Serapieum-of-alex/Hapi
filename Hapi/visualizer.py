@@ -7,8 +7,8 @@ Created on Sat Mar 14 16:36:01 2020
 import datetime as dt
 import math
 import os
-from typing import Union, List
 from collections import OrderedDict
+from typing import List, Union
 
 try :
     from osgeo import gdal
@@ -18,11 +18,10 @@ except ImportError:
 import matplotlib as mpl
 import matplotlib.colors as colors
 import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
-
 import numpy as np
 import pandas as pd
 from matplotlib import animation, gridspec
+from matplotlib.animation import FuncAnimation
 from matplotlib.ticker import LogFormatter
 from scipy.stats import gumbel_r
 
@@ -1571,7 +1570,7 @@ class Visualize:
             else:
                 sharex = False
                 sharey = False
-                
+
             fig, ax_XS = plt.subplots(
                 ncols=xscolumns,
                 nrows=xsrows,

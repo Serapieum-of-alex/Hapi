@@ -31,3 +31,7 @@ Examples/data/Hapi.qgz
 .idea/.gitignore
 .idea/HAPI.iml
 *.iml
+.idea/HAPI.iml
+*.iml
+requirements_dev.txt
+*.iml

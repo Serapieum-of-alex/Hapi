@@ -8,14 +8,13 @@ import datetime as dt
 import os
 import zipfile
 from bisect import bisect
-from typing import Union, Tuple  # List, Optional,
+from typing import Tuple, Union  # List, Optional,
 
 import matplotlib.pyplot as plt
-from matplotlib.figure import Figure
-
 import numpy as np
 import pandas as pd
 from loguru import logger
+from matplotlib.figure import Figure
 from pandas.core.frame import DataFrame
 from scipy.stats import genextreme, gumbel_r
 
@@ -44,7 +43,7 @@ class River:
         rrmstart: str="",
         rrmdays: int=36890,
         dto: int=60,
-        dx: Union[int, str]="",
+        dx: Union[float, str]=500,
         leftovertopping_suffix: str="_left.txt",
         rightovertopping_suffix: str="_right.txt",
         depthprefix: str="DepthMax",
@@ -1747,14 +1746,14 @@ class River:
                 slope = (
                     self.crosssections.loc[i, "gl"]
                     - self.crosssections.loc[i + 1, "gl"]
-                ) / 500
+                ) / self.dx
             else:
                 slope = (
                     abs(
                         self.crosssections.loc[i, "gl"]
                         - self.crosssections.loc[i - 1, "gl"]
                     )
-                    / 500
+                    / self.dx
                 )
             self.crosssections.loc[i, "Slope"] = slope
 
@@ -1767,7 +1766,7 @@ class River:
                 )
                 self.crosssections.loc[i, ColumnName] = self.crosssections.loc[
                     i, ColumnName
-                ] * (slope) ** (1 / 2)
+                ] * slope ** (1 / 2)
 
             else:
                 # lowest dike
@@ -1789,7 +1788,7 @@ class River:
                 )
                 self.crosssections.loc[i, ColumnName] = self.crosssections.loc[
                     i, ColumnName
-                ] * (slope) ** (1 / 2)
+                ] * slope ** (1 / 2)
 
             if isinstance(self.SP, DataFrame):
                 RP = self.GetReturnPeriod(

@@ -19,15 +19,18 @@ get_ipython().magic("reset -f")
 from datetime import datetime
 
 import gdal
+
 #%library
 import numpy as np
 import pandas as pd
 
 import Hapi.hbv as HBV
 import Hapi.performancecriteria as PC
+
 # functions
 from Hapi.calibration import Calibration
 from Hapi.distparameters import DistParameters as DP
+
 # import Wrapper
 # import Hapi.GISpy as GIS
 from Hapi.giscatchment import GISCatchment as GC
