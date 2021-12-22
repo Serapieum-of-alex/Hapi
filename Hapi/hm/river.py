@@ -21,7 +21,7 @@ from scipy.stats import genextreme, gumbel_r
 from Hapi.gis.raster import Raster as raster
 from Hapi.hm.saintvenant import SaintVenant
 from Hapi.sm import performancecriteria as Pf
-from Hapi.sm.distributions import GEV, Gumbel, PlottingPosition
+from Hapi.sm.distributions import GEV, Gumbel  # , PlottingPosition
 from Hapi.visualizer import Visualize as V
 
 hours = list(range(1, 25))
@@ -252,6 +252,7 @@ class River:
         self.RP = None
         self.SP = None
         self.rrmpath = None
+        self.segments = None # read cross sections
 
 
     def IndexToDate(self, index:int):
@@ -493,11 +494,13 @@ class River:
         elif self.version == 3:
             self.crosssections = pd.read_csv(path, delimiter=",")
             self.xsno = len(self.crosssections)
+            self.segments = list(set(self.crosssections["id"].tolist()))
         else:
             self.crosssections = pd.read_csv(path, delimiter=",")
             self.xsno = len(self.crosssections)
             # TODO to be checked later now for testing of version 4
             self.xsname = self.crosssections["xsid"].tolist()
+            self.segments = list(set(self.crosssections["id"].tolist()))
 
     def ReadBoundaryConditions(
             self, start: str="", end: str="", path: str="", fmt: str="%Y-%m-%d",
@@ -1658,8 +1661,11 @@ class River:
         try:
             loc = np.where(self.SP["id"] == Subid)[0][0]
             if distribution =="GEV":
-                F = gumbel_r.cdf(
-                    Q, loc=self.SP.loc[loc, "loc"], scale=self.SP.loc[loc, "scale"]
+                F = genextreme.cdf(
+                    Q,
+                    c = self.SP.loc[loc, "c"],
+                    loc=self.SP.loc[loc, "loc"],
+                    scale=self.SP.loc[loc, "scale"]
                 )
             else:
                 F = gumbel_r.cdf(
@@ -1730,7 +1736,7 @@ class River:
         )
 
 
-    def GetCapacity(self, ColumnName: str, Option: int=1):
+    def GetCapacity(self, ColumnName: str, Option: int=1, distribution: str="GEV"):
         """GetCapacity.
 
         GetCapacity method calculates the discharge that is enough to fill the
@@ -1812,6 +1818,7 @@ class River:
                 RP = self.GetReturnPeriod(
                     self.crosssections.loc[i, "id"],
                     self.crosssections.loc[i, ColumnName],
+                    distribution=distribution
                 )
                 if np.isnan(RP):
                     RP = -1
@@ -1862,14 +1869,14 @@ class River:
                 slope = (
                     self.crosssections.loc[i, "gl"]
                     - self.crosssections.loc[i + 1, "gl"]
-                ) / 500
+                ) / self.dx
             else:
                 slope = (
                     abs(
                         self.crosssections.loc[i, "gl"]
                         - self.crosssections.loc[i - 1, "gl"]
                     )
-                    / 500
+                    / self.dx
                 )
             # self.crosssections.loc[i,'Slope'] = slope
             Hl, Hr, Bl, Br, B, dbf = self.crosssections.loc[

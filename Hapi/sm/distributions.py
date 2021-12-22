@@ -191,6 +191,7 @@ class Gumbel:
             return cdf, fig, ax
         else:
             return cdf
+        # gumbel_r.cdf(Q, loc, scale)
 
     @staticmethod
     def ObjectiveFn(p, x):
@@ -592,17 +593,18 @@ class GEV:
 
     def cdf(
         self,
-        shape,
-        loc,
-        scale,
-        plot_figure=False,
-        figsize=(6, 5),
-        xlabel="Actual data",
-        ylabel="cdf",
-        fontsize=15,
-        actualdata=True,
+        shape: Union[float, int],
+        loc: Union[float, int],
+        scale: Union[float, int],
+        plot_figure: bool=False,
+        figsize: tuple=(6, 5),
+        xlabel: str="Actual data",
+        ylabel: str="cdf",
+        fontsize: int=15,
+        actualdata: bool=True,
     ):
-        """
+        """cdf.
+
         Returns the value of Gumbel's cdf with parameters loc and scale at x.
         """
         if scale <= 0:
@@ -647,9 +649,11 @@ class GEV:
                 ylabel=ylabel,
                 fontsize=fontsize,
             )
+
             return cdf, fig, ax
         else:
             return cdf
+        # genextreme.cdf()
 
     def EstimateParameter(self, method: str="mle", ObjFunc=None,
                           threshold: Union[int, float, None]=None,

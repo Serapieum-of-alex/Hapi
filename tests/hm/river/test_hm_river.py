@@ -589,11 +589,16 @@ def test_StatisticalProperties(
 def test_GetCapacity(
         version: int,
         river_cross_section_path: str,
+        distribution_properties_hm_results_fpath: str,
 ):
     River = R.River('HM', version=version)
     River.ReadCrossSections(river_cross_section_path)
+    River.StatisticalProperties(distribution_properties_hm_results_fpath)
     River.GetCapacity('Qbkf')
-    assert "Slope" in River.crosssections.columns.tolist()
-    assert "Qbkf" in River.crosssections.columns.tolist()
-
     River.GetCapacity('Qc2', Option=2)
+    cols = River.crosssections.columns.tolist()
+    assert "Slope" in cols
+    assert "Qbkf" in cols
+    assert "QbkfRP" in cols
+    assert "Qc2" in cols
+    assert "Qc2RP" in cols

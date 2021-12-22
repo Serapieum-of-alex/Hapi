@@ -22,7 +22,7 @@ def Discharge_gauge_long_ts() -> str:
 
 @pytest.fixture(scope="module")
 def Statistical_analisis_path() -> str:
-    return "Examples/Hydrodynamic models/analysis/Statistical analysis results"
+    return "Examples/Hydrodynamic models/test_case/inputs/gauges/discharge_long_ts/Statistical analysis results"
 
 @pytest.fixture(scope="module")
 def SavePlots() -> bool:

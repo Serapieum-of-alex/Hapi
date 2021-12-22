@@ -34,7 +34,11 @@ def river_network_path() -> str:
 
 @pytest.fixture(scope="module")
 def distribution_properties_fpath() -> str:
-    return "Examples/Hydrodynamic models/analysis/Statistical analysis results/DistributionProperties.csv"
+    return "Examples/Hydrodynamic models/test_case/inputs/gauges/discharge_long_ts/Statistical analysis results/DistributionProperties.csv"
+
+@pytest.fixture(scope="module")
+def distribution_properties_hm_results_fpath() -> str:
+    return "Examples/Hydrodynamic models/test_case/results/customized_results/discharge_long_ts/Statistical analysis results/DistributionProperties.csv"
 
 @pytest.fixture(scope="module")
 def segment1() -> int:

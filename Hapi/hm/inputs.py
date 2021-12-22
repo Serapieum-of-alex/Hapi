@@ -14,13 +14,15 @@ import pandas as pd
 from osgeo import gdal
 from scipy.stats import gumbel_r  # genextreme,
 
+from Hapi.hm.river import River
+
 # from Hapi.sm.statisticaltools import StatisticalTools as ST
 from Hapi.sm.distributions import GEV, Gumbel, PlottingPosition
 
 # from matplotlib import gridspec
 
 
-class Inputs:
+class Inputs(River):
     """Inputs.
 
     Methods
@@ -32,7 +34,7 @@ class Inputs:
         6- CreateTraceALL
     """
 
-    def __init__(self, Name, version=2):
+    def __init__(self, Name, version=3):
         self.Name = Name
         self.version = version
         self.StatisticalPr = None
@@ -184,10 +186,15 @@ class Inputs:
             TS = pd.DataFrame()
             # for the hydraulic model results
             if Results:
+                assert isinstance(self.segments, list), "please read the cross section first"
                 for i in range(len(ComputationalNodes)):
-                    TS.loc[:, int(ComputationalNodes[i])] = self.ReadRIMResult(
-                        TSdirectory + "/" + str(int(ComputationalNodes[i])) + file_extension
-                    )
+                    TS.loc[:, int(ComputationalNodes[i])] = pd.read_csv(
+                        TSdirectory + "/" + str(int(ComputationalNodes[i])) + file_extension,
+                        skiprows=1, header=None,
+                    )[1].tolist()
+                    #     self.ReadRIMResult(
+                    #     TSdirectory + "/" + str(int(ComputationalNodes[i])) + file_extension
+                    # )
             # for the rainfall runoff results.
             else:
                 for i in range(len(ComputationalNodes)):
@@ -669,38 +676,38 @@ class Inputs:
         if len(check) > 0:
             np.savetxt(wpath + "CheckWaterDepth.txt", check, fmt="%6d")
 
-    @staticmethod
-    def ReadRIMResult(Path):
-        """ReadRIMResult.
-
-        Parameters
-        ----------
-            Path : [String]
-                path to the RIM output file you want to read, the file should
-                contain two columns the first is the index of the day and the
-                second is the discharge value, the method fills missed days
-                with zeros
-
-        Returns
-        -------
-            f2 : TYPE
-                DESCRIPTION.
-
-        """
-
-        f = np.loadtxt(Path, delimiter=",")
-
-        f1 = list(range(int(f[0, 0]), int(f[-1, 0]) + 1))
-        f2 = list()
-        for j in range(len(f1)):
-            # if the index exist in the original list
-            if f1[j] in f[:, 0]:
-                # put the coresponding value in f2
-                f2.append(f[np.where(f[:, 0] == f1[j])[0][0], 1])
-            else:
-                # if it does not exist put zero
-                f2.append(0)
-        return f2
+    # @staticmethod
+    # def ReadHMResult(Path):
+    #     """ReadHMResult.
+    #
+    #     Parameters
+    #     ----------
+    #         Path : [String]
+    #             path to the RIM output file you want to read, the file should
+    #             contain two columns the first is the index of the day and the
+    #             second is the discharge value, the method fills missed days
+    #             with zeros
+    #
+    #     Returns
+    #     -------
+    #         f2 : TYPE
+    #             DESCRIPTION.
+    #
+    #     """
+    #
+    #     f = np.loadtxt(Path, delimiter=",")
+    #
+    #     f1 = list(range(int(f[0, 0]), int(f[-1, 0]) + 1))
+    #     f2 = list()
+    #     for j in range(len(f1)):
+    #         # if the index exist in the original list
+    #         if f1[j] in f[:, 0]:
+    #             # put the coresponding value in f2
+    #             f2.append(f[np.where(f[:, 0] == f1[j])[0][0], 1])
+    #         else:
+    #             # if it does not exist put zero
+    #             f2.append(0)
+    #     return f2
 
     def CreateTraceALL(
         self,

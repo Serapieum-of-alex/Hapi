@@ -23,9 +23,6 @@ def test_StatisticalProperties(
 ):
     Calib = RC.Calibration("HM", version=version)
     Calib.ReadGaugesTable(gauges_table_path)
-    # Calib.ReadObservedQ(ReadObservedQ_Path, dates[0], dates[1],
-    #                     nodatavalu, file_extension=gauges_file_extension,
-    #                     gauge_date_format=gauge_date_format)
 
     Inputs35 = IN.Inputs("Observed_Q")
     computationalnodes = Calib.GaugesTable['oid'].tolist()
@@ -46,7 +43,6 @@ def test_StatisticalProperties(
     assert all(elem in Inputs35.StatisticalPr.columns.tolist() for elem in statisticalpr_columns)
     assert all(elem in Calib.GaugesTable['oid'].to_list() for elem in Inputs35.StatisticalPr.index.tolist())
     assert all(elem in Inputs35.DistributionPr.columns.tolist() for elem in distributionpr_gum_columns)
-
     assert all(elem in Calib.GaugesTable['oid'].to_list() for elem in Inputs35.DistributionPr.index.tolist())
 
     Inputs35.StatisticalProperties(

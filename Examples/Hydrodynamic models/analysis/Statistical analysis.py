@@ -48,7 +48,7 @@ Calib.ReadGaugesTable(GaugesF)
 WarmUpPeriod = 0
 start = "1955-1-1"
 TSdirectory = "Examples/Hydrodynamic models/test_case/inputs/gauges/discharge_long_ts/"
-saveto = "Examples/Hydrodynamic models/analysis/Statistical analysis results"
+saveto = TSdirectory + "/Statistical analysis results/"
 SavePlots = True
 NoValue = -9
 #%%
@@ -66,9 +66,20 @@ Inputs35.StatisticalProperties(computationalnodes, TSdirectory, start, WarmUpPer
 #%% using gumbel
 Inputs35 = IN.Inputs("Observed_Q")
 
+Inputs35.ReadCrossSections("Examples/Hydrodynamic models/test_case/inputs/1d/topo/xs_same_downward-3segment.csv")
 computationalnodes = Calib.GaugesTable['oid'].tolist()
 
 Inputs35.StatisticalProperties(computationalnodes, TSdirectory, start, WarmUpPeriod,
                                SavePlots, saveto, SeparateFiles=True,
                                Filter=NoValue, Distibution='GUM',method='lmoments',
                                file_extension='.csv')
+#%% for the results
+TSdirectory = "Examples/Hydrodynamic models/test_case/results/customized_results/discharge_long_ts/"
+saveto = TSdirectory +  "/Statistical analysis results/"
+Inputs35 = IN.Inputs("HM_results")
+Inputs35.ReadCrossSections("Examples/Hydrodynamic models/test_case/inputs/1d/topo/xs_same_downward-3segment.csv")
+
+Inputs35.StatisticalProperties(Inputs35.segments, TSdirectory, start, WarmUpPeriod,
+                               SavePlots, saveto, SeparateFiles=True,
+                               Filter=NoValue, Distibution='GUM',method='lmoments',
+                               file_extension='.txt', Results=True)
