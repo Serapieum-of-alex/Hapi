@@ -9,6 +9,7 @@ StatisticalPr_columns = ["mean", "std", "min", "5%", "25%", "median","75%", "95%
                          "q2", "q5", "q10", "q25", "q50", "q100", "q200", "q500",
                          "q1000"]
 gev_columns = ["c", "loc", "scale", "D-static", "P-Value"]
+gum_columns = ["loc", "scale", "D-static", "P-Value"]
 
 @pytest.fixture(scope="module")
 def Discharge_WarmUpPeriod() -> int:
@@ -42,3 +43,7 @@ def statisticalpr_columns() -> list:
 @pytest.fixture(scope="module")
 def distributionpr_gev_columns() -> list:
     return gev_columns
+
+@pytest.fixture(scope="module")
+def distributionpr_gum_columns() -> list:
+    return gum_columns

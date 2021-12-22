@@ -59,19 +59,21 @@ class PlottingPosition:
 
 
 class Gumbel:
-    def __init__(self, data: Union[list, np.ndarray]):
+    def __init__(self, data: Union[list, np.ndarray]=None, loc: Union[int, float]=None,
+                 scale: Union[int, float]=None):
         """
         data : [list]
             data time series.
         """
-        self.data = np.array(data)
-        self.data_sorted = np.sort(data)
-        self.cdf_Weibul = PlottingPosition.Weibul(data)
-        self.loc = None
-        self.scale = None
+        if isinstance(data, list) or isinstance(data, np.ndarray):
+            self.data = np.array(data)
+            self.data_sorted = np.sort(data)
+            self.cdf_Weibul = PlottingPosition.Weibul(data)
+            self.KStable = 1.22 / np.sqrt(len(self.data))
+        self.loc = loc
+        self.scale = scale
         self.Dstatic = None
         self.KS_Pvalue = None
-        self.KStable = 1.22 / np.sqrt(len(self.data))
         self.chistatic = None
         self.chi_Pvalue = None
 
@@ -473,20 +475,24 @@ class GEV:
 
     data: ndarray
 
-    def __init__(self, data):
+    def __init__(self, data: Union[list, np.ndarray]=None, shape: Union[int, float]=None,
+                 loc: Union[int, float]=None, scale: Union[int, float]=None):
         """
         data : [list]
             data time series.
         """
-        self.data = np.array(data)
-        self.data_sorted = np.sort(data)
-        self.cdf_Weibul = PlottingPosition.Weibul(data)
-        self.shape = None
-        self.loc = None
-        self.scale = None
+        if isinstance(data, list) or isinstance(data, np.ndarray):
+            self.data = np.array(data)
+            self.data_sorted = np.sort(data)
+            self.cdf_Weibul = PlottingPosition.Weibul(data)
+            self.KStable = 1.22 / np.sqrt(len(self.data))
+
+        self.shape = shape
+        self.loc = loc
+        self.scale = scale
         self.Dstatic = None
         self.KS_Pvalue = None
-        self.KStable = 1.22 / np.sqrt(len(self.data))
+
         self.chistatic = None
         self.chi_Pvalue = None
         pass
@@ -766,8 +772,7 @@ class GEV:
         return Qth
 
     def ks(self):
-        """
-        Kolmogorov-Smirnov (KS) test
+        """Kolmogorov-Smirnov (KS) test.
 
         The smaller the D static the more likely that the two samples are drawn from the same distribution
         IF Pvalue < signeficance level ------ reject

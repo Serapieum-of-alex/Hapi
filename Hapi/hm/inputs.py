@@ -138,7 +138,7 @@ class Inputs:
 
         Parameters
         ----------
-            1-PathNodes : [String/list]
+            1-ComputationalNodes : [list]
                 The file/list which contains the ID of the computational
                 nodes you want to do the statistical analysis for, the ObservedFile
                 should contain the discharge time series of these nodes in order.
@@ -195,10 +195,6 @@ class Inputs:
                         TSdirectory + "/" + str(int(ComputationalNodes[i])) + file_extension,
                         skiprows=1, header=None,
                     )[1].tolist()
-
-                    #     np.loadtxt(
-                    #     TSdirectory + "/" + str(int(ComputationalNodes[i])) + file_extension
-                    # )  # ,skiprows = 0
 
             StartDate = dt.datetime.strptime(start, date_format)
             EndDate = StartDate + dt.timedelta(days=TS.shape[0] - 1)

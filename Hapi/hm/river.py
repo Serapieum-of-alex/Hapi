@@ -21,6 +21,7 @@ from scipy.stats import genextreme, gumbel_r
 from Hapi.gis.raster import Raster as raster
 from Hapi.hm.saintvenant import SaintVenant
 from Hapi.sm import performancecriteria as Pf
+from Hapi.sm.distributions import GEV, Gumbel, PlottingPosition
 from Hapi.visualizer import Visualize as V
 
 hours = list(range(1, 25))
@@ -1532,8 +1533,8 @@ class River:
         self.Trace2(sub_id, self.US)
 
 
-    def StatisticalProperties(self, path: str, Filter: bool=True,
-                              Distibution: str="GEV"):
+    def StatisticalProperties(self, path: str, Distibution: str="GEV"): #Filter: bool=True,
+
         """StatisticalProperties.
 
         StatisticalProperties method reads the parameters of the distribution and
@@ -1560,29 +1561,30 @@ class River:
 
         """
         self.SP = pd.read_csv(path, delimiter=",")  # ,header = None,skiprows = 0
+        #TODO: the following lines was created to filter the fistribution properties file to
+        # the nodes that locates only at the river.
 
-        if Filter:
-            assert self.slope, ("please read the Guide file with the Slope Method as this "
-                                "method uses the the Subid in the guide file as id")
-            assert self.rivernetwork, "Please read the Tracefile.txt with the RiverNetwork method data "
-            # filter all the computational nodes in the file to those only
-            # exist in the slope attribute (the nodes in the guide file)
-            NewSP = pd.DataFrame(columns=["id", "loc", "scale"])
-            NewSP["id"] = self.slope["id"]
-            for i in range(len(self.slope)):
-                # get the location of the usnode in the rivernetwork attribute
-                loc = np.where(self.rivernetwork["id"] == self.slope.loc[i, "id"])[0][0]
-                #  get the location of usnode in the SP attribute
-                try:
-                    loc = np.where(self.SP["id"] == self.rivernetwork.loc[loc, "US"])[
-                        0
-                    ][0]
-                    NewSP.loc[i, ["loc", "scale"]] = self.SP.loc[loc, ["loc", "scale"]]
-                except:
-                    NewSP.loc[i, ["loc", "scale"]] = [-1, -1]
-                    continue
-
-            self.SP = NewSP
+        # if Filter:
+        #     assert self.slope, ("please read the Guide file with the Slope Method as this "
+        #                         "method uses the the Subid in the guide file as id")
+        #     assert self.rivernetwork, "Please read the Tracefile.txt with the RiverNetwork method data "
+        #     # filter all the computational nodes in the file to those only
+        #     # exist in the slope attribute (the nodes in the guide file)
+        #     NewSP = pd.DataFrame(columns=["id", "loc", "scale"])
+        #     NewSP["id"] = self.rivernetwork["id"]
+        #     for i in range(len(self.rivernetwork)):
+        #         # get the location of the usnode in the rivernetwork attribute
+        #         #  get the location of usnode in the SP attribute
+        #         try:
+        #             loc = np.where(self.SP["id"] == self.rivernetwork.loc[i, "us"])[
+        #                 0
+        #             ][0]
+        #             NewSP.loc[i, ["loc", "scale"]] = self.SP.loc[loc, ["loc", "scale"]]
+        #         except:
+        #             NewSP.loc[i, ["loc", "scale"]] = [-1, -1]
+        #             continue
+        #
+        #     self.SP = NewSP
         # calculate the 2, 5, 10, 15, 20 return period doscharge
         T = np.array([2, 5, 10, 15, 20, 50, 100, 200, 500, 1000, 5000])
         self.SP = self.SP.assign(
@@ -1601,17 +1603,33 @@ class River:
         F = 1 - (1 / T)
         for i in range(len(self.SP)):
             if self.SP.loc[i, "loc"] != -1:
+                col1 = self.SP.columns.to_list().index("RP2")
                 if Distibution == "GEV":
-                    self.SP.loc[i, self.SP.keys()[6:].tolist()] = genextreme.ppf(
-                        F,
-                        self.SP.loc[i, "c"],
-                        loc=self.SP.loc[i, "loc"],
-                        scale=self.SP.loc[i, "scale"],
-                    ).tolist()
+                    dist = GEV()
+                    self.SP.loc[i, self.SP.keys()[col1:].tolist()] = \
+                                                dist.TheporeticalEstimate(
+                            self.SP.loc[i, "c"],
+                            self.SP.loc[i, "loc"],
+                            self.SP.loc[i, "scale"],
+                            F
+                        )
+                    #     genextreme.ppf(
+                    #     F,
+                    #     self.SP.loc[i, "c"],
+                    #     loc=self.SP.loc[i, "loc"],
+                    #     scale=self.SP.loc[i, "scale"],
+                    # ).tolist()
                 else:
-                    self.SP.loc[i, self.SP.keys()[5:].tolist()] = gumbel_r.ppf(
-                        F, loc=self.SP.loc[i, "loc"], scale=self.SP.loc[i, "scale"]
-                    ).tolist()
+                    dist = Gumbel()
+                    self.SP.loc[i, self.SP.keys()[col1:].tolist()] = \
+                                                dist.TheporeticalEstimate(
+                            self.SP.loc[i, "loc"],
+                            self.SP.loc[i, "scale"],
+                            F
+                        )
+                    #     gumbel_r.ppf(
+                    #     F, loc=self.SP.loc[i, "loc"], scale=self.SP.loc[i, "scale"]
+                    # ).tolist()
 
 
     def GetReturnPeriod(self, Subid: int, Q: Union[float, int],

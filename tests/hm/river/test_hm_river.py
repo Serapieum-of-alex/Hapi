@@ -569,6 +569,23 @@ def test_PlotBC(
     Sub.PlotBC(dates[0])
 
 
+def test_StatisticalProperties(
+        version: int,
+        distribution_properties_fpath: str,
+        statistical_properties_columns: list,
+        distributionpr_gev_columns: list,
+        distributionpr_gum_columns:list,
+):
+    River = R.River('HM', version=version)
+    River.StatisticalProperties(distribution_properties_fpath, Distibution="GEV")
+    assert all(elem in River.SP.columns.to_list() for elem in statistical_properties_columns)
+    assert all(elem in River.SP.columns.to_list() for elem in distributionpr_gev_columns[:3])
+
+    River.StatisticalProperties(distribution_properties_fpath, Distibution="Gumbel")
+    assert all(elem in River.SP.columns.to_list() for elem in statistical_properties_columns)
+    assert all(elem in River.SP.columns.to_list() for elem in distributionpr_gum_columns[:2])
+
+
 def test_GetCapacity(
         version: int,
         river_cross_section_path: str,

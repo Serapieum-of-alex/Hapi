@@ -14,7 +14,8 @@ last_xs = 100
 xsid = 50
 station_id = 999666
 date_format = "'%Y-%m-%d'"
-
+SP_columns = ["RP2", "RP5", "RP10", "RP15", "RP20", "RP50",
+              "RP100", "RP200", "RP500", "RP1000", "RP5000"]
 
 
 @pytest.fixture(scope="module")
@@ -30,6 +31,10 @@ def river_cross_section_path() -> str:
 @pytest.fixture(scope="module")
 def river_network_path() -> str:
     return "Examples/Hydrodynamic models/test_case/inputs/1d/topo/rivernetwork-3segments.txt"
+
+@pytest.fixture(scope="module")
+def distribution_properties_fpath() -> str:
+    return "Examples/Hydrodynamic models/analysis/Statistical analysis results/DistributionProperties.csv"
 
 @pytest.fixture(scope="module")
 def segment1() -> int:
@@ -130,3 +135,7 @@ def onemin_results_dates() -> list:
 @pytest.fixture(scope="module")
 def onemin_results_len() -> int:
     return 10
+
+@pytest.fixture(scope="module")
+def statistical_properties_columns() -> list:
+    return SP_columns
