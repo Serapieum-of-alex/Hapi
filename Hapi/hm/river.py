@@ -1825,7 +1825,7 @@ class River:
                 self.crosssections.loc[i, ColumnName + "RP"] = round(RP, 2)
 
 
-    def CalibrateDike(self, ObjectiveRP, CurrentRP):
+    def CalibrateDike(self, ObjectiveRP:Union[str, int], CurrentRP:Union[str, int]):
         """CalibrateDike.
 
         CalibrateDike method takes cross section and based on a
@@ -1849,9 +1849,8 @@ class River:
         """
         assert self.SP, "Please read the statistical properties file first using StatisticalProperties method"
         assert self.crosssections, "please read the cross section data first with the method CrossSections"
-        assert CurrentRP in self.crosssections.columns, (
-            CurrentRP
-            + " in not in the cross section data please use GetCapacity method to calculate the current return perion "
+        assert CurrentRP in self.crosssections.columns, (f"{CurrentRP} in not in the cross section data"
+            + " please use GetCapacity method to calculate the current return perion "
         )
         assert ObjectiveRP in self.crosssections.columns, (
             ObjectiveRP
@@ -1931,7 +1930,7 @@ class River:
                     )
                     self.crosssections.loc[i, "New Capacity"] = self.crosssections.loc[
                         i, "New Capacity"
-                    ] * (slope) ** (1 / 2)
+                    ] * slope ** (1 / 2)
 
                     RP = self.GetReturnPeriod(
                         self.crosssections.loc[i, "id"],

@@ -2,21 +2,13 @@
 
 Manual Calibration to calibrate the model Cross section of the hydraulic model
 """
-
-import datetime as dt
-
-# Libaries
-# from IPython import get_ipython
-# get_ipython().magic('reset -f')
 import os
-
-import matplotlib
-import matplotlib.pyplot as plt
-
-matplotlib.use('TkAgg')
-
+import datetime as dt
 import numpy as np
 import pandas as pd
+import matplotlib
+import matplotlib.pyplot as plt
+matplotlib.use('TkAgg')
 
 import Hapi.hm.calibration as RC
 import Hapi.hm.river as R
