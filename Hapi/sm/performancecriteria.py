@@ -52,9 +52,8 @@ def RMSEHF(Qobs, Qsim, WStype, N, alpha):
     """
     # input data validation
     # data type
-    assert type(WStype) == int, (
-        "Weighting scheme should be an integer number between 1 and 4 and you entered "
-        + str(WStype)
+    assert isinstance(WStype, int), (
+        f"Weighting scheme should be an integer number between 1 and 4 and you entered {WStype}"
     )
     assert isinstance(
         alpha, numbers.Number

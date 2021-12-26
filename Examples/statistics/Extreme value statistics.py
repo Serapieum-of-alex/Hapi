@@ -5,8 +5,8 @@ Created on Wed Sep  9 23:31:11 2020
 """
 # from IPython import get_ipython
 # get_ipython().magic("reset -f")
-# import os
-
+import os
+os.chdir(r"F:\01Algorithms\Hydrology\HAPI")
 # import scipy.optimize as so
 # import matplotlib.pyplot as plt
 # import numpy as np
@@ -122,6 +122,4 @@ CI = ConfidenceInterval.BootStrap(
 LB = CI["LB"]
 UB = CI["UB"]
 #%%
-fig, ax = Gevdist.ProbapilityPlot(
-    shape, loc, scale, cdf_Weibul, func=func, n_samples=len(time_series1)
-)
+fig, ax = Gevdist.ProbapilityPlot(shape, loc, scale, cdf_Weibul, func=func, n_samples=len(time_series1))

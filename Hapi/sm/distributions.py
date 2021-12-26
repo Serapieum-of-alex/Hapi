@@ -1,5 +1,5 @@
 from collections import OrderedDict
-from typing import Union, Any,Tuple, List
+from typing import Union, Any,Tuple
 import types
 
 import matplotlib.pyplot as plt
@@ -371,14 +371,17 @@ class Gumbel:
             )
 
         Qth = self.TheporeticalEstimate(self.loc, self.scale, self.cdf_Weibul)
-
-        test = chisquare(st.Standardize(Qth), st.Standardize(self.data))
-        self.chistatic = test.statistic
-        self.chi_Pvalue = test.pvalue
-        print("-----chisquare Test-----")
-        print("Statistic = " + str(test.statistic))
-        print("P value = " + str(test.pvalue))
-        return test.statistic, test.pvalue
+        try:
+            test = chisquare(st.Standardize(Qth), st.Standardize(self.data))
+            self.chistatic = test.statistic
+            self.chi_Pvalue = test.pvalue
+            print("-----chisquare Test-----")
+            print("Statistic = " + str(test.statistic))
+            print("P value = " + str(test.pvalue))
+            return test.statistic, test.pvalue
+        except Exception as e:
+            print(e)
+            # raise
 
 
     def ConfidenceInterval(
@@ -798,8 +801,7 @@ class GEV:
                 Value based on the theoretical distribution
         """
         if scale <= 0:
-            print("Parameters Invalid")
-            return
+            raise ValueError("Parameters Invalid")
 
         if any(F) < 0 or any(F) > 1:
             raise ValueError("cdf Value Invalid")
@@ -953,9 +955,11 @@ class GEV:
         Parameters
         ----------
         loc : [numeric]
-            location parameter of the gumbel distribution.
+            location parameter of the GEV distribution.
         scale : [numeric]
-            scale parameter of the gumbel distribution.
+            scale parameter of the GEV distribution.
+        shape: [float, int]
+            shape parameter for the GEV distribution
         F : [list]
             theoretical cdf calculated using weibul or using the distribution cdf function.
         alpha : [float]
@@ -977,15 +981,14 @@ class GEV:
         func : [function]
             function to be used in the confidence interval calculation.
 
-        Returns:
-        -------
-
         """
         if scale <= 0:
             raise ValueError("Scale Parameter is negative")
 
         Qth = self.TheporeticalEstimate(shape, loc, scale, F)
-        func = ConfidenceInterval.GEVfunc
+        if func is None:
+            func = ConfidenceInterval.GEVfunc
+
         Param_dist = [shape, loc, scale]
         CI = ConfidenceInterval.BootStrap(
             self.data, statfunction=func, gevfit=Param_dist, n_samples=n_samples, F=F
@@ -1009,11 +1012,11 @@ class GEV:
             Qlower,
             Qupper,
             alpha,
-            fig1size=(10, 5),
-            fig2size=(6, 6),
-            xlabel="Actual data",
-            ylabel="cdf",
-            fontsize=15,
+            fig1size=fig1size,
+            fig2size=fig2size,
+            xlabel=xlabel,
+            ylabel=ylabel,
+            fontsize=fontsize,
         )
 
         return fig, ax
@@ -1036,7 +1039,7 @@ class ConfidenceInterval:
 
     def BootStrap(
             data: Union[list, np.ndarray],
-            statfunction: types.FunctionType=np.average,
+            statfunction,
             alpha: float=0.05,
             n_samples: int=100,
             **kargs

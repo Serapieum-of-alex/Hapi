@@ -344,13 +344,8 @@ class Inputs(River):
             # parameters, theoretical cdf (or weibul), and calculate the confidence interval
             if SavePlots:
                 if Distibution == "GEV":
-                    fig, ax = dist.ProbapilityPlot(
-                        param_dist[0],
-                        param_dist[1],
-                        param_dist[2],
-                        cdf_Weibul,
-                        alpha=SignificanceLevel,
-                    )
+                    fig, ax = dist.ProbapilityPlot(param_dist[0], param_dist[1], param_dist[2], cdf_Weibul,
+                                                   alpha=SignificanceLevel)
                 else:
                     fig, ax = dist.ProbapilityPlot(
                         param_dist[0], param_dist[1], cdf_Weibul, alpha=SignificanceLevel

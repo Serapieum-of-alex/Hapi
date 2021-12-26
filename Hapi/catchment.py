@@ -6,10 +6,12 @@ Created on Wed Mar 31 02:10:49 2021
 
 __name__ = "catchment"
 
+from typing import Union
 import datetime as dt
 import math
 import os
 from types import ModuleType
+from loguru import logger
 
 import geopandas as gpd
 import matplotlib.dates as dates
@@ -53,13 +55,13 @@ class Catchment:
 
     def __init__(
         self,
-        name,
-        startdata,
-        enddate,
-        fmt="%Y-%m-%d",
-        SpatialResolution="Lumped",
-        TemporalResolution="Daily",
-        RouteRiver="Muskingum",
+        name: str,
+        startdata: str,
+        enddate: str,
+        fmt: str="%Y-%m-%d",
+        SpatialResolution: str="Lumped",
+        TemporalResolution: str="Daily",
+        RouteRiver: str="Muskingum",
     ):
         """
         Parameters
@@ -84,10 +86,16 @@ class Catchment:
         """
 
         self.name = name
-        self.startdata = dt.datetime.strptime(startdata, fmt)
+        self.startdate = dt.datetime.strptime(startdata, fmt)
         self.enddate = dt.datetime.strptime(enddate, fmt)
-        self.SpatialResolution = SpatialResolution
-        self.TemporalResolution = TemporalResolution
+
+        if not SpatialResolution.lower() in ['lumped', 'distributed']:
+            raise ValueError("available spatial resolutions are 'lumped' and 'distributed'")
+        self.SpatialResolution = SpatialResolution.lower()
+
+        if not TemporalResolution.lower() in ['daily', 'hourly']:
+            raise ValueError("available temporal resolutions are 'daily' and 'hourly'")
+        self.TemporalResolution = TemporalResolution.lower()
         self.Parameters = None
         # self.Prec = None
         # self.TS = None
@@ -97,14 +105,14 @@ class Catchment:
 
         # assuming the default dt is 1 day
         conversionfactor = (1000 * 24 * 60 * 60) / (1000 ** 2)
-        if TemporalResolution == "Daily":
+        if TemporalResolution.lower() == "daily":
             self.dt = 1  # 24
             self.conversionfactor = conversionfactor * 1
-            self.Index = pd.date_range(self.startdata, self.enddate, freq="D")
-        elif TemporalResolution == "Hourly":
+            self.Index = pd.date_range(self.startdate, self.enddate, freq="D")
+        elif TemporalResolution.lower() == "hourly":
             self.dt = 1  # 24
             self.conversionfactor = conversionfactor * 1 / 24
-            self.Index = pd.date_range(self.startdata, self.enddate, freq="H")
+            self.Index = pd.date_range(self.startdate, self.enddate, freq="H")
         else:
             # TODO calculate the temporal resolution factor
             # q mm , area sq km  (1000**2)/1000/f/24/60/60 = 1/(3.6*f)
@@ -128,21 +136,21 @@ class Catchment:
         """
         if not hasattr(self, "Prec"):
             # data type
-            assert type(Path) == str, "PrecPath input should be string type"
+            assert isinstance(Path, str), "PrecPath input should be string type"
             # check wether the path exists or not
-            assert os.path.exists(Path), Path + " you have provided does not exist"
+            assert os.path.exists(Path), f"{Path} you have provided does not exist"
             # check wether the folder has the rasters or not
             assert len(os.listdir(Path)) > 0, (
-                Path + " folder you have provided is empty"
+                f"{Path} folder you have provided is empty"
             )
             # read data
             self.Prec = Raster.ReadRastersFolder(Path, start=start, end=end, fmt=fmt)
             self.TS = (
                 self.Prec.shape[2] + 1
             )  # no of time steps =length of time series +1
-            assert type(self.Prec) == np.ndarray, "array should be of type numpy array"
+            assert isinstance(self.Prec, np.ndarray), "array should be of type numpy array"
 
-            print("Rainfall data are read successfully")
+            logger.debug("Rainfall data are read successfully")
 
     def ReadTemperature(self, Path, ll_temp=None, start="", end="", fmt=""):
         """
@@ -177,7 +185,7 @@ class Catchment:
                     for j in range(self.Temp.shape[1]):
                         self.ll_temp[i, j, :] = avg[i, j]
 
-            print("Temperature data are read successfully")
+            logger.debug("Temperature data are read successfully")
 
     def ReadET(self, Path, start="", end="", fmt=""):
         """
@@ -204,7 +212,7 @@ class Catchment:
             # read data
             self.ET = Raster.ReadRastersFolder(Path, start=start, end=end, fmt=fmt)
             assert type(self.ET) == np.ndarray, "array should be of type numpy array"
-            print("Potential Evapotranspiration data are read successfully")
+            logger.debug("Potential Evapotranspiration data are read successfully")
 
     def ReadFlowAcc(self, Path):
         """
@@ -274,7 +282,7 @@ class Catchment:
                 "Max Value in the Flow Acc raster is {x}"
                 " while No of cells are {y}"
             ).format(x=acc_val_mx, y=self.no_elem, sep="\n")
-            print(message)
+            logger.debug(message)
 
         # assert acc_val_mx == self.no_elem or acc_val_mx == self.no_elem -1,
 
@@ -295,7 +303,7 @@ class Catchment:
         # no_cells=np.size(raster[:,:])-np.count_nonzero(raster[raster==no_val])
         self.px_tot_area = self.no_elem * self.px_area  # total area of pixels
 
-        print("Flow Accmulation input is read successfully")
+        logger.debug("Flow Accmulation input is read successfully")
 
     def ReadFlowDir(self, Path):
         """
@@ -349,7 +357,7 @@ class Catchment:
 
         # create the flow direction table
         self.FDT = GC.FlowDirecTable(FlowDir)
-        print("Flow Direction input is read successfully")
+        logger.debug("Flow Direction input is read successfully")
 
     def ReadFlowPathLength(self, Path):
         """
@@ -397,7 +405,7 @@ class Catchment:
             (self.FPLArr[np.isnan(self.FPLArr)])
         )
 
-        print("Flow Path length input is read successfully")
+        logger.debug("Flow Path length input is read successfully")
 
     def ReadRiverGeometry(
         self, DEMF, BankfulldepthF, RiverWidthF, RiverRoughnessF, FloodPlainRoughnessF
@@ -417,8 +425,10 @@ class Catchment:
         FloodPlainRoughness = gdal.Open(FloodPlainRoughnessF)
         self.FloodPlainRoughness = FloodPlainRoughness.ReadAsArray()
 
-    def ReadParameters(self, Path, Snow=0, Maxbas=False):
-        """
+
+    def ReadParameters(self, Path:str, Snow: int=0, Maxbas: bool=False):
+        """ReadParameters.
+
         ReadParameters method reads the parameters' raster
 
         Parameters
@@ -505,10 +515,18 @@ class Catchment:
                     + str(len(self.Parameters))
                 )
 
-        print("Parameters are read successfully")
+        logger.debug("Parameters are read successfully")
 
-    def ReadLumpedModel(self, LumpedModel, CatArea, InitialCond, q_init=None):
-        """
+
+    def ReadLumpedModel(
+            self,
+            LumpedModel,
+            CatArea: Union[float, int],
+            InitialCond: list,
+            q_init=None
+    ):
+        """ReadLumpedModel.
+
         Parameters
         ----------
         LumpedModel : [module]
@@ -535,28 +553,29 @@ class Catchment:
         assert isinstance(
             LumpedModel, ModuleType
         ), "ConceptualModel should be a module or a python file contains functions "
+
         self.LumpedModel = LumpedModel
         self.CatArea = CatArea
 
         assert (
             len(InitialCond) == 5
-        ), "state variables are 5 and the given initial values are " + str(
-            len(InitialCond)
-        )
+        ), f"state variables are 5 and the given initial values are {len(InitialCond)}"
 
         self.InitialCond = InitialCond
 
-        if q_init != None:
+        if q_init is not None:
             assert type(q_init) == float, "q_init should be of type float"
         self.q_init = q_init
 
         if self.InitialCond is not None:
-            assert type(self.InitialCond) == list, "init_st should be of type list"
+            assert isinstance(self.InitialCond, list), "init_st should be of type list"
 
-        print("Lumped model is read successfully")
+        logger.debug("Lumped model is read successfully")
 
-    def ReadLumpedInputs(self, Path, ll_temp=None):
-        """
+
+    def ReadLumpedInputs(self, Path: str, ll_temp: Union[list, np.ndarray]=None):
+        """ReadLumpedInputs.
+
         ReadLumpedInputs method read the meteorological data of lumped mode
         [precipitation, Evapotranspiration, temperature, long term average temperature]
 
@@ -588,9 +607,10 @@ class Catchment:
         assert (
             np.shape(self.data)[1] == 3 or np.shape(self.data)[1] == 4
         ), " meteorological data should be of length at least 3 (prec, ET, temp) or 4(prec, ET, temp, tm) "
-        print("Lumped Model inputs are read successfully")
 
-    def ReadGaugeTable(self, Path, FlowaccPath="", fmt="%Y-%m"):
+        logger.debug("Lumped Model inputs are read successfully")
+
+    def ReadGaugeTable(self, Path: str, FlowaccPath: str="", fmt: str="%Y-%m-%d"):
         """
         ReadGaugeTable reads the table where the data about the gauges are listed
         [x coordinate, y coordinate, 'area ratio', 'weight'], the coordinates are
@@ -603,6 +623,8 @@ class Catchment:
             Path to the gauge file.
         FlowaccPath : [str], optional
             Path to the Flow acc raster. The default is ''.
+        fmt: [str]
+            Default is "%Y-%m-%d"
 
         Returns
         -------
@@ -633,18 +655,18 @@ class Catchment:
                 FlowAcc, self.GaugesTable[["id", "x", "y"]][:]
             )  # ,'weight'
 
-        print("Gauge Table is read successfully")
+        logger.debug("Gauge Table is read successfully")
 
     def ReadDischargeGauges(
         self,
-        Path,
-        delimiter=",",
-        column="id",
-        fmt="%Y-%m-%d",
-        Split=False,
-        Date1="",
-        Date2="",
-        readfrom="",
+        Path: str,
+        delimiter: str=",",
+        column: str="id",
+        fmt: str="%Y-%m-%d",
+        Split: bool=False,
+        Date1: str="",
+        Date2: str="",
+        readfrom: str="",
     ):
         """
         ReadDischargeGauges method read the gauge discharge data, discharge of
@@ -668,6 +690,8 @@ class Catchment:
             start date. The default is ''.
         Date2 : [str], optional
             end date. The default is ''.
+        readfrom: [str]
+            Default is "".
 
         Returns
         -------
@@ -676,12 +700,12 @@ class Catchment:
 
         """
 
-        if self.TemporalResolution == "Daily":
-            ind = pd.date_range(self.startdata, self.enddate, freq="D")
+        if self.TemporalResolution == "daily":
+            ind = pd.date_range(self.startdate, self.enddate, freq="D")
         else:
-            ind = pd.date_range(self.startdata, self.enddate, freq="H")
+            ind = pd.date_range(self.startdate, self.enddate, freq="H")
 
-        if self.SpatialResolution == "Distributed":
+        if self.SpatialResolution == "distributed":
             assert hasattr(self, "GaugesTable"), "please read the gauges table first"
 
             self.QGauges = pd.DataFrame(
@@ -708,7 +732,7 @@ class Catchment:
                 f.index = [dt.datetime.strptime(i, fmt) for i in f.index.tolist()]
 
                 self.QGauges[int(name)] = f.loc[
-                    self.startdata : self.enddate, f.columns[-1]
+                    self.startdate : self.enddate, f.columns[-1]
                 ]
         else:
             self.QGauges = pd.DataFrame(index=ind)
@@ -717,7 +741,7 @@ class Catchment:
             )  # ,#delimiter="\t", skiprows=11,
             f.index = [dt.datetime.strptime(i, fmt) for i in f.index.tolist()]
             self.QGauges[f.columns[0]] = f.loc[
-                self.startdata : self.enddate, f.columns[0]
+                self.startdate : self.enddate, f.columns[0]
             ]
 
         if Split:
@@ -725,7 +749,7 @@ class Catchment:
             Date2 = dt.datetime.strptime(Date2, fmt)
             self.QGauges = self.QGauges.loc[Date1:Date2]
 
-        print("Gauges data are read successfully")
+        logger.debug("Gauges data are read successfully")
 
     def ReadParametersBounds(self, UB, LB, Snow=0, Maxbas=False):
         """
@@ -762,7 +786,7 @@ class Catchment:
         self.Snow = Snow
         self.Maxbas = Maxbas
 
-        print("Parameters bounds are read successfully")
+        logger.debug("Parameters bounds are read successfully")
 
     def ExtractDischarge(
         self, CalculateMetrics=True, FW1=False, Factor=None, OnlyOutlet=False
@@ -975,27 +999,27 @@ class Catchment:
         plt.tight_layout()
 
         if hasattr(self, "Metrics"):
-            # print the metrics
-            print("----------------------------------")
-            print("Gauge - " + str(gaugeid))
-            print("RMSE= " + str(round(self.Metrics.loc["RMSE", gaugeid], 2)))
-            print("NSE= " + str(round(self.Metrics.loc["NSE", gaugeid], 2)))
-            print("NSEhf= " + str(round(self.Metrics.loc["NSEhf", gaugeid], 2)))
-            print("KGE= " + str(round(self.Metrics.loc["KGE", gaugeid], 2)))
-            print("WB= " + str(round(self.Metrics.loc["WB", gaugeid], 2)))
-            print(
+            # logger.debug the metrics
+            logger.debug("----------------------------------")
+            logger.debug("Gauge - " + str(gaugeid))
+            logger.debug("RMSE= " + str(round(self.Metrics.loc["RMSE", gaugeid], 2)))
+            logger.debug("NSE= " + str(round(self.Metrics.loc["NSE", gaugeid], 2)))
+            logger.debug("NSEhf= " + str(round(self.Metrics.loc["NSEhf", gaugeid], 2)))
+            logger.debug("KGE= " + str(round(self.Metrics.loc["KGE", gaugeid], 2)))
+            logger.debug("WB= " + str(round(self.Metrics.loc["WB", gaugeid], 2)))
+            logger.debug(
                 "Pearson-CC= " + str(round(self.Metrics.loc["Pearson-CC", gaugeid], 2))
             )
-            print("R2= " + str(round(self.Metrics.loc["R2", gaugeid], 2)))
+            logger.debug("R2= " + str(round(self.Metrics.loc["R2", gaugeid], 2)))
 
         return fig, ax
 
     def PlotDistributedResults(
-        self, startdata, enddate, fmt="%Y-%m-%d", Option=1, Gauges=False, **kwargs
+        self, startdate, enddate, fmt="%Y-%m-%d", Option=1, Gauges=False, **kwargs
     ):
         """
          =============================================================================
-           PlotDistributedResults(startdata, enddate, fmt="%Y-%m-%d", Option = 1, Gauges=False,
+           PlotDistributedResults(startdate, enddate, fmt="%Y-%m-%d", Option = 1, Gauges=False,
                             TicksSpacing = 2, Figsize=(8,8), PlotNumbers=True,
                             NumSize= 8, Title = 'Total Discharge',titlesize = 15, Backgroundcolorthreshold=None,
                             cbarlabel = 'Discharge m3/s', cbarlabelsize = 12, textcolors=("white","black"),
@@ -1010,7 +1034,7 @@ class Catchment:
 
         Parameters
         ----------
-        startdata : [str]
+        startdate : [str]
             starting date
         enddate : [str]
             end date
@@ -1089,10 +1113,10 @@ class Catchment:
         animation.FuncAnimation.
 
         """
-        startdata = dt.datetime.strptime(startdata, fmt)
+        startdate = dt.datetime.strptime(startdate, fmt)
         enddate = dt.datetime.strptime(enddate, fmt)
 
-        starti = np.where(self.Index == startdata)[0][0]
+        starti = np.where(self.Index == startdate)[0][0]
         endi = np.where(self.Index == enddate)[0][0]
 
         if Option == 1:
@@ -1179,7 +1203,7 @@ class Catchment:
         self,
         FlowAccPath="",
         Result=1,
-        startdata="",
+        startdate="",
         enddate="",
         Path="",
         Prefix="",
@@ -1187,7 +1211,7 @@ class Catchment:
     ):
         """
         =========================================================================
-        SaveResults(FlowAccPath, Result=1, startdata='', enddate='',
+        SaveResults(FlowAccPath, Result=1, startdate='', enddate='',
                     Path='', Prefix='', fmt="%Y-%m-%d")
         =========================================================================
         SaveResults save the results into rasters
@@ -1201,7 +1225,7 @@ class Catchment:
             the lower zone discharge, 4 for the snow pack, 5 for the soil
             moisture, 6 upper zone, 7 for the lower zone, 8 for the water content.
             The default is 1.
-        startdata : [str], optional
+        startdate : [str], optional
             start date. The default is ''.
         enddate : [str], optional
             end date. The default is ''.
@@ -1217,17 +1241,17 @@ class Catchment:
         None.
 
         """
-        if startdata == "":
-            startdata = self.Index[0]
+        if startdate == "":
+            startdate = self.Index[0]
         else:
-            startdata = dt.datetime.strptime(startdata, fmt)
+            startdate = dt.datetime.strptime(startdate, fmt)
 
         if enddate == "":
             enddate = self.Index[-1]
         else:
             enddate = dt.datetime.strptime(enddate, fmt)
 
-        starti = np.where(self.Index == startdata)[0][0]
+        starti = np.where(self.Index == startdate)[0][0]
         endi = np.where(self.Index == enddate)[0][0] + 1
 
         if self.SpatialResolution == "Distributed":
@@ -1272,7 +1296,7 @@ class Catchment:
                     src, self.statevariables[:, :, starti:endi, 4], names
                 )
         else:
-            ind = pd.date_range(startdata, enddate, freq="D")
+            ind = pd.date_range(startdate, enddate, freq="D")
             data = pd.DataFrame(index=ind)
 
             data["date"] = ["'" + str(i)[:10] + "'" for i in data.index]
@@ -1302,15 +1326,15 @@ class Catchment:
             else:
                 assert False, "the possible options are from 1 to 5"
 
-        print("Data is saved successfully")
+        logger.debug("Data is saved successfully")
 
     def ListAttributes(self):
         """
         Print Attributes List
         """
 
-        print("\n")
-        print(
+        logger.debug("\n")
+        logger.debug(
             "Attributes List of: "
             + repr(self.__dict__["name"])
             + " - "
@@ -1321,9 +1345,9 @@ class Catchment:
         self_keys.sort()
         for key in self_keys:
             if key != "name":
-                print(str(key) + " : " + repr(self.__dict__[key]))
+                logger.debug(str(key) + " : " + repr(self.__dict__[key]))
 
-        print("\n")
+        logger.debug("\n")
 
 
 class Lake:
@@ -1345,7 +1369,7 @@ class Lake:
 
     def __init__(
         self,
-        startdata="",
+        startdate="",
         enddate="",
         fmt="%Y-%m-%d",
         TemporalResolution="Daily",
@@ -1353,14 +1377,14 @@ class Lake:
     ):
         """
         =========================================================================
-            Lake(startdata='', enddate='', fmt="%Y-%m-%d",
+            Lake(startdate='', enddate='', fmt="%Y-%m-%d",
                          TemporalResolution="Daily", Split=False)
         =========================================================================
         Lake class for lake simulation
 
         Parameters
         ----------
-        startdata : [str], optional
+        startdate : [str], optional
             start date. The default is ''.
         enddate : [str], optional
             end date. The default is ''.
@@ -1378,13 +1402,13 @@ class Lake:
         """
 
         self.Split = Split
-        self.startdata = dt.datetime.strptime(startdata, fmt)
+        self.startdate = dt.datetime.strptime(startdate, fmt)
         self.enddate = dt.datetime.strptime(enddate, fmt)
 
         if TemporalResolution == "Daily":
-            self.Index = pd.date_range(startdata, enddate, freq="D")
+            self.Index = pd.date_range(startdate, enddate, freq="D")
         elif TemporalResolution == "Hourly":
-            self.Index = pd.date_range(startdata, enddate, freq="H")
+            self.Index = pd.date_range(startdate, enddate, freq="H")
         else:
             assert False, "Error"
         pass
@@ -1416,11 +1440,11 @@ class Lake:
         df.index = [dt.datetime.strptime(date, fmt) for date in df.index]
 
         if self.Split:
-            df = df.loc[self.startdata : self.enddate, :]
+            df = df.loc[self.startdate : self.enddate, :]
 
         self.MeteoData = df.values  # lakeCalibArray = lakeCalibArray[:,0:-1]
 
-        print("Lake Meteo data are read successfully")
+        logger.debug("Lake Meteo data are read successfully")
 
     def ReadParameters(self, Path):
         """
@@ -1441,7 +1465,7 @@ class Lake:
         """
         Parameters = np.loadtxt(Path).tolist()
         self.Parameters = Parameters
-        print("Lake Parameters are read successfully")
+        logger.debug("Lake Parameters are read successfully")
 
     def ReadLumpedModel(
         self,
@@ -1508,8 +1532,8 @@ class Lake:
         self.Snow = Snow
         self.OutflowCell = OutflowCell
         self.StageDischargeCurve = StageDischargeCurve
-        print("Lumped model is read successfully")
+        logger.debug("Lumped model is read successfully")
 
 
-# if __name__=='__main__':
-#     print("Catchment module")
+if __name__=='__main__':
+    logger.debug("Catchment module")

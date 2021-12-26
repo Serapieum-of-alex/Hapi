@@ -39,10 +39,8 @@ class Run(Catchment):
         pass
 
     def RunHapi(self):
-        """
-        =======================================================================
-            RunModel(PrecPath, Evap_Path, TempPath, DemPath, FlowAccPath, FlowDPath, ParPath, p2)
-        =======================================================================
+        """RunModel.
+
         this function runs the conceptual distributed hydrological model
 
         Inputs:
@@ -125,10 +123,8 @@ class Run(Catchment):
         print("Model Run has finished")
 
     def RunFloodModel(self):
-        """
-        =======================================================================
-            RunModel(PrecPath, Evap_Path, TempPath, DemPath, FlowAccPath, FlowDPath, ParPath, p2)
-        =======================================================================
+        """RunFloodModel.
+
         this function runs the conceptual distributed hydrological model
 
         Inputs:
@@ -466,11 +462,10 @@ class Run(Catchment):
         # run the model
         Wrapper.FW1Withlake(self, Lake)
 
+
     def RunLumped(self, Route=0, RoutingFn=[]):
-        """
-        =============================================================
-            RunLumped(ConceptualModel,data,parameters,p2,init_st,snow,Routing=0, RoutingFn=[])
-        =============================================================
+        """RunLumped.
+
         this function runs lumped conceptual model
 
         Inputs:
@@ -509,9 +504,9 @@ class Run(Catchment):
             snow=0
         """
         if self.TemporalResolution == "Daily":
-            ind = pd.date_range(self.StartDate, self.EndDate, freq="D")
+            ind = pd.date_range(self.startdate, self.enddate, freq="D")
         else:
-            ind = pd.date_range(self.StartDate, self.EndDate, freq="H")
+            ind = pd.date_range(self.startdate, self.enddate, freq="H")
 
         Qsim = pd.DataFrame(index=ind)
 
