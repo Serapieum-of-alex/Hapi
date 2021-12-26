@@ -14,14 +14,13 @@ Created on Wed Sep  9 23:31:11 2020
 # from scipy import stats as stats
 # from scipy.stats import genextreme, gumbel_r, norm
 import pandas as pd
-
+import matplotlib
+matplotlib.use('TkAgg')
 from Hapi.sm.distributions import GEV, ConfidenceInterval, Gumbel, PlottingPosition
-
 # from Hapi.statistics.statisticaltools import StatisticalTools as st
 
 time_series1 = pd.read_csv("examples/statistics/data/time_series1.txt", header=None)[0].tolist()
 time_series2 = pd.read_csv("examples/statistics/data/time_series2.txt", header=None)[0].tolist()
-
 #%%
 Gdist = Gumbel(time_series1)
 # defult parameter estimation method is maximum liklihood method
@@ -90,7 +89,7 @@ shape = Param_dist[0]
 loc = Param_dist[1]
 scale = Param_dist[2]
 # calculate and plot the pdf
-pdf = Gevdist.pdf(shape, loc, scale, plot_figure=True)
+pdf, fig, ax = Gevdist.pdf(shape, loc, scale, plot_figure=True)
 cdf, _, _ = Gevdist.cdf(shape, loc, scale, plot_figure=True)
 #%% lmoment method
 Param_dist = Gevdist.EstimateParameter(method="lmoments")
@@ -99,7 +98,7 @@ shape = Param_dist[0]
 loc = Param_dist[1]
 scale = Param_dist[2]
 # calculate and plot the pdf
-pdf = Gevdist.pdf(shape, loc, scale, plot_figure=True)
+pdf, fig, ax = Gevdist.pdf(shape, loc, scale, plot_figure=True)
 cdf, _, _ = Gevdist.cdf(shape, loc, scale, plot_figure=True)
 #%%
 time_series1.sort()
@@ -113,7 +112,6 @@ func = ConfidenceInterval.GEVfunc
 upper, lower = Gevdist.ConfidenceInterval(
     shape, loc, scale, F=cdf_Weibul, alpha=0.1, statfunction=func, n_samples=len(time_series1)
 )
-
 #%%
 """
 calculate the confidence interval using the boot strap method directly

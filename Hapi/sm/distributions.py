@@ -1,5 +1,6 @@
 from collections import OrderedDict
-from typing import Union
+from typing import Union, Any,Tuple, List
+import types
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -8,6 +9,7 @@ import numpy as np
 import scipy.optimize as so
 from loguru import logger
 from matplotlib import gridspec
+from matplotlib.figure import Figure
 from numpy import ndarray
 from numpy.random import randint
 from scipy.stats import chisquare, genextreme, gumbel_r, ks_2samp, norm
@@ -23,7 +25,7 @@ class PlottingPosition:
         pass
 
     @staticmethod
-    def Weibul(data: Union[list, np.ndarray], option: int = 1) -> list:
+    def Weibul(data: Union[list, np.ndarray], option: int = 1) -> np.ndarray:
         """Weibul.
 
         Weibul method to calculate the cumulative distribution function CDF or
@@ -45,23 +47,27 @@ class PlottingPosition:
         data.sort()
 
         if option == 1:
-            CDF = [j / (len(data) + 1) for j in range(1, len(data) + 1)]
+            CDF = np.array([j / (len(data) + 1) for j in range(1, len(data) + 1)])
             return CDF
         else:
             CDF = [j / (len(data) + 1) for j in range(1, len(data) + 1)]
-            T = [1 / (1 - j) for j in CDF]
+            T = np.array([1 / (1 - j) for j in CDF])
             return T
 
     @staticmethod
-    def Returnperiod(F: Union[list, np.ndarray]):
+    def Returnperiod(F: Union[list, np.ndarray]) -> np.ndarray:
         F = np.array(F)
         T = 1 / (1 - F)
         return T
 
 
 class Gumbel:
-    def __init__(self, data: Union[list, np.ndarray]=None, loc: Union[int, float]=None,
-                 scale: Union[int, float]=None):
+    def __init__(
+            self,
+            data: Union[list, np.ndarray]=None,
+            loc: Union[int, float]=None,
+            scale: Union[int, float]=None
+    ):
         """
         data : [list]
             data time series.
@@ -83,15 +89,15 @@ class Gumbel:
 
     def pdf(
         self,
-        loc: float,
-        scale: float,
+        loc: Union[float, int],
+        scale: Union[float, int],
         plot_figure: bool=False,
         figsize: tuple=(6, 5),
         xlabel: str="Actual data",
         ylabel: str="pdf",
         fontsize: Union[float, int]=15,
-        actualdata: bool=True,
-    ):
+        actualdata: Union[bool, np.ndarray]=True,
+    ) -> Union[tuple[np.ndarray, Figure, Any], np.ndarray]:
         """pdf.
 
         Returns the value of Gumbel's pdf with parameters loc and scale at x .
@@ -140,15 +146,15 @@ class Gumbel:
 
     def cdf(
         self,
-        loc,
-        scale,
-        plot_figure=False,
-        figsize=(6, 5),
-        xlabel="data",
-        ylabel="cdf",
-        fontsize=15,
-        actualdata=True,
-    ):
+        loc: Union[float, int],
+        scale: Union[float, int],
+        plot_figure: bool=False,
+        figsize: tuple=(6, 5),
+        xlabel: str="data",
+        ylabel: str="cdf",
+        fontsize: int=15,
+        actualdata: Union[bool, np.ndarray]=True,
+    ) -> Union[tuple[np.ndarray, Figure, Any], np.ndarray]:
         """cdf.
 
         cdf calculates the value of Gumbel's cdf with parameters loc and scale at x.
@@ -289,7 +295,11 @@ class Gumbel:
 
 
     @staticmethod
-    def TheporeticalEstimate(loc, scale, cdf):
+    def TheporeticalEstimate(
+            loc: Union[float, int],
+            scale: Union[float, int],
+            cdf: np.ndarray
+) -> np.ndarray:
         """TheporeticalEstimate.
 
         TheporeticalEstimate method calculates the theoretical values based on the Gumbel distribution
@@ -370,7 +380,14 @@ class Gumbel:
         print("P value = " + str(test.pvalue))
         return test.statistic, test.pvalue
 
-    def ConfidenceInterval(self, loc, scale, F, alpha=0.1):
+
+    def ConfidenceInterval(
+            self,
+            loc: Union[float, int],
+            scale: Union[float, int],
+            F: np.ndarray,
+            alpha: float=0.1
+    ) -> Tuple[np.ndarray, np.ndarray]:
         """ConfidenceInterval.
 
         Parameters:
@@ -402,22 +419,22 @@ class Gumbel:
             for j in Y
         ]
         v = norm.ppf(1 - alpha / 2)
-        Qupper = [Qth[j] + v * StdError[j] for j in range(len(self.data))]
-        Qlower = [Qth[j] - v * StdError[j] for j in range(len(self.data))]
+        Qupper = np.array([Qth[j] + v * StdError[j] for j in range(len(self.data))])
+        Qlower = np.array([Qth[j] - v * StdError[j] for j in range(len(self.data))])
         return Qupper, Qlower
 
     def ProbapilityPlot(
         self,
         loc: float,
         scale: float,
-        F: list,
+        F: np.ndarray,
         alpha: float=0.1,
         fig1size: tuple=(10, 5),
         fig2size: tuple=(6, 6),
         xlabel: str="Actual data",
         ylabel: str="cdf",
-        fontsize: float=15,
-    ):
+        fontsize: int=15,
+    ) -> tuple[list[Figure, Figure], list]:
         """ProbapilityPlot.
 
         ProbapilityPlot method calculates the theoretical values based on the Gumbel distribution
@@ -429,10 +446,20 @@ class Gumbel:
                 location parameter of the gumbel distribution.
             scale : [numeric]
                 scale parameter of the gumbel distribution.
-            F : [list]
+            F : [np.ndarray]
                 theoretical cdf calculated using weibul or using the distribution cdf function.
             alpha : [float]
                 value between 0 and 1.
+            fig1size: [tuple]
+                Default is (10, 5)
+            fig2size: [tuple]
+                Default is (6, 6)
+            xlabel: [str]
+                Default is "Actual data"
+            ylabel: [str]
+                Default is "cdf"
+            fontsize: [float]
+                Default is 15.
 
         Returns
         -------
@@ -504,16 +531,16 @@ class GEV:
 
     def pdf(
         self,
-        shape,
-        loc,
-        scale,
-        plot_figure=False,
-        figsize=(6, 5),
-        xlabel="Actual data",
-        ylabel="pdf",
-        fontsize=15,
-        actualdata=True,
-    ):
+        shape: Union[float, int],
+        loc: Union[float, int],
+        scale: Union[float, int],
+        plot_figure: bool=False,
+        figsize: tuple=(6, 5),
+        xlabel: str="Actual data",
+        ylabel: str="pdf",
+        fontsize: int=15,
+        actualdata:Union[bool, np.ndarray]=True,
+    ) -> Union[tuple[np.ndarray, Figure, Any], np.ndarray]:
         """pdf.
 
         Returns the value of GEV's pdf with parameters loc and scale at x .
@@ -526,6 +553,16 @@ class GEV:
             location parameter.
         scale : [numeric]
             scale parameter.
+        plot_figure: [bool]
+            Default is False.
+        figsize: [tuple]
+            Default is (6, 5).
+        xlabel: [str]
+            Default is "Actual data".
+        ylabel: [str]
+            Default is "pdf".
+        fontsize: [int]
+            Default is 15.
         actualdata : [bool/array]
             true if you want to calculate the pdf for the actual time series, array
             if you want to calculate the pdf for a theoretical time series
@@ -575,6 +612,7 @@ class GEV:
         if len(pdf) == 1:
             pdf = pdf[0]
 
+        pdf = np.array(pdf)
         # genextreme.pdf(data, loc=loc, scale=scale, c=shape)
         if plot_figure:
             Qx = np.linspace(
@@ -605,8 +643,8 @@ class GEV:
         xlabel: str="Actual data",
         ylabel: str="cdf",
         fontsize: int=15,
-        actualdata: bool=True,
-    ):
+        actualdata: Union[bool, np.ndarray]=True,
+    ) -> Union[tuple[np.ndarray, Figure, Any], np.ndarray]:
         """cdf.
 
         Returns the value of Gumbel's cdf with parameters loc and scale at x.
@@ -634,6 +672,8 @@ class GEV:
                     cdf.append(0)
                 else:
                     cdf.append(1)
+
+        cdf = np.array(cdf)
 
         if plot_figure:
             Qx = np.linspace(
@@ -736,7 +776,12 @@ class GEV:
         return Param
 
     @staticmethod
-    def TheporeticalEstimate(shape, loc, scale, F):
+    def TheporeticalEstimate(
+            shape: Union[float, int],
+            loc: Union[float, int],
+            scale: Union[float, int],
+            F: np.ndarray
+    ) -> np.ndarray:
         """TheporeticalEstimate.
 
         TheporeticalEstimate method calculates the theoretical values based on the Gumbel distribution
@@ -774,10 +819,11 @@ class GEV:
                 Y = (1 - np.exp(-1 * shape * Y)) / shape
 
             Qth.append(loc + scale * Y)
-
+        Qth = np.array(Qth)
         # the main equation from scipy
         # Qth = genextreme.ppf(F, shape, loc=loc, scale=scale)
         return Qth
+
 
     def ks(self):
         """Kolmogorov-Smirnov (KS) test.
@@ -836,13 +882,13 @@ class GEV:
 
     def ConfidenceInterval(
         self,
-        shape,
-        loc,
-        scale,
-        F,
-        alpha=0.1,
+        shape: Union[float, int],
+        loc: Union[float, int],
+        scale: Union[float, int],
+        F: np.ndarray,
+        alpha: float=0.1,
         statfunction=np.average,
-        n_samples=100,
+        n_samples: int=100,
         **kargs
     ):
         """ConfidenceInterval.
@@ -883,11 +929,12 @@ class GEV:
 
         return Qupper, Qlower
 
+
     def ProbapilityPlot(
         self,
-        shape,
-        loc,
-        scale,
+        shape: Union[float, int],
+        loc: Union[float, int],
+        scale: Union[float, int],
         F,
         alpha=0.1,
         func=None,
@@ -986,7 +1033,14 @@ class ConfidenceInterval:
         for _ in range(n_samples):
             yield randint(data.shape[0], size=(data.shape[0],))
 
-    def BootStrap(data, statfunction=np.average, alpha=0.05, n_samples=100, **kargs):
+
+    def BootStrap(
+            data: Union[list, np.ndarray],
+            statfunction: types.FunctionType=np.average,
+            alpha: float=0.05,
+            n_samples: int=100,
+            **kargs
+    ) ->  dict[str, OrderedDict[str, tuple[Any, Any]]]:
         """
         Calculate confidence intervals using parametric bootstrap and the
         percentil interval method
@@ -1093,13 +1147,13 @@ class plot:
         pass
 
     def pdf(
-        Qx,
+        Qx: np.ndarray,
         pdf_fitted,
-        data_sorted,
-        figsize=(6, 5),
-        xlabel="Actual data",
-        ylabel="pdf",
-        fontsize=15,
+        data_sorted: np.ndarray,
+        figsize: tuple=(6, 5),
+        xlabel: str="Actual data",
+        ylabel: str="pdf",
+        fontsize: int=15,
     ):
 
         fig = plt.figure(figsize=figsize)
@@ -1135,21 +1189,21 @@ class plot:
 
     @staticmethod
     def details(
-        Qx,
-        Qth,
-        Qact,
-        pdf,
-        cdf_fitted,
-        F,
-        Qlower,
-        Qupper,
-        alpha,
-        fig1size=(10, 5),
-        fig2size=(6, 6),
-        xlabel="Actual data",
-        ylabel="cdf",
-        fontsize=15,
-    ):
+        Qx: Union[np.ndarray, list],
+        Qth: Union[np.ndarray, list],
+        Qact: Union[np.ndarray, list],
+        pdf: Union[np.ndarray, list],
+        cdf_fitted: Union[np.ndarray, list],
+        F: Union[np.ndarray, list],
+        Qlower: Union[np.ndarray, list],
+        Qupper: Union[np.ndarray, list],
+        alpha: float,
+        fig1size: tuple=(10, 5),
+        fig2size: tuple=(6, 6),
+        xlabel: str="Actual data",
+        ylabel: str="cdf",
+        fontsize: int=15,
+    ) -> Tuple[list[Figure, Figure], list[Any, Any]]:
 
         fig1 = plt.figure(figsize=fig1size)
         gs = gridspec.GridSpec(nrows=1, ncols=2, figure=fig1)

@@ -20,3 +20,11 @@ def dist_estimation_parameters() -> List[str]:
 @pytest.fixture(scope="module")
 def dist_estimation_parameters_ks() -> str:
     return "lmoments"
+
+@pytest.fixture(scope="module")
+def confidence_interval_alpha() -> float:
+    return 0.1
+
+@pytest.fixture(scope="module")
+def parameter_estimation_optimization_threshold() -> int:
+    return 17
