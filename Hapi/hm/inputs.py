@@ -15,8 +15,6 @@ from osgeo import gdal
 from scipy.stats import gumbel_r  # genextreme,
 
 from Hapi.hm.river import River
-
-# from Hapi.sm.statisticaltools import StatisticalTools as ST
 from Hapi.sm.distributions import GEV, Gumbel, PlottingPosition
 
 # from matplotlib import gridspec
@@ -192,9 +190,6 @@ class Inputs(River):
                         TSdirectory + "/" + str(int(ComputationalNodes[i])) + file_extension,
                         skiprows=1, header=None,
                     )[1].tolist()
-                    #     self.ReadRIMResult(
-                    #     TSdirectory + "/" + str(int(ComputationalNodes[i])) + file_extension
-                    # )
             # for the rainfall runoff results.
             else:
                 for i in range(len(ComputationalNodes)):
@@ -393,8 +388,9 @@ class Inputs(River):
         DistributionPr.to_csv(f"{SavePath}/DistributionProperties.csv" , float_format="%.4f")
         self.DistributionPr = DistributionPr
 
+
     def WriteHQFile(self, NoNodes: int, StatisticalPropertiesFile:str, SaveTo:str):
-        """
+        """WriteHQFile.
 
         :param NoNodes:
         :param StatisticalPropertiesFile:

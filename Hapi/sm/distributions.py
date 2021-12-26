@@ -3,7 +3,8 @@ from typing import Union
 
 import matplotlib.pyplot as plt
 import numpy as np
-import scipy as sp
+
+# import scipy as sp
 import scipy.optimize as so
 from loguru import logger
 from matplotlib import gridspec
@@ -22,7 +23,7 @@ class PlottingPosition:
         pass
 
     @staticmethod
-    def Weibul(data: Union[list, np.ndarray], option: int = 1):
+    def Weibul(data: Union[list, np.ndarray], option: int = 1) -> list:
         """Weibul.
 
         Weibul method to calculate the cumulative distribution function CDF or
@@ -70,6 +71,7 @@ class Gumbel:
             self.data_sorted = np.sort(data)
             self.cdf_Weibul = PlottingPosition.Weibul(data)
             self.KStable = 1.22 / np.sqrt(len(self.data))
+
         self.loc = loc
         self.scale = scale
         self.Dstatic = None
@@ -217,7 +219,7 @@ class Gumbel:
         return L1 + L2
 
     def EstimateParameter(self, method: str="mle", ObjFunc=None,
-                          threshold:Union[None, float, int]=None, Test: bool=True):
+                          threshold:Union[None, float, int]=None, Test: bool=True) -> tuple:
         """EstimateParameter.
 
         EstimateParameter estimate the distribution parameter based on MLM
@@ -257,7 +259,7 @@ class Gumbel:
                 method + "value should be 'mle', 'mm', 'lmoments' or 'optimization'"
             )
         if method == "mle" or method == "mm":
-            Param = gumbel_r.fit(self.data, method=method)
+            Param = list(gumbel_r.fit(self.data, method=method))
         elif method == "lmoments":
             LM = Lmoments(self.data)
             LMU = LM.Lmom()
@@ -284,6 +286,7 @@ class Gumbel:
             self.chisquare()
 
         return Param
+
 
     @staticmethod
     def TheporeticalEstimate(loc, scale, cdf):
@@ -315,7 +318,8 @@ class Gumbel:
         # Qth = gumbel_r.ppf(F, loc=param_dist[0], scale=param_dist[1])
         return Qth
 
-    def ks(self):
+
+    def ks(self) -> tuple:
         """Kolmogorov-Smirnov (KS) test.
 
         The smaller the D static the more likely that the two samples are drawn from the same distribution
@@ -328,7 +332,7 @@ class Gumbel:
             Pvalue : [numeric]
                 IF Pvalue < signeficance level ------ reject the null hypotethis
         """
-        if not hasattr(self, "loc") or not hasattr(self, "scale"):
+        if self.loc is None or self.scale is None:
             raise ValueError(
                 "Value of loc/scale parameter is unknown please use "
                 "'EstimateParameter' to obtain them"
@@ -349,8 +353,8 @@ class Gumbel:
         return test.statistic, test.pvalue
 
 
-    def chisquare(self):
-        if not hasattr(self, "loc") or not hasattr(self, "scale"):
+    def chisquare(self) -> tuple:
+        if self.loc is None or self.scale is None:
             raise ValueError(
                 "Value of loc/scale parameter is unknown please use "
                 "'EstimateParameter' to obtain them"
@@ -657,7 +661,7 @@ class GEV:
 
     def EstimateParameter(self, method: str="mle", ObjFunc=None,
                           threshold: Union[int, float, None]=None,
-                          Test: bool=True):
+                          Test: bool=True) -> tuple:
         """EstimateParameter.
 
         EstimateParameter estimate the distribution parameter based on MLM
@@ -698,7 +702,7 @@ class GEV:
             )
 
         if method == "mle" or method == "mm":
-            Param = genextreme.fit(self.data, method=method)
+            Param = list(genextreme.fit(self.data, method=method))
         elif method == "lmoments":
             LM = Lmoments(self.data)
             LMU = LM.Lmom()
