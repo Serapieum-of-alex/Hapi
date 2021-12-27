@@ -1,5 +1,5 @@
 import pytest
-dates = ["2009-01-01", "2011-12-31"]
+coello_dates = ["2009-01-01", "2011-12-31"]
 area = 1530.0
 IC = [0,10,10,10,0]
 snow = 0
@@ -23,7 +23,7 @@ def lumped_gauges_path() -> str:
 
 @pytest.fixture(scope="module")
 def coello_rrm_date() -> list:
-    return dates
+    return coello_dates
 
 
 @pytest.fixture(scope="module")
