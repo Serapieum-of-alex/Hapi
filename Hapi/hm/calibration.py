@@ -69,7 +69,7 @@ class Calibration(River):
                     "plese check the fmt ({0}) you entered as it is different from the"
                     " rrmstart data ({1})"
                 )
-                print(msg.format(fmt, rrmstart))
+                logger.debug(msg.format(fmt, rrmstart))
                 return
 
         self.rrmend = self.rrmstart + dt.timedelta(days=rrmdays)
@@ -161,7 +161,7 @@ class Calibration(River):
         ind = pd.date_range(start, end)
         Gauges = pd.DataFrame(index=ind)
         Gauges.loc[:, 0] = ind
-        print("Reading water level gauges data")
+        logger.debug("Reading water level gauges data")
         for i in range(len(columns)):
             if self.GaugesTable.loc[i, "waterlevel"] == 1:
                 name = self.GaugesTable.loc[i, column]
@@ -187,10 +187,10 @@ class Calibration(River):
                     # use merge as there are some gaps in the middle
                     Gauges = Gauges.merge(f, on=0, how="left", sort=False)
 
-                    print(f"{i} - {path}{name}{file_extension} is read")
+                    logger.debug(f"{i} - {path}{name}{file_extension} is read")
 
                 except FileNotFoundError:
-                    print(f"{i} - {path}{name}{file_extension} has a problem")
+                    logger.debug(f"{i} - {path}{name}{file_extension} has a problem")
                     return
 
         Gauges.replace(to_replace=np.nan, value=novalue, inplace=True)
@@ -213,16 +213,16 @@ class Calibration(River):
     #     ind = pd.date_range(start, end)
     #     Gauges = pd.DataFrame(index=ind)
     #     Gauges.loc[:, 0] = ind
-    #     print("Reading discharge gauges data")
+    #     logger.debug("Reading discharge gauges data")
     #     for i in range(len(self.GaugesTable)):
     #         if self.GaugesTable.loc[i, "discharge"] == 1:
     #             name = self.GaugesTable.loc[i, column]
     #             try:
     #                 f = pd.read_csv(path, delimiter=",", header=0)
-    #                 print(f"{i} - {path} is read")
+    #                 logger.debug(f"{i} - {path} is read")
     #
     #             except FileNotFoundError:
-    #                 print(f"{i} - {path} has a problem")
+    #                 logger.debug(f"{i} - {path} has a problem")
     #                 return
     #             f.columns = [0, 1]
     #             f[0] = f[0].map(lambda x: dt.datetime.strptime(x, date_format))
@@ -285,7 +285,7 @@ class Calibration(River):
         ind = pd.date_range(start, end)
         Gauges = pd.DataFrame(index=ind)
         Gauges.loc[:, 0] = ind
-        print("Reading discharge gauges data")
+        logger.debug("Reading discharge gauges data")
         for i in range(len(self.GaugesTable)):
             if self.GaugesTable.loc[i, "discharge"] == 1:
                 name = self.GaugesTable.loc[i, column]
@@ -293,11 +293,11 @@ class Calibration(River):
                     f = pd.read_csv(
                         path + str(int(name)) + file_extension, delimiter=",", header=0
                     )
-                    print(f"{i} - {path}{name}{file_extension} is read")
+                    logger.debug(f"{i} - {path}{name}{file_extension} is read")
 
                 except FileNotFoundError:
-                    print(f"{i} - {path}{name}{file_extension} has a problem")
-                    return
+                    logger.debug(f"{i} - {path}{name}{file_extension} has a problem")
+                    continue
                 f.columns = [0,1]
                 f[0] = f[0].map(lambda x: dt.datetime.strptime(x, gauge_date_format))
                 # sort by date as some values are missed up
@@ -320,9 +320,9 @@ class Calibration(River):
         #         path + str(int(name)) + file_extension
         #     )  # ,skiprows = 0
         #
-        #     print(f"{i} - {path}{name}{file_extension} is read")
+        #     logger.debug(f"{i} - {path}{name}{file_extension} is read")
         # except FileNotFoundError:
-        #     print(f"{i} - {path}{name}{file_extension} has a problem")
+        #     logger.debug(f"{i} - {path}{name}{file_extension} has a problem")
         #     return
         # name = self.GaugesTable.loc[i, column]
 
@@ -396,10 +396,10 @@ class Calibration(River):
                         today,
                         date_format=fmt,
                     )[station_id].tolist()
-                    print(f"{i} - {path}{station_id}.txt is read")
+                    logger.debug(f"{i} - {path}{station_id}.txt is read")
                     self.RRM_Gauges.append(station_id)
                 except FileNotFoundError:
-                    print(f"{i} - {path}{station_id}.txt does not exist or have a problem")
+                    logger.debug(f"{i} - {path}{station_id}.txt does not exist or have a problem")
         else:
             for i in range(len(gauges)):
                 station_id = gauges[i]
@@ -422,11 +422,11 @@ class Calibration(River):
                         today,
                         date_format=fmt,
                     )[station_id].tolist()
-                    print(f"{i} - {path}{station_id}.txt is read")
+                    logger.debug(f"{i} - {path}{station_id}.txt is read")
                     self.RRM_Gauges.append(station_id)
                 except FileNotFoundError:
-                    print(f"{i} - {path}{station_id}.txt does not exist or have a problem")
-        # print("RRM time series for the gauge " + str(station_id) + " is read")
+                    logger.debug(f"{i} - {path}{station_id}.txt does not exist or have a problem")
+        # logger.debug("RRM time series for the gauge " + str(station_id) + " is read")
 
         if fromday == "":
             fromday = 1
@@ -508,7 +508,7 @@ class Calibration(River):
                                                    today='',
                                                    date_format=fmt,
                                                    )[nodeid].tolist()
-            print(f"{i} - {path}{nodeid}.txt is read")
+            logger.debug(f"{i} - {path}{nodeid}.txt is read")
 
             if addHQ2 and self.version == 1:
                 USnode = self.rivernetwork.loc[
@@ -595,7 +595,7 @@ class Calibration(River):
                                                    today='',
                                                    date_format=fmt,
                                                    )[nodeid].tolist()
-            print(f"{i} - {path}{nodeid}.txt is read")
+            logger.debug(f"{i} - {path}{nodeid}.txt is read")
         # for i in range(len(WLHM.columns)):
         #     f = np.loadtxt(path + str(int(WLHM.columns[i])) + ".txt", delimiter=",")
         #
@@ -1284,7 +1284,7 @@ class Calibration(River):
         # 3 is very and we want to elevate it to reduce the slope
         for j in range(len(precent)):
             if precent[j] < 0 and abs(precent[j]) >= SlopePercentThreshold:
-                print(j)
+                logger.debug(j)
                 # get the calculated slope based on the slope percent threshold
                 slopes[j + 1] = slopes[j] - (-SlopePercentThreshold * slopes[j])
                 segment.loc[j + 2, "gl"] = (
@@ -1345,8 +1345,8 @@ class Calibration(River):
 
         Print Attributes List
         """
-        print("\n")
-        print(
+        logger.debug("\n")
+        logger.debug(
             "Attributes List of: "
             + repr(self.__dict__["name"])
             + " - "
@@ -1357,6 +1357,6 @@ class Calibration(River):
         self_keys.sort()
         for key in self_keys:
             if key != "name":
-                print(str(key) + " : " + repr(self.__dict__[key]))
+                logger.debug(str(key) + " : " + repr(self.__dict__[key]))
 
-        print("\n")
+        logger.debug("\n")
