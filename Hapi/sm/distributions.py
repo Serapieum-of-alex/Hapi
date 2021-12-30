@@ -1,6 +1,6 @@
 from collections import OrderedDict
-from typing import Union, Any,Tuple
-import types
+from typing import Union, Any, Tuple, Dict, List
+# import types
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -97,7 +97,7 @@ class Gumbel:
         ylabel: str="pdf",
         fontsize: Union[float, int]=15,
         actualdata: Union[bool, np.ndarray]=True,
-    ) -> Union[tuple[np.ndarray, Figure, Any], np.ndarray]:
+    ) -> Union[Tuple[np.ndarray, Figure, Any], np.ndarray]:
         """pdf.
 
         Returns the value of Gumbel's pdf with parameters loc and scale at x .
@@ -154,7 +154,7 @@ class Gumbel:
         ylabel: str="cdf",
         fontsize: int=15,
         actualdata: Union[bool, np.ndarray]=True,
-    ) -> Union[tuple[np.ndarray, Figure, Any], np.ndarray]:
+    ) -> Union[Tuple[np.ndarray, Figure, Any], np.ndarray]:
         """cdf.
 
         cdf calculates the value of Gumbel's cdf with parameters loc and scale at x.
@@ -437,7 +437,7 @@ class Gumbel:
         xlabel: str="Actual data",
         ylabel: str="cdf",
         fontsize: int=15,
-    ) -> tuple[list[Figure, Figure], list]:
+    ) -> Tuple[List[Figure, Figure], list]:
         """ProbapilityPlot.
 
         ProbapilityPlot method calculates the theoretical values based on the Gumbel distribution
@@ -543,7 +543,7 @@ class GEV:
         ylabel: str="pdf",
         fontsize: int=15,
         actualdata:Union[bool, np.ndarray]=True,
-    ) -> Union[tuple[np.ndarray, Figure, Any], np.ndarray]:
+    ) -> Union[Tuple[np.ndarray, Figure, Any], np.ndarray]:
         """pdf.
 
         Returns the value of GEV's pdf with parameters loc and scale at x .
@@ -647,7 +647,7 @@ class GEV:
         ylabel: str="cdf",
         fontsize: int=15,
         actualdata: Union[bool, np.ndarray]=True,
-    ) -> Union[tuple[np.ndarray, Figure, Any], np.ndarray]:
+    ) -> Union[Tuple[np.ndarray, Figure, Any], np.ndarray]:
         """cdf.
 
         Returns the value of Gumbel's cdf with parameters loc and scale at x.
@@ -1043,7 +1043,7 @@ class ConfidenceInterval:
             alpha: float=0.05,
             n_samples: int=100,
             **kargs
-    ) ->  dict[str, OrderedDict[str, tuple[Any, Any]]]:
+    ): # ->  Dict[str, OrderedDict[str, Tuple[Any, Any]]]
         """
         Calculate confidence intervals using parametric bootstrap and the
         percentil interval method
@@ -1206,7 +1206,7 @@ class plot:
         xlabel: str="Actual data",
         ylabel: str="cdf",
         fontsize: int=15,
-    ) -> Tuple[list[Figure, Figure], list[Any, Any]]:
+    ) -> Tuple[List[Figure, Figure], List[Any, Any]]:
 
         fig1 = plt.figure(figsize=fig1size)
         gs = gridspec.GridSpec(nrows=1, ncols=2, figure=fig1)
