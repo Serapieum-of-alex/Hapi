@@ -23,7 +23,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install --no-cache-dir Cython
         pip install flake8 pytest
-        if [ -f requirement.txt ]; then pip install -r requirement.txt; fi
+        if [ -f requirement-ci.txt ]; then pip install -r requirement-ci.txt; fi
 #    - name: Lint with flake8
 #      run: |
 #        # stop the build if there are Python syntax errors or undefined names
