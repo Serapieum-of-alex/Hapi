@@ -30,11 +30,7 @@ class CrossSections:
         *args,
         **kwargs
     ):
-        """
-        =============================================================================
-        reg_plot(x , y, minmax_XS_area, xlab, ylab, xlgd, ylgd, title, filename,
-                 log, logandlinear, seelim, Save = False, *args, **kwargs)
-        =============================================================================
+        """reg_plot.
 
         Parameters
         ----------

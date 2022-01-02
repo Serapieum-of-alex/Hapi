@@ -155,7 +155,7 @@ def test_Sub_GetLaterals(
     IF.ReadLaterals(path=interface_Laterals_folder, date_format=interface_Laterals_date_format)
 
     Sub.GetFlow(IF)
-    Laterals = Sub.GetLaterals(create_sub_instance_lastxs)
+    Sub.GetLaterals(create_sub_instance_lastxs)
 
     assert len(Sub.BC) == len(Sub.Laterals) == test_time_series_length and len(Sub.BC.columns) == 1 \
            and len(Sub.Laterals.columns) == len(sub_GetFlow_lateralTable) + 1
