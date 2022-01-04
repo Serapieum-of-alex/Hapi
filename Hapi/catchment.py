@@ -451,7 +451,7 @@ class Catchment:
         Maxbas : [bool]
             True/False
         """
-        if self.SpatialResolution == "Distributed":
+        if self.SpatialResolution == "distributed":
             # data type
             assert type(Path) == str, "PrecPath input should be string type"
             # check wether the path exists or not
@@ -472,7 +472,7 @@ class Catchment:
         self.Snow = Snow
         self.Maxbas = Maxbas
 
-        if self.SpatialResolution == "Distributed":
+        if self.SpatialResolution == "distributed":
             if Snow == 1 and Maxbas:
                 assert self.Parameters.shape[2] == 16, (
                     "current version of HBV (with snow) takes 16 parameter you have entered "
@@ -938,7 +938,7 @@ class Catchment:
 
         fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(6, 5))
 
-        if self.SpatialResolution == "Distributed":
+        if self.SpatialResolution == "distributed":
             gaugeid = self.GaugesTable.loc[gaugei, "id"]
 
             if Title == "":
@@ -1254,7 +1254,7 @@ class Catchment:
         starti = np.where(self.Index == startdate)[0][0]
         endi = np.where(self.Index == enddate)[0][0] + 1
 
-        if self.SpatialResolution == "Distributed":
+        if self.SpatialResolution == "distributed":
             assert (
                 FlowAccPath != ""
             ), "Please enter the  FlowAccPath parameter to the SaveResults method"

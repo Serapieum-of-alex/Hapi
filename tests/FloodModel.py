@@ -8,7 +8,7 @@ Created on Sun Jun 24 21:02:34 2018
 # get_ipython().magic('reset -f')
 import os
 
-Comp = "F:/02Case studies/"
+Comp = "F:/02Case-studies/"
 # Comp = "F:/Users/mofarrag/"
 os.chdir(Comp + "/Coello/Hapi/Model/")
 
@@ -17,7 +17,6 @@ from Hapi.catchment import Catchment
 
 # import numpy as np
 from Hapi.run import Run
-
 #%% Paths
 path = Comp + "/Coello/Hapi/Data/00inputs/"
 # PrecPath = path + "meteodata/4000/calib/prec" #
@@ -27,11 +26,10 @@ Evap_Path = path + "meteodata/4000/calib/evap"
 TempPath = path + "meteodata/4000/calib/temp"
 FlowAccPath = path + "GIS/4000/acc4000.tif"
 FlowDPath = path + "GIS/4000/fd4000.tif"
-ParPathRun = "results/parameters/02lumped parameters/Parameter set-Avg/"
+ParPathRun = "results/parameters/02lumped parameters/Parameter-set-Avg/"
 # ParPathRun = "results/parameters/00default parameters/min/"
 SaveTo = "results/saved rasters/"
 #%% Flood model data
-
 RiverNetworkF = path + "GIS/4000/river_network.tif"
 BankfullDepthF = path + "GIS/4000/bankfulldepth.tif"
 RiverWidthF = path + "GIS/4000/river_width.tif"
@@ -39,7 +37,6 @@ RiverRoughnessF = path + "GIS/4000/channel_roughness.tif"
 FloodPlainRoughnessF = path + "GIS/4000/floodplain_roughness.tif"
 DEMF = path + "GIS/4000/dem4000.tif"
 RouteRiver = "Kinematic"
-
 #%% Meteorological data
 AreaCoeff = 1530
 InitialCond = [0, 5, 5, 5, 0]

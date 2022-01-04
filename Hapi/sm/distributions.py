@@ -1,5 +1,5 @@
 from collections import OrderedDict
-from typing import Union, Any, Tuple, Dict, List
+from typing import Union, Any, Tuple, List #Dict,
 # import types
 
 import matplotlib.pyplot as plt
@@ -437,7 +437,7 @@ class Gumbel:
         xlabel: str="Actual data",
         ylabel: str="cdf",
         fontsize: int=15,
-    ) -> Tuple[List[Figure, Figure], list]:
+    ) -> Tuple[List[Figure], list]:
         """ProbapilityPlot.
 
         ProbapilityPlot method calculates the theoretical values based on the Gumbel distribution
@@ -1206,7 +1206,7 @@ class plot:
         xlabel: str="Actual data",
         ylabel: str="cdf",
         fontsize: int=15,
-    ) -> Tuple[List[Figure, Figure], List[Any, Any]]:
+    ) -> Tuple[List[Figure], List[Any]]:
 
         fig1 = plt.figure(figsize=fig1size)
         gs = gridspec.GridSpec(nrows=1, ncols=2, figure=fig1)
