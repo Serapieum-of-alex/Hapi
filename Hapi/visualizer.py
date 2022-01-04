@@ -847,11 +847,17 @@ class Visualize:
 
         if fromxs == "":
             fromxs = Sub.xsname[0]
-            toxs = Sub.xsname[-1]
+            # toxs = Sub.xsname[-1]
         else:
             if fromxs < Sub.xsname[0]:
                 fromxs = Sub.xsname[0]
 
+            # if toxs > Sub.xsname[-1]:
+                # toxs = Sub.xsname[-1]
+        
+        if toxs == "":
+            toxs = Sub.xsname[-1]
+        else:
             if toxs > Sub.xsname[-1]:
                 toxs = Sub.xsname[-1]
 
