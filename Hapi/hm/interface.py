@@ -5,6 +5,7 @@ Created on Wed Mar  3 12:40:23 2021
 """
 import datetime as dt
 from typing import Union
+from loguru import logger
 
 import pandas as pd
 from pandas import DataFrame
@@ -78,7 +79,7 @@ class Interface(River):
             self.LateralsTable = pd.read_csv(path, skiprows=[0], header=None)
         except pd.errors.EmptyDataError:
             self.LateralsTable = pd.DataFrame()
-            print("The Lateral table file is empty")
+            logger.debug("The Lateral table file is empty")
             return
 
         self.LateralsTable.columns = ["filename"]
@@ -147,7 +148,7 @@ class Interface(River):
                     today,
                     date_format,
                 )[fname].tolist()
-                print("Lateral file " + fname + " is read")
+                logger.debug("Lateral file " + fname + " is read")
 
             self.Laterals["total"] = self.Laterals.sum(axis=1)
             if fromday == "":
@@ -160,7 +161,7 @@ class Interface(River):
 
             self.Laterals.index = pd.date_range(start, end, freq="D")
         else:
-            print("There are no Laterals table please check")
+            logger.debug("There are no Laterals table please check")
 
     def ReadRRMProgression(
         self, fromday="", today="", path="", date_format="'%Y-%m-%d'"
@@ -208,7 +209,7 @@ class Interface(River):
                     today,
                     date_format,
                 )[fname].tolist()
-                print("RRM Progression file " + fname + " is read")
+                logger.debug("RRM Progression file " + fname + " is read")
 
             # self.RRMProgression['total'] = self.Laterals.sum(axis=1)
             if fromday == "":
@@ -301,7 +302,7 @@ class Interface(River):
                 date_format,
             )[fname].tolist()
 
-            print("BC file " + fname + " is read")
+            logger.debug("BC file " + fname + " is read")
 
         self.BC["total"] = self.BC.sum(axis=1)
         if fromday == "":
@@ -319,8 +320,8 @@ class Interface(River):
 
         Print Attributes List
         """
-        print("\n")
-        print(
+        logger.debug("\n")
+        logger.debug(
             "Attributes List of: "
             + repr(self.__dict__["name"])
             + " - "
@@ -331,6 +332,6 @@ class Interface(River):
         self_keys.sort()
         for key in self_keys:
             if key != "name":
-                print(str(key) + " : " + repr(self.__dict__[key]))
+                logger.debug(str(key) + " : " + repr(self.__dict__[key]))
 
-        print("\n")
+        logger.debug("\n")
