@@ -3,6 +3,7 @@ from typing import Union  # List, Optional,
 
 import numpy as np
 import pandas as pd
+import geopandas as gpd
 from loguru import logger
 
 from Hapi.hm.river import River
@@ -112,7 +113,10 @@ class Calibration(River):
             the table will be read in a dataframe attribute
 
         """
-        self.GaugesTable = pd.read_csv(path)
+        # self.GaugesTable = pd.read_csv(path)
+        self.GaugesTable = gpd.read_file(path, driver="GeoJSON")
+        # sort the gauges table based on the segment
+        self.GaugesTable.sort_values(by="id", inplace=True, ignore_index=True)
 
 
     def ReadObservedWL(self, path: str, start: Union[str, dt.datetime],

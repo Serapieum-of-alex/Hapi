@@ -5,7 +5,7 @@ F:\02Case-studies\ClimXtreme\rim_base_data\src\rim\test_case\ideal_case
 xs_hz.csv
 # Laterals file, boundary condition
 no_laterals.txt, boundaryconditions.txt
-# River network file 
+# River network file
 rivernetwork-1segments.txt
 # Slope file
 slope.csv
@@ -28,8 +28,8 @@ customized_BC.txt
 # 1min resutlt format
 '(I7,2x,I2,2x,I5,2x,F9.3,2x,F9.3,2x,F9.3)','(F8.2,2x)'
 ## PARAMETERS ----------------------------------------
-# Temporal resolution 
-Daily	# Rainfall runoff model (daily/hourly) 
+# Temporal resolution
+Daily	# Rainfall runoff model (daily/hourly)
 60	# RIM (sec)
 60	# Store time step (sec)
 # period of simulation

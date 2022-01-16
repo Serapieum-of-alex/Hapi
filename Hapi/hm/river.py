@@ -214,6 +214,7 @@ class River:
         self.ResultsDetails = None
         self.RRMTemporalResolution = None
         self.HMTemporalResolution = None
+        self.HMStoreTimeStep = None
         self.TS = None
         self.SimStartIndex = None
         self.SimEndIndex = None
@@ -429,15 +430,15 @@ class River:
         )
 
         # Temporal Resolution
-        self.RRMTemporalResolution = wholefile[29].split("#")[0][:-1]
-        self.HMTemporalResolution = wholefile[30].split("#")[0][:-1]
-        self.HMTemporalResolution = int(self.HMTemporalResolution)
+        self.RRMTemporalResolution = wholefile[31].split("#")[0][:-1]
+        self.HMTemporalResolution = int(wholefile[32].split("#")[0][:-1])
+        self.HMStoreTimeStep = int(wholefile[33].split("#")[0][:-1])
 
         if self.RRMTemporalResolution == "Daily":
             # number of time steps for the 1D model
             self.TS = 24 * self.HMTemporalResolution
 
-        Start, End = wholefile[32][:-1].split(" ")
+        Start, End = wholefile[35][:-1].split(" ")
         self.SimStartIndex = int(Start)
         self.SimEndIndex = int(End)
         self.SimStart = self.IndexToDate(self.SimStartIndex)
@@ -445,12 +446,12 @@ class River:
         self.OneDTempR = 60  # in seconds
 
         # 1D thresholds
-        MinQ, MinDepth = wholefile[34][:-1].split(" ")
+        MinQ, MinDepth = wholefile[37][:-1].split(" ")
         MinQ = float(MinQ)
         MinDepth = float(MinDepth)
 
         # 1D or 2D
-        ModelMode, OvertoppingOnly = wholefile[36][:-1].split(" ")
+        ModelMode, OvertoppingOnly = wholefile[39][:-1].split(" ")
         ModelMode = int(ModelMode)
         OvertoppingOnly = int(OvertoppingOnly)
 
@@ -461,17 +462,12 @@ class River:
             OvertoppingOnly=OvertoppingOnly,
         )
 
-        DischargeThreshold = wholefile[38][:-1]
-        DischargeThreshold = int(DischargeThreshold)
+        DischargeThreshold = int(wholefile[41][:-1])
 
-        SimulationMode = wholefile[40][:-1]
-        SimulationMode = int(SimulationMode)
-        ResultsFormat = wholefile[42][:-1]
-        ResultsFormat = int(ResultsFormat)
-        CalcInundationDuration = wholefile[44][:-1]
-        CalcInundationDuration = int(CalcInundationDuration)
-        CalcReturnPerion = wholefile[46][:-1]
-        CalcReturnPerion = int(CalcReturnPerion)
+        SimulationMode = int(wholefile[43][:-1])
+        ResultsFormat = int(wholefile[45][:-1])
+        CalcInundationDuration = int(wholefile[47][:-1])
+        CalcReturnPerion = int(wholefile[49][:-1])
         self.D2 = dict(
             DischargeThreshold=DischargeThreshold,
             SimulationMode=SimulationMode,
@@ -1635,8 +1631,12 @@ class River:
                     # ).tolist()
 
 
-    def GetReturnPeriod(self, Subid: int, Q: Union[float, int],
-                        distribution: str="GEV"):
+    def GetReturnPeriod(
+            self,
+            Subid: int,
+            Q: Union[float, int],
+            distribution: str="GEV"
+    ):
         """GetReturnPeriod.
 
         GetReturnPeriod method takes given discharge and using the distribution
@@ -1673,7 +1673,7 @@ class River:
                 )
 
             return 1 / (1 - F)
-        except:
+        except IndexError:
             return -1
 
 
@@ -1736,11 +1736,16 @@ class River:
         )
 
 
-    def GetCapacity(self, ColumnName: str, Option: int=1, distribution: str="GEV"):
+    def GetCapacity(
+            self,
+            ColumnName: str,
+            Option: int=1, 
+            distribution: str="GEV"
+    ):
         """GetCapacity.
 
-        GetCapacity method calculates the discharge that is enough to fill the
-        cross section using kinematic wave approximation (using bed slope with manning)
+            GetCapacity method calculates the discharge that is enough to fill the
+            cross section using kinematic wave approximation (using bed slope with manning)
 
         Parameters
         ----------
@@ -1815,8 +1820,11 @@ class River:
                 ] * slope ** (1 / 2)
 
             if isinstance(self.SP, DataFrame):
+                assert "gauge" in self.crosssections.columns.tolist(), "To calculate the return period for each "\
+                                                                       "cross-section a column with the coresponding gauge"\
+                                                                       "id should be in the cross-section file"
                 RP = self.GetReturnPeriod(
-                    self.crosssections.loc[i, "id"],
+                    self.crosssections.loc[i, "gauge"],
                     self.crosssections.loc[i, ColumnName],
                     distribution=distribution
                 )
@@ -1825,10 +1833,14 @@ class River:
                 self.crosssections.loc[i, ColumnName + "RP"] = round(RP, 2)
 
 
-    def CalibrateDike(self, ObjectiveRP:Union[str, int], CurrentRP:Union[str, int]):
+    def CalibrateDike(
+            self, 
+            ObjectiveRP:Union[str, int], 
+            CurrentRP:Union[str, int]
+    ):
         """CalibrateDike.
 
-        CalibrateDike method takes cross section and based on a
+            CalibrateDike method takes cross section and based on a given return period
 
         Parameters
         ----------
@@ -1847,8 +1859,8 @@ class River:
             to fill the cross section after raising the dikes to the objective
             return period.
         """
-        assert self.SP, "Please read the statistical properties file first using StatisticalProperties method"
-        assert self.crosssections, "please read the cross section data first with the method CrossSections"
+        assert isinstance(self.SP, DataFrame), "Please read the statistical properties file first using StatisticalProperties method"
+        assert isinstance(self.crosssections, DataFrame), "please read the cross section data first with the method CrossSections"
         assert CurrentRP in self.crosssections.columns, (f"{CurrentRP} in not in the cross section data"
             + " please use GetCapacity method to calculate the current return perion "
         )
@@ -1857,8 +1869,6 @@ class River:
             + " in not in the cross section data please create a column in the cross section data containing the objective return period"
         )
 
-        # self.crosssections['zlnew'] = -1
-        # self.crosssections['zrnew'] = -1
         self.crosssections.loc[:, "zlnew"] = self.crosssections.loc[:, "zl"]
         self.crosssections.loc[:, "zrnew"] = self.crosssections.loc[:, "zr"]
 
@@ -1895,8 +1905,6 @@ class River:
                 self.crosssections.loc[i, "New RP"] = self.crosssections.loc[
                     i, CurrentRP
                 ]
-                # self.crosssections.loc[i,'zlnew'] = self.crosssections.loc[i,'zl']
-                # self.crosssections.loc[i,'zrnew'] = self.crosssections.loc[i,'zr']
 
                 while (
                     self.crosssections.loc[i, "New RP"]
@@ -1916,13 +1924,9 @@ class River:
                         )
 
                     H = self.crosssections.loc[i, ["zlnew", "zrnew"]].min()
-                    # logger.debug("H=" + str(H))
-
                     Coords = self.GetVortices(H - BedLevel, Hl, Hr, Bl, Br, B, dbf)
                     # get the area and perimeters
                     Area, Perimeter = self.PolygonGeometry(Coords)
-                    # self.crosssections.loc[i,'Area'] = Area
-                    # self.crosssections.loc[i,'Perimeter'] = Perimeter
                     self.crosssections.loc[i, "New Capacity"] = (
                         (1 / self.crosssections.loc[i, "m"])
                         * Area
@@ -1933,15 +1937,16 @@ class River:
                     ] * slope ** (1 / 2)
 
                     RP = self.GetReturnPeriod(
-                        self.crosssections.loc[i, "id"],
+                        self.crosssections.loc[i, "gauge"],
                         self.crosssections.loc[i, "New Capacity"],
                     )
 
                     self.crosssections.loc[i, "New RP"] = round(RP, 2)
-                    # logger.debug("New RP = "+str(RP))
+
                 logger.debug("New RP = " + str(round(RP, 2)))
                 logger.debug("New H = " + str(round(H, 2)))
                 logger.debug("---------------------------")
+
 
     def Overtopping(self, OvertoppingResultpath=""):
         """Overtopping.
