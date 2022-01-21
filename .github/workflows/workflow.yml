@@ -9,7 +9,6 @@ jobs:
         python-version: ["3.7", "3.8", "3.9"]
     env:
       OS: ${{ matrix.os }}
-#      PYTHON: 3.9
 
     steps:
     - uses: actions/checkout@master
@@ -25,7 +24,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install libproj-dev proj-data proj-bin
         sudo apt-get install libgeos-dev
-        sudo apt-get install gdal-bin libgdal-dev libgdal-doc libgdal1h
+        sudo apt-get install gdal-bin libgdal-dev libgdal-doc
         sudo apt-get install -y python3.9-dev
         sudo apt-get -y install python3.9-distutils python3-apt python3-pip python3-wheel
         pip install wheel
