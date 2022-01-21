@@ -26,9 +26,12 @@ jobs:
         sudo apt-get install libproj-dev proj-data proj-bin
         sudo apt-get install libgeos-dev
         sudo apt-get install gdal-bin libgdal-dev libgdal-doc
+        sudo apt-get install -y python3.9-dev
+        sudo apt-get -y install python3.9-distutils python3-apt python3-pip python3-wheel
         pip install wheel
         pip install --no-cache-dir Cython
         pip install flake8 pytest
+        pip install GDAL==$(gdal-config --version) --global-option=build_ext --global-option="-I/usr/include/gdal"
         if [ -f requirement-ci.txt ]; then pip install -r requirement-ci.txt; fi
         export LD_PRELOAD=/usr/lib/aarch64-linux-gnu/libgomp.so.1:/$LD_PRELOAD
 

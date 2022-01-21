@@ -1,15 +1,19 @@
 import os
 
 # import sys
-
-os.chdir("F:/01Algorithms/Hydrology/HAPI/Examples")
+"F:/01Algorithms/Hydrology/HAPI"
+# os.chdir("Examples/")
 rootpath = os.path.abspath(os.getcwd())
 # sys.path.append(rootpath + "/src")
-datapath = os.path.join(rootpath, "data/GIS/Hapi_GIS_Data")
-datapath2 = os.path.join(rootpath, "data/GIS")
+datapath = os.path.join(rootpath, "Examples/data/GIS/Hapi_GIS_Data")
+datapath2 = os.path.join(rootpath, "Examples/data/GIS")
 os.chdir(rootpath)
 
-import gdal
+try:
+    import gdal
+except ModuleNotFoundError:
+    from osgeo import gdal
+
 import geopandas as gpd
 import numpy as np
 import pandas as pd
@@ -867,3 +871,4 @@ clip = clip.astype(gdalnumeric.uint8)
 gdalnumeric.SaveArray(clip, "OUTPUT.jpg", format="JPEG")
 
 gdal.ErrorReset()
+#%%

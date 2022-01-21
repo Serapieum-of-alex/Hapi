@@ -2123,7 +2123,7 @@ class Raster:
             dst = None
 
     @staticmethod
-    def Mosaic(RasterList, Save=False, Path="MosaicedRaster.tif"):
+    def Mosaic(RasterList: list, Save: bool=False, Path: str="MosaicedRaster.tif"):
         """
         Parameters
         ----------
