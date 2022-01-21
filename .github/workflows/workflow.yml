@@ -33,10 +33,10 @@ jobs:
         pip install flake8 pytest
         export CPLUS_INCLUDE_PATH=/usr/include/gdal
         export C_INCLUDE_PATH=/usr/include/gdal
-        pip install GDAL==$(gdal-config --version) --global-option=build_ext --global-option="-I/usr/include/gdal" --include-dirs=/usr/include/gdal
+        pip install GDAL==$(gdal-config --version) --global-option=build_ext --global-option="-I/usr/include/gdal"
         if [ -f requirement-ci.txt ]; then pip install -r requirement-ci.txt; fi
         export LD_PRELOAD=/usr/lib/aarch64-linux-gnu/libgomp.so.1:/$LD_PRELOAD
-
+# --include-dirs=/usr/include/gdal
 #    - name: Lint with flake8
 #      run: |
 #        # stop the build if there are Python syntax errors or undefined names
