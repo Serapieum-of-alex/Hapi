@@ -27,7 +27,6 @@ jobs:
         sudo apt-get install gdal-bin libgdal-dev libgdal-doc
         sudo apt-add-repository ppa:ubuntugis/ubuntugis-unstable
         sudo apt-get update
-        sudo apt-get install python-gdal
         pip install wheel
         pip install --no-cache-dir Cython
         pip install flake8 pytest
