@@ -9,7 +9,9 @@ jobs:
         python-version: ["3.7", "3.8", "3.9"]
     env:
       OS: ${{ matrix.os }}
-#      PYTHON: 3.9
+      global:
+        - CPLUS_INCLUDE_PATH=/usr/include/gdal
+        - C_INCLUDE_PATH=/usr/include/gdal
 
     steps:
     - uses: actions/checkout@master
