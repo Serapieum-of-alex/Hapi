@@ -63,3 +63,6 @@ jobs:
         fail_ci_if_error: true
         path_to_write_report: ./coverage/codecov_report.txt
         verbose: true
+
+- name: YAML Schema Validator
+  uses: nwisbeta/validate-yaml-schema@v2.0.0
