@@ -27,13 +27,14 @@ jobs:
 
       - name: Install dependencies
         run: |
-          conda env update --file environment.yml --name base
+          $CONDA/bin/conda env update --file environment.yml --name base
           #pip install pytest
           #pip install pytest-cov
-          conda list
+          $CONDA/bin/conda list
           which python
-          #python -m pytest --cov=./ --cov-report=xml
-          # python -m pip install --upgrade pip  $CONDA/bin/
+          $CONDA/bin/pytest --cov=./ --cov-report=xml
+
+          # python -m pip install --upgrade pip
           # $CONDA is an environment variable pointing to the root of the miniconda directory
 
           #sudo apt-get update
