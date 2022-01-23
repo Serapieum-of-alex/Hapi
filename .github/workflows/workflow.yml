@@ -28,19 +28,20 @@ jobs:
       - name: Install dependencies
         run: |
           conda env update --file environment.yml --name base
-          pip install pytest
-          pip install pytest-cov
+          #pip install pytest
+          #pip install pytest-cov
           conda list
+          which python
           python -m pytest --cov=./ --cov-report=xml
           # python -m pip install --upgrade pip  $CONDA/bin/
           # $CONDA is an environment variable pointing to the root of the miniconda directory
 
-          sudo apt-get update
-          sudo apt-get install libproj-dev proj-data proj-bin
-          sudo apt-get install libgeos-dev
-          sudo apt-get install gdal-bin libgdal-dev libgdal-doc
-          sudo apt-add-repository ppa:ubuntugis/ubuntugis-unstable
-          sudo apt-get update
+          #sudo apt-get update
+          #sudo apt-get install libproj-dev proj-data proj-bin
+          #sudo apt-get install libgeos-dev
+          #sudo apt-get install gdal-bin libgdal-dev libgdal-doc
+          #sudo apt-add-repository ppa:ubuntugis/ubuntugis-unstable
+          #sudo apt-get update
 
           # pip install wheel
           #pip install --no-cache-dir Cython

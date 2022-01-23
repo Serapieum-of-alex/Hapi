@@ -26,5 +26,7 @@ dependencies:
   - geopy >=2.2.0
   - pip:
       - loguru >=0.5.3
+      - pytest
+      - pytest-cov
 #    - ffmpeg-python
     #- git+https://github.com/MAfarrag/HAPI.git
