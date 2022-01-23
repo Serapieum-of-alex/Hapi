@@ -18,23 +18,22 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           architecture: x64
-
-    - name: Install dependencies
-      run: |
-        $CONDA/bin/conda env update --file environment.yml --name base
-#        python -m pip install --upgrade pip
-        # $CONDA is an environment variable pointing to the root of the miniconda directory
-        sudo apt-get update
-        sudo apt-get install libproj-dev proj-data proj-bin
-        sudo apt-get install libgeos-dev
-        sudo apt-get install gdal-bin libgdal-dev libgdal-doc
-        sudo apt-add-repository ppa:ubuntugis/ubuntugis-unstable
-        sudo apt-get update
-#        pip install wheel
-#        pip install --no-cache-dir Cython
-#        pip install flake8 pytest
-#        if [ -f requirement-ci.txt ]; then pip install -r requirement-ci.txt; fi
-        export LD_PRELOAD=/usr/lib/aarch64-linux-gnu/libgomp.so.1:/$LD_PRELOAD
+      - name: Install dependencies
+        run: |
+          $CONDA/bin/conda env update --file environment.yml --name base
+          # python -m pip install --upgrade pip
+          # $CONDA is an environment variable pointing to the root of the miniconda directory
+          sudo apt-get update
+          sudo apt-get install libproj-dev proj-data proj-bin
+          sudo apt-get install libgeos-dev
+          sudo apt-get install gdal-bin libgdal-dev libgdal-doc
+          sudo apt-add-repository ppa:ubuntugis/ubuntugis-unstable
+          sudo apt-get update
+          # pip install wheel
+          #pip install --no-cache-dir Cython
+          #pip install flake8 pytest
+          #if [ -f requirement-ci.txt ]; then pip install -r requirement-ci.txt; fi
+          #export LD_PRELOAD=/usr/lib/aarch64-linux-gnu/libgomp.so.1:/$LD_PRELOAD
 
 #    - name: Lint with flake8
 #      run: |
@@ -44,25 +43,22 @@ jobs:
 #        $CONDA/bin/flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
 #        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
 #        $CONDA/bin/flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    - name: Generate coverage report
-      run: |
-#        pip install pytest
-#        pip install pytest-cov
-#        pytest --cov=./ --cov-report=xml
-        conda install pytest, pytest-cov
-        $CONDA/bin/pytest --cov=./ --cov-report=xml
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v1
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        files: ./coverage1.xml,./coverage2.xml
-        directory: ./coverage/reports/
-        flags: unittests
-        env_vars: OS,PYTHON
-        name: codecov-umbrella
-        fail_ci_if_error: true
-        path_to_write_report: ./coverage/codecov_report.txt
-        verbose: true
-
-- name: YAML Schema Validator
-  uses: nwisbeta/validate-yaml-schema@v2.0.0
+      - name: Generate coverage report
+        run: |
+          #pip install pytest
+          #pip install pytest-cov
+          #pytest --cov=./ --cov-report=xml
+          conda install pytest, pytest-cov
+          $CONDA/bin/pytest --cov=./ --cov-report=xml
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage1.xml,./coverage2.xml
+          directory: ./coverage/reports/
+          flags: unittests
+          env_vars: OS,PYTHON
+          name: codecov-umbrella
+          fail_ci_if_error: true
+          path_to_write_report: ./coverage/codecov_report.txt
+          verbose: true
