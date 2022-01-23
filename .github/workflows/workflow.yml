@@ -1,7 +1,7 @@
 name: CI
 on: [push, pull_request]
 jobs:
-  run:
+  tests:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
