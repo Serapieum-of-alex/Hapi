@@ -10,7 +10,6 @@ jobs:
     env:
       OS: ${{ matrix.os }}
 
-
     steps:
       - uses: actions/checkout@master
       - name: Set up Python ${{ matrix.python-version }}
@@ -18,17 +17,30 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           architecture: x64
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          miniconda-version: "latest"
+          activate-environment: anaconda-client-env
+          channels: conda-forge
+          allow-softlinks: true
+          channel-priority: flexible
+          show-channel-urls: true
+
       - name: Install dependencies
         run: |
-          $CONDA/bin/conda env update --file environment.yml --name base
-          # python -m pip install --upgrade pip
+          conda info
+          conda list
+          conda env update --file environment.yml --name base
+          # python -m pip install --upgrade pip  $CONDA/bin/
           # $CONDA is an environment variable pointing to the root of the miniconda directory
+
           sudo apt-get update
           sudo apt-get install libproj-dev proj-data proj-bin
           sudo apt-get install libgeos-dev
           sudo apt-get install gdal-bin libgdal-dev libgdal-doc
           sudo apt-add-repository ppa:ubuntugis/ubuntugis-unstable
           sudo apt-get update
+
           # pip install wheel
           #pip install --no-cache-dir Cython
           #pip install flake8 pytest
