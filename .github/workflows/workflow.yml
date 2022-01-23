@@ -32,7 +32,7 @@ jobs:
           #pip install pytest-cov
           conda list
           which python
-          python -m pytest --cov=./ --cov-report=xml
+          #python -m pytest --cov=./ --cov-report=xml
           # python -m pip install --upgrade pip  $CONDA/bin/
           # $CONDA is an environment variable pointing to the root of the miniconda directory
 

@@ -87,10 +87,7 @@ install:
   #- cmd: while read requirement; do conda install --yes $requirement; done < requirement.txt
 #  - cmd: FOR /F "delims=~" %f in (requirement.txt) DO (conda install f --yes )
   - cmd: conda install --yes --file requirement.txt
-#  - cmd: pip install --upgrade --user pip
-#  - cmd: pip install -r requirement.txt
   - cmd: conda update --yes -n base -c defaults conda
-#  - cmd: conda env update -name Hapi-env --file environment.yml  --prune
   - cmd: python -V
   - cmd: python setup.py build_ext --inplace
   - cmd: python setup.py install
