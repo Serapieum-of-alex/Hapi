@@ -8,7 +8,7 @@ Created on Sun Apr 29 17:42:04 2018
 @author: Mostafa
 """
 
-# library
+from typing import Union
 import numpy as np
 
 
@@ -77,22 +77,29 @@ class Routing:
         return outflow
 
     @staticmethod
-    def Muskingum_V(inflow, Qinitial, k, x, dt):
-        """
-        Vectorized version of Muskingum
+    def Muskingum_V(
+            inflow: np.ndarray,
+            Qinitial: Union[int, float],
+            k: Union[int, float],
+            x: Union[int, float],
+            dt: Union[int, float]
+    ) -> np.ndarray:
+        """Muskingum_V.
+
+            Vectorized version of Muskingum
 
         inputs:
         ----------
-            1-inflow:
-                [numpy array] time series of inflow hydrograph
-            2-Qinitial:
-                [numeric] initial value for outflow
-            3-k:
-                [numeric] travelling time (hours)
-            4-x:
-                [numeric] surface nonlinearity coefficient (0,0.5)
-            5-dt:
-                [numeric] delta t
+            1-inflow: [numpy array]
+                time series of inflow hydrograph
+            2-Qinitial: [numeric]
+                initial value for outflow
+            3-k: [numeric]
+                travelling time (hours)
+            4-x: [numeric]
+                surface nonlinearity coefficient (0,0.5)
+            5-dt: [numeric]
+                delta t
 
         Outputs:
         ----------

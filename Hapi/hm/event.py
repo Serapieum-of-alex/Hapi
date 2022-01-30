@@ -8,7 +8,7 @@ import datetime as dt
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-
+from pandas.core.frame import DataFrame
 from Hapi.gis.raster import Raster
 
 # import os
@@ -18,10 +18,8 @@ from Hapi.gis.raster import Raster
 
 class Event:
     # class attributes
-    """
-    =========================================
-        Event
-    =========================================
+    """Event.
+
     The Event class reads all the results of the Hydraulic model to preform all
     kind of analysis on flood event basis and the overtopping.
 
@@ -54,41 +52,35 @@ class Event:
         ReturnPeriodPrefix="ReturnPeriod",
         Compressed=True,
     ):
-        """
-        =============================================================================
-            Event(self, name, start = "1950-1-1", days = 36890,
-                  leftOvertopping_Suffix = "_left.txt",
-                  RightOvertopping_Suffix = "_right.txt", DepthPrefix = "DepthMax",
-                  DurationPrefix = "Duration", ReturnPeriodPrefix = "ReturnPeriod" ,
-                  Compressed = True)
-        =============================================================================
-        To instantiate the Event class you need to provide the following arguments
+        """Event.
+
+            To instantiate the Event class you need to provide the following arguments
 
         Parameters
         ----------
-        name : [str]
-            DESCRIPTION.
-        start : [str], optional
-            start date. The default is "1950-1-1".
-        days : integer, optional
-            length of the simulation . The default is 36890.
-        leftOvertopping_Suffix : [str], optional
-            the prefix you used to name the overtopping form the left bank files.
-            The default is "_left.txt".
-        RightOvertopping_Suffix : TYPE, optional
-            the prefix you used to name the overtopping form the right bank files.
-            The default is "_right.txt".
-        DepthPrefix : [str], optional
-            the prefix you used to name the Max depth raster result maps.
-            The default is "DepthMax".
-        DurationPrefix : [str], optional
-            the prefix you used to name the inundation duration raster result maps.
-            The default is "Duration".
-        ReturnPeriodPrefix : [str], optional
-            the prefix you used to name the Return Period raster result maps.
-            The default is "ReturnPeriod".
-        Compressed : [bool], optional
-            True if the result raster/ascii files are compressed. The default is True.
+            name : [str]
+                DESCRIPTION.
+            start : [str], optional
+                start date. The default is "1950-1-1".
+            days : integer, optional
+                length of the simulation . The default is 36890.
+            leftOvertopping_Suffix : [str], optional
+                the prefix you used to name the overtopping form the left bank files.
+                The default is "_left.txt".
+            RightOvertopping_Suffix : TYPE, optional
+                the prefix you used to name the overtopping form the right bank files.
+                The default is "_right.txt".
+            DepthPrefix : [str], optional
+                the prefix you used to name the Max depth raster result maps.
+                The default is "DepthMax".
+            DurationPrefix : [str], optional
+                the prefix you used to name the inundation duration raster result maps.
+                The default is "Duration".
+            ReturnPeriodPrefix : [str], optional
+                the prefix you used to name the Return Period raster result maps.
+                The default is "ReturnPeriod".
+            Compressed : [bool], optional
+                True if the result raster/ascii files are compressed. The default is True.
 
         Returns
         -------
@@ -116,6 +108,9 @@ class Event:
         self.ReferenceIndex["date"] = Ref_ind[:-1]
         # create dictionary to store any extracted values from maps
         self.ExtractedValues = dict()
+        self.EventIndex = None
+        self.EventBeginning = None
+        self.EndDays = None
 
     # method
     def IndexToDate(self):
@@ -125,22 +120,23 @@ class Event:
         date = self.EventIndex.loc[:, "id"].to_frame().applymap(dateFn)
         self.EventIndex["date"] = date
 
-    def CreateEventIndex(self, IndexPath):
-        """
-        ========================================================
-             CreateEventIndex(IndexPath)
-        ========================================================
-        CreateEventIndex takes the path to the index file result from the 2D model
-        and creates a data frame to start adding the components of the EventIndex
-        table
+
+    def CreateEventIndex(self, IndexPath: str):
+        """CreateEventIndex.
+
+            CreateEventIndex takes the path to the index file result from the 2D model
+            and creates a data frame to start adding the components of the EventIndex
+            table
 
         Inputs:
-            1-IndexPath:
-                [String] path including the file name and extention of the index
+        -------
+            1-IndexPath: [String]
+                path including the file name and extention of the index
                 file result from the 2D model
         Outputs:
-            1- EventIndex:
-                [dataframe] this method creates an instance attribute of type
+        -------
+            1- EventIndex: [dataframe]
+                this method creates an instance attribute of type
                 dataframe with columns ['id','continue', 'IndDiff', 'Duration']
         """
         # FIXME
@@ -202,11 +198,10 @@ class Event:
 
         self.EndDays = IDs
 
-    def Overtopping(self, OvertoppingPath):
-        """
-        ===================================================
-            Overtopping(self,OvertoppingPath)
-        ===================================================
+
+    def Overtopping(self, OvertoppingPath: str):
+        """Overtopping.
+
         Overtopping method reads the overtopping file and check if the EventIndex
         dataframe has already need created by the CreateEventIndex method, it
         will add the overtopping to it, if not it will create the EventIndex dataframe
@@ -227,7 +222,7 @@ class Event:
         # overtop after the method considers it as two separate events however
         # it is the same event (if the gap is less than 10 days it is still
         # considered the same event)
-        if not hasattr(self, "EventIndex"):
+        if not isinstance(self.EventIndex, DataFrame):
             # create the dataframe if the user did not use the CreateEventIndex method to
             # create the EventIndex dataframe
             self.EventIndex = pd.DataFrame()

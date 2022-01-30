@@ -1,3 +1,5 @@
+from Hapi.rrm.routing import Routing
+
 import pytest
 coello_dates = ["2009-01-01", "2011-12-31"]
 area = 1530.0
@@ -42,3 +44,7 @@ def coello_Snow() -> int:
 @pytest.fixture(scope="module")
 def coello_gauges_date_fmt() -> str:
     return gauges_datefmt
+
+# @pytest.fixture(scope="module")
+# def coello_lumpedmodel_RoutingFn() -> (inflow: Any, Qinitial: Any, k: Any, x: Any, dt: Any):
+#     return Routing.Muskingum_V

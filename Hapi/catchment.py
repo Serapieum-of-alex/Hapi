@@ -97,12 +97,22 @@ class Catchment:
             raise ValueError("available temporal resolutions are 'daily' and 'hourly'")
         self.TemporalResolution = TemporalResolution.lower()
         self.Parameters = None
-        # self.Prec = None
-        # self.TS = None
-        # self.Temp = None
-        # self.ET = None
-        # self.ll_temp = None
-
+        self.data = None
+        self.Prec = None
+        self.TS = None
+        self.Temp = None
+        self.ET = None
+        self.ll_temp = None
+        self.QGauges = None
+        self.Snow = None
+        self.Maxbas = None
+        self.LumpedModel = None
+        self.CatArea = None
+        self.InitialCond = None
+        self.q_init = None
+        self.GaugesTable = None
+        self.UB = None
+        self.LB = None
         # assuming the default dt is 1 day
         conversionfactor = (1000 * 24 * 60 * 60) / (1000 ** 2)
         if TemporalResolution.lower() == "daily":
@@ -122,12 +132,22 @@ class Catchment:
         self.RouteRiver = RouteRiver
         pass
 
-    def ReadRainfall(self, Path, start="", end="", fmt=""):
+    def ReadRainfall(self, 
+                     Path: str, 
+                     start: str="", 
+                     end: str="", 
+                     fmt: str=""):
         """
         Parameters
         ----------
-        Path : [String]
-            path to the Folder contains precipitation rasters.
+            Path : [String]
+                path to the Folder contains precipitation rasters.
+            start: [str]
+            
+            end: [str]
+            
+            fmt: [str]
+                
 
         Returns
         -------
@@ -426,7 +446,12 @@ class Catchment:
         self.FloodPlainRoughness = FloodPlainRoughness.ReadAsArray()
 
 
-    def ReadParameters(self, Path:str, Snow: int=0, Maxbas: bool=False):
+    def ReadParameters(
+            self,
+            Path:str,
+            Snow: int=0,
+            Maxbas: bool=False
+    ):
         """ReadParameters.
 
         ReadParameters method reads the parameters' raster
@@ -573,7 +598,11 @@ class Catchment:
         logger.debug("Lumped model is read successfully")
 
 
-    def ReadLumpedInputs(self, Path: str, ll_temp: Union[list, np.ndarray]=None):
+    def ReadLumpedInputs(
+            self,
+            Path: str,
+            ll_temp: Union[list, np.ndarray]=None
+    ):
         """ReadLumpedInputs.
 
         ReadLumpedInputs method read the meteorological data of lumped mode
@@ -610,8 +639,14 @@ class Catchment:
 
         logger.debug("Lumped Model inputs are read successfully")
 
-    def ReadGaugeTable(self, Path: str, FlowaccPath: str="", fmt: str="%Y-%m-%d"):
-        """
+    def ReadGaugeTable(
+            self,
+            Path: str,
+            FlowaccPath: str="",
+            fmt: str="%Y-%m-%d"
+    ):
+        """ReadGaugeTable.
+
         ReadGaugeTable reads the table where the data about the gauges are listed
         [x coordinate, y coordinate, 'area ratio', 'weight'], the coordinates are
         mandatory to enter , to locate the gauges and be able to extract the
@@ -657,6 +692,7 @@ class Catchment:
 
         logger.debug("Gauge Table is read successfully")
 
+
     def ReadDischargeGauges(
         self,
         Path: str,
@@ -668,7 +704,8 @@ class Catchment:
         Date2: str="",
         readfrom: str="",
     ):
-        """
+        """ReadDischargeGauges.
+
         ReadDischargeGauges method read the gauge discharge data, discharge of
         each gauge has to be stored separetly in a file, and the name of the file
         has to be stored in the Gauges table you entered ubing the method "ReadGaugeTable"
@@ -699,7 +736,6 @@ class Catchment:
             dataframe containing the discharge data
 
         """
-
         if self.TemporalResolution == "daily":
             ind = pd.date_range(self.startdate, self.enddate, freq="D")
         else:
@@ -751,8 +787,16 @@ class Catchment:
 
         logger.debug("Gauges data are read successfully")
 
-    def ReadParametersBounds(self, UB, LB, Snow=0, Maxbas=False):
-        """
+
+    def ReadParametersBounds(
+            self,
+            UB: list,
+            LB: list,
+            Snow: int=0,
+            Maxbas: bool=False
+    ):
+        """ReadParametersBounds.
+
         ReadParametersBounds method reads the lower and upper boundarys for each
         parameter
 
@@ -766,6 +810,8 @@ class Catchment:
             0 if you dont want to run the snow related processes and 1 if there is snow.
             in case of 1 (simulate snow processes) parameters related to snow simulation
             has to be provided. The default is 0.
+        Maxbas: [bool]
+            True if the parameters has maxbas.
 
         Returns
         -------
@@ -1176,10 +1222,9 @@ class Catchment:
         return anim
 
     def SaveAnimation(self, VideoFormat="gif", Path="", SaveFrames=20):
-        """
-        =====================================================================
-            SaveAnimation(VideoFormat="gif",Path='',SaveFrames=20)
-        =====================================================================
+        """SaveAnimation.
+
+            SaveAnimation
 
         Parameters
         ----------
@@ -1203,18 +1248,15 @@ class Catchment:
         self,
         FlowAccPath="",
         Result=1,
-        startdate="",
-        enddate="",
+        start="",
+        end="",
         Path="",
         Prefix="",
         fmt="%Y-%m-%d",
     ):
-        """
-        =========================================================================
-        SaveResults(FlowAccPath, Result=1, startdate='', enddate='',
-                    Path='', Prefix='', fmt="%Y-%m-%d")
-        =========================================================================
-        SaveResults save the results into rasters
+        """SaveResults.
+
+            SaveResults save the results into rasters
 
         Parameters
         ----------
@@ -1225,9 +1267,9 @@ class Catchment:
             the lower zone discharge, 4 for the snow pack, 5 for the soil
             moisture, 6 upper zone, 7 for the lower zone, 8 for the water content.
             The default is 1.
-        startdate : [str], optional
+        start : [str], optional
             start date. The default is ''.
-        enddate : [str], optional
+        end : [str], optional
             end date. The default is ''.
         Path : [str], optional
             PAth to the directory where you want to save the results. The default is ''.
@@ -1241,15 +1283,15 @@ class Catchment:
         None.
 
         """
-        if startdate == "":
+        if start == "":
             startdate = self.Index[0]
         else:
-            startdate = dt.datetime.strptime(startdate, fmt)
+            startdate = dt.datetime.strptime(start, fmt)
 
-        if enddate == "":
+        if end == "":
             enddate = self.Index[-1]
         else:
-            enddate = dt.datetime.strptime(enddate, fmt)
+            enddate = dt.datetime.strptime(end, fmt)
 
         starti = np.where(self.Index == startdate)[0][0]
         endi = np.where(self.Index == enddate)[0][0] + 1

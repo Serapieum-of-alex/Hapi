@@ -36,6 +36,7 @@ class Run(Catchment):
     """
 
     def __init__(self):
+        self.Qsim = None
         pass
 
     def RunHapi(self):
@@ -463,31 +464,35 @@ class Run(Catchment):
         Wrapper.FW1Withlake(self, Lake)
 
 
-    def RunLumped(self, Route=0, RoutingFn=[]):
+    def RunLumped(
+            self,
+            Route: int=0,
+            RoutingFn=None,
+    ):
         """RunLumped.
 
         this function runs lumped conceptual model
 
         Inputs:
         ----------
-            1-ConceptualModel:
-                [function] conceptual model and it should contain a function called simulate
-            2-data:
-                [numpy array] meteorological data as array with the first column as precipitation
+            1-ConceptualModel: [function]
+                conceptual model and it should contain a function called simulate
+            2-data: [numpy array]
+                meteorological data as array with the first column as precipitation
                 second as evapotranspiration, third as temperature and forth column as
                 long term average temperature
-            3- parameters:
-                [numpy array] conceptual model parameters as array
-            4-p2:
-                [List] list of unoptimized parameters
+            3- parameters: [numpy array]
+                conceptual model parameters as array
+            4-p2: [List]
+                list of unoptimized parameters
                 p2[0] = tfac, 1 for hourly, 0.25 for 15 min time step and 24 for daily time step
                 p2[1] = catchment area in km2
-            5-init_st:
-                [list] initial state variables values [sp, sm, uz, lz, wc].
-            6-Routing:
-                [0 or 1] to decide wether t route the generated discharge hydrograph or not
-            7-RoutingFn:
-                [function] function to route the dischrge hydrograph.
+            5-init_st: [list]
+                initial state variables values [sp, sm, uz, lz, wc].
+            6-Routing: [0 or 1]
+                to decide wether t route the generated discharge hydrograph or not
+            7-RoutingFn: [function]
+                function to route the dischrge hydrograph.
 
         Outputs:
         ----------
@@ -503,7 +508,9 @@ class Run(Catchment):
             init_st=[0,5,5,5,0]
             snow=0
         """
-        if self.TemporalResolution == "Daily":
+        if RoutingFn is None:
+            RoutingFn = []
+        if self.TemporalResolution == "daily":
             ind = pd.date_range(self.startdate, self.enddate, freq="D")
         else:
             ind = pd.date_range(self.startdate, self.enddate, freq="H")

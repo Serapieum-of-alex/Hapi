@@ -13,7 +13,7 @@ def gauge_date_format() -> str:
 
 @pytest.fixture(scope="module")
 def gauges_table_path() -> str:
-    return "Examples/Hydrodynamic models/test_case/inputs/gauges/gauges.csv"
+    return "Examples/Hydrodynamic models/test_case/inputs/gauges/gauges.geojson"
 
 
 @pytest.fixture(scope="module")

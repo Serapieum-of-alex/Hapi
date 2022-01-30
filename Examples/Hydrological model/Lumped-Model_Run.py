@@ -1,3 +1,4 @@
+import os
 import datetime as dt
 import matplotlib
 matplotlib.use('TkAgg')
@@ -7,14 +8,12 @@ from Hapi.catchment import Catchment
 from Hapi.rrm.routing import Routing
 import Hapi.sm.performancecriteria as PC
 #%%
-import os
 Comp = "F:/01Algorithms/Hydrology/HAPI/Examples"
 os.chdir(Comp)
-
 Parameterpath = Comp + "/Hydrological model/data/lumped_model/Coello_Lumped2021-03-08_muskingum.txt"
 MeteoDataPath = Comp + "/Hydrological model/data/lumped_model/meteo_data-MSWEP.csv"
 Path = Comp + "/data/lumped/"
-#%%
+SaveTo = Comp + "/Hydrological model/data/lumped_model/"
 ### Meteorological data
 start = "2009-01-01"
 end = "2011-12-31"
@@ -33,7 +32,6 @@ Coello.ReadLumpedModel(HBVLumped, AreaCoeff, InitialCond)
 
 Snow = 0 # no snow subroutine
 Coello.ReadParameters(Parameterpath, Snow)
-
 # Coello.Parameters
 #%% ### Observed flow
 Coello.ReadDischargeGauges(Path + "Qout_c.csv", fmt="%Y-%m-%d")
@@ -44,7 +42,6 @@ RoutingFn = Routing.Muskingum_V
 Route = 1
 #%% ### Run The Model
 Run.RunLumped(Coello, Route, RoutingFn)
-
 #%% ### Calculate performance criteria
 Metrics = dict()
 
@@ -62,7 +59,6 @@ print("NSE= " + str(round(Metrics['NSE'],2)))
 print("NSEhf= " + str(round(Metrics['NSEhf'],2)))
 print("KGE= " + str(round(Metrics['KGE'],2)))
 print("WB= " + str(round(Metrics['WB'],2)))
-
 #%% ### Plot Hydrograph
 gaugei = 0
 plotstart = "2009-01-01"
@@ -73,5 +69,5 @@ Coello.PlotHydrograph(plotstart, plotend, gaugei, Title= "Lumped Model")
 StartDate = "2009-01-01"
 EndDate = "2010-04-20"
 
-Path = SaveTo + "Results-Lumped-Model" + str(dt.datetime.now())[0:10] + ".txt"
-Coello.SaveResults(Result=5, StartDate=StartDate, EndDate=EndDate, Path=Path)
+Path = SaveTo + "Results-Lumped-Model_" + str(dt.datetime.now())[0:10] + ".txt"
+Coello.SaveResults(Result=5, start=StartDate, end=EndDate, Path=Path)
