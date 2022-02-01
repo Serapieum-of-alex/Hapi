@@ -925,20 +925,21 @@ class Catchment:
 
     def PlotHydrograph(
         self,
-        plotstart,
-        plotend,
-        gaugei,
-        Hapicolor="#004c99",
-        gaugecolor="#DC143C",
-        linewidth=3,
-        Hapiorder=1,
-        Gaugeorder=0,
-        labelfontsize=10,
-        XMajorfmt="%Y-%m-%d",
-        Noxticks=5,
-        Title="",
-        Xaxis_fmt="%d\n%m",
-        label="",
+        plotstart: str,
+        plotend: str,
+        gaugei: int,
+        Hapicolor: Union[tuple, str]="#004c99",
+        gaugecolor: Union[tuple, str]="#DC143C",
+        linewidth: int=3,
+        Hapiorder: int=1,
+        Gaugeorder: int=0,
+        labelfontsize: int=10,
+        XMajorfmt: str="%Y-%m-%d",
+        Noxticks: int=5,
+        Title: str="",
+        Xaxis_fmt: str="%d\n%m",
+        label: str="",
+        fmt:str="%Y-%m-%d",
     ):
         """
         PlotHydrograph plot the simulated and gauge hydrograph
@@ -969,6 +970,14 @@ class Catchment:
             format of the x-axis labels. The default is '%Y-%m-%d'.
         Noxticks : [integer], optional
             number of x-axis ticks. The default is 5.
+        Title: [str]
+            Default is "".
+        Xaxis_fmt: [str]
+            Default is "%d\n%m".
+        label: [str]
+            Default is "".
+        fmt:[str]
+            Default is "%Y-%m-%d".
 
         Returns
         -------
@@ -978,9 +987,8 @@ class Catchment:
             you can control the figure from the axes.
 
         """
-
-        plotstart = dt.datetime.strptime(plotstart, "%Y-%m-%d")
-        plotend = dt.datetime.strptime(plotend, "%Y-%m-%d")
+        plotstart = dt.datetime.strptime(plotstart, fmt)
+        plotend = dt.datetime.strptime(plotend, fmt)
 
         fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(6, 5))
 
@@ -1045,7 +1053,6 @@ class Catchment:
         plt.tight_layout()
 
         if hasattr(self, "Metrics"):
-            # logger.debug the metrics
             logger.debug("----------------------------------")
             logger.debug("Gauge - " + str(gaugeid))
             logger.debug("RMSE= " + str(round(self.Metrics.loc["RMSE", gaugeid], 2)))

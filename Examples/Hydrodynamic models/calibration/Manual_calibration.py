@@ -6,11 +6,10 @@ import datetime as dt
 import os
 
 import matplotlib
+matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-
-matplotlib.use('TkAgg')
 
 import Hapi.hm.calibration as RC
 import Hapi.hm.river as R
@@ -46,6 +45,7 @@ start = "1955-1-1"
 rrmstart = "1955-1-1"
 
 River = R.River('HM', version=3, start=start, rrmstart=rrmstart)
+#%%
 River.onedresultpath = rpath + "/results/1d/"
 River.usbcpath = rpath + "/results/USbnd/"
 River.oneminresultpath = rpath + "/results/"

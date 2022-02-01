@@ -80,3 +80,26 @@ def test_RunLumped(
     Run.RunLumped(Coello, Route, RoutingFn)
 
     assert len(Coello.Qsim) == 1095 and Coello.Qsim.columns.to_list() == ['q']
+
+
+def test_PlotHydrograph(
+        coello_rrm_date: list,
+        lumped_meteo_data_path: str,
+        coello_AreaCoeff: float,
+        coello_InitialCond: list,
+        lumped_parameters_path: str,
+        coello_Snow: int,
+        lumped_gauges_path: str,
+        coello_gauges_date_fmt: str,
+):
+    Coello = Catchment('rrm', coello_rrm_date[0], coello_rrm_date[1])
+    Coello.ReadLumpedInputs(lumped_meteo_data_path)
+    Coello.ReadLumpedModel(HBVLumped, coello_AreaCoeff, coello_InitialCond)
+    Coello.ReadParameters(lumped_parameters_path, coello_Snow)
+    # discharge gauges
+    Coello.ReadDischargeGauges(lumped_gauges_path, fmt=coello_gauges_date_fmt)
+    RoutingFn = Routing.Muskingum_V
+    Route = 1
+    Run.RunLumped(Coello, Route, RoutingFn)
+
+    assert len(Coello.Qsim) == 1095 and Coello.Qsim.columns.to_list() == ['q']
