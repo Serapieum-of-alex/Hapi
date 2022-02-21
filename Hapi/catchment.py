@@ -6,18 +6,18 @@ Created on Wed Mar 31 02:10:49 2021
 
 __name__ = "catchment"
 
-from typing import Union
 import datetime as dt
 import math
 import os
 from types import ModuleType
-from loguru import logger
+from typing import Union
 
 import geopandas as gpd
 import matplotlib.dates as dates
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from loguru import logger
 from osgeo import gdal
 
 import Hapi.sm.performancecriteria as PC
@@ -132,10 +132,10 @@ class Catchment:
         self.RouteRiver = RouteRiver
         pass
 
-    def ReadRainfall(self, 
-                     Path: str, 
-                     start: str="", 
-                     end: str="", 
+    def ReadRainfall(self,
+                     Path: str,
+                     start: str="",
+                     end: str="",
                      fmt: str=""):
         """
         Parameters
@@ -143,11 +143,11 @@ class Catchment:
             Path : [String]
                 path to the Folder contains precipitation rasters.
             start: [str]
-            
+
             end: [str]
-            
+
             fmt: [str]
-                
+
 
         Returns
         -------
