@@ -38,9 +38,23 @@ repos:
     -   id: requirements-txt-fixer
         name: "[reqs - format] fix requirements.txt"
 
+#    - repo: https://github.com/PyCQA/docformatter
+#      rev: v1.4
+#      hooks:
+#        - id: docformatter
+#          name: "[py   - format] docformatter"
+#          args: [ -i, --wrap-summaries, "0" ]
+
+#    - repo: https://github.com/PyCQA/pydocstyle
+#      rev: 6.1.1
+#      hooks:
+#        - id: pydocstyle
+#          name: "[py   - check] pydocstyle"
+#          files: ^Hapi/
 
 
-# TODO : uncheck later and fix all the problems of line too long
+
+    # TODO : uncheck later and fix all the problems of line too long
 #-   repo: https://gitlab.com/pycqa/flake8
 #    rev: 3.8.4
 #    hooks:

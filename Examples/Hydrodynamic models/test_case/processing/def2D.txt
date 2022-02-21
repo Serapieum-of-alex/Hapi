@@ -16,7 +16,7 @@ coupling1d_2d_rhine.txt
 uniform
 0
 # Model time step in seconds
-20         
+20
 # Hardware
 # Choose CPU (1) or GPU (2) processing
 2

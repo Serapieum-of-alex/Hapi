@@ -1,12 +1,15 @@
-import os
 import datetime as dt
+import os
+
 import matplotlib
+
 matplotlib.use('TkAgg')
 import Hapi.rrm.hbv_bergestrom92 as HBVLumped
-from Hapi.run import Run
+import Hapi.sm.performancecriteria as PC
 from Hapi.catchment import Catchment
 from Hapi.rrm.routing import Routing
-import Hapi.sm.performancecriteria as PC
+from Hapi.run import Run
+
 #%%
 Comp = "F:/01Algorithms/Hydrology/HAPI/Examples"
 os.chdir(Comp)

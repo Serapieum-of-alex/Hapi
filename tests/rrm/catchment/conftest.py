@@ -1,6 +1,7 @@
+import pytest
+
 from Hapi.rrm.routing import Routing
 
-import pytest
 coello_dates = ["2009-01-01", "2011-12-31"]
 area = 1530.0
 IC = [0,10,10,10,0]

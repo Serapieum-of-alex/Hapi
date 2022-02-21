@@ -1,9 +1,9 @@
 import datetime as dt
 from typing import Union  # List, Optional,
 
+import geopandas as gpd
 import numpy as np
 import pandas as pd
-import geopandas as gpd
 from loguru import logger
 
 from Hapi.hm.river import River

@@ -2,8 +2,9 @@ from typing import List
 
 import numpy as np
 from matplotlib.figure import Figure
-from Hapi.sm.distributions import GEV, Gumbel
-from Hapi.sm.distributions import PlottingPosition, ConfidenceInterval
+
+from Hapi.sm.distributions import GEV, ConfidenceInterval, Gumbel, PlottingPosition
+
 
 def test_plotting_position_weibul(
         time_series1: list,
@@ -252,4 +253,3 @@ def test_confidence_interval_directly(
 
     assert isinstance(LB, np.ndarray)
     assert isinstance(UB, np.ndarray)
-

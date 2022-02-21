@@ -1,12 +1,14 @@
-from pandas.core.indexes.datetimes import DatetimeIndex
-import numpy as np
-from pandas.core.frame import DataFrame
 from types import ModuleType
 
-from Hapi.catchment import Catchment
+import numpy as np
+from pandas.core.frame import DataFrame
+from pandas.core.indexes.datetimes import DatetimeIndex
+
 import Hapi.rrm.hbv_bergestrom92 as HBVLumped
+from Hapi.catchment import Catchment
 from Hapi.rrm.routing import Routing
 from Hapi.run import Run
+
 
 def test_create_catchment_instance(
         coello_rrm_date: list

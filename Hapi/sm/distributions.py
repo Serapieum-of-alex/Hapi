@@ -1,6 +1,5 @@
 from collections import OrderedDict
-from typing import Union, Any, Tuple, List #Dict,
-# import types
+from typing import Any, List, Tuple, Union  # Dict,
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -16,6 +15,11 @@ from scipy.stats import chisquare, genextreme, gumbel_r, ks_2samp, norm
 
 from Hapi.sm.parameterestimation import Lmoments
 from Hapi.sm.statisticaltools import StatisticalTools as st
+
+# import types
+
+
+
 
 ninf = 1e-5
 

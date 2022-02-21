@@ -5,9 +5,11 @@ Created on Sun Jun 21 01:55:25 2020
 """
 # import os
 Path = "F:/01Algorithms/Hydrology/HAPI/Examples"
+import matplotlib
+
 # os.chdir(Path)
 import pandas as pd
-import matplotlib
+
 matplotlib.use('TkAgg')
 
 # functions

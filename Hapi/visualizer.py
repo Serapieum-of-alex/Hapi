@@ -854,7 +854,7 @@ class Visualize:
 
             # if toxs > Sub.xsname[-1]:
                 # toxs = Sub.xsname[-1]
-        
+
         if toxs == "":
             toxs = Sub.xsname[-1]
         else:

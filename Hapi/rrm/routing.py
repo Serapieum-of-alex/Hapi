@@ -9,6 +9,7 @@ Created on Sun Apr 29 17:42:04 2018
 """
 
 from typing import Union
+
 import numpy as np
 
 

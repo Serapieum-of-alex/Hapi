@@ -1739,7 +1739,7 @@ class River:
     def GetCapacity(
             self,
             ColumnName: str,
-            Option: int=1, 
+            Option: int=1,
             distribution: str="GEV"
     ):
         """GetCapacity.
@@ -1834,8 +1834,8 @@ class River:
 
 
     def CalibrateDike(
-            self, 
-            ObjectiveRP:Union[str, int], 
+            self,
+            ObjectiveRP:Union[str, int],
             CurrentRP:Union[str, int]
     ):
         """CalibrateDike.

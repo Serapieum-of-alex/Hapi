@@ -5,9 +5,9 @@ Created on Wed Mar  3 12:40:23 2021
 """
 import datetime as dt
 from typing import Union
-from loguru import logger
 
 import pandas as pd
+from loguru import logger
 from pandas import DataFrame
 
 from Hapi.hm.river import River

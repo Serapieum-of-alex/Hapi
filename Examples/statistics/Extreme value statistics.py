@@ -6,7 +6,10 @@ Created on Wed Sep  9 23:31:11 2020
 # from IPython import get_ipython
 # get_ipython().magic("reset -f")
 import os
+
 os.chdir(r"F:\01Algorithms\Hydrology\HAPI")
+import matplotlib
+
 # import scipy.optimize as so
 # import matplotlib.pyplot as plt
 # import numpy as np
@@ -14,9 +17,10 @@ os.chdir(r"F:\01Algorithms\Hydrology\HAPI")
 # from scipy import stats as stats
 # from scipy.stats import genextreme, gumbel_r, norm
 import pandas as pd
-import matplotlib
+
 matplotlib.use('TkAgg')
 from Hapi.sm.distributions import GEV, ConfidenceInterval, Gumbel, PlottingPosition
+
 # from Hapi.statistics.statisticaltools import StatisticalTools as st
 
 time_series1 = pd.read_csv("examples/statistics/data/time_series1.txt", header=None)[0].tolist()
