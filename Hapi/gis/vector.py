@@ -5,7 +5,7 @@ Created on Sun Jul 01 17:07:40 2018
 """
 
 import json
-import warnings0
+import warnings
 
 import geopandas as gpd
 import numpy as np

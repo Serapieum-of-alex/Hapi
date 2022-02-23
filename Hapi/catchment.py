@@ -1,5 +1,4 @@
-"""
-Created on Wed Mar 31 02:10:49 2021
+"""Created on Wed Mar 31 02:10:49 2021.
 
 @author: mofarrag
 """
@@ -27,12 +26,11 @@ from Hapi.visualizer import Visualize as Vis
 
 
 class Catchment:
-    """
-    Catchment class include methods to read the meteorological and Spatial inputs
-    of the distributed hydrological model. Catchment class also reads the data
-    of the gauges, it is a super class that has the run subclass, so you
-    need to build the catchment object and hand it as an inpit to the Run class
-    to run the model
+    """Catchment class include methods to read the meteorological and Spatial
+    inputs of the distributed hydrological model. Catchment class also reads
+    the data of the gauges, it is a super class that has the run subclass, so
+    you need to build the catchment object and hand it as an inpit to the Run
+    class to run the model.
 
     methods:
         1-ReadRainfall
@@ -326,8 +324,7 @@ class Catchment:
         logger.debug("Flow Accmulation input is read successfully")
 
     def ReadFlowDir(self, Path):
-        """
-        ReadFlowDir method reads the flow direction raster
+        """ReadFlowDir method reads the flow direction raster.
 
         Parameters
         ----------
@@ -380,8 +377,7 @@ class Catchment:
         logger.debug("Flow Direction input is read successfully")
 
     def ReadFlowPathLength(self, Path):
-        """
-        ReadFlowPathLength method reads the flow path length
+        """ReadFlowPathLength method reads the flow path length.
 
         Parameters
         ----------
@@ -572,7 +568,6 @@ class Catchment:
             initial discharge.
         InitialCond : [list]
             initial conditions.
-
         """
 
         assert isinstance(
@@ -665,7 +660,6 @@ class Catchment:
         -------
         GaugesTable : [dataframe]
             the table of the gauges.
-
         """
         # read the gauge table
         if Path.endswith(".geojson"):
@@ -734,7 +728,6 @@ class Catchment:
         -------
         QGauges : [dataframe].
             dataframe containing the discharge data
-
         """
         if self.TemporalResolution == "daily":
             ind = pd.date_range(self.startdate, self.enddate, freq="D")
@@ -837,9 +830,8 @@ class Catchment:
     def ExtractDischarge(
         self, CalculateMetrics=True, FW1=False, Factor=None, OnlyOutlet=False
     ):
-        """
-        ExtractDischarge method extracts and sums the discharge from the
-        Quz_routed and Qlz_translated arrays at the location of the gauges
+        """ExtractDischarge method extracts and sums the discharge from the
+        Quz_routed and Qlz_translated arrays at the location of the gauges.
 
         Parameters
         ----------
@@ -941,8 +933,7 @@ class Catchment:
         label: str="",
         fmt:str="%Y-%m-%d",
     ):
-        """
-        PlotHydrograph plot the simulated and gauge hydrograph
+        """PlotHydrograph plot the simulated and gauge hydrograph.
 
         Parameters
         ----------
@@ -985,7 +976,6 @@ class Catchment:
             DESCRIPTION.
         ax : [matplotlib axes]
             you can control the figure from the axes.
-
         """
         plotstart = dt.datetime.strptime(plotstart, fmt)
         plotend = dt.datetime.strptime(plotend, fmt)
@@ -1245,7 +1235,6 @@ class Catchment:
         Returns
         -------
         None.
-
         """
         Vis.SaveAnimation(
             self.anim, VideoFormat=VideoFormat, Path=Path, SaveFrames=SaveFrames
@@ -1253,13 +1242,13 @@ class Catchment:
 
     def SaveResults(
         self,
-        FlowAccPath="",
-        Result=1,
-        start="",
-        end="",
-        Path="",
-        Prefix="",
-        fmt="%Y-%m-%d",
+        FlowAccPath: str="",
+        Result: int=1,
+        start: str="",
+        end: str="",
+        Path: str="",
+        Prefix: str="",
+        fmt: str="%Y-%m-%d",
     ):
         """SaveResults.
 
@@ -1288,7 +1277,6 @@ class Catchment:
         Returns
         -------
         None.
-
         """
         if start == "":
             startdate = self.Index[0]
@@ -1378,9 +1366,7 @@ class Catchment:
         logger.debug("Data is saved successfully")
 
     def ListAttributes(self):
-        """
-        Print Attributes List
-        """
+        """Print Attributes List."""
 
         logger.debug("\n")
         logger.debug(
