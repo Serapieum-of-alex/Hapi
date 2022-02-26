@@ -36,20 +36,17 @@ class Calibration(Catchment):
     """
 
     def __init__(
-        self,
-        name,
-        StartDate,
-        EndDate,
-        fmt="%Y-%m-%d",
-        SpatialResolution="Lumped",
-        TemporalResolution="Daily",
-        RouteRiver="Muskingum",
+            self,
+            name,
+            startdate,
+            enddate,
+            fmt="%Y-%m-%d",
+            SpatialResolution="Lumped",
+            TemporalResolution="Daily",
+            RouteRiver="Muskingum",
     ):
-        """
-        =============================================================================
-         Calibration(name, StartDate, EndDate, fmt="%Y-%m-%d", SpatialResolution = 'Lumped',
-                          TemporalResolution = "Daily")
-        =============================================================================
+        """Calibration.
+
         to instantiate the Calibration object you need to provide the following
         arguments
 
@@ -59,7 +56,7 @@ class Calibration(Catchment):
             Name of the Catchment.
         StartDate : [str]
             starting date.
-        EndDate : [str]
+        enddate : [str]
             end date.
         fmt : [str], optional
             format of the given date. The default is "%Y-%m-%d".
@@ -74,8 +71,8 @@ class Calibration(Catchment):
 
         """
         self.name = name
-        self.StartDate = dt.datetime.strptime(StartDate, fmt)
-        self.EndDate = dt.datetime.strptime(EndDate, fmt)
+        self.startdate = dt.datetime.strptime(startdate, fmt)
+        self.enddate = dt.datetime.strptime(enddate, fmt)
         self.SpatialResolution = SpatialResolution
         self.TemporalResolution = TemporalResolution
 
@@ -84,11 +81,11 @@ class Calibration(Catchment):
         if TemporalResolution == "Daily":
             self.dt = 1  # 24
             self.conversionfactor = conversionfactor * 1
-            self.Index = pd.date_range(self.StartDate, self.EndDate, freq="D")
+            self.Index = pd.date_range(self.startdate, self.enddate, freq="D")
         elif TemporalResolution == "Hourly":
             self.dt = 1  # 24
             self.conversionfactor = conversionfactor * 1 / 24
-            self.Index = pd.date_range(self.StartDate, self.EndDate, freq="H")
+            self.Index = pd.date_range(self.startdate, self.enddate, freq="H")
         else:
             # TODO calculate the teporal resolution factor
             # q mm , area sq km  (1000**2)/1000/f/60/60 = 1/(3.6*f)
@@ -243,22 +240,22 @@ class Calibration(Catchment):
         # [rows,cols] = self.FlowAcc.ReadAsArray().shape
         [fd_rows, fd_cols] = self.FlowDirArr.shape
         assert (
-            fd_rows == self.rows and fd_cols == self.cols
+                fd_rows == self.rows and fd_cols == self.cols
         ), "all input data should have the same number of rows"
 
         # input dimensions
         assert (
-            np.shape(self.Prec)[0] == self.rows
-            and np.shape(self.ET)[0] == self.rows
-            and np.shape(self.Temp)[0] == self.rows
+                np.shape(self.Prec)[0] == self.rows
+                and np.shape(self.ET)[0] == self.rows
+                and np.shape(self.Temp)[0] == self.rows
         ), "all input data should have the same number of rows"
         assert (
-            np.shape(self.Prec)[1] == self.cols
-            and np.shape(self.ET)[1] == self.cols
-            and np.shape(self.Temp)[1] == self.cols
+                np.shape(self.Prec)[1] == self.cols
+                and np.shape(self.ET)[1] == self.cols
+                and np.shape(self.Temp)[1] == self.cols
         ), "all input data should have the same number of columns"
         assert (
-            np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2]
+                np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2]
         ), "all meteorological input data should have the same length"
 
         # basic inputs
@@ -276,6 +273,7 @@ class Calibration(Catchment):
         assert type(ApiSolveArgs) == dict, "history_fname should be of type string "
 
         print("Calibration starts")
+
         ### calculate the objective function
         def opt_fun(par):
             try:
@@ -423,17 +421,17 @@ class Calibration(Catchment):
 
         # input dimensions
         assert (
-            np.shape(self.Prec)[0] == self.rows
-            and np.shape(self.ET)[0] == self.rows
-            and np.shape(self.Temp)[0] == self.rows
+                np.shape(self.Prec)[0] == self.rows
+                and np.shape(self.ET)[0] == self.rows
+                and np.shape(self.Temp)[0] == self.rows
         ), "all input data should have the same number of rows"
         assert (
-            np.shape(self.Prec)[1] == self.cols
-            and np.shape(self.ET)[1] == self.cols
-            and np.shape(self.Temp)[1] == self.cols
+                np.shape(self.Prec)[1] == self.cols
+                and np.shape(self.ET)[1] == self.cols
+                and np.shape(self.Temp)[1] == self.cols
         ), "all input data should have the same number of columns"
         assert (
-            np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2]
+                np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2]
         ), "all meteorological input data should have the same length"
 
         # basic inputs
@@ -451,6 +449,7 @@ class Calibration(Catchment):
         assert type(ApiSolveArgs) == dict, "history_fname should be of type string "
 
         print("Calibration starts")
+
         ### calculate the objective function
         def opt_fun(par):
             try:
@@ -595,12 +594,13 @@ class Calibration(Catchment):
         pll_type = OptimizationArgs[1]
         ApiSolveArgs = OptimizationArgs[2]
         # check optimization arguement
-        assert type(ApiObjArgs) == dict, "store_history should be 0 or 1"
-        assert type(ApiSolveArgs) == dict, "history_fname should be of type string "
+        assert isinstance(ApiObjArgs, dict), "store_history should be 0 or 1"
+        assert isinstance(ApiSolveArgs, dict), "history_fname should be of type string "
 
         # assert history_fname[-4:] == ".txt", "history_fname should be txt file please change extension or add .txt ad the end of the history_fname"
 
         print("Calibration starts")
+
         ### calculate the objective function
         def opt_fun(par):
             try:
