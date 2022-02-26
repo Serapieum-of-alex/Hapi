@@ -22,7 +22,7 @@ from Hapi.gis.raster import Raster as raster
 from Hapi.hm.saintvenant import SaintVenant
 from Hapi.sm import performancecriteria as Pf
 from Hapi.sm.distributions import GEV, Gumbel  # , PlottingPosition
-from Hapi.visualizer import Visualize as V
+from Hapi.plot.visualizer import Visualize as V
 
 hours = list(range(1, 25))
 
@@ -1541,7 +1541,7 @@ class River:
         period discharge for each sub-basin to create the parameters file use
         the code StatisticalProperties in the 07ReturnPeriod folder
 
-        Parameters
+        Parameters:
         ----------
             1-path : [String]
                 path to the "Statistical Properties.txt" file including the
@@ -1549,7 +1549,7 @@ class River:
             2-Filter:[Boolen]
                 true to filter the nodes to the nodes used in RIM (upstream nodes only)
 
-        Returns
+        Returns:
         -------
             1-SP: [data frame attribute]
                 containing the river computational nodes US of the sub basins
