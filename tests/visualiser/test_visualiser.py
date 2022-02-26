@@ -1,12 +1,11 @@
 from collections import OrderedDict
 
 import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
 from matplotlib.figure import Figure
 
 import Hapi.hm.river as R
 from Hapi.hm.interface import Interface
-from Hapi.visualizer import Visualize as V
+from Hapi.plot.visualizer import Visualize as V
 
 
 def test_create_visualize_instance(

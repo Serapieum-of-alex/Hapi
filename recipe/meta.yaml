@@ -51,6 +51,8 @@ requirements:
     - pytest >=6.2.5
     - pytest-cov >=2.12.1
     - loguru >=0.6.0
+    - geoplot >=0.4.4
+    
 test:
   imports:
     - Hapi
