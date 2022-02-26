@@ -26,6 +26,7 @@ dependencies:
   - ecmwf-api-client >=1.6.1
   - joblib >=1.1.0
   - geopy >=2.2.0
+  - geoplot >=0.4.4
   - pip:
     #- numpy
     #- pyproj

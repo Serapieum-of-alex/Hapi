@@ -1,15 +1,25 @@
 import datetime as dt
-from typing import Union  # List, Optional,
+from typing import Union, Any  # , Optional,
 
 import geopandas as gpd
 import numpy as np
 import pandas as pd
+
+from geopandas import GeoDataFrame
+from pandas.core.frame import DataFrame
+from pandas._libs.tslibs.timestamps import Timestamp
+import fiona
+
 from loguru import logger
+import matplotlib.pyplot as plt
 
 from Hapi.hm.river import River
-
+import Hapi.sm.performancecriteria as pf
+from Hapi.hapi_warnings import SilenceNumpyWarning, SilenceShapelyWarning
 datafn = lambda x: dt.datetime.strptime(x, "%Y-%m-%d")
 
+SilenceNumpyWarning()
+SilenceShapelyWarning()
 
 class Calibration(River):
     """Hydraulic model Calibration.
@@ -19,7 +29,8 @@ class Calibration(River):
     """
 
     def __init__(self, name: str, version: int=3, start: Union[str, dt.datetime]="1950-1-1",
-                 days=36890, fmt="%Y-%m-%d", rrmstart: str="", rrmdays: int=36890,):
+                 days: int=36890, fmt: str="%Y-%m-%d", rrmstart: str="", rrmdays: int=36890,
+                 novalue: int= -9, gauge_id_col: Any='oid'):
         """HMCalibration.
 
         To instantiate the HMCalibration object you have to provide the
@@ -44,6 +55,9 @@ class Calibration(River):
         rrmdays : [integer], optional
             the length of the data of the rainfall-runoff data in days.
             The default is 36890.
+        gauge_id_col: [Any]
+            the name of the column where the used id of the gauges is stored. Default is 'oid'
+
         Returns
         -------
         None.
@@ -55,6 +69,8 @@ class Calibration(River):
             self.start = dt.datetime.strptime(start, fmt)
         self.end = self.start + dt.timedelta(days=days)
         self.days = days
+        self.novalue = novalue
+        self.gauge_id_col = gauge_id_col
 
         Ref_ind = pd.date_range(self.start, self.end, freq="D")
         self.ReferenceIndex = pd.DataFrame(index=list(range(1, days + 1)))
@@ -82,7 +98,7 @@ class Calibration(River):
         self.WLHM = None #ReadHMWL
         self.QRRM = None # ReadRRM
         self.QRRM2 = None # ReadRRM
-        self.RRM_Gauges = [] # ReadRRM
+        self.RRM_Gauges = None # ReadRRM
 
         self.GaugesTable = None
         self.QGauges = None
@@ -95,6 +111,12 @@ class Calibration(River):
         self.AnnualMaxRRM = None
         self.AnnualMaxRIMQ = None
         self.AnnualMaxRIMWL = None
+        self.MetricsHM_RRM = None
+        self.MetricsRRM_Obs = None
+        self.MetricsHM_WL_Obs = None
+        self.MetricsHM_Q_Obs = None
+        self.WLgaugesList = None
+        self.QgaugesList = None
 
 
     def ReadGaugesTable(self, path: str):
@@ -114,14 +136,54 @@ class Calibration(River):
 
         """
         # self.GaugesTable = pd.read_csv(path)
-        self.GaugesTable = gpd.read_file(path, driver="GeoJSON")
+        try:
+            self.GaugesTable = gpd.read_file(path, driver="GeoJSON")
+        except fiona.errors.DriverError:
+            self.GaugesTable = pd.read_csv(path)
         # sort the gauges table based on the segment
         self.GaugesTable.sort_values(by="id", inplace=True, ignore_index=True)
 
 
+    def GetGauges(self, subid: int, gaugei: int=0) -> DataFrame:
+        """Get_Gauge_ID.
+            Get_Gauge_ID get the id of the station for a given river segment
+
+        parameters:
+        ----------
+        subid: [int]
+            the river segment id
+
+        return:
+        -------
+        id: [list/int]
+            if the river segment contains more than one gauges the function
+            returns a list of ids, otherwise it returns the id.
+        gauge name: [str]
+            name of the gauge
+        gauge xs: [int]
+            the nearest cross section to the gauge
+        """
+        gauges = self.GaugesTable.loc[self.GaugesTable['id'] == subid, :].reset_index()
+        if len(gauges) == 0:
+            raise KeyError("The given river segment does not have gauges in the gauge table")
+        elif len(gauges) > 1:
+            f = gauges.loc[gaugei, :].to_frame()
+            gauge = pd.DataFrame(index=[0], columns=f.index.to_list())
+            gauge.loc[0, :] = f.loc[f.index.to_list(), gaugei].values.tolist()
+            return gauge
+        else:
+            return gauges
+        # stationname = gauges.loc[:, column].values.tolist()
+        # gaugename = str(gauges.loc[gaugei, 'name'])
+        # gaugexs = gauges.loc[gaugei, 'xsid']
+        # segment_xs = str(subid) + "_" + str(gaugexs)
+
+         #stationname, gaugename, gaugexs
+
+
     def ReadObservedWL(self, path: str, start: Union[str, dt.datetime],
                        end: Union[str, dt.datetime], novalue: Union[int, float],
-                       column="oid", fmt="%Y-%m-%d", file_extension: str=".txt",
+                       fmt="%Y-%m-%d", file_extension: str=".txt",
                        gauge_date_format="%Y-%m-%d"):
         """ReadObservedWL.
 
@@ -160,7 +222,7 @@ class Calibration(River):
         if isinstance(end, str):
             end = dt.datetime.strptime(end, fmt)
 
-        columns = self.GaugesTable[column].tolist()
+        columns = self.GaugesTable[self.gauge_id_col].tolist()
 
         ind = pd.date_range(start, end)
         Gauges = pd.DataFrame(index=ind)
@@ -168,7 +230,7 @@ class Calibration(River):
         logger.debug("Reading water level gauges data")
         for i in range(len(columns)):
             if self.GaugesTable.loc[i, "waterlevel"] == 1:
-                name = self.GaugesTable.loc[i, column]
+                name = self.GaugesTable.loc[i, self.gauge_id_col]
                 try:
                     f = pd.read_csv(
                         path + str(int(name)) + file_extension, delimiter=",", header=0
@@ -249,37 +311,37 @@ class Calibration(River):
 
     def ReadObservedQ(self, path: str, start: Union[str, dt.datetime],
                       end: Union[str, dt.datetime], novalue: Union[int, float],
-                      column: str="oid", fmt: str="%Y-%m-%d", file_extension: str=".txt",
+                      fmt: str="%Y-%m-%d", file_extension: str=".txt",
                       gauge_date_format="%Y-%m-%d"):
         """ReadObservedQ.
 
-        ReadObservedQ method reads discharge data and store it in a dataframe
-        attribute "QGauges"
+            ReadObservedQ method reads discharge data and store it in a dataframe
+            attribute "QGauges"
 
         Parameters
         ----------
-        1-path : [String]
-            path to the folder where files for the gauges exist.
-        2-start : [datetime object]
-            starting date of the time series.
-        3-end : [datetime object]
-            ending date of the time series.
-        4-novalue : [numeric]
-            value stored in gaps.
-        5-column : [string/numeric]
-            name of the column that contains the gauges file name
-        7-fmt : [str]
-            format of the given dates. The default is "%Y-%m-%d"
+            1-path : [String]
+                path to the folder where files for the gauges exist.
+            2-start : [datetime object]
+                starting date of the time series.
+            3-end : [datetime object]
+                ending date of the time series.
+            4-novalue : [numeric]
+                value stored in gaps.
+            5-column : [string/numeric]
+                name of the column that contains the gauges file name
+            7-fmt : [str]
+                format of the given dates. The default is "%Y-%m-%d"
 
         Returns
         -------
-        QGauges:[dataframe attribute]
-            dataframe containing the hydrograph of each gauge under a column
-             by the name of  gauge.
-        GaugesTable:[dataframe attribute]
-            in the GaugesTable dataframe two new columns are inserted
-            ["Qstart", "Qend"] containing the start and end date of the
-            discharge time series.
+            QGauges:[dataframe attribute]
+                dataframe containing the hydrograph of each gauge under a column
+                 by the name of  gauge.
+            GaugesTable:[dataframe attribute]
+                in the GaugesTable dataframe two new columns are inserted
+                ["Qstart", "Qend"] containing the start and end date of the
+                discharge time series.
         """
         if isinstance(start, str):
             start = dt.datetime.strptime(start, fmt)
@@ -292,7 +354,7 @@ class Calibration(River):
         logger.debug("Reading discharge gauges data")
         for i in range(len(self.GaugesTable)):
             if self.GaugesTable.loc[i, "discharge"] == 1:
-                name = self.GaugesTable.loc[i, column]
+                name = self.GaugesTable.loc[i, self.gauge_id_col]
                 try:
                     f = pd.read_csv(
                         path + str(int(name)) + file_extension, delimiter=",", header=0
@@ -336,7 +398,7 @@ class Calibration(River):
 
         for i in range(len(self.GaugesTable)):
             if self.GaugesTable.loc[i, "discharge"] == 1:
-                ii = self.GaugesTable.loc[i, column]
+                ii = self.GaugesTable.loc[i, self.gauge_id_col]
                 st1 = self.QGauges[ii][self.QGauges[ii] != novalue].index[0]
                 end1 = self.QGauges[ii][self.QGauges[ii] != novalue].index[-1]
                 self.GaugesTable.loc[i, "Qstart"] = st1
@@ -344,11 +406,11 @@ class Calibration(River):
 
 
     def ReadRRM(self, path: str, fromday: Union[str, int]="", today: Union[str, int]="",
-                column="oid", fmt="%Y-%m-%d", location=1, path2=""):
+                fmt="%Y-%m-%d", location=1, path2=""):
         """ReadRRM.
 
-        ReadRRM method reads the discharge results of the rainfall runoff
-        model and store it in a dataframe attribute "QRRM"
+            ReadRRM method reads the discharge results of the rainfall runoff
+            model and store it in a dataframe attribute "QRRM"
 
         Parameters
         ----------
@@ -369,8 +431,10 @@ class Calibration(River):
         1-QRRM : [dataframe]
             rainfall-runoff discharge time series stored in a dataframe with
             the columns as the gauges id and the index are the time.
+        2- ReadRRM: [list]
+            list og gauges id
         """
-        gauges = self.GaugesTable.loc[self.GaugesTable["discharge"] == 1, column].tolist()
+        gauges = self.GaugesTable.loc[self.GaugesTable["discharge"] == 1, self.gauge_id_col].tolist()
 
         self.QRRM = pd.DataFrame()
         if location == 2:
@@ -446,7 +510,7 @@ class Calibration(River):
 
     def ReadHMQ(self, path: str, fromday: Union[str, int]="", today: Union[str, int]="",
                 novalue: Union[int, float]=-9, addHQ2: bool = False, shift: bool =False,
-                shiftsteps: int = 0, column: str = "oid", fmt: str = "%Y-%m-%d",
+                shiftsteps: int = 0, fmt: str = "%Y-%m-%d",
     ):
         """ReadRIMQ.
 
@@ -454,35 +518,35 @@ class Calibration(River):
 
         Parameters
         ----------
-        path : [String]
-            path to the folder where files for the gauges exist.
-        fromday : [datetime object/str]
-            starting date of the time series.
-        today : [integer]
-            length of the simulation (how many days after the start date) .
-        novalue : [numeric value]
-            the value used to fill the gaps in the time series or to fill the
-            days that is not simulated (discharge is less than threshold).
-        addHQ2 : [bool]
-            for version 1 the HQ2 can be added to the simulated hydrograph to
-            compare it with the gauge data.default is False.
-        shift : [bool]
-            boolean value to decide whither to shift the time series or not.
-            default is False.
-        shiftsteps : [integer]
-            number of time steps to shift the time series, could be negative
-            integer to shift the time series beackward. default is 0.
-        column : [string]
-            name of the column that contains the gauges file name. default is
-            'oid'.
-        fmt : [str]
-            format of the given dates. The default is "%Y-%m-%d"
+            path : [String]
+                path to the folder where files for the gauges exist.
+            fromday : [datetime object/str]
+                starting date of the time series.
+            today : [integer]
+                length of the simulation (how many days after the start date) .
+            novalue : [numeric value]
+                the value used to fill the gaps in the time series or to fill the
+                days that is not simulated (discharge is less than threshold).
+            addHQ2 : [bool]
+                for version 1 the HQ2 can be added to the simulated hydrograph to
+                compare it with the gauge data.default is False.
+            shift : [bool]
+                boolean value to decide whither to shift the time series or not.
+                default is False.
+            shiftsteps : [integer]
+                number of time steps to shift the time series, could be negative
+                integer to shift the time series beackward. default is 0.
+            column : [string]
+                name of the column that contains the gauges file name. default is
+                'oid'.
+            fmt : [str]
+                format of the given dates. The default is "%Y-%m-%d"
 
         Returns
         -------
-        QHM : [dataframe attribute]
-            dataframe containing the simulated hydrograph for each river
-            segment in the catchment.
+            QHM : [dataframe attribute]
+                dataframe containing the simulated hydrograph for each river
+                segment in the catchment.
         """
         if addHQ2 and self.version == 1:
             msg = "please read the traceall file using the RiverNetwork method"
@@ -490,8 +554,8 @@ class Calibration(River):
             msg = "please read the HQ file first using ReturnPeriod method"
             assert hasattr(self, "RP"), msg
 
-        gauges = self.GaugesTable.loc[self.GaugesTable["discharge"] == 1, column].tolist()
-
+        gauges = self.GaugesTable.loc[self.GaugesTable["discharge"] == 1, self.gauge_id_col].tolist()
+        self.QgaugesList = gauges
         self.QHM = pd.DataFrame()
 
         # for RIM1.0 don't fill with -9 as the empty days will be filled
@@ -517,7 +581,7 @@ class Calibration(River):
             if addHQ2 and self.version == 1:
                 USnode = self.rivernetwork.loc[
                     np.where(
-                        self.rivernetwork["id"] == self.GaugesTable.loc[i, column]
+                        self.rivernetwork["id"] == self.GaugesTable.loc[i, self.gauge_id_col]
                     )[0][0],
                     "us",
                 ]
@@ -558,35 +622,37 @@ class Calibration(River):
 
         Parameters
         ----------
-        1-path : [String]
-            path to the folder where files for the gauges exist.
-        2-start : [datetime object/str]
-            starting date of the time series.
-        3-days : [integer]
-            length of the simulation (how many days after the start date) .
-        4-novalue : [numeric value]
-            the value used to fill the gaps in the time series or to fill the
-            days that is not simulated (discharge is less than threshold).
-        5-shift : [bool]
-            boolean value to decide whither to shift the time series or not.
-            default is False.
-        6-shiftsteps : [integer]
-            number of time steps to shift the time series, could be negative
-            integer to shift the time series beackward. default is 0.
-        7-column : [string]
-            name of the column that contains the gauges file name. default is
-            'oid'.
-        8-fmt : [str]
-            format of the given dates. The default is "%Y-%m-%d"
+            1-path : [String]
+                path to the folder where files for the gauges exist.
+            2-start : [datetime object/str]
+                starting date of the time series.
+            3-days : [integer]
+                length of the simulation (how many days after the start date) .
+            4-novalue : [numeric value]
+                the value used to fill the gaps in the time series or to fill the
+                days that is not simulated (discharge is less than threshold).
+            5-shift : [bool]
+                boolean value to decide whither to shift the time series or not.
+                default is False.
+            6-shiftsteps : [integer]
+                number of time steps to shift the time series, could be negative
+                integer to shift the time series beackward. default is 0.
+            7-column : [string]
+                name of the column that contains the gauges file name. default is
+                'oid'.
+            8-fmt : [str]
+                format of the given dates. The default is "%Y-%m-%d"
 
         Returns
         -------
-        WLHM : [dataframe attribute]
-            dataframe containing the simulated water level hydrograph for
-            each river segment in the catchment.
+            WLHM : [dataframe attribute]
+                dataframe containing the simulated water level hydrograph for
+                each river segment in the catchment.
 
         """
-        gauges = self.GaugesTable.loc[self.GaugesTable["waterlevel"] == 1, column].tolist()
+        gauges = self.GaugesTable.loc[self.GaugesTable["waterlevel"] == 1, self.gauge_id_col].tolist()
+        self.WLgaugesList = gauges
+
         self.WLHM = pd.DataFrame()
         # WLHM.loc[:, :] = novalue
         for i in range(len(gauges)):
@@ -1343,6 +1409,417 @@ class Calibration(River):
                 self.crosssections.loc[i, "zr"] = (
                     BankLevel + self.crosssections.loc[i, "hr"] + 0.5
                 )
+
+    @staticmethod
+    def Metrics(
+            df1: DataFrame,
+            df2: DataFrame,
+            gauges: list,
+            novalue: int,
+            start: str='',
+            end: str='',
+            shift: int=0,
+            fmt: str="%Y-%m-%d"
+    ) -> DataFrame:
+
+        Metrics = gpd.GeoDataFrame(index=gauges,
+                               columns=["start", "end", "rmse",
+                                        "KGE", "WB", "NSE", "NSEModified"])
+
+        for i in range(len(gauges)):
+            # get the index of the first value in the column that is not -9 or Nan
+            st1 = df1.loc[:, df1.columns[i]][df1.loc[:, df1.columns[i]] != novalue].index[0]
+            st2 = df2.loc[:, df2.columns[i]][df2.loc[:, df2.columns[i]] != novalue].index[0]
+
+            Metrics.loc[gauges[i], 'start'] = max(st1, st2)
+            end1 = df1[df1.columns[i]][df1[df1.columns[i]] != novalue].index[-1]
+            end2 = df2[df2.columns[i]][df2[df2.columns[i]] != novalue].index[-1]
+            Metrics.loc[gauges[i], 'end'] = min(end1, end2)
+
+        """ manually adjust and start or end date to calculate the performance between
+        two dates """
+        if start != '':
+            Metrics.loc[:, 'start'] = dt.datetime.strptime(start, fmt)
+        if end != '':
+            Metrics.loc[:, 'end'] = dt.datetime.strptime(end, fmt)
+
+        # calculate th metrics
+        for i in range(len(gauges)):
+            obs = df1[gauges[i]].loc[Metrics.loc[gauges[i], 'start']:Metrics.loc[
+                gauges[i], 'end']].values.tolist()
+            sim = df2[gauges[i]].loc[Metrics.loc[gauges[i], 'start']:Metrics.loc[
+                gauges[i], 'end']].values.tolist()
+            # shift Rim result by 1 time step
+            # sim[1:-1] = sim[0:-2]
+            sim[shift:-shift] = sim[0:-shift * 2]
+
+            Metrics.loc[gauges[i], 'rmse'] = round(pf.RMSE(obs, sim), 0)
+            Metrics.loc[gauges[i], 'KGE'] = round(pf.KGE(obs, sim), 3)
+            Metrics.loc[gauges[i], 'NSE'] = round(pf.NSE(obs, sim), 3)
+            Metrics.loc[gauges[i], 'NSEModified'] = round(pf.NSEHF(obs, sim), 3)
+            Metrics.loc[gauges[i], 'WB'] = round(pf.WB(obs, sim), 0)
+            Metrics.loc[gauges[i], 'MBE'] = round(pf.MBE(obs, sim), 3)
+            Metrics.loc[gauges[i], 'MAE'] = round(pf.MAE(obs, sim), 3)
+
+        return Metrics
+
+
+    def HM_vs_RRM(
+            self,
+            start: str='',
+            end: str='',
+            fmt: str="%Y-%m-%d",
+            shift: int=0
+    ):
+        """HM_vs_RRM.
+
+            HM_vs_RRM calculate the performance metrics between the hydraulic model simulated
+            discharge and the rainfall-runoff model simulated discharge
+
+        inputs:
+        -------
+            1- RRM_Gauges: [list]
+                list og the RRM gauges' ids, created by the 'ReadRRM' method
+            2- QRRM: [dataframe]
+                dataframe for the discharge time-series of the simulated discharge by the RRM,
+                created by the 'ReadRRM' method
+        outputs:
+        -------
+            1- MetricsHM_RRM: [dataframe]
+                dataframe with the gauges id as rows and ['start', 'end', 'rmse', 'KGE', 'WB', 'NSE',
+                'NSEModefied'], as columns.
+        """
+        if not isinstance(self.RRM_Gauges, list):
+            raise ValueError("RRM_Gauges variable does not exist please read the RRM results "
+                             "with 'ReadRRM' method")
+        ### HM vs RRM
+        self.MetricsHM_RRM = self.Metrics(self.QRRM,
+                                          self.QHM,
+                                          self.RRM_Gauges,
+                                          self.novalue,
+                                          start,
+                                          end,
+                                          shift,
+                                          fmt)
+        # get the point geometry from the GaugesTable
+        self.MetricsHM_RRM = self.MetricsHM_RRM.merge(self.GaugesTable, left_index=True,
+                                                        right_on=self.gauge_id_col,
+                                                        how="left",
+                                                        sort=False)
+        self.MetricsHM_RRM.index = self.MetricsHM_RRM[self.gauge_id_col]
+        self.MetricsHM_RRM.index.name = 'index'
+        self.MetricsHM_RRM.crs = self.GaugesTable.crs
+
+
+    def RRM_vs_observed(
+            self,
+            start: str='',
+            end: str='',
+            fmt: str="%Y-%m-%d",
+            shift: int=0
+    ):
+        """RRM_vs_observed.
+
+            HM_vs_RRM calculate the performance metrics between the hydraulic model simulated
+            discharge and the rainfall-runoff model simulated discharge
+
+        inputs:
+        -------
+            1- RRM_Gauges: [list]
+                list og the RRM gauges' ids, created by the 'ReadRRM' method
+            2- QRRM: [dataframe]
+                dataframe for the discharge time-series of the simulated discharge by the RRM,
+                created by the 'ReadRRM' method
+        outputs:
+        -------
+            1- MetricsHM_RRM: [dataframe]
+                dataframe with the gauges id as rows and ['start', 'end', 'rmse', 'KGE', 'WB', 'NSE',
+                'NSEModefied'], as columns.
+        """
+        if not isinstance(self.RRM_Gauges, list):
+            raise ValueError("RRM_Gauges variable does not exist please read the RRM results "
+                             "with 'ReadRRM' method")
+
+        if not isinstance(self.QGauges, DataFrame):
+            raise ValueError("RRM_Gauges variable does not exist please read the RRM results "
+                             "with 'ReadObservedQ' method")
+
+        ### RRM vs observed
+        self.MetricsRRM_Obs = self.Metrics(self.QGauges,
+                                          self.QRRM,
+                                          self.RRM_Gauges,
+                                          self.novalue,
+                                          start,
+                                          end,
+                                          shift,
+                                          fmt)
+
+        self.MetricsRRM_Obs = self.MetricsRRM_Obs.merge(self.GaugesTable, left_index=True,
+                                                        right_on=self.gauge_id_col,
+                                                        how="left",
+                                                        sort=False)
+
+        self.MetricsRRM_Obs.index = self.MetricsRRM_Obs[self.gauge_id_col]
+        self.MetricsRRM_Obs.index.name = 'index'
+        self.MetricsRRM_Obs.crs = self.GaugesTable.crs
+
+
+    def HM_Q_vs_observed(
+            self,
+            start: str='',
+            end: str='',
+            fmt: str="%Y-%m-%d",
+            shift: int=0,
+    ):
+        """HM_vs_RRM.
+
+            HM_vs_RRM calculate the performance metrics between the hydraulic model simulated
+            discharge and the rainfall-runoff model simulated discharge
+
+        inputs:
+        -------
+            1- RRM_Gauges: [list]
+                list og the RRM gauges' ids, created by the 'ReadRRM' method
+            2- QRRM: [dataframe]
+                dataframe for the discharge time-series of the simulated discharge by the RRM,
+                created by the 'ReadRRM' method
+        outputs:
+        -------
+            1- MetricsHM_RRM: [dataframe]
+                dataframe with the gauges id as rows and ['start', 'end', 'rmse', 'KGE', 'WB', 'NSE',
+                'NSEModefied'], as columns.
+        """
+        if not isinstance(self.RRM_Gauges, list):
+            raise ValueError("RRM_Gauges variable does not exist please read the RRM results "
+                             "with 'ReadRRM' method")
+
+        if not isinstance(self.QGauges, DataFrame):
+            raise ValueError("RRM_Gauges variable does not exist please read the RRM results "
+                             "with 'ReadObservedQ' method")
+
+        if not isinstance(self.QHM, DataFrame):
+            raise ValueError("RRM_Gauges variable does not exist please read the RRM results "
+                             "with 'ReadHMQ' method")
+
+        ### HM Q vs observed
+        self.MetricsHM_Q_Obs = self.Metrics(self.QGauges,
+                                          self.QHM,
+                                          self.QgaugesList,
+                                          self.novalue,
+                                          start,
+                                          end,
+                                          shift,
+                                          fmt)
+
+        self.MetricsHM_Q_Obs = self.MetricsHM_Q_Obs.merge(self.GaugesTable, left_index=True,
+                                                            right_on=self.gauge_id_col,
+                                                            how="left",
+                                                            sort=False)
+
+        self.MetricsHM_Q_Obs.index = self.MetricsHM_Q_Obs[self.gauge_id_col]
+        self.MetricsHM_Q_Obs.index.name = 'index'
+        self.MetricsHM_Q_Obs.crs = self.GaugesTable.crs
+
+
+    def HM_WL_vs_observed(
+            self,
+            start: str='',
+            end: str='',
+            fmt: str="%Y-%m-%d",
+            shift: int=0,
+    ):
+        """HM_WL_vs_observed.
+
+            HM_vs_RRM calculate the performance metrics between the hydraulic model simulated
+            discharge and the rainfall-runoff model simulated discharge
+
+        inputs:
+        -------
+            1- RRM_Gauges: [list]
+                list og the RRM gauges' ids, created by the 'ReadRRM' method
+            2- QRRM: [dataframe]
+                dataframe for the discharge time-series of the simulated discharge by the RRM,
+                created by the 'ReadRRM' method
+        outputs:
+        -------
+            1- MetricsHM_Obs: [dataframe]
+                dataframe with the gauges id as rows and ['start', 'end', 'rmse', 'KGE', 'WB', 'NSE',
+                'NSEModefied'], as columns.
+        """
+        if not isinstance(self.RRM_Gauges, list):
+            raise ValueError("RRM_Gauges variable does not exist please read the RRM results "
+                             "with 'ReadRRM' method")
+
+        if not isinstance(self.WLGauges, DataFrame):
+            raise ValueError("RRM_Gauges variable does not exist please read the RRM results "
+                             "with 'ReadObservedWL' method")
+
+        if not isinstance(self.WLHM, DataFrame):
+            raise ValueError("RRM_Gauges variable does not exist please read the RRM results "
+                             "with 'ReadHMWL' method")
+
+        ### HM WL vs observed
+        self.MetricsHM_WL_Obs = self.Metrics(self.WLGauges,
+                                             self.WLHM,
+                                             self.WLgaugesList,
+                                             self.novalue,
+                                             start,
+                                             end,
+                                             shift,
+                                             fmt)
+
+        self.MetricsHM_WL_Obs = self.MetricsHM_WL_Obs.merge(self.GaugesTable, left_index=True,
+                                                            right_on=self.gauge_id_col,
+                                                            how="left",
+                                                            sort=False)
+
+        self.MetricsHM_WL_Obs.index = self.MetricsHM_WL_Obs[self.gauge_id_col]
+        self.MetricsHM_WL_Obs.index.name = 'index'
+        self.MetricsHM_WL_Obs.crs = self.GaugesTable.crs
+
+
+    def InspectGauge(
+            self,
+            subid: int,
+            gaugei: int=0,
+            start: str='',
+            end: str='',
+            fmt: str = "%Y-%m-%d",
+    ) -> DataFrame :
+        """InspectGauge.
+
+            InspectGauge returns the metrices of the gauge simulated discharge and water level
+            and plot it
+
+        parameters:
+        ----------
+        1- subid: [int]
+            river segment id
+        2- gaugei: [int]
+            if the river segment has more than one gauge, gaugei is the gauge order
+        return:
+        -------
+        1- summary: [DataFrame]
+            performance metrix
+        """
+        gauge = self.GetGauges(subid, gaugei)
+        gauge_id = gauge.loc[0, self.gauge_id_col]
+        gaugename = str(gauge.loc[0, 'name'])
+        # gaugexs = gauge.loc[gaugei, 'xsid']
+        summary = pd.DataFrame(index=["HM-RRM", "RRM-Observed", "HM-Q-Observed", "HM-WL-Observed"],
+                               columns=self.MetricsHM_RRM.columns
+                               )
+
+        # for each gauge in the segment
+        summary.loc["HM-Q-Observed", :] = self.MetricsHM_Q_Obs.loc[gauge_id, :]
+
+        if gauge.loc[0, 'waterlevel'] == 1 and gauge.loc[0, 'discharge'] == 1:
+            fig, (ax1, ax2) = plt.subplots(ncols=1, nrows=2, figsize=(15, 8),
+                                           sharex=True)
+        else:
+            fig, ax1 = plt.subplots(ncols=1, nrows=1, figsize=(15, 8))
+
+        # TODO:
+        if gauge_id in self.RRM_Gauges:
+            # there are RRM simulated data
+            summary.loc["HM-RRM", :] = self.MetricsHM_RRM.loc[gauge_id, :]
+            summary.loc["RRM-Observed", :] = self.MetricsRRM_Obs.loc[gauge_id, :]
+
+            if start == "":
+                start_1 = self.MetricsHM_RRM.loc[gauge_id, 'start']
+            else:
+                s1 = dt.datetime.strptime(start, fmt)
+                s2 = self.MetricsHM_RRM.loc[gauge_id, 'start']
+                start_1 = max(s1, s2)
+
+            if end == "" :
+                end_1 = self.MetricsHM_RRM.loc[gauge_id, 'end']
+            else:
+                e1 = dt.datetime.strptime(end, fmt)
+                e2 = self.MetricsHM_RRM.loc[gauge_id, 'end']
+                end_1 = min(e1, e2)
+
+            ax1.plot(self.QHM[gauge_id].loc[start_1: end_1], label="HM", zorder=5)
+            ax1.plot(self.QRRM[gauge_id].loc[start_1: end_1], label="RRM")
+            ax1.plot(self.QGauges[gauge_id].loc[start_1: end_1], label="Observed")
+            ax1.set_ylabel("Discharge m3/s", fontsize=12)
+            # SimMax = max(self.QHM[gauge_id].loc[start:end])
+            # ObsMax = max(self.QRRM[gauge_id].loc[start:end])
+            # pos = max(SimMax, ObsMax)
+        if gauge.loc[0, 'waterlevel'] == 1:
+            # there are water level observed data
+            summary.loc["HM-WL-Observed", :] = self.MetricsHM_WL_Obs.loc[gauge_id, :]
+
+            if start == "":
+                start_2 = self.MetricsHM_WL_Obs.loc[gauge_id, 'start']
+            else:
+                s1 = dt.datetime.strptime(start, fmt)
+                s2 = self.MetricsHM_WL_Obs.loc[gauge_id, 'start']
+                start_2 = max(s1, s2)
+
+            if end == "":
+                end_2 = self.MetricsHM_WL_Obs.loc[gauge_id, 'end']
+            else:
+                e1 = dt.datetime.strptime(end, fmt)
+                e2 = self.MetricsHM_WL_Obs.loc[gauge_id, 'end']
+                end_2 = min(e1, e2)
+
+            ax2.plot(self.WLHM[gauge_id].loc[start_2: end_2],
+                     label="HM", linewidth=2)
+            ax2.plot(self.WLGauges[gauge_id].loc[start_2: end_2],
+                     label="Observed", linewidth=2)
+            ax2.set_ylabel("Water Level m", fontsize=12)
+
+            # SimMax = max(self.WLHM[gauge_id].loc[start_2:end_2])
+            # ObsMax = max(self.WLGauges[gauge_id].loc[start_2: end_2])
+            # pos = max(SimMax, ObsMax)
+        plt.legend(fontsize=15)
+        ax1.set_title(gaugename, fontsize=30)
+
+        return summary
+
+    @staticmethod
+    def PrepareToSave(df):
+        df.drop(['start', 'end'], axis=1, inplace=True)
+        start = df['Qstart'].tolist()
+        for i in range(len(start)):
+            if isinstance(df.loc[df.index[i], 'Qstart'], Timestamp):
+                df.loc[df.index[i], 'Qstart'] = str(df.loc[df.index[i], 'Qstart'].date())
+            if isinstance(df.loc[df.index[i], 'Qend'], Timestamp):
+                df.loc[df.index[i], 'Qend'] = str(df.loc[df.index[i], 'Qend'].date())
+            if isinstance(df.loc[df.index[i], 'WLstart'], Timestamp):
+                df.loc[df.index[i], 'WLstart'] = str(df.loc[df.index[i], 'WLstart'].date())
+            if isinstance(df.loc[df.index[i], 'WLend'], Timestamp):
+                df.loc[df.index[i], 'WLend'] = str(df.loc[df.index[i], 'WLend'].date())
+
+        # df['Qstart'] = [str(i.date()) for i in start if isinstance(i, Timestamp)]
+        # start = df['Qend'].tolist()
+        # df['Qend'] = [str(i.date()) for i in start if isinstance(i, Timestamp)]
+        # start = df['WLstart'].tolist()
+        # df['WLstart'] = [str(i.date()) for i in start if isinstance(i, Timestamp)]
+        # start = df['WLend'].tolist()
+        # df['WLend'] = [str(i.date()) for i in start if isinstance(i, Timestamp)]
+        return  df
+
+
+    def SaveMetices(self, path):
+
+        if isinstance(self.MetricsHM_RRM, GeoDataFrame):
+            df = self.PrepareToSave(self.MetricsHM_RRM.copy())
+            df.to_file(path + "MetricsHM_Q_RRM.geojson", driver="GeoJSON")
+
+        if isinstance(self.MetricsHM_Q_Obs, GeoDataFrame):
+            df = self.PrepareToSave(self.MetricsHM_Q_Obs.copy())
+            df.to_file(path + "MetricsHM_Q_Obs.geojson", driver="GeoJSON")
+
+        if isinstance(self.MetricsRRM_Obs, GeoDataFrame):
+            df = self.PrepareToSave(self.MetricsRRM_Obs.copy())
+            df.to_file(path + "MetricsRRM_Q_Obs.geojson", driver="GeoJSON")
+
+        if isinstance(self.MetricsHM_WL_Obs, GeoDataFrame):
+            df = self.PrepareToSave(self.MetricsHM_WL_Obs.copy())
+            df.to_file(path + "MetricsHM_WL_Obs.geojson", driver="GeoJSON")
+
 
     def ListAttributes(self):
         """ListAttributes.

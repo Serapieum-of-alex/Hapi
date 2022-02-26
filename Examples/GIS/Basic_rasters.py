@@ -20,7 +20,7 @@ import pandas as pd
 
 from Hapi.gis.giscatchment import GISCatchment as GC
 from Hapi.gis.raster import Raster
-from Hapi.visualizer import Visualize as vis
+from visualize.visualizer import Visualize as vis
 
 #%% Paths
 RasterAPath = datapath + "/acc4000.tif"
@@ -679,12 +679,11 @@ gdal.Polygonize(band, None, outlayer, 0, [])
 # so we provide an empty list.
 outfile = None
 import os
-import sys
 
 # The second line "outfile = None" is for closing the new shapefile and making sure that all
 # data has been written to it
 #%%
-from osgeo import gdal, gdalnumeric, ogr, osr
+from osgeo import gdal, gdalnumeric, ogr
 
 # import Image, ImageDraw
 # from PIL.Image import core as Image

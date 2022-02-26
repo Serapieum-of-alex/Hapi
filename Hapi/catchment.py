@@ -22,7 +22,7 @@ from osgeo import gdal
 import Hapi.sm.performancecriteria as PC
 from Hapi.gis.giscatchment import GISCatchment as GC
 from Hapi.gis.raster import Raster
-from Hapi.visualizer import Visualize as Vis
+from Hapi.plot.visualizer import Visualize as Vis
 
 
 class Catchment:
