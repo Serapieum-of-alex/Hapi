@@ -3,7 +3,6 @@ import Hapi.hm.calibration as RC
 
 def test_create_calibration_instance(
         version: int,
-
 ):
     RC.Calibration("HM", version=version)
 
@@ -48,8 +47,8 @@ def test_ReadObservedWL(
     Calib = RC.Calibration("HM", version=version)
     Calib.ReadGaugesTable(gauges_table_path)
     Calib.ReadObservedWL(ReadObservedWL_Path, dates[0], dates[1],
-                        nodatavalu, file_extension=gauges_file_extension,
-                        gauge_date_format=gauge_date_format)
+                         nodatavalu, file_extension=gauges_file_extension,
+                         gauge_date_format=gauge_date_format)
     assert len(Calib.WLGauges) == test_time_series_length and \
            len(Calib.WLGauges.columns) == 3 and \
            len(Calib.GaugesTable.columns) == 12
@@ -68,7 +67,8 @@ def test_CalculateProfile(
     Calib.ReadCrossSections(river_cross_section_path)
     Calib.CalculateProfile(segment3, calibrateProfile_DS_bedlevel, calibrateProfile_mn, calibrateProfile_slope)
 
-    assert Calib.crosssections.loc[Calib.crosssections['id']==3,'gl'].tolist()[-1] == calibrateProfile_DS_bedlevel
+    assert Calib.crosssections.loc[Calib.crosssections['id'] == 3, 'gl'].tolist()[-1] == calibrateProfile_DS_bedlevel
+
 
 def test_SmoothMaxSlope(
         version: int,
@@ -79,6 +79,7 @@ def test_SmoothMaxSlope(
     Calib.ReadCrossSections(river_cross_section_path)
     Calib.SmoothMaxSlope(segment3)
 
+
 def test_SmoothBedLevel(
         version: int,
         river_cross_section_path: str,
@@ -87,6 +88,7 @@ def test_SmoothBedLevel(
     Calib = RC.Calibration("HM", version=version)
     Calib.ReadCrossSections(river_cross_section_path)
     Calib.SmoothBedLevel(segment3)
+
 
 def test_DownWardBedLevel(
         version: int,
@@ -98,6 +100,7 @@ def test_DownWardBedLevel(
     Calib.ReadCrossSections(river_cross_section_path)
     Calib.DownWardBedLevel(segment3, DownWardBedLevel_height)
 
+
 def test_SmoothBankLevel(
         version: int,
         river_cross_section_path: str,
@@ -106,6 +109,7 @@ def test_SmoothBankLevel(
     Calib = RC.Calibration("HM", version=version)
     Calib.ReadCrossSections(river_cross_section_path)
     Calib.SmoothBankLevel(segment3)
+
 
 def test_SmoothFloodplainHeight(
         version: int,
@@ -125,6 +129,7 @@ def test_SmoothBedWidth(
     Calib = RC.Calibration("HM", version=version)
     Calib.ReadCrossSections(river_cross_section_path)
     Calib.SmoothBedWidth(segment3)
+
 
 def test_CheckFloodplain(
         version: int,
