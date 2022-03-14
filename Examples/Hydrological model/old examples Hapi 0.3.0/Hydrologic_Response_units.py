@@ -6,16 +6,17 @@ This function is used durin the calibration of the model to distribute generated
 algorithm into a defined HRUs by a classified raster
 """
 
-import gdal
+from osgeo import gdal
 
-#%library
+# %library
 import numpy as np
 
-from Hapi.distparameters import DistParameters as DP
+from Hapi.rrm.distparameters import DistParameters as DP
+
 
 # data path
 path = "/data/"
-#%% Two Lumped Parameter [K1, Perc]
+# %% Two Lumped Parameter [K1, Perc]
 # number of parameters in the rainfall runoff model
 no_parameters = 12
 
@@ -45,12 +46,11 @@ par_g = np.random.random(no_elem * (no_parameters - no_lumped_par))
 par_g = np.append(par_g, 55)
 par_g = np.append(par_g, 66)
 
-
 par_2lumped = DP.HRU(
     par_g, soil_type, no_parameters, no_lumped_par, lumped_par_pos, kub=1, klb=0.5
 )
 
-#%% One Lumped Parameter [K1]
+# %% One Lumped Parameter [K1]
 
 no_lumped_par = 1
 lumped_par_pos = [6]
@@ -63,7 +63,7 @@ par_1lump = DP.HRU(
     par_g, soil_type, no_parameters, no_lumped_par, lumped_par_pos, kub=1, klb=0.5
 )
 
-#%% HRU without lumped Parameter
+# %% HRU without lumped Parameter
 
 no_lumped_par = 0
 lumped_par_pos = []

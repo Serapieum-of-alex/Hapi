@@ -15,7 +15,7 @@ of catchment response based on dynamic weighting of hydrological models" on apri
     state variables, and initial discharge.
 - Model output is Qalculated dicharge at time t+1
 - Model equations are solved using explicit scheme
-- model structure uses 18 parameters if the catchment has snow
+- model structure uses 15 parameters if the catchment has snow
     [tt, rfcf, sfcf, cfmax, cwh, cfr, fc, beta, e_corr, lp, c_flux, k, k1,
     alpha, perc]
 
@@ -27,6 +27,7 @@ surface runoff, interflow and baseflow
 """
 # libraries
 import numpy as np
+
 
 DEF_ST = [0.0, 10.0, 10.0, 10.0, 0.0]
 DEF_q0 = 0
@@ -127,12 +128,12 @@ def Snow(temp, rf, sf, wc_old, sp_old, tt, cfmax, cfr, cwh):
     if temp > tt:  # if temp > melting threshold
         # then either some snow will melt or the entire snow will melt
         if (
-            cfmax * (temp - tt) < sp_old + sf
+                cfmax * (temp - tt) < sp_old + sf
         ):  # if amount of melted snow < the entire existing snow (previous amount+new)
             melt = cfmax * (temp - tt)
         else:  # if amount of melted snow > the entire existing snow (previous amount+new)
             melt = (
-                sp_old + sf
+                    sp_old + sf
             )  # then the entire existing snow will melt (old snow pack + the current snowfall)
 
         sp_new = sp_old + sf - melt
@@ -141,10 +142,10 @@ def Snow(temp, rf, sf, wc_old, sp_old, tt, cfmax, cfr, cwh):
     else:  # if temp < melting threshold
         # then either some water will freeze or all the water willfreeze
         if (
-            cfr * cfmax * (tt - temp) < wc_old + rf
+                cfr * cfmax * (tt - temp) < wc_old + rf
         ):  # then either some water will freeze or all the water willfreeze
             refr = (
-                cfr * cfmax * (tt - temp)
+                    cfr * cfmax * (tt - temp)
             )  # cfmax*(ttm-temp) is the rate of melting of snow while cfr*cfmax*(ttm-temp) is the rate of freeze of melted water  (rate of freezing > rate of melting)
         else:  # if the amount of frozen water > entire water available
             refr = wc_old + rf
@@ -499,7 +500,7 @@ def Simulate(prec, temp, et, ll_temp, par, init_st=None, q_init=None, snow=0):
     q_uz = np.zeros([len(prec) + 1], dtype=np.float32)
     q_lz = np.zeros([len(prec) + 1], dtype=np.float32)
 
-    if init_st is None:  #   0  1  2  3  4  5
+    if init_st is None:  # 0  1  2  3  4  5
         st[0, :] = DEF_ST  # [sp,sm,uz,lz,wc,LA]
     else:
         st[0, :] = init_st

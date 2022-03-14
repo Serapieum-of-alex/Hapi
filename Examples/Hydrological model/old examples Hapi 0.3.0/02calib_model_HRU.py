@@ -3,15 +3,17 @@ Created on Sun Jun 24 21:02:34 2018
 
 @author: Mostafa
 """
-#%links
+# %links
 # from IPython import get_ipython   # to reset the variable explorer each time
 # get_ipython().magic('reset -f')
 import os
+
 
 os.chdir(
     "C:/Users/Mostafa/Desktop/My Files/thesis/My Thesis/Data_and_Models/Model/Code/colombia"
 )
 import sys
+
 
 sys.path.append(
     "C:/Users/Mostafa/Desktop/My Files/thesis/My Thesis/Data_and_Models/Interface/Distributed_Hydrological_model/HBV_distributed/function"
@@ -20,13 +22,13 @@ sys.path.append(
 path = "C:/Users/Mostafa/Desktop/My Files/thesis/My Thesis/Data_and_Models/Data/colombia/00inputs/"  # GIS/4000/
 from datetime import datetime
 
-import gdal
+from osgeo import gdal
 
-#%library
+# %library
 import numpy as np
 import pandas as pd
 
-import Hapi.distparameters as DP
+import Hapi.rrm.distparameters as DP
 
 # import Wrapper
 # import Hapi.GISpy as GIS
@@ -37,11 +39,12 @@ import Hapi.performancecriteria as PC
 # functions
 from Hapi.calibration import RunCalibration
 
+
 # from pyOpt import Optimization, ALHSO,Optimizer
 
 
 # import Inputs
-#%%
+# %%
 ### Meteorological & GIS Data
 PrecPath = prec_path = path + "meteodata/4000/calib/prec"
 Evap_Path = evap_path = path + "meteodata/4000/calib/evap"
@@ -63,7 +66,6 @@ UB = np.loadtxt("UB_HRU.txt", usecols=0)
 LB = np.loadtxt("LB_HRU.txt", usecols=0)
 
 Basic_inputs = dict(p2=p2, init_st=init_st, UB=UB, LB=LB, snow=snow)
-
 
 ### spatial variability function
 """
@@ -94,7 +96,6 @@ no_optimized_par = DP.ParametersNO(raster, no_parameters, no_lumped_par, 1)
 # this nomber is just an indication to prepare the UB & LB file don't input it to the model
 
 SpatialVarArgs = [raster, no_parameters, no_lumped_par, lumped_par_pos]
-
 
 ### Objective function
 
@@ -140,17 +141,17 @@ def OF(Qobs, Qout, q_uz_routed, q_lz_trans, coordinates):
     for i in range(len(coordinates) - 1):
         Quz = np.reshape(
             q_uz_routed[
-                int(coordinates.loc[coordinates.index[i], "cell_row"]),
-                int(coordinates.loc[coordinates.index[i], "cell_col"]),
-                :-1,
+            int(coordinates.loc[coordinates.index[i], "cell_row"]),
+            int(coordinates.loc[coordinates.index[i], "cell_col"]),
+            :-1,
             ],
             len(Qobs),
         )
         Qlz = np.reshape(
             q_lz_trans[
-                int(coordinates.loc[coordinates.index[i], "cell_row"]),
-                int(coordinates.loc[coordinates.index[i], "cell_col"]),
-                :-1,
+            int(coordinates.loc[coordinates.index[i], "cell_row"]),
+            int(coordinates.loc[coordinates.index[i], "cell_col"]),
+            :-1,
             ],
             len(Qobs),
         )
@@ -171,7 +172,7 @@ def OF(Qobs, Qout, q_uz_routed, q_lz_trans, coordinates):
 store_history = 1
 history_fname = "par_history.txt"
 OptimizationArgs = [store_history, history_fname]
-#%%
+# %%
 # run calibration
 cal_parameters = RunCalibration(
     HBV,
@@ -185,7 +186,7 @@ cal_parameters = RunCalibration(
     OptimizationArgs,
     printError=1,
 )
-#%% convert parameters to rasters
+# %% convert parameters to rasters
 ParPath = "par15_7_2018.txt"
 par = np.loadtxt(ParPath)
 klb = 0.5
