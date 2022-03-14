@@ -11,7 +11,7 @@ from Hapi.run import Run
 
 path = r"C:\MyComputer\01Algorithms\hydrology\Hapi/"
 # %% data
-Parameterpath = path + "Examples/Hydrological model/data/lumped_model/Coello_Lumped2021-03-08_muskingum.txt"
+Parameterpath = path + "Examples/Hydrological model/data/lumped_model/coello-lumped-parameters2022-03-13-maxbas.txt"
 MeteoDataPath = path + "Examples/Hydrological model/data/lumped_model/meteo_data-MSWEP.csv"
 Path = path + "Examples/Hydrological model/data/lumped_model/"
 SaveTo = path + "Examples/Hydrological model/data/lumped_model/"
@@ -32,14 +32,15 @@ Coello.ReadLumpedModel(HBVLumped, AreaCoeff, InitialCond)
 # %% ### Model Parameters
 
 Snow = 0  # no snow subroutine
-Coello.ReadParameters(Parameterpath, Snow)
+Maxbas = True
+Coello.ReadParameters(Parameterpath, Snow, Maxbas=Maxbas)
 # Coello.Parameters
 # %% ### Observed flow
 Coello.ReadDischargeGauges(Path + "Qout_c.csv", fmt="%Y-%m-%d")
 # %%  ### Routing
 
 # RoutingFn = Routing.TriangularRouting2
-RoutingFn = Routing.Muskingum_V
+RoutingFn = Routing.TriangularRouting1
 Route = 1
 # %% ### Run The Model
 # Coello.Parameters = [1.0171762638840873,
@@ -82,5 +83,5 @@ Coello.PlotHydrograph(plotstart, plotend, gaugei, Title="Lumped Model")
 StartDate = "2009-01-01"
 EndDate = "2010-04-20"
 
-Path = SaveTo + "Results-Lumped-Model_" + str(dt.datetime.now())[0:10] + ".txt"
+Path = SaveTo + f"{Coello.name}Results-Lumped-Model_" + str(dt.datetime.now())[0:10] + ".txt"
 Coello.SaveResults(Result=5, start=StartDate, end=EndDate, Path=Path)

@@ -5,19 +5,14 @@ wher the catchment is consisted os a ustream lake and a volcanic area
     from reading input files
 
 """
-# from IPython import get_ipython
-# get_ipython().magic('reset -f')
 import os
-
 os.chdir("F:/02Case studies/El Salvador")
-
 import datetime as dt
-
 import numpy as np
 
-import Hapi.hbv as HBV
-import Hapi.hbv_lake as HBVLake
-import Hapi.performancecriteria as Pf
+import Hapi.rrm.hbv as HBV
+import Hapi.rrm.hbv_lake as HBVLake
+import Hapi.sm.performancecriteria as Pf
 from Hapi.catchment import Catchment, Lake
 from Hapi.run import Run
 
