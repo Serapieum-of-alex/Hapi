@@ -22,11 +22,11 @@ for dependency in hard_dependencies:
 if missing_dependencies:
     raise ImportError("Missing required dependencies {0}".format(missing_dependencies))
 
+
 # del hard_dependencies, dependency, missing_dependencies
 
 
 def configuration(parent_package="", top_path=None):
-
     from numpy.distutils.misc_util import Configuration
 
     config = Configuration(None, parent_package, top_path)
@@ -41,6 +41,7 @@ def configuration(parent_package="", top_path=None):
     config.add_subpackage("rrm")
     config.add_subpackage("rs")
     config.add_subpackage("hm")
+    config.add_subpackage("plot")
     config.add_subpackage("gis")
 
     return config
@@ -54,8 +55,9 @@ import Hapi.rrm
 import Hapi.rs
 import Hapi.run
 import Hapi.sm
-import Hapi.visualizer
+import Hapi.plot
 import Hapi.weirdFn
+
 
 # import Hapi.saintvenant
 # module level doc-string

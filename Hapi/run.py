@@ -98,24 +98,24 @@ class Run(Catchment):
         # input dimensions
         [fd_rows, fd_cols] = self.FlowDirArr.shape
         assert (
-            fd_rows == self.rows and fd_cols == self.cols
+                fd_rows == self.rows and fd_cols == self.cols
         ), "all input data should have the same number of rows"
 
         # input dimensions
         assert (
-            np.shape(self.Prec)[0] == self.rows
-            and np.shape(self.ET)[0] == self.rows
-            and np.shape(self.Temp)[0] == self.rows
-            and np.shape(self.Parameters)[0] == self.rows
+                np.shape(self.Prec)[0] == self.rows
+                and np.shape(self.ET)[0] == self.rows
+                and np.shape(self.Temp)[0] == self.rows
+                and np.shape(self.Parameters)[0] == self.rows
         ), "all input data should have the same number of rows"
         assert (
-            np.shape(self.Prec)[1] == self.cols
-            and np.shape(self.ET)[1] == self.cols
-            and np.shape(self.Temp)[1] == self.cols
-            and np.shape(self.Parameters)[1] == self.cols
+                np.shape(self.Prec)[1] == self.cols
+                and np.shape(self.ET)[1] == self.cols
+                and np.shape(self.Temp)[1] == self.cols
+                and np.shape(self.Parameters)[1] == self.cols
         ), "all input data should have the same number of columns"
         assert (
-            np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2]
+                np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2]
         ), "all meteorological input data should have the same length"
 
         # run the model
@@ -182,37 +182,37 @@ class Run(Catchment):
         # input dimensions
         [fd_rows, fd_cols] = self.FlowDirArr.shape
         assert (
-            fd_rows == self.rows and fd_cols == self.cols
+                fd_rows == self.rows and fd_cols == self.cols
         ), "all input data should have the same number of rows"
 
         # input dimensions
         assert (
-            np.shape(self.Prec)[0] == self.rows
-            and np.shape(self.ET)[0] == self.rows
-            and np.shape(self.Temp)[0] == self.rows
-            and np.shape(self.Parameters)[0] == self.rows
+                np.shape(self.Prec)[0] == self.rows
+                and np.shape(self.ET)[0] == self.rows
+                and np.shape(self.Temp)[0] == self.rows
+                and np.shape(self.Parameters)[0] == self.rows
         ), "all input data should have the same number of rows"
         assert (
-            np.shape(self.Prec)[1] == self.cols
-            and np.shape(self.ET)[1] == self.cols
-            and np.shape(self.Temp)[1] == self.cols
-            and np.shape(self.Parameters)[1] == self.cols
+                np.shape(self.Prec)[1] == self.cols
+                and np.shape(self.ET)[1] == self.cols
+                and np.shape(self.Temp)[1] == self.cols
+                and np.shape(self.Parameters)[1] == self.cols
         ), "all input data should have the same number of columns"
         assert (
-            np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2]
+                np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2]
         ), "all meteorological input data should have the same length"
 
         assert (
-            np.shape(self.BankfullDepth)[0] == self.rows
-            and np.shape(self.RiverWidth)[0] == self.rows
-            and np.shape(self.RiverRoughness)[0] == self.rows
-            and np.shape(self.FloodPlainRoughness)[0] == self.rows
+                np.shape(self.BankfullDepth)[0] == self.rows
+                and np.shape(self.RiverWidth)[0] == self.rows
+                and np.shape(self.RiverRoughness)[0] == self.rows
+                and np.shape(self.FloodPlainRoughness)[0] == self.rows
         ), "all input data should have the same number of rows"
         assert (
-            np.shape(self.BankfullDepth)[1] == self.cols
-            and np.shape(self.RiverWidth)[1] == self.cols
-            and np.shape(self.RiverRoughness)[1] == self.cols
-            and np.shape(self.FloodPlainRoughness)[1] == self.cols
+                np.shape(self.BankfullDepth)[1] == self.cols
+                and np.shape(self.RiverWidth)[1] == self.cols
+                and np.shape(self.RiverRoughness)[1] == self.cols
+                and np.shape(self.FloodPlainRoughness)[1] == self.cols
         ), "all input data should have the same number of columns"
 
         # run the model
@@ -276,31 +276,31 @@ class Run(Catchment):
         # input dimensions
         [fd_rows, fd_cols] = self.FlowDirArr.shape
         assert (
-            fd_rows == self.rows and fd_cols == self.cols
+                fd_rows == self.rows and fd_cols == self.cols
         ), "all input data should have the same number of rows"
 
         # input dimensions
         assert (
-            np.shape(self.Prec)[0] == self.rows
-            and np.shape(self.ET)[0] == self.rows
-            and np.shape(self.Temp)[0] == self.rows
-            and np.shape(self.Parameters)[0] == self.rows
+                np.shape(self.Prec)[0] == self.rows
+                and np.shape(self.ET)[0] == self.rows
+                and np.shape(self.Temp)[0] == self.rows
+                and np.shape(self.Parameters)[0] == self.rows
         ), "all input data should have the same number of rows"
         assert (
-            np.shape(self.Prec)[1] == self.cols
-            and np.shape(self.ET)[1] == self.cols
-            and np.shape(self.Temp)[1] == self.cols
-            and np.shape(self.Parameters)[1] == self.cols
+                np.shape(self.Prec)[1] == self.cols
+                and np.shape(self.ET)[1] == self.cols
+                and np.shape(self.Temp)[1] == self.cols
+                and np.shape(self.Parameters)[1] == self.cols
         ), "all input data should have the same number of columns"
         assert (
-            np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2]
+                np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2]
         ), "all meteorological input data should have the same length"
 
         assert (
-            np.shape(Lake.MeteoData)[0] == np.shape(self.Prec)[2]
+                np.shape(Lake.MeteoData)[0] == np.shape(self.Prec)[2]
         ), "Lake meteorological data has to have the same length as the distributed raster data"
         assert (
-            np.shape(Lake.MeteoData)[1] >= 3
+                np.shape(Lake.MeteoData)[1] >= 3
         ), "Lake Meteo data has to have at least three columns rain, ET, and Temp"
 
         # run the model
@@ -363,19 +363,19 @@ class Run(Catchment):
 
         # input dimensions
         assert (
-            np.shape(self.Prec)[0] == self.rows
-            and np.shape(self.ET)[0] == self.rows
-            and np.shape(self.Temp)[0] == self.rows
-            and np.shape(self.Parameters)[0] == self.rows
+                np.shape(self.Prec)[0] == self.rows
+                and np.shape(self.ET)[0] == self.rows
+                and np.shape(self.Temp)[0] == self.rows
+                and np.shape(self.Parameters)[0] == self.rows
         ), "all input data should have the same number of rows"
         assert (
-            np.shape(self.Prec)[1] == self.cols
-            and np.shape(self.ET)[1] == self.cols
-            and np.shape(self.Temp)[1] == self.cols
-            and np.shape(self.Parameters)[1] == self.cols
+                np.shape(self.Prec)[1] == self.cols
+                and np.shape(self.ET)[1] == self.cols
+                and np.shape(self.Temp)[1] == self.cols
+                and np.shape(self.Parameters)[1] == self.cols
         ), "all input data should have the same number of columns"
         assert (
-            np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2]
+                np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2]
         ), "all meteorological input data should have the same length"
 
         # run the model
@@ -438,35 +438,34 @@ class Run(Catchment):
 
         # input dimensions
         assert (
-            np.shape(self.Prec)[0] == self.rows
-            and np.shape(self.ET)[0] == self.rows
-            and np.shape(self.Temp)[0] == self.rows
-            and np.shape(self.Parameters)[0] == self.rows
+                np.shape(self.Prec)[0] == self.rows
+                and np.shape(self.ET)[0] == self.rows
+                and np.shape(self.Temp)[0] == self.rows
+                and np.shape(self.Parameters)[0] == self.rows
         ), "all input data should have the same number of rows"
         assert (
-            np.shape(self.Prec)[1] == self.cols
-            and np.shape(self.ET)[1] == self.cols
-            and np.shape(self.Temp)[1] == self.cols
-            and np.shape(self.Parameters)[1] == self.cols
+                np.shape(self.Prec)[1] == self.cols
+                and np.shape(self.ET)[1] == self.cols
+                and np.shape(self.Temp)[1] == self.cols
+                and np.shape(self.Parameters)[1] == self.cols
         ), "all input data should have the same number of columns"
         assert (
-            np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2]
+                np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2]
         ), "all meteorological input data should have the same length"
 
         assert (
-            np.shape(Lake.MeteoData)[0] == np.shape(self.Prec)[2]
+                np.shape(Lake.MeteoData)[0] == np.shape(self.Prec)[2]
         ), "Lake meteorological data has to have the same length as the distributed raster data"
         assert (
-            np.shape(Lake.MeteoData)[1] >= 3
+                np.shape(Lake.MeteoData)[1] >= 3
         ), "Lake Meteo data has to have at least three columns rain, ET, and Temp"
 
         # run the model
         Wrapper.FW1Withlake(self, Lake)
 
-
     def RunLumped(
             self,
-            Route: int=0,
+            Route: int = 0,
             RoutingFn=None,
     ):
         """RunLumped.
@@ -510,7 +509,7 @@ class Run(Catchment):
         """
         if RoutingFn is None:
             RoutingFn = []
-        if self.TemporalResolution == "daily":
+        if self.TemporalResolution.lower() == "daily":
             ind = pd.date_range(self.startdate, self.enddate, freq="D")
         else:
             ind = pd.date_range(self.startdate, self.enddate, freq="H")
@@ -521,7 +520,7 @@ class Run(Catchment):
         Qsim["q"] = self.Qsim
         self.Qsim = Qsim[:]
 
-        print("Model Run has finished")
+        # print("Model Run has finished")
 
 
 if __name__ == "__main__":

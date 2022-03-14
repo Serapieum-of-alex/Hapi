@@ -52,14 +52,14 @@ class Catchment:
     """
 
     def __init__(
-        self,
-        name: str,
-        startdata: str,
-        enddate: str,
-        fmt: str="%Y-%m-%d",
-        SpatialResolution: str="Lumped",
-        TemporalResolution: str="Daily",
-        RouteRiver: str="Muskingum",
+            self,
+            name: str,
+            startdata: str,
+            enddate: str,
+            fmt: str = "%Y-%m-%d",
+            SpatialResolution: str = "Lumped",
+            TemporalResolution: str = "Daily",
+            RouteRiver: str = "Muskingum",
     ):
         """
         Parameters
@@ -132,9 +132,9 @@ class Catchment:
 
     def ReadRainfall(self,
                      Path: str,
-                     start: str="",
-                     end: str="",
-                     fmt: str=""):
+                     start: str = "",
+                     end: str = "",
+                     fmt: str = ""):
         """
         Parameters
         ----------
@@ -164,7 +164,7 @@ class Catchment:
             # read data
             self.Prec = Raster.ReadRastersFolder(Path, start=start, end=end, fmt=fmt)
             self.TS = (
-                self.Prec.shape[2] + 1
+                    self.Prec.shape[2] + 1
             )  # no of time steps =length of time series +1
             assert isinstance(self.Prec, np.ndarray), "array should be of type numpy array"
 
@@ -190,7 +190,7 @@ class Catchment:
             assert os.path.exists(Path), Path + " you have provided does not exist"
             # check wether the folder has the rasters or not
             assert len(os.listdir(Path)) > 0, (
-                Path + " folder you have provided is empty"
+                    Path + " folder you have provided is empty"
             )
             # read data
             self.Temp = Raster.ReadRastersFolder(Path, start=start, end=end, fmt=fmt)
@@ -225,7 +225,7 @@ class Catchment:
             assert os.path.exists(Path), Path + " you have provided does not exist"
             # check wether the folder has the rasters or not
             assert len(os.listdir(Path)) > 0, (
-                Path + " folder you have provided is empty"
+                    Path + " folder you have provided is empty"
             )
             # read data
             self.ET = Raster.ReadRastersFolder(Path, start=start, end=end, fmt=fmt)
@@ -260,7 +260,7 @@ class Catchment:
         assert os.path.exists(Path), Path + " you have provided does not exist"
         # check the extension of the accumulation file
         assert (
-            Path[-4:] == ".tif"
+                Path[-4:] == ".tif"
         ), "please add the extension at the end of the Flow accumulation raster path input"
         # check wether the path exists or not
         assert os.path.exists(Path), Path + " you have provided does not exist"
@@ -344,7 +344,7 @@ class Catchment:
         assert os.path.exists(Path), Path + " you have provided does not exist"
         # check the extension of the accumulation file
         assert (
-            Path[-4:] == ".tif"
+                Path[-4:] == ".tif"
         ), "please add the extension at the end of the Flow accumulation raster path input"
         # check wether the path exists or not
         assert os.path.exists(Path), Path + " you have provided does not exist"
@@ -402,7 +402,7 @@ class Catchment:
         # input values
         FPL_ext = Path[-4:]
         assert (
-            FPL_ext == ".tif"
+                FPL_ext == ".tif"
         ), "please add the extension at the end of the Flow accumulation raster path input"
         # check wether the path exists or not
         assert os.path.exists(Path), Path + " you have provided does not exist"
@@ -424,7 +424,7 @@ class Catchment:
         logger.debug("Flow Path length input is read successfully")
 
     def ReadRiverGeometry(
-        self, DEMF, BankfulldepthF, RiverWidthF, RiverRoughnessF, FloodPlainRoughnessF
+            self, DEMF, BankfulldepthF, RiverWidthF, RiverRoughnessF, FloodPlainRoughnessF
     ):
         DEM = gdal.Open(DEMF)
         self.DEM = DEM.ReadAsArray()
@@ -441,12 +441,11 @@ class Catchment:
         FloodPlainRoughness = gdal.Open(FloodPlainRoughnessF)
         self.FloodPlainRoughness = FloodPlainRoughness.ReadAsArray()
 
-
     def ReadParameters(
             self,
-            Path:str,
-            Snow: int=0,
-            Maxbas: bool=False
+            Path: str,
+            Snow: int = 0,
+            Maxbas: bool = False
     ):
         """ReadParameters.
 
@@ -472,14 +471,14 @@ class Catchment:
         Maxbas : [bool]
             True/False
         """
-        if self.SpatialResolution == "distributed":
+        if self.SpatialResolution.lower() == "distributed":
             # data type
             assert type(Path) == str, "PrecPath input should be string type"
             # check wether the path exists or not
             assert os.path.exists(Path), Path + " you have provided does not exist"
             # check wether the folder has the rasters or not
             assert len(os.listdir(Path)) > 0, (
-                Path + " folder you have provided is empty"
+                    Path + " folder you have provided is empty"
             )
             # parameters
             self.Parameters = Raster.ReadRastersFolder(Path)
@@ -487,7 +486,7 @@ class Catchment:
             self.Parameters = pd.read_csv(Path, index_col=0, header=None)[1].tolist()
 
         assert (
-            Snow == 0 or Snow == 1
+                Snow == 0 or Snow == 1
         ), " snow input defines whether to consider snow subroutine or not it has to be 0 or 1"
 
         self.Snow = Snow
@@ -496,48 +495,47 @@ class Catchment:
         if self.SpatialResolution == "distributed":
             if Snow == 1 and Maxbas:
                 assert self.Parameters.shape[2] == 16, (
-                    "current version of HBV (with snow) takes 16 parameter you have entered "
-                    + str(self.Parameters.shape[2])
+                        "current version of HBV (with snow) takes 16 parameter you have entered "
+                        + str(self.Parameters.shape[2])
                 )
             elif Snow == 0 and Maxbas:
                 assert self.Parameters.shape[2] == 11, (
-                    "current version of HBV (with snow) takes 11 parameter you have entered "
-                    + str(self.Parameters.shape[2])
+                        "current version of HBV (with snow) takes 11 parameter you have entered "
+                        + str(self.Parameters.shape[2])
                 )
             elif Snow == 1 and not Maxbas:
                 assert self.Parameters.shape[2] == 17, (
-                    "current version of HBV (with snow) takes 17 parameter you have entered "
-                    + str(self.Parameters.shape[2])
+                        "current version of HBV (with snow) takes 17 parameter you have entered "
+                        + str(self.Parameters.shape[2])
                 )
             elif Snow == 0 and not Maxbas:
                 assert self.Parameters.shape[2] == 12, (
-                    "current version of HBV (with snow) takes 12 parameter you have entered "
-                    + str(self.Parameters.shape[2])
+                        "current version of HBV (with snow) takes 12 parameter you have entered "
+                        + str(self.Parameters.shape[2])
                 )
         else:
             if Snow == 1 and Maxbas:
                 assert len(self.Parameters) == 16, (
-                    "current version of HBV (with snow) takes 16 parameter you have entered "
-                    + str(len(self.Parameters))
+                        "current version of HBV (with snow) takes 16 parameter you have entered "
+                        + str(len(self.Parameters))
                 )
             elif Snow == 0 and Maxbas:
                 assert len(self.Parameters) == 11, (
-                    "current version of HBV (with snow) takes 11 parameter you have entered "
-                    + str(len(self.Parameters))
+                        "current version of HBV (with snow) takes 11 parameter you have entered "
+                        + str(len(self.Parameters))
                 )
             elif Snow == 1 and not Maxbas:
                 assert len(self.Parameters) == 17, (
-                    "current version of HBV (with snow) takes 17 parameter you have entered "
-                    + str(len(self.Parameters))
+                        "current version of HBV (with snow) takes 17 parameter you have entered "
+                        + str(len(self.Parameters))
                 )
             elif Snow == 0 and not Maxbas:
                 assert len(self.Parameters) == 12, (
-                    "current version of HBV (with snow) takes 12 parameter you have entered "
-                    + str(len(self.Parameters))
+                        "current version of HBV (with snow) takes 12 parameter you have entered "
+                        + str(len(self.Parameters))
                 )
 
         logger.debug("Parameters are read successfully")
-
 
     def ReadLumpedModel(
             self,
@@ -578,7 +576,7 @@ class Catchment:
         self.CatArea = CatArea
 
         assert (
-            len(InitialCond) == 5
+                len(InitialCond) == 5
         ), f"state variables are 5 and the given initial values are {len(InitialCond)}"
 
         self.InitialCond = InitialCond
@@ -592,11 +590,10 @@ class Catchment:
 
         logger.debug("Lumped model is read successfully")
 
-
     def ReadLumpedInputs(
             self,
             Path: str,
-            ll_temp: Union[list, np.ndarray]=None
+            ll_temp: Union[list, np.ndarray] = None
     ):
         """ReadLumpedInputs.
 
@@ -629,7 +626,7 @@ class Catchment:
             self.ll_temp = self.data[:, 2].mean()
 
         assert (
-            np.shape(self.data)[1] == 3 or np.shape(self.data)[1] == 4
+                np.shape(self.data)[1] == 3 or np.shape(self.data)[1] == 4
         ), " meteorological data should be of length at least 3 (prec, ET, temp) or 4(prec, ET, temp, tm) "
 
         logger.debug("Lumped Model inputs are read successfully")
@@ -637,8 +634,8 @@ class Catchment:
     def ReadGaugeTable(
             self,
             Path: str,
-            FlowaccPath: str="",
-            fmt: str="%Y-%m-%d"
+            FlowaccPath: str = "",
+            fmt: str = "%Y-%m-%d"
     ):
         """ReadGaugeTable.
 
@@ -686,17 +683,16 @@ class Catchment:
 
         logger.debug("Gauge Table is read successfully")
 
-
     def ReadDischargeGauges(
-        self,
-        Path: str,
-        delimiter: str=",",
-        column: str="id",
-        fmt: str="%Y-%m-%d",
-        Split: bool=False,
-        Date1: str="",
-        Date2: str="",
-        readfrom: str="",
+            self,
+            Path: str,
+            delimiter: str = ",",
+            column: str = "id",
+            fmt: str = "%Y-%m-%d",
+            Split: bool = False,
+            Date1: str = "",
+            Date2: str = "",
+            readfrom: str = "",
     ):
         """ReadDischargeGauges.
 
@@ -729,12 +725,12 @@ class Catchment:
         QGauges : [dataframe].
             dataframe containing the discharge data
         """
-        if self.TemporalResolution == "daily":
+        if self.TemporalResolution.lower() == "daily":
             ind = pd.date_range(self.startdate, self.enddate, freq="D")
         else:
             ind = pd.date_range(self.startdate, self.enddate, freq="H")
 
-        if self.SpatialResolution == "distributed":
+        if self.SpatialResolution.lower() == "distributed":
             assert hasattr(self, "GaugesTable"), "please read the gauges table first"
 
             self.QGauges = pd.DataFrame(
@@ -761,8 +757,8 @@ class Catchment:
                 f.index = [dt.datetime.strptime(i, fmt) for i in f.index.tolist()]
 
                 self.QGauges[int(name)] = f.loc[
-                    self.startdate : self.enddate, f.columns[-1]
-                ]
+                                          self.startdate: self.enddate, f.columns[-1]
+                                          ]
         else:
             self.QGauges = pd.DataFrame(index=ind)
             f = pd.read_csv(
@@ -770,8 +766,8 @@ class Catchment:
             )  # ,#delimiter="\t", skiprows=11,
             f.index = [dt.datetime.strptime(i, fmt) for i in f.index.tolist()]
             self.QGauges[f.columns[0]] = f.loc[
-                self.startdate : self.enddate, f.columns[0]
-            ]
+                                         self.startdate: self.enddate, f.columns[0]
+                                         ]
 
         if Split:
             Date1 = dt.datetime.strptime(Date1, fmt)
@@ -780,13 +776,12 @@ class Catchment:
 
         logger.debug("Gauges data are read successfully")
 
-
     def ReadParametersBounds(
             self,
             UB: list,
             LB: list,
-            Snow: int=0,
-            Maxbas: bool=False
+            Snow: int = 0,
+            Maxbas: bool = False
     ):
         """ReadParametersBounds.
 
@@ -820,7 +815,7 @@ class Catchment:
         self.LB = np.array(LB)
 
         assert (
-            Snow == 0 or Snow == 1
+                Snow == 0 or Snow == 1
         ), " snow input defines whether to consider snow subroutine or not it has to be 0 or 1"
         self.Snow = Snow
         self.Maxbas = Maxbas
@@ -828,7 +823,7 @@ class Catchment:
         logger.debug("Parameters bounds are read successfully")
 
     def ExtractDischarge(
-        self, CalculateMetrics=True, FW1=False, Factor=None, OnlyOutlet=False
+            self, CalculateMetrics=True, FW1=False, Factor=None, OnlyOutlet=False
     ):
         """ExtractDischarge method extracts and sums the discharge from the
         Quz_routed and Qlz_translated arrays at the location of the gauges.
@@ -916,22 +911,22 @@ class Catchment:
                 self.Metrics.loc["R2", gaugeid] = round(PC.R2(Qobs, Qsim), 3)
 
     def PlotHydrograph(
-        self,
-        plotstart: str,
-        plotend: str,
-        gaugei: int,
-        Hapicolor: Union[tuple, str]="#004c99",
-        gaugecolor: Union[tuple, str]="#DC143C",
-        linewidth: int=3,
-        Hapiorder: int=1,
-        Gaugeorder: int=0,
-        labelfontsize: int=10,
-        XMajorfmt: str="%Y-%m-%d",
-        Noxticks: int=5,
-        Title: str="",
-        Xaxis_fmt: str="%d\n%m",
-        label: str="",
-        fmt:str="%Y-%m-%d",
+            self,
+            plotstart: str,
+            plotend: str,
+            gaugei: int,
+            Hapicolor: Union[tuple, str] = "#004c99",
+            gaugecolor: Union[tuple, str] = "#DC143C",
+            linewidth: int = 3,
+            Hapiorder: int = 1,
+            Gaugeorder: int = 0,
+            labelfontsize: int = 10,
+            XMajorfmt: str = "%Y-%m-%d",
+            Noxticks: int = 5,
+            Title: str = "",
+            Xaxis_fmt: str = "%d\n%m",
+            label: str = "",
+            fmt: str = "%Y-%m-%d",
     ):
         """PlotHydrograph plot the simulated and gauge hydrograph.
 
@@ -1058,7 +1053,7 @@ class Catchment:
         return fig, ax
 
     def PlotDistributedResults(
-        self, startdate, enddate, fmt="%Y-%m-%d", Option=1, Gauges=False, **kwargs
+            self, startdate, enddate, fmt="%Y-%m-%d", Option=1, Gauges=False, **kwargs
     ):
         """
          =============================================================================
@@ -1241,14 +1236,14 @@ class Catchment:
         )
 
     def SaveResults(
-        self,
-        FlowAccPath: str="",
-        Result: int=1,
-        start: str="",
-        end: str="",
-        Path: str="",
-        Prefix: str="",
-        fmt: str="%Y-%m-%d",
+            self,
+            FlowAccPath: str = "",
+            Result: int = 1,
+            start: str = "",
+            end: str = "",
+            Path: str = "",
+            Prefix: str = "",
+            fmt: str = "%Y-%m-%d",
     ):
         """SaveResults.
 
@@ -1293,7 +1288,7 @@ class Catchment:
 
         if self.SpatialResolution == "distributed":
             assert (
-                FlowAccPath != ""
+                    FlowAccPath != ""
             ), "Please enter the  FlowAccPath parameter to the SaveResults method"
             src = gdal.Open(FlowAccPath)
 
@@ -1349,16 +1344,16 @@ class Catchment:
                 data.to_csv(Path, index=False, float_format="%.3f")
             elif Result == 4:
                 data[["SP", "SM", "UZ", "LZ", "WC"]] = self.statevariables[
-                    starti:endi, :
-                ]
+                                                       starti:endi, :
+                                                       ]
                 data.to_csv(Path, index=False, float_format="%.3f")
             elif Result == 5:
                 data["Qsim"] = self.Qsim[starti:endi]
                 data["Quz"] = self.quz[starti:endi]
                 data["Qlz"] = self.qlz[starti:endi]
                 data[["SP", "SM", "UZ", "LZ", "WC"]] = self.statevariables[
-                    starti:endi, :
-                ]
+                                                       starti:endi, :
+                                                       ]
                 data.to_csv(Path, index=False, float_format="%.3f")
             else:
                 assert False, "the possible options are from 1 to 5"
@@ -1403,12 +1398,12 @@ class Lake:
     """
 
     def __init__(
-        self,
-        startdate="",
-        enddate="",
-        fmt="%Y-%m-%d",
-        TemporalResolution="Daily",
-        Split=False,
+            self,
+            startdate="",
+            enddate="",
+            fmt="%Y-%m-%d",
+            TemporalResolution="Daily",
+            Split=False,
     ):
         """
         =========================================================================
@@ -1475,7 +1470,7 @@ class Lake:
         df.index = [dt.datetime.strptime(date, fmt) for date in df.index]
 
         if self.Split:
-            df = df.loc[self.startdate : self.enddate, :]
+            df = df.loc[self.startdate: self.enddate, :]
 
         self.MeteoData = df.values  # lakeCalibArray = lakeCalibArray[:,0:-1]
 
@@ -1503,14 +1498,14 @@ class Lake:
         logger.debug("Lake Parameters are read successfully")
 
     def ReadLumpedModel(
-        self,
-        LumpedModel,
-        CatArea,
-        LakeArea,
-        InitialCond,
-        OutflowCell,
-        StageDischargeCurve,
-        Snow,
+            self,
+            LumpedModel,
+            CatArea,
+            LakeArea,
+            InitialCond,
+            OutflowCell,
+            StageDischargeCurve,
+            Snow,
     ):
         """
         ==========================================================================
@@ -1570,5 +1565,5 @@ class Lake:
         logger.debug("Lumped model is read successfully")
 
 
-if __name__=='__main__':
+if __name__ == '__main__':
     logger.debug("Catchment module")
