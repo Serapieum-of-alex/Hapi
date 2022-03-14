@@ -2,7 +2,7 @@ channels:
   - conda-forge
 dependencies:
   - pip >=21.3.1
-  - numpy >=1.21.2,<1.22.3
+  - numpy >=1.21.2,<1.22.4
   - gdal >=3.3.3,<3.4.2
   - affine >=2.3.0
   - fiona >=1.8.20
@@ -26,7 +26,7 @@ dependencies:
   - geopy >=2.2.0
   - geoplot >=0.4.4
   - pip:
-      - loguru >=0.6.0
+      - loguru >=0.5.3
       - pytest >=6.2.5
       - pytest-cov >=2.12.1
 #    - ffmpeg-python

@@ -73,10 +73,10 @@ def RMSEHF(
         f"Weighting scheme should be an integer number between 1 and 4 you have enters {WStype}"
     )
     assert (
-        N >= 0
+            N >= 0
     ), f"Weighting scheme Power should be positive number you have entered {N}"
     assert (
-        0 < alpha < 1
+            0 < alpha < 1
     ), f"alpha should be float number and between 0 & 1 you have entered {alpha}"
 
     # convert Qobs & Qsim into arrays
@@ -89,7 +89,7 @@ def RMSEHF(
     if WStype == 1:
         w = h ** N  # rational Discharge power N
     elif (
-        WStype == 2
+            WStype == 2
     ):  # -------------------------------------------------------------N is not in the equation
         w = (h / alpha) ** N
         w[h > alpha] = 1
@@ -135,8 +135,8 @@ def RMSELF(
     # input data validation
     # data type
     assert type(WStype) == int, (
-        "Weighting scheme should be an integer number between 1 and 4 and you entered "
-        + str(WStype)
+            "Weighting scheme should be an integer number between 1 and 4 and you entered "
+            + str(WStype)
     )
     assert isinstance(alpha, int) or isinstance(alpha, float), \
         "alpha should be a number and between 0 & 1"
@@ -146,10 +146,10 @@ def RMSELF(
         f"Weighting scheme should be an integer number between 1 and 4 you have enters {WStype}"
     )
     assert (
-        N >= 0
+            N >= 0
     ), f"Weighting scheme Power should be positive number you have entered {N}"
     assert (
-        0 < alpha < 1
+            0 < alpha < 1
     ), f"alpha should be float number and between 0 & 1 you have entered {alpha}"
 
     # convert Qobs & Qsim into arrays
@@ -274,7 +274,8 @@ def NSE(Qobs: np.ndarray, Qsim: np.ndarray):
 
 
 def NSEHF(Qobs: Union[list, np.ndarray], Qsim: Union[list, np.ndarray]):
-    """
+    """NSEHF.
+
     Modified Nash-Sutcliffe efficiency. Metric for the estimation of performance of the
     hydrological model
 
@@ -286,15 +287,15 @@ def NSEHF(Qobs: Union[list, np.ndarray], Qsim: Union[list, np.ndarray]):
 
     Inputs:
     ----------
-        1-Qobs :
-            [numpy ndarray] Measured discharge [m3/s]
-        2-Qsim :
-            [numpy ndarray] Simulated discharge [m3/s]
+    1-Qobs :
+        [numpy ndarray] Measured discharge [m3/s]
+    2-Qsim :
+        [numpy ndarray] Simulated discharge [m3/s]
 
     Outputs
     -------
-        1-f :
-            [float] NSE value
+    1-f :
+        [float] NSE value
 
     Examples:
     -------
@@ -305,6 +306,47 @@ def NSEHF(Qobs: Union[list, np.ndarray], Qsim: Union[list, np.ndarray]):
     # convert Qobs & Qsim into arrays
     Qobs = np.array(Qobs)
     Qsim = np.array(Qsim)
+
+    a = sum(Qobs * (Qobs - Qsim) ** 2)
+    b = sum(Qobs * (Qobs - np.average(Qobs)) ** 2)
+    e = 1 - (a / b)
+
+    return e
+
+
+def NSELF(Qobs: Union[list, np.ndarray], Qsim: Union[list, np.ndarray]):
+    """NSELF.
+
+    Modified Nash-Sutcliffe efficiency. Metric for the estimation of performance of the
+    hydrological model
+
+    reference:
+    Hundecha Y. & Bárdossy A. Modeling of the effect of land use
+    changes on the runoff generation of a river basin through
+    parameter regionalization of a watershed model. J Hydrol
+    2004, 292, (1–4), 281–295
+
+    Inputs:
+    ----------
+    1-Qobs :
+        [numpy ndarray] Measured discharge [m3/s]
+    2-Qsim :
+        [numpy ndarray] Simulated discharge [m3/s]
+
+    Outputs
+    -------
+    1-f :
+        [float] NSE value
+
+    Examples:
+    -------
+        Qobs=np.loadtxt("Qobs.txt")
+        Qout=Model(prec,evap,temp)
+        error=NSE(Qobs,Qout)
+    """
+    # convert Qobs & Qsim into arrays
+    Qobs = np.array(np.log(Qobs))
+    Qsim = np.array(np.log(Qsim))
 
     a = sum(Qobs * (Qobs - Qsim) ** 2)
     b = sum(Qobs * (Qobs - np.average(Qobs)) ** 2)
