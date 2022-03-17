@@ -1,5 +1,6 @@
 import os
 
+
 # import sys
 "F:/01Algorithms/Hydrology/HAPI"
 # os.chdir("Examples/")
@@ -17,12 +18,17 @@ except ModuleNotFoundError:
 import geopandas as gpd
 import numpy as np
 import pandas as pd
+import matplotlib
 
+
+matplotlib.use("TkAgg")
 from Hapi.gis.giscatchment import GISCatchment as GC
 from Hapi.gis.raster import Raster
-from visualize.visualizer import Visualize as vis
+from Hapi.plot.visualizer import Visualize as vis
+from Hapi.plot.map import Map
 
-#%% Paths
+
+# %% Paths
 RasterAPath = datapath + "/acc4000.tif"
 RasterBPath = datapath + "/dem_100_f.tif"
 pointsPath = datapath + "/points.csv"
@@ -30,7 +36,7 @@ aligned_raster_folder = datapath + "/alligned_rasters/"
 alligned_rasater = datapath + "/Evaporation_ECMWF_ERA-Interim_mm_daily_2009.01.01.tif"
 soilmappath = datapath + "/soil_raster.tif"
 Basinshp = datapath + "/basins.shp"
-#%%
+# %%
 """
 you need to define the TEMP path in your environment variable as some of the metods in the raster
 module do some preprocessing in the TEMP path
@@ -38,10 +44,10 @@ module do some preprocessing in the TEMP path
 also if you have installed qgis define the directory to the bin folder inside the installation directory
 of qgis in the environment variable with a name "qgis"
 """
-#%% read the raster
+# %% read the raster
 src = gdal.Open(RasterAPath)
-vis.PlotArray(src, Title="Flow Accumulation")
-#%% GetRasterData
+Map.PlotArray(src, Title="Flow Accumulation")
+# %% GetRasterData
 """
 get the basic data inside a raster (the array and the nodatavalue)
 
@@ -59,7 +65,7 @@ Outputs:
         value stored in novalue cells
 """
 arr, nodataval = Raster.GetRasterData(src)
-#%%
+# %%
 """GetProjectionData.
 
 GetProjectionData returns the projection details of a given gdal.Dataset
@@ -80,7 +86,7 @@ Returns:
 epsg, geo = Raster.GetProjectionData(src)
 print("EPSG = " + str(epsg))
 print(geo)
-#%% GetCoords
+# %% GetCoords
 """GetCoords.
 
 Returns the coordinates of the cell centres (only the cells that
@@ -101,7 +107,7 @@ mat_range : array
 
 """
 coords, centerscoords = Raster.GetCellCoords(src)
-#%% SaveRaster
+# %% SaveRaster
 """SaveRaster.
 
 SaveRaster saves a raster to a path
@@ -124,7 +130,7 @@ EX:
 """
 path = datapath + "/rasterexample.tif"
 Raster.SaveRaster(src, path)
-#%% CreateRaster
+# %% CreateRaster
 """
 We will recreate the raster that we have already read using the 'GetRasterData' method at the
 top from the array and the projection data we obtained using the 'GetProjectionData' method
@@ -158,8 +164,8 @@ Returns
 """
 
 src = Raster.CreateRaster(arr=arr, geo=geo, EPSG=str(epsg), NoDataValue=nodataval)
-vis.PlotArray(src, Title="Flow Accumulation")
-#%% RasterLike
+Map.PlotArray(src, Title="Flow Accumulation")
+# %% RasterLike
 """RasterLike.
 
 RasterLike method creates a Geotiff raster like another input raster, new raster
@@ -206,7 +212,7 @@ path = datapath + "/rasterlike.tif"
 Raster.RasterLike(src, arr2, path)
 dst = gdal.Open(path)
 vis.PlotArray(dst, Title="Flow Accumulation", ColorScale=1)
-#%%
+# %%
 """MapAlgebra.
 
 MapAlgebra executes a mathematical operation on raster array and returns
@@ -245,7 +251,7 @@ def func1(val):
 
 dst = Raster.MapAlgebra(src, func1)
 vis.PlotArray(dst, Title="Classes", ColorScale=4, TicksSpacing=1)
-#%%
+# %%
 """RasterFill.
 
 RasterFill takes a raster and fill it with one value
@@ -272,7 +278,7 @@ Raster.RasterFill(src, value, SaveTo=path)
 "now the resulted raster is saved to disk"
 dst = gdal.Open(path)
 vis.PlotArray(dst, Title="Flow Accumulation")
-#%%
+# %%
 """ResampleRaster.
 
 this function reproject a raster to any projection
@@ -305,7 +311,7 @@ dst_arr, _ = Raster.GetRasterData(dst)
 _, newgeo = Raster.GetProjectionData(dst)
 print("New cell size is " + str(newgeo[1]))
 vis.PlotArray(dst, Title="Flow Accumulation")
-#%%
+# %%
 """ProjectRaster.
 
 ProjectRaster reprojects a raster to any projection
@@ -348,7 +354,7 @@ dst = Raster.ProjectRaster(src, to_epsg=to_epsg, Option=2)
 newepsg, newgeo = Raster.GetProjectionData(dst)
 print("New EPSG - " + str(newepsg))
 print("New Geotransform - " + str(newgeo))
-#%%
+# %%
 """ReprojectDataset.
 
 ReprojectDataset reprojects and resamples a folder of rasters to any projection
@@ -384,7 +390,7 @@ Outputs:
 # print("New EPSG - " + str(newepsg))
 # print("New Geotransform - " + str(newgeo))
 # vis.PlotArray(dst, Title="Flow Accumulation")
-#%% CropAlligned
+# %% CropAlligned
 """if you have an array and you want clip/crop it using another raster/array"""
 
 """CropAlligned.
@@ -428,14 +434,14 @@ vis.PlotArray(
     ColorScale=1,
     TicksSpacing=0.01,
 )
-#%% clip raster using another raster while preserving the alignment
+# %% clip raster using another raster while preserving the alignment
 """
 cropping rasters may  change the alignment of the cells and to keep the alignment during cropping a raster
 we will crop the same previous raster but will give the input to the function as a gdal.dataset object
 """
 dst_cropped = Raster.CropAlligned(dst, src)
 vis.PlotArray(dst_cropped, Title="Cropped raster", ColorScale=1, TicksSpacing=0.01)
-#%% crop raster using array
+# %% crop raster using array
 """
 we can also crop a raster using an array in condition that we enter the value of the nodata stored in the
 array
@@ -443,7 +449,7 @@ we can repeat the previous example but
 """
 dst_cropped = Raster.CropAlligned(dst, arr, mask_noval=nodataval)
 vis.PlotArray(dst_cropped, Title="Cropped array", ColorScale=1, TicksSpacing=0.01)
-#%% clip a folder of rasters using another raster while preserving the alignment
+# %% clip a folder of rasters using another raster while preserving the alignment
 """
 you can perform the previous step on multiple rasters using the CropAlignedFolder
 """
@@ -483,7 +489,7 @@ Example:
 """
 saveto = datapath + "/crop_aligned_folder/"
 Raster.CropAlignedFolder(aligned_raster_folder, src, saveto)
-#%%
+# %%
 """MatchRasterAlignment.
 
 MatchRasterAlignment method matches the coordinate system and the number of of rows & columns
@@ -525,7 +531,7 @@ New_epsg, New_geotransform = Raster.GetProjectionData(soil_aligned)
 print("After alignment EPSG = " + str(New_epsg))
 print("After alignment Geotransform = " + str(New_geotransform))
 vis.PlotArray(soil_aligned, Title="After alignment", ColorScale=1, TicksSpacing=1)
-#%%
+# %%
 """Crop.
 
 crop method crops a raster sing another raster.
@@ -564,12 +570,12 @@ dst_epsg, dst_geotransform = Raster.GetProjectionData(dst)
 print("resulted EPSG = " + str(dst_epsg))
 print("resulted Geotransform = " + str(dst_geotransform))
 vis.PlotArray(dst, Title="Cropped Raster", ColorScale=1, TicksSpacing=1)
-#%%
+# %%
 # src_aligned = gdal.Open(alligned_rasater)
 # # arr, nodataval = Raster.GetRasterData(src_aligned)
 # vis.PlotArray(src_aligned, Title="Before Cropping-Evapotranspiration", ColorScale=1,
 #               TicksSpacing=0.01)
-#%%
+# %%
 """ClipRasterWithPolygon.
 
 ClipRasterWithPolygon method clip a raster using polygon shapefile
@@ -609,7 +615,7 @@ src = gdal.Open(alligned_rasater)
 dst = Raster.Clip2(alligned_rasater, Basinshp, save=False, output_path=None)
 # vis.PlotArray(dst, Title="After Cropping-Evapotranspiration by a shapefile", ColorScale=1,
 #               TicksSpacing=0.01)
-#%% ReadASCII.
+# %% ReadASCII.
 """ReadASCII.
 
 ReadASCII reads an ASCII file
@@ -648,14 +654,15 @@ path2 = (
     r"F:\02Case-studies\ClimXtreme\rim_base_data\setup\rhine\inputs\2d\roughness.asc"
 )
 Raster.WriteASCII(path2, details, arr)
-#%% read the points
+# %% read the points
 points = pd.read_csv(pointsPath)
 points["row"] = np.nan
 points["col"] = np.nan
 points.loc[:, ["row", "col"]] = GC.NearestCell(src, points[["x", "y"]][:]).values
-#%%
+# %%
 
 from osgeo import ogr, osr
+
 
 band = dst.GetRasterBand(1)
 src_proj = dst.GetProjection()
@@ -682,12 +689,13 @@ import os
 
 # The second line "outfile = None" is for closing the new shapefile and making sure that all
 # data has been written to it
-#%%
+# %%
 from osgeo import gdal, gdalnumeric, ogr
 
 # import Image, ImageDraw
 # from PIL.Image import core as Image
 from PIL import Image, ImageDraw
+
 
 # Exceptions will get raised on anything >= gdal.CE_Failure
 gdal.UseExceptions()
@@ -768,7 +776,7 @@ def stretch(a):
     lut = []
     for b in range(0, len(hist), 256):
         # step size
-        step = reduce(operator.add, hist[b : b + 256]) / 255
+        step = reduce(operator.add, hist[b: b + 256]) / 255
         # create equalization lookup table
         n = 0
         for i in range(256):
@@ -788,7 +796,6 @@ srcArray = gdalnumeric.LoadFile(raster_path)
 # (world file) info
 srcImage = gdal.Open(raster_path)
 geoTrans = srcImage.GetGeoTransform()
-
 
 # Create an OGR layer from a boundary shapefile
 shapef = ogr.Open(shapefile_path)
@@ -870,4 +877,4 @@ clip = clip.astype(gdalnumeric.uint8)
 gdalnumeric.SaveArray(clip, "OUTPUT.jpg", format="JPEG")
 
 gdal.ErrorReset()
-#%%
+# %%

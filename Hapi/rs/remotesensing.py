@@ -30,29 +30,28 @@ class RemoteSensing:
         4- ListAttributes
     """
 
+
     def __init__(
-        self,
-        Time="daily",
-        StartDate="",
-        EndDate="",
-        Path="",
-        Vars=[],
-        latlim=[],
-        lonlim=[],
-        fmt="%Y-%m-%d",
+            self,
+            Time="daily",
+            start="",
+            end="",
+            Path="",
+            Vars=[],
+            latlim=[],
+            lonlim=[],
+            fmt="%Y-%m-%d",
     ):
         """
-        =============================================================================
-            RemoteSensing(self, Time='daily', StartDate='', EndDate='',Path='',
+            RemoteSensing(self, Time='daily', start='', end='',Path='',
                           Vars=[], latlim=[], lonlim=[], fmt="%Y-%m-%d")
-        =============================================================================
 
         Parameters:
             Time (str, optional):
                 [description]. Defaults to 'daily'.
-            StartDate (str, optional):
+            start (str, optional):
                 [description]. Defaults to ''.
-            EndDate (str, optional):
+            end (str, optional):
                 [description]. Defaults to ''.
             Path (str, optional):
                 Path where you want to save the downloaded data. Defaults to ''.
@@ -65,17 +64,17 @@ class RemoteSensing:
             fmt (str, optional):
                 [description]. Defaults to "%Y-%m-%d".
         """
-        self.StartDate = dt.datetime.strptime(StartDate, fmt)
-        self.EndDate = dt.datetime.strptime(EndDate, fmt)
+        self.start = dt.datetime.strptime(start, fmt)
+        self.end = dt.datetime.strptime(end, fmt)
 
         if Time == "six_hourly":
             # Set required data for the three hourly option
             self.string1 = "oper"
         # Set required data for the daily option
         elif Time == "daily":
-            self.Dates = pd.date_range(self.StartDate, self.EndDate, freq="D")
+            self.Dates = pd.date_range(self.start, self.end, freq="D")
         elif Time == "monthly":
-            self.Dates = pd.date_range(self.StartDate, self.EndDate, freq="MS")
+            self.Dates = pd.date_range(self.start, self.end, freq="MS")
 
         self.Time = Time
         self.Path = Path
@@ -92,13 +91,11 @@ class RemoteSensing:
         self.lonlim_corr = [lonlim_corr_one, lonlim_corr_two]
         # TODO move it to the ECMWF method later
         # for ECMWF only
-        self.string7 = "%s/to/%s" % (self.StartDate, self.EndDate)
+        self.string7 = "%s/to/%s" % (self.start, self.end)
 
-    def ECMWF(self, Waitbar=1):  # SumMean=1, Min=0, Max=0,
-        """
-        =============================================================
-            ECMWF(self, Waitbar=1)
-        =============================================================
+
+    def ECMWF(self, Waitbar: bool = True):
+        """ECMWF
 
         ECMWF method downloads ECMWF daily data for a given variable, time
         interval, and spatial extent.
@@ -106,17 +103,8 @@ class RemoteSensing:
 
         Parameters
         ----------
-        SumMean : TYPE, optional
-            0 or 1. Indicates if the output values are the daily mean for
-            instantaneous values or sum for fluxes. The default is 1.
-        Min : TYPE, optional
-            0 or 1. Indicates if the output values are the daily minimum.
-            The default is 0.
-        Max : TYPE, optional
-            0 or 1. Indicates if the output values are the daily maximum.
-            The default is 0.
         Waitbar : TYPE, optional
-            1 (Default) will create a waitbar. The default is 1.
+            0 or 1. to display the progress bar
 
         Returns
         -------
@@ -125,17 +113,15 @@ class RemoteSensing:
         """
         for var in self.Vars:
             # Download data
-            print(
-                "\nDownload ECMWF %s data for period %s till %s"
-                % (var, self.StartDate, self.EndDate)
-            )
+            print(f"\nDownload ECMWF {var} data for period {self.start} till {self.end}")
 
             self.DownloadData(var, Waitbar)  # CaseParameters=[SumMean, Min, Max]
         # delete the downloaded netcdf
         del_ecmwf_dataset = os.path.join(self.Path, "data_interim.nc")
         os.remove(del_ecmwf_dataset)
 
-    def DownloadData(self, Var, Waitbar):
+
+    def DownloadData(self, Var: str, Waitbar: bool):
         """
         This function downloads ECMWF six-hourly, daily or monthly data
 
@@ -227,7 +213,7 @@ class RemoteSensing:
         Geo_out = tuple([Geo_one, 0.125, 0.0, Geo_four, 0.0, -0.125])
 
         # Create Waitbar
-        if Waitbar == 1:
+        if Waitbar:
             total_amount = len(self.Dates)
             amount = 0
             weirdFn.printWaitBar(
@@ -283,7 +269,7 @@ class RemoteSensing:
 
             # Create Tiff files
             # Raster.Save_as_tiff(name_out, Data_end, Geo_out, "WGS84")
-            Raster.CreateRaster(Path=name_out, data=Data_end, geo=Geo_out, EPSG="WGS84")
+            Raster.CreateRaster(Path=name_out, arr=Data_end, geo=Geo_out, EPSG="WGS84")
 
             if Waitbar == 1:
                 amount = amount + 1
@@ -299,20 +285,21 @@ class RemoteSensing:
 
         return ()
 
+
     @staticmethod
     def API(
-        output_folder,
-        DownloadType,
-        string1,
-        string2,
-        string3,
-        string4,
-        string5,
-        string6,
-        string7,
-        string8,
-        string9,
-        string10,
+            output_folder,
+            DownloadType,
+            string1,
+            string2,
+            string3,
+            string4,
+            string5,
+            string6,
+            string7,
+            string8,
+            string9,
+            string10,
     ):
 
         os.chdir(output_folder)
@@ -330,9 +317,9 @@ class RemoteSensing:
                     "time": "%s" % string6,
                     "date": "%s" % string7,
                     "type": "%s"
-                    % string8,  # http://apps.ecmwf.int/codes/grib/format/mars/type/
+                            % string8,  # http://apps.ecmwf.int/codes/grib/format/mars/type/
                     "class": "%s"
-                    % string9,  # http://apps.ecmwf.int/codes/grib/format/mars/class/
+                             % string9,  # http://apps.ecmwf.int/codes/grib/format/mars/class/
                     "area": "%s" % string10,
                     "format": "netcdf",
                     "target": "data_interim.nc",
@@ -352,9 +339,9 @@ class RemoteSensing:
                     "time": "%s" % string6,
                     "date": "%s" % string7,
                     "type": "%s"
-                    % string8,  # http://apps.ecmwf.int/codes/grib/format/mars/type/
+                            % string8,  # http://apps.ecmwf.int/codes/grib/format/mars/type/
                     "class": "%s"
-                    % string9,  # http://apps.ecmwf.int/codes/grib/format/mars/class/
+                             % string9,  # http://apps.ecmwf.int/codes/grib/format/mars/class/
                     "area": "%s" % string10,
                     "format": "netcdf",
                     "target": "data_interim.nc",
@@ -557,6 +544,7 @@ class Variables:
         "HCC": 1,
     }
 
+
     def __init__(self, step):
 
         # output units after applying factor
@@ -635,6 +623,7 @@ class Variables:
         else:
             raise KeyError("The input time step is not supported")
 
+
     def __str__(self):
 
         print(
@@ -650,6 +639,7 @@ class Variables:
             + "\n"
             + str(self.units)
         )
+
 
     def ListAttributes(self):
         """
@@ -674,15 +664,17 @@ class Variables:
 
 
 class CHIRPS:
+
+
     def __init__(
-        self,
-        StartDate="",
-        EndDate="",
-        latlim=[],
-        lonlim=[],
-        Time="daily",
-        Path="",
-        fmt="%Y-%m-%d",
+            self,
+            start="",
+            end="",
+            latlim=[],
+            lonlim=[],
+            Time="daily",
+            Path="",
+            fmt="%Y-%m-%d",
     ):
         # latlim -- [ymin, ymax] (values must be between -50 and 50)
         # lonlim -- [xmin, xmax] (values must be between -180 and 180)
@@ -706,17 +698,17 @@ class CHIRPS:
             os.makedirs(self.output_folder)
 
         # check time variables
-        if StartDate == "":
-            StartDate = pd.Timestamp("1981-01-01")
+        if start == "":
+            start = pd.Timestamp("1981-01-01")
         else:
-            self.StartDate = dt.datetime.strptime(StartDate, fmt)
+            self.start = dt.datetime.strptime(start, fmt)
 
-        if EndDate == "":
-            EndDate = pd.Timestamp("Now")
+        if end == "":
+            end = pd.Timestamp("Now")
         else:
-            self.EndDate = dt.datetime.strptime(EndDate, fmt)
+            self.end = dt.datetime.strptisme(end, fmt)
         # Create days
-        self.Dates = pd.date_range(self.StartDate, self.EndDate, freq=self.TimeFreq)
+        self.Dates = pd.date_range(self.start, self.end, freq=self.TimeFreq)
 
         # Check space variables
         if latlim[0] < -50 or latlim[1] > 50:
@@ -745,6 +737,7 @@ class CHIRPS:
                 [np.floor((lonlim[0] + 180) * 20), np.ceil((lonlim[1] + 180) * 20)]
             )
         )
+
 
     def Download(self, Waitbar=1, cores=None):
         """
@@ -808,6 +801,7 @@ class CHIRPS:
             )
         return results
 
+
     def RetrieveData(Date, args):
         """
         ===============================================
@@ -845,8 +839,8 @@ class CHIRPS:
         # Define FTP path to directory
         if TimeCase == "daily":
             pathFTP = (
-                "pub/org/chg/products/CHIRPS-2.0/global_daily/tifs/p05/%s/"
-                % Date.strftime("%Y")
+                    "pub/org/chg/products/CHIRPS-2.0/global_daily/tifs/p05/%s/"
+                    % Date.strftime("%Y")
             )
         elif TimeCase == "monthly":
             pathFTP = "pub/org/chg/products/CHIRPS-2.0/global_monthly/tifs/"
@@ -909,7 +903,7 @@ class CHIRPS:
             dataset, NoDataValue = Raster.GetRasterData(outfilename)
 
             # clip dataset to the given extent
-            data = dataset[yID[0] : yID[1], xID[0] : xID[1]]
+            data = dataset[yID[0]: yID[1], xID[0]: xID[1]]
             # replace -ve values with -9999
             data[data < 0] = -9999
 
@@ -929,6 +923,7 @@ class CHIRPS:
         except:
             print("file not exists")
         return True
+
 
     def ListAttributes(self):
         """
