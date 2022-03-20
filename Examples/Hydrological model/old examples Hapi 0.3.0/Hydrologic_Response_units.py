@@ -6,13 +6,11 @@ This function is used durin the calibration of the model to distribute generated
 algorithm into a defined HRUs by a classified raster
 """
 
-from osgeo import gdal
-
 # %library
 import numpy as np
+from osgeo import gdal
 
 from Hapi.rrm.distparameters import DistParameters as DP
-
 
 # data path
 path = "/data/"

@@ -8,12 +8,10 @@ Created on Sun Jun 24 21:02:34 2018
 # get_ipython().magic('reset -f')
 import os
 
-
 os.chdir(
     "C:/Users/Mostafa/Desktop/My Files/thesis/My Thesis/Data_and_Models/Model/Code/colombia"
 )
 import sys
-
 
 sys.path.append(
     "C:/Users/Mostafa/Desktop/My Files/thesis/My Thesis/Data_and_Models/Interface/Distributed_Hydrological_model/HBV_distributed/function"
@@ -22,23 +20,20 @@ sys.path.append(
 path = "C:/Users/Mostafa/Desktop/My Files/thesis/My Thesis/Data_and_Models/Data/colombia/00inputs/"  # GIS/4000/
 from datetime import datetime
 
-from osgeo import gdal
-
 # %library
 import numpy as np
 import pandas as pd
-
-import Hapi.rrm.distparameters as DP
+from osgeo import gdal
 
 # import Wrapper
 # import Hapi.GISpy as GIS
-import Hapi.giscatchment as GC
-import Hapi.hbv as HBV
-import Hapi.performancecriteria as PC
+import Hapi.gis.giscatchment as GC
+import Hapi.rrm.distparameters as DP
+import Hapi.rrm.hbv as HBV
+import Hapi.sm.performancecriteria as PC
 
 # functions
-from Hapi.calibration import RunCalibration
-
+from Hapi.rrm.calibration import RunCalibration
 
 # from pyOpt import Optimization, ALHSO,Optimizer
 
