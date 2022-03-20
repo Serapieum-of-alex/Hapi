@@ -40,19 +40,20 @@ class DistParameters:
     7- SaveParameters
     """
 
+
     def __init__(
-        self,
-        raster,
-        no_parameters,
-        no_lumped_par=0,
-        lumped_par_pos=[],
-        Lake=0,
-        Snow=0,
-        HRUs=0,
-        Function=1,
-        Kub=1,
-        Klb=50,
-        Maskingum=False,
+            self,
+            raster,
+            no_parameters,
+            no_lumped_par=0,
+            lumped_par_pos=[],
+            Lake=False,
+            Snow=False,
+            HRUs=False,
+            Function=1,
+            Kub=1,
+            Klb=50,
+            Maskingum=False,
     ):
         """DistParameters.
 
@@ -92,25 +93,19 @@ class DistParameters:
         None.
 
         """
-        assert (
-            type(raster) == gdal.Dataset
-        ), "raster should be read using gdal (gdal dataset please read it using gdal library) "
-        assert type(no_parameters) == int, " no_parameters should be integer number"
-        assert type(no_lumped_par) == int, "no of lumped parameters should be integer"
+        assert isinstance(raster, gdal.Dataset), "raster should be read using gdal (gdal dataset please read it " \
+                                                 "using gdal library) "
+        assert isinstance(no_parameters, int), " no_parameters should be integer number"
+        assert isinstance(no_lumped_par, int), "no of lumped parameters should be integer"
 
         if no_lumped_par >= 1:
-            if type(lumped_par_pos) == list:
+            if isinstance(lumped_par_pos, list):
                 assert no_lumped_par == len(lumped_par_pos), (
-                    "you have to entered"
-                    + str(no_lumped_par)
-                    + "no of lumped parameters but only"
-                    + str(len(lumped_par_pos))
-                    + " position "
+                    f"you have to entered {no_lumped_par} no of lumped parameters but only {len(lumped_par_pos)} "
+                    f"position "
                 )
             else:  # if not int or list
-                assert (
-                    False
-                ), "you have one or more lumped parameters so the position has to be entered as a list"
+                raise ValueError("you have one or more lumped parameters so the position has to be entered as a list")
 
         self.Lake = Lake
         self.Snow = Snow
@@ -135,7 +130,7 @@ class DistParameters:
                     self.raster_A[i, j] = np.nan
 
         # count the number of non-empty cells
-        if self.HRUs == 1:
+        if self.HRUs:
             self.values = list(
                 set(
                     [
@@ -192,6 +187,7 @@ class DistParameters:
         self.ParametersNumber()
 
         pass
+
 
     def par3d(self, par_g):  # , kub=1,klb=0.5,Maskingum=True
         """
@@ -275,39 +271,20 @@ class DistParameters:
 
         # input values
         if self.no_lumped_par > 0:
-            assert (
-                len(par_g) == (self.no_elem * self.no_parameters) + self.no_lumped_par
-            ), (
-                "As there is "
-                + str(self.no_lumped_par)
-                + " lumped parameters, length of input parameters should be "
-                + str(self.no_elem)
-                + "*"
-                + "("
-                + str(self.no_parameters + self.no_lumped_par)
-                + "-"
-                + str(self.no_lumped_par)
-                + ")"
-                + "+"
-                + str(self.no_lumped_par)
-                + "="
-                + str(
-                    self.no_elem * (self.no_parameters - self.no_lumped_par)
-                    + self.no_lumped_par
+            par_no = (self.no_elem * self.no_parameters) + self.no_lumped_par
+            assert len(par_g) == par_no, \
+                (
+                        f"As there is {self.no_lumped_par} lumped parameters, length of input parameters should be {self.no_elem}"
+                        + f"*({self.no_parameters + self.no_lumped_par} - {self.no_lumped_par}) + {self.no_lumped_par} = "
+                        + f"{self.no_elem * (self.no_parameters - self.no_lumped_par) + self.no_lumped_par} not {len(par_g)}"
+                        + " probably you have to add the value of the lumped parameter at the end of the list"
                 )
-                + " not "
-                + str(len(par_g))
-                + " probably you have to add the value of the lumped parameter at the end of the list"
-            )
         else:
             # if there is no lumped parameters
-            assert len(par_g) == self.no_elem * self.no_parameters, (
-                "As there is no lumped parameters length of input parameters should be "
-                + str(self.no_elem)
-                + "*"
-                + str(self.no_parameters)
-                + "="
-                + str(self.no_elem * self.no_parameters)
+            par_no = self.no_elem * self.no_parameters
+            assert len(par_g) == par_no, (
+                    f"As there is no lumped parameters length of input parameters should be {self.no_elem} * "
+                    + f"{self.no_parameters} = {self.no_elem * self.no_parameters}"
             )
 
         # parameters in array
@@ -317,8 +294,8 @@ class DistParameters:
         # assign them to each cell
         for i in range(self.no_elem):
             self.Par2d[:, i] = par_g[
-                i * self.no_parameters : (i * self.no_parameters) + self.no_parameters
-            ]
+                               i * self.no_parameters: (i * self.no_parameters) + self.no_parameters
+                               ]
 
         ### lumped parameters
         if self.no_lumped_par > 0:
@@ -326,15 +303,15 @@ class DistParameters:
                 # create a list with the value of the lumped parameter(k1)
                 # (stored at the end of the list of the parameters)
                 pk1 = (
-                    np.ones((1, self.no_elem))
-                    * par_g[(self.no_parameters * np.shape(self.Par2d)[1]) + i]
+                        np.ones((1, self.no_elem))
+                        * par_g[(self.no_parameters * np.shape(self.Par2d)[1]) + i]
                 )
                 # put the list of parameter k1 at the 6 row
                 self.Par2d = np.vstack(
                     [
                         self.Par2d[: self.lumped_par_pos[i], :],
                         pk1,
-                        self.Par2d[self.lumped_par_pos[i] :, :],
+                        self.Par2d[self.lumped_par_pos[i]:, :],
                     ]
                 )
 
@@ -349,6 +326,7 @@ class DistParameters:
         # if Maskingum:
         #     for i in range(self.no_elem):
         #         self.Par3d[self.celli[i],self.cellj[i],-2]= DistParameters.calculateK(self.Par3d[self.celli[i],self.cellj[i],-1],self.Par3d[self.celli[i],self.cellj[i],-2],kub,klb)
+
 
     def par3dLumped(self, par_g):  # , kub=1, klb=0.5, Maskingum = True
         """
@@ -389,7 +367,7 @@ class DistParameters:
         # input data validation
         # data type
         assert (
-            type(par_g) == np.ndarray or type(par_g) == list
+                type(par_g) == np.ndarray or type(par_g) == list
         ), "par_g should be of type 1d array or list"
         # assert isinstance(kub,numbers.Number) , " kub should be a number"
         # assert isinstance(klb,numbers.Number) , " klb should be a number"
@@ -411,6 +389,7 @@ class DistParameters:
         #         self.Par3d[self.celli[i],self.cellj[i],-2] = DistParameters.calculateK(self.Par3d[self.celli[i],self.cellj[i],-1],
         #                                                                                self.Par3d[self.celli[i],self.cellj[i],-2],
         #                                                                                kub,klb)
+
 
     @staticmethod
     def calculateK(x, position, UB, LB):
@@ -445,6 +424,7 @@ class DistParameters:
         generatedK = np.linspace(constraint1, constraint2, 50)
         k = generatedK[int(round(position, 0))]
         return k
+
 
     def par2d_lumpedK1_lake(self, par_g, no_parameters_lake):  # ,kub,klb
         """
@@ -496,14 +476,14 @@ class DistParameters:
         # assign them to each cell
         for i in range(self.no_elem):
             self.Par2d[:, i] = par_g[
-                i * no_parameters : (i * no_parameters) + no_parameters
-            ]
+                               i * no_parameters: (i * no_parameters) + no_parameters
+                               ]
 
         # create a list with the value of the lumped parameter(k1)
         # (stored at the end of the list of the parameters)
         pk1 = (
-            np.ones((1, self.no_elem))
-            * par_g[(np.shape(self.Par2d)[0] * np.shape(self.Par2d)[1])]
+                np.ones((1, self.no_elem))
+                * par_g[(np.shape(self.Par2d)[0] * np.shape(self.Par2d)[1])]
         )
 
         # put the list of parameter k1 at the 6 row
@@ -520,10 +500,11 @@ class DistParameters:
         #     self.Par3d[self.celli[i],self.cellj[i],-2]= DistParameters.calculateK(self.Par3d[self.celli[i],self.cellj[i],-1],self.Par3d[self.celli[i],self.cellj[i],-2],kub,klb)
 
         # lake parameters
-        self.lake_par = par_g[len(par_g) - no_parameters_lake :]
+        self.lake_par = par_g[len(par_g) - no_parameters_lake:]
         # self.lake_par[-2] = DistParameters.calculateK(self.lake_par[-1],self.lake_par[-2],kub,klb)
 
         # return self.Par3d, lake_par
+
 
     def HRU(self, par_g):  # ,kub=1,klb=0.5
         """
@@ -593,46 +574,25 @@ class DistParameters:
         # input data validation
         # data type
         assert (
-            type(par_g) == np.ndarray or type(par_g) == list
+                type(par_g) == np.ndarray or type(par_g) == list
         ), "par_g should be of type 1d array or list"
         # assert isinstance(kub,numbers.Number) , " kub should be a number"
         # assert isinstance(klb,numbers.Number) , " klb should be a number"
 
         # input values
         if self.no_lumped_par > 0:
-            assert (
-                len(par_g) == (self.no_elem * self.no_parameters) + self.no_lumped_par
-            ), (
-                "As there is "
-                + str(self.no_lumped_par)
-                + " lumped parameters, length of input parameters should be "
-                + str(self.no_elem)
-                + "*"
-                + "("
-                + str(self.no_parameters)
-                + "-"
-                + str(self.no_lumped_par)
-                + ")"
-                + "+"
-                + str(self.no_lumped_par)
-                + "="
-                + str(
-                    self.no_elem * (self.no_parameters - self.no_lumped_par)
-                    + self.no_lumped_par
-                )
-                + " not "
-                + str(len(par_g))
-                + " probably you have to add the value of the lumped parameter at the end of the list"
+            par_no = (self.no_elem * self.no_parameters) + self.no_lumped_par
+            assert len(par_g) == par_no, (
+                    f"As there is {self.no_lumped_par} lumped parameters, length of input parameters should be "
+                    f"{self.no_elem}*({self.no_parameters}-{self.no_lumped_par})+{self.no_lumped_par}="
+                    + str(self.no_elem * (self.no_parameters - self.no_lumped_par) + self.no_lumped_par)
+                    + f" not {len(par_g)} probably you have to add the value of the lumped parameter at the end of the list"
             )
         else:
             # if there is no lumped parameters
             assert len(par_g) == self.no_elem * self.no_parameters, (
-                "As there is no lumped parameters length of input parameters should be "
-                + str(self.no_elem)
-                + "*"
-                + str(self.no_parameters)
-                + "="
-                + str(self.no_elem * self.no_parameters)
+                    f"As there is no lumped parameters length of input parameters should be {self.no_elem}*{self.no_parameters}"
+                    + f"={self.no_elem * self.no_parameters}"
             )
 
         # take the parameters from the generated parameters or the 1D list and
@@ -640,8 +600,8 @@ class DistParameters:
         self.Par2d = np.zeros(shape=(self.no_parameters, self.no_elem), dtype=np.float)
         for i in range(self.no_elem):
             self.Par2d[:, i] = par_g[
-                i * self.no_parameters : (i * self.no_parameters) + self.no_parameters
-            ]
+                               i * self.no_parameters: (i * self.no_parameters) + self.no_parameters
+                               ]
 
         ### lumped parameters
         if self.no_lumped_par > 0:
@@ -649,15 +609,15 @@ class DistParameters:
                 # create a list with the value of the lumped parameter(k1)
                 # (stored at the end of the list of the parameters)
                 pk1 = (
-                    np.ones((1, self.no_elem))
-                    * par_g[(self.no_parameters * np.shape(self.Par2d)[1]) + i]
+                        np.ones((1, self.no_elem))
+                        * par_g[(self.no_parameters * np.shape(self.Par2d)[1]) + i]
                 )
                 # put the list of parameter k1 at the 6 row
                 self.Par2d = np.vstack(
                     [
                         self.Par2d[: self.lumped_par_pos[i], :],
                         pk1,
-                        self.Par2d[self.lumped_par_pos[i] :, :],
+                        self.Par2d[self.lumped_par_pos[i]:, :],
                     ]
                 )
 
@@ -671,6 +631,7 @@ class DistParameters:
         # generated parameters
         for i in range(self.no_elem):
             self.Par3d[self.raster_A == self.values[i]] = self.Par2d[:, i]
+
 
     @staticmethod
     def HRU_HAND(DEM, FD, FPL, River):
@@ -755,10 +716,10 @@ class DistParameters:
             for j in range(cols):
                 if dem_A[i, j] != no_val:
                     HAND[i, j] = (
-                        dem_A[i, j]
-                        - dem_A[
-                            int(nearest_network[i, j, 0]), int(nearest_network[i, j, 1])
-                        ]
+                            dem_A[i, j]
+                            - dem_A[
+                                int(nearest_network[i, j, 0]), int(nearest_network[i, j, 1])
+                            ]
                     )
 
         # calculate the distance to the nearest drainage cell using flow path length
@@ -769,13 +730,14 @@ class DistParameters:
             for j in range(cols):
                 if dem_A[i, j] != no_val:
                     DTND[i, j] = (
-                        fpl_A[i, j]
-                        - fpl_A[
-                            int(nearest_network[i, j, 0]), int(nearest_network[i, j, 1])
-                        ]
+                            fpl_A[i, j]
+                            - fpl_A[
+                                int(nearest_network[i, j, 0]), int(nearest_network[i, j, 1])
+                            ]
                     )
 
         return HAND, DTND
+
 
     def ParametersNumber(self):
         """
@@ -798,12 +760,12 @@ class DistParameters:
                 0 to define that no hydrologic response units (HRUs), 1 to define that
                 HRUs are used
         """
-        if self.HRUs == 0:
+        if not self.HRUs:
             if self.no_lumped_par > 0:
                 # self.ParametersNO = (self.no_elem *( self.no_parameters - self.no_lumped_par)) + self.no_lumped_par
                 self.ParametersNO = (
-                    self.no_elem * self.no_parameters
-                ) + self.no_lumped_par
+                                            self.no_elem * self.no_parameters
+                                    ) + self.no_lumped_par
             else:
                 # if there is no lumped parameters
                 self.ParametersNO = self.no_elem * self.no_parameters
@@ -811,11 +773,12 @@ class DistParameters:
             if self.no_lumped_par > 0:
                 # self.ParametersNO = (self.no_elem * (self.no_parameters - self.no_lumped_par)) + self.no_lumped_par
                 self.ParametersNO = (
-                    self.no_elem * self.no_parameters
-                ) + self.no_lumped_par
+                                            self.no_elem * self.no_parameters
+                                    ) + self.no_lumped_par
             else:
                 # if there is no lumped parameters
                 self.ParametersNO = self.no_elem * self.no_parameters
+
 
     def SaveParameters(self, Path):
         """
@@ -909,6 +872,7 @@ class DistParameters:
 
         for i in range(np.shape(self.Par3d)[2]):
             Raster.RasterLike(self.raster, self.Par3d[:, :, i], pnme[i])
+
 
     def ListAttributes(self):
         """

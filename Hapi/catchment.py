@@ -9,7 +9,7 @@ import datetime as dt
 import math
 import os
 from types import ModuleType
-from typing import Union
+from typing import Optional, Union
 
 import geopandas as gpd
 import matplotlib.dates as dates
@@ -22,6 +22,7 @@ from osgeo import gdal
 import Hapi.sm.performancecriteria as PC
 from Hapi.gis.giscatchment import GISCatchment as GC
 from Hapi.gis.raster import Raster
+from Hapi.plot.map import Map
 from Hapi.plot.visualizer import Visualize as Vis
 
 
@@ -51,24 +52,26 @@ class Catchment:
         16-SaveResults
     """
 
+
     def __init__(
             self,
             name: str,
             startdata: str,
-            enddate: str,
+            end: str,
             fmt: str = "%Y-%m-%d",
-            SpatialResolution: str = "Lumped",
-            TemporalResolution: str = "Daily",
-            RouteRiver: str = "Muskingum",
+            SpatialResolution: Optional[str] = "Lumped",
+            TemporalResolution: Optional[str] = "Daily",
+            RouteRiver: Optional[str] = "Muskingum",
     ):
-        """
+        """Catchment.
+
         Parameters
         ----------
         name : [str]
             Name of the Catchment.
         startdata : [str]
             starting date.
-        enddate : [str]
+        end : [str]
             end date.
         fmt : [str], optional
             format of the given date. The default is "%Y-%m-%d".
@@ -82,10 +85,9 @@ class Catchment:
         None.
 
         """
-
         self.name = name
-        self.startdate = dt.datetime.strptime(startdata, fmt)
-        self.enddate = dt.datetime.strptime(enddate, fmt)
+        self.start = dt.datetime.strptime(startdata, fmt)
+        self.end = dt.datetime.strptime(end, fmt)
 
         if not SpatialResolution.lower() in ['lumped', 'distributed']:
             raise ValueError("available spatial resolutions are 'lumped' and 'distributed'")
@@ -94,6 +96,23 @@ class Catchment:
         if not TemporalResolution.lower() in ['daily', 'hourly']:
             raise ValueError("available temporal resolutions are 'daily' and 'hourly'")
         self.TemporalResolution = TemporalResolution.lower()
+        # assuming the default dt is 1 day
+        conversionfactor = (1000 * 24 * 60 * 60) / (1000 ** 2)
+        if TemporalResolution.lower() == "daily":
+            self.dt = 1  # 24
+            self.conversionfactor = conversionfactor * 1
+            self.Index = pd.date_range(self.start, self.end, freq="D")
+        elif TemporalResolution.lower() == "hourly":
+            self.dt = 1  # 24
+            self.conversionfactor = conversionfactor * 1 / 24
+            self.Index = pd.date_range(self.start, self.end, freq="H")
+        else:
+            # TODO calculate the temporal resolution factor
+            # q mm , area sq km  (1000**2)/1000/f/24/60/60 = 1/(3.6*f)
+            # if daily tfac=24 if hourly tfac=1 if 15 min tfac=0.25
+            self.conversionfactor = 24
+
+        self.RouteRiver = RouteRiver
         self.Parameters = None
         self.data = None
         self.Prec = None
@@ -111,40 +130,50 @@ class Catchment:
         self.GaugesTable = None
         self.UB = None
         self.LB = None
-        # assuming the default dt is 1 day
-        conversionfactor = (1000 * 24 * 60 * 60) / (1000 ** 2)
-        if TemporalResolution.lower() == "daily":
-            self.dt = 1  # 24
-            self.conversionfactor = conversionfactor * 1
-            self.Index = pd.date_range(self.startdate, self.enddate, freq="D")
-        elif TemporalResolution.lower() == "hourly":
-            self.dt = 1  # 24
-            self.conversionfactor = conversionfactor * 1 / 24
-            self.Index = pd.date_range(self.startdate, self.enddate, freq="H")
-        else:
-            # TODO calculate the temporal resolution factor
-            # q mm , area sq km  (1000**2)/1000/f/24/60/60 = 1/(3.6*f)
-            # if daily tfac=24 if hourly tfac=1 if 15 min tfac=0.25
-            self.Tfactor = 24
+        self.cols = None
+        self.rows = None
+        self.NoDataValue = None
+        self.FlowAccArr = None
+        self.no_elem = None
+        self.acc_val = None
+        self.Outlet = None
+        self.CellSize = None
+        self.px_area = None
+        self.px_tot_area = None
+        self.FlowDirArr = None
+        self.FDT = None
+        self.FPLArr = None
+        self.DEM, self.BankfullDepth, self.RiverWidth, self.RiverRoughness, self.FloodPlainRoughness = \
+            None, None, None, None, None
+        self.qout, self.Qtot = None, None
+        self.quz_routed, self.qlz_translated, self.statevariables = None, None, None
+        self.anim = None
+        self.quz, self.qlz = None, None
+        self.Qsim = None
+        self.Metrics = None
 
-        self.RouteRiver = RouteRiver
-        pass
 
-    def ReadRainfall(self,
-                     Path: str,
-                     start: str = "",
-                     end: str = "",
-                     fmt: str = ""):
-        """
+    def ReadRainfall(
+            self,
+            Path: str,
+            start: str = "",
+            end: str = "",
+            fmt: str = ""
+    ):
+        """ReadRainfall.
+
         Parameters
         ----------
-            Path : [String]
-                path to the Folder contains precipitation rasters.
-            start: [str]
-
-            end: [str]
-
-            fmt: [str]
+        Path : [String]
+            path to the Folder contains precipitation rasters.
+        fmt: [str]
+            format of the given date
+        start: [str]
+            start date if you want to read the input temperature for a specific period only,
+            if not given all rasters in the given path will be read.
+        end: [str]
+            end date if you want to read the input temperature for a specific period only,
+            if not given all rasters in the given path will be read.
 
 
         Returns
@@ -152,7 +181,7 @@ class Catchment:
         Prec : [array attribute]
             array containing the spatial rainfall values
         """
-        if not hasattr(self, "Prec"):
+        if self.Prec is None:
             # data type
             assert isinstance(Path, str), "PrecPath input should be string type"
             # check wether the path exists or not
@@ -170,20 +199,38 @@ class Catchment:
 
             logger.debug("Rainfall data are read successfully")
 
-    def ReadTemperature(self, Path, ll_temp=None, start="", end="", fmt=""):
-        """
+
+    def ReadTemperature(
+            self,
+            Path: str,
+            ll_temp: Union[list, np.ndarray] = None,
+            start: str = "",
+            end: str = "",
+            fmt: str = ""
+    ):
+        """ReadTemperature.
+
         Parameters
         ----------
         Path : [String]
             path to the Folder contains temperature rasters.
+        fmt: [str]
+            format of the given date
+        start: [str]
+            start date if you want to read the input temperature for a specific period only,
+            if not given all rasters in the given path will be read.
+        end: [str]
+            end date if you want to read the input temperature for a specific period only,
+            if not given all rasters in the given path will be read.
+        ll_temp: [list/ ndarray]
+            long term temperature
 
         Returns
         -------
         Temp : [array attribute]
             array containing the spatial temperature values
-
         """
-        if not hasattr(self, "Temp"):
+        if self.Temp is None:
             # data type
             assert type(Path) == str, "PrecPath input should be string type"
             # check wether the path exists or not
@@ -205,20 +252,35 @@ class Catchment:
 
             logger.debug("Temperature data are read successfully")
 
-    def ReadET(self, Path, start="", end="", fmt=""):
-        """
+
+    def ReadET(
+            self,
+            Path: str,
+            start: str = "",
+            end: str = "",
+            fmt: str = ""
+    ):
+        """ReadET.
+
         Parameters
         ----------
         Path : [String]
             path to the Folder contains Evapotranspiration rasters.
+        fmt: [str]
+            format of the given date
+        start: [str]
+            start date if you want to read the input temperature for a specific period only,
+            if not given all rasters in the given path will be read.
+        end: [str]
+            end date if you want to read the input temperature for a specific period only,
+            if not given all rasters in the given path will be read.
 
         Returns
         -------
         ET : [array attribute]
             array containing the spatial Evapotranspiration values
-
         """
-        if not hasattr(self, "ET"):
+        if self.ET is None:
             # data type
             assert type(Path) == str, "PrecPath input should be string type"
             # check wether the path exists or not
@@ -232,8 +294,10 @@ class Catchment:
             assert type(self.ET) == np.ndarray, "array should be of type numpy array"
             logger.debug("Potential Evapotranspiration data are read successfully")
 
-    def ReadFlowAcc(self, Path):
-        """
+
+    def ReadFlowAcc(self, Path: str):
+        """ReadFlowAcc.
+
         Parameters
         ----------
         Path : [String]
@@ -252,10 +316,9 @@ class Catchment:
             the NoDataValue
         no_elem : [integer]
             number of cells in the domain
-
         """
         # data type
-        assert type(Path) == str, "PrecPath input should be string type"
+        assert isinstance(Path, str), "PrecPath input should be string type"
         # check wether the path exists or not
         assert os.path.exists(Path), Path + " you have provided does not exist"
         # check the extension of the accumulation file
@@ -323,7 +386,8 @@ class Catchment:
 
         logger.debug("Flow Accmulation input is read successfully")
 
-    def ReadFlowDir(self, Path):
+
+    def ReadFlowDir(self, Path: str):
         """ReadFlowDir method reads the flow direction raster.
 
         Parameters
@@ -339,7 +403,7 @@ class Catchment:
             flow direction table
         """
         # data type
-        assert type(Path) == str, "PrecPath input should be string type"
+        assert isinstance(Path, str), "PrecPath input should be string type"
         # check wether the path exists or not
         assert os.path.exists(Path), Path + " you have provided does not exist"
         # check the extension of the accumulation file
@@ -376,7 +440,8 @@ class Catchment:
         self.FDT = GC.FlowDirecTable(FlowDir)
         logger.debug("Flow Direction input is read successfully")
 
-    def ReadFlowPathLength(self, Path):
+
+    def ReadFlowPathLength(self, Path: str):
         """ReadFlowPathLength method reads the flow path length.
 
         Parameters
@@ -398,7 +463,7 @@ class Catchment:
             number of cells in the domain
         """
         # data type
-        assert type(Path) == str, "PrecPath input should be string type"
+        assert isinstance(Path, str), "PrecPath input should be string type"
         # input values
         FPL_ext = Path[-4:]
         assert (
@@ -423,9 +488,29 @@ class Catchment:
 
         logger.debug("Flow Path length input is read successfully")
 
+
     def ReadRiverGeometry(
-            self, DEMF, BankfulldepthF, RiverWidthF, RiverRoughnessF, FloodPlainRoughnessF
+            self,
+            DEMF: str,
+            BankfulldepthF: str,
+            RiverWidthF: str,
+            RiverRoughnessF: str,
+            FloodPlainRoughnessF: str
     ):
+        """ReadRiverGeometry.
+
+        Parameters
+        ----------
+        DEMF
+        BankfulldepthF
+        RiverWidthF
+        RiverRoughnessF
+        FloodPlainRoughnessF
+
+        Returns
+        -------
+
+        """
         DEM = gdal.Open(DEMF)
         self.DEM = DEM.ReadAsArray()
 
@@ -441,10 +526,11 @@ class Catchment:
         FloodPlainRoughness = gdal.Open(FloodPlainRoughnessF)
         self.FloodPlainRoughness = FloodPlainRoughness.ReadAsArray()
 
+
     def ReadParameters(
             self,
             Path: str,
-            Snow: int = 0,
+            Snow: int = False,
             Maxbas: bool = False
     ):
         """ReadParameters.
@@ -456,7 +542,7 @@ class Catchment:
         Path : [str]
             path to the folder where the raster exist.
         Snow : [integer]
-            0 if you dont want to run the snow related processes and 1 if there is snow.
+            False if you dont want to run the snow related processes and 1 if there is snow.
             in case of 1 (simulate snow processes) parameters related to snow simulation
             has to be provided. The default is 0.
         Maxbas : [bool], optional
@@ -486,56 +572,57 @@ class Catchment:
             self.Parameters = pd.read_csv(Path, index_col=0, header=None)[1].tolist()
 
         assert (
-                Snow == 0 or Snow == 1
-        ), " snow input defines whether to consider snow subroutine or not it has to be 0 or 1"
+                Snow == False or Snow
+        ), " snow input defines whether to consider snow subroutine or not it has to be True or False"
 
         self.Snow = Snow
         self.Maxbas = Maxbas
 
         if self.SpatialResolution == "distributed":
-            if Snow == 1 and Maxbas:
+            if Snow and Maxbas:
                 assert self.Parameters.shape[2] == 16, (
                         "current version of HBV (with snow) takes 16 parameter you have entered "
                         + str(self.Parameters.shape[2])
                 )
-            elif Snow == 0 and Maxbas:
+            elif not Snow and Maxbas:
                 assert self.Parameters.shape[2] == 11, (
                         "current version of HBV (with snow) takes 11 parameter you have entered "
                         + str(self.Parameters.shape[2])
                 )
-            elif Snow == 1 and not Maxbas:
+            elif Snow and not Maxbas:
                 assert self.Parameters.shape[2] == 17, (
                         "current version of HBV (with snow) takes 17 parameter you have entered "
                         + str(self.Parameters.shape[2])
                 )
-            elif Snow == 0 and not Maxbas:
+            elif not Snow and not Maxbas:
                 assert self.Parameters.shape[2] == 12, (
                         "current version of HBV (with snow) takes 12 parameter you have entered "
                         + str(self.Parameters.shape[2])
                 )
         else:
-            if Snow == 1 and Maxbas:
+            if Snow and Maxbas:
                 assert len(self.Parameters) == 16, (
                         "current version of HBV (with snow) takes 16 parameter you have entered "
                         + str(len(self.Parameters))
                 )
-            elif Snow == 0 and Maxbas:
+            elif not Snow and Maxbas:
                 assert len(self.Parameters) == 11, (
                         "current version of HBV (with snow) takes 11 parameter you have entered "
                         + str(len(self.Parameters))
                 )
-            elif Snow == 1 and not Maxbas:
+            elif Snow and not Maxbas:
                 assert len(self.Parameters) == 17, (
                         "current version of HBV (with snow) takes 17 parameter you have entered "
                         + str(len(self.Parameters))
                 )
-            elif Snow == 0 and not Maxbas:
+            elif not Snow and not Maxbas:
                 assert len(self.Parameters) == 12, (
                         "current version of HBV (with snow) takes 12 parameter you have entered "
                         + str(len(self.Parameters))
                 )
 
         logger.debug("Parameters are read successfully")
+
 
     def ReadLumpedModel(
             self,
@@ -590,6 +677,7 @@ class Catchment:
 
         logger.debug("Lumped model is read successfully")
 
+
     def ReadLumpedInputs(
             self,
             Path: str,
@@ -630,6 +718,7 @@ class Catchment:
         ), " meteorological data should be of length at least 3 (prec, ET, temp) or 4(prec, ET, temp, tm) "
 
         logger.debug("Lumped Model inputs are read successfully")
+
 
     def ReadGaugeTable(
             self,
@@ -683,6 +772,7 @@ class Catchment:
 
         logger.debug("Gauge Table is read successfully")
 
+
     def ReadDischargeGauges(
             self,
             Path: str,
@@ -726,9 +816,9 @@ class Catchment:
             dataframe containing the discharge data
         """
         if self.TemporalResolution.lower() == "daily":
-            ind = pd.date_range(self.startdate, self.enddate, freq="D")
+            ind = pd.date_range(self.start, self.end, freq="D")
         else:
-            ind = pd.date_range(self.startdate, self.enddate, freq="H")
+            ind = pd.date_range(self.start, self.end, freq="H")
 
         if self.SpatialResolution.lower() == "distributed":
             assert hasattr(self, "GaugesTable"), "please read the gauges table first"
@@ -757,7 +847,7 @@ class Catchment:
                 f.index = [dt.datetime.strptime(i, fmt) for i in f.index.tolist()]
 
                 self.QGauges[int(name)] = f.loc[
-                                          self.startdate: self.enddate, f.columns[-1]
+                                          self.start: self.end, f.columns[-1]
                                           ]
         else:
             self.QGauges = pd.DataFrame(index=ind)
@@ -766,7 +856,7 @@ class Catchment:
             )  # ,#delimiter="\t", skiprows=11,
             f.index = [dt.datetime.strptime(i, fmt) for i in f.index.tolist()]
             self.QGauges[f.columns[0]] = f.loc[
-                                         self.startdate: self.enddate, f.columns[0]
+                                         self.start: self.end, f.columns[0]
                                          ]
 
         if Split:
@@ -776,11 +866,12 @@ class Catchment:
 
         logger.debug("Gauges data are read successfully")
 
+
     def ReadParametersBounds(
             self,
-            UB: list,
-            LB: list,
-            Snow: int = 0,
+            UB: Union[list, np.ndarray],
+            LB: Union[list, np.ndarray],
+            Snow: bool = False,
             Maxbas: bool = False
     ):
         """ReadParametersBounds.
@@ -814,18 +905,24 @@ class Catchment:
         self.UB = np.array(UB)
         self.LB = np.array(LB)
 
-        assert (
-                Snow == 0 or Snow == 1
-        ), " snow input defines whether to consider snow subroutine or not it has to be 0 or 1"
+        assert isinstance(Snow, bool), " snow input defines whether to consider snow subroutine or not it has to be " \
+                                       "True or False"
         self.Snow = Snow
         self.Maxbas = Maxbas
 
         logger.debug("Parameters bounds are read successfully")
 
+
     def ExtractDischarge(
-            self, CalculateMetrics=True, FW1=False, Factor=None, OnlyOutlet=False
+            self,
+            CalculateMetrics=True,
+            FW1=False,
+            Factor=None,
+            OnlyOutlet=False
     ):
-        """ExtractDischarge method extracts and sums the discharge from the
+        """ExtractDischarge
+
+        ExtractDischarge method extracts and sums the discharge from the
         Quz_routed and Qlz_translated arrays at the location of the gauges.
 
         Parameters
@@ -838,6 +935,8 @@ class Catchment:
             list of factor if you want to multiply the simulated discharge by
             a factor you have to provide a list of the factor (as many factors
             as the number of gauges). The default is False.
+        OnlyOutlet: [bool]
+            True to extract the discharge only at the outlet.
         Returns
         -------
         Qsim : [dataframe]
@@ -909,6 +1008,7 @@ class Catchment:
                     PC.PearsonCorre(Qobs, Qsim), 3
                 )
                 self.Metrics.loc["R2", gaugeid] = round(PC.R2(Qobs, Qsim), 3)
+
 
     def PlotHydrograph(
             self,
@@ -1052,29 +1152,27 @@ class Catchment:
 
         return fig, ax
 
+
     def PlotDistributedResults(
-            self, startdate, enddate, fmt="%Y-%m-%d", Option=1, Gauges=False, **kwargs
+            self,
+            start: str,
+            end: str,
+            fmt: str = "%Y-%m-%d",
+            Option: int = 1,
+            Gauges: bool = False,
+            **kwargs
     ):
-        """
-         =============================================================================
-           PlotDistributedResults(startdate, enddate, fmt="%Y-%m-%d", Option = 1, Gauges=False,
-                            TicksSpacing = 2, Figsize=(8,8), PlotNumbers=True,
-                            NumSize= 8, Title = 'Total Discharge',titlesize = 15, Backgroundcolorthreshold=None,
-                            cbarlabel = 'Discharge m3/s', cbarlabelsize = 12, textcolors=("white","black"),
-                            Cbarlength = 0.75, Interval = 200,cmap='coolwarm_r', Textloc=[0.1,0.2],
-                            Gaugecolor='red',Gaugesize=100, ColorScale = 1,gamma=1./2.,linthresh=0.0001,
-                            linscale=0.001, midpoint=0, orientation='vertical', rotation=-90,
-                            **kwargs):
-        =============================================================================
+        """PlotDistributedResults
+
         PlotDistributedResults animate the time series of the meteorological inputs and
         the result calculated by the model  like the total discharge, upper zone,
         and lower zone discharge and the state variables
 
         Parameters
         ----------
-        startdate : [str]
+        start : [str]
             starting date
-        enddate : [str]
+        end : [str]
             end date
         fmt : [str]
             format of the gicen date. The default is "%Y-%m-%d"
@@ -1085,77 +1183,82 @@ class Catchment:
             11-Temperature. The default is 1
         Gauges : [str]
             . The default is False
-        TicksSpacing : [integer], optional
-            Spacing in the colorbar ticks. The default is 2.
-        Figsize : [tuple], optional
-            figure size. The default is (8,8).
-        PlotNumbers : [bool], optional
-            True to plot the values intop of each cell. The default is True.
-        NumSize : integer, optional
-            size of the numbers plotted intop of each cells. The default is 8.
-        Title : [str], optional
-            title of the plot. The default is 'Total Discharge'.
-        titlesize : [integer], optional
-            title size. The default is 15.
-        Backgroundcolorthreshold : [float/integer], optional
-            threshold value if the value of the cell is greater, the plotted
-            numbers will be black and if smaller the plotted number will be white
-            if None given the maxvalue/2 will be considered. The default is None.
-        textcolors : TYPE, optional
-            Two colors to be used to plot the values i top of each cell. The default is ("white","black").
-        cbarlabel : str, optional
-            label of the color bar. The default is 'Discharge m3/s'.
-        cbarlabelsize : integer, optional
-            size of the color bar label. The default is 12.
-        Cbarlength : [float], optional
-            ratio to control the height of the colorbar. The default is 0.75.
-        Interval : [integer], optional
-            number to controlthe speed of the animation. The default is 200.
-        cmap : [str], optional
-            color style. The default is 'coolwarm_r'.
-        Textloc : [list], optional
-            location of the date text. The default is [0.1,0.2].
-        Gaugecolor : [str], optional
-            color of the points. The default is 'red'.
-        Gaugesize : [integer], optional
-            size of the points. The default is 100.
-        ColorScale : integer, optional
-            there are 5 options to change the scale of the colors. The default is 1.
-            1- ColorScale 1 is the normal scale
-            2- ColorScale 2 is the power scale
-            3- ColorScale 3 is the SymLogNorm scale
-            4- ColorScale 4 is the PowerNorm scale
-            5- ColorScale 5 is the BoundaryNorm scale
-            ------------------------------------------------------------------
-            gamma : [float], optional
-                value needed for option 2 . The default is 1./2..
-            linthresh : [float], optional
-                value needed for option 3. The default is 0.0001.
-            linscale : [float], optional
-                value needed for option 3. The default is 0.001.
-            midpoint : [float], optional
-                value needed for option 5. The default is 0.
-            ------------------------------------------------------------------
-        orientation : [string], optional
-            orintation of the colorbar horizontal/vertical. The default is 'vertical'.
-        rotation : [number], optional
-            rotation of the colorbar label. The default is -90.
-        **kwargs : [dict]
-            keys:
-                Points : [dataframe].
-                    dataframe contains two columns 'cell_row', and cell_col to
-                    plot the point at this location
+        **kwargs :
+            possible keyward args
+            TicksSpacing : [integer], optional
+                Spacing in the colorbar ticks. The default is 2.
+            Figsize : [tuple], optional
+                figure size. The default is (8,8).
+            PlotNumbers : [bool], optional
+                True to plot the values intop of each cell. The default is True.
+            NumSize : integer, optional
+                size of the numbers plotted intop of each cells. The default is 8.
+            Title : [str], optional
+                title of the plot. The default is 'Total Discharge'.
+            titlesize : [integer], optional
+                title size. The default is 15.
+            Backgroundcolorthreshold : [float/integer], optional
+                threshold value if the value of the cell is greater, the plotted
+                numbers will be black and if smaller the plotted number will be white
+                if None given the maxvalue/2 will be considered. The default is None.
+            textcolors : TYPE, optional
+                Two colors to be used to plot the values i top of each cell. The default is ("white","black").
+            cbarlabel : str, optional
+                label of the color bar. The default is 'Discharge m3/s'.
+            cbarlabelsize : integer, optional
+                size of the color bar label. The default is 12.
+            Cbarlength : [float], optional
+                ratio to control the height of the colorbar. The default is 0.75.
+            Interval : [integer], optional
+                number to controlthe speed of the animation. The default is 200.
+            cmap : [str], optional
+                color style. The default is 'coolwarm_r'.
+            Textloc : [list], optional
+                location of the date text. The default is [0.1,0.2].
+            Gaugecolor : [str], optional
+                color of the points. The default is 'red'.
+            Gaugesize : [integer], optional
+                size of the points. The default is 100.
+            ColorScale : integer, optional
+                there are 5 options to change the scale of the colors. The default is 1.
+                1- ColorScale 1 is the normal scale
+                2- ColorScale 2 is the power scale
+                3- ColorScale 3 is the SymLogNorm scale
+                4- ColorScale 4 is the PowerNorm scale
+                5- ColorScale 5 is the BoundaryNorm scale
+                ------------------------------------------------------------------
+                gamma : [float], optional
+                    value needed for option 2 . The default is 1./2..
+                linthresh : [float], optional
+                    value needed for option 3. The default is 0.0001.
+                linscale : [float], optional
+                    value needed for option 3. The default is 0.001.
+                midpoint : [float], optional
+                    value needed for option 5. The default is 0.
+                ------------------------------------------------------------------
+            orientation : [string], optional
+                orintation of the colorbar horizontal/vertical. The default is 'vertical'.
+            rotation : [number], optional
+                rotation of the colorbar label. The default is -90.
+            **kwargs : [dict]
+                keys:
+                    Points : [dataframe].
+                        dataframe contains two columns 'cell_row', and cell_col to
+                        plot the point at this location
 
         Returns
         -------
         animation.FuncAnimation.
 
         """
-        startdate = dt.datetime.strptime(startdate, fmt)
-        enddate = dt.datetime.strptime(enddate, fmt)
+        start = dt.datetime.strptime(start, fmt)
+        end = dt.datetime.strptime(end, fmt)
 
-        starti = np.where(self.Index == startdate)[0][0]
-        endi = np.where(self.Index == enddate)[0][0]
+        starti = np.where(self.Index == start)[0][0]
+        endi = np.where(self.Index == end)[0][0]
+
+        if 1 > Option > 11:
+            raise ValueError("Plotting options are from 1 to 11")
 
         if Option == 1:
             self.Qtot[self.FlowAccArr == self.NoDataValue, :] = np.nan
@@ -1207,11 +1310,12 @@ class Catchment:
         if Gauges:
             kwargs["Points"] = self.GaugesTable
 
-        anim = Vis.AnimateArray(Arr, Time, self.no_elem, Title=Title, **kwargs)
+        anim = Map.AnimateArray(Arr, Time, self.no_elem, Title=Title, **kwargs)
 
         self.anim = anim
 
         return anim
+
 
     def SaveAnimation(self, VideoFormat="gif", Path="", SaveFrames=20):
         """SaveAnimation.
@@ -1234,6 +1338,7 @@ class Catchment:
         Vis.SaveAnimation(
             self.anim, VideoFormat=VideoFormat, Path=Path, SaveFrames=SaveFrames
         )
+
 
     def SaveResults(
             self,
@@ -1274,17 +1379,17 @@ class Catchment:
         None.
         """
         if start == "":
-            startdate = self.Index[0]
+            start = self.Index[0]
         else:
-            startdate = dt.datetime.strptime(start, fmt)
+            start = dt.datetime.strptime(start, fmt)
 
         if end == "":
-            enddate = self.Index[-1]
+            end = self.Index[-1]
         else:
-            enddate = dt.datetime.strptime(end, fmt)
+            end = dt.datetime.strptime(end, fmt)
 
-        starti = np.where(self.Index == startdate)[0][0]
-        endi = np.where(self.Index == enddate)[0][0] + 1
+        starti = np.where(self.Index == start)[0][0]
+        endi = np.where(self.Index == end)[0][0] + 1
 
         if self.SpatialResolution == "distributed":
             assert (
@@ -1328,7 +1433,7 @@ class Catchment:
                     src, self.statevariables[:, :, starti:endi, 4], names
                 )
         else:
-            ind = pd.date_range(startdate, enddate, freq="D")
+            ind = pd.date_range(start, end, freq="D")
             data = pd.DataFrame(index=ind)
 
             data["date"] = ["'" + str(i)[:10] + "'" for i in data.index]
@@ -1359,6 +1464,7 @@ class Catchment:
                 assert False, "the possible options are from 1 to 5"
 
         logger.debug("Data is saved successfully")
+
 
     def ListAttributes(self):
         """Print Attributes List."""
@@ -1397,26 +1503,24 @@ class Lake:
         3- ReadLumpedModel
     """
 
+
     def __init__(
             self,
-            startdate="",
-            enddate="",
+            start="",
+            end="",
             fmt="%Y-%m-%d",
             TemporalResolution="Daily",
             Split=False,
     ):
-        """
-        =========================================================================
-            Lake(startdate='', enddate='', fmt="%Y-%m-%d",
-                         TemporalResolution="Daily", Split=False)
-        =========================================================================
+        """Lake.
+
         Lake class for lake simulation
 
         Parameters
         ----------
-        startdate : [str], optional
+        start : [str], optional
             start date. The default is ''.
-        enddate : [str], optional
+        end : [str], optional
             end date. The default is ''.
         fmt : [str], optional
             date format. The default is "%Y-%m-%d".
@@ -1428,26 +1532,29 @@ class Lake:
         Returns
         -------
         None.
-
         """
 
+        self.OutflowCell = None
+        self.Snow = None
         self.Split = Split
-        self.startdate = dt.datetime.strptime(startdate, fmt)
-        self.enddate = dt.datetime.strptime(enddate, fmt)
+        self.start = dt.datetime.strptime(start, fmt)
+        self.end = dt.datetime.strptime(end, fmt)
 
-        if TemporalResolution == "Daily":
-            self.Index = pd.date_range(startdate, enddate, freq="D")
-        elif TemporalResolution == "Hourly":
-            self.Index = pd.date_range(startdate, enddate, freq="H")
+        if TemporalResolution.lower() == "daily":
+            self.Index = pd.date_range(start, end, freq="D")
+        elif TemporalResolution.lower() == "hourly":
+            self.Index = pd.date_range(start, end, freq="H")
         else:
             assert False, "Error"
-        pass
+        self.MeteoData = None
+        self.Parameters = None
+        self.LumpedModel, self.CatArea, self.LakeArea, self.InitialCond = None, None, None, None
+        self.StageDischargeCurve = None
 
-    def ReadMeteoData(self, Path, fmt):
-        """
-        =================================================================
-              ReadMeteoData(Path, fmt)
-        =================================================================
+
+    def ReadMeteoData(self, Path: str, fmt: str):
+        """ReadMeteoData
+
         ReadMeteoData reads the meteorological data for the lake
         [rainfall, ET, temperature]
 
@@ -1463,24 +1570,22 @@ class Lake:
         -------
         MeteoData : [array].
             array containing the meteorological data
-
         """
 
         df = pd.read_csv(Path, index_col=0)
         df.index = [dt.datetime.strptime(date, fmt) for date in df.index]
 
         if self.Split:
-            df = df.loc[self.startdate: self.enddate, :]
+            df = df.loc[self.start: self.end, :]
 
         self.MeteoData = df.values  # lakeCalibArray = lakeCalibArray[:,0:-1]
 
         logger.debug("Lake Meteo data are read successfully")
 
+
     def ReadParameters(self, Path):
-        """
-        ====================================================================
-             ReadParameters(Path)
-        ====================================================================
+        """ReadParameters
+
         ReadParameters method reads the lake parameters
 
         Parameters
@@ -1491,11 +1596,11 @@ class Lake:
         Returns
         -------
         Parameters : [array].
-
         """
         Parameters = np.loadtxt(Path).tolist()
         self.Parameters = Parameters
         logger.debug("Lake Parameters are read successfully")
+
 
     def ReadLumpedModel(
             self,
@@ -1507,11 +1612,8 @@ class Lake:
             StageDischargeCurve,
             Snow,
     ):
-        """
-        ==========================================================================
-            ReadLumpedModel(self, LumpedModel, CatArea, LakeArea, InitialCond,
-                             OutflowCell, StageDischargeCurve, Snow)
-        ==========================================================================
+        """ReadLumpedModel.
+
         ReadLumpedModel reads the lumped model module
 
         Parameters
@@ -1556,7 +1658,7 @@ class Lake:
         self.LakeArea = LakeArea
         self.InitialCond = InitialCond
 
-        if self.InitialCond != None:
+        if self.InitialCond is not None:
             assert type(self.InitialCond) == list, "init_st should be of type list"
 
         self.Snow = Snow

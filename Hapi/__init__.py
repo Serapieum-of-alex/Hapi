@@ -51,13 +51,12 @@ import Hapi.catchment
 import Hapi.gis
 import Hapi.hm
 import Hapi.java_functions
+import Hapi.plot
 import Hapi.rrm
 import Hapi.rs
 import Hapi.run
 import Hapi.sm
-import Hapi.plot
 import Hapi.weirdFn
-
 
 # import Hapi.saintvenant
 # module level doc-string

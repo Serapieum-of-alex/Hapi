@@ -28,7 +28,6 @@ surface runoff, interflow and baseflow
 # libraries
 import numpy as np
 
-
 DEF_ST = [0.0, 10.0, 10.0, 10.0, 0.0]
 DEF_q0 = 0
 

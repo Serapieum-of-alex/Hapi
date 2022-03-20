@@ -24,8 +24,6 @@ from matplotlib import animation, gridspec
 from matplotlib.animation import FuncAnimation
 from scipy.stats import gumbel_r
 
-
-
 hours = list(range(1, 25))
 
 class Visualize:

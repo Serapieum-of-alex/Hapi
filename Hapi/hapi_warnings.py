@@ -1,5 +1,7 @@
 import warnings
+
 import numpy as np
+
 
 class InstabilityWarning(UserWarning):
     """Issued when results may be unstable."""

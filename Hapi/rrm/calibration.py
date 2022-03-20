@@ -11,6 +11,7 @@ runoff at known locations based on given performance function
 
 """
 import datetime as dt
+from typing import Any, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -35,15 +36,16 @@ class Calibration(Catchment):
 
     """
 
+
     def __init__(
             self,
-            name,
-            startdate,
-            enddate,
-            fmt="%Y-%m-%d",
-            SpatialResolution="Lumped",
-            TemporalResolution="Daily",
-            RouteRiver="Muskingum",
+            name: Any,
+            start: str,
+            end: str,
+            fmt: str = "%Y-%m-%d",
+            SpatialResolution: Optional[str] = "Lumped",
+            TemporalResolution: Optional[str] = "Daily",
+            RouteRiver: Optional[str] = "Muskingum",
     ):
         """Calibration.
 
@@ -54,9 +56,9 @@ class Calibration(Catchment):
         ----------
         name : [str]
             Name of the Catchment.
-        StartDate : [str]
+        start : [str]
             starting date.
-        enddate : [str]
+        end : [str]
             end date.
         fmt : [str], optional
             format of the given date. The default is "%Y-%m-%d".
@@ -71,21 +73,21 @@ class Calibration(Catchment):
 
         """
         self.name = name
-        self.startdate = dt.datetime.strptime(startdate, fmt)
-        self.enddate = dt.datetime.strptime(enddate, fmt)
+        self.start = dt.datetime.strptime(start, fmt)
+        self.end = dt.datetime.strptime(end, fmt)
         self.SpatialResolution = SpatialResolution
         self.TemporalResolution = TemporalResolution
 
         conversionfactor = (1000 * 24 * 60 * 60) / (1000 ** 2)
 
-        if TemporalResolution == "Daily":
+        if TemporalResolution.lower() == "daily":
             self.dt = 1  # 24
             self.conversionfactor = conversionfactor * 1
-            self.Index = pd.date_range(self.startdate, self.enddate, freq="D")
-        elif TemporalResolution == "Hourly":
+            self.Index = pd.date_range(self.start, self.end, freq="D")
+        elif TemporalResolution.lower() == "hourly":
             self.dt = 1  # 24
             self.conversionfactor = conversionfactor * 1 / 24
-            self.Index = pd.date_range(self.startdate, self.enddate, freq="H")
+            self.Index = pd.date_range(self.start, self.end, freq="H")
         else:
             # TODO calculate the teporal resolution factor
             # q mm , area sq km  (1000**2)/1000/f/60/60 = 1/(3.6*f)
@@ -93,13 +95,52 @@ class Calibration(Catchment):
             self.Tfactor = 24
 
         self.RouteRiver = RouteRiver
+        self.RouteRiver = RouteRiver
+        self.Parameters = None
+        self.data = None
+        self.Prec = None
+        self.TS = None
+        self.Temp = None
+        self.ET = None
+        self.ll_temp = None
+        self.QGauges = None
+        self.Snow = None
+        self.Maxbas = None
+        self.LumpedModel = None
+        self.CatArea = None
+        self.InitialCond = None
+        self.q_init = None
+        self.GaugesTable = None
+        self.UB = None
+        self.LB = None
+        self.cols = None
+        self.rows = None
+        self.NoDataValue = None
+        self.FlowAccArr = None
+        self.no_elem = None
+        self.acc_val = None
+        self.Outlet = None
+        self.CellSize = None
+        self.px_area = None
+        self.px_tot_area = None
+        self.FlowDirArr = None
+        self.FDT = None
+        self.FPLArr = None
+        self.DEM, self.BankfullDepth, self.RiverWidth, self.RiverRoughness, self.FloodPlainRoughness = \
+            None, None, None, None, None
+        self.qout, self.Qtot = None, None
+        self.quz_routed, self.qlz_translated, self.statevariables = None, None, None
+        self.anim = None
+        self.quz, self.qlz = None, None
+        self.Qsim = None
+        self.Metrics = None
+
         pass
 
+
     def ReadObjectiveFn(self, OF, args):
-        """
-        ==============================================================
-            ReadObjectiveFn(OF,args)
-        ==============================================================
+        """ReadObjectiveFn
+
         ReadObjectiveFn method takes the objective function and and any arguments
         that are needed to be passed to the objective function.
 
@@ -120,18 +161,17 @@ class Calibration(Catchment):
         assert callable(OF), "The Objective function should be a function"
         self.OF = OF
 
-        if args == None:
+        if args is None:
             args = []
 
         self.OFArgs = args
 
         print("Objective function is read successfully")
 
+
     def ExtractDischarge(self, Factor=None):
-        """
-        ================================================================
-                ExtractDischarge(self)
-        ================================================================
+        """ExtractDischarge
+
         ExtractDischarge method extracts the discharge hydrograph in the
         Q
 
@@ -170,13 +210,10 @@ class Calibration(Catchment):
 
         # return error
 
+
     def RunCalibration(self, SpatialVarFun, OptimizationArgs, printError=None):
-        """
-        =======================================================================
-            RunCalibration(ConceptualModel, Paths, p2, Q_obs, UB, LB,
-                           SpatialVarFun, lumpedParNo, lumpedParPos,
-                           objective_function, printError=None, *args):
-        =======================================================================
+        """RunCalibration
+
         this function runs the calibration algorithm for the conceptual distributed
         hydrological model
 
@@ -274,6 +311,7 @@ class Calibration(Catchment):
 
         print("Calibration starts")
 
+
         ### calculate the objective function
         def opt_fun(par):
             try:
@@ -315,6 +353,7 @@ class Calibration(Catchment):
 
             return error, g, fail
 
+
         ### define the optimization components
         opt_prob = Optimization("HBV Calibration", opt_fun)
         for i in range(len(self.LB)):
@@ -350,11 +389,10 @@ class Calibration(Catchment):
 
         return res
 
+
     def FW1Calibration(self, SpatialVarFun, OptimizationArgs, printError=None):
-        """
-        =======================================================================
-            RunCalibration(ConceptualModel, Paths, p2, Q_obs, UB, LB, SpatialVarFun, lumpedParNo, lumpedParPos, objective_function, printError=None, *args):
-        =======================================================================
+        """RunCalibration.
+
         this function runs the calibration algorithm for the conceptual distributed
         hydrological model
 
@@ -450,6 +488,7 @@ class Calibration(Catchment):
 
         print("Calibration starts")
 
+
         ### calculate the objective function
         def opt_fun(par):
             try:
@@ -481,6 +520,7 @@ class Calibration(Catchment):
 
             return error, [], fail
 
+
         ### define the optimization components
         opt_prob = Optimization("HBV Calibration", opt_fun)
         for i in range(len(self.LB)):
@@ -509,6 +549,7 @@ class Calibration(Catchment):
         self.OFvalue = res[0]
 
         return res
+
 
     def LumpedCalibration(self, Basic_inputs, OptimizationArgs, printError=None):
         """RunCalibration.
@@ -601,6 +642,7 @@ class Calibration(Catchment):
 
         print("Calibration starts")
 
+
         ### calculate the objective function
         def opt_fun(par):
             try:
@@ -623,12 +665,7 @@ class Calibration(Catchment):
                     ), "the objective function you have entered needs more inputs please enter then in a list as *args"
 
                 if printError != 0:
-                    print(
-                        "Error = "
-                        + str(round(error, 3))
-                        + " Inequality Const = "
-                        + str(np.round(g, 2))
-                    )
+                    print(f"Error = {round(error, 3)} Inequality Const = {np.round(g, 2)}")
                     # print(par)
                 fail = 0
             except:
@@ -636,6 +673,7 @@ class Calibration(Catchment):
                 g = []
                 fail = 1
             return error, g, fail
+
 
         ### define the optimization components
         opt_prob = Optimization("HBV Calibration", opt_fun)
@@ -686,6 +724,7 @@ class Calibration(Catchment):
         self.Parameters = res[1]
 
         return res
+
 
     def ListAttributes(self):
         """

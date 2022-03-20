@@ -1,21 +1,20 @@
 import datetime as dt
-from typing import Union, Any  # , Optional,
+from typing import Any, Union  # , Optional,
 
+import fiona
 import geopandas as gpd
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-
 from geopandas import GeoDataFrame
-from pandas.core.frame import DataFrame
-from pandas._libs.tslibs.timestamps import Timestamp
-import fiona
-
 from loguru import logger
-import matplotlib.pyplot as plt
+from pandas._libs.tslibs.timestamps import Timestamp
+from pandas.core.frame import DataFrame
 
-from Hapi.hm.river import River
 import Hapi.sm.performancecriteria as pf
 from Hapi.hapi_warnings import SilenceNumpyWarning, SilenceShapelyWarning
+from Hapi.hm.river import River
+
 datafn = lambda x: dt.datetime.strptime(x, "%Y-%m-%d")
 
 SilenceNumpyWarning()

@@ -4,7 +4,6 @@ based on a source raster, perform any algebric operation on cell's values
 
 @author: Mostafa
 """
-from typing import Optional, Union, Any
 import datetime as dt
 
 # import subprocess
@@ -18,9 +17,7 @@ import sys
 # import datetime as dt
 import time
 import zipfile
-
-from osgeo import gdal, gdalconst, ogr, osr
-from osgeo.gdal import Dataset
+from typing import Any, Optional, Union
 
 import geopandas as gpd
 import netCDF4
@@ -34,10 +31,11 @@ import rasterio.merge
 # import glob
 import scipy.interpolate
 import scipy.misc as misc
+from osgeo import gdal, gdalconst, ogr, osr
+from osgeo.gdal import Dataset
 from pyproj import Proj, transform
 
 from Hapi.gis.vector import Vector
-
 
 # import skimage.transform as transform
 
@@ -2586,7 +2584,7 @@ class Raster:
         ), "A_path input should be string type"
 
         # input values
-        if type(path) == str:
+        if isinstance(path, str):
             # check wether the path exist or not
             assert os.path.exists(path), "the path you have provided does not exist"
             # check whether there are files or not inside the folder

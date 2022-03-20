@@ -23,8 +23,10 @@ class Wrapper:
         5- Lumped
     """
 
+
     def __init__(self):
         pass
+
 
     @staticmethod
     def RRMModel(Model, ll_temp=None, q_0=None):
@@ -94,9 +96,11 @@ class Wrapper:
 
         # Model.qout = Model.qout[:-1]
 
+
     @staticmethod
     def RRMWithlake(Model, Lake, ll_temp=None, q_0=None):
-        """
+        """RRMWithlake.
+
         RRMWithlake connects three modules the lake, the distributed
         ranfall-runoff module and spatial routing module
 
@@ -114,7 +118,6 @@ class Wrapper:
         Returns
         -------
         None.
-
         """
 
         plake = Lake.MeteoData[:, 0]
@@ -128,7 +131,7 @@ class Wrapper:
             t,
             et,
             Lake.Parameters,
-            [Model.Timef, Lake.CatArea, Lake.LakeArea],
+            [Model.conversionfactor, Lake.CatArea, Lake.LakeArea],
             Lake.StageDischargeCurve,
             0,
             init_st=Lake.InitialCond,
@@ -142,7 +145,7 @@ class Wrapper:
             Lake.Qlake[0],
             Lake.Parameters[11],
             Lake.Parameters[12],
-            Model.Timef,
+            Model.conversionfactor,
         )
 
         # subcatchment
@@ -154,19 +157,20 @@ class Wrapper:
             Lake.QlakeR[0],
             Model.Parameters[Lake.OutflowCell[0], Lake.OutflowCell[1], 10],
             Model.Parameters[Lake.OutflowCell[0], Lake.OutflowCell[1], 11],
-            Model.Timef,
+            Model.conversionfactor,
         )
 
         qlake = np.append(qlake, qlake[-1])
         # both lake & Quz are in m3/s
         Model.quz[Lake.OutflowCell[0], Lake.OutflowCell[1], :] = (
-            Model.quz[Lake.OutflowCell[0], Lake.OutflowCell[1], :] + qlake
+                Model.quz[Lake.OutflowCell[0], Lake.OutflowCell[1], :] + qlake
         )
 
         # run the GIS part to rout from cell to another
         distrrm.SpatialRouting(Model)
 
         # Model.qout = Model.qout[:-1]
+
 
     @staticmethod
     def FW1(Model, ll_temp=None, q_0=None):
@@ -205,6 +209,7 @@ class Wrapper:
 
         Model.qout = Model.qout[:-1]
 
+
     @staticmethod
     def FW1Withlake(Model, Lake, ll_temp=None, q_0=None):
         """
@@ -241,7 +246,7 @@ class Wrapper:
             t,
             et,
             Lake.Parameters,
-            [Model.Timef, Lake.CatArea, Lake.LakeArea],
+            [Model.conversionfactor, Lake.CatArea, Lake.LakeArea],
             Lake.StageDischargeCurve,
             0,
             init_st=Lake.InitialCond,
@@ -256,7 +261,7 @@ class Wrapper:
             Lake.Qlake[0],
             Lake.Parameters[11],
             Lake.Parameters[12],
-            Model.Timef,
+            Model.conversionfactor,
         )
 
         # subcatchment
@@ -279,9 +284,10 @@ class Wrapper:
 
         qout = qlz1 + quz1
 
-        # qout = (qlz1 + quz1) * Model.CatArea / (Model.Timef* 3.6)
+        # qout = (qlz1 + quz1) * Model.CatArea / (Model.conversionfactor* 3.6)
 
         Model.qout = qout[:-1] + Lake.QlakeR
+
 
     @staticmethod
     def Lumped(Model, Routing=0, RoutingFn=[]):

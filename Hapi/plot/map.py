@@ -1,26 +1,32 @@
-from typing import Any, Tuple, Union, List
-from loguru import logger
+from typing import Any, List, Tuple, Union
 
-import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
-from matplotlib import gridspec #  animation,
-import matplotlib.colors as colors
-from matplotlib.ticker import LogFormatter
-import numpy as np
-from osgeo import gdal
-from geopandas import GeoDataFrame
-import geoplot.crs as gcrs
 import geoplot as gplt
+import geoplot.crs as gcrs
+import matplotlib.colors as colors
+import matplotlib.pyplot as plt
+import numpy as np
+from geopandas import GeoDataFrame
+from loguru import logger
+from matplotlib import gridspec  # animation,
+from matplotlib.animation import FuncAnimation
+from matplotlib.ticker import LogFormatter
+from osgeo import gdal
 
-from Hapi.plot.visualizer import Visualize, MidpointNormalize
-from Hapi.sm.statisticaltools import StatisticalTools as ST
-from Hapi.gis.raster import Raster
 from Hapi.gis.giscatchment import GISCatchment as GC
+from Hapi.gis.raster import Raster
+from Hapi.plot.visualizer import MidpointNormalize, Visualize
+from Hapi.sm.statisticaltools import StatisticalTools as ST
 
 
 class Map:
+    """
+    Map
+    """
+
+
     def __init__(self):
         pass
+
 
     @staticmethod
     def PlotCatchment(
@@ -116,35 +122,35 @@ class Map:
 
     @staticmethod
     def AnimateArray(
-        Arr,
-        Time,
-        NoElem,
-        TicksSpacing=2,
-        Figsize=(8, 8),
-        PlotNumbers=True,
-        NumSize=8,
-        Title="Total Discharge",
-        titlesize=15,
-        Backgroundcolorthreshold=None,
-        cbarlabel="Discharge m3/s",
-        cbarlabelsize=12,
-        textcolors=("white", "black"),
-        Cbarlength=0.75,
-        interval=200,
-        cmap="coolwarm_r",
-        Textloc=[0.1, 0.2],
-        Gaugecolor="red",
-        Gaugesize=100,
-        ColorScale=1,
-        gamma=0.5,
-        linthresh=0.0001,
-        linscale=0.001,
-        midpoint=0,
-        orientation="vertical",
-        rotation=-90,
-        IDcolor="blue",
-        IDsize=10,
-        **kwargs
+            Arr,
+            Time,
+            NoElem,
+            TicksSpacing=2,
+            Figsize=(8, 8),
+            PlotNumbers=True,
+            NumSize=8,
+            Title="Total Discharge",
+            titlesize=15,
+            Backgroundcolorthreshold=None,
+            cbarlabel="Discharge m3/s",
+            cbarlabelsize=12,
+            textcolors=("white", "black"),
+            Cbarlength=0.75,
+            interval=200,
+            cmap="coolwarm_r",
+            Textloc=[0.1, 0.2],
+            Gaugecolor="red",
+            Gaugesize=100,
+            ColorScale=1,
+            gamma=0.5,
+            linthresh=0.0001,
+            linscale=0.001,
+            midpoint=0,
+            orientation="vertical",
+            rotation=-90,
+            IDcolor="blue",
+            IDsize=10,
+            **kwargs
     ):
         """AnimateArray.
 
@@ -333,6 +339,7 @@ class Map:
         else:
             Backgroundcolorthreshold = im.norm(np.nanmax(Arr)) / 2.0
 
+
         def init():
             im.set_data(Arr[:, :, 0])
             day_text.set_text("")
@@ -361,6 +368,7 @@ class Map:
                 output = output + Textlist
 
             return output
+
 
         def animate(i):
             im.set_data(Arr[:, :, i])
@@ -400,6 +408,7 @@ class Map:
 
             return output
 
+
         plt.tight_layout()
         # global anim
         anim = FuncAnimation(
@@ -413,25 +422,26 @@ class Map:
 
         return anim
 
+
     @staticmethod
     def Plot_Type1(
-        Y1,
-        Y2,
-        Points,
-        PointsY,
-        PointMaxSize=200,
-        PointMinSize=1,
-        X_axis_label="X Axis",
-        LegendNum=5,
-        LegendLoc=(1.3, 1),
-        PointLegendTitle="Output 2",
-        Ylim=[0, 180],
-        Y2lim=[-2, 14],
-        color1="#27408B",
-        color2="#DC143C",
-        color3="grey",
-        linewidth=4,
-        **kwargs
+            Y1,
+            Y2,
+            Points,
+            PointsY,
+            PointMaxSize=200,
+            PointMinSize=1,
+            X_axis_label="X Axis",
+            LegendNum=5,
+            LegendLoc=(1.3, 1),
+            PointLegendTitle="Output 2",
+            Ylim=[0, 180],
+            Y2lim=[-2, 14],
+            color1="#27408B",
+            color2="#DC143C",
+            color3="grey",
+            linewidth=4,
+            **kwargs
     ):
         """Plot_Type1.
 
@@ -642,33 +652,34 @@ class Map:
 
         return (ax1, ax2), fig
 
+
     @staticmethod
     def PlotArray(
-        src,
-        nodataval=np.nan,
-        Figsize=(8, 8),
-        Title="Total Discharge",
-        titlesize=15,
-        Cbarlength=0.75,
-        orientation="vertical",
-        cbarlabelsize=12,
-        cbarlabel="Color bar label",
-        rotation=-90,
-        TicksSpacing=5,
-        NumSize=8,
-        ColorScale=1,
-        cmap="coolwarm_r",
-        gamma=0.5,
-        linscale=0.001,
-        linthresh=0.0001,
-        midpoint=0,
-        display_cellvalue=False,
-        Backgroundcolorthreshold=None,
-        Gaugecolor="red",
-        Gaugesize=100,
-        IDcolor="blue",
-        IDsize=10,
-        **kwargs
+            src,
+            nodataval=np.nan,
+            Figsize=(8, 8),
+            Title="Total Discharge",
+            titlesize=15,
+            Cbarlength=0.75,
+            orientation="vertical",
+            cbarlabelsize=12,
+            cbarlabel="Color bar label",
+            rotation=-90,
+            TicksSpacing=5,
+            NumSize=8,
+            ColorScale=1,
+            cmap="coolwarm_r",
+            gamma=0.5,
+            linscale=0.001,
+            linthresh=0.0001,
+            midpoint=0,
+            display_cellvalue=False,
+            Backgroundcolorthreshold=None,
+            Gaugecolor="red",
+            Gaugesize=100,
+            IDcolor="blue",
+            IDsize=10,
+            **kwargs
     ):
         """PlotArray.
 
@@ -890,27 +901,35 @@ class Map:
 
         return fig, ax
 
+
 class Scale:
+
 
     def __init__(self):
         pass
+
 
     def log_scale(minval, maxval):
         def scalar(val):
             val = val + abs(minval) + 1
             return np.log10(val)
 
+
         return scalar
+
 
     def power_scale(minval, maxval):
         def scalar(val):
             val = val + abs(minval) + 1
             return (val / 1000) ** 2
 
+
         return scalar
+
 
     def identity_scale(minval, maxval):
         def scalar(val):
             return 2
+
 
         return scalar

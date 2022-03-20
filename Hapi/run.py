@@ -19,10 +19,8 @@ from Hapi.rrm.wrapper import Wrapper
 
 
 class Run(Catchment):
-    """
-    =====================
-        Run
-    =====================
+    """Run.
+
     Run sub-class validate the spatial data and hand it to the wrapper class, It is
     a sub-class from the catchment class, so you need to create the Catchment
     object first to run the model
@@ -35,9 +33,11 @@ class Run(Catchment):
         5- RunLumped
     """
 
+
     def __init__(self):
         self.Qsim = None
         pass
+
 
     def RunHapi(self):
         """RunModel.
@@ -46,19 +46,19 @@ class Run(Catchment):
 
         Inputs:
         ----------
-            1-Paths:
+        1-Paths:
 
-                4-FlowAccPath:
+        4-FlowAccPath:
 
-                5-FlowDPath:
-                    [String] path to the Flow Direction raster of the catchment (it should
-                    include the raster name and extension)
-            7-ParPath:
-                [String] path to the Folder contains parameters rasters of the catchment
-            8-p2:
-                [List] list of unoptimized parameters
-                p2[0] = tfac, 1 for hourly, 0.25 for 15 min time step and 24 for daily time step
-                p2[1] = catchment area in km2
+        5-FlowDPath:
+            [String] path to the Flow Direction raster of the catchment (it should
+            include the raster name and extension)
+        7-ParPath:
+            [String] path to the Folder contains parameters rasters of the catchment
+        8-p2:
+            [List] list of unoptimized parameters
+            p2[0] = tfac, 1 for hourly, 0.25 for 15 min time step and 24 for daily time step
+            p2[1] = catchment area in km2
 
         Outputs:
         ----------
@@ -123,6 +123,7 @@ class Run(Catchment):
 
         print("Model Run has finished")
 
+
     def RunFloodModel(self):
         """RunFloodModel.
 
@@ -130,19 +131,19 @@ class Run(Catchment):
 
         Inputs:
         ----------
-            1-Paths:
+        1-Paths:
 
-                4-FlowAccPath:
+        4-FlowAccPath:
 
-                5-FlowDPath:
-                    [String] path to the Flow Direction raster of the catchment (it should
-                    include the raster name and extension)
-            7-ParPath:
-                [String] path to the Folder contains parameters rasters of the catchment
-            8-p2:
-                [List] list of unoptimized parameters
-                p2[0] = tfac, 1 for hourly, 0.25 for 15 min time step and 24 for daily time step
-                p2[1] = catchment area in km2
+        5-FlowDPath:
+            [String] path to the Flow Direction raster of the catchment (it should
+            include the raster name and extension)
+        7-ParPath:
+            [String] path to the Folder contains parameters rasters of the catchment
+        8-p2:
+            [List] list of unoptimized parameters
+            p2[0] = tfac, 1 for hourly, 0.25 for 15 min time step and 24 for daily time step
+            p2[1] = catchment area in km2
 
         Outputs:
         ----------
@@ -222,43 +223,42 @@ class Run(Catchment):
         SV.KinematicRaster(self)
         print("1D model Run has finished")
 
+
     def RunHAPIwithLake(self, Lake):
-        """
-        =======================================================================
-            RunDistwithLake(PrecPath, Evap_Path, TempPath, DemPath, FlowAccPath, FlowDPath, ParPath, p2)
-        =======================================================================
+        """RunDistwithLake
+
         this function runs the conceptual distributed hydrological model
 
         Inputs:
         ----------
-            1-Paths:
-                1-PrecPath:
-                    [String] path to the Folder contains precipitation rasters
-                2-Evap_Path:
-                    [String] path to the Folder contains Evapotranspiration rasters
-                3-TempPath:
-                    [String] path to the Folder contains Temperature rasters
-                4-FlowAccPath:
-                    [String] path to the Flow Accumulation raster of the catchment (it should
-                    include the raster name and extension)
-                5-FlowDPath:
-                    [String] path to the Flow Direction raster of the catchment (it should
-                    include the raster name and extension)
-            7-ParPath:
-                [String] path to the Folder contains parameters rasters of the catchment
-            8-p2:
-                [List] list of unoptimized parameters
-                p2[0] = tfac, 1 for hourly, 0.25 for 15 min time step and 24 for daily time step
-                p2[1] = catchment area in km2
+        1-Paths:
+            1-PrecPath:
+                [String] path to the Folder contains precipitation rasters
+            2-Evap_Path:
+                [String] path to the Folder contains Evapotranspiration rasters
+            3-TempPath:
+                [String] path to the Folder contains Temperature rasters
+            4-FlowAccPath:
+                [String] path to the Flow Accumulation raster of the catchment (it should
+                include the raster name and extension)
+            5-FlowDPath:
+                [String] path to the Flow Direction raster of the catchment (it should
+                include the raster name and extension)
+        7-ParPath:
+            [String] path to the Folder contains parameters rasters of the catchment
+        8-p2:
+            [List] list of unoptimized parameters
+            p2[0] = tfac, 1 for hourly, 0.25 for 15 min time step and 24 for daily time step
+            p2[1] = catchment area in km2
 
         Outputs:
         ----------
-            1- st:
-                [4D array] state variables
-            2- q_out:
-                [1D array] calculated Discharge at the outlet of the catchment
-            3- q_uz:
-                [3D array] Distributed discharge for each cell
+        1- st:
+            [4D array] state variables
+        2- q_out:
+            [1D array] calculated Discharge at the outlet of the catchment
+        3- q_uz:
+            [3D array] Distributed discharge for each cell
 
         Example:
         ----------
@@ -277,7 +277,7 @@ class Run(Catchment):
         [fd_rows, fd_cols] = self.FlowDirArr.shape
         assert (
                 fd_rows == self.rows and fd_cols == self.cols
-        ), "all input data should have the same number of rows"
+        ), "all input data should have the same number of rows and columns"
 
         # input dimensions
         assert (
@@ -308,43 +308,42 @@ class Run(Catchment):
 
         print("Model Run has finished")
 
+
     def RunFW1(self):
-        """
-        =======================================================================
-            RunDistwithLake(PrecPath, Evap_Path, TempPath, DemPath, FlowAccPath, FlowDPath, ParPath, p2)
-        =======================================================================
+        """RunDistwithLake.
+
         this function runs the conceptual distributed hydrological model
 
         Inputs:
         ----------
-            1-Paths:
-                1-PrecPath:
-                    [String] path to the Folder contains precipitation rasters
-                2-Evap_Path:
-                    [String] path to the Folder contains Evapotranspiration rasters
-                3-TempPath:
-                    [String] path to the Folder contains Temperature rasters
-                4-FlowAccPath:
-                    [String] path to the Flow Accumulation raster of the catchment (it should
-                    include the raster name and extension)
-                5-FlowDPath:
-                    [String] path to the Flow Direction raster of the catchment (it should
-                    include the raster name and extension)
-            7-ParPath:
-                [String] path to the Folder contains parameters rasters of the catchment
-            8-p2:
-                [List] list of unoptimized parameters
-                p2[0] = tfac, 1 for hourly, 0.25 for 15 min time step and 24 for daily time step
-                p2[1] = catchment area in km2
+        1-Paths:
+            1-PrecPath:
+                [String] path to the Folder contains precipitation rasters
+            2-Evap_Path:
+                [String] path to the Folder contains Evapotranspiration rasters
+            3-TempPath:
+                [String] path to the Folder contains Temperature rasters
+            4-FlowAccPath:
+                [String] path to the Flow Accumulation raster of the catchment (it should
+                include the raster name and extension)
+            5-FlowDPath:
+                [String] path to the Flow Direction raster of the catchment (it should
+                include the raster name and extension)
+        7-ParPath:
+            [String] path to the Folder contains parameters rasters of the catchment
+        8-p2:
+            [List] list of unoptimized parameters
+            p2[0] = tfac, 1 for hourly, 0.25 for 15 min time step and 24 for daily time step
+            p2[1] = catchment area in km2
 
         Outputs:
         ----------
-            1- st:
-                [4D array] state variables
-            2- q_out:
-                [1D array] calculated Discharge at the outlet of the catchment
-            3- q_uz:
-                [3D array] Distributed discharge for each cell
+        1- st:
+            [4D array] state variables
+        2- q_out:
+            [1D array] calculated Discharge at the outlet of the catchment
+        3- q_uz:
+            [3D array] Distributed discharge for each cell
 
         Example:
         ----------
@@ -383,43 +382,42 @@ class Run(Catchment):
 
         print("Model Run has finished")
 
+
     def RunFW1withLake(self, Lake):
-        """
-        =======================================================================
-            RunDistwithLake(PrecPath, Evap_Path, TempPath, DemPath, FlowAccPath, FlowDPath, ParPath, p2)
-        =======================================================================
+        """RunDistwithLake.
+
         this function runs the conceptual distributed hydrological model
 
         Inputs:
         ----------
-            1-Paths:
-                1-PrecPath:
-                    [String] path to the Folder contains precipitation rasters
-                2-Evap_Path:
-                    [String] path to the Folder contains Evapotranspiration rasters
-                3-TempPath:
-                    [String] path to the Folder contains Temperature rasters
-                4-FlowAccPath:
-                    [String] path to the Flow Accumulation raster of the catchment (it should
-                    include the raster name and extension)
-                5-FlowDPath:
-                    [String] path to the Flow Direction raster of the catchment (it should
-                    include the raster name and extension)
-            7-ParPath:
-                [String] path to the Folder contains parameters rasters of the catchment
-            8-p2:
-                [List] list of unoptimized parameters
-                p2[0] = tfac, 1 for hourly, 0.25 for 15 min time step and 24 for daily time step
-                p2[1] = catchment area in km2
+        1-Paths:
+            1-PrecPath:
+                [String] path to the Folder contains precipitation rasters
+            2-Evap_Path:
+                [String] path to the Folder contains Evapotranspiration rasters
+            3-TempPath:
+                [String] path to the Folder contains Temperature rasters
+            4-FlowAccPath:
+                [String] path to the Flow Accumulation raster of the catchment (it should
+                include the raster name and extension)
+            5-FlowDPath:
+                [String] path to the Flow Direction raster of the catchment (it should
+                include the raster name and extension)
+        7-ParPath:
+            [String] path to the Folder contains parameters rasters of the catchment
+        8-p2:
+            [List] list of unoptimized parameters
+            p2[0] = tfac, 1 for hourly, 0.25 for 15 min time step and 24 for daily time step
+            p2[1] = catchment area in km2
 
         Outputs:
         ----------
-            1- st:
-                [4D array] state variables
-            2- q_out:
-                [1D array] calculated Discharge at the outlet of the catchment
-            3- q_uz:
-                [3D array] Distributed discharge for each cell
+        1- st:
+            [4D array] state variables
+        2- q_out:
+            [1D array] calculated Discharge at the outlet of the catchment
+        3- q_uz:
+            [3D array] Distributed discharge for each cell
 
         Example:
         ----------
@@ -463,6 +461,7 @@ class Run(Catchment):
         # run the model
         Wrapper.FW1Withlake(self, Lake)
 
+
     def RunLumped(
             self,
             Route: int = 0,
@@ -474,31 +473,31 @@ class Run(Catchment):
 
         Inputs:
         ----------
-            1-ConceptualModel: [function]
-                conceptual model and it should contain a function called simulate
-            2-data: [numpy array]
-                meteorological data as array with the first column as precipitation
-                second as evapotranspiration, third as temperature and forth column as
-                long term average temperature
-            3- parameters: [numpy array]
-                conceptual model parameters as array
-            4-p2: [List]
-                list of unoptimized parameters
-                p2[0] = tfac, 1 for hourly, 0.25 for 15 min time step and 24 for daily time step
-                p2[1] = catchment area in km2
-            5-init_st: [list]
-                initial state variables values [sp, sm, uz, lz, wc].
-            6-Routing: [0 or 1]
-                to decide wether t route the generated discharge hydrograph or not
-            7-RoutingFn: [function]
-                function to route the dischrge hydrograph.
+        1-ConceptualModel: [function]
+            conceptual model and it should contain a function called simulate
+        2-data: [numpy array]
+            meteorological data as array with the first column as precipitation
+            second as evapotranspiration, third as temperature and forth column as
+            long term average temperature
+        3- parameters: [numpy array]
+            conceptual model parameters as array
+        4-p2: [List]
+            list of unoptimized parameters
+            p2[0] = tfac, 1 for hourly, 0.25 for 15 min time step and 24 for daily time step
+            p2[1] = catchment area in km2
+        5-init_st: [list]
+            initial state variables values [sp, sm, uz, lz, wc].
+        6-Routing: [0 or 1]
+            to decide wether t route the generated discharge hydrograph or not
+        7-RoutingFn: [function]
+            function to route the dischrge hydrograph.
 
         Outputs:
         ----------
-            1- st:
-                [numpy array] 3d array of the 5 state variable data for each cell
-            2- q_lz:
-                [numpy array] 1d array of the calculated discharge.
+        1- st:
+            [numpy array] 3d array of the 5 state variable data for each cell
+        2- q_lz:
+            [numpy array] 1d array of the calculated discharge.
 
         Examples:
         ----------
@@ -510,7 +509,7 @@ class Run(Catchment):
         if RoutingFn is None:
             RoutingFn = []
         if self.TemporalResolution.lower() == "daily":
-            ind = pd.date_range(self.startdate, self.enddate, freq="D")
+            ind = pd.date_range(self.start, self.end, freq="D")
         else:
             ind = pd.date_range(self.startdate, self.enddate, freq="H")
 
