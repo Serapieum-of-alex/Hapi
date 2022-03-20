@@ -1,6 +1,5 @@
 import os
 
-
 # import sys
 "F:/01Algorithms/Hydrology/HAPI"
 # os.chdir("Examples/")
@@ -16,17 +15,15 @@ except ModuleNotFoundError:
     from osgeo import gdal
 
 import geopandas as gpd
+import matplotlib
 import numpy as np
 import pandas as pd
-import matplotlib
-
 
 matplotlib.use("TkAgg")
 from Hapi.gis.giscatchment import GISCatchment as GC
 from Hapi.gis.raster import Raster
-from Hapi.plot.visualizer import Visualize as vis
 from Hapi.plot.map import Map
-
+from Hapi.plot.visualizer import Visualize as vis
 
 # %% Paths
 RasterAPath = datapath + "/acc4000.tif"
@@ -663,7 +660,6 @@ points.loc[:, ["row", "col"]] = GC.NearestCell(src, points[["x", "y"]][:]).value
 
 from osgeo import ogr, osr
 
-
 band = dst.GetRasterBand(1)
 src_proj = dst.GetProjection()
 src_epsg = osr.SpatialReference(wkt=src_proj)
@@ -695,7 +691,6 @@ from osgeo import gdal, gdalnumeric, ogr
 # import Image, ImageDraw
 # from PIL.Image import core as Image
 from PIL import Image, ImageDraw
-
 
 # Exceptions will get raised on anything >= gdal.CE_Failure
 gdal.UseExceptions()
