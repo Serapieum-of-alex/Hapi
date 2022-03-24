@@ -1,5 +1,6 @@
+"""Hydaulic model calibration related function module"""
 import datetime as dt
-from typing import Any, Union  # , Optional,
+from typing import Any, Tuple, Union  # , Optional,
 
 import fiona
 import geopandas as gpd
@@ -8,6 +9,8 @@ import numpy as np
 import pandas as pd
 from geopandas import GeoDataFrame
 from loguru import logger
+from matplotlib.figure import Figure
+from pandas import DataFrame
 from pandas._libs.tslibs.timestamps import Timestamp
 from pandas.core.frame import DataFrame
 
@@ -1684,7 +1687,7 @@ class Calibration(River):
             start: str='',
             end: str='',
             fmt: str = "%Y-%m-%d",
-    ) -> DataFrame :
+    ) -> Union[tuple[DataFrame, Figure, tuple[Any, Any]], tuple[DataFrame, Figure, Any]]:
         """InspectGauge.
 
             InspectGauge returns the metrices of the gauge simulated discharge and water level
@@ -1696,6 +1699,10 @@ class Calibration(River):
             river segment id
         2- gaugei: [int]
             if the river segment has more than one gauge, gaugei is the gauge order
+        3- start: [str]
+            start date, if not given it will be taken from the already calculated Metrics table
+        4- end: [str]
+            end date, if not given it will be taken from the already calculated Metrics table
         return:
         -------
         1- summary: [DataFrame]
@@ -1708,13 +1715,11 @@ class Calibration(River):
         summary = pd.DataFrame(index=["HM-RRM", "RRM-Observed", "HM-Q-Observed", "HM-WL-Observed"],
                                columns=self.MetricsHM_RRM.columns
                                )
-
         # for each gauge in the segment
         summary.loc["HM-Q-Observed", :] = self.MetricsHM_Q_Obs.loc[gauge_id, :]
 
         if gauge.loc[0, 'waterlevel'] == 1 and gauge.loc[0, 'discharge'] == 1:
-            fig, (ax1, ax2) = plt.subplots(ncols=1, nrows=2, figsize=(15, 8),
-                                           sharex=True)
+            fig, (ax1, ax2) = plt.subplots(ncols=1, nrows=2, sharex=True, figsize=(15, 8))
         else:
             fig, ax1 = plt.subplots(ncols=1, nrows=1, figsize=(15, 8))
 
@@ -1742,6 +1747,7 @@ class Calibration(River):
             ax1.plot(self.QRRM[gauge_id].loc[start_1: end_1], label="RRM")
             ax1.plot(self.QGauges[gauge_id].loc[start_1: end_1], label="Observed")
             ax1.set_ylabel("Discharge m3/s", fontsize=12)
+            ax1.legend(fontsize=15)
             # SimMax = max(self.QHM[gauge_id].loc[start:end])
             # ObsMax = max(self.QRRM[gauge_id].loc[start:end])
             # pos = max(SimMax, ObsMax)
@@ -1768,14 +1774,19 @@ class Calibration(River):
             ax2.plot(self.WLGauges[gauge_id].loc[start_2: end_2],
                      label="Observed", linewidth=2)
             ax2.set_ylabel("Water Level m", fontsize=12)
+            ax2.legend(fontsize=15)
 
             # SimMax = max(self.WLHM[gauge_id].loc[start_2:end_2])
             # ObsMax = max(self.WLGauges[gauge_id].loc[start_2: end_2])
             # pos = max(SimMax, ObsMax)
-        plt.legend(fontsize=15)
+        # plt.legend(fontsize=15)
+        ax1.set_title(gaugename, fontsize=30)
         ax1.set_title(gaugename, fontsize=30)
 
-        return summary
+        if gauge.loc[0, 'waterlevel'] == 1:
+            return summary, fig, (ax1, ax2)
+        else:
+            return summary, fig, ax1
 
     @staticmethod
     def PrepareToSave(df):

@@ -4586,15 +4586,13 @@ class Sub(River):
             DESCRIPTION.
         ax : TYPE
             DESCRIPTION.
-
-
         """
         start = dt.datetime.strptime(start, fmt)
         end = dt.datetime.strptime(end, fmt)
 
         fig, ax = plt.subplots(ncols=1, nrows=1, figsize=figsize)
 
-        if hasattr(self, "XSHydrographs"):
+        if not self.XSHydrographs is None:
             # plot if you read the results using ther read1DResults
             try:
                 ax.plot(

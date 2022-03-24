@@ -44,7 +44,7 @@ class Map:
             TitleSize: int = 500,
             Save: Union[bool, str] = False,
     ):
-        """PlotMetrix.
+        """PlotCatchment.
 
         Inputs:
         ------
@@ -85,8 +85,8 @@ class Map:
             gplt.pointplot(Metrics, projection=gcrs.AlbersEqualArea(),
                            hue=ColumnName, cmap=cmap,
                            scale=ColumnName, limits=(4, 20),
-                           # scheme=scheme,
-                           scale_func=scale_func,
+                           scheme=scheme,
+                           # scale_func = scale_func,
                            legend=True,
                            legend_var='scale',
                            legend_kwargs={  # 'loc': 'upper right',
