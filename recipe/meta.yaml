@@ -27,7 +27,7 @@ requirements:
   run:
     - pip >=21.3.1
     - numpy >=1.21.2,<1.22.4
-    - gdal >=3.3.3,<3.4.2
+    - gdal >=3.3.3,<3.4.3
     - affine >=2.3.0
     - fiona >=1.8.20
     - proj >=0.2.0
@@ -51,7 +51,7 @@ requirements:
     - pytest >=6.2.5
     - pytest-cov >=2.12.1
     - loguru >=0.5.3
-    - geoplot >=0.4.4
+    - geoplot >=0.5.1
 
 test:
   imports:
