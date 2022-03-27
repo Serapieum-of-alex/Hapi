@@ -5,7 +5,7 @@ Created on Sun Jun 24 21:02:34 2018
 """
 import datetime as dt
 
-Comp = "F:/01Algorithms/Hydrology/HAPI/Examples"
+Comp = "F:/01Algorithms/Hydrology/HAPI/examples"
 #%% Modules
 import Hapi.rrm.hbv_bergestrom92 as HBVLumped
 import Hapi.sm.performancecriteria as PC

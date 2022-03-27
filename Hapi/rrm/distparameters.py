@@ -812,7 +812,7 @@ class DistParameters:
          ----------
               Rasters for parameters of the distributed model
 
-        Examples:
+        examples:
         ----------
              DemPath = path+"GIS/4000/dem4000.tif"
              raster=gdal.Open(DemPath)

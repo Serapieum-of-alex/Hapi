@@ -321,7 +321,7 @@ class Wrapper:
             2- q_lz:
                 [numpy array] 1d array of the calculated discharge.
 
-        Examples:
+        examples:
         ----------
             p2=[24, 1530]
             #[sp,sm,uz,lz,wc]

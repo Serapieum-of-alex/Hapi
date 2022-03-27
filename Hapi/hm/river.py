@@ -2162,7 +2162,7 @@ class River:
             1-Subs : TYPE
                 DESCRIPTION.
 
-        Examples
+        examples
         --------
             1- get the flooded subs for a specific days
                 floodedSubs = RIM1River.GetFloodedSubs(day = [1122,1123], allEventdays=False)

@@ -3,11 +3,16 @@ Created on Sun Jun 21 01:55:25 2020
 
 @author: mofarrag
 """
+# import os
+Path = "F:/01Algorithms/Hydrology/HAPI/examples"
+import matplotlib
 
-Comp = "F:/01Algorithms/Hydrology/HAPI/examples"
-
+# os.chdir(Path)
 import pandas as pd
 
+matplotlib.use('TkAgg')
+
+# functions
 import Hapi.rrm.hbv_bergestrom92 as HBVLumped
 import Hapi.sm.performancecriteria as PC
 from Hapi.catchment import Catchment
@@ -15,17 +20,15 @@ from Hapi.rrm.routing import Routing
 from Hapi.run import Run
 from Hapi.sm.sensitivityanalysis import SensitivityAnalysis as SA
 
-#%% Paths
-Parameterpath = Comp + "/data/lumped/Coello_Lumped2021-03-08_muskingum.txt"
-MeteoDataPath = Comp + "/data/lumped/meteo_data-MSWEP.csv"
-Path = Comp + "/data/lumped/"
+Parameterpath = Path + "/data/Lumped/Coello_Lumped2021-03-08_muskingum.txt"
+Path = Path + "/data/Lumped/"
 #%%
 ### meteorological data
 start = "2009-01-01"
 end = "2011-12-31"
 name = "Coello"
 Coello = Catchment(name, start, end)
-Coello.ReadLumpedInputs(MeteoDataPath)
+Coello.ReadLumpedInputs(Path + "meteo_data-MSWEP.csv")
 
 ### Basic_inputs
 # catchment area
@@ -37,20 +40,22 @@ InitialCond = [0, 10, 10, 10, 0]
 Coello.ReadLumpedModel(HBVLumped, CatArea, InitialCond)
 
 ### parameters
-Snow = 0  # no snow subroutine
-Coello.ReadParameters(Parameterpath, Snow)
+# no snow subroutine
+Snow = 0
+# if routing using Maxbas True, if Muskingum False
+Maxbas = False
+Coello.ReadParameters(Parameterpath, Snow, Maxbas=Maxbas)
 
 parameters = pd.read_csv(Parameterpath, index_col=0, header=None)
 parameters.rename(columns={1: "value"}, inplace=True)
-#%% parameters boundaries
-UB = pd.read_csv(Path + "/LB-1-Muskinguk.txt", index_col=0, header=None)
+
+UB = pd.read_csv(Path + "/UB-1-Muskinguk.txt", index_col=0, header=None)
 parnames = UB.index
 UB = UB[1].tolist()
-LB = pd.read_csv(Path + "/UB-1-Muskinguk.txt", index_col=0, header=None)
+LB = pd.read_csv(Path + "/LB-1-Muskinguk.txt", index_col=0, header=None)
 LB = LB[1].tolist()
 Coello.ReadParametersBounds(UB, LB, Snow)
 
-#%%
 # observed flow
 Coello.ReadDischargeGauges(Path + "Qout_c.csv", fmt="%Y-%m-%d")
 ### Routing
@@ -131,15 +136,13 @@ def WrapperType2(Randpar, Route, RoutingFn, Qobs):
     return rmse, Coello.Qsim["q"]
 
 
-Type = 1
-
+Type = 2
 if Type == 1:
     fn = WrapperType1
 elif Type == 2:
     fn = WrapperType2
 
-
-Positions = []
+Positions = [10]
 
 
 Sen = SA(parameters, Coello.LB, Coello.UB, fn, Positions, 5, Type=Type)

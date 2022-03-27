@@ -399,7 +399,7 @@ class Vector:
             1-points : [List]
                 list of Shaply point objects [Point,Point]
 
-        Examples:
+        examples:
         ----------
             coordinates = [(24.950899, 60.169158), (24.953492, 60.169158), (24.953510, 60.170104), (24.950958, 60.169990)]
             PointList = GIS.CreatePoint(coordinates)
@@ -643,7 +643,7 @@ class Vector:
                 [geopandas.geodataframe.GeoDataFrame] the same input geopandas
                 dataframe but with spatial reference
 
-        Examples:
+        examples:
             NewGeometry = gpd.GeoDataFrame()
             coordinates = [(24.950899, 60.169158), (24.953492, 60.169158), (24.953510, 60.170104), (24.950958, 60.169990)]
             NewGeometry.loc[0,'geometry'] = GIS.CreatePolygon(coordinates,2)

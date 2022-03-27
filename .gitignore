@@ -150,7 +150,7 @@ Hapi/hm.py
 
 HAPI_Nile.egg-info/PKG-INFO
 docs/.vscode/
-Examples/data/Hapi.qgz
+examples/data/Hapi.qgz
 
 .idea/.gitignore
 .idea/HAPI.iml

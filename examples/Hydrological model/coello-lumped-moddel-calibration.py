@@ -1,6 +1,13 @@
-Comp = "F:/01Algorithms/Hydrology/HAPI/examples"
+# Lumped Model Calibration
+
+# - Please change the Path in the following cell to the directory where you stored the case study data
+
+# Comp = "F:/01Algorithms/Hydrology/HAPI/examples"
+
+### Modules
 import datetime as dt
 
+import numpy as np
 import pandas as pd
 
 import Hapi.rrm.hbv_bergestrom92 as HBVLumped
@@ -9,18 +16,25 @@ from Hapi.rrm.calibration import Calibration
 from Hapi.rrm.routing import Routing
 from Hapi.run import Run
 
-#%% Paths
-Parameterpath = Comp + "/data/lumped/Coello_Lumped2021-03-08_muskingum.txt"
-MeteoDataPath = Comp + "/data/lumped/meteo_data-MSWEP.csv"
-Path = Comp + "/data/lumped/"
-#%% Meteorological data
+# %%
+
+path = r"C:\MyComputer\01Algorithms\hydrology\Hapi/"
+### Paths
+Parameterpath = path + "examples/Hydrological model/data/lumped_model/Coello_Lumped2021-03-08_muskingum.txt"
+MeteoDataPath = path + "examples/Hydrological model/data/lumped_model/meteo_data-MSWEP.csv"
+Path = path + "examples/Hydrological model/data/lumped_model/"
+
+### Meteorological data
+
 start = "2009-01-01"
 end = "2011-12-31"
 name = "Coello"
 
 Coello = Calibration(name, start, end)
 Coello.ReadLumpedInputs(MeteoDataPath)
-#%% Basic_inputs
+
+### Basic_inputs
+
 # catchment area
 AreaCoeff = 1530
 # temporal resolution
@@ -29,7 +43,9 @@ InitialCond = [0, 10, 10, 10, 0]
 # no snow subroutine
 Snow = 0
 Coello.ReadLumpedModel(HBVLumped, AreaCoeff, InitialCond)
-#%% Calibration parameters
+
+# Calibration parameters
+
 # Calibration boundaries
 UB = pd.read_csv(Path + "/UB-3.txt", index_col=0, header=None)
 parnames = UB.index
@@ -39,15 +55,18 @@ LB = LB[1].tolist()
 
 Maxbas = True
 Coello.ReadParametersBounds(UB, LB, Snow, Maxbas=Maxbas)
-#%% additional arguments
+
+### Additional arguments
+
 parameters = []
 # Routing
 Route = 1
 RoutingFn = Routing.TriangularRouting1
 
 Basic_inputs = dict(Route=Route, RoutingFn=RoutingFn, InitialValues=parameters)
-#%%
+
 ### Objective function
+
 # outlet discharge
 Coello.ReadDischargeGauges(Path + "Qout_c.csv", fmt="%Y-%m-%d")
 
@@ -55,26 +74,19 @@ OF_args = []
 OF = PC.RMSE
 
 Coello.ReadObjectiveFn(PC.RMSE, OF_args)
-#%% Optimization
-"""
-API options
-Create the options dictionary all the optimization parameters should be passed
-to the optimization object inside the option dictionary:
+
+# Calibration
+
+# API options
+# Create the options dictionary all the optimization parameters should be passed
+# to the optimization object inside the option dictionary:
 
 
-to see all options import Optimizer class and check the documentation of the
-method setOption
+# to see all options import Optimizer class and check the documentation of the
+# method setOption
 
-"""
-ApiObjArgs = dict(
-    hms=100,
-    hmcr=0.95,
-    par=0.65,
-    dbw=2000,
-    fileout=1,
-    xinit=0,
-    filename=Path + "/Lumped_History" + str(dt.datetime.now())[0:10] + ".txt",
-)
+ApiObjArgs = dict(hms=100, hmcr=0.95, par=0.65, dbw=2000, fileout=1, xinit=0,
+                  filename=Path + "/Lumped_History" + str(dt.datetime.now())[0:10] + ".txt")
 
 for i in range(len(ApiObjArgs)):
     print(list(ApiObjArgs.keys())[i], str(ApiObjArgs[list(ApiObjArgs.keys())[i]]))
@@ -82,50 +94,59 @@ for i in range(len(ApiObjArgs)):
 # pll_type = 'POA'
 pll_type = None
 
-ApiSolveArgs = dict(store_sol=True, display_opts=True, store_hst=True, hot_start=False)
+ApiSolveArgs = dict(store_sol=True, display_opts=True, store_hst=False, hot_start=False)
 
 OptimizationArgs = [ApiObjArgs, pll_type, ApiSolveArgs]
-#%%
-# run calibration
-cal_parameters = Coello.LumpedCalibration(
-    Basic_inputs, OptimizationArgs, printError=None
-)
+
+# %% Run Calibration
+
+cal_parameters = Coello.LumpedCalibration(Basic_inputs, OptimizationArgs, printError=None)
 
 print("Objective Function = " + str(round(cal_parameters[0], 2)))
 print("Parameters are " + str(cal_parameters[1]))
-print("Time = " + str(round(cal_parameters[2]["time"] / 60, 2)) + " min")
-#%% run the model
+print("Time = " + str(round(cal_parameters[2]['time'] / 60, 2)) + " min")
+
+# cal_parameters[2]['time']
+
+# %% Run the Model
+
 Coello.Parameters = cal_parameters[1]
 Run.RunLumped(Coello, Route, RoutingFn)
-#%% calculate performance criteria
+
+### Calculate Performance Criteria
+
 Metrics = dict()
 
 Qobs = Coello.QGauges[Coello.QGauges.columns[0]]
 
-Metrics["RMSE"] = PC.RMSE(Qobs, Coello.Qsim["q"])
-Metrics["NSE"] = PC.NSE(Qobs, Coello.Qsim["q"])
-Metrics["NSEhf"] = PC.NSEHF(Qobs, Coello.Qsim["q"])
-Metrics["KGE"] = PC.KGE(Qobs, Coello.Qsim["q"])
-Metrics["WB"] = PC.WB(Qobs, Coello.Qsim["q"])
+Metrics['RMSE'] = PC.RMSE(Qobs, Coello.Qsim['q'])
+Metrics['NSE'] = PC.NSE(Qobs, Coello.Qsim['q'])
+Metrics['NSEhf'] = PC.NSEHF(Qobs, Coello.Qsim['q'])
+Metrics['KGE'] = PC.KGE(Qobs, Coello.Qsim['q'])
+Metrics['WB'] = PC.WB(Qobs, Coello.Qsim['q'])
 
-print("RMSE= " + str(round(Metrics["RMSE"], 2)))
-print("NSE= " + str(round(Metrics["NSE"], 2)))
-print("NSEhf= " + str(round(Metrics["NSEhf"], 2)))
-print("KGE= " + str(round(Metrics["KGE"], 2)))
-print("WB= " + str(round(Metrics["WB"], 2)))
-#%% plotting
+print("RMSE= " + str(round(Metrics['RMSE'], 2)))
+print("NSE= " + str(round(Metrics['NSE'], 2)))
+print("NSEhf= " + str(round(Metrics['NSEhf'], 2)))
+print("KGE= " + str(round(Metrics['KGE'], 2)))
+print("WB= " + str(round(Metrics['WB'], 2)))
+
+### Plotting Hydrograph
+
 gaugei = 0
 plotstart = "2009-01-01"
 plotend = "2011-12-31"
 Coello.PlotHydrograph(plotstart, plotend, gaugei, Title="Lumped Model")
 
-#%% save the parameters
+### Save the Parameters
+
 ParPath = Path + "Parameters" + str(dt.datetime.now())[0:10] + ".txt"
 parameters = pd.DataFrame(index=parnames)
-parameters["values"] = cal_parameters[1]
+parameters['values'] = cal_parameters[1]
 parameters.to_csv(ParPath, header=None, float_format="%0.4f")
 
-#%% Save Results
+### Save Results
+
 StartDate = "2009-01-01"
 EndDate = "2010-04-20"
 

@@ -324,7 +324,7 @@ class Inputs:
         files in the Path are going to have a new name including the order at
         the begining of the name.
 
-        Examples
+        examples
         -------
         1- "MSWEP_2009010100.tif" the fmt = '%Y%m%d00'
         2-
@@ -420,7 +420,7 @@ class Inputs:
         Outputs:
         ----------
             1- List of the values in the excel file
-        Examples:
+        examples:
         ----------
             years=[2009,2010,2011]#,2012,2013]
             months=[1,2,3,4,5,6,7,8,9,10,11,12]

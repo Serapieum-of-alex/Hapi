@@ -14,7 +14,7 @@ repos:
         args: [ --maxkb=5000 ]
     -   id: check-docstring-first
         name: "[py   -  check] docstring first"
-        files: /Examples
+        files: /examples
         types : [file, python ]
     -   id: check-json
         name: "[json -  check] validate json"

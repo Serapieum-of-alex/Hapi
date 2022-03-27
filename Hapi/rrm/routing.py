@@ -53,7 +53,7 @@ class Routing:
             1-outflow:
                 [numpy array] time series of routed hydrograph
 
-        Examples:
+        examples:
         ----------
         pars[10]=k
         pars[11]=x
@@ -107,7 +107,7 @@ class Routing:
             1-outflow:
                 [numpy array] time series of routed hydrograph
 
-        Examples:
+        examples:
         ----------
         pars[10]=k
         pars[11]=x
@@ -189,7 +189,7 @@ class Routing:
             1-q_r:
                 [numpy array] time series of routed hydrograph
 
-        Examples:
+        examples:
         ----------
             q_sim=TriangularRouting(np.array(q_sim), parameters[-1])
         """

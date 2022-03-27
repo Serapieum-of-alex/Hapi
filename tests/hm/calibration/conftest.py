@@ -13,17 +13,17 @@ def gauge_date_format() -> str:
 
 @pytest.fixture(scope="module")
 def gauges_table_path() -> str:
-    return "Examples/Hydrodynamic models/test_case/inputs/gauges/gauges.geojson"
+    return "examples/Hydrodynamic models/test_case/inputs/gauges/gauges.geojson"
 
 
 @pytest.fixture(scope="module")
 def ReadObservedQ_Path() -> str:
-    return "Examples/Hydrodynamic models/test_case/inputs/gauges/discharge/"
+    return "examples/Hydrodynamic models/test_case/inputs/gauges/discharge/"
 
 
 @pytest.fixture(scope="module")
 def ReadObservedWL_Path() -> str:
-    return "Examples/Hydrodynamic models/test_case/inputs/gauges/water_level/"
+    return "examples/Hydrodynamic models/test_case/inputs/gauges/water_level/"
 
 @pytest.fixture(scope="module")
 def calibrateProfile_DS_bedlevel() -> float:

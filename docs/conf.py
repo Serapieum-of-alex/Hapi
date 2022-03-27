@@ -31,7 +31,7 @@ html_theme_path = ["."]
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.abspath("../Hapi"))
 sys.path.insert(0, os.path.abspath(".."))
-sys.path.insert(0, os.path.abspath("../Examples"))
+sys.path.insert(0, os.path.abspath("../examples"))
 
 # If your extensions are in another directory, add it here. If the
 # directory is relative to the documentation root, use

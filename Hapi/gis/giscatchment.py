@@ -614,7 +614,7 @@ class GISCatchment:
         ----------
             1-StCoord:the same input dataframe with two extra columns "cellx","celly"
 
-        Examples:
+        examples:
             soil_type=gdal.Open("DEM.tif")
             coordinates=stations[['id','x','y']][:]
             coordinates.loc[:,["cell_row","cell_col"]]=NearestCell(Raster,StCoord)

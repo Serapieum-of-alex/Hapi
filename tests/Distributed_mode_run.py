@@ -3,7 +3,7 @@ Created on Sun Jun 24 21:02:34 2018
 
 @author: Mostafa
 """
-Comp = "F:/01Algorithms/Hydrology/HAPI/Examples"
+Comp = "F:/01Algorithms/Hydrology/HAPI/examples"
 
 import Hapi.rrm.hbv_bergestrom92 as HBV
 from Hapi.catchment import Catchment

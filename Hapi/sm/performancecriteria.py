@@ -256,7 +256,7 @@ def NSE(Qobs: np.ndarray, Qsim: np.ndarray):
         1-f: [float]
             NSE value
 
-    Examples:
+    examples:
     -------
         Qobs = np.loadtxt("Qobs.txt")
         Qout = Model(prec,evap,temp)
@@ -297,7 +297,7 @@ def NSEHF(Qobs: Union[list, np.ndarray], Qsim: Union[list, np.ndarray]):
     1-f :
         [float] NSE value
 
-    Examples:
+    examples:
     -------
         Qobs=np.loadtxt("Qobs.txt")
         Qout=Model(prec,evap,temp)
@@ -338,7 +338,7 @@ def NSELF(Qobs: Union[list, np.ndarray], Qsim: Union[list, np.ndarray]):
     1-f :
         [float] NSE value
 
-    Examples:
+    examples:
     -------
         Qobs=np.loadtxt("Qobs.txt")
         Qout=Model(prec,evap,temp)
