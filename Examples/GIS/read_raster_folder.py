@@ -8,14 +8,14 @@ os.chdir(r"C:\MyComputer\01Algorithms\Hydrology\Hapi")
 import numpy as np
 from Hapi.gis.raster import Raster
 Path = "examples/GIS/data/raster-folder/"
-F = Raster.ReadRastersFolder(Path, WithOrder=True)
+F = Raster.ReadRastersFolder(Path)
 assert np.shape(F) == (125, 93, 6)
 
 start = "1979-01-02"
 end = "1979-01-05"
 fmt = "%Y-%m-%d"
 
-F = Raster.ReadRastersFolder(Path, WithOrder=True, start=start, end=end, fmt=fmt)
+F = Raster.ReadRastersFolder(Path, start=start, end=end, fmt=fmt)
 assert np.shape(F) == (125, 93, 4)
 
 # "5_MSWEP_1979.01.06.tif".

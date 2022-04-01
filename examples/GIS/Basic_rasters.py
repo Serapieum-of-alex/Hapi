@@ -24,8 +24,7 @@ from Hapi.gis.giscatchment import GISCatchment as GC
 from Hapi.gis.raster import Raster
 from Hapi.plot.map import Map
 from Hapi.plot.visualizer import Visualize as vis
-
-# %% Paths
+## Paths
 RasterAPath = datapath + "/acc4000.tif"
 RasterBPath = datapath + "/dem_100_f.tif"
 pointsPath = datapath + "/points.csv"
@@ -33,7 +32,7 @@ aligned_raster_folder = datapath + "/alligned_rasters/"
 alligned_rasater = datapath + "/Evaporation_ECMWF_ERA-Interim_mm_daily_2009.01.01.tif"
 soilmappath = datapath + "/soil_raster.tif"
 Basinshp = datapath + "/basins.shp"
-# %%
+##
 """
 you need to define the TEMP path in your environment variable as some of the metods in the raster
 module do some preprocessing in the TEMP path
