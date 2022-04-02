@@ -1,8 +1,11 @@
 import os
+
 import numpy as np
 from osgeo import gdal
 from osgeo.gdal import Dataset
+
 from Hapi.gis.raster import Raster
+
 
 def test_GetRasterData(
         src: Dataset,
@@ -156,5 +159,3 @@ class TestReadRastersFolder:
                                  rasters_folder_dim[1],
                                  rasters_folder_between_dates_raster_number
                                  )
-
-

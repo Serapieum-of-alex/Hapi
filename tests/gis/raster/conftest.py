@@ -1,5 +1,6 @@
-import pytest
 import numpy as np
+import pytest
+
 # import datetime as dt
 from osgeo import gdal
 from osgeo.gdal import Dataset
@@ -133,4 +134,3 @@ def rasters_folder_date_fmt() -> str:
 @pytest.fixture(scope="module")
 def rasters_folder_between_dates_raster_number() -> int:
     return 4
-

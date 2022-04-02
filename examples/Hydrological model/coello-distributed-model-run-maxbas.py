@@ -1,18 +1,22 @@
 """ Distributed model with a maxbas routing scheme """
 import os
+
 # comp = "F:/02Case studies/"
 Comp = r"C:\MyComputer\01Algorithms\Hydrology\Hapi/"
 os.chdir(Comp+ "examples/")
+import datetime as dt
+
+import matplotlib.pyplot as plt
+import pandas as pd
+
 # import numpy as np
 from osgeo import gdal
-import datetime as dt
-import pandas as pd
-import matplotlib.pyplot as plt
 
-from Hapi.run import Run
-from Hapi.catchment import Catchment
 import Hapi.rrm.hbv_bergestrom92 as HBV
 import Hapi.sm.performancecriteria as PC
+from Hapi.catchment import Catchment
+from Hapi.run import Run
+
 #%% Paths
 path = Comp + "/Coello/Hapi/Data/00inputs/"
 PrecPath = path + "meteodata/4000/calib/prec-MSWEP"
@@ -52,19 +56,19 @@ Coello.ReadDischargeGauges(GaugesPath, column='id', fmt="%Y-%m-%d")
 """
 Outputs:
     ----------
-    1-statevariables: [numpy attribute] 
+    1-statevariables: [numpy attribute]
         4D array (rows,cols,time,states) states are [sp,wc,sm,uz,lv]
-    2-qlz: [numpy attribute] 
+    2-qlz: [numpy attribute]
         3D array of the lower zone discharge
-    3-quz: [numpy attribute] 
+    3-quz: [numpy attribute]
         3D array of the upper zone discharge
-    4-qout: [numpy attribute] 
+    4-qout: [numpy attribute]
         1D timeseries of discharge at the outlet of the catchment
         of unit m3/sec
-    5-quz_routed: [numpy attribute] 
+    5-quz_routed: [numpy attribute]
         3D array of the upper zone discharge  accumulated and
         routed at each time step
-    6-qlz_translated: [numpy attribute] 
+    6-qlz_translated: [numpy attribute]
         3D array of the lower zone discharge translated at each time step
 """
 Run.RunFW1(Coello)
@@ -78,7 +82,7 @@ print("RMSE= " + str(round(Coello.Metrics.loc['RMSE',gaugeid],2)))
 print("NSE= " + str(round(Coello.Metrics.loc['NSE',gaugeid],2)))
 print("NSEhf= " + str(round(Coello.Metrics.loc['NSEhf',gaugeid],2)))
 print("KGE= " + str(round(Coello.Metrics.loc['KGE',gaugeid],2)))
-print("WB= " + str(round(Coello.Metrics.loc['WB',gaugeid],2)))    
+print("WB= " + str(round(Coello.Metrics.loc['WB',gaugeid],2)))
 #%% plot
 i = 5
 gaugei = 5

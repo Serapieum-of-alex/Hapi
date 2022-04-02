@@ -25,6 +25,7 @@ from Hapi.gis.giscatchment import GISCatchment as GC
 from Hapi.gis.raster import Raster
 from Hapi.plot.map import Map
 from Hapi.plot.visualizer import Visualize as vis
+
 #%% Paths
 RasterAPath = datapath + "/acc4000.tif"
 RasterBPath = datapath + "/dem_100_f.tif"

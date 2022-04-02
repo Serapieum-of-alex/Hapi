@@ -12,6 +12,7 @@ from matplotlib.animation import FuncAnimation
 from matplotlib.ticker import LogFormatter
 from osgeo import gdal
 from osgeo.gdal import Dataset
+
 from Hapi.gis.giscatchment import GISCatchment as GC
 from Hapi.gis.raster import Raster
 from Hapi.plot.visualizer import MidpointNormalize, Visualize

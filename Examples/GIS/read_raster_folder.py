@@ -4,9 +4,12 @@ Created on Sun May  9 03:35:25 2021
 @author: mofarrag
 """
 import os
+
 os.chdir(r"C:\MyComputer\01Algorithms\Hydrology\Hapi")
 import numpy as np
+
 from Hapi.gis.raster import Raster
+
 Path = "examples/GIS/data/raster-folder/"
 F = Raster.ReadRastersFolder(Path)
 assert np.shape(F) == (125, 93, 6)

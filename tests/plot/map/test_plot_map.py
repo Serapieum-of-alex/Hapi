@@ -1,7 +1,9 @@
 import pytest
-from osgeo.gdal import Dataset
-from Hapi.plot.map import Map
 from matplotlib.figure import Figure
+from osgeo.gdal import Dataset
+
+from Hapi.plot.map import Map
+
 
 class TestPlotArray:
 
