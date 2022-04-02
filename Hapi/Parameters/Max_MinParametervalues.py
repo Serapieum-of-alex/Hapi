@@ -56,7 +56,7 @@ for i in range(len(ParamList)):
             + ".tif"
         )
 
-    parameters = R.ReadRastersFolder(Path, WithOrder=False)
+    parameters = R.ReadRastersFolder(Path)
     MaxValue = parameters.max(axis=2)
     MinValue = parameters.min(axis=2)
     MeanValue = parameters.mean(axis=2)

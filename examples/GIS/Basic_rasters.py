@@ -1,11 +1,12 @@
 import os
 
 # import sys
-"F:/01Algorithms/Hydrology/HAPI"
+r"C:\MyComputer\01Algorithms\Hydrology"
 # os.chdir("examples/")
 rootpath = os.path.abspath(os.getcwd())
 # sys.path.append(rootpath + "/src")
-datapath = os.path.join(rootpath, "examples/data/GIS/Hapi_GIS_Data")
+# datapath = os.path.join(rootpath, "examples/data/GIS/Hapi_GIS_Data")
+datapath = os.path.join(rootpath, "examples/GIS/data")
 datapath2 = os.path.join(rootpath, "examples/data/GIS")
 os.chdir(rootpath)
 
@@ -24,7 +25,7 @@ from Hapi.gis.giscatchment import GISCatchment as GC
 from Hapi.gis.raster import Raster
 from Hapi.plot.map import Map
 from Hapi.plot.visualizer import Visualize as vis
-## Paths
+#%% Paths
 RasterAPath = datapath + "/acc4000.tif"
 RasterBPath = datapath + "/dem_100_f.tif"
 pointsPath = datapath + "/points.csv"
@@ -32,7 +33,7 @@ aligned_raster_folder = datapath + "/alligned_rasters/"
 alligned_rasater = datapath + "/Evaporation_ECMWF_ERA-Interim_mm_daily_2009.01.01.tif"
 soilmappath = datapath + "/soil_raster.tif"
 Basinshp = datapath + "/basins.shp"
-##
+#%%
 """
 you need to define the TEMP path in your environment variable as some of the metods in the raster
 module do some preprocessing in the TEMP path
@@ -40,10 +41,10 @@ module do some preprocessing in the TEMP path
 also if you have installed qgis define the directory to the bin folder inside the installation directory
 of qgis in the environment variable with a name "qgis"
 """
-# %% read the raster
+#%%` read the raster
 src = gdal.Open(RasterAPath)
-Map.PlotArray(src, Title="Flow Accumulation")
-# %% GetRasterData
+fig, ax = Map.PlotArray(src, Title="Flow Accumulation")
+#%%` GetRasterData
 """
 get the basic data inside a raster (the array and the nodatavalue)
 
@@ -61,7 +62,7 @@ Outputs:
         value stored in novalue cells
 """
 arr, nodataval = Raster.GetRasterData(src)
-# %%
+#%%`
 """GetProjectionData.
 
 GetProjectionData returns the projection details of a given gdal.Dataset
@@ -82,7 +83,7 @@ Returns:
 epsg, geo = Raster.GetProjectionData(src)
 print("EPSG = " + str(epsg))
 print(geo)
-# %% GetCoords
+#%%` GetCoords
 """GetCoords.
 
 Returns the coordinates of the cell centres (only the cells that
@@ -103,7 +104,7 @@ mat_range : array
 
 """
 coords, centerscoords = Raster.GetCellCoords(src)
-# %% SaveRaster
+#%%` SaveRaster
 """SaveRaster.
 
 SaveRaster saves a raster to a path
@@ -124,9 +125,9 @@ EX:
 ----------
     SaveRaster(raster,output_path)
 """
-path = datapath + "/rasterexample.tif"
+path = datapath + "/save_raster_test.tif"
 Raster.SaveRaster(src, path)
-# %% CreateRaster
+#%%` CreateRaster
 """
 We will recreate the raster that we have already read using the 'GetRasterData' method at the
 top from the array and the projection data we obtained using the 'GetProjectionData' method
@@ -161,7 +162,7 @@ Returns
 
 src = Raster.CreateRaster(arr=arr, geo=geo, EPSG=str(epsg), NoDataValue=nodataval)
 Map.PlotArray(src, Title="Flow Accumulation")
-# %% RasterLike
+#%%` RasterLike
 """RasterLike.
 
 RasterLike method creates a Geotiff raster like another input raster, new raster
@@ -198,6 +199,7 @@ Ex:
     name="rain.tif"
     RasterLike(src,data,name)
 """
+
 """
 If we have made some calculation on raster array and we want to save the array back in the raster
 """
@@ -207,7 +209,7 @@ arr2[~np.isclose(arr, nodataval, rtol=0.001)] = 5
 path = datapath + "/rasterlike.tif"
 Raster.RasterLike(src, arr2, path)
 dst = gdal.Open(path)
-vis.PlotArray(dst, Title="Flow Accumulation", ColorScale=1)
+Map.PlotArray(dst, Title="Flow Accumulation", ColorScale=1)
 # %%
 """MapAlgebra.
 
@@ -246,8 +248,8 @@ def func1(val):
 
 
 dst = Raster.MapAlgebra(src, func1)
-vis.PlotArray(dst, Title="Classes", ColorScale=4, TicksSpacing=1)
-# %%
+Map.PlotArray(dst, Title="Classes", ColorScale=4, TicksSpacing=1)
+#%%
 """RasterFill.
 
 RasterFill takes a raster and fill it with one value
@@ -273,8 +275,8 @@ Raster.RasterFill(src, value, SaveTo=path)
 
 "now the resulted raster is saved to disk"
 dst = gdal.Open(path)
-vis.PlotArray(dst, Title="Flow Accumulation")
-# %%
+Map.PlotArray(dst, Title="Flow Accumulation")
+#%%
 """ResampleRaster.
 
 this function reproject a raster to any projection
@@ -306,7 +308,7 @@ dst = Raster.ResampleRaster(src, cell_size, resample_technique="bilinear")
 dst_arr, _ = Raster.GetRasterData(dst)
 _, newgeo = Raster.GetProjectionData(dst)
 print("New cell size is " + str(newgeo[1]))
-vis.PlotArray(dst, Title="Flow Accumulation")
+Map.PlotArray(dst, Title="Flow Accumulation")
 # %%
 """ProjectRaster.
 

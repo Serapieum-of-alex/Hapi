@@ -17,7 +17,7 @@ import sys
 # import datetime as dt
 import time
 import zipfile
-from typing import Any, Optional, Union
+from typing import Any, Union
 
 import geopandas as gpd
 import netCDF4
@@ -112,40 +112,35 @@ class Raster:
         67-Moving_average
         68-Get_ordinal
         69-ListAttributes
-
-
     """
-
-
     def __init__(self):
         pass
 
 
     @staticmethod
-    def GetRasterData(src: Dataset, band=""):
+    def GetRasterData(
+            src: Dataset,
+            band = 1
+    ):
         """
         get the basic data inside a raster (the array and the nodatavalue)
 
-        Inputs:
+        Parameters
         ----------
-            Input: [gdal.Dataset]
+            src: [gdal.Dataset]
                 a gdal.Dataset is a raster already been read using gdal
             band : [integer]
                 the band you want to get its data. Default is 1
-        Outputs:
+
+        Returns
         ----------
-            1- array : [array]
+            array : [array]
                 array with all the values in the flow path length raster
-            2- no_val : [numeric]
+            no_val : [numeric]
                 value stored in novalue cells
         """
-        if band == "":
-            band = 1
-
-        msg = (
-            "please enter a valib gdal object (raster has been read " "using gdal.open)"
-        )
-        assert isinstance(src, gdal.Dataset), msg
+        if not isinstance(src, Dataset):
+            raise TypeError("please enter a valib gdal object (raster has been read using gdal.Open)")
 
         # get the value stores in novalue cells
         NoDataValue = np.float32(src.GetRasterBand(band).GetNoDataValue())
@@ -228,36 +223,36 @@ class Raster:
 
 
     @staticmethod
-    def SaveRaster(raster: Dataset, path):
+    def SaveRaster(raster: Dataset, path: str):
         """SaveRaster.
 
         SaveRaster saves a raster to a path
 
-        inputs:
+        Parameters
         ----------
-            1- raster:
-                [gdal object]
-            2- path:
-                [string] a path includng the name of the raster and extention like
-                path="data/cropped.tif"
+        1- raster:
+            [gdal object]
+        2- path:
+            [string] a path includng the name of the raster and extention like
+            path="data/cropped.tif"
 
-        Outputs:
-        ----------
+        Returns
+        -------
             the function does not return and data but only save the raster to the hard drive
 
-        EX:
-        ----------
+        Examples
+        --------
             SaveRaster(raster,output_path)
         """
-        # input data validation
-        # data type
-        assert isinstance(
-            raster, gdal.Dataset
-        ), "src should be read using gdal (gdal dataset please read it using gdal library) "
-        assert isinstance(path, str), "Raster_path input should be string type"
+        if not isinstance(raster, gdal.Dataset):
+            raise TypeError("raster parameter should be read using gdal dataset please read it using gdal")
+
+        if not isinstance(path, str):
+            raise TypeError("Raster_path input should be string type")
         # input values
         ext = path[-4:]
-        assert ext == ".tif", "please add the extension at the end of the path input"
+        if not ext == ".tif":
+            raise ValueError("please add the extension at the end of the path input")
 
         driver = gdal.GetDriverByName("GTiff")
         dst_ds = driver.CreateCopy(path, raster, 0)
@@ -265,8 +260,13 @@ class Raster:
 
 
     @staticmethod
-    def CreateRaster(Path="", arr: Union[str, Dataset] = "", geo: Union[str, tuple] = "", EPSG: str = "",
-                     NoDataValue: Any = -9999):
+    def CreateRaster(
+            Path: str="",
+            arr: Union[str, Dataset, np.ndarray] = "",
+            geo: Union[str, tuple] = "",
+            EPSG: Union[str, int] = "",
+            NoDataValue: Any = -9999
+    ):
         """CreateRaster.
 
         CreateRaster method creates a raster from a given array and geotransform data
@@ -300,7 +300,9 @@ class Raster:
             driver_type = "MEM"
             compress = []
         else:
-            assert isinstance(Path, str), "first parameter Path should be string"
+            if not isinstance(Path, str):
+                raise TypeError("first parameter Path should be string")
+
             driver_type = "GTiff"
             compress = ["COMPRESS=LZW"]
 
@@ -311,6 +313,7 @@ class Raster:
         srse = osr.SpatialReference()
 
         if EPSG == "":
+            # if no epsg assume WGS 94 (4326)
             srse.SetWellKnownGeogCS("WGS84")
         else:
             try:
@@ -346,7 +349,12 @@ class Raster:
 
 
     @staticmethod
-    def RasterLike(src, array, path, pixel_type=1):
+    def RasterLike(
+            src: Dataset,
+            array: np.ndarray,
+            path: str,
+            pixel_type: int=1
+    ):
         """RasterLike.
 
         RasterLike method creates a Geotiff raster like another input raster, new raster
@@ -354,8 +362,8 @@ class Raster:
         raster, cell size, nodata velue, and number of rows and columns
         the raster and the dem should have the same number of columns and rows
 
-        inputs:
-        -------
+        Parameters
+        ----------
             1- src : [gdal.dataset]
                 source raster to get the spatial information
             2- array : [numpy array]
@@ -372,26 +380,29 @@ class Raster:
                 5 for integer 16
                 6 for integer 32
 
-        outputs:
-        --------
+        Returns
+        -------
             1- save the new raster to the given path
 
-        Ex:
-        ----------
-            data=np.load("RAIN_5k.npy")
-            src=gdal.Open("DEM.tif")
-            name="rain.tif"
-            RasterLike(src,data,name)
+        Example
+        -------
+            >>> data = np.load("RAIN_5k.npy")
+            >>> src = gdal.Open("DEM.tif")
+            >>> name = "rain.tif"
+            >>> Raster.RasterLike(src,data,name)
         """
-        # input data validation
-        # data type
-        msg = "src should be read using gdal (gdal dataset please read it using gdal library) "
-        assert isinstance(src, gdal.Dataset), msg
-        assert isinstance(array, np.ndarray), "array should be of type numpy array"
-        assert isinstance(path, str), "Raster_path input should be string type"
-        assert isinstance(
-            pixel_type, int
-        ), "pixel type input should be integer type please check documentations"
+        if not isinstance(src, gdal.Dataset):
+            raise TypeError("src should be read using gdal (gdal dataset please read it using gdal library) ")
+
+        if not isinstance(array, np.ndarray):
+            raise TypeError("array should be of type numpy array")
+
+        if not isinstance(path, str):
+            raise TypeError("Raster_path input should be string type")
+
+        if not isinstance(pixel_type, int):
+            raise TypeError("pixel type input should be integer type please check documentations")
+
         # input values
         #    assert os.path.exists(path), path+ " you have provided does not exist"
         ext = path[-4:]
@@ -511,13 +522,16 @@ class Raster:
 
 
     @staticmethod
-    def RasterFill(src, Val, SaveTo):
+    def RasterFill(
+            src: Dataset, 
+            Val: Union[float, int],
+            SaveTo: str
+    ):
         """RasterFill.
 
-        RasterFill takes a raster and fill it with one value
+            RasterFill takes a raster and fill it with one value
 
-
-        inputs:
+        Parameters
         ----------
             1- src : [gdal.dataset]
                 source raster
@@ -526,13 +540,12 @@ class Raster:
             3- SaveTo : [str]
                 path including the extension (.tif)
 
-        Returns:
-        --------
+        Returns
+        -------
             1- raster : [saved on disk]
                 the raster will be saved directly to the path you provided.
         """
-        # input data validation
-        # data type
+
         assert isinstance(
             src, gdal.Dataset
         ), "src should be read using gdal (gdal dataset please read it using gdal library) "
@@ -553,38 +566,40 @@ class Raster:
 
 
     @staticmethod
-    def ResampleRaster(src, cell_size, resample_technique="Nearest"):
+    def ResampleRaster(
+            src: Dataset,
+            cell_size: Union[int, float],
+            resample_technique: str="Nearest"
+    ):
         """ResampleRaster.
 
         this function reproject a raster to any projection
         (default the WGS84 web mercator projection, without resampling)
         The function returns a GDAL in-memory file object, where you can ReadAsArray etc.
 
-        inputs:
+        Parameters
         ----------
-            1- raster : [gdal.Dataset]
-                 gdal raster (src=gdal.Open("dem.tif"))
-            3-cell_size : [integer]
-                 new cell size to resample the raster.
-                (default empty so raster will not be resampled)
-            4- resample_technique : [String]
-                resampling technique default is "Nearest"
-                https://gisgeography.com/raster-resampling/
-                "Nearest" for nearest neighbour,"cubic" for cubic convolution,
-                "bilinear" for bilinear
+        src : [gdal.Dataset]
+             gdal raster (src=gdal.Open("dem.tif"))
+        cell_size : [integer]
+             new cell size to resample the raster.
+            (default empty so raster will not be resampled)
+        resample_technique : [String]
+            resampling technique default is "Nearest"
+            https://gisgeography.com/raster-resampling/
+            "Nearest" for nearest neighbour,"cubic" for cubic convolution,
+            "bilinear" for bilinear
 
-        Outputs:
-        ----------
-            1-raster : [gdal.Dataset]
-                 gdal object (you can read it by ReadAsArray)
+        Returns
+        -------
+        raster : [gdal.Dataset]
+             gdal object (you can read it by ReadAsArray)
         """
-        # input data validation
-        # data type
-        msg = "src should be read using gdal (gdal dataset please read it using gdal library) "
-        assert isinstance(src, gdal.Dataset), msg
+        if not isinstance(src, gdal.Dataset):
+            raise TypeError("src should be read using gdal (gdal dataset please read it using gdal library) ")
 
-        msg = " please enter correct resample_technique more information see docmentation "
-        assert isinstance(resample_technique, str), msg
+        if not isinstance(resample_technique, str):
+            raise TypeError(" please enter correct resample_technique more information see docmentation ")
 
         if resample_technique == "Nearest":
             resample_technique = gdal.GRA_NearestNeighbour
@@ -2552,36 +2567,59 @@ class Raster:
 
 
     @staticmethod
-    def ReadRastersFolder(path, WithOrder=True, start="", end="", fmt="", freq="daily"):
-        """
-        this function reads rasters from a folder and creates a 3d arraywith the same
+    def ReadRastersFolder(
+            path: str,
+            with_order: bool=True,
+            start: str="",
+            end: str="",
+            fmt: str="",
+            freq: str="daily",
+    ):
+        """ReadRastersFolder.
+
+        this function reads rasters from a folder and creates a 3d array with the same
         2d dimensions of the first raster in the folder and len as the number of files
 
         inside the folder.
         - all rasters should have the same dimensions
         - folder should only contain raster files
+        - raster file name should have the date at the end of the file name before the extension directly
+          with the YYYY.MM.DD / YYYY-MM-DD or YYYY_MM_DD
+          >>> "50_MSWEP_1979.01.01.tif"
 
-        Inputs:
+        Parameters
         ----------
-            1- path:
-                [String/list] path of the folder that contains all the rasters or
-                a list contains the paths of the rasters to read.
+        path:[String/list]
+            path of the folder that contains all the rasters or
+            a list contains the paths of the rasters to read.
+        with_order: [bool]
+            True if the rasters follows a certain order, then the rasters names should have a
+            number at the beginning indicating the order.
+        fmt: [str]
+            format of the given date
+        start: [str]
+            start date if you want to read the input temperature for a specific period only,
+            if not given all rasters in the given path will be read.
+        end: [str]
+            end date if you want to read the input temperature for a specific period only,
+            if not given all rasters in the given path will be read.
+        freq: [str]
+            frequency of the rasters "daily", Hourly, monthly
 
-        Outputs:
-        ----------
-            1- arr_3d:
-                [numpy.ndarray] 3d array contains arrays read from all rasters in the folder.
+        Returns
+        -------
+        1- arr_3d:
+            [numpy.ndarray] 3d array contains arrays read from all rasters in the folder.
 
-        Example:
-        ----------
-            prec_path="00inputs/meteodata/4000/prec"
-            prec=ReadRastersFolder(prec_path)
+        Example
+        -------
+            >>> raster_folder = "examples/GIS/data/raster-folder"
+            >>> prec = Raster.ReadRastersFolder(raster_folder)
         """
         # input data validation
         # data type
-        assert (
-                type(path) == str or type(path) == list
-        ), "A_path input should be string type"
+        if not isinstance(path, str)  and not isinstance(path, list):
+            raise TypeError(f"path input should be string/list type, given{type(path)}")
 
         # input values
         if isinstance(path, str):
@@ -2597,7 +2635,7 @@ class Raster:
             files = path[:]
 
         # to sort the files in the same order as the first number in the name
-        if WithOrder:
+        if with_order:
             try:
                 filesNo = [int(i.split("_")[0]) for i in files]
             except ValueError:
@@ -2620,9 +2658,10 @@ class Raster:
             dates = list()
             for i in range(len(files)):
                 if freq == "daily":
-                    year = int(files[i].split("_")[-3])
-                    month = int(files[i].split("_")[-2])
-                    day = int(files[i].split("_")[-1].split(".")[0])
+                    l = len(files[i]) - 4
+                    day = int(files[i][l - 2: l])
+                    month = int(files[i][l - 5:l - 3])
+                    year = int(files[i][l - 10: l - 6])
                     dates.append(dt.datetime(year, month, day))
                 elif freq == "hourly":
                     year = int(files[i].split("_")[-4])
@@ -2662,10 +2701,10 @@ class Raster:
                 f = gdal.Open(files[i])
                 arr_3d[:, :, i] = f.ReadAsArray()
         else:
-            for i in range(starti, endi):
+            for i in enumerate(range(starti, endi)):
                 # read the tif file
-                f = gdal.Open(path + "/" + files[i])
-                arr_3d[:, :, i] = f.ReadAsArray()
+                f = gdal.Open(path + "/" + files[i[1]])
+                arr_3d[:, :, i[0]] = f.ReadAsArray()
 
         return arr_3d
 
