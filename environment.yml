@@ -25,8 +25,8 @@ dependencies:
   - ecmwf-api-client >=1.6.1
   - joblib >=1.1.0
   - geopy >=2.2.0
-  - geoplot >=0.5.1
   - pip:
+      - geoplot >=0.5.1
       - loguru >=0.5.3
       - pytest >=6.2.5
       - pytest-cov >=2.12.1
