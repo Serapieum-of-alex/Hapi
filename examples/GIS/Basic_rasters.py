@@ -30,10 +30,10 @@ from Hapi.plot.visualizer import Visualize as vis
 RasterAPath = datapath + "/acc4000.tif"
 RasterBPath = datapath + "/dem_100_f.tif"
 pointsPath = datapath + "/points.csv"
-aligned_raster_folder = datapath + "/alligned_rasters/"
-alligned_rasater = datapath + "/Evaporation_ECMWF_ERA-Interim_mm_daily_2009.01.01.tif"
+aligned_raster_folder = datapath + "/aligned_rasters/"
+aligned_raster = datapath + "/Evaporation_ECMWF_ERA-Interim_mm_daily_2009.01.01.tif"
 soilmappath = datapath + "/soil_raster.tif"
-Basinshp = datapath + "/basins.shp"
+Basinshp = datapath + "/basin.geojson"
 #%%
 """
 you need to define the TEMP path in your environment variable as some of the metods in the raster
@@ -388,7 +388,7 @@ Outputs:
 # newepsg, newgeo = Raster.GetProjectionData(dst)
 # print("New EPSG - " + str(newepsg))
 # print("New Geotransform - " + str(newgeo))
-# vis.PlotArray(dst, Title="Flow Accumulation")
+# Map.PlotArray(dst, Title="Flow Accumulation")
 # %% CropAlligned
 """if you have an array and you want clip/crop it using another raster/array"""
 
@@ -416,9 +416,10 @@ Outputs:
         exactly the same like src raster
 """
 # crop array using a raster
-dst = gdal.Open(alligned_rasater)
+dst = gdal.Open(aligned_raster)
 dst_arr, dst_nodataval = Raster.GetRasterData(dst)
-vis.PlotArray(
+
+Map.PlotArray(
     dst_arr,
     nodataval=dst_nodataval,
     Title="Before Cropping-Evapotranspiration",
@@ -426,7 +427,7 @@ vis.PlotArray(
     TicksSpacing=0.01,
 )
 dst_arr_cropped = Raster.CropAlligned(dst_arr, src)
-vis.PlotArray(
+Map.PlotArray(
     dst_arr_cropped,
     nodataval=nodataval,
     Title="Cropped array",
@@ -439,7 +440,7 @@ cropping rasters may  change the alignment of the cells and to keep the alignmen
 we will crop the same previous raster but will give the input to the function as a gdal.dataset object
 """
 dst_cropped = Raster.CropAlligned(dst, src)
-vis.PlotArray(dst_cropped, Title="Cropped raster", ColorScale=1, TicksSpacing=0.01)
+Map.PlotArray(dst_cropped, Title="Cropped raster", ColorScale=1, TicksSpacing=0.01)
 # %% crop raster using array
 """
 we can also crop a raster using an array in condition that we enter the value of the nodata stored in the
@@ -447,7 +448,7 @@ array
 we can repeat the previous example but
 """
 dst_cropped = Raster.CropAlligned(dst, arr, mask_noval=nodataval)
-vis.PlotArray(dst_cropped, Title="Cropped array", ColorScale=1, TicksSpacing=0.01)
+Map.PlotArray(dst_cropped, Title="Cropped array", ColorScale=1, TicksSpacing=0.01)
 # %% clip a folder of rasters using another raster while preserving the alignment
 """
 you can perform the previous step on multiple rasters using the CropAlignedFolder
@@ -523,13 +524,13 @@ epsg, geotransform = Raster.GetProjectionData(soil_raster)
 print("Before alignment EPSG = " + str(epsg))
 print("Before alignment Geotransform = " + str(geotransform))
 # cell_size = geotransform[1]
-vis.PlotArray(soil_raster, Title="To be aligned", ColorScale=1, TicksSpacing=1)
+Map.PlotArray(soil_raster, Title="To be aligned", ColorScale=1, TicksSpacing=1)
 
 soil_aligned = Raster.MatchRasterAlignment(src, soil_raster)
 New_epsg, New_geotransform = Raster.GetProjectionData(soil_aligned)
 print("After alignment EPSG = " + str(New_epsg))
 print("After alignment Geotransform = " + str(New_geotransform))
-vis.PlotArray(soil_aligned, Title="After alignment", ColorScale=1, TicksSpacing=1)
+Map.PlotArray(soil_aligned, Title="After alignment", ColorScale=1, TicksSpacing=1)
 # %%
 """Crop.
 
@@ -554,11 +555,11 @@ Output:
         the cropped raster will also be saved to disk in the OutputPath
         directory.
 """
-RasterA = gdal.Open(alligned_rasater)
+RasterA = gdal.Open(aligned_raster)
 epsg, geotransform = Raster.GetProjectionData(RasterA)
 print("Raster EPSG = " + str(epsg))
 print("Raster Geotransform = " + str(geotransform))
-vis.PlotArray(RasterA, Title="Raster to be cropped", ColorScale=1, TicksSpacing=1)
+Map.PlotArray(RasterA, Title="Raster to be cropped", ColorScale=1, TicksSpacing=1)
 """
 We will use the soil raster from the previous example as a mask
 so the projection is different between the raster and the mask and the cell size is also different
@@ -568,11 +569,11 @@ dst = Raster.Crop(RasterA, soil_raster)
 dst_epsg, dst_geotransform = Raster.GetProjectionData(dst)
 print("resulted EPSG = " + str(dst_epsg))
 print("resulted Geotransform = " + str(dst_geotransform))
-vis.PlotArray(dst, Title="Cropped Raster", ColorScale=1, TicksSpacing=1)
+Map.PlotArray(dst, Title="Cropped Raster", ColorScale=1, TicksSpacing=1)
 # %%
 # src_aligned = gdal.Open(alligned_rasater)
 # # arr, nodataval = Raster.GetRasterData(src_aligned)
-# vis.PlotArray(src_aligned, Title="Before Cropping-Evapotranspiration", ColorScale=1,
+# Map.PlotArray(src_aligned, Title="Before Cropping-Evapotranspiration", ColorScale=1,
 #               TicksSpacing=0.01)
 # %%
 """ClipRasterWithPolygon.
@@ -608,12 +609,12 @@ EX:
     clipped_raster=ClipRasterWithPolygon(Raster_path,shapefile_path,True,output_path)
 """
 shp = gpd.read_file(Basinshp)
-src = gdal.Open(alligned_rasater)
+src = gdal.Open(aligned_raster)
 
 # dst = Raster.ClipRasterWithPolygon(alligned_rasater, Basinshp, save=False, output_path=None)
-dst = Raster.Clip2(alligned_rasater, Basinshp, save=False, output_path=None)
-# vis.PlotArray(dst, Title="After Cropping-Evapotranspiration by a shapefile", ColorScale=1,
-#               TicksSpacing=0.01)
+# dst = Raster.Clip2(aligned_raster, Basinshp, save=False, output_path=None)
+Map.PlotArray(dst, Title="After Cropping-Evapotranspiration by a shapefile", ColorScale=1,
+              TicksSpacing=0.01)
 # %% ReadASCII.
 """ReadASCII.
 
@@ -645,14 +646,12 @@ Outputs:
 Example:
     Elevation_values,DEMSpatialDetails = ReadASCII("dem.asc",1)
 """
-path = r"F:\02Case-studies\ClimXtreme\rim_base_data\setup\rhine\inputs\2d\dem_rhine.asc"
-arr, details = Raster.ReadASCII(path, pixel_type=1)
-vis.PlotArray(arr, details[-1], Title="Cropped Raster", ColorScale=2, TicksSpacing=200)
-arr[~np.isclose(arr, details[-1], rtol=0.001)] = 0.03
-path2 = (
-    r"F:\02Case-studies\ClimXtreme\rim_base_data\setup\rhine\inputs\2d\roughness.asc"
-)
-Raster.WriteASCII(path2, details, arr)
+path = datapath + r"/asci_example.asc"
+arr, geotransform = Raster.ReadASCII(path, pixel_type=1)
+Map.PlotArray(arr, geotransform[-1], Title="Cropped Raster", ColorScale=2, TicksSpacing=200)
+arr[~np.isclose(arr, geotransform[-1], rtol=0.001)] = 0.03
+path2 = datapath + r"/roughness.asc"
+Raster.WriteASCII(path2, geotransform, arr)
 # %% read the points
 points = pd.read_csv(pointsPath)
 points["row"] = np.nan
@@ -784,7 +783,7 @@ def stretch(a):
 
 
 shapefile_path = Basinshp
-raster_path = alligned_rasater
+raster_path = aligned_raster
 
 # def main( shapefile_path, raster_path ):
 # Load the source data as a gdalnumeric array

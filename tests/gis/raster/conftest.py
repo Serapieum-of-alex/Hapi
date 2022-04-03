@@ -1,3 +1,4 @@
+import geopandas as gpd
 import numpy as np
 import pytest
 
@@ -10,22 +11,30 @@ from osgeo.gdal import Dataset
 def src() -> Dataset:
     return gdal.Open("examples/GIS/data/acc4000.tif")
 
+
 @pytest.fixture(scope="module")
 def src_arr(src: Dataset) -> np.ndarray:
     return src.ReadAsArray()
 
+
 @pytest.fixture(scope="module")
-def src_no_data_value() -> float:
-    return -3.402823e+38
+def src_shape(src: Dataset) -> tuple:
+    return src.ReadAsArray().shape
+
+
+@pytest.fixture(scope="module")
+def src_no_data_value(src: Dataset) -> float:
+    return src.GetRasterBand(1).GetNoDataValue()
 
 
 @pytest.fixture(scope="module")
 def src_epsg() -> int:
     return 32618
 
+
 @pytest.fixture(scope="module")
-def src_geotransform() -> tuple:
-    return 432968.1206170588, 4000.0, 0.0, 520007.787999178, 0.0, -4000.0
+def src_geotransform(src: Dataset) -> tuple:
+    return src.GetGeoTransform()
 
 
 @pytest.fixture(scope="module")
@@ -49,6 +58,11 @@ def cells_centerscoords() -> np.ndarray:
     return np.array([[434968.12061706, 520007.78799918],
                     [438968.12061706, 520007.78799918],
                     [442968.12061706, 520007.78799918]])
+
+
+@pytest.fixture(scope="module")
+def soil_raster() -> Dataset:
+    return gdal.Open("examples/GIS/data/soil_raster.tif")
 
 
 @pytest.fixture(scope="module")
@@ -101,6 +115,42 @@ def resample_raster_cell_size() -> int:
 def resample_raster_resample_technique() -> str:
     return "bilinear"
 
+
+@pytest.fixture(scope="module")
+def resample_raster_result_dims() -> tuple:
+    return 520, 560
+
+
+@pytest.fixture(scope="module")
+def project_raster_to_epsg() -> int:
+    return 4326
+
+
+@pytest.fixture(scope="module")
+def aligned_raster() -> Dataset:
+    return gdal.Open("examples/GIS/data/Evaporation_ECMWF_ERA-Interim_mm_daily_2009.01.01.tif")
+
+
+@pytest.fixture(scope="module")
+def aligned_raster_arr(aligned_raster) -> np.ndarray:
+    return aligned_raster.ReadAsArray()
+
+
+@pytest.fixture(scope="module")
+def crop_aligned_folder_path() -> str:
+    return "examples/GIS/data/aligned_rasters/"
+
+
+@pytest.fixture(scope="module")
+def crop_aligned_folder_saveto() -> str:
+    return "examples/GIS/data/crop_aligned_folder/"
+
+
+@pytest.fixture(scope="module")
+def crop_saveto() -> str:
+    return "examples/GIS/data/crop_using_crop.tif"
+
+
 @pytest.fixture(scope="module")
 def rasters_folder_path() -> str:
     return "examples/GIS/data/raster-folder"
@@ -134,3 +184,24 @@ def rasters_folder_date_fmt() -> str:
 @pytest.fixture(scope="module")
 def rasters_folder_between_dates_raster_number() -> int:
     return 4
+
+
+@pytest.fixture(scope="module")
+def basin_polygon() -> gpd.GeoDataFrame:
+    return gpd.read_file("examples/GIS/data/basin.geojson")
+
+@pytest.fixture(scope="module")
+def ascii_file_path() -> str:
+    return "examples/GIS/data/asci_example.asc"
+
+@pytest.fixture(scope="module")
+def ascii_file_save_to() -> str:
+    return "examples/GIS/data/asci_write_test.asc"
+
+@pytest.fixture(scope="module")
+def ascii_shape() -> tuple:
+    return 13,14
+
+@pytest.fixture(scope="module")
+def ascii_geotransform() -> tuple:
+    return 13, 14, 432968.1206170588, 468007.787999178, 4000.0, -3.4028230607370965e+38

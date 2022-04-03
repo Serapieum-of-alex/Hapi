@@ -158,3 +158,4 @@ examples/data/Hapi.qgz
 examples/Hydrodynamic models/test_case/inputs/gauges/discharge_long_ts/Statistical analysis results/Figures/F-444222.png
 examples/Hydrodynamic models/test_case/inputs/gauges/discharge_long_ts/Statistical analysis results/Figures/F-888555.png
 examples/Hydrodynamic models/test_case/inputs/gauges/discharge_long_ts/Statistical analysis results/Figures/F-999666.png
+*.qgz

@@ -656,10 +656,10 @@ class Map:
 
     @staticmethod
     def PlotArray(
-            src: Dataset,
+            src: Union[Dataset, np.ndarray],
             nodataval: Union[int, float]=np.nan,
             Figsize=(8, 8),
-            Title="Total Discharge",
+            Title: Any="Total Discharge",
             titlesize=15,
             Cbarlength=0.75,
             orientation="vertical",
@@ -792,7 +792,11 @@ class Map:
                 np.nanmin(Arr), np.nanmax(Arr) + TicksSpacing, TicksSpacing
             )
         else:
-            ticks = np.arange(np.nanmin(Arr), np.nanmax(Arr), TicksSpacing)
+            try:
+                ticks = np.arange(np.nanmin(Arr), np.nanmax(Arr), TicksSpacing)
+            except ValueError:
+                raise ValueError("The number of ticks exceeded the max allowed size, possible errors"
+                                 f"is the value of the NodataValue you entered-{nodataval}")
             ticks = np.append(
                 ticks,
                 [int(np.nanmax(Arr) / TicksSpacing) * TicksSpacing + TicksSpacing],
