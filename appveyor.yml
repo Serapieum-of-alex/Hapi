@@ -86,7 +86,7 @@ install:
   - cmd: conda config --add channels conda-forge
   #- cmd: while read requirement; do conda install --yes $requirement; done < requirement.txt
 #  - cmd: FOR /F "delims=~" %f in (requirement.txt) DO (conda install f --yes )
-  - cmd: conda install --yes --file requirement.txt
+  - cmd: conda install --yes --file requirements.txt
   - cmd: conda update --yes -n base -c defaults conda
   - cmd: python -V
   - cmd: python setup.py build_ext --inplace

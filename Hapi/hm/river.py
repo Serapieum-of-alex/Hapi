@@ -297,8 +297,6 @@ class River:
         -------
         [Integer]
             the order oif the date in the time series.
-
-
         """
         if isinstance(date, str):
             date = dt.datetime.strptime(date, fmt)
@@ -328,7 +326,6 @@ class River:
         -------
         [Date time ]
             date object.
-
         """
         # convert the index into date
         return self.referenceindex.loc[index, "date"]
@@ -356,9 +353,11 @@ class River:
             date = dt.datetime.strptime(date, fmt)
         return np.where(self.referenceindex["date"] == date)[0][0] + 1
 
+
     @staticmethod
     def round(number, roundto):
         return round(number / roundto) * roundto
+
 
     def Read1DConfigFile(self, path: str):
         """Read1DConfigFile.
@@ -1532,21 +1531,29 @@ class River:
         self.Trace2(sub_id, self.US)
 
 
-    def StatisticalProperties(self, path: str, Distibution: str="GEV"): #Filter: bool=True,
+    def StatisticalProperties(
+            self,
+            path: str,
+            Distibution: str="GEV"
+    ): #Filter: bool=True,
 
         """StatisticalProperties.
 
-        StatisticalProperties method reads the parameters of the distribution and
-        calculates the the 2, 5, 10, 15, 20, 50, 100, 200, 500, 1000 return
-        period discharge for each sub-basin to create the parameters file use
-        the code StatisticalProperties in the 07ReturnPeriod folder
+            StatisticalProperties method reads the parameters of the distribution and
+            calculates the the 2, 5, 10, 15, 20, 50, 100, 200, 500, 1000 return
+            period discharge for each sub-basin to create the parameters file use
+            the code StatisticalProperties in the 07ReturnPeriod folder
 
         Parameters:
         ----------
             1-path : [String]
                 path to the "Statistical Properties.txt" file including the
                 file name and extention "path/Statistical Properties.txt".
-            2-Filter:[Boolen]
+
+            Distibution: [str]
+                The distribution used to fit the data. Default is "GEV".
+
+                2-Filter:[Boolen]
                 true to filter the nodes to the nodes used in RIM (upstream nodes only)
 
         Returns:
@@ -1554,8 +1561,7 @@ class River:
             1-SP: [data frame attribute]
                 containing the river computational nodes US of the sub basins
                 and estimated gumbel distribution parameters that fit the time
-                series
-                ['node','HQ2','HQ10','HQ100']
+                series ['node','HQ2','HQ10','HQ100']
 
 
         """
@@ -1612,12 +1618,6 @@ class River:
                             self.SP.loc[i, "scale"],
                             F
                         )
-                    #     genextreme.ppf(
-                    #     F,
-                    #     self.SP.loc[i, "c"],
-                    #     loc=self.SP.loc[i, "loc"],
-                    #     scale=self.SP.loc[i, "scale"],
-                    # ).tolist()
                 else:
                     dist = Gumbel()
                     self.SP.loc[i, self.SP.keys()[col1:].tolist()] = \
@@ -1626,9 +1626,6 @@ class River:
                             self.SP.loc[i, "scale"],
                             F
                         )
-                    #     gumbel_r.ppf(
-                    #     F, loc=self.SP.loc[i, "loc"], scale=self.SP.loc[i, "scale"]
-                    # ).tolist()
 
 
     def GetReturnPeriod(
@@ -1759,6 +1756,7 @@ class River:
 
         Returns
         -------
+        the crosssections dataframe will be updated with the following columns.
             1- Discharge: [dataframe column]
                 the calculated discharge will be stored in the crosssections
                 attribute in the River object in a columns with the given ColumnName

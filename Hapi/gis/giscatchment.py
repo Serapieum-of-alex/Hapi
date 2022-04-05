@@ -3,15 +3,12 @@ Created on Sat May 26 04:52:15 2018
 
 @author: Mostafa
 """
-# library
-# import os
+
 import numpy as np
 import pandas as pd
-
-try:
-    import gdal
-except ModuleNotFoundError:
-    from osgeo import gdal
+from osgeo import gdal
+from osgeo.gdal import Dataset
+from pandas import DataFrame
 
 from Hapi.gis.raster import Raster as raster
 
@@ -595,55 +592,58 @@ class GISCatchment:
         raster.RasterLike(basins, basins_A, pathout)
 
     @staticmethod
-    def NearestCell(Raster, StCoord):
-        """
-        this function calculates the the indices (row, col) of nearest cell in a given
-        raster to a station
-        coordinate system of the raster has to be projected to be able to calculate
-        the distance
+    def NearestCell(
+            Raster: Dataset,
+            StCoord: DataFrame,
+    ) -> DataFrame:
+        """NearestCell.
 
-        Inputs:
+            this function calculates the the indices (row, col) of nearest cell in a given
+            raster to a station
+            coordinate system of the raster has to be projected to be able to calculate
+            the distance
+
+        Parameters
         ----------
-            1-Raster:
-                [gdal.dataset] raster to get the spatial information (coordinates of each cell)
-            2-StCoord:
-                [Dataframe] dataframe with two columns "x", "y" contains the coordinates
+            Raster: [gdal.dataset]
+                raster to get the spatial information (coordinates of each cell)
+            StCoord: [Dataframe]
+                dataframe with two columns "x", "y" contains the coordinates
                 of each station
 
-        Output:
-        ----------
-            1-StCoord:the same input dataframe with two extra columns "cellx","celly"
+        Returns
+        -------
+            StCoord:the same input dataframe with two extra columns "cellx","celly"
 
-        examples:
-            soil_type=gdal.Open("DEM.tif")
-            coordinates=stations[['id','x','y']][:]
-            coordinates.loc[:,["cell_row","cell_col"]]=NearestCell(Raster,StCoord)
+        Examples
+        --------
+            >>> soil_type = gdal.Open("DEM.tif")
+            >>> data = dict(id = [0,1,2,3], x = [1,2,3,6], y = [5,4,7,8])
+            >>> stations = pd.DataFrame(data)
+            >>> coordinates = stations[['id','x','y']][:]
+            >>> coordinates.loc[:,["cell_row","cell_col"]] = GISCatchment.NearestCell(Raster, StCoord).values
         """
-        # input data validation
-        # data type
-        assert (
-            type(Raster) == gdal.Dataset
-        ), "raster should be read using gdal (gdal dataset please read it using gdal library) "
-        assert (
-            type(StCoord) == pd.core.frame.DataFrame
-        ), "please check StCoord input it should be pandas dataframe "
+        if not isinstance(Raster, gdal.Dataset):
+            raise TypeError ("raster should be read using gdal (gdal dataset please read it using gdal library) ")
+
+        if not isinstance(StCoord, DataFrame):
+            raise TypeError(f"please check StCoord input it should be pandas dataframe - given {type(StCoord)}")
 
         # check if the user has stored the coordinates in the dataframe with the right names or not
-        assert (
-            "x" in StCoord.columns
-        ), "please check the StCoord x coordinates of the stations should be stored in a column name 'x'"
-        assert (
-            "y" in StCoord.columns
-        ), "please check the StCoord y coordinates of the stations should be stored in a column name 'y'"
+        if not "x" in StCoord.columns:
+            raise ValueError ("please check the StCoord parameter it should contain a column with the x coordinates"
+                             "and the column name should be 'x'")
+        if not "y" in StCoord.columns:
+            raise ValueError ("please check the StCoord parameter it should contain a column with the y coordinates"
+                             "and the column name should be 'y'")
 
         StCoord["cell_row"] = np.nan
         StCoord["cell_col"] = np.nan
 
         rows = Raster.RasterYSize
         cols = Raster.RasterXSize
-        geo_trans = (
-            Raster.GetGeoTransform()
-        )  # get the coordinates of the top left corner and cell size [x,dx,y,dy]
+        geo_trans = Raster.GetGeoTransform()
+        # get the coordinates of the top left corner and cell size [x,dx,y,dy]
         # X_coordinate= upperleft corner x+ index* cell size+celsize/2
         coox = np.ones((rows, cols))
         cooy = np.ones((rows, cols))

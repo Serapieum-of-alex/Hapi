@@ -5,7 +5,6 @@ based on a source raster, perform any algebric operation on cell's values
 @author: Mostafa
 """
 import datetime as dt
-import glob
 
 # import subprocess
 # import tarfile
@@ -18,7 +17,7 @@ import sys
 # import datetime as dt
 import time
 import zipfile
-from typing import Any, Tuple, Union
+from typing import Any, Dict, List, Tuple, Union
 
 import geopandas as gpd
 import netCDF4
@@ -37,6 +36,13 @@ from osgeo.gdal import Dataset
 from pyproj import Proj, transform
 
 from Hapi.gis.vector import Vector
+
+# import glob
+
+
+
+
+
 
 # import skimage.transform as transform
 
@@ -177,6 +183,38 @@ class Raster:
         epsg = int(sr_src.GetAttrValue("AUTHORITY", 1))
 
         return epsg, geo
+
+
+    @staticmethod
+    def GetEPSG(proj, extension="tiff"):
+        """GetEPSG.
+
+            This function reads the projection of a GEOGCS file or tiff file
+
+        Parameters
+        ----------
+        proj : TYPE
+            projection read from the netcdf file.
+        extension : [string], optional
+            tiff or GEOGCS . The default is 'tiff'.
+
+        Returns
+        -------
+        epsg : [integer]
+            epsg number
+        """
+        try:
+            if extension == "tiff":
+                # Get info of the dataset that is used for transforming
+                g_proj = proj.GetProjection()
+                Projection = g_proj.split('EPSG","')
+            if extension == "GEOGCS":
+                Projection = proj
+            epsg = int((str(Projection[-1]).split("]")[0])[0:-1])
+        except:
+            epsg = 4326
+
+        return epsg
 
 
     @staticmethod
@@ -2992,51 +3030,59 @@ class Raster:
 
     @staticmethod
     def OverlayMap(
-            Path, BaseMap, ExcludeValue, Compressed=False, OccupiedCellsOnly=True
-    ):
-        """
-        this function is written to extract and return a list of all the values
-        in an ASCII file
+            Path: str,
+            ClassesMap: Union[str, np.ndarray],
+            ExcludeValue: Union[float, int],
+            Compressed: bool=False,
+            OccupiedCellsOnly: bool=True
+    ) -> Tuple[Dict[List[float], List[float]], int]:
+        """OverlayMap.
 
-        Inputs:
-            1-Path:
-                [String] a path to ascii file (inclusing the extension).
-            2-BaseMap:
-                [String/array] a path includng the name of the ASCII and extention like
-                path="data/cropped.asc".
-            3-ExcludedValue:
-                [Numeric] values you want to exclude from extracted values.
-            4-Compressed:
-                [Bool] if the map you provided is compressed.
-            5-OccupiedCellsOnly:
-                [Bool] if you want to count only cells that is not zero.
-        Outputs:
-            1- ExtractedValues:
-                [Dict] dictonary with a list of values in the basemap as keys
+            OverlayMap extracts and return a list of all the values in an ASCII file,
+            if you have two maps one with classes, and the other map contains any type of values,
+            and you want to know the values in each class
+
+        Parameters
+        ----------
+            Path: [str]
+                a path to ascii file.
+            ClassesMap: [str/array]
+                a path includng the name of the ASCII and extention, or an array
+                >>> path = "classes.asc"
+            ExcludeValue: [Numeric]
+                values you want to exclude from extracted values.
+            Compressed: [Bool]
+                if the map you provided is compressed.
+            OccupiedCellsOnly: [Bool]
+                if you want to count only cells that is not zero.
+        Returns
+        -------
+            ExtractedValues: [Dict]
+                dictonary with a list of values in the basemap as keys
                     and for each key a list of all the intersected values in the
                     maps from the path.
-            2- NonZeroCells:
-                [dataframe] dataframe with the first column as the "file" name
-                and the second column is the number of cells in each map.
+            NonZeroCells: [dataframe]
+                the number of cells in the map.
         """
-        # input data validation
-        # data type
-        assert type(Path) == str, "Path input should be string type"
-        assert type(Compressed) == bool, "Compressed input should be Boolen type"
-        # assert type(BaseMapF) == str, "BaseMapF input should be string type"
-        # input values
+        if not isinstance(Path, str):
+            raise TypeError(f"Path input should be string type - given{type(Path)}")
+
+        if not isinstance(Compressed, bool):
+            raise TypeError(f"Compressed input should be Boolen type given {type(Compressed)}")
+
         # check wether the path exist or not
-        assert os.path.exists(Path), "the path you have provided does not exist"
+        if not os.path.exists(Path):
+            raise FileNotFoundError(f"the path {Path} you have provided does not exist")
 
         # read the base map
-        if type(BaseMap) == str:
-            if BaseMap.endswith(".asc"):
-                BaseMapV, _ = Raster.ReadASCII(BaseMap)
+        if isinstance(ClassesMap, str):
+            if ClassesMap.endswith(".asc"):
+                BaseMapV, _ = Raster.ReadASCII(ClassesMap)
             else:
-                BaseMap = gdal.Open(BaseMap)
+                BaseMap = gdal.Open(ClassesMap)
                 BaseMapV = BaseMap.ReadAsArray()
         else:
-            BaseMapV = BaseMap
+            BaseMapV = ClassesMap
 
         ExtractedValues = dict()
 
@@ -3225,36 +3271,6 @@ class Raster:
         return (array - array_min) / (array_max - array_min)
 
 
-    @staticmethod
-    def GetEpsg(proj, extension="tiff"):
-        """
-        This function reads the projection of a GEOGCS file or tiff file
-
-        Parameters
-        ----------
-        proj : TYPE
-            projection read from the netcdf file.
-        extension : [string], optional
-            tiff or GEOGCS . The default is 'tiff'.
-
-        Returns
-        -------
-        epsg : [integer]
-            epsg number
-        """
-        try:
-            if extension == "tiff":
-                # Get info of the dataset that is used for transforming
-                g_proj = proj.GetProjection()
-                Projection = g_proj.split('EPSG","')
-            if extension == "GEOGCS":
-                Projection = proj
-            epsg = int((str(Projection[-1]).split("]")[0])[0:-1])
-        except:
-            epsg = 4326
-
-        return epsg
-
 
     @staticmethod
     def NCdetails(nc, Var=None):
@@ -3352,7 +3368,7 @@ class Raster:
         try:
             crso = nc.variables["crs"]
             proj = crso.projection
-            epsg = Raster.GetEpsg(proj, extension="GEOGCS")
+            epsg = Raster.GetEPSG(proj, extension="GEOGCS")
         except:
             epsg = 4326
 
@@ -4581,30 +4597,6 @@ class Raster:
             print("only 2D or 3D dimensions are supported")
 
         return Array_out
-
-
-    def Get_epsg(g, extension="tiff"):
-        """
-        This function reads the projection of a GEOGCS file or tiff file
-
-        Keyword arguments:
-        g -- string
-            Filename to the file that must be read
-        extension -- tiff or GEOGCS
-            Define the extension of the dataset (default is tiff)
-        """
-        try:
-            if extension == "tiff":
-                # Get info of the dataset that is used for transforming
-                g_proj = g.GetProjection()
-                Projection = g_proj.split('EPSG","')
-            if extension == "GEOGCS":
-                Projection = g
-            epsg_to = int((str(Projection[-1]).split("]")[0])[0:-1])
-        except:
-            epsg_to = 4326
-            # print 'Was not able to get the projection, so WGS84 is assumed'
-        return epsg_to
 
 
     def gap_filling(dataset, NoDataValue, method=1):

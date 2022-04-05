@@ -8,16 +8,13 @@ import os
 
 os.chdir("F:/01Algorithms/Hydrology/HAPI/examples")
 
-import gdal
 import matplotlib.pyplot as plt
-import osr
+from osgeo import gdal, osr
 
 from Hapi.gis.raster import Raster
 
 # import rasterio
 # from rasterio.plot import show
-
-
 #%%
 RasterApath = "data/GIS/DEM5km_Rhine_burned_acc.tif"
 RasterBpath = "data/GIS/MSWEP_1979010100.tif"
