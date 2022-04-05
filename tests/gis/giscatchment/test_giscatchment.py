@@ -1,7 +1,8 @@
-import pandas as pd
-from pandas import DataFrame
 import numpy as np
+import pandas as pd
 from osgeo.gdal import Dataset
+from pandas import DataFrame
+
 from Hapi.gis.giscatchment import GISCatchment as GC
 
 

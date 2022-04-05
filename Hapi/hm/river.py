@@ -1636,21 +1636,23 @@ class River:
     ):
         """GetReturnPeriod.
 
-        GetReturnPeriod method takes given discharge and using the distribution
-        properties of a particular sub basin it it calculates the return period
+            GetReturnPeriod method takes given discharge and using the distribution
+            properties of a particular sub basin it it calculates the return period
 
         Parameters
         ----------
-            1-Subid : [Integer]
-                sub-basin id.
-            2-Q : [Float]
-                Discharge value.
+        Subid : [Integer]
+            sub-basin id.
+        Q : [Float]
+            Discharge value.
+        distribution: [str]
+            the distribution used to fit the discharge data. Default is "GEV".
 
         Returns
         -------
-            1-return Period :[Float]
-                return periodcal culated for the given discharge using the
-                parameters of the distribution for the catchment.
+        return Period :[Float]
+            return periodcal culated for the given discharge using the
+            parameters of the distribution for the catchment.
 
         """
         assert isinstance(self.SP, DataFrame), "Please read the statistical properties file for the catchment first"
@@ -1744,28 +1746,36 @@ class River:
             GetCapacity method calculates the discharge that is enough to fill the
             cross section using kinematic wave approximation (using bed slope with manning)
 
+            In order to calculate the return period coresponding to each cross-section discharge
+            each cross section needs to be assigned the id of a specific gauge, as the statistical
+            analysis  is being done for the gauges only, so the distribution parameters are estimated
+            only for the gauges.
+
         Parameters
         ----------
-            1-ColumnName : [String]
-                A name for the column to store the calculated depth at the
-                cross section dataframe.
-            2-Option : [Integer]
-                1 if you want to calculate the capacity of the bankfull area,
-                2 if you want to calculate the capacity of the whole cross section
-                to the lelvel of the lowest dike
+        ColumnName : [String]
+            A name for the column to store the calculated depth at the
+            cross section dataframe.
+        Option : [Integer]
+            1 if you want to calculate the capacity of the bankfull area,
+            2 if you want to calculate the capacity of the whole cross section
+            to the lelvel of the lowest dike
+        distribution: [str]
+            The distribution you used to fit the discharge data. Default is GEV
 
         Returns
         -------
         the crosssections dataframe will be updated with the following columns.
-            1- Discharge: [dataframe column]
-                the calculated discharge will be stored in the crosssections
-                attribute in the River object in a columns with the given ColumnName
-            2- ColumnName+"RP":[dataframe column]
-                if you already rad the statistical properties another column containing
-                the coresponding return period to the discharge,
-                the calculated return period will be stored in a column with a name
-                the given ColumnName+"RP", if the ColumnName was QC then the discharge
-                will be in a Qc columns and the return period will be in QcRP column
+
+        Discharge: [dataframe column]
+            the calculated discharge will be stored in the crosssections
+            attribute in the River object in a columns with the given ColumnName
+        ColumnName+"RP":[dataframe column]
+            if you already rad the statistical properties another column containing
+            the coresponding return period to the discharge,
+            the calculated return period will be stored in a column with a name
+            the given ColumnName+"RP", if the ColumnName was QC then the discharge
+            will be in a Qc columns and the return period will be in QcRP column
         """
         for i in range(len(self.crosssections) - 1):
             # get the slope
@@ -1818,9 +1828,9 @@ class River:
                 ] * slope ** (1 / 2)
 
             if isinstance(self.SP, DataFrame):
-                assert "gauge" in self.crosssections.columns.tolist(), "To calculate the return period for each "\
-                                                                       "cross-section a column with the coresponding gauge"\
-                                                                       "id should be in the cross-section file"
+                if not "gauge" in self.crosssections.columns.tolist():
+                    raise ValueError("To calculate the return period for each cross-section a column with "
+                                     "the coresponding gauge id should be in the cross-section file")
                 RP = self.GetReturnPeriod(
                     self.crosssections.loc[i, "gauge"],
                     self.crosssections.loc[i, ColumnName],
