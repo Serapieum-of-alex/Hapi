@@ -36,7 +36,7 @@ repos:
                 --indent=4,
                 --no-sort-keys ]
     -   id: requirements-txt-fixer
-        name: "[reqs - format] fix requirement.txt"
+        name: "[reqs - format] fix requirements.txt"
 
 #    - repo: https://github.com/PyCQA/docformatter
 #      rev: v1.4
