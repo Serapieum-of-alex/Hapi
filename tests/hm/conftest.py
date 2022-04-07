@@ -32,7 +32,7 @@ def xs_total_no() -> int:
 
 @pytest.fixture(scope="module")
 def xs_col_no() -> int:
-    return 16
+    return 17
 
 @pytest.fixture(scope="module")
 def test_time_series_length() -> int:

@@ -179,10 +179,10 @@ class Raster:
         # GET PROJECTION
         src_proj = src.GetProjection()
         # spatial ref
-        sr_src = osr.SpatialReference(wkt=src_proj)
+        sr_src = osr.Spatiagit      lReference(wkt=src_proj)
         epsg = int(sr_src.GetAttrValue("AUTHORITY", 1))
 
-        return epsg, geo
+        return epsg, geogit
 
 
     @staticmethod
