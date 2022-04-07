@@ -182,7 +182,7 @@ class Raster:
         sr_src = osr.SpatialReference(wkt=src_proj)
         epsg = int(sr_src.GetAttrValue("AUTHORITY", 1))
 
-        return epsg, geogit
+        return epsg, geo
 
 
     @staticmethod

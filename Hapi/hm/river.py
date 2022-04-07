@@ -1843,8 +1843,8 @@ class River:
 
     def CalibrateDike(
             self,
-            ObjectiveRP:Union[str, int],
-            CurrentRP:Union[str, int]
+            ObjectiveRP: Union[str, int],
+            CurrentRP: Union[str, int]
     ):
         """CalibrateDike.
 
@@ -1867,15 +1867,19 @@ class River:
             to fill the cross section after raising the dikes to the objective
             return period.
         """
-        assert isinstance(self.SP, DataFrame), "Please read the statistical properties file first using StatisticalProperties method"
-        assert isinstance(self.crosssections, DataFrame), "please read the cross section data first with the method CrossSections"
-        assert CurrentRP in self.crosssections.columns, (f"{CurrentRP} in not in the cross section data"
-            + " please use GetCapacity method to calculate the current return perion "
-        )
-        assert ObjectiveRP in self.crosssections.columns, (
-            ObjectiveRP
-            + " in not in the cross section data please create a column in the cross section data containing the objective return period"
-        )
+        if not isinstance(self.SP, DataFrame):
+            raise TypeError("Please read the statistical properties file first using StatisticalProperties method")
+
+        if not isinstance(self.crosssections, DataFrame):
+            raise TypeError("please read the cross section data first with the method CrossSections")
+
+        if not CurrentRP in self.crosssections.columns:
+            raise ValueError(f"{CurrentRP} in not in the cross section data please use GetCapacity method to "
+                             f"calculate the current return perion")
+
+        if not ObjectiveRP in self.crosssections.columns:
+            raise ValueError(f"{ObjectiveRP} in not in the cross section data please create a column in the cross "
+                                           "section data containing the objective return period")
 
         self.crosssections.loc[:, "zlnew"] = self.crosssections.loc[:, "zl"]
         self.crosssections.loc[:, "zrnew"] = self.crosssections.loc[:, "zr"]
@@ -1901,6 +1905,7 @@ class River:
             ].tolist()
             BedLevel = self.crosssections.loc[i, "gl"]
 
+            # compare the current return period with the desired return period.
             if (
                 self.crosssections.loc[i, CurrentRP]
                 < self.crosssections.loc[i, ObjectiveRP]
@@ -1951,8 +1956,8 @@ class River:
 
                     self.crosssections.loc[i, "New RP"] = round(RP, 2)
 
-                logger.debug("New RP = " + str(round(RP, 2)))
-                logger.debug("New H = " + str(round(H, 2)))
+                logger.debug(f"New RP = {round(RP, 2)}")
+                logger.debug(f"New H = {round(H, 2)}")
                 logger.debug("---------------------------")
 
 
