@@ -23,10 +23,259 @@ class Map:
     """
     Map
     """
-
-
     def __init__(self):
         pass
+
+    @staticmethod
+    def PlotArray(
+            src: Union[Dataset, np.ndarray],
+            nodataval: Union[int, float] = np.nan,
+            Figsize: Tuple[int, int]=(8, 8),
+            Title: Any = "Total Discharge",
+            titlesize: Union[int, float] = 15,
+            Cbarlength: Union[int, float] = 0.75,
+            orientation: str="vertical",
+            cbarlabelsize: Union[int, float] = 12,
+            cbarlabel: str="Color bar label",
+            rotation: Union[int, float] = -90,
+            TicksSpacing: Union[int, float] = 5,
+            NumSize: Union[int, float] = 8,
+            ColorScale: int=1,
+            cmap: str="coolwarm_r",
+            gamma: Union[int, float] = 0.5,
+            linscale: Union[int, float] = 0.001,
+            linthresh: Union[int, float] = 0.0001,
+            midpoint: int=0,
+            display_cellvalue: bool=False,
+            Backgroundcolorthreshold=None,
+            Gaugecolor: str="red",
+            Gaugesize: Union[int, float] = 100,
+            IDcolor="blue",
+            IDsize: Union[int, float] = 10,
+            **kwargs
+    ):
+        """PlotArray.
+
+            plot an array/ gdal dataset
+
+        Parameters
+        ----------
+        src : [array/gdal.Dataset]
+            the array/gdal raster you want to plot.
+        nodataval : [numeric]
+            value used to fill cells out of the domain. Optional, Default is np.nan
+            needed only in case of plotting array
+        Figsize : [tuple], optional
+            figure size. The default is (8,8).
+        Title : [str], optional
+            title of the plot. The default is 'Total Discharge'.
+        titlesize : [integer], optional
+            title size. The default is 15.
+        Cbarlength : [float], optional
+            ratio to control the height of the colorbar. The default is 0.75.
+        orientation : [string], optional
+            orintation of the colorbar horizontal/vertical. The default is 'vertical'.
+        cbarlabelsize : integer, optional
+            size of the color bar label. The default is 12.
+        cbarlabel : str, optional
+            label of the color bar. The default is 'Discharge m3/s'.
+        rotation : [number], optional
+            rotation of the colorbar label. The default is -90.
+        TicksSpacing : [integer], optional
+            Spacing in the colorbar ticks. The default is 2.
+        ColorScale : integer, optional
+            there are 5 options to change the scale of the colors. The default is 1.
+            1- ColorScale 1 is the normal scale
+            2- ColorScale 2 is the power scale
+            3- ColorScale 3 is the SymLogNorm scale
+            4- ColorScale 4 is the PowerNorm scale
+            5- ColorScale 5 is the BoundaryNorm scale
+        gamma : [float], optional
+            value needed for option 2 . The default is 1./2..
+        linthresh : [float], optional
+            value needed for option 3. The default is 0.0001.
+        linscale : [float], optional
+            value needed for option 3. The default is 0.001.
+        midpoint : [float], optional
+            value needed for option 5. The default is 0.
+        cmap : [str], optional
+            color style. The default is 'coolwarm_r'.
+        display_cellvalue : [bool]
+            True if you want to display the values of the cells as a text
+        NumSize : integer, optional
+            size of the numbers plotted intop of each cells. The default is 8.
+        Backgroundcolorthreshold : [float/integer], optional
+            threshold value if the value of the cell is greater, the plotted
+            numbers will be black and if smaller the plotted number will be white
+            if None given the maxvalue/2 will be considered. The default is None.
+        Gaugecolor : [str], optional
+            color of the points. The default is 'red'.
+        Gaugesize : [integer], optional
+            size of the points. The default is 100.
+        IDcolor : [str]
+            the ID of the Point.The default is "blue".
+        IDsize : [integer]
+            size of the ID text. The default is 10.
+        IDcolor : []
+
+        rotation : []
+
+        midpoint : []
+
+        **kwargs : [dict]
+            keys:
+                Points : [dataframe].
+                    dataframe contains two columns 'row', and col to
+                    plot the point at this location
+
+        Returns
+        -------
+        axes: [figure axes].
+            the axes of the matplotlib figure
+        fig: [matplotlib figure object]
+            the figure object
+        """
+        if isinstance(src, gdal.Dataset):
+            Arr, nodataval = Raster.GetRasterData(src)
+            Arr = Arr.astype(np.float32)
+            Arr[np.isclose(Arr, nodataval, rtol=0.001)] = np.nan
+
+            no_elem = np.size(Arr[:, :]) - np.count_nonzero((Arr[np.isnan(Arr)]))
+
+            if "points" in kwargs.keys():
+                points = kwargs["points"]
+                points["row"] = np.nan
+                points["col"] = np.nan
+                # to locte the points in the array
+                points.loc[:, ["row", "col"]] = GC.NearestCell(
+                    src, points[["x", "y"]][:]
+                ).values
+        elif isinstance(src, np.ndarray):
+            Arr = src
+            Arr[np.isclose(Arr, nodataval, rtol=0.001)] = np.nan
+            no_elem = np.size(Arr[:, :]) - np.count_nonzero((Arr[np.isnan(Arr)]))
+
+        fig = plt.figure(figsize=Figsize)
+        ax = fig.add_subplot()
+
+        if np.mod(np.nanmax(Arr), TicksSpacing) == 0:
+            ticks = np.arange(
+                np.nanmin(Arr), np.nanmax(Arr) + TicksSpacing, TicksSpacing
+            )
+        else:
+            try:
+                ticks = np.arange(np.nanmin(Arr), np.nanmax(Arr), TicksSpacing)
+            except ValueError:
+                raise ValueError("The number of ticks exceeded the max allowed size, possible errors"
+                                 f"is the value of the NodataValue you entered-{nodataval}")
+            ticks = np.append(
+                ticks,
+                [int(np.nanmax(Arr) / TicksSpacing) * TicksSpacing + TicksSpacing],
+            )
+
+        if ColorScale == 1:
+            im = ax.matshow(
+                Arr[:, :], cmap=cmap, vmin=np.nanmin(Arr), vmax=np.nanmax(Arr)
+            )
+            cbar_kw = dict(ticks=ticks)
+        elif ColorScale == 2:
+            im = ax.matshow(
+                Arr[:, :],
+                cmap=cmap,
+                norm=colors.PowerNorm(
+                    gamma=gamma, vmin=np.nanmin(Arr), vmax=np.nanmax(Arr)
+                ),
+            )
+            cbar_kw = dict(ticks=ticks)
+        elif ColorScale == 3:
+            im = ax.matshow(
+                Arr[:, :],
+                cmap=cmap,
+                norm=colors.SymLogNorm(
+                    linthresh=linthresh,
+                    linscale=linscale,
+                    base=np.e,
+                    vmin=np.nanmin(Arr),
+                    vmax=np.nanmax(Arr),
+                ),
+            )
+
+            formatter = LogFormatter(10, labelOnlyBase=False)
+            cbar_kw = dict(ticks=ticks, format=formatter)
+        elif ColorScale == 4:
+            bounds = ticks
+            norm = colors.BoundaryNorm(boundaries=bounds, ncolors=256)
+            im = ax.matshow(Arr[:, :], cmap=cmap, norm=norm)
+            cbar_kw = dict(ticks=ticks)
+        else:
+            im = ax.matshow(
+                Arr[:, :], cmap=cmap, norm=MidpointNormalize(midpoint=midpoint)
+            )
+            cbar_kw = dict(ticks=ticks)
+
+        # Create colorbar
+        cbar = ax.figure.colorbar(
+            im, ax=ax, shrink=Cbarlength, orientation=orientation, **cbar_kw
+        )
+        cbar.ax.set_ylabel(
+            cbarlabel, rotation=rotation, va="bottom", fontsize=cbarlabelsize
+        )
+        cbar.ax.tick_params(labelsize=10)
+
+        ax.set_title(Title, fontsize=titlesize)
+        ax.set_xticklabels([])
+        ax.set_yticklabels([])
+
+        ax.set_xticks([])
+        ax.set_yticks([])
+        Indexlist = list()
+
+        if display_cellvalue:
+            for x in range(Arr.shape[0]):
+                for y in range(Arr.shape[1]):
+                    if not np.isnan(Arr[x, y]):
+                        Indexlist.append([x, y])
+            # add text for the cell values
+            Textlist = list()
+            for x in range(no_elem):
+                Textlist.append(
+                    ax.text(
+                        Indexlist[x][1],
+                        Indexlist[x][0],
+                        round(Arr[Indexlist[x][0], Indexlist[x][1]], 2),
+                        ha="center",
+                        va="center",
+                        color="w",
+                        fontsize=NumSize,
+                    )
+                )
+        #
+        PoitsID = list()
+        if "points" in kwargs.keys():
+            row = points.loc[:, "row"].tolist()
+            col = points.loc[:, "col"].tolist()
+            IDs = points.loc[:, "id"].tolist()
+            Points = ax.scatter(col, row, color=Gaugecolor, s=Gaugesize)
+
+            for i in range(len(row)):
+                PoitsID.append(
+                    ax.text(
+                        col[i],
+                        row[i],
+                        IDs[i],
+                        ha="center",
+                        va="center",
+                        color=IDcolor,
+                        fontsize=IDsize,
+                    )
+                )
+        # Normalize the threshold to the images color range.
+        if Backgroundcolorthreshold is not None:
+            Backgroundcolorthreshold = im.norm(Backgroundcolorthreshold)
+        else:
+            Backgroundcolorthreshold = im.norm(np.nanmax(Arr)) / 2.0
+
+        return fig, ax
 
 
     @staticmethod
@@ -654,257 +903,7 @@ class Map:
         return (ax1, ax2), fig
 
 
-    @staticmethod
-    def PlotArray(
-            src: Union[Dataset, np.ndarray],
-            nodataval: Union[int, float]=np.nan,
-            Figsize=(8, 8),
-            Title: Any="Total Discharge",
-            titlesize=15,
-            Cbarlength=0.75,
-            orientation="vertical",
-            cbarlabelsize=12,
-            cbarlabel="Color bar label",
-            rotation=-90,
-            TicksSpacing=5,
-            NumSize=8,
-            ColorScale=1,
-            cmap="coolwarm_r",
-            gamma=0.5,
-            linscale=0.001,
-            linthresh=0.0001,
-            midpoint=0,
-            display_cellvalue=False,
-            Backgroundcolorthreshold=None,
-            Gaugecolor="red",
-            Gaugesize=100,
-            IDcolor="blue",
-            IDsize=10,
-            **kwargs
-    ):
-        """PlotArray.
 
-        plot an image for 2d arrays
-
-        Parameters
-        ----------
-            src : [array/gdal.Dataset]
-                the array/gdal raster you want to plot.
-            nodataval : [numeric]
-                value used to fill cells out of the domain. Optional, Default is np.nan
-                needed only in case of plotting array
-            Figsize : [tuple], optional
-                figure size. The default is (8,8).
-            Title : [str], optional
-                title of the plot. The default is 'Total Discharge'.
-            titlesize : [integer], optional
-                title size. The default is 15.
-            Cbarlength : [float], optional
-                ratio to control the height of the colorbar. The default is 0.75.
-            orientation : [string], optional
-                orintation of the colorbar horizontal/vertical. The default is 'vertical'.
-            cbarlabelsize : integer, optional
-                size of the color bar label. The default is 12.
-            cbarlabel : str, optional
-                label of the color bar. The default is 'Discharge m3/s'.
-            rotation : [number], optional
-                rotation of the colorbar label. The default is -90.
-            TicksSpacing : [integer], optional
-                Spacing in the colorbar ticks. The default is 2.
-            ColorScale : integer, optional
-                there are 5 options to change the scale of the colors. The default is 1.
-                1- ColorScale 1 is the normal scale
-                2- ColorScale 2 is the power scale
-                3- ColorScale 3 is the SymLogNorm scale
-                4- ColorScale 4 is the PowerNorm scale
-                5- ColorScale 5 is the BoundaryNorm scale
-            gamma : [float], optional
-                value needed for option 2 . The default is 1./2..
-            linthresh : [float], optional
-                value needed for option 3. The default is 0.0001.
-            linscale : [float], optional
-                value needed for option 3. The default is 0.001.
-            midpoint : [float], optional
-                value needed for option 5. The default is 0.
-            cmap : [str], optional
-                color style. The default is 'coolwarm_r'.
-            display_cellvalue : [bool]
-                True if you want to display the values of the cells as a text
-            NumSize : integer, optional
-                size of the numbers plotted intop of each cells. The default is 8.
-            Backgroundcolorthreshold : [float/integer], optional
-                threshold value if the value of the cell is greater, the plotted
-                numbers will be black and if smaller the plotted number will be white
-                if None given the maxvalue/2 will be considered. The default is None.
-            Gaugecolor : [str], optional
-                color of the points. The default is 'red'.
-            Gaugesize : [integer], optional
-                size of the points. The default is 100.
-            IDcolor : [str]
-                the ID of the Point.The default is "blue".
-            IDsize : [integer]
-                size of the ID text. The default is 10.
-            IDcolor : []
-
-            rotation : []
-
-            midpoint : []
-
-            **kwargs : [dict]
-                keys:
-                    Points : [dataframe].
-                        dataframe contains two columns 'row', and col to
-                        plot the point at this location
-
-        Returns
-        -------
-            1- axes: [figure axes].
-                the axes of the matplotlib figure
-            2. fig: [matplotlib figure object]
-                the figure object
-
-        """
-        if isinstance(src, gdal.Dataset):
-            Arr, nodataval = Raster.GetRasterData(src)
-            Arr = Arr.astype(np.float32)
-            Arr[np.isclose(Arr, nodataval, rtol=0.001)] = np.nan
-
-            no_elem = np.size(Arr[:, :]) - np.count_nonzero((Arr[np.isnan(Arr)]))
-
-            if "points" in kwargs.keys():
-                points = kwargs["points"]
-                points["row"] = np.nan
-                points["col"] = np.nan
-                # to locte the points in the array
-                points.loc[:, ["row", "col"]] = GC.NearestCell(
-                    src, points[["x", "y"]][:]
-                ).values
-        elif isinstance(src, np.ndarray):
-            Arr = src
-            Arr[np.isclose(Arr, nodataval, rtol=0.001)] = np.nan
-            no_elem = np.size(Arr[:, :]) - np.count_nonzero((Arr[np.isnan(Arr)]))
-
-        fig = plt.figure(figsize=Figsize)  # 60,
-        ax = fig.add_subplot()
-
-        if np.mod(np.nanmax(Arr), TicksSpacing) == 0:
-            ticks = np.arange(
-                np.nanmin(Arr), np.nanmax(Arr) + TicksSpacing, TicksSpacing
-            )
-        else:
-            try:
-                ticks = np.arange(np.nanmin(Arr), np.nanmax(Arr), TicksSpacing)
-            except ValueError:
-                raise ValueError("The number of ticks exceeded the max allowed size, possible errors"
-                                 f"is the value of the NodataValue you entered-{nodataval}")
-            ticks = np.append(
-                ticks,
-                [int(np.nanmax(Arr) / TicksSpacing) * TicksSpacing + TicksSpacing],
-            )
-
-        if ColorScale == 1:
-            im = ax.matshow(
-                Arr[:, :], cmap=cmap, vmin=np.nanmin(Arr), vmax=np.nanmax(Arr)
-            )
-            cbar_kw = dict(ticks=ticks)
-        elif ColorScale == 2:
-            im = ax.matshow(
-                Arr[:, :],
-                cmap=cmap,
-                norm=colors.PowerNorm(
-                    gamma=gamma, vmin=np.nanmin(Arr), vmax=np.nanmax(Arr)
-                ),
-            )
-            cbar_kw = dict(ticks=ticks)
-        elif ColorScale == 3:
-            im = ax.matshow(
-                Arr[:, :],
-                cmap=cmap,
-                norm=colors.SymLogNorm(
-                    linthresh=linthresh,
-                    linscale=linscale,
-                    base=np.e,
-                    vmin=np.nanmin(Arr),
-                    vmax=np.nanmax(Arr),
-                ),
-            )
-
-            formatter = LogFormatter(10, labelOnlyBase=False)
-            cbar_kw = dict(ticks=ticks, format=formatter)
-        elif ColorScale == 4:
-            bounds = ticks
-            norm = colors.BoundaryNorm(boundaries=bounds, ncolors=256)
-            im = ax.matshow(Arr[:, :], cmap=cmap, norm=norm)
-            cbar_kw = dict(ticks=ticks)
-        else:
-            im = ax.matshow(
-                Arr[:, :], cmap=cmap, norm=MidpointNormalize(midpoint=midpoint)
-            )
-            cbar_kw = dict(ticks=ticks)
-
-        # Create colorbar
-        cbar = ax.figure.colorbar(
-            im, ax=ax, shrink=Cbarlength, orientation=orientation, **cbar_kw
-        )
-        cbar.ax.set_ylabel(
-            cbarlabel, rotation=rotation, va="bottom", fontsize=cbarlabelsize
-        )
-        cbar.ax.tick_params(labelsize=10)
-
-        ax.set_title(Title, fontsize=titlesize)
-        ax.set_xticklabels([])
-        ax.set_yticklabels([])
-
-        ax.set_xticks([])
-        ax.set_yticks([])
-        Indexlist = list()
-
-        if display_cellvalue:
-            for x in range(Arr.shape[0]):
-                for y in range(Arr.shape[1]):
-                    if not np.isnan(Arr[x, y]):
-                        Indexlist.append([x, y])
-            # add text for the cell values
-            Textlist = list()
-            for x in range(no_elem):
-                Textlist.append(
-                    ax.text(
-                        Indexlist[x][1],
-                        Indexlist[x][0],
-                        round(Arr[Indexlist[x][0], Indexlist[x][1]], 2),
-                        ha="center",
-                        va="center",
-                        color="w",
-                        fontsize=NumSize,
-                    )
-                )
-        #
-        PoitsID = list()
-        if "points" in kwargs.keys():
-            row = points.loc[:, "row"].tolist()
-            col = points.loc[:, "col"].tolist()
-            IDs = points.loc[:, "id"].tolist()
-            Points = ax.scatter(col, row, color=Gaugecolor, s=Gaugesize)
-
-            for i in range(len(row)):
-                PoitsID.append(
-                    ax.text(
-                        col[i],
-                        row[i],
-                        IDs[i],
-                        ha="center",
-                        va="center",
-                        color=IDcolor,
-                        fontsize=IDsize,
-                    )
-                )
-        # Normalize the threshold to the images color range.
-        if Backgroundcolorthreshold is not None:
-            Backgroundcolorthreshold = im.norm(Backgroundcolorthreshold)
-        else:
-            Backgroundcolorthreshold = im.norm(np.nanmax(Arr)) / 2.0
-
-        return fig, ax
 
 
 class Scale:

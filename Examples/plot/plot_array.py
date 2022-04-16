@@ -12,7 +12,7 @@ from Hapi.plot.map import Map
 #%% Paths
 RasterAPath = "examples/data/GIS/Hapi_GIS_Data/dem_100_f.tif"
 RasterBPath = "examples/data/GIS/Hapi_GIS_Data/acc4000.tif"
-pointsPath = "examples/data/GIS/Hapi_GIS_Data/points.csv"
+pointsPath = "examples/GIS/data/points.csv"
 """
 to plot the array you need to read the raster using gdal
 """
@@ -116,15 +116,20 @@ ColorScale = 2
 gamma = 0.5
 
 Map.PlotArray(
-    src, ColorScale=ColorScale, cmap=cmap, gamma=gamma, TicksSpacing=TicksSpacing
+    src, ColorScale=ColorScale, cmap=cmap, gamma=gamma, TicksSpacing=TicksSpacing,
+    Title= f"gamma = {gamma}"
 )
 #%%
+gamma = 0.4
 Map.PlotArray(
-    src, ColorScale=ColorScale, cmap=cmap, gamma=0.4, TicksSpacing=TicksSpacing
+    src, ColorScale=ColorScale, cmap=cmap, gamma=gamma, TicksSpacing=TicksSpacing,
+    Title= f"gamma = {gamma}"
 )
 #%%
+gamma = 0.2
 Map.PlotArray(
-    src, ColorScale=ColorScale, cmap=cmap, gamma=0.2, TicksSpacing=TicksSpacing
+    src, ColorScale=ColorScale, cmap=cmap, gamma=gamma, TicksSpacing=TicksSpacing,
+    Title= f"gamma = {gamma}"
 )
 #%%  SymLogNorm scale
 ColorScale = 3

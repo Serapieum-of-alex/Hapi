@@ -1956,9 +1956,9 @@ class River:
 
                     self.crosssections.loc[i, "New RP"] = round(RP, 2)
 
-                logger.debug(f"New RP = {round(RP, 2)}")
-                logger.debug(f"New H = {round(H, 2)}")
-                logger.debug("---------------------------")
+                logger.info(f"New RP = {round(RP, 2)}")
+                logger.info(f"New H = {round(H, 2)}")
+                logger.info("---------------------------")
 
 
     def Overtopping(self, OvertoppingResultpath=""):

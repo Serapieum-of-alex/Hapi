@@ -160,3 +160,4 @@ examples/Hydrodynamic models/test_case/inputs/gauges/discharge_long_ts/Statistic
 examples/Hydrodynamic models/test_case/inputs/gauges/discharge_long_ts/Statistical analysis results/Figures/F-999666.png
 *.qgz
 *.png
+.vscode
