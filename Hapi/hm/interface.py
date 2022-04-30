@@ -50,7 +50,12 @@ class Interface(River):
         self.BC = None
         pass
 
-    def ReadLateralsTable(self, path, prefix="lf_xsid", suffix=".txt"):
+    def ReadLateralsTable(
+            self,
+            path: str,
+            prefix: str="lf_xsid",
+            suffix: str=".txt"
+    ) -> None:
         """ReadLateralsTable.
 
         ReadLateralsTable method reads the laterals file
@@ -64,22 +69,20 @@ class Interface(River):
         ----------
         path : [String], optional
             Path to read the results from.
-        suffix: []
-
+        suffix: [str]
+            any
         prefix: []
 
 
         Returns
         -------
         None.
-
-
         """
         try:
             self.LateralsTable = pd.read_csv(path, skiprows=[0], header=None)
         except pd.errors.EmptyDataError:
             self.LateralsTable = pd.DataFrame()
-            logger.debug("The Lateral table file is empty")
+            logger.warning("The Lateral table file is empty")
             return
 
         self.LateralsTable.columns = ["filename"]
@@ -90,7 +93,7 @@ class Interface(River):
             for i in self.LateralsTable[self.LateralsTable.columns[0]]
         ]
 
-        if hasattr(self, "crosssections"):
+        if not self.crosssections is None:
             self.crosssections["lateral"] = 0
             for i in range(len(self.crosssections)):
                 if (
@@ -104,33 +107,39 @@ class Interface(River):
             ), "Please read the cross section file first using the method 'ReadCrossSections'"
 
 
-    def ReadLaterals(self, fromday: Union[str, int]="", today: Union[str, int]="",
-                     path: str="", date_format: str="'%Y-%m-%d'"):
+    def ReadLaterals(
+            self,
+            fromday: Union[str, int]="",
+            today: Union[str, int]="",
+            path: str="",
+            date_format: str="'%Y-%m-%d'"
+    ):
         """ReadUSHydrograph.
 
-        read the upstream hydrograph
+            read the upstream hydrograph
 
         Parameters
         ----------
-        1-fromday : [integer], optional
+        fromday : [integer], optional
                 the day you want to read the result from, the first day is 1 not zero.The default is ''.
-        2-today : [integer], optional
+        today : [integer], optional
                 the day you want to read the result to.
-        3-path : [String], optional
+        path : [String], optional
             path to read the results from. The default is ''.
-        4-date_format : "TYPE, optional
-            DESCRIPTION. The default is "'%Y-%m-%d'".
+        date_format : "TYPE, optional
+            format of the given date string. The default is "'%Y-%m-%d'".
 
         Returns
         -------
-        1-USHydrographs : [dataframe attribute].
+        USHydrographs : [dataframe attribute].
             dataframe contains the hydrograph of each of the upstream segments
             with segment id as a column name and a column 'total' contains the
             sum of all the hydrographs.
         """
-        errmsg = """Please read the laterals table first using the
-        'ReadLateralsTable' method """
-        assert hasattr(self, "LateralsTable"), "{0}".format(errmsg)
+        if not self.LateralsTable is None:
+            raise ValueError("Please read the laterals table first using the"
+                             "'ReadLateralsTable' method ")
+
         self.Laterals = pd.DataFrame()
 
         if isinstance(self.LateralsTable, DataFrame):

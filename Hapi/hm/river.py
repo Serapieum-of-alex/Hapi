@@ -479,10 +479,20 @@ class River:
     def ReadCrossSections(self, path: str):
         """ReadCrossSections.
 
-        Read crossSections file
+            Read crossSections file
 
         CrossSections method reads the cross section data of the river and assign it
         to an attribute "Crosssections" of type dataframe
+
+        Parameters
+        ----------
+        path: [str]
+            path to the cross-section file
+
+        Returns
+        -------
+        crosssections : [dataframe]
+            a dataframe attribute will be created
         """
         if self.version == 1 or self.version == 2:
             self.crosssections = pd.read_csv(path, delimiter=",", skiprows=1)
@@ -496,6 +506,7 @@ class River:
             # TODO to be checked later now for testing of version 4
             self.xsname = self.crosssections["xsid"].tolist()
             self.segments = list(set(self.crosssections["id"].tolist()))
+
 
     def ReadBoundaryConditions(
             self, start: str="", end: str="", path: str="", fmt: str="%Y-%m-%d",
@@ -521,25 +532,25 @@ class River:
 
         Parameters
         ----------
-        1-start : [integer/string], optional
+        start : [integer/string], optional
                 the day you want to read the result from, the first day is 1
                 not zero, you can also enter the date of the day.
                 The default is ''.
-        2-end : [integer], optional
+        end : [integer], optional
                 the day you want to read the result to.
-        4-path : [String], optional
+        path : [String], optional
             path to read the results from. The default is ''.
-        5- fmt: [string]
+        fmt: [string]
             format of the date. fmt="%Y-%m-%d %H:%M:%S"
 
         Returns
         -------
-            1-QBC: [dataframe attribute]
-                dataframe contains the Discharge boundary conditions for each
-                day as a row and for each column are the hours
-            1-HBC: [dataframe attribute]
-                dataframe contains the water depth boundary conditions for each
-                day as a row and for each column are the hours
+        QBC: [dataframe attribute]
+            dataframe contains the Discharge boundary conditions for each
+            day as a row and for each column are the hours
+        HBC: [dataframe attribute]
+            dataframe contains the water depth boundary conditions for each
+            day as a row and for each column are the hours
         """
         if path != "":
             self.usbcpath = path
@@ -1405,18 +1416,18 @@ class River:
         """RiverNetwork.
 
         RiverNetwork method rad the table of each computational node followed by
-        upstream and then downstream node (TraceAll file)
+        upstream and then downstream node
 
         Parameters
         ----------
-            1-path : [String]
-                path to the Trace.txt file including the file name and extention
-                                "path/Trace.txt".
+        path : [String]
+            path to the Trace.txt file including the file name and extention
+                            "path/Trace.txt".
 
         Returns
         -------
-            1-rivernetwork:[data frame attribute]
-                containing the river network with columns ['Subid','US','DS']
+        rivernetwork:[data frame attribute]
+            containing the river network with columns ['Subid','US','DS']
         """
         if self.version == 1 or self.version == 2:
             self.rivernetwork = pd.read_csv(path, delimiter=",")  # ,header = None

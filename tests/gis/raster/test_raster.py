@@ -165,6 +165,8 @@ class TestProjectRaster:
         dst_arr = dst.ReadAsArray()
         assert dst_arr.shape == src_shape
 
+# TODO: test ReprojectDataset
+
 class TestCropAlligned:
     # TODO: still create a test for the case that the src and the mask does not have the same alignments
     def test_crop_arr_with_gdal_obj(
@@ -228,6 +230,8 @@ def test_crop(
     # Geotransform = (432968.1206170588, 4000.0, 0.0, 520007.787999178, 0.0, -4000.0)
     dst = Raster.Crop(aligned_raster, soil_raster, Save=True, OutputPath=crop_saveto)
     assert os.path.exists(crop_saveto)
+
+# def test_ClipRasterWithPolygon():
 
 
 class TestASCII:

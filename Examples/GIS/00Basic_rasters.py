@@ -1,24 +1,22 @@
 import os
+import sys
 
-# import sys
-r"C:\MyComputer\01Algorithms\Hydrology"
 # os.chdir("examples/")
-rootpath = os.path.abspath(os.getcwd())
+# debug
+# rootpath = os.path.abspath(os.getcwd())
+# datapath = os.path.join(rootpath, "examples/GIS/data")
 # sys.path.append(rootpath + "/src")
 # datapath = os.path.join(rootpath, "examples/data/GIS/Hapi_GIS_Data")
+# run
+rootpath = r"C:\MyComputer\01Algorithms\Hydrology\Hapi"
 datapath = os.path.join(rootpath, "examples/GIS/data")
-datapath2 = os.path.join(rootpath, "examples/data/GIS")
 os.chdir(rootpath)
-
-try:
-    import gdal
-except ModuleNotFoundError:
-    from osgeo import gdal
 
 import geopandas as gpd
 import matplotlib
 import numpy as np
 import pandas as pd
+from osgeo import gdal
 
 matplotlib.use("TkAgg")
 from Hapi.gis.giscatchment import GISCatchment as GC
@@ -42,10 +40,10 @@ module do some preprocessing in the TEMP path
 also if you have installed qgis define the directory to the bin folder inside the installation directory
 of qgis in the environment variable with a name "qgis"
 """
-#%%` read the raster
+# %% read the raster
 src = gdal.Open(RasterAPath)
 fig, ax = Map.PlotArray(src, Title="Flow Accumulation")
-#%%` GetRasterData
+# %% GetRasterData
 """
 get the basic data inside a raster (the array and the nodatavalue)
 
@@ -63,7 +61,7 @@ Outputs:
         value stored in novalue cells
 """
 arr, nodataval = Raster.GetRasterData(src)
-#%%`
+# %%
 """GetProjectionData.
 
 GetProjectionData returns the projection details of a given gdal.Dataset
@@ -84,7 +82,7 @@ Returns:
 epsg, geo = Raster.GetProjectionData(src)
 print("EPSG = " + str(epsg))
 print(geo)
-#%%` GetCoords
+# %% GetCoords
 """GetCoords.
 
 Returns the coordinates of the cell centres (only the cells that
@@ -105,7 +103,7 @@ mat_range : array
 
 """
 coords, centerscoords = Raster.GetCellCoords(src)
-#%%` SaveRaster
+# %% SaveRaster
 """SaveRaster.
 
 SaveRaster saves a raster to a path
@@ -128,7 +126,7 @@ EX:
 """
 path = datapath + "/save_raster_test.tif"
 Raster.SaveRaster(src, path)
-#%%` CreateRaster
+# %%` CreateRaster
 """
 We will recreate the raster that we have already read using the 'GetRasterData' method at the
 top from the array and the projection data we obtained using the 'GetProjectionData' method
@@ -163,7 +161,7 @@ Returns
 
 src = Raster.CreateRaster(arr=arr, geo=geo, EPSG=str(epsg), NoDataValue=nodataval)
 Map.PlotArray(src, Title="Flow Accumulation")
-#%%` RasterLike
+# %%` RasterLike
 """RasterLike.
 
 RasterLike method creates a Geotiff raster like another input raster, new raster
@@ -250,7 +248,7 @@ def func1(val):
 
 dst = Raster.MapAlgebra(src, func1)
 Map.PlotArray(dst, Title="Classes", ColorScale=4, TicksSpacing=1)
-#%%
+# %%
 """RasterFill.
 
 RasterFill takes a raster and fill it with one value
@@ -277,7 +275,7 @@ Raster.RasterFill(src, value, SaveTo=path)
 "now the resulted raster is saved to disk"
 dst = gdal.Open(path)
 Map.PlotArray(dst, Title="Flow Accumulation")
-#%%
+# %%
 """ResampleRaster.
 
 this function reproject a raster to any projection
@@ -571,7 +569,7 @@ print("resulted EPSG = " + str(dst_epsg))
 print("resulted Geotransform = " + str(dst_geotransform))
 Map.PlotArray(dst, Title="Cropped Raster", ColorScale=1, TicksSpacing=1)
 # %%
-# src_aligned = gdal.Open(alligned_rasater)
+src_aligned = gdal.Open(aligned_raster)
 # # arr, nodataval = Raster.GetRasterData(src_aligned)
 # Map.PlotArray(src_aligned, Title="Before Cropping-Evapotranspiration", ColorScale=1,
 #               TicksSpacing=0.01)
@@ -611,8 +609,8 @@ EX:
 shp = gpd.read_file(Basinshp)
 src = gdal.Open(aligned_raster)
 
-# dst = Raster.ClipRasterWithPolygon(alligned_rasater, Basinshp, save=False, output_path=None)
-# dst = Raster.Clip2(aligned_raster, Basinshp, save=False, output_path=None)
+dst = Raster.ClipRasterWithPolygon(aligned_raster, Basinshp, save=False, output_path=None)
+dst = Raster.Clip2(aligned_raster, Basinshp, save=False, output_path=None)
 Map.PlotArray(dst, Title="After Cropping-Evapotranspiration by a shapefile", ColorScale=1,
               TicksSpacing=0.01)
 # %% ReadASCII.

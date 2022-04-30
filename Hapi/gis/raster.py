@@ -1417,26 +1417,26 @@ class Raster:
 
         Parameters
         ----------
-            src_dir : [String]
-                path of the folder of the rasters you want to set Nodata Value
-                on the same location of NodataValue of Raster A, the folder should
-                not have any other files except the rasters
-            Mask : [String/gdal.Dataset]
-                path/gdal.Dataset of the mask raster to crop the rasters (to get the NoData value
-                and it location in the array) Mask should include the name of the raster and the
-                extension like "data/dem.tif", or you can read the mask raster using gdal and use
-                is the first parameter to the function.
-            saveto : [String]
-                path where new rasters are going to be saved with exact
-                same old names
+        src_dir : [String]
+            path of the folder of the rasters you want to set Nodata Value
+            on the same location of NodataValue of Raster A, the folder should
+            not have any other files except the rasters
+        Mask : [String/gdal.Dataset]
+            path/gdal.Dataset of the mask raster to crop the rasters (to get the NoData value
+            and it location in the array) Mask should include the name of the raster and the
+            extension like "data/dem.tif", or you can read the mask raster using gdal and use
+            is the first parameter to the function.
+        saveto : [String]
+            path where new rasters are going to be saved with exact
+            same old names
 
         Returns
         -------
-            1- new rasters have the values from rasters in B_input_path with the NoDataValue in the same
-            locations like raster A
+        1- new rasters have the values from rasters in B_input_path with the NoDataValue in the same
+        locations like raster A
 
-        Example
-        -------
+        Examples
+        --------
             >>> dem_path = "examples/GIS/data/acc4000.tif"
             >>> src_path = "examples/GIS/data/aligned_rasters/"
             >>> out_path = "examples/GIS/data/crop_aligned_folder/"
@@ -1498,19 +1498,20 @@ class Raster:
 
             crop method crops a raster using another raster (both rasters does not have to be aligned).
 
-        Parameters:
+        Parameters
         -----------
-            src: [string/gdal.Dataset]
-                the raster you want to crop as a path or a gdal object
-            Mask : [string/gdal.Dataset]
-                the raster you want to use as a mask to crop other raster,
-                the mask can be also a path or a gdal object.
-            OutputPath : [string]
-                if you want to save the cropped raster directly to disk
-                enter the value of the OutputPath as the path.
-            Save : [boolen]
-                True if you want to save the cropped raster directly to disk.
-        Output:
+        src: [string/gdal.Dataset]
+            the raster you want to crop as a path or a gdal object
+        Mask : [string/gdal.Dataset]
+            the raster you want to use as a mask to crop other raster,
+            the mask can be also a path or a gdal object.
+        OutputPath : [string]
+            if you want to save the cropped raster directly to disk
+            enter the value of the OutputPath as the path.
+        Save : [boolen]
+            True if you want to save the cropped raster directly to disk.
+
+        Returns
         -------
             1- dst : [gdal.Dataset]
                 the cropped raster will be returned, if the Save parameter was True,
@@ -1582,47 +1583,47 @@ class Raster:
 
     @staticmethod
     def ClipRasterWithPolygon(
-            Raster_path,
+            raster_path,
             shapefile_path,
             save=False,
             output_path=None
     ):
         """ClipRasterWithPolygon.
 
-        ClipRasterWithPolygon method clip a raster using polygon shapefile
+            ClipRasterWithPolygon method clip a raster using polygon shapefile
 
         Parameters
         ----------
-            1- Raster_path : [String]
-                path to the input raster including the raster extension (.tif)
-            2- shapefile_path : [String]
-                path to the input shapefile including the shapefile extension (.shp)
-            3-save : [Boolen]
-                True or False to decide whether to save the clipped raster or not
-                default is False
-            3- output_path : [String]
-                path to the place in your drive you want to save the clipped raster
-                including the raster name & extension (.tif), default is None
+        raster_path : [String]
+            path to the input raster including the raster extension (.tif)
+        shapefile_path : [String]
+            path to the input shapefile including the shapefile extension (.shp)
+        save : [Boolen]
+            True or False to decide whether to save the clipped raster or not
+            default is False
+        output_path : [String]
+            path to the place in your drive you want to save the clipped raster
+            including the raster name & extension (.tif), default is None
 
         Returns
         -------
-            1- projected_raster:
-                [gdal object] clipped raster
-            2- if save is True function is going to save the clipped raster to the output_path
+        projected_raster:
+            [gdal object] clipped raster
+        if save is True function is going to save the clipped raster to the output_path
 
         Examples
         --------
-            >>> Raster_path = r"data/Evaporation_ERA-Interim_2009.01.01.tif"
-            >>> shapefile_path = "data/"+"Outline.shp"
-            >>> clipped_raster = Raster.ClipRasterWithPolygon(Raster_path,shapefile_path)
-            or
-            >>> output_path = r"data/cropped.tif"
-            >>> clipped_raster = Raster.ClipRasterWithPolygon(Raster_path, shapefile_path, True, output_path)
+        >>> src_path = r"data/Evaporation_ERA-Interim_2009.01.01.tif"
+        >>> shp_path = "data/"+"Outline.shp"
+        >>> clipped_raster = Raster.ClipRasterWithPolygon(raster_path,shapefile_path)
+        or
+        >>> dst_path = r"data/cropped.tif"
+        >>> clipped_raster = Raster.ClipRasterWithPolygon(src_path, shp_path, True, dst_path)
         """
-        if isinstance(Raster_path, str):
-            src = gdal.Open(Raster_path)
-        elif isinstance(Raster_path, gdal.Dataset):
-            src = Raster_path
+        if isinstance(raster_path, str):
+            src = gdal.Open(raster_path)
+        elif isinstance(raster_path, gdal.Dataset):
+            src = raster_path
         else:
             raise TypeError("Raster_path input should be string type")
 
@@ -1664,10 +1665,10 @@ class Raster:
             os.remove(out_transformed)
         else:
             # crs of the raster was not GCS or longitudes less than 180
-            if isinstance(Raster_path, str):
-                raster = rasterio.open(Raster_path)
+            if isinstance(raster_path, str):
+                raster = rasterio.open(raster_path)
             else:
-                raster = rasterio.open(Raster_path.GetDescription())
+                raster = rasterio.open(raster_path.GetDescription())
 
         ### Cropping the raster with the shapefile
         # Re-project into the same coordinate system as the raster data
