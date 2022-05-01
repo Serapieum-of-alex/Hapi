@@ -43,7 +43,10 @@ def test_GroundSurface(
 
     IF.ReadCrossSections(river_cross_section_path)
     IF.ReadLateralsTable(interface_Laterals_table_path)
-    IF.ReadLaterals(path=interface_Laterals_folder, date_format=interface_Laterals_date_format)
+    IF.ReadLaterals(
+        path=interface_Laterals_folder,
+        date_format=interface_Laterals_date_format
+    )
 
     Sub.GetFlow(IF)
     Sub.Read1DResult()

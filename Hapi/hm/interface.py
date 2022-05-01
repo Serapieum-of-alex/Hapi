@@ -93,7 +93,7 @@ class Interface(River):
             for i in self.LateralsTable[self.LateralsTable.columns[0]]
         ]
 
-        if not self.crosssections is None:
+        if hasattr(self, "crosssections"):
             self.crosssections["lateral"] = 0
             for i in range(len(self.crosssections)):
                 if (
@@ -136,9 +136,9 @@ class Interface(River):
             with segment id as a column name and a column 'total' contains the
             sum of all the hydrographs.
         """
-        if not self.LateralsTable is None:
-            raise ValueError("Please read the laterals table first using the"
-                             "'ReadLateralsTable' method ")
+        errmsg = """Please read the laterals table first using the
+        'ReadLateralsTable' method """
+        assert hasattr(self, "LateralsTable"), "{0}".format(errmsg)
 
         self.Laterals = pd.DataFrame()
 
