@@ -494,9 +494,7 @@ class River:
         crosssections : [dataframe]
             a dataframe attribute will be created
         """
-        if self.version == 1 or self.version == 2:
-            self.crosssections = pd.read_csv(path, delimiter=",", skiprows=1)
-        elif self.version == 3:
+        if self.version == 3:
             self.crosssections = pd.read_csv(path, delimiter=",")
             self.xsno = len(self.crosssections)
             self.segments = list(set(self.crosssections["id"].tolist()))
@@ -1385,12 +1383,8 @@ class River:
                 dataframe of the boundary condition segments that has slope
 
         """
-        if self.version == 1 or self.version == 2:
-            self.slope = pd.read_csv(path, delimiter=",", header=None)
-            self.slope.columns = ["id", "f1", "slope", "f2"]
-        else:
-            self.slope = pd.read_csv(path, delimiter=",", header=None, skiprows=1)
-            self.slope.columns = ["id", "slope"]
+        self.slope = pd.read_csv(path, delimiter=",", header=None, skiprows=1)
+        self.slope.columns = ["id", "slope"]
 
     def ReturnPeriod(self, path):
         """ReturnPeriod.
@@ -1429,33 +1423,29 @@ class River:
         rivernetwork:[data frame attribute]
             containing the river network with columns ['Subid','US','DS']
         """
-        if self.version == 1 or self.version == 2:
-            self.rivernetwork = pd.read_csv(path, delimiter=",")  # ,header = None
-            self.rivernetwork.columns = ["id", "us", "ds"]
-        else:
-            File = open(path)
-            wholefile = File.readlines()
-            File.close()
-            rivernetwork = pd.DataFrame(columns=wholefile[0][:-1].split(","))
-            # all lines excpt the last line
-            for i in range(1, len(wholefile)):
-                rivernetwork.loc[i - 1, rivernetwork.columns[0:2].tolist()] = [
-                    int(j) for j in wholefile[i][:-1].split(",")[0:2]
-                ]
-                rivernetwork.loc[i - 1, rivernetwork.columns[2]] = [
-                    int(j) for j in wholefile[i][:-1].split(",")[2:]
-                ]
-            # last line does not have the \n at the end
-            i = len(wholefile) - 1
+        File = open(path)
+        wholefile = File.readlines()
+        File.close()
+        rivernetwork = pd.DataFrame(columns=wholefile[0][:-1].split(","))
+        # all lines excpt the last line
+        for i in range(1, len(wholefile)):
             rivernetwork.loc[i - 1, rivernetwork.columns[0:2].tolist()] = [
                 int(j) for j in wholefile[i][:-1].split(",")[0:2]
             ]
             rivernetwork.loc[i - 1, rivernetwork.columns[2]] = [
-                int(j) for j in wholefile[i].split(",")[2:]
+                int(j) for j in wholefile[i][:-1].split(",")[2:]
             ]
-            rivernetwork.columns = ["No", "id", "us"]
-            self.rivernetwork = rivernetwork[:]
-            self.Segments = self.rivernetwork["id"].tolist()
+        # last line does not have the \n at the end
+        i = len(wholefile) - 1
+        rivernetwork.loc[i - 1, rivernetwork.columns[0:2].tolist()] = [
+            int(j) for j in wholefile[i][:-1].split(",")[0:2]
+        ]
+        rivernetwork.loc[i - 1, rivernetwork.columns[2]] = [
+            int(j) for j in wholefile[i].split(",")[2:]
+        ]
+        rivernetwork.columns = ["No", "id", "us"]
+        self.rivernetwork = rivernetwork[:]
+        self.Segments = self.rivernetwork["id"].tolist()
 
 
     def TraceSegment(self, sub_id):
@@ -1480,21 +1470,13 @@ class River:
         Example:
             Subid = 42
         """
-        if self.version == 1 or self.version == 2:
-            DS = int(
-                self.rivernetwork["ds"][np.where(self.rivernetwork["id"] == sub_id)[0][0]]
-            )
-            US = int(
-                self.rivernetwork["us"][np.where(self.rivernetwork["id"] == sub_id)[0][0]]
-            )
-        else:
-            US = self.rivernetwork["us"][np.where(self.rivernetwork["id"] == sub_id)[0][0]]
-            for i in range(len(self.rivernetwork)):
-                if id in self.rivernetwork.loc[i, "us"]:
-                    DS = self.rivernetwork.loc[i, "id"]
-                    break
-                else:
-                    DS = []
+        US = self.rivernetwork["us"][np.where(self.rivernetwork["id"] == sub_id)[0][0]]
+        for i in range(len(self.rivernetwork)):
+            if id in self.rivernetwork.loc[i, "us"]:
+                DS = self.rivernetwork.loc[i, "id"]
+                break
+            else:
+                DS = []
 
         return US, DS
 
@@ -3238,22 +3220,20 @@ class Sub(River):
             raise ValueError("please Read the cross section for the whole river with 'ReadCrossSections' "
                              "method before creating the sub-segment instance")
         # filter the whole cross section file and get the cross section of the segment
-        if self.version == 1 or self.version == 2:
-            self.crosssections = River.crosssections[River.crosssections["id"] == sub_id]
-        else:
-            self.crosssections = River.crosssections[River.crosssections["id"] == sub_id]
-            if RunModel:
-                self.xsid = self.crosssections.loc[:, "xsid"].values
-                self.dbf = self.crosssections.loc[:, "dbf"].values
-                self.bedlevel = self.crosssections.loc[:, "gl"].values
-                self.hl = self.crosssections.loc[:, "hl"].values
-                self.cl = self.crosssections.loc[:, "bl"].values
-                self.zl = self.crosssections.loc[:, "zl"].values
-                self.hr = self.crosssections.loc[:, "hr"].values
-                self.cr = self.crosssections.loc[:, "br"].values
-                self.zr = self.crosssections.loc[:, "zr"].values
-                self.mw = self.crosssections.loc[:, "b"].values
-                self.mn = self.crosssections.loc[:, "m"].values
+
+        self.crosssections = River.crosssections[River.crosssections["id"] == sub_id]
+        if RunModel:
+            self.xsid = self.crosssections.loc[:, "xsid"].values
+            self.dbf = self.crosssections.loc[:, "dbf"].values
+            self.bedlevel = self.crosssections.loc[:, "gl"].values
+            self.hl = self.crosssections.loc[:, "hl"].values
+            self.cl = self.crosssections.loc[:, "bl"].values
+            self.zl = self.crosssections.loc[:, "zl"].values
+            self.hr = self.crosssections.loc[:, "hr"].values
+            self.cr = self.crosssections.loc[:, "br"].values
+            self.zr = self.crosssections.loc[:, "zr"].values
+            self.mw = self.crosssections.loc[:, "b"].values
+            self.mn = self.crosssections.loc[:, "m"].values
 
         self.crosssections.index = list(range(len(self.crosssections)))
         self.lastxs = self.crosssections.loc[len(self.crosssections) - 1, "xsid"]

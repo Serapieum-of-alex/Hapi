@@ -744,12 +744,9 @@ class Inputs(River):
         Subs = pd.read_csv(RIMSubsFilePath, header=None)
         Subs = Subs.rename(columns={0: "SubID"})
 
-        if self.version == 1:
-            Subs["US"] = -1
-            Subs["DS"] = -1
-        else:
-            Subs["US"] = None
-            Subs["DS"] = None
+
+        Subs["US"] = None
+        Subs["DS"] = None
 
         for i in range(len(Subs)):
             try:
@@ -760,32 +757,15 @@ class Inputs(River):
             except IndexError:
                 # if the sub-basin is not in the route array so it is not routed by SWIM
                 # but still can be routed using RIM
-                if self.version == 1:
-                    Subs.loc[i, "US"] = -1
-                    Subs.loc[i, "DS"] = -1
-                else:
-                    # Subs.loc[i,'US'] = None
-                    # Subs.loc[i,'DS'] = None
-                    Subs.loc[i, "US"] = -1
-                    Subs.loc[i, "DS"] = -1
+
+                # Subs.loc[i,'US'] = None
+                # Subs.loc[i,'DS'] = None
+                Subs.loc[i, "US"] = -1
+                Subs.loc[i, "DS"] = -1
 
         # Save the file with the same format required for the hg R code
-        if self.version == 1:
-            #    ToSave = Subs.loc[:,['US','SubID']]
-            #    ToSave['Extra column 1'] = -1
-            #    ToSave['Extra column 2'] = -1
-            Subs.to_csv(TraceFile, header=True, index=None)
 
-            onlyRouted = Subs[Subs["US"] != -1][Subs["DS"] != -1]
-
-            if USonly == 1:
-                All = onlyRouted["US"].tolist()
-            else:
-                All = onlyRouted["US"].tolist() + onlyRouted["DS"].tolist()
-            np.savetxt(HydrologicalInputsFile, All, fmt="%d")
-
-        else:
-            Subs.to_csv(TraceFile, index=None, header=True)
+        Subs.to_csv(TraceFile, index=None, header=True)
         #    ToSave = Subs.loc[:,['SubID','US']]
         #    ToSave['Extra column 1'] = -1
         #    ToSave['Extra column 2'] = -1
