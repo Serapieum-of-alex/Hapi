@@ -173,7 +173,11 @@ class Interface(River):
             logger.debug("There are no Laterals table please check")
 
     def ReadRRMProgression(
-        self, fromday="", today="", path="", date_format="'%Y-%m-%d'"
+            self,
+            fromday: int="",
+            today: int="",
+            path: str="",
+            date_format: str="'%Y-%m-%d'"
     ):
         """ReadRRMProgression.
 
@@ -182,25 +186,26 @@ class Interface(River):
 
         Parameters
         ----------
-        1-fromday : [integer], optional
+        fromday: [integer], optional
                 the day you want to read the result from, the first day is 1 not zero.The default is ''.
-        2-today : [integer], optional
+        today: [integer], optional
                 the day you want to read the result to.
-        3-path : [String], optional
+        path: [String], optional
             path to read the results from. The default is ''.
-        4-date_format : "TYPE, optional
+        date_format: "TYPE, optional
             DESCRIPTION. The default is "'%Y-%m-%d'".
 
         Returns
         -------
-        1-USHydrographs : [dataframe attribute].
+        USHydrographs : [dataframe attribute].
             dataframe contains the hydrograph of each of the upstream segments
             with segment id as a column name and a column 'total' contains the
             sum of all the hydrographs.
         """
-        errmsg = """Please read the laterals table first using the
-        'ReadLateralsTable' method """
-        assert hasattr(self, "LateralsTable"), "{0}".format(errmsg)
+        if self.LateralsTable is None:
+            raise ValueError("Please read the laterals table first using the"
+                             "'ReadLateralsTable' method ")
+
         self.RRMProgression = pd.DataFrame()
 
         if len(self.LateralsTable) > 0:

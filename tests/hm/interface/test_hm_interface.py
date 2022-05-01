@@ -50,3 +50,19 @@ def test_ReadBoundaryConditions(
     IF.ReadBoundaryConditions(path=interface_bc_folder, date_format=interface_bc_date_format)
 
     assert len(IF.BC) == test_time_series_length and len(IF.BC.columns) == 3
+
+def test_ReadRRMProgression(
+        dates: list,
+        river_cross_section_path: str,
+        interface_Laterals_table_path: str,
+        rrm_resutls_hm_location: str,
+        interface_Laterals_date_format: str,
+        laterals_number_ts: int,
+        no_laterals: int,
+):
+    IF = Interface('Rhine', start=dates[0])
+    IF.ReadCrossSections(river_cross_section_path)
+    IF.ReadLateralsTable(interface_Laterals_table_path)
+    IF.ReadRRMProgression(path=rrm_resutls_hm_location, date_format=interface_Laterals_date_format)
+    assert len(IF.RRMProgression) == laterals_number_ts
+    assert len(IF.RRMProgression.columns) == no_laterals
