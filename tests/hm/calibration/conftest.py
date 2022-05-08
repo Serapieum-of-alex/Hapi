@@ -50,3 +50,8 @@ def rrmpath() -> str:
 @pytest.fixture(scope="module")
 def rrmgauges() -> str:
     return [444222, 888555, 999666]
+
+
+@pytest.fixture(scope="module")
+def hm_separated_results_path() -> str:
+    return r"examples\Hydrodynamic models\test_case\results\separated-results"
