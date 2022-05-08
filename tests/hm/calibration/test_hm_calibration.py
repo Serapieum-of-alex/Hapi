@@ -158,12 +158,68 @@ def test_ReadRRM(
 
 def test_ReadHMQ(
         gauges_table_path: str,
-        hm_separated_results_path: str,
+        hm_separated_q_results_path,
         test_time_series_length: int,
         rrmgauges: List[int],
 ):
     Calib = RC.Calibration("HM", version=3)
     Calib.ReadGaugesTable(gauges_table_path)
-    Calib.ReadHMQ(hm_separated_results_path, fmt="'%Y-%m-%d'")
+    Calib.ReadHMQ(hm_separated_q_results_path, fmt="'%Y-%m-%d'")
     assert len(Calib.QHM) == test_time_series_length and len(Calib.QHM.columns) == len(rrmgauges)
     assert all(elem in Calib.QHM.columns.to_list() for elem in rrmgauges)
+
+
+class Test_GetAnnualMax:
+
+    def test_option_1(
+            self,
+            gauges_table_path: str,
+            ObservedQ_long_ts_Path: str,
+            ObservedQ_long_ts_dates: list,
+            nodatavalu: int,
+            gauges_file_extension: str,
+            gauge_long_ts_date_format: str,
+            ObservedQ_long_ts_len: int,
+            gauges_numbers: int
+    ):
+        Calib = RC.Calibration("HM", version=3)
+        Calib.ReadGaugesTable(gauges_table_path)
+        Calib.ReadObservedQ(ObservedQ_long_ts_Path, ObservedQ_long_ts_dates[0], ObservedQ_long_ts_dates[1],
+                            nodatavalu, file_extension=gauges_file_extension,
+                            gauge_date_format=gauge_long_ts_date_format)
+        # RIM.ReadObservedQ(ObservedPath, GRDCStartDate, GRDCEndDate, NoValue)
+
+        Calib.GetAnnualMax(option=1)
+        assert len(Calib.AnnualMaxObsQ) == ObservedQ_long_ts_len
+        assert len(Calib.AnnualMaxObsQ.columns) == gauges_numbers
+
+    def test_option_3(
+            self,
+            gauges_table_path: str,
+            rrm_long_ts_number: int,
+            gauges_numbers: int,
+            rrmpath_long_ts: str,
+    ):
+        Calib = RC.Calibration("HM", version=3)
+        Calib.ReadGaugesTable(gauges_table_path)
+        Calib.ReadRRM(rrmpath_long_ts, fmt="'%Y-%m-%d'")
+
+        Calib.GetAnnualMax(option=3)
+        assert len(Calib.AnnualMaxRRM) == rrm_long_ts_number
+        assert len(Calib.AnnualMaxRRM.columns) == gauges_numbers
+
+
+    def test_option_4(
+            self,
+            gauges_table_path: str,
+            hm_long_ts_number: int,
+            gauges_numbers: int,
+            hm_separated_results_q_long_ts_path,
+    ):
+        Calib = RC.Calibration("HM", version=3)
+        Calib.ReadGaugesTable(gauges_table_path)
+        Calib.ReadHMQ(hm_separated_results_q_long_ts_path, fmt="'%Y-%m-%d'")
+
+        Calib.GetAnnualMax(option=4)
+        assert len(Calib.AnnualMaxRIMQ) == hm_long_ts_number
+        assert len(Calib.AnnualMaxRIMQ.columns) == gauges_numbers

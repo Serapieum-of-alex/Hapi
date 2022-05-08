@@ -752,7 +752,9 @@ class Calibration(River):
         self.CalibrationWL[subid] = wl[1].resample("D").mean()
 
     def GetAnnualMax(
-        self, option=1, CorespondingTo=dict(MaxObserved=" ", TimeWindow=0)
+            self,
+            option=1,
+            CorespondingTo=dict(MaxObserved=" ", TimeWindow=0)
     ):
         """GetAnnualMax.
 
@@ -762,13 +764,13 @@ class Calibration(River):
 
         Parameters
         ----------
-        1-option : [integer], optional
+        option : [integer], optional
             1 for the historical observed Discharge data, 2 for the historical
             observed water level data, 3 for the rainfall-runoff data,
             4 for the rim discharge result, 5 for the rim water level result.
             The default is 1.
 
-        2-CorespondingTo: [Dict], optional
+        CorespondingTo: [Dict], optional
             -if you want to extract the max annual values from the observed
             discharge time series (CorespondingTo=dict(MaxObserved = "Q") and
             then extract the values of the same dates in the result time
@@ -785,46 +787,45 @@ class Calibration(River):
 
         Returns
         -------
-        1-AnnualMaxObsQ: [dataframe attribute]
+        AnnualMaxObsQ: [dataframe attribute]
             when using Option=1
-        2-AnnualMaxObsWL: [dataframe attribute]
+        AnnualMaxObsWL: [dataframe attribute]
             when using option = 2
-        3-AnnualMaxRRM: [dataframe attribute]
+        AnnualMaxRRM: [dataframe attribute]
             when using option = 3
-        4-AnnualMaxRIMQ: [dataframe attribute]
+        AnnualMaxRIMQ: [dataframe attribute]
             when using option = 4
-        5-AnnualMaxRIMWL: [dataframe attribute]
+        AnnualMaxRIMWL: [dataframe attribute]
             when using option = 5
         """
         if option == 1:
-            msg = """ please read the observed Discharge data first with the
-            ReadObservedQ method """
-            assert hasattr(self, "QGauges"), "{0}".format(msg)
+            if not isinstance(self.QGauges, DataFrame):
+                raise ValueError("please read the observed Discharge data first with the"
+                                 "ReadObservedQ method ")
             columns = self.QGauges.columns.tolist()
         elif option == 2:
-            msg = """please read the observed Water level data first with the
-            ReadObservedWL method"""
-            assert hasattr(self, "WLGauges"), "{0}".format(msg)
+            if not isinstance(self.WLGauges, DataFrame):
+                raise ValueError("please read the observed Water level data first with the "
+                                 "ReadObservedWL method")
             columns = self.WLGauges.columns.tolist()
         elif option == 3:
-            msg = """ please read the Rainfall-runoff data first with the
-            ReadRRM method"""
-            assert hasattr(self, "QRRM"), "{0}".format(msg)
+            if not isinstance(self.QRRM, DataFrame):
+                raise ValueError("please read the Rainfall-runoff data first with the "
+                                 "ReadRRM method")
             columns = self.QRRM.columns.tolist()
         elif option == 4:
-            msg = """ please read the RIM results first with the ReadRIMQ
-            method """
-            assert hasattr(self, "QHM"), "{0}".format(msg)
+            if not isinstance(self.QHM, DataFrame):
+                raise ValueError("please read the RIM results first with the ReadRIMQ method ")
             columns = self.QHM.columns.tolist()
         else:
-            msg = "please read the RIM results first with the ReadRIMWL method"
-            assert hasattr(self, "WLHM"), "{0}".format(msg)
+            if not isinstance(self.WLHM, DataFrame):
+                raise ValueError("please read the RIM results first with the ReadRIMWL method")
             columns = self.WLHM.columns.tolist()
 
         if CorespondingTo["MaxObserved"] == "WL":
-            msg = """ please read the observed Water level data first with the
-            ReadObservedWL method"""
-            assert hasattr(self, "WLGauges"), "{0}".format(msg)
+            if not isinstance(self.WLGauges, DataFrame):
+                raise ValueError("please read the observed Water level data first with the "
+                                 "ReadObservedWL method")
 
             startdate = self.WLGauges.index[0]
             AnnualMax = (
@@ -860,7 +861,6 @@ class Calibration(River):
                 QTS = list()
 
                 if option == 1:
-
                     for j in range(len(self.AnnualMaxDates.loc[:, Sub])):
                         ind = self.AnnualMaxDates.index[j]
                         date = self.AnnualMaxDates.loc[ind, Sub]
@@ -868,7 +868,6 @@ class Calibration(River):
                         end = date + dt.timedelta(days=CorespondingTo["TimeWindow"])
                         QTS.append(self.QGauges.loc[start:end, Sub].max())
                 elif option == 2:
-
                     for j in range(len(self.AnnualMaxDates.loc[:, Sub])):
                         ind = self.AnnualMaxDates.index[j]
                         date = self.AnnualMaxDates.loc[ind, Sub]
@@ -876,7 +875,6 @@ class Calibration(River):
                         end = date + dt.timedelta(days=1)
                         QTS.append(self.WLGauges.loc[start:end, Sub].max())
                 elif option == 3:
-
                     for j in range(len(self.AnnualMaxDates.loc[:, Sub])):
                         ind = self.AnnualMaxDates.index[j]
                         date = self.AnnualMaxDates.loc[ind, Sub]
@@ -884,7 +882,6 @@ class Calibration(River):
                         end = date + dt.timedelta(days=CorespondingTo["TimeWindow"])
                         QTS.append(self.QRRM.loc[start:end, Sub].max())
                 elif option == 4:
-
                     for j in range(len(self.AnnualMaxDates.loc[:, Sub])):
                         ind = self.AnnualMaxDates.index[j]
                         date = self.AnnualMaxDates.loc[ind, Sub]
@@ -892,7 +889,6 @@ class Calibration(River):
                         end = date + dt.timedelta(days=CorespondingTo["TimeWindow"])
                         QTS.append(self.QHM.loc[start:end, Sub].max())
                 else:
-
                     for j in range(len(self.AnnualMaxDates.loc[:, Sub])):
                         ind = self.AnnualMaxDates.index[j]
                         date = self.AnnualMaxDates.loc[ind, Sub]
@@ -903,10 +899,9 @@ class Calibration(River):
                 AnnualMax.loc[:, Sub] = QTS
 
         elif CorespondingTo["MaxObserved"] == "Q":
-            msg = """ please read the observed Discharge data first with the
-            ReadObservedQ method """
-            assert hasattr(self, "QGauges"), "{0}".format(msg)
-
+            if not isinstance(self.QGauges, DataFrame):
+                raise ValueError("please read the observed Discharge data first with the"
+                                 "ReadObservedQ method")
             startdate = self.QGauges.index[0]
             AnnualMax = (
                 self.QGauges.loc[:, self.QGauges.columns[0]].resample("A-OCT").max()
@@ -940,7 +935,6 @@ class Calibration(River):
                 QTS = list()
 
                 if option == 1:
-
                     for j in range(len(self.AnnualMaxDates.loc[:, Sub])):
                         ind = self.AnnualMaxDates.index[j]
                         date = self.AnnualMaxDates.loc[ind, Sub]
@@ -949,7 +943,6 @@ class Calibration(River):
                         QTS.append(self.QGauges.loc[start:end, Sub].max())
 
                 elif option == 2:
-
                     for j in range(len(self.AnnualMaxDates.loc[:, Sub])):
                         ind = self.AnnualMaxDates.index[j]
                         date = self.AnnualMaxDates.loc[ind, Sub]
@@ -958,7 +951,6 @@ class Calibration(River):
                         QTS.append(self.WLGauges.loc[start:end, Sub].max())
 
                 elif option == 3:
-
                     for j in range(len(self.AnnualMaxDates.loc[:, Sub])):
                         ind = self.AnnualMaxDates.index[j]
                         date = self.AnnualMaxDates.loc[ind, Sub]
@@ -967,7 +959,6 @@ class Calibration(River):
                         QTS.append(self.QRRM.loc[start:end, Sub].max())
 
                 elif option == 4:
-
                     for j in range(len(self.AnnualMaxDates.loc[:, Sub])):
                         ind = self.AnnualMaxDates.index[j]
                         date = self.AnnualMaxDates.loc[ind, Sub]
@@ -975,7 +966,6 @@ class Calibration(River):
                         end = date + dt.timedelta(days=CorespondingTo["TimeWindow"])
                         QTS.append(self.QHM.loc[start:end, Sub].max())
                 else:
-
                     for j in range(len(self.AnnualMaxDates.loc[:, Sub])):
                         ind = self.AnnualMaxDates.index[j]
                         date = self.AnnualMaxDates.loc[ind, Sub]
