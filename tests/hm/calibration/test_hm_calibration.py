@@ -1,3 +1,4 @@
+from typing import List
 import Hapi.hm.calibration as RC
 
 
@@ -139,3 +140,31 @@ def test_CheckFloodplain(
     Calib = RC.Calibration("HM", version=version)
     Calib.ReadCrossSections(river_cross_section_path)
     Calib.CheckFloodplain()
+
+
+def test_ReadRRM(
+        gauges_table_path: str,
+        rrmpath: str,
+        test_time_series_length: int,
+        rrmgauges: List[int],
+):
+    Calib = RC.Calibration("HM", version=3)
+    Calib.ReadGaugesTable(gauges_table_path)
+    Calib.ReadRRM(rrmpath, fmt="'%Y-%m-%d'")
+    assert len(Calib.QRRM)
+    assert len(Calib.QRRM) == test_time_series_length and len(Calib.QRRM.columns) == len(rrmgauges)
+    assert all(elem in Calib.QRRM.columns.to_list() for elem in rrmgauges)
+
+
+def test_ReadHMQ(
+        gauges_table_path: str,
+        rrmpath: str,
+        test_time_series_length: int,
+        rrmgauges: List[int],
+):
+    Calib = RC.Calibration("HM", version=3)
+    Calib.ReadGaugesTable(gauges_table_path)
+    Calib.ReadRRM(rrmpath, fmt="'%Y-%m-%d'")
+    assert len(Calib.QRRM)
+    assert len(Calib.QRRM) == test_time_series_length and len(Calib.QRRM.columns) == len(rrmgauges)
+    assert all(elem in Calib.QRRM.columns.to_list() for elem in rrmgauges)

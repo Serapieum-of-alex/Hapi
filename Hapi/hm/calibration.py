@@ -27,9 +27,7 @@ class Calibration(River):
     """Hydraulic model Calibration.
 
     Hydraulic model calibration class
-
     """
-
     def __init__(self, name: str, version: int=3, start: Union[str, dt.datetime]="1950-1-1",
                  days: int=36890, fmt: str="%Y-%m-%d", rrmstart: str="", rrmdays: int=36890,
                  novalue: int= -9, gauge_id_col: Any='oid'):
@@ -63,7 +61,6 @@ class Calibration(River):
         Returns
         -------
         None.
-
         """
         self.name = name
         self.version = version
@@ -322,28 +319,30 @@ class Calibration(River):
 
         Parameters
         ----------
-            1-path : [String]
-                path to the folder where files for the gauges exist.
-            2-start : [datetime object]
-                starting date of the time series.
-            3-end : [datetime object]
-                ending date of the time series.
-            4-novalue : [numeric]
-                value stored in gaps.
-            5-column : [string/numeric]
-                name of the column that contains the gauges file name
-            7-fmt : [str]
-                format of the given dates. The default is "%Y-%m-%d"
+        path : [String]
+            path to the folder where files for the gauges exist.
+        start : [datetime object]
+            starting date of the time series.
+        end : [datetime object]
+            ending date of the time series.
+        novalue : [numeric]
+            value stored in gaps.
+        fmt : [str]
+            format of the given dates. The default is "%Y-%m-%d"
+        file_extension: [str]
+            extension of the files. Default is ".txt"
+        gauge_date_format: [str]
+            format of the date in the first column in the gauges files. Default is "%Y-%m-%d".
 
         Returns
         -------
-            QGauges:[dataframe attribute]
-                dataframe containing the hydrograph of each gauge under a column
-                 by the name of  gauge.
-            GaugesTable:[dataframe attribute]
-                in the GaugesTable dataframe two new columns are inserted
-                ["Qstart", "Qend"] containing the start and end date of the
-                discharge time series.
+        QGauges:[dataframe attribute]
+            dataframe containing the hydrograph of each gauge under a column
+             by the name of  gauge.
+        GaugesTable:[dataframe attribute]
+            in the GaugesTable dataframe two new columns are inserted
+            ["Qstart", "Qend"] containing the start and end date of the
+            discharge time series.
         """
         if isinstance(start, str):
             start = dt.datetime.strptime(start, fmt)
@@ -361,7 +360,7 @@ class Calibration(River):
                     f = pd.read_csv(
                         path + str(int(name)) + file_extension, delimiter=",", header=0
                     )
-                    logger.debug(f"{i} - {path}{name}{file_extension} is read")
+                    logger.info(f"{i} - {path}{name}{file_extension} is read")
 
                 except FileNotFoundError:
                     logger.debug(f"{i} - {path}{name}{file_extension} has a problem")
@@ -407,8 +406,15 @@ class Calibration(River):
                 self.GaugesTable.loc[i, "Qend"] = end1
 
 
-    def ReadRRM(self, path: str, fromday: Union[str, int]="", today: Union[str, int]="",
-                fmt="%Y-%m-%d", location=1, path2=""):
+    def ReadRRM(
+            self,
+            path: str,
+            fromday: Union[str, int]="",
+            today: Union[str, int]="",
+            fmt: str="%Y-%m-%d",
+            location: str=1,
+            path2: str=""
+    ):
         """ReadRRM.
 
             ReadRRM method reads the discharge results of the rainfall runoff
@@ -416,24 +422,25 @@ class Calibration(River):
 
         Parameters
         ----------
-        1-path : [String]
+        path : [String]
             path to the folder where files for the gauges exist.
-        2-start : [datetime object]
+        fromday : [datetime object]
             starting date of the time series.
-        3-end : [datetime object]
+        today : [datetime object]
             ending date of the time series.
-        4-column : [string]
-            name of the column that contains the gauges file name. default is
-            'oid'.
-        5-fmt : [str]
+        fmt : [str]
             format of the given dates. The default is "%Y-%m-%d"
+        location: [int]
+            the RRM hydrographs for a 2nd location
+        path2 : [str]
+            directory where the RRM hydrographs for the 2nd location are saved
 
         Returns
         -------
-        1-QRRM : [dataframe]
+        QRRM : [dataframe]
             rainfall-runoff discharge time series stored in a dataframe with
             the columns as the gauges id and the index are the time.
-        2- ReadRRM: [list]
+        ReadRRM: [list]
             list og gauges id
         """
         gauges = self.GaugesTable.loc[self.GaugesTable["discharge"] == 1, self.gauge_id_col].tolist()
@@ -466,10 +473,10 @@ class Calibration(River):
                         today,
                         date_format=fmt,
                     )[station_id].tolist()
-                    logger.debug(f"{i} - {path}{station_id}.txt is read")
+                    logger.info(f"{i} - {path}{station_id}.txt is read")
                     self.RRM_Gauges.append(station_id)
                 except FileNotFoundError:
-                    logger.debug(f"{i} - {path}{station_id}.txt does not exist or have a problem")
+                    logger.info(f"{i} - {path}{station_id}.txt does not exist or have a problem")
         else:
             for i in range(len(gauges)):
                 station_id = gauges[i]
@@ -492,10 +499,10 @@ class Calibration(River):
                         today,
                         date_format=fmt,
                     )[station_id].tolist()
-                    logger.debug(f"{i} - {path}{station_id}.txt is read")
+                    logger.info(f"{i} - {path}{station_id}.txt is read")
                     self.RRM_Gauges.append(station_id)
                 except FileNotFoundError:
-                    logger.debug(f"{i} - {path}{station_id}.txt does not exist or have a problem")
+                    logger.info(f"{i} - {path}{station_id}.txt does not exist or have a problem")
         # logger.debug("RRM time series for the gauge " + str(station_id) + " is read")
 
         if fromday == "":
@@ -506,49 +513,56 @@ class Calibration(River):
         start = self.ReferenceIndex.loc[fromday, "date"]
         end = self.ReferenceIndex.loc[today, "date"]
 
-        self.QRRM.index = pd.date_range(start, end, freq="D")
-        self.QRRM2.index = pd.date_range(start, end, freq="D")
+        if location == 1:
+            self.QRRM.index = pd.date_range(start, end, freq="D")
+        else:
+            self.QRRM.index = pd.date_range(start, end, freq="D")
+            self.QRRM2.index = pd.date_range(start, end, freq="D")
 
 
-    def ReadHMQ(self, path: str, fromday: Union[str, int]="", today: Union[str, int]="",
-                novalue: Union[int, float]=-9, addHQ2: bool = False, shift: bool =False,
-                shiftsteps: int = 0, fmt: str = "%Y-%m-%d",
+    def ReadHMQ(
+            self,
+            path: str,
+            fromday: Union[str, int]="",
+            today: Union[str, int]="",
+            novalue: Union[int, float]=-9,
+            addHQ2: bool = False,
+            shift: bool =False,
+            shiftsteps: int = 0,
+            fmt: str = "%Y-%m-%d",
     ):
-        """ReadRIMQ.
+        """ReadHMQ.
 
         Read Hydraulic model discharge time series.
 
         Parameters
         ----------
-            path : [String]
-                path to the folder where files for the gauges exist.
-            fromday : [datetime object/str]
-                starting date of the time series.
-            today : [integer]
-                length of the simulation (how many days after the start date) .
-            novalue : [numeric value]
-                the value used to fill the gaps in the time series or to fill the
-                days that is not simulated (discharge is less than threshold).
-            addHQ2 : [bool]
-                for version 1 the HQ2 can be added to the simulated hydrograph to
-                compare it with the gauge data.default is False.
-            shift : [bool]
-                boolean value to decide whither to shift the time series or not.
-                default is False.
-            shiftsteps : [integer]
-                number of time steps to shift the time series, could be negative
-                integer to shift the time series beackward. default is 0.
-            column : [string]
-                name of the column that contains the gauges file name. default is
-                'oid'.
-            fmt : [str]
-                format of the given dates. The default is "%Y-%m-%d"
+        path : [String]
+            path to the folder where files for the gauges exist.
+        fromday : [datetime object/str]
+            starting date of the time series.
+        today : [integer]
+            length of the simulation (how many days after the start date) .
+        novalue : [numeric value]
+            the value used to fill the gaps in the time series or to fill the
+            days that is not simulated (discharge is less than threshold).
+        addHQ2 : [bool]
+            for version 1 the HQ2 can be added to the simulated hydrograph to
+            compare it with the gauge data.default is False.
+        shift : [bool]
+            boolean value to decide whither to shift the time series or not.
+            default is False.
+        shiftsteps : [integer]
+            number of time steps to shift the time series, could be negative
+            integer to shift the time series beackward. default is 0.
+        fmt : [str]
+            format of the given dates. The default is "%Y-%m-%d"
 
         Returns
         -------
-            QHM : [dataframe attribute]
-                dataframe containing the simulated hydrograph for each river
-                segment in the catchment.
+        QHM : [dataframe attribute]
+            dataframe containing the simulated hydrograph for each river
+            segment in the catchment.
         """
         if addHQ2 and self.version == 1:
             msg = "please read the traceall file using the RiverNetwork method"
@@ -1480,16 +1494,16 @@ class Calibration(River):
 
         inputs:
         -------
-            1- RRM_Gauges: [list]
-                list og the RRM gauges' ids, created by the 'ReadRRM' method
-            2- QRRM: [dataframe]
-                dataframe for the discharge time-series of the simulated discharge by the RRM,
-                created by the 'ReadRRM' method
+        RRM_Gauges: [list]
+            list og the RRM gauges' ids, created by the 'ReadRRM' method
+        QRRM: [dataframe]
+            dataframe for the discharge time-series of the simulated discharge by the RRM,
+            created by the 'ReadRRM' method
         outputs:
         -------
-            1- MetricsHM_RRM: [dataframe]
-                dataframe with the gauges id as rows and ['start', 'end', 'rmse', 'KGE', 'WB', 'NSE',
-                'NSEModefied'], as columns.
+        MetricsHM_RRM: [dataframe]
+            dataframe with the gauges id as rows and ['start', 'end', 'rmse', 'KGE', 'WB', 'NSE',
+            'NSEModefied'], as columns.
         """
         if not isinstance(self.RRM_Gauges, list):
             raise ValueError("RRM_Gauges variable does not exist please read the RRM results "

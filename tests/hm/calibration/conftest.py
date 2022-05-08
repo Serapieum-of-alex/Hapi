@@ -40,3 +40,13 @@ def calibrateProfile_slope() -> float:
 @pytest.fixture(scope="module")
 def DownWardBedLevel_height() -> float:
     return 0.05
+
+
+@pytest.fixture(scope="module")
+def rrmpath() -> str:
+    return r"examples\Hydrodynamic models\test_case\inputs\rrm\rrm_location"
+
+
+@pytest.fixture(scope="module")
+def rrmgauges() -> str:
+    return [444222, 888555, 999666]
