@@ -9,7 +9,7 @@ def test_create_calibration_instance(
     RC.Calibration("HM", version=version)
 
 
-def test_ReadGaugesTable_method(gauges_table_path: str):
+def test_ReadGaugesTable(gauges_table_path: str):
     Calib = RC.Calibration("HM", version=3)
     Calib.ReadGaugesTable(gauges_table_path)
     assert len(Calib.GaugesTable) == 3 and len(Calib.GaugesTable.columns) == 10
@@ -169,6 +169,19 @@ def test_ReadHMQ(
     assert all(elem in Calib.QHM.columns.to_list() for elem in rrmgauges)
 
 
+def test_ReadHMWL(
+        gauges_table_path: str,
+        hm_separated_wl_results_path,
+        test_time_series_length: int,
+        rrmgauges: List[int],
+):
+    Calib = RC.Calibration("HM", version=3)
+    Calib.ReadGaugesTable(gauges_table_path)
+    Calib.ReadHMWL(hm_separated_wl_results_path, fmt="'%Y-%m-%d'")
+    assert len(Calib.WLHM) == test_time_series_length and len(Calib.WLHM.columns) == len(rrmgauges)
+    assert all(elem in Calib.WLHM.columns.to_list() for elem in rrmgauges)
+
+
 class Test_GetAnnualMax:
 
     def test_option_1(
@@ -182,6 +195,9 @@ class Test_GetAnnualMax:
             ObservedQ_long_ts_len: int,
             gauges_numbers: int
     ):
+        """
+        test extracting max annual observed discharge
+        """
         Calib = RC.Calibration("HM", version=3)
         Calib.ReadGaugesTable(gauges_table_path)
         Calib.ReadObservedQ(ObservedQ_long_ts_Path, ObservedQ_long_ts_dates[0], ObservedQ_long_ts_dates[1],
@@ -200,6 +216,9 @@ class Test_GetAnnualMax:
             gauges_numbers: int,
             rrmpath_long_ts: str,
     ):
+        """
+        test extracting max annual hydrologic model simulated discharge
+        """
         Calib = RC.Calibration("HM", version=3)
         Calib.ReadGaugesTable(gauges_table_path)
         Calib.ReadRRM(rrmpath_long_ts, fmt="'%Y-%m-%d'")
@@ -216,10 +235,13 @@ class Test_GetAnnualMax:
             gauges_numbers: int,
             hm_separated_results_q_long_ts_path,
     ):
+        """
+        test extracting max annual hydraulic model simulated discharge
+        """
         Calib = RC.Calibration("HM", version=3)
         Calib.ReadGaugesTable(gauges_table_path)
         Calib.ReadHMQ(hm_separated_results_q_long_ts_path, fmt="'%Y-%m-%d'")
 
         Calib.GetAnnualMax(option=4)
-        assert len(Calib.AnnualMaxRIMQ) == hm_long_ts_number
-        assert len(Calib.AnnualMaxRIMQ.columns) == gauges_numbers
+        assert len(Calib.AnnualMaxHMQ) == hm_long_ts_number
+        assert len(Calib.AnnualMaxHMQ.columns) == gauges_numbers

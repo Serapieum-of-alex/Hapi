@@ -1,4 +1,5 @@
 from typing import List
+
 import pytest
 
 
@@ -87,12 +88,16 @@ def rrmgauges() -> List[int]:
 
 @pytest.fixture(scope="module")
 def hm_separated_q_results_path() -> str:
-    return r"examples\Hydrodynamic models\test_case\results\separated-results"
+    return r"examples\Hydrodynamic models\test_case\results\separated-results\discharge"
+
+@pytest.fixture(scope="module")
+def hm_separated_wl_results_path() -> str:
+    return r"examples\Hydrodynamic models\test_case\results\separated-results\water_level"
 
 
 @pytest.fixture(scope="module")
 def hm_separated_results_q_long_ts_path() -> str:
-    return r"examples\Hydrodynamic models\test_case\results\separated-results\long_ts"
+    return r"examples\Hydrodynamic models\test_case\results\separated-results\discharge\long_ts"
 
 
 @pytest.fixture(scope="module")

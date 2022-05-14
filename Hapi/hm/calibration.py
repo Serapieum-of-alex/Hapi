@@ -1,6 +1,6 @@
 """Hydaulic model calibration related function module"""
 import datetime as dt
-from typing import Any, Tuple, Union  # , Optional,
+from typing import Any, Union  # , Optional,Tuple,
 
 import fiona
 import geopandas as gpd
@@ -10,7 +10,7 @@ import pandas as pd
 from geopandas import GeoDataFrame
 from loguru import logger
 from matplotlib.figure import Figure
-from pandas import DataFrame
+# from pandas import DataFrame
 from pandas._libs.tslibs.timestamps import Timestamp
 from pandas.core.frame import DataFrame
 
@@ -108,12 +108,13 @@ class Calibration(River):
         self.AnnualMaxObsQ = None
         self.AnnualMaxObsWL = None
         self.AnnualMaxRRM = None
-        self.AnnualMaxRIMQ = None
-        self.AnnualMaxRIMWL = None
-        self.MetricsHM_RRM = None
-        self.MetricsRRM_Obs = None
-        self.MetricsHM_WL_Obs = None
-        self.MetricsHM_Q_Obs = None
+        self.AnnualMaxHMQ = None
+        self.AnnualMaxHMWL = None
+        self.AnnualMaxDates = None
+        self.MetricsHMvsRRM = None
+        self.MetricsRRMvsObs = None
+        self.MetricsHMWLvsObs = None
+        self.MetricsHMQvsObs = None
         self.WLgaugesList = None
         self.QgaugesList = None
 
@@ -126,15 +127,33 @@ class Calibration(River):
         Parameters
         ----------
         path : [String]
-            the path to the text file of the gauges table.
+            the path to the text file of the gauges table. the file can be geojson or a csv file.
+        >>> "gauges.geojson"
+        {
+        "type": "FeatureCollection", "crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:EPSG::3035" } },
+        "features": [
+        { "type": "Feature", "properties": { "gid": 149, "name": "station 1", "oid": 23800100, "river": "Nile",
+        "id": 1, "xsid": 16100, "datum(m)": 252.36, "discharge": 1, "waterlevel": 1 }, "geometry": { "type": "Point", "coordinates": [ 4278240.4259, 2843958.863 ] } },
+        { "type": "Feature", "properties": { "gid": 106, "name": "station 2", "oid": 23800500, "river": "Nile",
+        "id": 2, "xsid": 16269, "datum(m)": 159.37, "discharge": 1, "waterlevel": 1 }, "geometry": { "type": "Point", "coordinates": [ 4259614.333, 2884750.556 ] } },
+        { "type": "Feature", "properties": { "gid": 158, "name": "station 3", "oid": 23800690, "river": "Nile",
+        "id": 4, "xsid": 16581, "datum(m)": 119.71, "discharge": 1, "waterlevel": 1}, "geometry": { "type": "Point", "coordinates": [ 4248756.490, 2924872.503 ] } },
 
         Returns
         -------
         GaugesTable: [dataframe attribute]
             the table will be read in a dataframe attribute
 
+        Examples
+        --------
+        >>> import Hapi.hm.calibration as RC
+        >>> Calib = RC.Calibration("Hydraulic model", gauge_id_col="id")
+        >>> Calib.ReadGaugesTable("path/to/gauges.geojson")
+        >>> Calib.GaugesTable
+                gid  ...                         geometry
+            0   149  ...  POINT (4278240.426 2843958.864)
+            1   106  ...  POINT (4259614.334 2884750.556)
         """
-        # self.GaugesTable = pd.read_csv(path)
         try:
             self.GaugesTable = gpd.read_file(path, driver="GeoJSON")
         except fiona.errors.DriverError:
@@ -751,6 +770,7 @@ class Calibration(River):
         self.CalibrationQ[subid] = q[1].resample("D").mean()
         self.CalibrationWL[subid] = wl[1].resample("D").mean()
 
+
     def GetAnnualMax(
             self,
             option=1,
@@ -765,20 +785,22 @@ class Calibration(River):
         Parameters
         ----------
         option : [integer], optional
-            1 for the historical observed Discharge data, 2 for the historical
-            observed water level data, 3 for the rainfall-runoff data,
-            4 for the rim discharge result, 5 for the rim water level result.
+            - 1 for the historical observed Discharge data.
+            - 2 for the historical observed water level data.
+            - 3 for the rainfall-runoff data.
+            - 4 for the rim discharge result.
+            - 5 for the rim water level result.
             The default is 1.
 
         CorespondingTo: [Dict], optional
-            -if you want to extract the max annual values from the observed
+            - if you want to extract the max annual values from the observed
             discharge time series (CorespondingTo=dict(MaxObserved = "Q") and
-            then extract the values of the same dates in the result time
-            series the same for observed water level time series
+            then extract the values of the same dates in the simulated time
+            series. The same for observed water level time series
             (CorespondingTo=dict(MaxObserved = "WL").
-             or if you just want to extract the max annual time values from
-             each time series (CorespondingTo=dict(MaxObserved = " ").
-             The default is " ".
+            or if you just want to extract the max annual values from
+            each time series (CorespondingTo=dict(MaxObserved = " ").
+            The default is " ".
 
             - if you want to extract some values before and after the
             coresponding date and then take the max value of all extracted
@@ -795,8 +817,12 @@ class Calibration(River):
             when using option = 3
         AnnualMaxRIMQ: [dataframe attribute]
             when using option = 4
-        AnnualMaxRIMWL: [dataframe attribute]
+        AnnualMaxHMWL: [dataframe attribute]
             when using option = 5
+        AnnualMaxDates : [dataframe attribute]
+
+        Examples
+        --------
         """
         if option == 1:
             if not isinstance(self.QGauges, DataFrame):
@@ -1002,9 +1028,9 @@ class Calibration(River):
         elif option == 3:
             self.AnnualMaxRRM = AnnualMax
         elif option == 4:
-            self.AnnualMaxRIMQ = AnnualMax
+            self.AnnualMaxHMQ = AnnualMax
         else:
-            self.AnnualMaxRIMWL = AnnualMax
+            self.AnnualMaxHMWL = AnnualMax
 
     def CalculateProfile(self, Segmenti: int, BedlevelDS: float, Manning: float, BC_slope: float):
         """CalculateProfile.
@@ -1470,26 +1496,32 @@ class Calibration(River):
         return Metrics
 
 
-    def HM_vs_RRM(
+    def HMvsRRM(
             self,
             start: str='',
             end: str='',
             fmt: str="%Y-%m-%d",
             shift: int=0
     ):
-        """HM_vs_RRM.
+        """HMvsRRM.
 
             HM_vs_RRM calculate the performance metrics between the hydraulic model simulated
             discharge and the rainfall-runoff model simulated discharge
 
-        inputs:
-        -------
-        RRM_Gauges: [list]
-            list og the RRM gauges' ids, created by the 'ReadRRM' method
-        QRRM: [dataframe]
-            dataframe for the discharge time-series of the simulated discharge by the RRM,
-            created by the 'ReadRRM' method
-        outputs:
+        Parameters
+        ----------
+        start: [str]
+            the stating date for the period you want to calculate the error for.
+        end: [str]
+            the end date for the period you want to calculate the error for.
+        fmt: [str]
+            format of the given date
+        shift: [int]
+            if there is a shift in the clculated timeseries by one or more time
+            steps and you want to fix this problem in calculating the metrics by
+            shifting the calculated timeseries by one or more time steps.
+
+        Returns
         -------
         MetricsHM_RRM: [dataframe]
             dataframe with the gauges id as rows and ['start', 'end', 'rmse', 'KGE', 'WB', 'NSE',
@@ -1499,25 +1531,25 @@ class Calibration(River):
             raise ValueError("RRM_Gauges variable does not exist please read the RRM results "
                              "with 'ReadRRM' method")
         ### HM vs RRM
-        self.MetricsHM_RRM = self.Metrics(self.QRRM,
-                                          self.QHM,
-                                          self.RRM_Gauges,
-                                          self.novalue,
-                                          start,
-                                          end,
-                                          shift,
-                                          fmt)
+        self.MetricsHMvsRRM = self.Metrics(self.QRRM,
+                                           self.QHM,
+                                           self.RRM_Gauges,
+                                           self.novalue,
+                                           start,
+                                           end,
+                                           shift,
+                                           fmt)
         # get the point geometry from the GaugesTable
-        self.MetricsHM_RRM = self.MetricsHM_RRM.merge(self.GaugesTable, left_index=True,
+        self.MetricsHMvsRRM = self.MetricsHMvsRRM.merge(self.GaugesTable, left_index=True,
                                                         right_on=self.gauge_id_col,
                                                         how="left",
                                                         sort=False)
-        self.MetricsHM_RRM.index = self.MetricsHM_RRM[self.gauge_id_col]
-        self.MetricsHM_RRM.index.name = 'index'
-        self.MetricsHM_RRM.crs = self.GaugesTable.crs
+        self.MetricsHMvsRRM.index = self.MetricsHMvsRRM[self.gauge_id_col]
+        self.MetricsHMvsRRM.index.name = 'index'
+        self.MetricsHMvsRRM.crs = self.GaugesTable.crs
 
 
-    def RRM_vs_observed(
+    def RRMvsObserved(
             self,
             start: str='',
             end: str='',
@@ -1529,18 +1561,24 @@ class Calibration(River):
             HM_vs_RRM calculate the performance metrics between the hydraulic model simulated
             discharge and the rainfall-runoff model simulated discharge
 
-        inputs:
+        Parameters
+        ----------
+        start: [str]
+            the stating date for the period you want to calculate the error for.
+        end: [str]
+            the end date for the period you want to calculate the error for.
+        fmt: [str]
+            format of the given date
+        shift: [int]
+            if there is a shift in the clculated timeseries by one or more time
+            steps and you want to fix this problem in calculating the metrics by
+            shifting the calculated timeseries by one or more time steps.
+
+        Returns
         -------
-            1- RRM_Gauges: [list]
-                list og the RRM gauges' ids, created by the 'ReadRRM' method
-            2- QRRM: [dataframe]
-                dataframe for the discharge time-series of the simulated discharge by the RRM,
-                created by the 'ReadRRM' method
-        outputs:
-        -------
-            1- MetricsHM_RRM: [dataframe]
-                dataframe with the gauges id as rows and ['start', 'end', 'rmse', 'KGE', 'WB', 'NSE',
-                'NSEModefied'], as columns.
+        MetricsHM_RRM: [dataframe]
+            dataframe with the gauges id as rows and ['start', 'end', 'rmse', 'KGE', 'WB', 'NSE',
+            'NSEModefied'], as columns.
         """
         if not isinstance(self.RRM_Gauges, list):
             raise ValueError("RRM_Gauges variable does not exist please read the RRM results "
@@ -1551,26 +1589,26 @@ class Calibration(River):
                              "with 'ReadObservedQ' method")
 
         ### RRM vs observed
-        self.MetricsRRM_Obs = self.Metrics(self.QGauges,
-                                          self.QRRM,
-                                          self.RRM_Gauges,
-                                          self.novalue,
-                                          start,
-                                          end,
-                                          shift,
-                                          fmt)
+        self.MetricsRRMvsObs = self.Metrics(self.QGauges,
+                                            self.QRRM,
+                                            self.RRM_Gauges,
+                                            self.novalue,
+                                            start,
+                                            end,
+                                            shift,
+                                            fmt)
 
-        self.MetricsRRM_Obs = self.MetricsRRM_Obs.merge(self.GaugesTable, left_index=True,
-                                                        right_on=self.gauge_id_col,
-                                                        how="left",
-                                                        sort=False)
+        self.MetricsRRMvsObs = self.MetricsRRMvsObs.merge(self.GaugesTable, left_index=True,
+                                                          right_on=self.gauge_id_col,
+                                                          how="left",
+                                                          sort=False)
 
-        self.MetricsRRM_Obs.index = self.MetricsRRM_Obs[self.gauge_id_col]
-        self.MetricsRRM_Obs.index.name = 'index'
-        self.MetricsRRM_Obs.crs = self.GaugesTable.crs
+        self.MetricsRRMvsObs.index = self.MetricsRRMvsObs[self.gauge_id_col]
+        self.MetricsRRMvsObs.index.name = 'index'
+        self.MetricsRRMvsObs.crs = self.GaugesTable.crs
 
 
-    def HM_Q_vs_observed(
+    def HMQvsObserved(
             self,
             start: str='',
             end: str='',
@@ -1582,18 +1620,24 @@ class Calibration(River):
             HM_vs_RRM calculate the performance metrics between the hydraulic model simulated
             discharge and the rainfall-runoff model simulated discharge
 
-        inputs:
+        Parameters
+        ----------
+        start: [str]
+            the stating date for the period you want to calculate the error for.
+        end: [str]
+            the end date for the period you want to calculate the error for.
+        fmt: [str]
+            format of the given date
+        shift: [int]
+            if there is a shift in the clculated timeseries by one or more time
+            steps and you want to fix this problem in calculating the metrics by
+            shifting the calculated timeseries by one or more time steps.
+
+        Returns
         -------
-            1- RRM_Gauges: [list]
-                list og the RRM gauges' ids, created by the 'ReadRRM' method
-            2- QRRM: [dataframe]
-                dataframe for the discharge time-series of the simulated discharge by the RRM,
-                created by the 'ReadRRM' method
-        outputs:
-        -------
-            1- MetricsHM_RRM: [dataframe]
-                dataframe with the gauges id as rows and ['start', 'end', 'rmse', 'KGE', 'WB', 'NSE',
-                'NSEModefied'], as columns.
+        MetricsHM_RRM: [dataframe]
+            dataframe with the gauges id as rows and ['start', 'end', 'rmse', 'KGE', 'WB', 'NSE',
+            'NSEModefied'], as columns.
         """
         if not isinstance(self.RRM_Gauges, list):
             raise ValueError("RRM_Gauges variable does not exist please read the RRM results "
@@ -1608,49 +1652,55 @@ class Calibration(River):
                              "with 'ReadHMQ' method")
 
         ### HM Q vs observed
-        self.MetricsHM_Q_Obs = self.Metrics(self.QGauges,
-                                          self.QHM,
-                                          self.QgaugesList,
-                                          self.novalue,
-                                          start,
-                                          end,
-                                          shift,
-                                          fmt)
+        self.MetricsHMQvsObs = self.Metrics(self.QGauges,
+                                            self.QHM,
+                                            self.QgaugesList,
+                                            self.novalue,
+                                            start,
+                                            end,
+                                            shift,
+                                            fmt)
 
-        self.MetricsHM_Q_Obs = self.MetricsHM_Q_Obs.merge(self.GaugesTable, left_index=True,
-                                                            right_on=self.gauge_id_col,
-                                                            how="left",
-                                                            sort=False)
+        self.MetricsHMQvsObs = self.MetricsHMQvsObs.merge(self.GaugesTable, left_index=True,
+                                                          right_on=self.gauge_id_col,
+                                                          how="left",
+                                                          sort=False)
 
-        self.MetricsHM_Q_Obs.index = self.MetricsHM_Q_Obs[self.gauge_id_col]
-        self.MetricsHM_Q_Obs.index.name = 'index'
-        self.MetricsHM_Q_Obs.crs = self.GaugesTable.crs
+        self.MetricsHMQvsObs.index = self.MetricsHMQvsObs[self.gauge_id_col]
+        self.MetricsHMQvsObs.index.name = 'index'
+        self.MetricsHMQvsObs.crs = self.GaugesTable.crs
 
 
-    def HM_WL_vs_observed(
+    def HMWLvsObserved(
             self,
             start: str='',
             end: str='',
             fmt: str="%Y-%m-%d",
             shift: int=0,
     ):
-        """HM_WL_vs_observed.
+        """HMWLvsOserved.
 
             HM_vs_RRM calculate the performance metrics between the hydraulic model simulated
             discharge and the rainfall-runoff model simulated discharge
 
-        inputs:
+        Parameters
+        ----------
+        start: [str]
+            the stating date for the period you want to calculate the error for.
+        end: [str]
+            the end date for the period you want to calculate the error for.
+        fmt: [str]
+            format of the given date
+        shift: [int]
+            if there is a shift in the clculated timeseries by one or more time
+            steps and you want to fix this problem in calculating the metrics by
+            shifting the calculated timeseries by one or more time steps.
+
+        Returns
         -------
-            1- RRM_Gauges: [list]
-                list og the RRM gauges' ids, created by the 'ReadRRM' method
-            2- QRRM: [dataframe]
-                dataframe for the discharge time-series of the simulated discharge by the RRM,
-                created by the 'ReadRRM' method
-        outputs:
-        -------
-            1- MetricsHM_Obs: [dataframe]
-                dataframe with the gauges id as rows and ['start', 'end', 'rmse', 'KGE', 'WB', 'NSE',
-                'NSEModefied'], as columns.
+        MetricsHM_Obs: [dataframe]
+            dataframe with the gauges id as rows and ['start', 'end', 'rmse', 'KGE', 'WB', 'NSE',
+            'NSEModefied'], as columns.
         """
         if not isinstance(self.RRM_Gauges, list):
             raise ValueError("RRM_Gauges variable does not exist please read the RRM results "
@@ -1665,7 +1715,7 @@ class Calibration(River):
                              "with 'ReadHMWL' method")
 
         ### HM WL vs observed
-        self.MetricsHM_WL_Obs = self.Metrics(self.WLGauges,
+        self.MetricsHMWLvsObs = self.Metrics(self.WLGauges,
                                              self.WLHM,
                                              self.WLgaugesList,
                                              self.novalue,
@@ -1674,14 +1724,14 @@ class Calibration(River):
                                              shift,
                                              fmt)
 
-        self.MetricsHM_WL_Obs = self.MetricsHM_WL_Obs.merge(self.GaugesTable, left_index=True,
+        self.MetricsHMWLvsObs = self.MetricsHMWLvsObs.merge(self.GaugesTable, left_index=True,
                                                             right_on=self.gauge_id_col,
                                                             how="left",
                                                             sort=False)
 
-        self.MetricsHM_WL_Obs.index = self.MetricsHM_WL_Obs[self.gauge_id_col]
-        self.MetricsHM_WL_Obs.index.name = 'index'
-        self.MetricsHM_WL_Obs.crs = self.GaugesTable.crs
+        self.MetricsHMWLvsObs.index = self.MetricsHMWLvsObs[self.gauge_id_col]
+        self.MetricsHMWLvsObs.index.name = 'index'
+        self.MetricsHMWLvsObs.crs = self.GaugesTable.crs
 
 
     def InspectGauge(
@@ -1717,10 +1767,10 @@ class Calibration(River):
         gaugename = str(gauge.loc[0, 'name'])
         # gaugexs = gauge.loc[gaugei, 'xsid']
         summary = pd.DataFrame(index=["HM-RRM", "RRM-Observed", "HM-Q-Observed", "HM-WL-Observed"],
-                               columns=self.MetricsHM_RRM.columns
+                               columns=self.MetricsHMvsRRM.columns
                                )
         # for each gauge in the segment
-        summary.loc["HM-Q-Observed", :] = self.MetricsHM_Q_Obs.loc[gauge_id, :]
+        summary.loc["HM-Q-Observed", :] = self.MetricsHMQvsObs.loc[gauge_id, :]
 
         if gauge.loc[0, 'waterlevel'] == 1 and gauge.loc[0, 'discharge'] == 1:
             fig, (ax1, ax2) = plt.subplots(ncols=1, nrows=2, sharex=True, figsize=(15, 8))
@@ -1730,21 +1780,21 @@ class Calibration(River):
         # TODO:
         if gauge_id in self.RRM_Gauges:
             # there are RRM simulated data
-            summary.loc["HM-RRM", :] = self.MetricsHM_RRM.loc[gauge_id, :]
-            summary.loc["RRM-Observed", :] = self.MetricsRRM_Obs.loc[gauge_id, :]
+            summary.loc["HM-RRM", :] = self.MetricsHMvsRRM.loc[gauge_id, :]
+            summary.loc["RRM-Observed", :] = self.MetricsRRMvsObs.loc[gauge_id, :]
 
             if start == "":
-                start_1 = self.MetricsHM_RRM.loc[gauge_id, 'start']
+                start_1 = self.MetricsHMvsRRM.loc[gauge_id, 'start']
             else:
                 s1 = dt.datetime.strptime(start, fmt)
-                s2 = self.MetricsHM_RRM.loc[gauge_id, 'start']
+                s2 = self.MetricsHMvsRRM.loc[gauge_id, 'start']
                 start_1 = max(s1, s2)
 
             if end == "" :
-                end_1 = self.MetricsHM_RRM.loc[gauge_id, 'end']
+                end_1 = self.MetricsHMvsRRM.loc[gauge_id, 'end']
             else:
                 e1 = dt.datetime.strptime(end, fmt)
-                e2 = self.MetricsHM_RRM.loc[gauge_id, 'end']
+                e2 = self.MetricsHMvsRRM.loc[gauge_id, 'end']
                 end_1 = min(e1, e2)
 
             ax1.plot(self.QHM[gauge_id].loc[start_1: end_1], label="HM", zorder=5)
@@ -1757,20 +1807,20 @@ class Calibration(River):
             # pos = max(SimMax, ObsMax)
         if gauge.loc[0, 'waterlevel'] == 1:
             # there are water level observed data
-            summary.loc["HM-WL-Observed", :] = self.MetricsHM_WL_Obs.loc[gauge_id, :]
+            summary.loc["HM-WL-Observed", :] = self.MetricsHMWLvsObs.loc[gauge_id, :]
 
             if start == "":
-                start_2 = self.MetricsHM_WL_Obs.loc[gauge_id, 'start']
+                start_2 = self.MetricsHMWLvsObs.loc[gauge_id, 'start']
             else:
                 s1 = dt.datetime.strptime(start, fmt)
-                s2 = self.MetricsHM_WL_Obs.loc[gauge_id, 'start']
+                s2 = self.MetricsHMWLvsObs.loc[gauge_id, 'start']
                 start_2 = max(s1, s2)
 
             if end == "":
-                end_2 = self.MetricsHM_WL_Obs.loc[gauge_id, 'end']
+                end_2 = self.MetricsHMWLvsObs.loc[gauge_id, 'end']
             else:
                 e1 = dt.datetime.strptime(end, fmt)
-                e2 = self.MetricsHM_WL_Obs.loc[gauge_id, 'end']
+                e2 = self.MetricsHMWLvsObs.loc[gauge_id, 'end']
                 end_2 = min(e1, e2)
 
             ax2.plot(self.WLHM[gauge_id].loc[start_2: end_2],
@@ -1818,20 +1868,20 @@ class Calibration(River):
 
     def SaveMetices(self, path):
 
-        if isinstance(self.MetricsHM_RRM, GeoDataFrame):
-            df = self.PrepareToSave(self.MetricsHM_RRM.copy())
+        if isinstance(self.MetricsHMvsRRM, GeoDataFrame):
+            df = self.PrepareToSave(self.MetricsHMvsRRM.copy())
             df.to_file(path + "MetricsHM_Q_RRM.geojson", driver="GeoJSON")
 
-        if isinstance(self.MetricsHM_Q_Obs, GeoDataFrame):
-            df = self.PrepareToSave(self.MetricsHM_Q_Obs.copy())
+        if isinstance(self.MetricsHMQvsObs, GeoDataFrame):
+            df = self.PrepareToSave(self.MetricsHMQvsObs.copy())
             df.to_file(path + "MetricsHM_Q_Obs.geojson", driver="GeoJSON")
 
-        if isinstance(self.MetricsRRM_Obs, GeoDataFrame):
-            df = self.PrepareToSave(self.MetricsRRM_Obs.copy())
+        if isinstance(self.MetricsRRMvsObs, GeoDataFrame):
+            df = self.PrepareToSave(self.MetricsRRMvsObs.copy())
             df.to_file(path + "MetricsRRM_Q_Obs.geojson", driver="GeoJSON")
 
-        if isinstance(self.MetricsHM_WL_Obs, GeoDataFrame):
-            df = self.PrepareToSave(self.MetricsHM_WL_Obs.copy())
+        if isinstance(self.MetricsHMWLvsObs, GeoDataFrame):
+            df = self.PrepareToSave(self.MetricsHMWLvsObs.copy())
             df.to_file(path + "MetricsHM_WL_Obs.geojson", driver="GeoJSON")
 
 
