@@ -20,7 +20,6 @@ def test_ReadObservedQ(
         ReadObservedQ_Path: str,
         dates: list,
         nodatavalu: int,
-        gauges_file_extension: str,
         gauge_date_format: str,
         version: int,
         test_time_series_length: int
@@ -28,8 +27,7 @@ def test_ReadObservedQ(
     Calib = RC.Calibration("HM", version=version)
     Calib.ReadGaugesTable(gauges_table_path)
     Calib.ReadObservedQ(ReadObservedQ_Path, dates[0], dates[1],
-                        nodatavalu, file_extension=gauges_file_extension,
-                        gauge_date_format=gauge_date_format)
+                        nodatavalu, gauge_date_format=gauge_date_format)
 
     assert len(Calib.QGauges) == test_time_series_length \
            and len(Calib.QGauges.columns) == 3 and \
@@ -41,7 +39,6 @@ def test_ReadObservedWL(
         ReadObservedWL_Path: str,
         dates: list,
         nodatavalu: int,
-        gauges_file_extension: str,
         gauge_date_format: str,
         version: int,
         test_time_series_length: int
@@ -49,8 +46,7 @@ def test_ReadObservedWL(
     Calib = RC.Calibration("HM", version=version)
     Calib.ReadGaugesTable(gauges_table_path)
     Calib.ReadObservedWL(ReadObservedWL_Path, dates[0], dates[1],
-                         nodatavalu, file_extension=gauges_file_extension,
-                         gauge_date_format=gauge_date_format)
+                         nodatavalu, gauge_date_format=gauge_date_format)
     assert len(Calib.WLGauges) == test_time_series_length and \
            len(Calib.WLGauges.columns) == 3 and \
            len(Calib.GaugesTable.columns) == 12
@@ -182,6 +178,7 @@ def test_ReadHMWL(
     assert all(elem in Calib.WLHM.columns.to_list() for elem in rrmgauges)
 
 
+
 class Test_GetAnnualMax:
 
     def test_option_1(
@@ -190,7 +187,6 @@ class Test_GetAnnualMax:
             ObservedQ_long_ts_Path: str,
             ObservedQ_long_ts_dates: list,
             nodatavalu: int,
-            gauges_file_extension: str,
             gauge_long_ts_date_format: str,
             ObservedQ_long_ts_len: int,
             gauges_numbers: int
@@ -201,8 +197,7 @@ class Test_GetAnnualMax:
         Calib = RC.Calibration("HM", version=3)
         Calib.ReadGaugesTable(gauges_table_path)
         Calib.ReadObservedQ(ObservedQ_long_ts_Path, ObservedQ_long_ts_dates[0], ObservedQ_long_ts_dates[1],
-                            nodatavalu, file_extension=gauges_file_extension,
-                            gauge_date_format=gauge_long_ts_date_format)
+                            nodatavalu, gauge_date_format=gauge_long_ts_date_format)
         # RIM.ReadObservedQ(ObservedPath, GRDCStartDate, GRDCEndDate, NoValue)
 
         Calib.GetAnnualMax(option=1)
@@ -245,3 +240,13 @@ class Test_GetAnnualMax:
         Calib.GetAnnualMax(option=4)
         assert len(Calib.AnnualMaxHMQ) == hm_long_ts_number
         assert len(Calib.AnnualMaxHMQ.columns) == gauges_numbers
+
+
+# def test_InspectGauge():
+#     subid = 28
+#     gaugei = 0
+#     # start ="1990-01-01"
+#     start = ""
+#     end = ''  # "1994-3-1"
+#
+#     summary, fig, ax = Calib.InspectGauge(subid, gaugei=gaugei, start=start, end=end)

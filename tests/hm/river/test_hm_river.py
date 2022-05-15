@@ -284,7 +284,6 @@ def test_PlotQ(
         gauges_table_path: str,
         ReadObservedQ_Path: str,
         nodatavalu: int,
-        gauges_file_extension: str,
         gauge_date_format: str,
         segment3_specificxs_plot: int,
 
@@ -292,8 +291,7 @@ def test_PlotQ(
     Calib = RC.Calibration("HM", version=version)
     Calib.ReadGaugesTable(gauges_table_path)
     Calib.ReadObservedQ(ReadObservedQ_Path, dates[0], dates[1],
-                        nodatavalu, file_extension=gauges_file_extension,
-                        gauge_date_format=gauge_date_format)
+                        nodatavalu, gauge_date_format=gauge_date_format)
 
     gaugei = 0
     gauges = Calib.GaugesTable.loc[Calib.GaugesTable['id'] == segment3, :]
@@ -336,7 +334,6 @@ def test_CalculateQMetrics(
         gauges_table_path: str,
         ReadObservedQ_Path: str,
         nodatavalu: int,
-        gauges_file_extension: str,
         gauge_date_format: str,
         segment3: int,
 
@@ -344,8 +341,7 @@ def test_CalculateQMetrics(
     Calib = RC.Calibration("HM", version=version)
     Calib.ReadGaugesTable(gauges_table_path)
     Calib.ReadObservedQ(ReadObservedQ_Path, dates[0], dates[1],
-                        nodatavalu, file_extension=gauges_file_extension,
-                        gauge_date_format=gauge_date_format)
+                        nodatavalu, gauge_date_format=gauge_date_format)
 
     gaugei = 0
     gauges = Calib.GaugesTable.loc[Calib.GaugesTable['id'] == segment3, :]
@@ -399,7 +395,6 @@ def test_PlotWL(
         gauges_table_path: str,
         ReadObservedWL_Path: str,
         nodatavalu: int,
-        gauges_file_extension: str,
         gauge_date_format: str,
         segment3: int,
         river_cross_section_path: str,
@@ -409,8 +404,7 @@ def test_PlotWL(
     Calib = RC.Calibration("HM", version=version)
     Calib.ReadGaugesTable(gauges_table_path)
     Calib.ReadObservedWL(ReadObservedWL_Path, dates[0], dates[1],
-                        nodatavalu, file_extension=gauges_file_extension,
-                        gauge_date_format=gauge_date_format)
+                        nodatavalu, gauge_date_format=gauge_date_format)
 
     gaugei = 0
     gauges = Calib.GaugesTable.loc[Calib.GaugesTable['id'] == segment3, :]
@@ -441,7 +435,6 @@ def test_CalculateWLMetrics(
         gauges_table_path: str,
         ReadObservedWL_Path: str,
         nodatavalu: int,
-        gauges_file_extension: str,
         gauge_date_format: str,
         segment3: int,
 
@@ -449,8 +442,7 @@ def test_CalculateWLMetrics(
     Calib = RC.Calibration("HM", version=version)
     Calib.ReadGaugesTable(gauges_table_path)
     Calib.ReadObservedWL(ReadObservedWL_Path, dates[0], dates[1],
-                         nodatavalu, file_extension=gauges_file_extension,
-                         gauge_date_format=gauge_date_format)
+                         nodatavalu, gauge_date_format=gauge_date_format)
 
     gaugei = 0
     gauges = Calib.GaugesTable.loc[Calib.GaugesTable['id'] == segment3, :]

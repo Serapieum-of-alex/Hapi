@@ -9,7 +9,6 @@ def test_StatisticalProperties(
         ReadObservedQ_Path: str,
         dates: list,
         nodatavalu: int,
-        gauges_file_extension: str,
         gauge_date_format: str,
         version: int,
         Discharge_WarmUpPeriod: int,
@@ -37,8 +36,8 @@ def test_StatisticalProperties(
         SeparateFiles=True,
         Filter=NoValue,
         Distibution='GUM',
-        method='lmoments',
-        file_extension=gauges_file_extension)
+        method='lmoments'
+    )
     assert os.path.exists(os.path.join(Statistical_analisis_path, "Figures"))
     assert all(elem in Inputs35.StatisticalPr.columns.tolist() for elem in statisticalpr_columns)
     assert all(elem in Calib.GaugesTable['oid'].to_list() for elem in Inputs35.StatisticalPr.index.tolist())
@@ -54,8 +53,8 @@ def test_StatisticalProperties(
         Statistical_analisis_path,
         SeparateFiles=True,
         Filter=NoValue,
-        method='lmoments',
-        file_extension=gauges_file_extension)
+        method='lmoments'
+    )
 
 
 
