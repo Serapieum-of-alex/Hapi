@@ -117,3 +117,7 @@ def start() -> str:
 @pytest.fixture(scope="module")
 def InspectGauge_sub_id() -> int:
     return 1
+
+@pytest.fixture(scope="module")
+def hm_saveto() -> str:
+    return r"examples\Hydrodynamic models\test_case\results"

@@ -355,7 +355,38 @@ def test_InspectGauge(
     Calib.HMvsRRM()
     Calib.RRMvsObserved()
     gaugei = 0
-    summary, fig, ax = Calib.InspectGauge(InspectGauge_sub_id, gaugei=gaugei, start=start, end=end)
+    summary, fig, ax = Calib.InspectGauge(InspectGauge_sub_id, gaugei=gaugei)
     assert isinstance(fig, Figure)
     assert isinstance(summary, DataFrame)
     assert all(elem in summary.columns.to_list() for elem in Metrics_table_columns)
+
+
+def test_SaveMetices(
+        gauges_table_path: str,
+        ReadObservedWL_Path: str,
+        ReadObservedQ_Path: str,
+        rrmpath: str,
+        dates: list,
+        nodatavalu: int,
+        gauge_date_format: str,
+        hm_separated_q_results_path: str,
+        hm_separated_wl_results_path: str,
+        Metrics_table_columns: List[str],
+        hm_saveto: str,
+):
+    Calib = RC.Calibration("HM", version=3, start=dates[0])
+    Calib.ReadGaugesTable(gauges_table_path)
+    Calib.ReadObservedWL(ReadObservedWL_Path, dates[0], dates[1],
+                         nodatavalu, gauge_date_format=gauge_date_format)
+    Calib.ReadHMWL(hm_separated_wl_results_path, fmt="'%Y-%m-%d'")
+    Calib.HMWLvsObserved()
+    Calib.ReadObservedQ(ReadObservedQ_Path, dates[0], dates[1],
+                        nodatavalu, gauge_date_format=gauge_date_format)
+    Calib.ReadHMQ(hm_separated_q_results_path, fmt="'%Y-%m-%d'")
+    Calib.HMQvsObserved()
+
+    Calib.ReadRRM(rrmpath, fmt="'%Y-%m-%d'")
+    Calib.HMvsRRM()
+    Calib.RRMvsObserved()
+    Calib.SaveMetices(hm_saveto)
+
