@@ -9,7 +9,6 @@ import datetime as dt
 
 import numpy as np
 import pandas as pd
-
 import Hapi.rrm.hbv_bergestrom92 as HBVLumped
 import Hapi.sm.performancecriteria as PC
 from Hapi.rrm.calibration import Calibration
@@ -17,7 +16,6 @@ from Hapi.rrm.routing import Routing
 from Hapi.run import Run
 
 # %%
-
 path = r"C:\MyComputer\01Algorithms\hydrology\Hapi/"
 ### Paths
 Parameterpath = path + "examples/Hydrological model/data/lumped_model/Coello_Lumped2021-03-08_muskingum.txt"
@@ -41,7 +39,7 @@ AreaCoeff = 1530
 # [Snow pack, Soil moisture, Upper zone, Lower Zone, Water content]
 InitialCond = [0, 10, 10, 10, 0]
 # no snow subroutine
-Snow = 0
+Snow = False
 Coello.ReadLumpedModel(HBVLumped, AreaCoeff, InitialCond)
 
 # Calibration parameters

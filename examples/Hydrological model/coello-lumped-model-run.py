@@ -31,7 +31,7 @@ InitialCond = [0, 10, 10, 10, 0]
 Coello.ReadLumpedModel(HBVLumped, AreaCoeff, InitialCond)
 # %% ### Model Parameters
 
-Snow = 0  # no snow subroutine
+Snow = False  # no snow subroutine
 Coello.ReadParameters(Parameterpath, Snow)
 # Coello.Parameters
 # %% ### Observed flow
@@ -56,6 +56,7 @@ Route = 1
 
 Run.RunLumped(Coello, Route, RoutingFn)
 # %% ### Calculate performance criteria
+# Coello.ExtractDischarge(OnlyOutlet=True)
 Metrics = dict()
 
 # gaugeid = Coello.QGauges.columns[-1]
