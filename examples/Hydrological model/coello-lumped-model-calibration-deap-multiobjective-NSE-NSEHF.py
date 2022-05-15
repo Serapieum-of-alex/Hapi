@@ -17,14 +17,10 @@ import Hapi.sm.performancecriteria as PC
 from Hapi.rrm.calibration import Calibration
 from Hapi.rrm.routing import Routing
 from Hapi.run import Run
-
-path = r"C:\MyComputer\01Algorithms\hydrology\Hapi/"
-# %%
 import random
-
 from deap import algorithms, base, creator, tools
-
-### Paths
+path = r"C:\MyComputer\01Algorithms\hydrology\Hapi/"
+# %% Paths
 # Parameterpath = path + "examples/Hydrological model/data/lumped_model/Coello_Lumped2021-03-08_muskingum.txt"
 MeteoDataPath = path + "examples/Hydrological model/data/lumped_model/meteo_data-MSWEP.csv"
 Path = path + "examples/Hydrological model/data/lumped_model/"

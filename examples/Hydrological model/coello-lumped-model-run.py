@@ -8,7 +8,6 @@ import Hapi.sm.performancecriteria as PC
 from Hapi.catchment import Catchment
 from Hapi.rrm.routing import Routing
 from Hapi.run import Run
-
 path = r"C:\MyComputer\01Algorithms\hydrology\Hapi/"
 # %% data
 Parameterpath = path + "examples/Hydrological model/data/lumped_model/Coello_Lumped2021-03-08_muskingum.txt"
