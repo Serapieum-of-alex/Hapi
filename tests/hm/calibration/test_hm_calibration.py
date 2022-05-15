@@ -1,5 +1,7 @@
 from typing import List
-
+from pandas.core.frame import DataFrame
+from geopandas import GeoDataFrame
+from matplotlib.figure import Figure
 import Hapi.hm.calibration as RC
 
 
@@ -154,7 +156,7 @@ def test_ReadRRM(
 
 def test_ReadHMQ(
         gauges_table_path: str,
-        hm_separated_q_results_path,
+        hm_separated_q_results_path: str,
         test_time_series_length: int,
         rrmgauges: List[int],
 ):
@@ -167,7 +169,7 @@ def test_ReadHMQ(
 
 def test_ReadHMWL(
         gauges_table_path: str,
-        hm_separated_wl_results_path,
+        hm_separated_wl_results_path: str,
         test_time_series_length: int,
         rrmgauges: List[int],
 ):
@@ -242,11 +244,118 @@ class Test_GetAnnualMax:
         assert len(Calib.AnnualMaxHMQ.columns) == gauges_numbers
 
 
-# def test_InspectGauge():
-#     subid = 28
-#     gaugei = 0
-#     # start ="1990-01-01"
-#     start = ""
-#     end = ''  # "1994-3-1"
-#
-#     summary, fig, ax = Calib.InspectGauge(subid, gaugei=gaugei, start=start, end=end)
+def test_HMvsRRM(
+        gauges_table_path: str,
+        rrmpath: str,
+        hm_separated_q_results_path: str,
+        test_time_series_length: int,
+        rrmgauges: List[int],
+        Metrics_table_columns: List[str],
+):
+    Calib = RC.Calibration("HM", version=3)
+    Calib.ReadGaugesTable(gauges_table_path)
+    Calib.ReadHMQ(hm_separated_q_results_path, fmt="'%Y-%m-%d'")
+    Calib.ReadRRM(rrmpath, fmt="'%Y-%m-%d'")
+    Calib.HMvsRRM()
+    assert isinstance(Calib.MetricsHMvsRRM, DataFrame) and isinstance(Calib.MetricsHMvsRRM, GeoDataFrame)
+    assert len(Calib.MetricsHMvsRRM) == 3
+    assert all(Calib.MetricsHMvsRRM.index == Calib.GaugesTable.loc[:, Calib.gauge_id_col].to_list())
+    assert all(Calib.MetricsHMvsRRM.columns == Metrics_table_columns)
+
+
+def test_RRMvsObserved(
+        gauges_table_path: str,
+        ReadObservedQ_Path: str,
+        dates: list,
+        nodatavalu: int,
+        gauge_date_format: str,
+        rrmpath: str,
+        Metrics_table_columns: List[str],
+):
+    Calib = RC.Calibration("HM", version=3, start=dates[0])
+    Calib.ReadGaugesTable(gauges_table_path)
+    Calib.ReadObservedQ(ReadObservedQ_Path, dates[0], dates[1],
+                        nodatavalu, gauge_date_format=gauge_date_format)
+    Calib.ReadRRM(rrmpath, fmt="'%Y-%m-%d'")
+    Calib.RRMvsObserved()
+    assert isinstance(Calib.MetricsRRMvsObs, DataFrame) and isinstance(Calib.MetricsRRMvsObs, GeoDataFrame)
+    assert len(Calib.MetricsRRMvsObs) == 3
+    assert all(Calib.MetricsRRMvsObs.index == Calib.GaugesTable.loc[:, Calib.gauge_id_col].to_list())
+    assert all(elem in Calib.MetricsRRMvsObs.columns for elem in Metrics_table_columns)
+
+
+def test_HMQvsObserved(
+        gauges_table_path: str,
+        ReadObservedQ_Path: str,
+        dates: list,
+        nodatavalu: int,
+        gauge_date_format: str,
+        hm_separated_q_results_path: str,
+        Metrics_table_columns: List[str],
+):
+    Calib = RC.Calibration("HM", version=3, start=dates[0])
+    Calib.ReadGaugesTable(gauges_table_path)
+    Calib.ReadObservedQ(ReadObservedQ_Path, dates[0], dates[1],
+                        nodatavalu, gauge_date_format=gauge_date_format)
+    Calib.ReadHMQ(hm_separated_q_results_path, fmt="'%Y-%m-%d'")
+    Calib.HMQvsObserved()
+    assert isinstance(Calib.MetricsHMQvsObs, DataFrame) and isinstance(Calib.MetricsHMQvsObs, GeoDataFrame)
+    assert len(Calib.MetricsHMQvsObs) == 3
+    assert all(Calib.MetricsHMQvsObs.index == Calib.GaugesTable.loc[:, Calib.gauge_id_col].to_list())
+    assert all(elem in Calib.MetricsHMQvsObs.columns for elem in Metrics_table_columns)
+
+
+def test_HMWLvsObserved(
+        gauges_table_path: str,
+        ReadObservedWL_Path: str,
+        dates: list,
+        nodatavalu: int,
+        gauge_date_format: str,
+        hm_separated_wl_results_path: str,
+        Metrics_table_columns: List[str],
+):
+    Calib = RC.Calibration("HM", version=3, start=dates[0])
+    Calib.ReadGaugesTable(gauges_table_path)
+    Calib.ReadObservedWL(ReadObservedWL_Path, dates[0], dates[1],
+                         nodatavalu, gauge_date_format=gauge_date_format)
+    Calib.ReadHMWL(hm_separated_wl_results_path, fmt="'%Y-%m-%d'")
+    Calib.HMWLvsObserved()
+    assert isinstance(Calib.MetricsHMWLvsObs, DataFrame) and isinstance(Calib.MetricsHMWLvsObs, GeoDataFrame)
+    assert len(Calib.MetricsHMWLvsObs) == 3
+    assert all(Calib.MetricsHMWLvsObs.index == Calib.GaugesTable.loc[:, Calib.gauge_id_col].to_list())
+    assert all(elem in Calib.MetricsHMWLvsObs.columns for elem in Metrics_table_columns)
+
+
+
+def test_InspectGauge(
+        gauges_table_path: str,
+        ReadObservedWL_Path: str,
+        ReadObservedQ_Path: str,
+        rrmpath: str,
+        dates: list,
+        nodatavalu: int,
+        gauge_date_format: str,
+        hm_separated_q_results_path: str,
+        hm_separated_wl_results_path: str,
+        Metrics_table_columns: List[str],
+        InspectGauge_sub_id: int,
+):
+    Calib = RC.Calibration("HM", version=3, start=dates[0])
+    Calib.ReadGaugesTable(gauges_table_path)
+    Calib.ReadObservedWL(ReadObservedWL_Path, dates[0], dates[1],
+                         nodatavalu, gauge_date_format=gauge_date_format)
+    Calib.ReadHMWL(hm_separated_wl_results_path, fmt="'%Y-%m-%d'")
+    Calib.HMWLvsObserved()
+    Calib.ReadObservedQ(ReadObservedQ_Path, dates[0], dates[1],
+                        nodatavalu, gauge_date_format=gauge_date_format)
+    Calib.ReadHMQ(hm_separated_q_results_path, fmt="'%Y-%m-%d'")
+    Calib.HMQvsObserved()
+
+    Calib.ReadRRM(rrmpath, fmt="'%Y-%m-%d'")
+    Calib.HMvsRRM()
+    Calib.RRMvsObserved()
+    gaugei = 0
+    summary, fig, ax = Calib.InspectGauge(InspectGauge_sub_id, gaugei=gaugei, start=start, end=end)
+    assert isinstance(fig, Figure)
+    assert isinstance(summary, DataFrame)
+    assert all(elem in summary.columns.to_list() for elem in Metrics_table_columns)

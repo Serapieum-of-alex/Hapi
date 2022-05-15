@@ -103,3 +103,17 @@ def hm_separated_results_q_long_ts_path() -> str:
 @pytest.fixture(scope="module")
 def hm_long_ts_number() -> int:
     return 61
+
+@pytest.fixture(scope="module")
+def Metrics_table_columns() -> List[str]:
+    return ['start', 'end', 'rmse', 'KGE', 'WB', 'NSE', 'NSEModified', 'MBE', 'MAE',
+       'id', 'gid', 'name', 'oid', 'river', 'xsid', 'datum(m)', 'discharge',
+       'waterlevel', 'geometry']
+
+@pytest.fixture(scope="module")
+def start() -> str:
+    return "1955-01-01"
+
+@pytest.fixture(scope="module")
+def InspectGauge_sub_id() -> int:
+    return 1
