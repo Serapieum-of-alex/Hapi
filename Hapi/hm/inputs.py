@@ -138,39 +138,39 @@ class Inputs(River):
 
         Parameters
         ----------
-            1-ComputationalNodes : [list]
-                The file/list which contains the ID of the computational
-                nodes you want to do the statistical analysis for, the ObservedFile
-                should contain the discharge time series of these nodes in order.
-            2-path : [String]
-                The directory where the time series files exist.
-            3-StartDate : [string]
-                the begining date of the time series.
-            4-WarmUpPeriod : [integer]
-                the number of days you want to neglect at the begining of the
-                Simulation (warm up period).
-            5-SavePlots : [Bool]
-                DESCRIPTION.
-            6-SavePath : [String]
-                the path where you want to  save the statistical properties.
-            7-SeparateFiles: [Bool]
-                if the discharge data are stored in separate files not all in one file
-                SeparateFiles should be True, default [False].
-            8-Filter: [Bool]
-                for observed or RIMresult data it has gaps of times where the
-                model did not run or gaps in the observed data if these gap days
-                are filled with a specific value and you want to ignore it here
-                give Filter = Value you want
-            9-Results: [Bool]
-                If the files are results form RIM or observed, as the format
-                differes between the two. default [False]
+        ComputationalNodes : [list]
+            The file/list which contains the ID of the computational
+            nodes you want to do the statistical analysis for, the ObservedFile
+            should contain the discharge time series of these nodes in order.
+        TSdirectory : [str]
+            The directory where the time series files exist.
+        start : [string]
+            the begining date of the time series.
+        WarmUpPeriod : [integer]
+            the number of days you want to neglect at the begining of the
+            Simulation (warm up period).
+        SavePlots : [Bool]
+            DESCRIPTION.
+        SavePath : [String]
+            the path where you want to  save the statistical properties.
+        SeparateFiles: [Bool]
+            if the discharge data are stored in separate files not all in one file
+            SeparateFiles should be True, default [False].
+        Filter: [Bool]
+            for observed or RIMresult data it has gaps of times where the
+            model did not run or gaps in the observed data if these gap days
+            are filled with a specific value and you want to ignore it here
+            give Filter = Value you want
+        Results: [Bool]
+            If the files are results form RIM or observed, as the format
+            differes between the two. default [False]
 
         Returns
         -------
-            1-Statistical Properties.csv:
-                file containing some statistical properties like mean, std, min, 5%, 25%,
-                median, 75%, 95%, max, t_beg, t_end, nyr, q1.5, q2, q5, q10, q25, q50,
-                q100, q200, q500.
+        Statistical Properties.csv:
+            file containing some statistical properties like mean, std, min, 5%, 25%,
+            median, 75%, 95%, max, t_beg, t_end, nyr, q1.5, q2, q5, q10, q25, q50,
+            q100, q200, q500.
         """
         if isinstance(ComputationalNodes, str):
             ComputationalNodes = np.loadtxt(ComputationalNodes, dtype=np.uint16)
@@ -667,38 +667,6 @@ class Inputs(River):
         if len(check) > 0:
             np.savetxt(wpath + "CheckWaterDepth.txt", check, fmt="%6d")
 
-    # @staticmethod
-    # def ReadHMResult(Path):
-    #     """ReadHMResult.
-    #
-    #     Parameters
-    #     ----------
-    #         Path : [String]
-    #             path to the RIM output file you want to read, the file should
-    #             contain two columns the first is the index of the day and the
-    #             second is the discharge value, the method fills missed days
-    #             with zeros
-    #
-    #     Returns
-    #     -------
-    #         f2 : TYPE
-    #             DESCRIPTION.
-    #
-    #     """
-    #
-    #     f = np.loadtxt(Path, delimiter=",")
-    #
-    #     f1 = list(range(int(f[0, 0]), int(f[-1, 0]) + 1))
-    #     f2 = list()
-    #     for j in range(len(f1)):
-    #         # if the index exist in the original list
-    #         if f1[j] in f[:, 0]:
-    #             # put the coresponding value in f2
-    #             f2.append(f[np.where(f[:, 0] == f1[j])[0][0], 1])
-    #         else:
-    #             # if it does not exist put zero
-    #             f2.append(0)
-    #     return f2
 
     def CreateTraceALL(
         self,
