@@ -15,10 +15,10 @@ import pandas as pd
 import Hapi.hm.calibration as RC
 import Hapi.hm.river as R
 from Hapi.hm.interface import Interface
-from Hapi.visualizer import Visualize as V
+from Hapi.plot.visualizer import Visualize as V
 
 """change directory to the processing folder inside the project folder"""
-os.chdir(r"F:\01Algorithms\Hydrology\HAPI")
+os.chdir(r"C:\MyComputer\01Algorithms\Hydrology\Hapi")
 rpath = os.path.abspath(os.getcwd() + "/examples/Hydrodynamic models/test_case")
 saveto = rpath
 # %% gauges
@@ -67,7 +67,7 @@ IF.ReadBoundaryConditionsTable(rpath + "/inputs/1d/topo/boundaryconditions.txt")
 IF.ReadBoundaryConditions(path=rpath + "/inputs/1d/hydro/", date_format='%d_%m_%Y')
 # %% Sub-basin
 """ Write the Sub-ID you want to visualize its results """
-SubID = 3
+SubID = 2
 Sub = R.Sub(SubID, River)
 Sub.GetFlow(IF)
 # %% read RIM results

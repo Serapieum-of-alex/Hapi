@@ -6,14 +6,19 @@ hydrographs using the Hydaulic model
 and folder structure and to do that you have to run
 the code 01CalibrationDataPreparation.py""
 """
+import datetime as dt
+
 #%% Libraries
 import os
-import numpy as np
-import datetime as dt
+
 import matplotlib
+import numpy as np
+
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
+
 import Hapi.hm.calibration as RC
+
 """change directory to the processing folder inside the project folder"""
 os.chdir(r"C:\MyComputer\01Algorithms\Hydrology\Hapi")
 rpath = os.path.abspath(os.getcwd() + "/examples/Hydrodynamic models/test_case")
