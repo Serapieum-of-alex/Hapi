@@ -1058,7 +1058,6 @@ class River:
         -------
         Q : [Dataframe]
             time series of the runoff .
-
         """
         if version < 3:
             Q = pd.read_csv(path + "/" + str(nodeid) + ".txt", header=None)
@@ -1373,15 +1372,14 @@ class River:
 
         Parameters
         ----------
-            1-path : [String]
-                path to the Guide.csv file including the file name and extention
-                "RIM1Files + "/Guide.csv".
+        path : [String]
+            path to the Guide.csv file including the file name and extention
+            "RIM1Files + "/Guide.csv".
 
         Returns
         -------
-            slope: [DataFrame]
-                dataframe of the boundary condition segments that has slope
-
+        slope: [DataFrame]
+            dataframe of the boundary condition segments that has slope
         """
         self.slope = pd.read_csv(path, delimiter=",", header=None, skiprows=1)
         self.slope.columns = ["id", "slope"]
@@ -1457,18 +1455,20 @@ class River:
 
         Parameters
         ----------
-            1- sub_id : TYPE
-                DESCRIPTION.
+        sub_id : TYPE
+            DESCRIPTION.
 
         Returns
         -------
-            1-USnode : [Integer]
-                the Upstream computational node from Configuration file.
-            2-DSnode : [Integer]
-                the Downstream computational node from Configuration file.
+        USnode : [Integer]
+            the Upstream computational node from Configuration file.
+        DSnode : [Integer]
+            the Downstream computational node from Configuration file.
 
-        Example:
-            Subid = 42
+        Examples
+        --------
+        >>> Subid = 42
+        >>> River.TraceSegment(Subid)
         """
         US = self.rivernetwork["us"][np.where(self.rivernetwork["id"] == sub_id)[0][0]]
         for i in range(len(self.rivernetwork)):
@@ -1529,7 +1529,6 @@ class River:
             path: str,
             Distibution: str="GEV"
     ): #Filter: bool=True,
-
         """StatisticalProperties.
 
             StatisticalProperties method reads the parameters of the distribution and
@@ -1539,26 +1538,39 @@ class River:
 
         Parameters:
         ----------
-            1-path : [String]
-                path to the "Statistical Properties.txt" file including the
-                file name and extention "path/Statistical Properties.txt".
+        path : [String]
+            path to the "Statistical Properties.txt" file including the
+            file name and extention "path/Statistical Properties.txt".
+        >>> Statistical Properties.txt
+            id,c,loc,scale,D-static,P-Value
+            23800100,-0.0511,115.9465,42.7040,0.1311,0.6748
+            23800500,0.0217,304.8785,120.0510,0.0820,0.9878
+            23800690,0.0215,455.4108,193.4242,0.0656,0.9996
 
-            Distibution: [str]
-                The distribution used to fit the data. Default is "GEV".
-
-                2-Filter:[Boolen]
-                true to filter the nodes to the nodes used in RIM (upstream nodes only)
+        Distibution: [str]
+            The distribution used to fit the data. Default is "GEV".
 
         Returns:
         -------
-            1-SP: [data frame attribute]
-                containing the river computational nodes US of the sub basins
-                and estimated gumbel distribution parameters that fit the time
-                series ['node','HQ2','HQ10','HQ100']
+        SP: [data frame attribute]
+            containing the river computational nodes US of the sub basins
+            and estimated gumbel distribution parameters that fit the time
+            series ['node','HQ2','HQ10','HQ100']
 
-
+        Examples
+        --------
+        >>> import Hapi.hm.river as R
+        >>> HM = R.River('Hydraulic model')
+        >>> stat_properties_path = "path/to/results/statistical analysis/DistributionProperties.csv"
+        >>> HM.StatisticalProperties(stat_properties_path)
+        >>> HM.SP
+                       id       c        loc      scale  D-static  P-Value
+        0        23800100 -0.0511   115.9465    42.7040    0.1311   0.6748
+        1        23800500  0.0217   304.8785   120.0510    0.0820   0.9878
+        2        23800690  0.0215   455.4108   193.4242    0.0656   0.9996
+        3        23700200  0.1695  2886.8037   900.1678    0.0820   0.9878
         """
-        self.SP = pd.read_csv(path, delimiter=",")  # ,header = None,skiprows = 0
+        self.SP = pd.read_csv(path, delimiter=",")
         #TODO: the following lines was created to filter the fistribution properties file to
         # the nodes that locates only at the river.
 
@@ -1646,9 +1658,9 @@ class River:
         return Period :[Float]
             return periodcal culated for the given discharge using the
             parameters of the distribution for the catchment.
-
         """
-        assert isinstance(self.SP, DataFrame), "Please read the statistical properties file for the catchment first"
+        if not isinstance(self.SP, DataFrame):
+            raise ValueError("Please read the statistical properties file for the catchment first")
 
         try:
             loc = np.where(self.SP["id"] == Subid)[0][0]
@@ -1669,35 +1681,45 @@ class River:
             return -1
 
 
-    def GetQForReturnPeriod(self, Subid, T):
+    def GetQForReturnPeriod(self, Subid, T, distribution: str="GEV"):
         """GetQForReturnPeriod.
 
-        get the corespondiong discharge to a specific return period
+            get the corespondiong discharge to a specific return period
 
         Parameters
         ----------
-        Subid : TYPE
+        Subid : [int]
             DESCRIPTION.
         T : TYPE
             DESCRIPTION.
+        distribution: [str]
+            statistical distribution. Default is "GEV"
 
         Returns
         -------
         TYPE
             DESCRIPTION.
-
         """
-        assert self.SP, "Please read the statistical properties file for the catchment first"
-        assert (
-            "id" in self.SP.columns
-        ), "the SP dataframe should have a column 'id' containing the id of the gauges"
+        if not isinstance(self.SP, DataFrame):
+            raise ValueError("Please read the statistical properties file for the catchment first")
+
+        if "id" not in self.SP.columns:
+            raise ValueError("the SP dataframe should have a column 'id' containing the id of the gauges")
 
         F = 1 - (1 / T)
         try:
             loc = np.where(self.SP["id"] == Subid)[0][0]
-            Q = gumbel_r.ppf(
-                F, loc=self.SP.loc[loc, "loc"], scale=self.SP.loc[loc, "scale"]
-            )
+            if distribution == "GEV":
+                Q = genextreme.ppf(
+                    F,
+                    c=self.SP.loc[loc, "c"],
+                    loc=self.SP.loc[loc, "loc"],
+                    scale=self.SP.loc[loc, "scale"]
+                )
+            else:
+                Q = gumbel_r.ppf(
+                    F, loc=self.SP.loc[loc, "loc"], scale=self.SP.loc[loc, "scale"]
+                )
             return Q
         except:
             return -1
@@ -3186,7 +3208,6 @@ class Sub(River):
     to create the Sub instance the river object has to have the cross-sections read using the
     'ReadCrossSections' method
     """
-
     def __init__(self, sub_id: int, River, RunModel: bool=False):
         self.id = sub_id
         self.RIM = River.name
@@ -3573,31 +3594,30 @@ class Sub(River):
 
         Parameters
         ----------
-            1-station_id : [Integer]
-                DESCRIPTION.
-            2-fromday : [Integer], optional
-                start day of the period you wanrt to read its results.
-                The default is [].
-            3-today : [Integer], optional
-                end day of the period you wanrt to read its results.
-                The default is [].
-            4-path: [str]
-                path to the directory where the result files. if not given the
-                river.rrmpath should be given. default is ''
-            5-date_format: [str]
-                format of the date string, default is "%d_%m_%Y"
-            6-location: [1]
-                1 if there is results for the rrm at one location, 2 if the are
-                results for the rrm at two locations. default is 1
-            6- path2: [str]
-                path where the results of the rrm at the second location, this
-                parameter is needed only in case location=2. default is ''
+        station_id : [Integer]
+            DESCRIPTION.
+        fromday : [Integer], optional
+            start day of the period you wanrt to read its results.
+            The default is [].
+        today : [Integer], optional
+            end day of the period you wanrt to read its results.
+            The default is [].
+        path: [str]
+            path to the directory where the result files. if not given the
+            river.rrmpath should be given. default is ''
+        date_format: [str]
+            format of the date string, default is "%d_%m_%Y"
+        location: [1]
+            1 if there is results for the rrm at one location, 2 if the are
+            results for the rrm at two locations. default is 1
+        path2: [str]
+            path where the results of the rrm at the second location, this
+            parameter is needed only in case location=2. default is ''
         Returns
         -------
-            1-RRM:[data frame attribute]
-                containing the computational node and rainfall-runoff results
-                (hydrograph)with columns ['id', Nodeid ]
-
+        RRM:[data frame attribute]
+            containing the computational node and rainfall-runoff results
+            (hydrograph)with columns ['id', Nodeid ]
         """
         if not isinstance(self.RRM, DataFrame):
             self.RRM = pd.DataFrame()
@@ -3915,10 +3935,12 @@ class Sub(River):
         ).tolist()
 
 
-    def SaveHydrograph(self, xsid: int,
-                       path: str = "",
-                       Option: int = 1
-                       ):
+    def SaveHydrograph(
+            self,
+            xsid: int,
+            path: str = "",
+            Option: int = 1
+    ):
         """Save Hydrograph.
 
         SaveHydrograph method saves the hydrograph of any cross-section in
@@ -3938,10 +3960,10 @@ class Sub(River):
             default is ''.
         Option : [integer]
             1 to write water depth results, 2 to write water level results
+
         Returns
         -------
         None.
-
         """
         if path == "":
             msg = (
@@ -5449,14 +5471,9 @@ class Sub(River):
         """
         Print Attributes List
         """
-
         logger.debug("\n")
         logger.debug(
-            "Attributes List of: "
-            + repr(self.__dict__["name"])
-            + " - "
-            + self.__class__.__name__
-            + " Instance\n"
+            f"Attributes List of: {repr(self.__dict__['name'])} - {self.__class__.__name__}  Instance\n"
         )
         self_keys = list(self.__dict__.keys())
         self_keys.sort()

@@ -4,7 +4,7 @@ Created on Wed Mar  3 12:40:23 2021
 @author: mofarrag
 """
 import datetime as dt
-from typing import Union
+from typing import Any, Union
 
 import pandas as pd
 from loguru import logger
@@ -29,8 +29,14 @@ class Interface(River):
 
     Laterals: DataFrame
 
-    def __init__(self, name, version=3, start="1952-1-1", days=36890, fmt="%Y-%m-%d"):
-
+    def __init__(
+            self,
+            name: Any,
+            version: int=3,
+            start: str="1952-1-1",
+            days: int=36890,
+            fmt: str="%Y-%m-%d"
+    ):
         assert type(start) == str, "start argument has to be string"
         assert type(version) == int, "version argument has to be integer number"
         assert type(days) == int, "number of days has to be integer number"
@@ -170,7 +176,7 @@ class Interface(River):
 
             self.Laterals.index = pd.date_range(start, end, freq="D")
         else:
-            logger.debug("There are no Laterals table please check")
+            logger.info("There are no Laterals table please check")
 
     def ReadRRMProgression(
             self,
@@ -223,7 +229,7 @@ class Interface(River):
                     today,
                     date_format,
                 )[fname].tolist()
-                logger.debug("RRM Progression file " + fname + " is read")
+                logger.info("RRM Progression file " + fname + " is read")
 
             # self.RRMProgression['total'] = self.Laterals.sum(axis=1)
             if fromday == "":
@@ -258,8 +264,6 @@ class Interface(River):
         Returns
         -------
         None.
-
-
         """
         self.BCTable = pd.read_csv(path, skiprows=[0], header=None)
         self.BCTable.columns = ["filename"]
@@ -270,7 +274,10 @@ class Interface(River):
         ]
 
     def ReadBoundaryConditions(
-        self, fromday: Union[str, int]="", today: Union[str, int]="", path: str="",
+            self,
+            fromday: Union[str, int]="",
+            today: Union[str, int]="",
+            path: str="",
             date_format: str="'%Y-%m-%d'"
     ):
         """ReadUSHydrograph.

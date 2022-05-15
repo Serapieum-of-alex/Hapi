@@ -8,6 +8,9 @@ from numpy.linalg import inv
 
 
 class SaintVenant:
+    """
+    SaintVenant equation solver
+    """
     def __init__(self, maxiteration=10, beta=1, epsi=0.5, theta=0.5):
         # preismann scheme parameters
         self.theta = theta
