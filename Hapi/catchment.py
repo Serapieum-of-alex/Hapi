@@ -905,8 +905,9 @@ class Catchment:
         self.UB = np.array(UB)
         self.LB = np.array(LB)
 
-        assert isinstance(Snow, bool), " snow input defines whether to consider snow subroutine or not it has to be " \
-                                       "True or False"
+        if not isinstance(Snow, bool):
+            raise ValueError(" snow input defines whether to consider snow subroutine or not it has to be "
+                             "True or False")
         self.Snow = Snow
         self.Maxbas = Maxbas
 
@@ -937,6 +938,7 @@ class Catchment:
             as the number of gauges). The default is False.
         OnlyOutlet: [bool]
             True to extract the discharge only at the outlet.
+
         Returns
         -------
         Qsim : [dataframe]
