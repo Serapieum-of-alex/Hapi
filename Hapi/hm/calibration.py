@@ -1789,7 +1789,6 @@ class Calibration(River):
         else:
             fig, ax1 = plt.subplots(ncols=1, nrows=1, figsize=(15, 8))
 
-        # TODO:
         if gauge_id in self.RRM_Gauges:
             # there are RRM simulated data
             summary.loc["HM-RRM", :] = self.MetricsHMvsRRM.loc[gauge_id, :]
@@ -1811,8 +1810,8 @@ class Calibration(River):
                 end_1 = min(e1, e2)
 
             ax1.plot(self.QHM[gauge_id].loc[start_1: end_1], label="HM", zorder=5)
-            ax1.plot(self.QRRM[gauge_id].loc[start_1: end_1], label="RRM")
             ax1.plot(self.QGauges[gauge_id].loc[start_1: end_1], label="Observed")
+            ax1.plot(self.QRRM[gauge_id].loc[start_1: end_1], label="RRM")
             ax1.set_ylabel("Discharge m3/s", fontsize=12)
             ax1.legend(fontsize=15)
             # SimMax = max(self.QHM[gauge_id].loc[start:end])

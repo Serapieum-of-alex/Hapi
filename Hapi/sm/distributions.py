@@ -25,6 +25,9 @@ ninf = 1e-5
 
 
 class PlottingPosition:
+    """
+    PlottingPosition
+    """
     def __init__(self):
         pass
 
@@ -1027,7 +1030,10 @@ class GEV:
 
 
 class ConfidenceInterval:
-    def __init__():
+    """
+    ConfidenceInterval
+    """
+    def __init__(self):
         pass
 
     @staticmethod

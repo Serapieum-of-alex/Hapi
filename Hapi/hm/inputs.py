@@ -7,7 +7,7 @@ import datetime as dt
 import os
 import zipfile
 from typing import Union
-
+from loguru import logger
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -118,8 +118,7 @@ class Inputs(River):
         method: str="lmoments",
         EstimateParameters: bool=False,
         Quartile: float=0,
-        Results: bool=False,
-        SignificanceLevel=0.1,
+        SignificanceLevel: float=0.1,
         file_extension: str = '.txt',
         date_format: str = "%Y-%m-%d",
     ):
@@ -132,9 +131,6 @@ class Inputs(River):
         the code assumes that the time series are of a daily temporal resolution,
         and that the hydrological year is 1-Nov/31-Oct
         (Petrow and Merz, 2009, JoH).
-
-        for the rainfall runoff model the time series is written in the files
-        as one column without a date column.
 
         Parameters
         ----------
@@ -150,7 +146,7 @@ class Inputs(River):
             the number of days you want to neglect at the begining of the
             Simulation (warm up period).
         SavePlots : [Bool]
-            DESCRIPTION.
+            True if you want to save the plots.
         SavePath : [String]
             the path where you want to  save the statistical properties.
         SeparateFiles: [Bool]
@@ -161,9 +157,20 @@ class Inputs(River):
             model did not run or gaps in the observed data if these gap days
             are filled with a specific value and you want to ignore it here
             give Filter = Value you want
-        Results: [Bool]
-            If the files are results form RIM or observed, as the format
-            differes between the two. default [False]
+        Distibution: [str]
+            Default is "GEV".
+        method: [str]
+            Default is "lmoments"
+        EstimateParameters: [bool]
+            Default is False.
+        Quartile: [float]
+            Default is 0.
+        SignificanceLevel:
+            Default is [0.1].
+        file_extension: [str]
+            Default is '.txt'.
+        date_format: [str]
+            Default is "%Y-%m-%d".
 
         Returns
         -------
@@ -183,20 +190,15 @@ class Inputs(River):
         if SeparateFiles:
             TS = pd.DataFrame()
             # for the hydraulic model results
-            if Results:
-                assert isinstance(self.segments, list), "please read the cross section first"
-                for i in range(len(ComputationalNodes)):
-                    TS.loc[:, int(ComputationalNodes[i])] = pd.read_csv(
-                        TSdirectory + "/" + str(int(ComputationalNodes[i])) + file_extension,
-                        skiprows=1, header=None,
-                    )[1].tolist()
-            # for the rainfall runoff results.
-            else:
-                for i in range(len(ComputationalNodes)):
-                    TS.loc[:, int(ComputationalNodes[i])] = pd.read_csv(
-                        TSdirectory + "/" + str(int(ComputationalNodes[i])) + file_extension,
-                        skiprows=1, header=None,
-                    )[1].tolist()
+            logger.info("The function ignores the date column in the time series files and starts from the "
+                        "given start parameter to the function so check if it is the same start date as in "
+                        "the files")
+
+            for i in range(len(ComputationalNodes)):
+                TS.loc[:, int(ComputationalNodes[i])] = pd.read_csv(
+                    TSdirectory + "/" + str(int(ComputationalNodes[i])) + file_extension,
+                    skiprows=1, header=None,
+                )[1].tolist()
 
             StartDate = dt.datetime.strptime(start, date_format)
             EndDate = StartDate + dt.timedelta(days=TS.shape[0] - 1)
@@ -343,6 +345,7 @@ class Inputs(River):
             # based on the Gumbel distribution
             # parameters, theoretical cdf (or weibul), and calculate the confidence interval
             if SavePlots:
+
                 if Distibution == "GEV":
                     fig, ax = dist.ProbapilityPlot(param_dist[0], param_dist[1], param_dist[2], cdf_Weibul,
                                                    alpha=SignificanceLevel)
