@@ -112,7 +112,6 @@ class Inputs(River):
         WarmUpPeriod: int,
         SavePlots: bool,
         SavePath: str,
-        SeparateFiles: bool=False,
         Filter: Union[bool, float, int]=False,
         Distibution: str="GEV",
         method: str="lmoments",
@@ -149,9 +148,6 @@ class Inputs(River):
             True if you want to save the plots.
         SavePath : [String]
             the path where you want to  save the statistical properties.
-        SeparateFiles: [Bool]
-            if the discharge data are stored in separate files not all in one file
-            SeparateFiles should be True, default [False].
         Filter: [Bool]
             for observed or RIMresult data it has gaps of times where the
             model did not run or gaps in the observed data if these gap days
@@ -160,7 +156,7 @@ class Inputs(River):
         Distibution: [str]
             Default is "GEV".
         method: [str]
-            Default is "lmoments"
+            available methods are 'mle', 'mm', 'lmoments', optimization. Default is "lmoments"
         EstimateParameters: [bool]
             Default is False.
         Quartile: [float]
@@ -187,31 +183,26 @@ class Inputs(River):
             raise TypeError("ComputationalNodes should be either a path or a list")
 
         # hydrographs
-        if SeparateFiles:
-            TS = pd.DataFrame()
-            # for the hydraulic model results
-            logger.info("The function ignores the date column in the time series files and starts from the "
-                        "given start parameter to the function so check if it is the same start date as in "
-                        "the files")
 
-            for i in range(len(ComputationalNodes)):
+        TS = pd.DataFrame()
+        # for the hydraulic model results
+        logger.info("The function ignores the date column in the time series files and starts from the "
+                    "given start parameter to the function so check if it is the same start date as in "
+                    "the files")
+
+        for i in range(len(ComputationalNodes)):
+            try:
                 TS.loc[:, int(ComputationalNodes[i])] = pd.read_csv(
-                    TSdirectory + "/" + str(int(ComputationalNodes[i])) + file_extension,
+                    f"{TSdirectory}/{int(ComputationalNodes[i])}{file_extension}",
                     skiprows=1, header=None,
                 )[1].tolist()
+            except FileNotFoundError:
+                logger.warning(f" File {int(ComputationalNodes[i])}{file_extension} does not exist")
 
-            StartDate = dt.datetime.strptime(start, date_format)
-            EndDate = StartDate + dt.timedelta(days=TS.shape[0] - 1)
-            ind = pd.date_range(StartDate, EndDate)
-            TS.index = ind
-        else:
-            TS = pd.read_csv(TSdirectory, delimiter=r"\s+", header=None)
-            StartDate = dt.datetime.strptime(start, date_format)
-            EndDate = StartDate + dt.timedelta(days=TS.shape[0] - 1)
-            TS.index = pd.date_range(StartDate, EndDate, freq="D")
-            # delete the first two columns
-            del TS[0], TS[1]
-            TS.columns = ComputationalNodes
+        StartDate = dt.datetime.strptime(start, date_format)
+        EndDate = StartDate + dt.timedelta(days=TS.shape[0] - 1)
+        ind = pd.date_range(StartDate, EndDate)
+        TS.index = ind
 
         # neglect the first year (warmup year) in the time series
         TS = TS.loc[StartDate + dt.timedelta(days=WarmUpPeriod) : EndDate, :]
@@ -378,7 +369,7 @@ class Inputs(River):
                 StatisticalPr.loc[i, irp_name] = irp
 
             # Print for prompt and check progress.
-            print("Gauge", i, "done.")
+            logger.info(f"Gauge {i} done.")
 
         # Output file
         StatisticalPr.to_csv(f"{SavePath}/Statistical Properties.csv", float_format="%.4f")
