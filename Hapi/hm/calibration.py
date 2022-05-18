@@ -219,11 +219,12 @@ class Calibration(River):
             the end date of the water level time series.
         novalue : [integer/float]
             value used to fill the missing values.
-        column : [str/numeric]
-            the id of the column containing the name of the files.default
-            is "oid".
         fmt : [str]
             format of the given dates. The default is "%Y-%m-%d"
+        file_extension: [str]
+            extension of the files. Default is ".txt"
+        gauge_date_format: [str]
+            format of the date in the first column in the gauges files. Default is "%Y-%m-%d".
 
         Returns
         -------
