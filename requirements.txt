@@ -5,7 +5,7 @@ cython
 gdal==3.4.0
 affine==2.3.0
 fiona==1.8.20
-proj==0.2.0
+proj==8.2.0
 pyproj>=3.2.1,<=3.3.0
 pandas>=1.3.2,<1.4.3
 Rtree>=0.9.4
@@ -27,5 +27,3 @@ loguru>=0.5.3
 geoplot>=0.5.1
 pytest-cov>=2.12.1
 pytest>=6.2.5
-
-
