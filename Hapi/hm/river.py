@@ -1571,30 +1571,6 @@ class River:
         3        23700200  0.1695  2886.8037   900.1678    0.0820   0.9878
         """
         self.SP = pd.read_csv(path, delimiter=",")
-        #TODO: the following lines was created to filter the fistribution properties file to
-        # the nodes that locates only at the river.
-
-        # if Filter:
-        #     assert self.slope, ("please read the Guide file with the Slope Method as this "
-        #                         "method uses the the Subid in the guide file as id")
-        #     assert self.rivernetwork, "Please read the Tracefile.txt with the RiverNetwork method data "
-        #     # filter all the computational nodes in the file to those only
-        #     # exist in the slope attribute (the nodes in the guide file)
-        #     NewSP = pd.DataFrame(columns=["id", "loc", "scale"])
-        #     NewSP["id"] = self.rivernetwork["id"]
-        #     for i in range(len(self.rivernetwork)):
-        #         # get the location of the usnode in the rivernetwork attribute
-        #         #  get the location of usnode in the SP attribute
-        #         try:
-        #             loc = np.where(self.SP["id"] == self.rivernetwork.loc[i, "us"])[
-        #                 0
-        #             ][0]
-        #             NewSP.loc[i, ["loc", "scale"]] = self.SP.loc[loc, ["loc", "scale"]]
-        #         except:
-        #             NewSP.loc[i, ["loc", "scale"]] = [-1, -1]
-        #             continue
-        #
-        #     self.SP = NewSP
         # calculate the 2, 5, 10, 15, 20 return period doscharge
         T = np.array([2, 5, 10, 15, 20, 50, 100, 200, 500, 1000, 5000])
         self.SP = self.SP.assign(
@@ -1636,7 +1612,7 @@ class River:
     def GetReturnPeriod(
             self,
             Subid: int,
-            Q: Union[float, int],
+            Q: Union[float, int, np.ndarray, list],
             distribution: str="GEV"
     ):
         """GetReturnPeriod.
