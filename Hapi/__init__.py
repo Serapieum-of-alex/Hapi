@@ -63,7 +63,6 @@ import Hapi.gis
 import Hapi.plot
 import Hapi.hm
 import Hapi.java_functions
-
 import Hapi.rrm
 import Hapi.rs
 import Hapi.run
