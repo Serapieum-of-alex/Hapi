@@ -33,7 +33,6 @@ def test_StatisticalProperties(
         Discharge_WarmUpPeriod,
         SavePlots,
         Statistical_analisis_path,
-        SeparateFiles=True,
         Filter=NoValue,
         Distibution='GUM',
         method='lmoments'
@@ -51,7 +50,6 @@ def test_StatisticalProperties(
         Discharge_WarmUpPeriod,
         SavePlots,
         Statistical_analisis_path,
-        SeparateFiles=True,
         Filter=NoValue,
         method='lmoments'
     )
