@@ -221,7 +221,6 @@ class Lmoments:
     def GEV(xmom):
         """
         Estimate the generalized extreme value distribution parameters using Lmoments method
-
         """
         eps = 1e-6
         maxit = 20
