@@ -6,8 +6,8 @@ with open("README.md", "r") as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-requirements = [line.strip() for line in open("requirements.txt").readlines()]
-requirements = requirements[1:]
+# requirements = [line.strip() for line in open("requirements.txt").readlines()]
+# requirements = requirements[1:]
 
 test_requirements = ['pytest>=3', ]
 
@@ -26,7 +26,7 @@ setup(
     packages=find_packages(include=['Hapi', 'Hapi.*']),
     test_suite="tests",
     tests_require=test_requirements,
-    install_requires=requirements,
+    # install_requires=requirements,
     entry_points={
         'console_scripts': [
             'Hapi=Hapi.cli:main',
