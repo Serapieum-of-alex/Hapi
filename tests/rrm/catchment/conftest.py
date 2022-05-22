@@ -1,11 +1,11 @@
 import pytest
 
-from Hapi.rrm.routing import Routing
+# from Hapi.rrm.routing import Routing
 
 coello_dates = ["2009-01-01", "2011-12-31"]
 area = 1530.0
 IC = [0,10,10,10,0]
-snow = 0
+snow = False
 gauges_datefmt = "%Y-%m-%d"
 
 
