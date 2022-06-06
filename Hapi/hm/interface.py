@@ -9,7 +9,6 @@ from typing import Any, Union
 import pandas as pd
 from loguru import logger
 from pandas import DataFrame
-
 from Hapi.hm.river import River
 
 
@@ -26,7 +25,6 @@ class Interface(River):
         4- ReadBoundaryConditions
         5- ListAttributes
     """
-
     Laterals: DataFrame
 
     def __init__(
@@ -37,14 +35,18 @@ class Interface(River):
             days: int=36890,
             fmt: str="%Y-%m-%d"
     ):
-        assert type(start) == str, "start argument has to be string"
-        assert type(version) == int, "version argument has to be integer number"
-        assert type(days) == int, "number of days has to be integer number"
-        assert type(fmt) == str, "date format 'fmt' has to be a string"
+        if not isinstance(start, str):
+            raise ValueError("start argument has to be string")
+        if not isinstance(version, int):
+            raise ValueError("version argument has to be integer number")
+        if not isinstance(days, int):
+            raise ValueError("number of days has to be integer number")
+        if not isinstance(fmt, str):
+            raise ValueError("date format 'fmt' has to be a string")
 
         self.name = name
         self.version = version
-        self.start = dt.datetime.strptime(start, "%Y-%m-%d")
+        self.start = dt.datetime.strptime(start, fmt)
         self.end = self.start + dt.timedelta(days=days)
         Ref_ind = pd.date_range(self.start, self.end, freq="D")
         self.ReferenceIndex = pd.DataFrame(index=list(range(1, days + 1)))
@@ -82,7 +84,8 @@ class Interface(River):
 
         Returns
         -------
-        None.
+        LateralsTable: [dataframe attribute]
+            dataframe with two columns ["filename", "sxid"]
         """
         try:
             self.LateralsTable = pd.read_csv(path, skiprows=[0], header=None)
@@ -108,9 +111,7 @@ class Interface(River):
                 ):
                     self.crosssections.loc[i, "lateral"] = 1
         else:
-            assert (
-                False
-            ), "Please read the cross section file first using the method 'ReadCrossSections'"
+            raise ValueError("Please read the cross section file first using the method 'ReadCrossSections'")
 
 
     def ReadLaterals(
@@ -137,14 +138,13 @@ class Interface(River):
 
         Returns
         -------
-        USHydrographs : [dataframe attribute].
+        Laterals : [dataframe attribute].
             dataframe contains the hydrograph of each of the upstream segments
             with segment id as a column name and a column 'total' contains the
             sum of all the hydrographs.
         """
-        errmsg = """Please read the laterals table first using the
-        'ReadLateralsTable' method """
-        assert hasattr(self, "LateralsTable"), "{0}".format(errmsg)
+        if not isinstance(self.LateralsTable, DataFrame):
+            raise ValueError("Please read the laterals table first using the 'ReadLateralsTable' method")
 
         self.Laterals = pd.DataFrame()
 
@@ -152,7 +152,7 @@ class Interface(River):
 
             for i in range(len(self.LateralsTable)):
                 NodeID = self.LateralsTable.loc[i, "xsid"]
-                fname = "lf_xsid" + str(NodeID)
+                fname = f"lf_xsid{NodeID}"
 
                 self.Laterals[NodeID] = self.ReadRRMResults(
                     self.version,
@@ -163,7 +163,7 @@ class Interface(River):
                     today,
                     date_format,
                 )[fname].tolist()
-                logger.debug("Lateral file " + fname + " is read")
+                logger.info(f"Lateral file {fname} is read")
 
             self.Laterals["total"] = self.Laterals.sum(axis=1)
             if fromday == "":
@@ -177,6 +177,7 @@ class Interface(River):
             self.Laterals.index = pd.date_range(start, end, freq="D")
         else:
             logger.info("There are no Laterals table please check")
+
 
     def ReadRRMProgression(
             self,
