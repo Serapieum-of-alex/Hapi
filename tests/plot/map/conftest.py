@@ -1,7 +1,23 @@
 from typing import List
-
+import numpy as np
 import pandas as pd
 import pytest
+from osgeo import gdal
+from osgeo.gdal import Dataset
+
+@pytest.fixture(scope="module")
+def src() -> Dataset:
+    return gdal.Open("examples/GIS/data/acc4000.tif")
+
+
+@pytest.fixture(scope="module")
+def src_arr(src: Dataset) -> np.ndarray:
+    return src.ReadAsArray()
+
+
+@pytest.fixture(scope="module")
+def src_no_data_value(src: Dataset) -> float:
+    return src.GetRasterBand(1).GetNoDataValue()
 
 
 @pytest.fixture(scope="module")
