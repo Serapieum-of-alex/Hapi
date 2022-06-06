@@ -2,7 +2,7 @@ import datetime as dt
 import numpy as np
 
 # from Hapi.run import Run
-import Hapi.sm.performancecriteria as PC
+import statista.metrics as PC
 from Hapi.rrm.routing import Routing
 from Hapi.rrm.calibration import Calibration
 import Hapi.rrm.hbv_bergestrom92 as HBVLumped
