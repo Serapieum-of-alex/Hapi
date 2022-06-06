@@ -285,14 +285,14 @@ class Inputs(River):
                 threshold = np.quantile(amax, Quartile)
                 if Distibution == "GEV":
                     dist = GEV(amax)
-                    param_dist = dist.EstimateParameter(
+                    param_dist = dist.estimateParameter(
                         method='optimization',
                         ObjFunc=Gumbel.ObjectiveFn,
                         threshold=threshold,
                     )
                 else:
                     dist = Gumbel(amax)
-                    param_dist = dist.EstimateParameter(
+                    param_dist = dist.estimateParameter(
                         method='optimization',
                         ObjFunc=Gumbel.ObjectiveFn,
                         threshold=threshold,
@@ -302,12 +302,12 @@ class Inputs(River):
                 if Distibution == "GEV":
                     dist = GEV(amax)
                     # defult parameter estimation method is maximum liklihood method
-                    param_dist = dist.EstimateParameter(method=method)
+                    param_dist = dist.estimateParameter(method=method)
                 else:
                     # A gumbel distribution is fitted to the annual maxima
                     dist = Gumbel(amax)
                     # defult parameter estimation method is maximum liklihood method
-                    param_dist = dist.EstimateParameter(method=method)
+                    param_dist = dist.estimateParameter(method=method)
 
             DistributionPr.loc[i,"D-static"], DistributionPr.loc[i,"P-Value"] = dist.ks()
             if Distibution == "GEV":
@@ -321,27 +321,27 @@ class Inputs(River):
             # Return periods from the fitted distribution are stored.
             # get the Discharge coresponding to the return periods
             if Distibution == "GEV":
-                Qrp = dist.TheporeticalEstimate(
+                Qrp = dist.theporeticalEstimate(
                     param_dist[0], param_dist[1], param_dist[2], F
                 )
             else:
-                Qrp = dist.TheporeticalEstimate(param_dist[0], param_dist[1], F)
+                Qrp = dist.theporeticalEstimate(param_dist[0], param_dist[1], F)
 
             # to get the Non Exceedance probability for a specific Value
             # sort the amax
             amax.sort()
             # calculate the F (Exceedence probability based on weibul)
-            cdf_Weibul = PlottingPosition.Weibul(amax)
-            # Gumbel.ProbapilityPlot method calculates the theoretical values
+            cdf_Weibul = PlottingPosition.weibul(amax)
+            # Gumbel.probapilityPlot method calculates the theoretical values
             # based on the Gumbel distribution
             # parameters, theoretical cdf (or weibul), and calculate the confidence interval
             if SavePlots:
 
                 if Distibution == "GEV":
-                    fig, ax = dist.ProbapilityPlot(param_dist[0], param_dist[1], param_dist[2], cdf_Weibul,
+                    fig, ax = dist.probapilityPlot(param_dist[0], param_dist[1], param_dist[2], cdf_Weibul,
                                                    alpha=SignificanceLevel)
                 else:
-                    fig, ax = dist.ProbapilityPlot(
+                    fig, ax = dist.probapilityPlot(
                         param_dist[0], param_dist[1], cdf_Weibul, alpha=SignificanceLevel
                     )
 
