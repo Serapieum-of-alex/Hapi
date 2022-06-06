@@ -1,1 +1,1 @@
-"""Unit test package for HapiSM."""
+"""Unit test package for Hapi."""
