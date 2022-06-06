@@ -39,18 +39,18 @@ novalue = -9
 start = "1955-01-01"
 end = "1955-03-21"
 Calib = RC.Calibration("HM", start=start)
-Calib.ReadGaugesTable(gauges_file)
-Calib.ReadObservedQ(q_obs_path, start, end, novalue,
+Calib.readGaugesTable(gauges_file)
+Calib.readObservedQ(q_obs_path, start, end, novalue,
                     gauge_date_format="'%Y-%m-%d'")
 Calib.ReadObservedWL(wl_obs_path, start, end, novalue,
                      gauge_date_format="'%Y-%m-%d'")
 # sort the gauges table based on the segment
-Calib.GaugesTable.sort_values(by="id", inplace=True, ignore_index=True)
+Calib.hm_gauges.sort_values(by="id", inplace=True, ignore_index=True)
 #%% Read RIM results
-Calib.ReadHMQ(hm_q_path, fmt="'%Y-%m-%d'")
+Calib.readHMQ(hm_q_path, fmt="'%Y-%m-%d'")
 Calib.ReadHMWL(hmwl_path, fmt="'%Y-%m-%d'")
 
-Calib.ReadRRM(
+Calib.readRRM(
     f"{rrm_path}/hm_location",
     fmt="'%Y-%m-%d'",
     location=2,
@@ -75,37 +75,37 @@ summary, fig, ax = Calib.InspectGauge(subid, gaugei=gaugei, start=start, end=end
 print(summary)
 #%% special plot for the poster
 subid = 1
-gaugei = Calib.GaugesTable.loc[Calib.GaugesTable["id"] == subid, Calib.gauge_id_col].values[0]
+gaugei = Calib.hm_gauges.loc[Calib.hm_gauges["id"] == subid, Calib.gauge_id_col].values[0]
 
 fromdate = dt.datetime(1955,1,1)
 todate = dt.datetime(1955,3,21)
-i = Calib.RRM_Gauges.index(gaugei)
-#for i in range(len(Calib.RRM_Gauges)):
-plt.figure(int(Calib.RRM_Gauges[i]), figsize = (10,8))
+i = Calib.rrm_gauges.index(gaugei)
+#for i in range(len(Calib.rrm_gauges)):
+plt.figure(int(Calib.rrm_gauges[i]), figsize = (10, 8))
 
-plt.plot(Calib.QRRM.loc[fromdate:todate, Calib.QRRM.columns[i]],
+plt.plot(Calib.q_rrm.loc[fromdate:todate, Calib.q_rrm.columns[i]],
          label = "SWIM", linewidth = 3,
          linestyle = '-') #, color ="#DC143C"
 
-plt.plot(Calib.QGauges[Calib.QGauges.columns[i]].loc[fromdate:todate],
+plt.plot(Calib.q_gauges[Calib.q_gauges.columns[i]].loc[fromdate:todate],
          label = "Observed Hydrograph", linewidth = 3,
          linestyle = 'dashed') #, color = "#DC143C"
-plt.plot(Calib.QHM[Calib.QHM.columns[i]].loc[fromdate:todate],
+plt.plot(Calib.q_hm[Calib.q_hm.columns[i]].loc[fromdate:todate],
          label = "RIM", linewidth = 3,
          linestyle = '-.') #, color = "green"
-#SimMax = max(Calib.QHM[Calib.QHM.columns[i]].loc[Calib.MetricsHM_RRM.loc[Calib.RRM_Gauges[i],'start']:Calib.MetricsHM_RRM.loc[Calib.RRM_Gauges[i],'end']])
-#ObsMax = max(Calib.QRRM[Calib.QRRM.columns[i]].loc[Calib.MetricsHM_RRM.loc[Calib.RRM_Gauges[i],'start']:Calib.MetricsHM_RRM.loc[Calib.RRM_Gauges[i],'end']])
+#SimMax = max(Calib.q_hm[Calib.q_hm.columns[i]].loc[Calib.MetricsHM_RRM.loc[Calib.rrm_gauges[i],'start']:Calib.MetricsHM_RRM.loc[Calib.rrm_gauges[i],'end']])
+#ObsMax = max(Calib.q_rrm[Calib.q_rrm.columns[i]].loc[Calib.MetricsHM_RRM.loc[Calib.rrm_gauges[i],'start']:Calib.MetricsHM_RRM.loc[Calib.rrm_gauges[i],'end']])
 #pos = max(SimMax, ObsMax)
 
-#plt.annotate("SubID = " + str(int(Calib.QHM.columns[i])), xy=(dt.datetime(1971,1,1),pos-10),
+#plt.annotate("SubID = " + str(int(Calib.q_hm.columns[i])), xy=(dt.datetime(1971,1,1),pos-10),
 #             fontsize = 20)
-#plt.annotate("RMSE = " + str(round(Calib.MetricsHM_RRM.loc[Calib.RRM_Gauges[i],'rmse'],2)), xy=(dt.datetime(1971,1,1),pos-40),
+#plt.annotate("RMSE = " + str(round(Calib.MetricsHM_RRM.loc[Calib.rrm_gauges[i],'rmse'],2)), xy=(dt.datetime(1971,1,1),pos-40),
 #             fontsize = 15)
-#plt.annotate("KGE = " + str(round(Calib.MetricsHM_RRM.loc[Calib.RRM_Gauges[i],'KGE'],2)), xy=(dt.datetime(1971,1,1),pos-70),
+#plt.annotate("KGE = " + str(round(Calib.MetricsHM_RRM.loc[Calib.rrm_gauges[i],'KGE'],2)), xy=(dt.datetime(1971,1,1),pos-70),
 #             fontsize = 15)
-#plt.annotate("NSE = " + str(round(Calib.MetricsHM_RRM.loc[Calib.RRM_Gauges[i],'NSE'],2)), xy=(dt.datetime(1971,1,1),pos-100),
+#plt.annotate("NSE = " + str(round(Calib.MetricsHM_RRM.loc[Calib.rrm_gauges[i],'NSE'],2)), xy=(dt.datetime(1971,1,1),pos-100),
 #             fontsize = 15)
-#plt.annotate("WB = " + str(round(Calib.MetricsHM_RRM.loc[Calib.RRM_Gauges[i],'WB'],2)), xy=(dt.datetime(1971,1,1),pos-130),
+#plt.annotate("WB = " + str(round(Calib.MetricsHM_RRM.loc[Calib.rrm_gauges[i],'WB'],2)), xy=(dt.datetime(1971,1,1),pos-130),
 #             fontsize = 15)
 plt.xlabel('Time', fontsize = 15)
 plt.ylabel("Discharge m3/s", fontsize = 15)

@@ -42,7 +42,7 @@ River.OneDResultPath = rpath + "/results/1d/"
 River.RiverNetwork(rpath + "/inputs/1d/topo/rivernetwork-3segments.txt")
 # River.ReturnPeriod(CompP1 + "/base_data/HYDROMOD/RIM1.0/Observed Period/Statistical Analysis/" + "HQRhine.csv")
 path = r"examples/Hydrodynamic models/test_case/results/customized_results/discharge_long_ts/Statistical analysis results/DistributionProperties.csv"
-River.StatisticalProperties(path)
+River.statisticalProperties(path)
 #%%
 
 # calculate the capacity of the bankfull area

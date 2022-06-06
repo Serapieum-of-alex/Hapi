@@ -30,13 +30,13 @@ novalue = -9
 start = "1955-01-01"
 end = "1955-03-21"
 Calib = RC.Calibration("HM", version=3)
-Calib.ReadGaugesTable(GaugesF)
-Calib.ReadObservedQ(QgaugesPath, start, end, novalue, file_extension='.csv',
+Calib.readGaugesTable(GaugesF)
+Calib.readObservedQ(QgaugesPath, start, end, novalue, file_extension='.csv',
                     gauge_date_format="'%Y-%m-%d'")
 Calib.ReadObservedWL(WLGaugesPath, start, end, novalue, file_extension='.csv',
                      gauge_date_format="'%Y-%m-%d'")
 # sort the gauges table based on the segment
-Calib.GaugesTable.sort_values(by="id", inplace=True, ignore_index=True)
+Calib.hm_gauges.sort_values(by="id", inplace=True, ignore_index=True)
 # %% Paths
 # the working directory of the project
 RIM2Files = rpath + "/inputs/1d/topo/"
@@ -86,7 +86,7 @@ gaugei = 0
 
 try:
     # get the gauges that are in the segment
-    gauges = Calib.GaugesTable.loc[Calib.GaugesTable['id'] == SubID, :]
+    gauges = Calib.hm_gauges.loc[Calib.hm_gauges['id'] == SubID, :]
     gauges.index = range(len(gauges))
     stationname = gauges.loc[gaugei, 'oid']
     gaugename = str(gauges.loc[gaugei, 'name'])
@@ -101,7 +101,7 @@ except KeyError:
     # get the gauge of the upstream segment
     """ write the segment id you want to get its data"""
     OtherSubID = 17
-    gauges = Calib.GaugesTable.loc[Calib.GaugesTable['id'] == OtherSubID, :]
+    gauges = Calib.hm_gauges.loc[Calib.hm_gauges['id'] == OtherSubID, :]
     gauges.index = range(len(gauges))
     stationname = gauges.loc[gaugei, 'oid']
     gaugename = str(gauges.loc[gaugei, 'name'])

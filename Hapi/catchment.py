@@ -744,7 +744,7 @@ class Catchment:
 
         Returns
         -------
-        GaugesTable : [dataframe]
+        hm_gauges : [dataframe]
             the table of the gauges.
         """
         # read the gauge table
@@ -812,7 +812,7 @@ class Catchment:
 
         Returns
         -------
-        QGauges : [dataframe].
+        q_gauges : [dataframe].
             dataframe containing the discharge data
         """
         if self.TemporalResolution.lower() == "daily":
@@ -821,7 +821,7 @@ class Catchment:
             ind = pd.date_range(self.start, self.end, freq="H")
 
         if self.SpatialResolution.lower() == "distributed":
-            assert hasattr(self, "GaugesTable"), "please read the gauges table first"
+            assert hasattr(self, "hm_gauges"), "please read the gauges table first"
 
             self.QGauges = pd.DataFrame(
                 index=ind, columns=self.GaugesTable[column].tolist()

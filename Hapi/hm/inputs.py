@@ -45,28 +45,27 @@ class Inputs(River):
 
         Parameters
         ----------
-            WeatherGenerator : TYPE
-                DESCRIPTION.
-            FilePrefix : TYPE
-                DESCRIPTION.
-            realization : [Integer]
-                type the number of the realization (the order of the 100 year
-                run by swim).
-            path : [String]
-                 SWIMResultFile is the naming format you used in naming the result
-                 files of the discharge values stored with the name of the file as
-                 out+realization number + .dat (ex out15.dat).
-            SWIMNodes : [String]
-                text file containing the list of sub-basins IDs or computational nodes ID you
-                have used to run SWIM and store the results.
-            SavePath : [String]
-                path to the folder where you want to save the separate file for
-                each sub-basin.
+        WeatherGenerator : TYPE
+            DESCRIPTION.
+        FilePrefix : TYPE
+            DESCRIPTION.
+        realization : [Integer]
+            type the number of the realization (the order of the 100 year
+            run by swim).
+        path : [String]
+             SWIMResultFile is the naming format you used in naming the result
+             files of the discharge values stored with the name of the file as
+             out+realization number + .dat (ex out15.dat).
+        SWIMNodes : [String]
+            text file containing the list of sub-basins IDs or computational nodes ID you
+            have used to run SWIM and store the results.
+        SavePath : [String]
+            path to the folder where you want to save the separate file for
+            each sub-basin.
 
         Returns
         -------
         None.
-
         """
         if WeatherGenerator:
             """ WeatherGenerator """
@@ -104,7 +103,7 @@ class Inputs(River):
                 SavePath + "/" + str(Nodes.loc[i, 0]) + ".txt", header=None, index=None
             )
 
-    def StatisticalProperties(
+    def statisticalProperties(
         self,
         ComputationalNodes: Union[str, list],
         TSdirectory: str,
@@ -190,6 +189,7 @@ class Inputs(River):
                     "given start parameter to the function so check if it is the same start date as in "
                     "the files")
 
+        skip = []
         for i in range(len(ComputationalNodes)):
             try:
                 TS.loc[:, int(ComputationalNodes[i])] = pd.read_csv(
@@ -198,6 +198,7 @@ class Inputs(River):
                 )[1].tolist()
             except FileNotFoundError:
                 logger.warning(f" File {int(ComputationalNodes[i])}{file_extension} does not exist")
+                skip.append(int(ComputationalNodes[i]))
 
         StartDate = dt.datetime.strptime(start, date_format)
         EndDate = StartDate + dt.timedelta(days=TS.shape[0] - 1)
@@ -267,6 +268,10 @@ class Inputs(River):
                 os.mkdir(rpath)
 
         for i in ComputationalNodes:
+            # if the node file does not exit and was not read in the top of the function
+            if i in skip:
+                continue
+
             QTS = TS.loc[:, i]
             # The time series is resampled to the annual maxima, and turned into a
             # numpy array.
@@ -381,10 +386,14 @@ class Inputs(River):
     def WriteHQFile(self, NoNodes: int, StatisticalPropertiesFile:str, SaveTo:str):
         """WriteHQFile.
 
-        :param NoNodes:
-        :param StatisticalPropertiesFile:
-        :param SaveTo:
-        :return:
+        Parameters
+        ----------
+        NoNodes:
+        StatisticalPropertiesFile:
+        SaveTo:
+        Returns
+        -------
+        None
         """
         # Create a table of all nodes and sub-basins
         HQ = pd.DataFrame(
@@ -426,7 +435,6 @@ class Inputs(River):
         SaveTo,
         wpath,
     ):
-
         AllResults = os.listdir(MapsPath)
         # list of the Max Depth files only
         MaxDepthList = list()

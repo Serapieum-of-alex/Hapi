@@ -41,7 +41,7 @@ import Hapi.hm.inputs as IN
 
 GaugesF = "examples/Hydrodynamic models/test_case/inputs/gauges/gauges.csv"
 Calib = RC.Calibration("RIM", version=3)
-Calib.ReadGaugesTable(GaugesF)
+Calib.readGaugesTable(GaugesF)
 
 # path = CompP + "/base_data/Calibration/"
 # ObservedFile = "GRDC"
@@ -57,9 +57,9 @@ create the DistributionProperties.csv & Statistical Properties.csv files with
 """
 Inputs35 = IN.Inputs("Observed_Q")
 
-computationalnodes = Calib.GaugesTable['oid'].tolist()
+computationalnodes = Calib.hm_gauges['oid'].tolist()
 
-Inputs35.StatisticalProperties(computationalnodes, TSdirectory, start, WarmUpPeriod,
+Inputs35.statisticalProperties(computationalnodes, TSdirectory, start, WarmUpPeriod,
                                SavePlots, saveto, SeparateFiles=True,
                                Filter=NoValue, method='lmoments',
                                file_extension='.csv')
@@ -67,11 +67,11 @@ Inputs35.StatisticalProperties(computationalnodes, TSdirectory, start, WarmUpPer
 Inputs35 = IN.Inputs("Observed_Q")
 
 Inputs35.ReadCrossSections("examples/Hydrodynamic models/test_case/inputs/1d/topo/xs_same_downward-3segment.csv")
-computationalnodes = Calib.GaugesTable['oid'].tolist()
+computationalnodes = Calib.hm_gauges['oid'].tolist()
 
-Inputs35.StatisticalProperties(computationalnodes, TSdirectory, start, WarmUpPeriod,
+Inputs35.statisticalProperties(computationalnodes, TSdirectory, start, WarmUpPeriod,
                                SavePlots, saveto, SeparateFiles=True,
-                               Filter=NoValue, Distibution='GUM',method='lmoments',
+                               Filter=NoValue, Distibution='GUM', method='lmoments',
                                file_extension='.csv')
 #%% for the results
 TSdirectory = "examples/Hydrodynamic models/test_case/results/customized_results/discharge_long_ts/"
@@ -79,7 +79,7 @@ saveto = TSdirectory +  "/Statistical analysis results/"
 Inputs35 = IN.Inputs("HM_results")
 Inputs35.ReadCrossSections("examples/Hydrodynamic models/test_case/inputs/1d/topo/xs_same_downward-3segment.csv")
 
-Inputs35.StatisticalProperties(Inputs35.segments, TSdirectory, start, WarmUpPeriod,
+Inputs35.statisticalProperties(Inputs35.segments, TSdirectory, start, WarmUpPeriod,
                                SavePlots, saveto, SeparateFiles=True,
-                               Filter=NoValue, Distibution='GUM',method='lmoments',
+                               Filter=NoValue, Distibution='GUM', method='lmoments',
                                file_extension='.txt', Results=True)

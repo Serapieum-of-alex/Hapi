@@ -1528,7 +1528,7 @@ class River:
         self.Trace2(sub_id, self.US)
 
 
-    def StatisticalProperties(
+    def statisticalProperties(
             self,
             path: str,
             Distibution: str="GEV"
@@ -1566,7 +1566,7 @@ class River:
         >>> import Hapi.hm.river as R
         >>> HM = R.River('Hydraulic model')
         >>> stat_properties_path = "path/to/results/statistical analysis/DistributionProperties.csv"
-        >>> HM.StatisticalProperties(stat_properties_path)
+        >>> HM.statisticalProperties(stat_properties_path)
         >>> HM.SP
                        id       c        loc      scale  D-static  P-Value
         0        23800100 -0.0511   115.9465    42.7040    0.1311   0.6748
@@ -1613,7 +1613,7 @@ class River:
                         )
 
 
-    def GetReturnPeriod(
+    def getReturnPeriod(
             self,
             Subid: int,
             Q: Union[float, int, np.ndarray, list],
@@ -1622,7 +1622,7 @@ class River:
         """GetReturnPeriod.
 
             GetReturnPeriod method takes given discharge and using the distribution
-            properties of a particular sub basin it it calculates the return period
+            properties of a particular sub basin it calculates the return period
 
         Parameters
         ----------
@@ -1641,10 +1641,17 @@ class River:
         """
         if not isinstance(self.SP, DataFrame):
             raise ValueError("Please read the statistical properties file for the catchment first")
-
         try:
             loc = np.where(self.SP["id"] == Subid)[0][0]
             if distribution =="GEV":
+                # dist = GEV()
+                # rp = dist.getRP(
+                #     self.SP.loc[loc, "c"],
+                #     self.SP.loc[loc, "loc"],
+                #     self.SP.loc[loc, "scale"],
+                #     Q
+                # )
+
                 F = genextreme.cdf(
                     Q,
                     c = self.SP.loc[loc, "c"],
@@ -1652,6 +1659,8 @@ class River:
                     scale=self.SP.loc[loc, "scale"]
                 )
             else:
+                # dist = Gumbel()
+                # rp = dist.getRP(self.SP.loc[loc, "loc"], self.SP.loc[loc, "scale"], Q)
                 F = gumbel_r.cdf(
                     Q, loc=self.SP.loc[loc, "loc"], scale=self.SP.loc[loc, "scale"]
                 )
@@ -1661,7 +1670,7 @@ class River:
             return -1
 
 
-    def GetQForReturnPeriod(self, Subid, T, distribution: str="GEV"):
+    def getQForReturnPeriod(self, Subid, T, distribution: str= "GEV"):
         """GetQForReturnPeriod.
 
             get the corespondiong discharge to a specific return period
@@ -1826,7 +1835,7 @@ class River:
                 if not "gauge" in self.crosssections.columns.tolist():
                     raise ValueError("To calculate the return period for each cross-section a column with "
                                      "the coresponding gauge id should be in the cross-section file")
-                RP = self.GetReturnPeriod(
+                RP = self.getReturnPeriod(
                     self.crosssections.loc[i, "gauge"],
                     self.crosssections.loc[i, ColumnName],
                     distribution=distribution
@@ -1944,7 +1953,7 @@ class River:
                         i, "New Capacity"
                     ] * slope ** (1 / 2)
 
-                    RP = self.GetReturnPeriod(
+                    RP = self.getReturnPeriod(
                         self.crosssections.loc[i, "gauge"],
                         self.crosssections.loc[i, "New Capacity"],
                     )
@@ -4687,7 +4696,7 @@ class Sub(River):
             if plotgauge:
                 # plot the gauge data
                 ax.plot(
-                    Calib.QGauges.loc[start:end, stationname],
+                    Calib.q_gauges.loc[start:end, stationname],
                     label="Gauge",
                     linewidth=linewidth,
                     zorder=gaugeorder,
@@ -4752,7 +4761,7 @@ class Sub(River):
             )
             # plot the gauge data
             ax.plot(
-                Calib.QGauges.loc[
+                Calib.q_gauges.loc[
                     Calib.CalibrationQ.index[0] : Calib.CalibrationQ.index[-1],
                     stationname,
                 ],
@@ -5063,14 +5072,14 @@ class Sub(River):
         QHM = pd.DataFrame()
 
         try:
-            GaugeStart = Calib.GaugesTable[Calib.GaugesTable["xsid"] == gaugexs][
+            GaugeStart = Calib.hm_gauges[Calib.hm_gauges["xsid"] == gaugexs][
                 "Qstart"
             ].values[0]
-            GaugeEnd = Calib.GaugesTable[Calib.GaugesTable["xsid"] == gaugexs][
+            GaugeEnd = Calib.hm_gauges[Calib.hm_gauges["xsid"] == gaugexs][
                 "Qend"
             ].values[0]
         except IndexError:
-            logger.debug("The XS you provided does not exist in the GaugesTable")
+            logger.debug("The XS you provided does not exist in the hm_gauges")
             return
 
         if Filter:
@@ -5083,7 +5092,7 @@ class Sub(River):
             end2 = min(GaugeEnd, end, self.lastday)
 
             # get the observed discharge
-            Qobs = Calib.QGauges.loc[st2:end2, stationname]
+            Qobs = Calib.q_gauges.loc[st2:end2, stationname]
 
             # resample the times series to average daily
             ind = pd.date_range(
@@ -5099,14 +5108,14 @@ class Sub(River):
             #     sub.Resample(gaugexs, 'q', starti, endi, Delete=True)
             # except:
             #     sub.Resample(gaugexs, 'q', starti, endi, Delete=False)
-            # QHM['q']  = sub.ResampledQ[gaugexs][:]
-            # QHM.index = pd.date_range(st2, end2)
+            # q_hm['q']  = sub.ResampledQ[gaugexs][:]
+            # q_hm.index = pd.date_range(st2, end2)
 
         else:
             st2 = max(GaugeStart, self.firstdayresults)
             end2 = min(GaugeEnd, self.lastday)
             # get the observed discharge
-            Qobs = Calib.QGauges.loc[st2:end2, stationname]
+            Qobs = Calib.q_gauges.loc[st2:end2, stationname]
 
             # resample the times series to average daily
             ind = pd.date_range(
@@ -5118,8 +5127,8 @@ class Sub(River):
             QHM["q"] = QHM.loc[st2:end2, "q"]
 
             # old
-            # QHM['q'] = sub.Result1D['q'][sub.Result1D['xs'] == gaugexs][sub.Result1D['hour'] == 24][:]
-            # QHM.index = pd.date_range(st2, end2)
+            # q_hm['q'] = sub.Result1D['q'][sub.Result1D['xs'] == gaugexs][sub.Result1D['hour'] == 24][:]
+            # q_hm.index = pd.date_range(st2, end2)
         qsim = QHM.loc[st2:end2, "q"].tolist()
         rmse = round(Pf.RMSE(Qobs, qsim), 0)
         kge = round(Pf.KGE(Qobs, qsim), 2)
@@ -5209,10 +5218,10 @@ class Sub(River):
 
         if plotgauge:
 
-            GaugeStart = Calib.GaugesTable[Calib.GaugesTable["xsid"] == gaugexs][
+            GaugeStart = Calib.hm_gauges[Calib.hm_gauges["xsid"] == gaugexs][
                 "WLstart"
             ]
-            GaugeEnd = Calib.GaugesTable[Calib.GaugesTable["xsid"] == gaugexs]["WLend"]
+            GaugeEnd = Calib.hm_gauges[Calib.hm_gauges["xsid"] == gaugexs]["WLend"]
 
             try:
                 GaugeStart = GaugeStart.values[0]
@@ -5229,7 +5238,7 @@ class Sub(River):
                     logger.debug("Out of Gauge dates")
                     plotgauge = False
             except (IndexError, TypeError):
-                logger.debug("The XS you provided does not exist in the GaugesTable")
+                logger.debug("The XS you provided does not exist in the hm_gauges")
                 plotgauge = False
 
         fig, ax = plt.subplots(ncols=1, nrows=1, figsize=figsize)
@@ -5281,14 +5290,14 @@ class Sub(River):
             format of the date. fmt="%Y-%m-%d %H:%M:%S"
         """
         try:
-            GaugeStart = Calib.GaugesTable[Calib.GaugesTable["xsid"] == gaugexs][
+            GaugeStart = Calib.hm_gauges[Calib.hm_gauges["xsid"] == gaugexs][
                 "WLstart"
             ].values[0]
-            GaugeEnd = Calib.GaugesTable[Calib.GaugesTable["xsid"] == gaugexs][
+            GaugeEnd = Calib.hm_gauges[Calib.hm_gauges["xsid"] == gaugexs][
                 "WLend"
             ].values[0]
         except IndexError:
-            logger.debug("The XS you provided does not exist in the GaugesTable")
+            logger.debug("The XS you provided does not exist in the hm_gauges")
             return
 
         if isinstance(GaugeStart, int):

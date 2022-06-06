@@ -29,43 +29,43 @@ NoValue = -9
 Calib = RC.Calibration("HM", 3, gauge_id_col="id")
 #%%
 Rhine = R.River('HM')
-Rhine.StatisticalProperties(hm_path + "/Statistical analysis/" + "DistributionProperties.csv",
+Rhine.statisticalProperties(hm_path + "/Statistical analysis/" + "DistributionProperties.csv",
                             Distibution="Gumbel")
 
 Rhine_obs = R.River('Observed')
-Rhine_obs.StatisticalProperties(observed_path + "/Statistical analysis/" + "DistributionProperties.csv",
+Rhine_obs.statisticalProperties(observed_path + "/Statistical analysis/" + "DistributionProperties.csv",
                                 Distibution="Gumbel")
 #%% read the discharge data to get the max annual values
-Calib.ReadGaugesTable(gauges_files)
+Calib.readGaugesTable(gauges_files)
 # read the gauge flow hydrographs
-Calib.ReadObservedQ(observed_path, start, end, NoValue)#,column="id"
+Calib.readObservedQ(observed_path, start, end, NoValue)#,column="id"
 # read the SWIM hydrographs for the gauge sub-basins
-Calib.ReadRRM(rrm_path)
-Calib.ReadHMQ(hm_path)
+Calib.readRRM(rrm_path)
+Calib.readHMQ(hm_path)
 #%% Get the max annual
-Calib.GetAnnualMax(option=1)
-Calib.GetAnnualMax(option=3)
-Calib.GetAnnualMax(option=4)
+Calib.getAnnualMax(option=1)
+Calib.getAnnualMax(option=3)
+Calib.getAnnualMax(option=4)
 
-cols = Calib.GaugesTable['id'].tolist()
+cols = Calib.hm_gauges['id'].tolist()
 Qgauges = pd.DataFrame()
 Qgauges['SubID'] = cols
 
-Calib.RPObs = pd.DataFrame(index = Calib.AnnualMaxObsQ.index, columns = cols)
-Calib.RPHM = pd.DataFrame(index = Calib.AnnualMaxObsQ.index, columns = cols)
+Calib.RPObs = pd.DataFrame(index = Calib.annual_max_obs_q.index, columns = cols)
+Calib.RPHM = pd.DataFrame(index = Calib.annual_max_obs_q.index, columns = cols)
 
 Qgauges = Qgauges.assign(start = 0, end = 0)
 
 # get the start and end date (excluding the gaps) of each gauges
 for i in range(len(Qgauges)):
     Sub = Qgauges.loc[i,'SubID']
-    st1 = Calib.AnnualMaxObsQ.loc[:, Sub][Calib.AnnualMaxObsQ.loc[:, Sub] != NoValue].index[0]
-    st2 = Calib.AnnualMaxHMQ.loc[:, Sub][Calib.AnnualMaxHMQ.loc[:, Sub] != NoValue].index[0]
+    st1 = Calib.annual_max_obs_q.loc[:, Sub][Calib.annual_max_obs_q.loc[:, Sub] != NoValue].index[0]
+    st2 = Calib.annual_max_hm_q.loc[:, Sub][Calib.annual_max_hm_q.loc[:, Sub] != NoValue].index[0]
 
     Qgauges.loc[i,'start'] = max(st1,st2)
 #    start.append(ObsQ[ObsQ.columns[i]][ObsQ[ObsQ.columns[i]] != NoValue].index[0])
-    end1 = Calib.AnnualMaxObsQ[Sub][Calib.AnnualMaxObsQ[Sub] != NoValue].index[-1]
-    end2 = Calib.AnnualMaxHMQ[Sub][Calib.AnnualMaxHMQ[Sub] != NoValue].index[-1]
+    end1 = Calib.annual_max_obs_q[Sub][Calib.annual_max_obs_q[Sub] != NoValue].index[-1]
+    end2 = Calib.annual_max_hm_q[Sub][Calib.annual_max_hm_q[Sub] != NoValue].index[-1]
     Qgauges.loc[i,'end'] =min(end1,end2)
 
 for i in range(len(Qgauges)):
@@ -73,11 +73,11 @@ for i in range(len(Qgauges)):
     fromd = Qgauges.loc[i,'start']
     tod = Qgauges.loc[i,'end']
     # HM
-    Qrp = np.array(Calib.AnnualMaxHMQ.loc[fromd:tod, Sub])
-    Calib.RPHM.loc[fromd:tod, Sub] =  Rhine.GetReturnPeriod(Sub, Qrp, distribution="Gumbel")
+    Qrp = np.array(Calib.annual_max_hm_q.loc[fromd:tod, Sub])
+    Calib.RPHM.loc[fromd:tod, Sub] =  Rhine.getReturnPeriod(Sub, Qrp, distribution="Gumbel")
     # Obs
-    Qrp = np.array(Calib.AnnualMaxObsQ.loc[fromd:tod, Sub])
-    Calib.RPObs.loc[fromd:tod, Sub] =  Rhine_obs.GetReturnPeriod(Sub, Qrp, distribution="Gumbel")
+    Qrp = np.array(Calib.annual_max_obs_q.loc[fromd:tod, Sub])
+    Calib.RPObs.loc[fromd:tod, Sub] =  Rhine_obs.getReturnPeriod(Sub, Qrp, distribution="Gumbel")
 
 """
     # to get the Non Exceedance probability for a specific Value
@@ -133,9 +133,9 @@ for i in range(len(Qgauges)):
     # GRDC.Qrp.loc[GRDC.Qrp.index[i],:] = gumbel_r.ppf(F,loc=GRDC.SP.loc[i,"loc"], scale=GRDC.SP.loc[i,"scale"])
     # River1.Qrp.loc[River1.Qrp.index[i],:] = gumbel_r.ppf(F,loc=River1.SP.loc[i,"loc"], scale=River1.SP.loc[i,"scale"])
     # River2.Qrp.loc[River2.Qrp.index[i],:] = gumbel_r.ppf(F,loc=River2.SP.loc[i,"loc"], scale=River2.SP.loc[i,"scale"])
-    Rhine_obs.Qrp.loc[SubID, :] = Rhine_obs.GetQForReturnPeriod(SubID, T, distribution="Gumbel")
+    Rhine_obs.Qrp.loc[SubID, :] = Rhine_obs.getQForReturnPeriod(SubID, T, distribution="Gumbel")
     # River1.Qrp.loc[River1.Qrp.index[i],:] = River1.GetQForReturnPeriod(GRDC.SP.loc[i,"id"], T)
-    Rhine.Qrp.loc[SubID, :] = Rhine.GetQForReturnPeriod(SubID, T, distribution="Gumbel")
+    Rhine.Qrp.loc[SubID, :] = Rhine.getQForReturnPeriod(SubID, T, distribution="Gumbel")
 #%% plot the frequency curves separately
 color1 = '#27408B'
 color2 = '#DC143C'
@@ -209,9 +209,9 @@ if PlotPoint :
     fromd = Qgauges.loc[Qgauges['SubID'] == SubID,'start'].tolist()[0]
     tod = Qgauges.loc[Qgauges['SubID'] == SubID,'end'].tolist()[0]
 
-    ax[0,0].plot(Calib.RPObs.loc[fromd:tod, SubID].tolist(), Calib.AnnualMaxObsQ.loc[fromd:tod, SubID].tolist(),
+    ax[0,0].plot(Calib.RPObs.loc[fromd:tod, SubID].tolist(), Calib.annual_max_obs_q.loc[fromd:tod, SubID].tolist(),
                  'o', zorder=6, color = 'black', markersize = markersize, fillstyle='none') #markerfacecoloralt=""
-    ax[0,0].plot(Calib.RPHM.loc[fromd:tod, SubID].tolist(), Calib.AnnualMaxHMQ.loc[fromd:tod, SubID].tolist(),
+    ax[0,0].plot(Calib.RPHM.loc[fromd:tod, SubID].tolist(), Calib.annual_max_hm_q.loc[fromd:tod, SubID].tolist(),
                  'x', zorder=4, color = 'black', markersize = markersize, fillstyle='none')
     # ax[0,0].plot(RIM1.RPRIM.loc[fromd:tod,SubID].tolist(), RIM1.AnnualMaxRIMQ.loc[fromd:tod,SubID].tolist(),
     #              's',zorder=5, color = 'black', markersize = markersize, fillstyle='none')
@@ -250,9 +250,9 @@ if PlotPoint :
     fromd = Qgauges.loc[Qgauges['SubID'] == SubID,'start'].tolist()[0]
     tod = Qgauges.loc[Qgauges['SubID'] == SubID,'end'].tolist()[0]
 
-    ax[0,1].plot(Calib.RPObs.loc[fromd:tod, SubID].tolist(), Calib.AnnualMaxObsQ.loc[fromd:tod, SubID].tolist(),
+    ax[0,1].plot(Calib.RPObs.loc[fromd:tod, SubID].tolist(), Calib.annual_max_obs_q.loc[fromd:tod, SubID].tolist(),
                  'o', zorder=6, color = 'black', markersize = markersize, fillstyle='none') #markerfacecoloralt=""
-    ax[0,1].plot(Calib.RPHM.loc[fromd:tod, SubID].tolist(), Calib.AnnualMaxHMQ.loc[fromd:tod, SubID].tolist(),
+    ax[0,1].plot(Calib.RPHM.loc[fromd:tod, SubID].tolist(), Calib.annual_max_hm_q.loc[fromd:tod, SubID].tolist(),
                  'x', zorder=4, color = 'black', markersize = markersize, fillstyle='none')
     # ax[0,1].plot(RIM1.RPRIM.loc[fromd:tod,SubID].tolist(), RIM1.AnnualMaxRIMQ.loc[fromd:tod,SubID].tolist(),
     #              's',zorder=5, color = 'black', markersize = markersize, fillstyle='none')
@@ -283,9 +283,9 @@ if PlotPoint :
     fromd = Qgauges.loc[Qgauges['SubID'] == SubID,'start'].tolist()[0]
     tod = Qgauges.loc[Qgauges['SubID'] == SubID,'end'].tolist()[0]
 
-    ax[0,2].plot(Calib.RPObs.loc[fromd:tod, SubID].tolist(), Calib.AnnualMaxObsQ.loc[fromd:tod, SubID].tolist(),
+    ax[0,2].plot(Calib.RPObs.loc[fromd:tod, SubID].tolist(), Calib.annual_max_obs_q.loc[fromd:tod, SubID].tolist(),
                  'o', zorder=6, color = 'black', markersize = markersize, fillstyle='none') #markerfacecoloralt=""
-    ax[0,2].plot(Calib.RPHM.loc[fromd:tod, SubID].tolist(), Calib.AnnualMaxHMQ.loc[fromd:tod, SubID].tolist(),
+    ax[0,2].plot(Calib.RPHM.loc[fromd:tod, SubID].tolist(), Calib.annual_max_hm_q.loc[fromd:tod, SubID].tolist(),
                  'x', zorder=4, color = 'black', markersize = markersize, fillstyle='none')
     # ax[0,2].plot(RIM1.RPRIM.loc[fromd:tod,SubID].tolist(), RIM1.AnnualMaxRIMQ.loc[fromd:tod,SubID].tolist(),
     #              's',zorder=5, color = 'black', markersize = markersize, fillstyle='none')
@@ -319,9 +319,9 @@ if PlotPoint :
     fromd = Qgauges.loc[Qgauges['SubID'] == SubID,'start'].tolist()[0]
     tod = Qgauges.loc[Qgauges['SubID'] == SubID,'end'].tolist()[0]
 
-    ax[1,0].plot(Calib.RPObs.loc[fromd:tod, SubID].tolist(), Calib.AnnualMaxObsQ.loc[fromd:tod, SubID].tolist(),
+    ax[1,0].plot(Calib.RPObs.loc[fromd:tod, SubID].tolist(), Calib.annual_max_obs_q.loc[fromd:tod, SubID].tolist(),
                  'o', zorder=6, color = 'black', markersize = markersize, fillstyle='none') #markerfacecoloralt=""
-    ax[1,0].plot(Calib.RPHM.loc[fromd:tod, SubID].tolist(), Calib.AnnualMaxHMQ.loc[fromd:tod, SubID].tolist(),
+    ax[1,0].plot(Calib.RPHM.loc[fromd:tod, SubID].tolist(), Calib.annual_max_hm_q.loc[fromd:tod, SubID].tolist(),
                  'x', zorder=4, color = 'black', markersize = markersize, fillstyle='none')
     # ax[1,0].plot(RIM1.RPRIM.loc[fromd:tod,SubID].tolist(), RIM1.AnnualMaxRIMQ.loc[fromd:tod,SubID].tolist(),
     #              's',zorder=5, color = 'black', markersize = markersize, fillstyle='none')
@@ -353,9 +353,9 @@ if PlotPoint :
     fromd = Qgauges.loc[Qgauges['SubID'] == SubID,'start'].tolist()[0]
     tod = Qgauges.loc[Qgauges['SubID'] == SubID,'end'].tolist()[0]
 
-    ax[1,1].plot(Calib.RPObs.loc[fromd:tod, SubID].tolist(), Calib.AnnualMaxObsQ.loc[fromd:tod, SubID].tolist(),
+    ax[1,1].plot(Calib.RPObs.loc[fromd:tod, SubID].tolist(), Calib.annual_max_obs_q.loc[fromd:tod, SubID].tolist(),
                  'o', zorder=6, color = 'black', markersize = markersize, fillstyle='none') #markerfacecoloralt=""
-    ax[1,1].plot(Calib.RPHM.loc[fromd:tod, SubID].tolist(), Calib.AnnualMaxHMQ.loc[fromd:tod, SubID].tolist(),
+    ax[1,1].plot(Calib.RPHM.loc[fromd:tod, SubID].tolist(), Calib.annual_max_hm_q.loc[fromd:tod, SubID].tolist(),
                  'x', zorder=4, color = 'black', markersize = markersize, fillstyle='none')
     # ax[1,1].plot(RIM1.RPRIM.loc[fromd:tod,SubID].tolist(), RIM1.AnnualMaxRIMQ.loc[fromd:tod,SubID].tolist(),
     #              's',zorder=5, color = 'black', markersize = markersize, fillstyle='none')
@@ -387,9 +387,9 @@ if PlotPoint :
     fromd = Qgauges.loc[Qgauges['SubID'] == SubID,'start'].tolist()[0]
     tod = Qgauges.loc[Qgauges['SubID'] == SubID,'end'].tolist()[0]
 
-    ax[1,2].plot(Calib.RPObs.loc[fromd:tod, SubID].tolist(), Calib.AnnualMaxObsQ.loc[fromd:tod, SubID].tolist(),
+    ax[1,2].plot(Calib.RPObs.loc[fromd:tod, SubID].tolist(), Calib.annual_max_obs_q.loc[fromd:tod, SubID].tolist(),
                  'o', zorder=6, color = 'black', markersize = markersize, fillstyle='none') #markerfacecoloralt=""
-    ax[1,2].plot(Calib.RPHM.loc[fromd:tod, SubID].tolist(), Calib.AnnualMaxHMQ.loc[fromd:tod, SubID].tolist(),
+    ax[1,2].plot(Calib.RPHM.loc[fromd:tod, SubID].tolist(), Calib.annual_max_hm_q.loc[fromd:tod, SubID].tolist(),
                  'x', zorder=4, color = 'black', markersize = markersize, fillstyle='none')
     # ax[1,2].plot(RIM1.RPRIM.loc[fromd:tod,SubID].tolist(), RIM1.AnnualMaxRIMQ.loc[fromd:tod,SubID].tolist(),
     #              's',zorder=5, color = 'black', markersize = markersize, fillstyle='none')
@@ -421,9 +421,9 @@ if PlotPoint :
     fromd = Qgauges.loc[Qgauges['SubID'] == SubID,'start'].tolist()[0]
     tod = Qgauges.loc[Qgauges['SubID'] == SubID,'end'].tolist()[0]
 
-    ax[2,0].plot(Calib.RPObs.loc[fromd:tod, SubID].tolist(), Calib.AnnualMaxObsQ.loc[fromd:tod, SubID].tolist(),
+    ax[2,0].plot(Calib.RPObs.loc[fromd:tod, SubID].tolist(), Calib.annual_max_obs_q.loc[fromd:tod, SubID].tolist(),
                  'o', zorder=6, color = 'black', markersize = markersize, fillstyle='none') #markerfacecoloralt=""
-    ax[2,0].plot(Calib.RPHM.loc[fromd:tod, SubID].tolist(), Calib.AnnualMaxHMQ.loc[fromd:tod, SubID].tolist(),
+    ax[2,0].plot(Calib.RPHM.loc[fromd:tod, SubID].tolist(), Calib.annual_max_hm_q.loc[fromd:tod, SubID].tolist(),
                  'x', zorder=4, color = 'black', markersize = markersize, fillstyle='none')
     # ax[2,0].plot(RIM1.RPRIM.loc[fromd:tod,SubID].tolist(), RIM1.AnnualMaxRIMQ.loc[fromd:tod,SubID].tolist(),
     #              's',zorder=5, color = 'black', markersize = markersize, fillstyle='none')
@@ -454,9 +454,9 @@ if PlotPoint :
     fromd = Qgauges.loc[Qgauges['SubID'] == SubID,'start'].tolist()[0]
     tod = Qgauges.loc[Qgauges['SubID'] == SubID,'end'].tolist()[0]
 
-    ax[2,1].plot(Calib.RPObs.loc[fromd:tod, SubID].tolist(), Calib.AnnualMaxObsQ.loc[fromd:tod, SubID].tolist(),
+    ax[2,1].plot(Calib.RPObs.loc[fromd:tod, SubID].tolist(), Calib.annual_max_obs_q.loc[fromd:tod, SubID].tolist(),
                  'o', zorder=6, color = 'black', markersize = markersize, fillstyle='none') #markerfacecoloralt=""
-    ax[2,1].plot(Calib.RPHM.loc[fromd:tod, SubID].tolist(), Calib.AnnualMaxHMQ.loc[fromd:tod, SubID].tolist(),
+    ax[2,1].plot(Calib.RPHM.loc[fromd:tod, SubID].tolist(), Calib.annual_max_hm_q.loc[fromd:tod, SubID].tolist(),
                  'x', zorder=4, color = 'black', markersize = markersize, fillstyle='none')
     # ax[2,1].plot(RIM1.RPRIM.loc[fromd:tod,SubID].tolist(), RIM1.AnnualMaxRIMQ.loc[fromd:tod,SubID].tolist(),
     #              's',zorder=5, color = 'black', markersize = markersize, fillstyle='none')
@@ -487,9 +487,9 @@ if PlotPoint :
     fromd = Qgauges.loc[Qgauges['SubID'] == SubID,'start'].tolist()[0]
     tod = Qgauges.loc[Qgauges['SubID'] == SubID,'end'].tolist()[0]
 
-    ax[2,2].plot(Calib.RPObs.loc[fromd:tod, SubID].tolist(), Calib.AnnualMaxObsQ.loc[fromd:tod, SubID].tolist(),
+    ax[2,2].plot(Calib.RPObs.loc[fromd:tod, SubID].tolist(), Calib.annual_max_obs_q.loc[fromd:tod, SubID].tolist(),
                  'o', zorder=6, color = 'black', markersize = markersize, fillstyle='none') #markerfacecoloralt=""
-    ax[2,2].plot(Calib.RPHM.loc[fromd:tod, SubID].tolist(), Calib.AnnualMaxHMQ.loc[fromd:tod, SubID].tolist(),
+    ax[2,2].plot(Calib.RPHM.loc[fromd:tod, SubID].tolist(), Calib.annual_max_hm_q.loc[fromd:tod, SubID].tolist(),
                  'x', zorder=4, color = 'black', markersize = markersize, fillstyle='none')
     # ax[2,2].plot(RIM1.RPRIM.loc[fromd:tod,SubID].tolist(), RIM1.AnnualMaxRIMQ.loc[fromd:tod,SubID].tolist(),
     #              's',zorder=5, color = 'black', markersize = markersize, fillstyle='none')
