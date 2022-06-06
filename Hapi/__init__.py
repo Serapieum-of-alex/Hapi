@@ -47,26 +47,24 @@ def configuration(parent_package="", top_path=None):
         quiet=True,
     )
 
-    config.add_subpackage("gis")
+    # config.add_subpackage("gis")
     config.add_subpackage("hm")
     config.add_subpackage("plot")
     config.add_subpackage("rrm")
-    config.add_subpackage("rs")
-    config.add_subpackage("sm")
-
-
+    # config.add_subpackage("rs")
+    # config.add_subpackage("sm")
     return config
 
 
 import Hapi.catchment
-import Hapi.gis
+# import Hapi.gis
 import Hapi.plot
 import Hapi.hm
 import Hapi.java_functions
 import Hapi.rrm
-import Hapi.rs
+# import Hapi.rs
 import Hapi.run
-import Hapi.sm
+# import Hapi.sm
 import Hapi.weirdFn
 
 # import Hapi.saintvenant
