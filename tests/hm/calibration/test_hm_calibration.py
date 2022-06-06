@@ -15,8 +15,8 @@ def test_create_calibration_instance(
 
 def test_ReadGaugesTable(gauges_table_path: str):
     Calib = RC.Calibration("HM", version=3)
-    Calib.ReadGaugesTable(gauges_table_path)
-    assert len(Calib.GaugesTable) == 3 and len(Calib.GaugesTable.columns) == 10
+    Calib.readGaugesTable(gauges_table_path)
+    assert len(Calib.hm_gauges) == 3 and len(Calib.hm_gauges.columns) == 10
 
 
 def test_ReadObservedQ(
@@ -29,13 +29,13 @@ def test_ReadObservedQ(
         test_time_series_length: int
 ):
     Calib = RC.Calibration("HM", version=version)
-    Calib.ReadGaugesTable(gauges_table_path)
-    Calib.ReadObservedQ(ReadObservedQ_Path, dates[0], dates[1],
+    Calib.readGaugesTable(gauges_table_path)
+    Calib.readObservedQ(ReadObservedQ_Path, dates[0], dates[1],
                         nodatavalu, gauge_date_format=gauge_date_format)
 
-    assert len(Calib.QGauges) == test_time_series_length \
-           and len(Calib.QGauges.columns) == 3 and \
-           len(Calib.GaugesTable.columns) == 12
+    assert len(Calib.q_gauges) == test_time_series_length \
+           and len(Calib.q_gauges.columns) == 3 and \
+           len(Calib.hm_gauges.columns) == 12
 
 
 def test_ReadObservedWL(
@@ -48,12 +48,12 @@ def test_ReadObservedWL(
         test_time_series_length: int
 ):
     Calib = RC.Calibration("HM", version=version)
-    Calib.ReadGaugesTable(gauges_table_path)
+    Calib.readGaugesTable(gauges_table_path)
     Calib.ReadObservedWL(ReadObservedWL_Path, dates[0], dates[1],
                          nodatavalu, gauge_date_format=gauge_date_format)
     assert len(Calib.WLGauges) == test_time_series_length and \
            len(Calib.WLGauges.columns) == 3 and \
-           len(Calib.GaugesTable.columns) == 12
+           len(Calib.hm_gauges.columns) == 12
 
 
 def test_CalculateProfile(
@@ -150,10 +150,10 @@ def test_ReadRRM(
         rrmgauges: List[int],
 ):
     Calib = RC.Calibration("HM", version=3)
-    Calib.ReadGaugesTable(gauges_table_path)
-    Calib.ReadRRM(rrmpath, fmt="'%Y-%m-%d'")
-    assert len(Calib.QRRM) == test_time_series_length and len(Calib.QRRM.columns) == len(rrmgauges)
-    assert all(elem in Calib.QRRM.columns.to_list() for elem in rrmgauges)
+    Calib.readGaugesTable(gauges_table_path)
+    Calib.readRRM(rrmpath, fmt="'%Y-%m-%d'")
+    assert len(Calib.q_rrm) == test_time_series_length and len(Calib.q_rrm.columns) == len(rrmgauges)
+    assert all(elem in Calib.q_rrm.columns.to_list() for elem in rrmgauges)
 
 
 def test_ReadHMQ(
@@ -163,10 +163,10 @@ def test_ReadHMQ(
         rrmgauges: List[int],
 ):
     Calib = RC.Calibration("HM", version=3)
-    Calib.ReadGaugesTable(gauges_table_path)
-    Calib.ReadHMQ(hm_separated_q_results_path, fmt="'%Y-%m-%d'")
-    assert len(Calib.QHM) == test_time_series_length and len(Calib.QHM.columns) == len(rrmgauges)
-    assert all(elem in Calib.QHM.columns.to_list() for elem in rrmgauges)
+    Calib.readGaugesTable(gauges_table_path)
+    Calib.readHMQ(hm_separated_q_results_path, fmt="'%Y-%m-%d'")
+    assert len(Calib.q_hm) == test_time_series_length and len(Calib.q_hm.columns) == len(rrmgauges)
+    assert all(elem in Calib.q_hm.columns.to_list() for elem in rrmgauges)
 
 
 def test_ReadHMWL(
@@ -176,7 +176,7 @@ def test_ReadHMWL(
         rrmgauges: List[int],
 ):
     Calib = RC.Calibration("HM", version=3)
-    Calib.ReadGaugesTable(gauges_table_path)
+    Calib.readGaugesTable(gauges_table_path)
     Calib.ReadHMWL(hm_separated_wl_results_path, fmt="'%Y-%m-%d'")
     assert len(Calib.WLHM) == test_time_series_length and len(Calib.WLHM.columns) == len(rrmgauges)
     assert all(elem in Calib.WLHM.columns.to_list() for elem in rrmgauges)
@@ -199,14 +199,14 @@ class Test_GetAnnualMax:
         test extracting max annual observed discharge
         """
         Calib = RC.Calibration("HM", version=3)
-        Calib.ReadGaugesTable(gauges_table_path)
-        Calib.ReadObservedQ(ObservedQ_long_ts_Path, ObservedQ_long_ts_dates[0], ObservedQ_long_ts_dates[1],
+        Calib.readGaugesTable(gauges_table_path)
+        Calib.readObservedQ(ObservedQ_long_ts_Path, ObservedQ_long_ts_dates[0], ObservedQ_long_ts_dates[1],
                             nodatavalu, gauge_date_format=gauge_long_ts_date_format)
         # RIM.ReadObservedQ(ObservedPath, GRDCStartDate, GRDCEndDate, NoValue)
 
-        Calib.GetAnnualMax(option=1)
-        assert len(Calib.AnnualMaxObsQ) == ObservedQ_long_ts_len
-        assert len(Calib.AnnualMaxObsQ.columns) == gauges_numbers
+        Calib.getAnnualMax(option=1)
+        assert len(Calib.annual_max_obs_q) == ObservedQ_long_ts_len
+        assert len(Calib.annual_max_obs_q.columns) == gauges_numbers
 
     def test_option_3(
             self,
@@ -219,12 +219,12 @@ class Test_GetAnnualMax:
         test extracting max annual hydrologic model simulated discharge
         """
         Calib = RC.Calibration("HM", version=3)
-        Calib.ReadGaugesTable(gauges_table_path)
-        Calib.ReadRRM(rrmpath_long_ts, fmt="'%Y-%m-%d'")
+        Calib.readGaugesTable(gauges_table_path)
+        Calib.readRRM(rrmpath_long_ts, fmt="'%Y-%m-%d'")
 
-        Calib.GetAnnualMax(option=3)
-        assert len(Calib.AnnualMaxRRM) == rrm_long_ts_number
-        assert len(Calib.AnnualMaxRRM.columns) == gauges_numbers
+        Calib.getAnnualMax(option=3)
+        assert len(Calib.annual_max_rrm) == rrm_long_ts_number
+        assert len(Calib.annual_max_rrm.columns) == gauges_numbers
 
 
     def test_option_4(
@@ -238,12 +238,12 @@ class Test_GetAnnualMax:
         test extracting max annual hydraulic model simulated discharge
         """
         Calib = RC.Calibration("HM", version=3)
-        Calib.ReadGaugesTable(gauges_table_path)
-        Calib.ReadHMQ(hm_separated_results_q_long_ts_path, fmt="'%Y-%m-%d'")
+        Calib.readGaugesTable(gauges_table_path)
+        Calib.readHMQ(hm_separated_results_q_long_ts_path, fmt="'%Y-%m-%d'")
 
-        Calib.GetAnnualMax(option=4)
-        assert len(Calib.AnnualMaxHMQ) == hm_long_ts_number
-        assert len(Calib.AnnualMaxHMQ.columns) == gauges_numbers
+        Calib.getAnnualMax(option=4)
+        assert len(Calib.annual_max_hm_q) == hm_long_ts_number
+        assert len(Calib.annual_max_hm_q.columns) == gauges_numbers
 
 
 def test_HMvsRRM(
@@ -255,13 +255,13 @@ def test_HMvsRRM(
         Metrics_table_columns: List[str],
 ):
     Calib = RC.Calibration("HM", version=3)
-    Calib.ReadGaugesTable(gauges_table_path)
-    Calib.ReadHMQ(hm_separated_q_results_path, fmt="'%Y-%m-%d'")
-    Calib.ReadRRM(rrmpath, fmt="'%Y-%m-%d'")
+    Calib.readGaugesTable(gauges_table_path)
+    Calib.readHMQ(hm_separated_q_results_path, fmt="'%Y-%m-%d'")
+    Calib.readRRM(rrmpath, fmt="'%Y-%m-%d'")
     Calib.HMvsRRM()
     assert isinstance(Calib.MetricsHMvsRRM, DataFrame) and isinstance(Calib.MetricsHMvsRRM, GeoDataFrame)
     assert len(Calib.MetricsHMvsRRM) == 3
-    assert all(Calib.MetricsHMvsRRM.index == Calib.GaugesTable.loc[:, Calib.gauge_id_col].to_list())
+    assert all(Calib.MetricsHMvsRRM.index == Calib.hm_gauges.loc[:, Calib.gauge_id_col].to_list())
     assert all(Calib.MetricsHMvsRRM.columns == Metrics_table_columns)
 
 
@@ -275,14 +275,14 @@ def test_RRMvsObserved(
         Metrics_table_columns: List[str],
 ):
     Calib = RC.Calibration("HM", version=3, start=dates[0])
-    Calib.ReadGaugesTable(gauges_table_path)
-    Calib.ReadObservedQ(ReadObservedQ_Path, dates[0], dates[1],
+    Calib.readGaugesTable(gauges_table_path)
+    Calib.readObservedQ(ReadObservedQ_Path, dates[0], dates[1],
                         nodatavalu, gauge_date_format=gauge_date_format)
-    Calib.ReadRRM(rrmpath, fmt="'%Y-%m-%d'")
+    Calib.readRRM(rrmpath, fmt="'%Y-%m-%d'")
     Calib.RRMvsObserved()
     assert isinstance(Calib.MetricsRRMvsObs, DataFrame) and isinstance(Calib.MetricsRRMvsObs, GeoDataFrame)
     assert len(Calib.MetricsRRMvsObs) == 3
-    assert all(Calib.MetricsRRMvsObs.index == Calib.GaugesTable.loc[:, Calib.gauge_id_col].to_list())
+    assert all(Calib.MetricsRRMvsObs.index == Calib.hm_gauges.loc[:, Calib.gauge_id_col].to_list())
     assert all(elem in Calib.MetricsRRMvsObs.columns for elem in Metrics_table_columns)
 
 
@@ -296,14 +296,14 @@ def test_HMQvsObserved(
         Metrics_table_columns: List[str],
 ):
     Calib = RC.Calibration("HM", version=3, start=dates[0])
-    Calib.ReadGaugesTable(gauges_table_path)
-    Calib.ReadObservedQ(ReadObservedQ_Path, dates[0], dates[1],
+    Calib.readGaugesTable(gauges_table_path)
+    Calib.readObservedQ(ReadObservedQ_Path, dates[0], dates[1],
                         nodatavalu, gauge_date_format=gauge_date_format)
-    Calib.ReadHMQ(hm_separated_q_results_path, fmt="'%Y-%m-%d'")
+    Calib.readHMQ(hm_separated_q_results_path, fmt="'%Y-%m-%d'")
     Calib.HMQvsObserved()
     assert isinstance(Calib.MetricsHMQvsObs, DataFrame) and isinstance(Calib.MetricsHMQvsObs, GeoDataFrame)
     assert len(Calib.MetricsHMQvsObs) == 3
-    assert all(Calib.MetricsHMQvsObs.index == Calib.GaugesTable.loc[:, Calib.gauge_id_col].to_list())
+    assert all(Calib.MetricsHMQvsObs.index == Calib.hm_gauges.loc[:, Calib.gauge_id_col].to_list())
     assert all(elem in Calib.MetricsHMQvsObs.columns for elem in Metrics_table_columns)
 
 
@@ -317,14 +317,14 @@ def test_HMWLvsObserved(
         Metrics_table_columns: List[str],
 ):
     Calib = RC.Calibration("HM", version=3, start=dates[0])
-    Calib.ReadGaugesTable(gauges_table_path)
+    Calib.readGaugesTable(gauges_table_path)
     Calib.ReadObservedWL(ReadObservedWL_Path, dates[0], dates[1],
                          nodatavalu, gauge_date_format=gauge_date_format)
     Calib.ReadHMWL(hm_separated_wl_results_path, fmt="'%Y-%m-%d'")
     Calib.HMWLvsObserved()
     assert isinstance(Calib.MetricsHMWLvsObs, DataFrame) and isinstance(Calib.MetricsHMWLvsObs, GeoDataFrame)
     assert len(Calib.MetricsHMWLvsObs) == 3
-    assert all(Calib.MetricsHMWLvsObs.index == Calib.GaugesTable.loc[:, Calib.gauge_id_col].to_list())
+    assert all(Calib.MetricsHMWLvsObs.index == Calib.hm_gauges.loc[:, Calib.gauge_id_col].to_list())
     assert all(elem in Calib.MetricsHMWLvsObs.columns for elem in Metrics_table_columns)
 
 
@@ -343,17 +343,17 @@ def test_InspectGauge(
         InspectGauge_sub_id: int,
 ):
     Calib = RC.Calibration("HM", version=3, start=dates[0])
-    Calib.ReadGaugesTable(gauges_table_path)
+    Calib.readGaugesTable(gauges_table_path)
     Calib.ReadObservedWL(ReadObservedWL_Path, dates[0], dates[1],
                          nodatavalu, gauge_date_format=gauge_date_format)
     Calib.ReadHMWL(hm_separated_wl_results_path, fmt="'%Y-%m-%d'")
     Calib.HMWLvsObserved()
-    Calib.ReadObservedQ(ReadObservedQ_Path, dates[0], dates[1],
+    Calib.readObservedQ(ReadObservedQ_Path, dates[0], dates[1],
                         nodatavalu, gauge_date_format=gauge_date_format)
-    Calib.ReadHMQ(hm_separated_q_results_path, fmt="'%Y-%m-%d'")
+    Calib.readHMQ(hm_separated_q_results_path, fmt="'%Y-%m-%d'")
     Calib.HMQvsObserved()
 
-    Calib.ReadRRM(rrmpath, fmt="'%Y-%m-%d'")
+    Calib.readRRM(rrmpath, fmt="'%Y-%m-%d'")
     Calib.HMvsRRM()
     Calib.RRMvsObserved()
     gaugei = 0
@@ -377,17 +377,17 @@ def test_SaveMetices(
         hm_saveto: str,
 ):
     Calib = RC.Calibration("HM", version=3, start=dates[0])
-    Calib.ReadGaugesTable(gauges_table_path)
+    Calib.readGaugesTable(gauges_table_path)
     Calib.ReadObservedWL(ReadObservedWL_Path, dates[0], dates[1],
                          nodatavalu, gauge_date_format=gauge_date_format)
     Calib.ReadHMWL(hm_separated_wl_results_path, fmt="'%Y-%m-%d'")
     Calib.HMWLvsObserved()
-    Calib.ReadObservedQ(ReadObservedQ_Path, dates[0], dates[1],
+    Calib.readObservedQ(ReadObservedQ_Path, dates[0], dates[1],
                         nodatavalu, gauge_date_format=gauge_date_format)
-    Calib.ReadHMQ(hm_separated_q_results_path, fmt="'%Y-%m-%d'")
+    Calib.readHMQ(hm_separated_q_results_path, fmt="'%Y-%m-%d'")
     Calib.HMQvsObserved()
 
-    Calib.ReadRRM(rrmpath, fmt="'%Y-%m-%d'")
+    Calib.readRRM(rrmpath, fmt="'%Y-%m-%d'")
     Calib.HMvsRRM()
     Calib.RRMvsObserved()
     Calib.SaveMetices(hm_saveto)

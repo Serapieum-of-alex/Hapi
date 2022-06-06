@@ -21,12 +21,12 @@ def test_StatisticalProperties(
         distributionpr_gum_columns: list,
 ):
     Calib = RC.Calibration("HM", version=version)
-    Calib.ReadGaugesTable(gauges_table_path)
+    Calib.readGaugesTable(gauges_table_path)
 
     Inputs35 = IN.Inputs("Observed_Q")
-    computationalnodes = Calib.GaugesTable['oid'].tolist()
+    computationalnodes = Calib.hm_gauges['oid'].tolist()
 
-    Inputs35.StatisticalProperties(
+    Inputs35.statisticalProperties(
         computationalnodes,
         Discharge_gauge_long_ts,
         dates[0],
@@ -39,11 +39,11 @@ def test_StatisticalProperties(
     )
     assert os.path.exists(os.path.join(Statistical_analisis_path, "Figures"))
     assert all(elem in Inputs35.StatisticalPr.columns.tolist() for elem in statisticalpr_columns)
-    assert all(elem in Calib.GaugesTable['oid'].to_list() for elem in Inputs35.StatisticalPr.index.tolist())
+    assert all(elem in Calib.hm_gauges['oid'].to_list() for elem in Inputs35.StatisticalPr.index.tolist())
     assert all(elem in Inputs35.DistributionPr.columns.tolist() for elem in distributionpr_gum_columns)
-    assert all(elem in Calib.GaugesTable['oid'].to_list() for elem in Inputs35.DistributionPr.index.tolist())
+    assert all(elem in Calib.hm_gauges['oid'].to_list() for elem in Inputs35.DistributionPr.index.tolist())
 
-    Inputs35.StatisticalProperties(
+    Inputs35.statisticalProperties(
         computationalnodes,
         Discharge_gauge_long_ts,
         dates[0],
@@ -58,6 +58,6 @@ def test_StatisticalProperties(
 
     assert os.path.exists(os.path.join(Statistical_analisis_path, "Figures"))
     assert all(elem in Inputs35.StatisticalPr.columns.tolist() for elem in statisticalpr_columns)
-    assert all(elem in Calib.GaugesTable['oid'].to_list() for elem in Inputs35.StatisticalPr.index.tolist())
+    assert all(elem in Calib.hm_gauges['oid'].to_list() for elem in Inputs35.StatisticalPr.index.tolist())
     assert all(elem in Inputs35.DistributionPr.columns.tolist() for elem in distributionpr_gev_columns)
-    assert all(elem in Calib.GaugesTable['oid'].to_list() for elem in Inputs35.DistributionPr.index.tolist())
+    assert all(elem in Calib.hm_gauges['oid'].to_list() for elem in Inputs35.DistributionPr.index.tolist())

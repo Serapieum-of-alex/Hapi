@@ -289,12 +289,12 @@ def test_PlotQ(
 
 ):
     Calib = RC.Calibration("HM", version=version)
-    Calib.ReadGaugesTable(gauges_table_path)
-    Calib.ReadObservedQ(ReadObservedQ_Path, dates[0], dates[1],
+    Calib.readGaugesTable(gauges_table_path)
+    Calib.readObservedQ(ReadObservedQ_Path, dates[0], dates[1],
                         nodatavalu, gauge_date_format=gauge_date_format)
 
     gaugei = 0
-    gauges = Calib.GaugesTable.loc[Calib.GaugesTable['id'] == segment3, :]
+    gauges = Calib.hm_gauges.loc[Calib.hm_gauges['id'] == segment3, :]
     gauges.index = range(len(gauges))
     stationname = gauges.loc[gaugei, 'oid']
     gaugename = str(gauges.loc[gaugei, 'name'])
@@ -339,12 +339,12 @@ def test_CalculateQMetrics(
 
 ):
     Calib = RC.Calibration("HM", version=version)
-    Calib.ReadGaugesTable(gauges_table_path)
-    Calib.ReadObservedQ(ReadObservedQ_Path, dates[0], dates[1],
+    Calib.readGaugesTable(gauges_table_path)
+    Calib.readObservedQ(ReadObservedQ_Path, dates[0], dates[1],
                         nodatavalu, gauge_date_format=gauge_date_format)
 
     gaugei = 0
-    gauges = Calib.GaugesTable.loc[Calib.GaugesTable['id'] == segment3, :]
+    gauges = Calib.hm_gauges.loc[Calib.hm_gauges['id'] == segment3, :]
     gauges.index = range(len(gauges))
     stationname = gauges.loc[gaugei, 'oid']
 
@@ -402,12 +402,12 @@ def test_PlotWL(
         Read1DResult_path: str,
 ):
     Calib = RC.Calibration("HM", version=version)
-    Calib.ReadGaugesTable(gauges_table_path)
+    Calib.readGaugesTable(gauges_table_path)
     Calib.ReadObservedWL(ReadObservedWL_Path, dates[0], dates[1],
                         nodatavalu, gauge_date_format=gauge_date_format)
 
     gaugei = 0
-    gauges = Calib.GaugesTable.loc[Calib.GaugesTable['id'] == segment3, :]
+    gauges = Calib.hm_gauges.loc[Calib.hm_gauges['id'] == segment3, :]
     gauges.index = range(len(gauges))
     stationname = gauges.loc[gaugei, 'oid']
     gaugename = str(gauges.loc[gaugei, 'name'])
@@ -440,12 +440,12 @@ def test_CalculateWLMetrics(
 
 ):
     Calib = RC.Calibration("HM", version=version)
-    Calib.ReadGaugesTable(gauges_table_path)
+    Calib.readGaugesTable(gauges_table_path)
     Calib.ReadObservedWL(ReadObservedWL_Path, dates[0], dates[1],
                          nodatavalu, gauge_date_format=gauge_date_format)
 
     gaugei = 0
-    gauges = Calib.GaugesTable.loc[Calib.GaugesTable['id'] == segment3, :]
+    gauges = Calib.hm_gauges.loc[Calib.hm_gauges['id'] == segment3, :]
     gauges.index = range(len(gauges))
     stationname = gauges.loc[gaugei, 'oid']
 
@@ -569,11 +569,11 @@ def test_StatisticalProperties(
         distributionpr_gum_columns:list,
 ):
     River = R.River('HM', version=version)
-    River.StatisticalProperties(distribution_properties_fpath, Distibution="GEV")
+    River.statisticalProperties(distribution_properties_fpath, Distibution="GEV")
     assert all(elem in River.SP.columns.to_list() for elem in statistical_properties_columns)
     assert all(elem in River.SP.columns.to_list() for elem in distributionpr_gev_columns[:3])
 
-    River.StatisticalProperties(distribution_properties_fpath, Distibution="Gumbel")
+    River.statisticalProperties(distribution_properties_fpath, Distibution="Gumbel")
     assert all(elem in River.SP.columns.to_list() for elem in statistical_properties_columns)
     assert all(elem in River.SP.columns.to_list() for elem in distributionpr_gum_columns[:2])
 
@@ -585,7 +585,7 @@ def test_GetCapacity(
 ):
     River = R.River('HM', version=version)
     River.ReadCrossSections(river_cross_section_path)
-    River.StatisticalProperties(distribution_properties_hm_results_fpath)
+    River.statisticalProperties(distribution_properties_hm_results_fpath)
     River.GetCapacity('Qbkf')
     River.GetCapacity('Qc2', Option=2)
     cols = River.crosssections.columns.tolist()
