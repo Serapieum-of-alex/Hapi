@@ -13,7 +13,7 @@ test_requirements = ['pytest>=3', ]
 
 setup(
     name="HAPI-Nile",
-    version="1.2.3",
+    version="1.3.0",
     description="Distributed Hydrological model",
     author="Mostafa Farrag",
     author_email="moah.farag@gmail.come",

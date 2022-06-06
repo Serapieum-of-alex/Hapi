@@ -126,7 +126,7 @@ pip install git+https://github.com/MAfarrag/HAPI
 ## pip
 to install the last release you can easly use pip
 ```
-pip install HAPI-Nile==1.2.3
+pip install HAPI-Nile==1.3.0
 ```
 
 Quick start
