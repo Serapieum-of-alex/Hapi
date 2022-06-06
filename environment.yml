@@ -9,6 +9,7 @@ dependencies:
   - gdal >=3.3.3,<3.5.1
   - oasis >=1.0.2
   - pyramids >= 0.2.0
+  - statista >=0.1.0
   - statsmodels >=0.14.0
   - scipy >=1.7.0,<1.8.2
   - rasterstats >=0.16.0
