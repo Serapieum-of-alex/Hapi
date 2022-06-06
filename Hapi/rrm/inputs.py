@@ -1,3 +1,4 @@
+
 """
 Created on Wed May 16 03:50:00 2018
 
@@ -17,7 +18,7 @@ from rasterio.plot import show
 from rasterstats import zonal_stats
 
 import Hapi
-from Hapi.gis.raster import Raster as raster
+from pyramids.raster import Raster as raster
 
 
 class Inputs:
@@ -90,7 +91,7 @@ class Inputs:
         print(
             "First alligned files will be created in a folder 'AllignedRasters' in the Temp folder in you environment variable"
         )
-        raster.MatchDataAlignment(Rasteri, InputFolder, temp)
+        raster.matchDataAlignment(Rasteri, InputFolder, temp)
         # create new folder in the current directory for alligned and nodatavalue matched cells
         try:
             os.makedirs(os.path.join(os.getcwd(), FolderName))
@@ -106,7 +107,7 @@ class Inputs:
         print(
             "second matching NoDataValue from the DEM raster too all raster will be created in the outputpath"
         )
-        raster.CropAlignedFolder(temp, Rasteri, FolderName + "/")
+        raster.cropAlignedFolder(temp, Rasteri, FolderName + "/")
         # delete the processing folder from temp
         shutil.rmtree(temp)
 
@@ -156,14 +157,14 @@ class Inputs:
             "18_x_muskingum",
         ]
 
-        raster = rasterio.open(ParametersPath + "/max/" + ParamList[0] + ".tif")
-        Basin = Basin.to_crs(crs=raster.crs)
+        raster_obj = rasterio.open(ParametersPath + "/max/" + ParamList[0] + ".tif")
+        Basin = Basin.to_crs(crs=raster_obj.crs)
         # max values
         UB = list()
         for i in range(len(ParamList)):
-            raster = rasterio.open(ParametersPath + "/max/" + ParamList[i] + ".tif")
-            array = raster.read(1)
-            affine = raster.transform
+            raster_obj = rasterio.open(ParametersPath + "/max/" + ParamList[i] + ".tif")
+            array = raster_obj.read(1)
+            affine = raster_obj.transform
             UB.append(
                 zonal_stats(Basin, array, affine=affine, stats=["max"])[0]["max"]
             )  # stats=['min', 'max', 'mean', 'median', 'majority']
@@ -171,9 +172,9 @@ class Inputs:
         # min values
         LB = list()
         for i in range(len(ParamList)):
-            raster = rasterio.open(ParametersPath + "/min/" + ParamList[i] + ".tif")
-            array = raster.read(1)
-            affine = raster.transform
+            raster_obj = rasterio.open(ParametersPath + "/min/" + ParamList[i] + ".tif")
+            array = raster_obj.read(1)
+            affine = raster_obj.transform
             LB.append(zonal_stats(Basin, array, affine=affine, stats=["min"])[0]["min"])
 
         Par = pd.DataFrame(index=ParamList)
@@ -181,7 +182,7 @@ class Inputs:
         Par["UB"] = UB
         Par["LB"] = LB
         # plot the given basin with the parameters raster
-        ax = show((raster, 1), with_bounds=True)
+        ax = show((raster_obj, 1), with_bounds=True)
         Basin.plot(facecolor="None", edgecolor="blue", linewidth=2, ax=ax)
         # ax.set_xbound([Basin.bounds.loc[0,'minx']-10,Basin.bounds.loc[0,'maxx']+10])
         # ax.set_ybound([Basin.bounds.loc[0,'miny']-1, Basin.bounds.loc[0,'maxy']+1])
@@ -246,14 +247,14 @@ class Inputs:
         ]
 
         if not AsRaster:
-            raster = rasterio.open(ParametersPath + "/" + ParamList[0] + ".tif")
-            src = src.to_crs(crs=raster.crs)
+            raster_obj = rasterio.open(ParametersPath + "/" + ParamList[0] + ".tif")
+            src = src.to_crs(crs=raster_obj.crs)
             # max values
             Par = list()
             for i in range(len(ParamList)):
-                raster = rasterio.open(ParametersPath + "/" + ParamList[i] + ".tif")
-                array = raster.read(1)
-                affine = raster.transform
+                raster_obj = rasterio.open(ParametersPath + "/" + ParamList[i] + ".tif")
+                array = raster_obj.read(1)
+                affine = raster_obj.transform
                 Par.append(
                     zonal_stats(src, array, affine=affine, stats=["max"])[0]["max"]
                 )  # stats=['min', 'max', 'mean', 'median', 'majority']
@@ -261,7 +262,7 @@ class Inputs:
             # plot the given basin with the parameters raster
 
             # Plot DEM
-            ax = show((raster, 1), with_bounds=True)
+            ax = show((raster_obj, 1), with_bounds=True)
             src.plot(facecolor="None", edgecolor="blue", linewidth=2, ax=ax)
             # ax.set_xbound([Basin.bounds.loc[0,'minx']-10,Basin.bounds.loc[0,'maxx']+10])
             # ax.set_ybound([Basin.bounds.loc[0,'miny']-1, Basin.bounds.loc[0,'maxy']+1])
@@ -294,9 +295,9 @@ class Inputs:
         # check wether the folder has the rasters or not
         assert len(os.listdir(Path)) > 0, Path + " folder you have provided is empty"
         # read data
-        data = raster.ReadRastersFolder(Path)
+        data = raster.readRastersFolder(Path)
         # get the No data value from the first raster in the folder
-        _, NoDataValue = raster.GetRasterData(Input=Path + "/" + os.listdir(Path)[0])
+        _, NoDataValue = raster.getRasterData(Path + "/" + os.listdir(Path)[0])
         data[data == NoDataValue] = np.nan
 
         data = np.nanmean(data, axis=0)

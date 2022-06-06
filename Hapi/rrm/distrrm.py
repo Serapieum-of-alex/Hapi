@@ -6,7 +6,7 @@ Created on Wed Jun 27 19:17:15 2018
 
 import numpy as np
 
-from Hapi.gis.raster import Raster as raster
+from pyramids.raster import Raster as raster
 from Hapi.rrm.routing import Routing as routing
 
 
@@ -303,7 +303,8 @@ class DistributedRRM:
         dummy_states[:] = np.nan
 
         # Get the mask
-        mask, no_val = raster.get_mask(DEM)
+        # mask, no_val = raster.get_mask(DEM)
+        mask, no_val = raster.getRasterData(DEM)
         # shape of the fpl raster (rows, columns)-------------- rows are x and columns are y
         x_ext, y_ext = mask.shape
         #    y_ext, x_ext = mask.shape # shape of the fpl raster (rows, columns)------------ should change rows are y and columns are x

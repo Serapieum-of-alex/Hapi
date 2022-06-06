@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 from pandas.core.frame import DataFrame
 
-from Hapi.gis.raster import Raster
+from pyramids.raster import Raster
 
 # import os
 
@@ -350,7 +350,7 @@ class Event:
                 and the second column is the number of cells in each map
         """
 
-        self.DepthValues, NonZeroCells = Raster.OverlayMaps(
+        self.DepthValues, NonZeroCells = Raster.overlayMaps(
             Path,
             BaseMapF,
             self.DepthPrefix,
@@ -454,7 +454,7 @@ class Event:
                         + ".zip"
                     )
 
-                ExtractedValues, NonZeroCells = Raster.ExtractValues(
+                ExtractedValues, NonZeroCells = Raster.extractValues(
                     Path, ExcludeValue, self.Compressed, OccupiedCellsOnly
                 )
                 self.ExtractedValues[Day] = ExtractedValues
@@ -654,4 +654,4 @@ class Event:
 
 
 if __name__ == "__main__":
-    x = Event()
+    x = Event("Event")

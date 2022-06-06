@@ -18,11 +18,11 @@ from matplotlib.figure import Figure
 from pandas.core.frame import DataFrame
 from scipy.stats import genextreme, gumbel_r
 
-from Hapi.gis.raster import Raster as raster
+from pyramids.raster import Raster as raster
 from Hapi.hm.saintvenant import SaintVenant
 from Hapi.plot.visualizer import Visualize as V
-from Hapi.sm import performancecriteria as Pf
-from Hapi.sm.distributions import GEV, Gumbel  # , PlottingPosition
+from statista import metrics as Pf
+from statista.distributions import GEV, Gumbel  # , PlottingPosition
 
 hours = list(range(1, 25))
 
@@ -530,16 +530,20 @@ class River:
 
         Parameters
         ----------
-        start : [integer/string], optional
+        start : [int/str], optional
                 the day you want to read the result from, the first day is 1
                 not zero, you can also enter the date of the day.
                 The default is ''.
-        end : [integer], optional
+        end : [int], optional
                 the day you want to read the result to.
         path : [String], optional
             path to read the results from. The default is ''.
         fmt: [string]
             format of the date. fmt="%Y-%m-%d %H:%M:%S"
+        ds: [bool]
+
+        dsbcpath: [str]
+            
 
         Returns
         -------
@@ -1541,7 +1545,7 @@ class River:
         path : [String]
             path to the "Statistical Properties.txt" file including the
             file name and extention "path/Statistical Properties.txt".
-        >>> Statistical Properties.txt
+            >>> "Statistical Properties.txt"
             id,c,loc,scale,D-static,P-Value
             23800100,-0.0511,115.9465,42.7040,0.1311,0.6748
             23800500,0.0217,304.8785,120.0510,0.0820,0.9878
@@ -1593,7 +1597,7 @@ class River:
                 if Distibution == "GEV":
                     dist = GEV()
                     self.SP.loc[i, self.SP.keys()[col1:].tolist()] = \
-                                                dist.TheporeticalEstimate(
+                                                dist.theporeticalEstimate(
                             self.SP.loc[i, "c"],
                             self.SP.loc[i, "loc"],
                             self.SP.loc[i, "scale"],
@@ -1602,7 +1606,7 @@ class River:
                 else:
                     dist = Gumbel()
                     self.SP.loc[i, self.SP.keys()[col1:].tolist()] = \
-                                                dist.TheporeticalEstimate(
+                                                dist.theporeticalEstimate(
                             self.SP.loc[i, "loc"],
                             self.SP.loc[i, "scale"],
                             F
@@ -3072,7 +3076,7 @@ class River:
         Errors : [list]
             list of the files' names that has errors and are already corrected.
         """
-        DEM, SpatialRef = raster.ReadASCII(DEMpath)
+        DEM, SpatialRef = raster.readASCII(DEMpath)
         NoDataValue = SpatialRef[-1]
 
         # filter and get the required maps
@@ -3142,7 +3146,7 @@ class River:
                         File.write(str(SpatialRef[i].decode()[:-2]) + "\n")
 
                     for i in range(rows):
-                        File.writelines(list(map(raster.StringSpace, MapArray[i, :])))
+                        File.writelines(list(map(raster.stringSpace, MapArray[i, :])))
                         File.write("\n")
 
                 # zip the file
@@ -3184,7 +3188,12 @@ class Sub(River):
     to create the Sub instance the river object has to have the cross-sections read using the
     'ReadCrossSections' method
     """
-    def __init__(self, sub_id: int, River, RunModel: bool=False):
+    def __init__(
+            self,
+            sub_id: int,
+            River,
+            RunModel: bool=False
+    ):
         self.id = sub_id
         self.RIM = River.name
         self.version = River.version
@@ -3246,10 +3255,7 @@ class Sub(River):
         self.onedresultpath = River.onedresultpath
 
         if isinstance(River.slope, DataFrame) and self.id in River.slope["id"].tolist():
-            # if self.version == 1 or self.version == 2 :
             self.slope = River.slope[River.slope["id"] == sub_id]["slope"].tolist()[0]
-            # else:
-            # self.slope = River.slope[River.slope['id']==id]['slope'].tolist()[0]
 
         if isinstance(River.rivernetwork, DataFrame):
             self.usnode, self.dsnode = River.TraceSegment(sub_id)
@@ -3942,11 +3948,9 @@ class Sub(River):
         None.
         """
         if path == "":
-            msg = (
-                "please enter the value of the CustomizedRunspath or use "
-                " the path argument to specify where to save the file"
-            )
-            assert self.CustomizedRunspath, msg
+            if not self.CustomizedRunspath:
+                raise ValueError("please enter the value of the CustomizedRunspath or use the path "
+                                 "argument to specify where to save the file")
             path = self.CustomizedRunspath
 
         saveDS = self.XSHydrographs[xsid].resample("D").last().to_frame()
@@ -4073,29 +4077,32 @@ class Sub(River):
         return fig, ax
 
 
-    def ReadUSHydrograph(self, fromday: [str, int]="",
-                         today: Union[str, int]="",
-                         path: str="",
-                         date_format: str="'%Y-%m-%d'"):
+    def ReadUSHydrograph(
+            self,
+            fromday: [str, int]="",
+            today: Union[str, int]="",
+            path: str="",
+            date_format: str="'%Y-%m-%d'"
+    ):
         """ReadUSHydrograph.
 
-        Read the hydrograph of the upstream segment.
+            Read the hydrograph of the upstream segment.
 
         Parameters
         ----------
-        1-fromday : [integer], optional
+        fromday : [int], optional
                 the day you want to read the result from, the first day is 1 not zero.The default is ''.
-        2-today : [integer], optional
+        today : [int], optional
                 the day you want to read the result to.
-        3-path : [String], optional
+        path : [str], optional
             path to read the results from. if path is not given the CustomizedRunspath
              attribute for the river instance should be given. The default is ''.
-        4-date_format : "TYPE, optional
+        date_format : "TYPE, optional
             DESCRIPTION. The default is "'%Y-%m-%d'".
 
         Returns
         -------
-        1-USHydrographs : [dataframe attribute].
+        USHydrographs : [dataframe attribute].
             dataframe contains the hydrograph of each of the upstream segments
             with segment id as a column name and a column 'total' contains the
             sum of all the hydrographs.
@@ -4122,13 +4129,13 @@ class Sub(River):
                             today,
                             date_format,
                         )[Nodeid]
-                        logger.debug(f"the US hydrograph '{Nodeid}' has been read")
+                        logger.info(f"the US hydrograph '{Nodeid}' has been read")
                     except FileNotFoundError:
                         msg = (
                             f" the Path - {path} does not contain the routed hydrographs for the the "
                             f"segment - {Nodeid}"
                         )
-                        logger.debug(msg)
+                        logger.info(msg)
                         return
 
             # there is one upstream segment
@@ -4144,16 +4151,13 @@ class Sub(River):
                     today,
                     date_format,
                 )[Nodeid]
-                logger.debug(f"the US hydrograph '{Nodeid}' has been read")
+                logger.info(f"the US hydrograph '{Nodeid}' has been read")
             except FileNotFoundError:
-                msg = (
-                    f"The Path - {path} does not contain the routed hydrographs for the "
-                    f"segment - {Nodeid}"
-                )
-                logger.debug(msg)
+                logger.info(f"The Path - {path} does not contain the routed hydrographs for the "
+                    f"segment - {Nodeid}")
                 return
         else:
-            logger.debug("the Segment Does not have any Upstream Segments, or you have "
+            logger.info("the Segment Does not have any Upstream Segments, or you have "
                          "not read the river network in the river instance")
             return
 
@@ -4252,8 +4256,12 @@ class Sub(River):
         self.AreaPerLow = AreaPerLow[:, :]
 
 
-    def GetFlow(self, IF, fromday: Union[int, str]="", today: Union[int, str]="",
-                date_format="%d_%m_%Y"):
+    def GetFlow(
+            self,
+            IF,
+            fromday: Union[int, str]="",
+            today: Union[int, str]="",
+            date_format="%d_%m_%Y"):
         """GetFlow.
 
         Extract the lateral flow and boundary condition (if exist) time series
@@ -4279,11 +4287,12 @@ class Sub(River):
         Laterals : [dataframe attribute].
             dataframe containing a column for each cross section that has a lateral.
         """
-        assert isinstance(IF.BC, DataFrame), ("the boundary condition does not exist "
-                                              "you have to read it first using the "
-                                              "'ReadBoundaryConditions' method in the interface model")
-        assert isinstance(IF.Laterals, DataFrame), ("the Laterals does not exist you have to read it first"
-                                         "using the 'ReadLaterals' method in the interface model")
+        if not isinstance(IF.BC, DataFrame):
+            raise ValueError("the boundary condition does not exist you have to read it first using the "
+                             "'ReadBoundaryConditions' method in the interface model")
+        if not isinstance(IF.Laterals, DataFrame):
+            raise ValueError("the Laterals does not exist you have to read it first "
+                             "using the 'ReadLaterals' method in the interface model")
 
         if fromday == "":
             fromday = IF.BC.index[0]
@@ -4322,7 +4331,7 @@ class Sub(River):
                 self.Laterals.loc[:, i] = IF.Laterals.loc[fromday:today, i]
 
             self.Laterals["total"] = self.Laterals.sum(axis=1)
-
+            # if the rrm hydrograph at the location of the hm or at the location of the rrm is read
             if isinstance(IF.RRMProgression, DataFrame):
                 self.RRMProgression = pd.DataFrame(
                     index=pd.date_range(fromday, today, freq="D"),
@@ -4353,10 +4362,10 @@ class Sub(River):
         dataframe
             sum of the laterals of all the cross sections in the segment
             upstream of a given xsid.
-
         """
-        msg = "please read the Laterals Table and the Laterals first"
-        assert isinstance(self.LateralsTable, list) and isinstance(self.Laterals, DataFrame), msg
+        if not isinstance(self.LateralsTable, list) and not isinstance(self.Laterals, DataFrame):
+            raise ValueError("please read the Laterals Table and the Laterals first")
+
         USgauge = self.LateralsTable[: bisect(self.LateralsTable, xsid)]
         return self.Laterals[USgauge].sum(axis=1).to_frame()
 
@@ -4364,8 +4373,8 @@ class Sub(River):
     def GetTotalFlow(self, gaugexs: int):
         """GetTotalFlow.
 
-        GetTotalFlow extracts all the laterals upstream of a certain xs and
-        also extracts the Upstream/BC hydrograph.
+            GetTotalFlow extracts all the laterals upstream of a certain xs and
+            also extracts the Upstream/BC hydrograph.
 
         Parameters
         ----------
@@ -4379,13 +4388,15 @@ class Sub(River):
             of the given xs, the column name is "total"
         """
         # Sum the laterals and the BC/US hydrograph
-        assert isinstance(self.Laterals, DataFrame), "Please read the lateral flows first using the 'GetFlow'"
+        if not isinstance(self.Laterals, DataFrame):
+            raise ValueError("Please read the lateral flows first using the 'GetFlow'")
+
         Laterals = self.GetLaterals(gaugexs)
         try:
             s1 = Laterals.index[0]
             e1 = Laterals.index[-1]
         except IndexError:
-            logger.debug("there are no laterals for the given segment")
+            logger.info("there are no laterals for the given segment")
             return
 
         if isinstance(self.BC, DataFrame):
@@ -4399,7 +4410,7 @@ class Sub(River):
                 Laterals.loc[s:e, 0].values
                 + self.BC.loc[s:e, self.BC.columns[0]].values
             )
-            logger.debug(f"Total flow for the XS-{gaugexs} has been calculated")
+            logger.info(f"Total flow for the XS-{gaugexs} has been calculated")
         elif isinstance(self.USHydrographs, DataFrame):
             s2 = self.USHydrographs.index[0]
             s = max(s1, s2)
@@ -4411,9 +4422,9 @@ class Sub(River):
                 Laterals.loc[s:e, 0].values
                 + self.USHydrographs.loc[s:e, "total"].values
             )
-            logger.debug(f"Total flow for the XS-{gaugexs} has been calculated")
+            logger.info(f"Total flow for the XS-{gaugexs} has been calculated")
         else:
-            logger.debug(f"The US Hydrograph/BC of the given River segment-{self.id} is not read yet "
+            logger.info(f"The US Hydrograph/BC of the given River segment-{self.id} is not read yet "
                          "please use the 'ReadUSHydrograph' method to read it")
 
 
@@ -4432,7 +4443,6 @@ class Sub(River):
         -------
         H : TYPE
             DESCRIPTION.
-
         """
         H = np.zeros(shape=(len(Q)))
 
@@ -5395,7 +5405,7 @@ class Sub(River):
                     self.twodresultpath + self.returnperiod_prefix + str(Day) + ".zip"
                 )
 
-            ExtractedValues, NonZeroCells = raster.OverlayMap(
+            ExtractedValues, NonZeroCells = raster.overlayMap(
                 path, BaseMapF, ExcludeValue, self.compressed, OccupiedCellsOnly
             )
 

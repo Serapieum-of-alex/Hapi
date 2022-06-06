@@ -15,7 +15,7 @@ from matplotlib.figure import Figure
 from pandas._libs.tslibs.timestamps import Timestamp
 from pandas.core.frame import DataFrame
 
-import Hapi.sm.performancecriteria as pf
+import statista.metrics as pf
 from Hapi.hapi_warnings import SilenceNumpyWarning, SilenceShapelyWarning
 from Hapi.hm.river import River
 

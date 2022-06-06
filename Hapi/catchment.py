@@ -19,10 +19,10 @@ import pandas as pd
 from loguru import logger
 from osgeo import gdal
 
-import Hapi.sm.performancecriteria as PC
-from Hapi.gis.giscatchment import GISCatchment as GC
-from Hapi.gis.raster import Raster
-from Hapi.plot.map import Map
+import statista.metrics as PC
+from pyramids.catchment import Catchment as GC
+from pyramids.raster import Raster
+from digitalearth.map import Map
 from Hapi.plot.visualizer import Visualize as Vis
 
 
@@ -191,7 +191,7 @@ class Catchment:
                 f"{Path} folder you have provided is empty"
             )
             # read data
-            self.Prec = Raster.ReadRastersFolder(Path, start=start, end=end, fmt=fmt)
+            self.Prec = Raster.readRastersFolder(Path, start=start, end=end, fmt=fmt)
             self.TS = (
                     self.Prec.shape[2] + 1
             )  # no of time steps =length of time series +1
@@ -240,7 +240,7 @@ class Catchment:
                     Path + " folder you have provided is empty"
             )
             # read data
-            self.Temp = Raster.ReadRastersFolder(Path, start=start, end=end, fmt=fmt)
+            self.Temp = Raster.readRastersFolder(Path, start=start, end=end, fmt=fmt)
             assert type(self.Temp) == np.ndarray, "array should be of type numpy array"
 
             if ll_temp is None:
@@ -290,7 +290,7 @@ class Catchment:
                     Path + " folder you have provided is empty"
             )
             # read data
-            self.ET = Raster.ReadRastersFolder(Path, start=start, end=end, fmt=fmt)
+            self.ET = Raster.readRastersFolder(Path, start=start, end=end, fmt=fmt)
             assert type(self.ET) == np.ndarray, "array should be of type numpy array"
             logger.debug("Potential Evapotranspiration data are read successfully")
 
@@ -437,7 +437,7 @@ class Catchment:
         ), "flow direction raster should contain values 1,2,4,8,16,32,64,128 only "
 
         # create the flow direction table
-        self.FDT = GC.FlowDirecTable(FlowDir)
+        self.FDT = GC.flowDirectionTable(FlowDir)
         logger.debug("Flow Direction input is read successfully")
 
 
@@ -567,7 +567,7 @@ class Catchment:
                     Path + " folder you have provided is empty"
             )
             # parameters
-            self.Parameters = Raster.ReadRastersFolder(Path)
+            self.Parameters = Raster.readRastersFolder(Path)
         else:
             self.Parameters = pd.read_csv(Path, index_col=0, header=None)[1].tolist()
 
@@ -766,7 +766,7 @@ class Catchment:
             # if hasattr(self, 'FlowAcc'):
             FlowAcc = gdal.Open(FlowaccPath)
             # calculate the nearest cell to each station
-            self.GaugesTable.loc[:, ["cell_row", "cell_col"]] = GC.NearestCell(
+            self.GaugesTable.loc[:, ["cell_row", "cell_col"]] = GC.nearestCell(
                 FlowAcc, self.GaugesTable[["id", "x", "y"]][:]
             )  # ,'weight'
 
@@ -1409,29 +1409,29 @@ class Catchment:
             names = [i.replace(" ", "_") for i in names]
             names = [i + ".tif" for i in names]
             if Result == 1:
-                Raster.RastersLike(src, self.Qtot[:, :, starti:endi], names)
+                Raster.rastersLike(src, self.Qtot[:, :, starti:endi], names)
             elif Result == 2:
-                Raster.RastersLike(src, self.quz_routed[:, :, starti:endi], names)
+                Raster.rastersLike(src, self.quz_routed[:, :, starti:endi], names)
             elif Result == 3:
-                Raster.RastersLike(src, self.qlz_translated[:, :, starti:endi], names)
+                Raster.rastersLike(src, self.qlz_translated[:, :, starti:endi], names)
             elif Result == 4:
-                Raster.RastersLike(
+                Raster.rastersLike(
                     src, self.statevariables[:, :, starti:endi, 0], names
                 )
             elif Result == 5:
-                Raster.RastersLike(
+                Raster.rastersLike(
                     src, self.statevariables[:, :, starti:endi, 1], names
                 )
             elif Result == 6:
-                Raster.RastersLike(
+                Raster.rastersLike(
                     src, self.statevariables[:, :, starti:endi, 2], names
                 )
             elif Result == 7:
-                Raster.RastersLike(
+                Raster.rastersLike(
                     src, self.statevariables[:, :, starti:endi, 3], names
                 )
             elif Result == 8:
-                Raster.RastersLike(
+                Raster.rastersLike(
                     src, self.statevariables[:, :, starti:endi, 4], names
                 )
         else:

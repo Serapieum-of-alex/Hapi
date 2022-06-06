@@ -15,7 +15,7 @@ from osgeo import gdal
 from scipy.stats import gumbel_r  # genextreme,
 
 from Hapi.hm.river import River
-from Hapi.sm.distributions import GEV, Gumbel, PlottingPosition
+from statista.distributions import GEV, Gumbel, PlottingPosition
 
 # from matplotlib import gridspec
 

@@ -8,19 +8,13 @@ into rasters
 """
 import datetime as dt
 import math
-
 # import numbers
 import os
-
 import numpy as np
+from osgeo import gdal
 
-try:
-    import gdal
-except ModuleNotFoundError:
-    from osgeo import gdal
-
-from Hapi.gis.giscatchment import GISCatchment as GC
-from Hapi.gis.raster import Raster
+from pyramids.catchment import Catchment as GC
+from pyramids.raster import Raster
 
 
 class DistParameters:
@@ -195,73 +189,74 @@ class DistParameters:
         as 1D list from optimization algorithm] and distribute them horizontally on
         number of cells given by a raster
 
-        Inputs :
+        Parameters
         ----------
-            1- par_g : [list]
-                list of parameters
-            2- raster : [gdal.dataset]
-                raster to get the spatial information of the catchment
-                (DEM, flow accumulation or flow direction raster)
-            3- no_parameters : [integer]
-                no of parameters of the cell according to the rainfall runoff model
-            4-no_lumped_par : [integer]
-                nomber of lumped parameters, you have to enter the value of
-                the lumped parameter at the end of the list, default is 0 (no lumped parameters)
-            5-lumped_par_pos : [List]
-                list of order or position of the lumped parameter among all
-                the parameters of the lumped model (order starts from 0 to the length
-                of the model parameters), default is [] (empty), the following order
-                of parameters is used for the lumped HBV model used
-                [ltt, utt, rfcf, sfcf, ttm, cfmax, cwh, cfr, fc, beta, e_corr, etf, lp,
-                c_flux, k, k1, alpha, perc, pcorr, Kmuskingum, Xmuskingum]
-            6- kub : [float]
-                upper bound of K value (traveling time in muskingum routing method)
-                default is 1 hour
-            7- klb : [float]
-                Lower bound of K value (traveling time in muskingum routing method)
-                default is 0.5 hour (30 min)
-            8- Maskingum : [bool], optional
+        par_g : [list]
+            list of parameters
+        raster : [gdal.dataset]
+            raster to get the spatial information of the catchment
+            (DEM, flow accumulation or flow direction raster)
+        no_parameters : [integer]
+            no of parameters of the cell according to the rainfall runoff model
+        no_lumped_par : [integer]
+            nomber of lumped parameters, you have to enter the value of
+            the lumped parameter at the end of the list, default is 0 (no lumped parameters)
+        lumped_par_pos : [List]
+            list of order or position of the lumped parameter among all
+            the parameters of the lumped model (order starts from 0 to the length
+            of the model parameters), default is [] (empty), the following order
+            of parameters is used for the lumped HBV model used
+            [ltt, utt, rfcf, sfcf, ttm, cfmax, cwh, cfr, fc, beta, e_corr, etf, lp,
+            c_flux, k, k1, alpha, perc, pcorr, Kmuskingum, Xmuskingum]
+        kub : [float]
+            upper bound of K value (traveling time in muskingum routing method)
+            default is 1 hour
+        klb : [float]
+            Lower bound of K value (traveling time in muskingum routing method)
+            default is 0.5 hour (30 min)
+        Maskingum : [bool], optional
             if the routing function is muskingum. The default is False.
-        Output:
-        ----------
-            1- par_3d : [3d array]
-                3D array of the parameters distributed horizontally on the cells
 
-        Example:
-        ----------
-            EX1:totally distributed parameters
-                raster=gdal.Open("dem.tif")
-                [fc, beta, etf, lp, c_flux, k, k1, alpha, perc, pcorr, Kmuskingum, Xmuskingum]
-                no_lumped_par=0
-                lumped_par_pos=[]
-                par_g=np.random.random(no_elem*(no_parameters-no_lumped_par))
+        Returns
+        -------
+        par_3d : [3d array]
+            3D array of the parameters distributed horizontally on the cells
 
-                tot_dist_par=par3d(par_g,raster,no_parameters,no_lumped_par,lumped_par_pos,kub=1,klb=0.5)
+        Examples
+        --------
+        EX1:totally distributed parameters
+            raster=gdal.Open("dem.tif")
+            [fc, beta, etf, lp, c_flux, k, k1, alpha, perc, pcorr, Kmuskingum, Xmuskingum]
+            no_lumped_par=0
+            lumped_par_pos=[]
+            par_g=np.random.random(no_elem*(no_parameters-no_lumped_par))
 
-            EX2: One Lumped Parameter [K1]
-                raster=gdal.Open("dem.tif")
-                given values of parameters are of this order
-                [fc, beta, etf, lp, c_flux, k, alpha, perc, pcorr, Kmuskingum, Xmuskingum,k1]
-                K1 is lumped so its value is inserted at the end and its order should
-                be after K
+            tot_dist_par=par3d(par_g,raster,no_parameters,no_lumped_par,lumped_par_pos,kub=1,klb=0.5)
 
-                no_lumped_par=1
-                lumped_par_pos=[6]
-                par_g=np.random.random(no_elem* (no_parameters-no_lumped_par))
-                # insert the value of k1 at the end
-                par_g=np.append(par_g,0.005)
+        EX2: One Lumped Parameter [K1]
+            raster=gdal.Open("dem.tif")
+            given values of parameters are of this order
+            [fc, beta, etf, lp, c_flux, k, alpha, perc, pcorr, Kmuskingum, Xmuskingum,k1]
+            K1 is lumped so its value is inserted at the end and its order should
+            be after K
 
-                dist_par=par3d(par_g,raster,no_parameters,no_lumped_par,lumped_par_pos,kub=1,klb=0.5)
+            no_lumped_par=1
+            lumped_par_pos=[6]
+            par_g=np.random.random(no_elem* (no_parameters-no_lumped_par))
+            # insert the value of k1 at the end
+            par_g=np.append(par_g,0.005)
 
-            EX3:Two Lumped Parameter [K1, Perc]
-                raster=gdal.Open("dem.tif")
-                no_lumped_par=2
-                lumped_par_pos=[6,8]
-                par_g=np.random.random(no_elem* (no_parameters-no_lumped_par))
-                par_g=np.append(par_g,0.005)
-                par_g=np.append(par_g,0.006)
+            dist_par=par3d(par_g,raster,no_parameters,no_lumped_par,lumped_par_pos,kub=1,klb=0.5)
 
-                dist_par=par3d(par_g,raster,no_parameters,no_lumped_par,lumped_par_pos,kub=1,klb=0.5)
+        EX3:Two Lumped Parameter [K1, Perc]
+            raster=gdal.Open("dem.tif")
+            no_lumped_par=2
+            lumped_par_pos=[6,8]
+            par_g=np.random.random(no_elem* (no_parameters-no_lumped_par))
+            par_g=np.append(par_g,0.005)
+            par_g=np.append(par_g,0.006)
+
+            dist_par=par3d(par_g,raster,no_parameters,no_lumped_par,lumped_par_pos,kub=1,klb=0.5)
         """
         # input data validation
         # data type
@@ -334,35 +329,35 @@ class DistParameters:
         as 1D list from optimization algorithm] and distribute them horizontally on
         number of cells given by a raster
 
-        Inputs :
+        Parameters
         ----------
-            1- par_g : [list]
-                list of parameters
-            2- kub : [float]
-                upper bound of K value (traveling time in muskingum routing method)
-                default is 1 hour
-            3- klb : [float]
-                Lower bound of K value (traveling time in muskingum routing method)
-                default is 0.5 hour (30 min)
-            4- Maskingum : [bool], optional
+        par_g : [list]
+            list of parameters
+        kub : [float]
+            upper bound of K value (traveling time in muskingum routing method)
+            default is 1 hour
+        klb : [float]
+            Lower bound of K value (traveling time in muskingum routing method)
+            default is 0.5 hour (30 min)
+        Maskingum : [bool], optional
             if the routing function is muskingum. The default is False.
 
-        Output:
+        Returns
         ----------
-            1- par_3d: [3d array]
-                3D array of the parameters distributed horizontally on the cells
+        par_3d: [3d array]
+            3D array of the parameters distributed horizontally on the cells
 
         Example:
         ----------
-            EX1:Lumped parameters
-                raster=gdal.Open("dem.tif")
-                [fc, beta, etf, lp, c_flux, k, k1, alpha, perc, pcorr, Kmuskingum, Xmuskingum]
+        EX1:Lumped parameters
+            raster=gdal.Open("dem.tif")
+            [fc, beta, etf, lp, c_flux, k, k1, alpha, perc, pcorr, Kmuskingum, Xmuskingum]
 
-                raster=gdal.Open(path+"soil_classes.tif")
-                no_parameters=12
-                par_g=np.random.random(no_parameters) #no_elem*(no_parameters-no_lumped_par)
+            raster=gdal.Open(path+"soil_classes.tif")
+            no_parameters=12
+            par_g=np.random.random(no_parameters) #no_elem*(no_parameters-no_lumped_par)
 
-                tot_dist_par=DP.par3dLumped(par_g,raster,no_parameters,lumped_par_pos,kub=1,klb=0.5)
+            tot_dist_par=DP.par3dLumped(par_g,raster,no_parameters,lumped_par_pos,kub=1,klb=0.5)
         """
         # input data validation
         # data type
@@ -398,17 +393,17 @@ class DistParameters:
         value of k parameters between upper & lower constraint then the output
         will be the value coresponding to the giving position
 
-        Inputs:
+        Parameters
         ----------
-            1- x : [numeric]
-                weighting coefficient to determine the linearity of the water surface
-                (one of the parameters of muskingum routing method)
-            2- position : [integer]
-                random position between upper and lower bounds of the k parameter
-            3-UB : [numeric]
-                upper bound for k parameter
-            3-LB : [numeric]
-                Lower bound for k parameter
+        x : [numeric]
+            weighting coefficient to determine the linearity of the water surface
+            (one of the parameters of muskingum routing method)
+        position : [integer]
+            random position between upper and lower bounds of the k parameter
+        UB : [numeric]
+            upper bound for k parameter
+        LB : [numeric]
+            Lower bound for k parameter
         """
         # k has to be smaller than this constraint
         constraint1 = 0.5 * 1 / (1 - x)
@@ -431,40 +426,39 @@ class DistParameters:
         par2d_lumpedK1_lake method takes a list of parameters and distribute
         them horizontally on number of cells given by a raster
 
-        Inputs :
+        Parameters
         ----------
-            1- par_g : [list]
-                list of parameters
-            2- raster : [gdal.dataset]
-                raster to get the spatial information of the catchment
-                (DEM, flow accumulation or flow direction raster)
-            3- no_parameters :[integer]
-                no of parameters of the cell
-            4- no_parameters_lake : [integer]
-                no of lake parameters
-            5- kub : [float]
-                upper bound of K value (traveling time in muskingum routing method)
-                default is 1 hour
-            6- klb : [float]
-                Lower bound of K value (traveling time in muskingum routing method)
-                default is 0.5 hour (30 min)
+        par_g : [list]
+            list of parameters
+        raster : [gdal.dataset]
+            raster to get the spatial information of the catchment
+            (DEM, flow accumulation or flow direction raster)
+        no_parameters :[integer]
+            no of parameters of the cell
+        no_parameters_lake : [integer]
+            no of lake parameters
+        kub : [float]
+            upper bound of K value (traveling time in muskingum routing method)
+            default is 1 hour
+        klb : [float]
+            Lower bound of K value (traveling time in muskingum routing method)
+            default is 0.5 hour (30 min)
 
-        Output:
-        ----------
-            1- Par3d: [3d array]
-                3D array of the parameters distributed horizontally on the cells
-            2- lake_par: [list]
-                list of the lake parameters.
+        Returns
+        -------
+        Par3d: [3d array]
+            3D array of the parameters distributed horizontally on the cells
+        lake_par: [list]
+            list of the lake parameters.
 
         Example:
         ----------
-            a list of 155 value,all parameters are distributed except lower zone coefficient
-            (is written at the end of the list) each cell(14 cells) has 11 parameter plus lower zone
-            (12 parameters) function will take each 11 parameter and assing them to a specific cell
-            then assign the last value (lower zone parameter) to all cells
-            14*11=154 + 1 = 155
+        a list of 155 value,all parameters are distributed except lower zone coefficient
+        (is written at the end of the list) each cell(14 cells) has 11 parameter plus lower zone
+        (12 parameters) function will take each 11 parameter and assing them to a specific cell
+        then assign the last value (lower zone parameter) to all cells
+        14*11=154 + 1 = 155
         """
-
         # parameters in array
         # remove a place for the lumped parameter (k1) lower zone coefficient
         no_parameters = self.no_parameters - 1
@@ -514,62 +508,63 @@ class DistParameters:
         the input raster should be classified raster (by numbers) into class to be used
         to define the HRUs
 
-        Inputs :
+        Parameters
         ----------
-            1- par_g:
-                [list] list of parameters
-            2- raster:
-                [gdal.dataset] classification raster to get the spatial information
-                of the catchment and the to define each cell belongs to which HRU
-            3- no_parameters
-                [int] no of parameters of the cell according to the rainfall runoff model
-            4-no_lumped_par:
-                [int] nomber of lumped parameters, you have to enter the value of
-                the lumped parameter at the end of the list, default is 0 (no lumped parameters)
-            5-lumped_par_pos:
-                [List] list of order or position of the lumped parameter among all
-                the parameters of the lumped model (order starts from 0 to the length
-                of the model parameters), default is [] (empty), the following order
-                of parameters is used for the lumped HBV model used
-                [ltt, utt, rfcf, sfcf, ttm, cfmax, cwh, cfr, fc, beta, e_corr, etf, lp,
-                c_flux, k, k1, alpha, perc, pcorr, Kmuskingum, Xmuskingum]
-            6- kub:
-                [float] upper bound of K value (traveling time in muskingum routing method)
-                default is 1 hour
-            7- klb:
-                [float] Lower bound of K value (traveling time in muskingum routing method)
-                default is 0.5 hour (30 min)
+        par_g:
+            [list] list of parameters
+        raster:
+            [gdal.dataset] classification raster to get the spatial information
+            of the catchment and the to define each cell belongs to which HRU
+        no_parameters
+            [int] no of parameters of the cell according to the rainfall runoff model
+        no_lumped_par:
+            [int] nomber of lumped parameters, you have to enter the value of
+            the lumped parameter at the end of the list, default is 0 (no lumped parameters)
+        lumped_par_pos:
+            [List] list of order or position of the lumped parameter among all
+            the parameters of the lumped model (order starts from 0 to the length
+            of the model parameters), default is [] (empty), the following order
+            of parameters is used for the lumped HBV model used
+            [ltt, utt, rfcf, sfcf, ttm, cfmax, cwh, cfr, fc, beta, e_corr, etf, lp,
+            c_flux, k, k1, alpha, perc, pcorr, Kmuskingum, Xmuskingum]
+        kub:
+            [float] upper bound of K value (traveling time in muskingum routing method)
+            default is 1 hour
+        klb:
+            [float] Lower bound of K value (traveling time in muskingum routing method)
+            default is 0.5 hour (30 min)
 
-        Output:
+        Returns
         ----------
-            1- par_3d: 3D array of the parameters distributed horizontally on the cells
+        par_3d:
+            3D array of the parameters distributed horizontally on the cells
 
-        Example:
-        ----------
-            EX1:HRU without lumped parameters
-                [fc, beta, etf, lp, c_flux, k, k1, alpha, perc, pcorr, Kmuskingum, Xmuskingum]
-                raster = gdal.Open("soil_types.tif")
-                no_lumped_par=0
-                lumped_par_pos=[]
-                par_g=np.random.random(no_elem*(no_parameters-no_lumped_par))
+        Examples
+        --------
+        EX1:HRU without lumped parameters
+            [fc, beta, etf, lp, c_flux, k, k1, alpha, perc, pcorr, Kmuskingum, Xmuskingum]
+            raster = gdal.Open("soil_types.tif")
+            no_lumped_par=0
+            lumped_par_pos=[]
+            par_g=np.random.random(no_elem*(no_parameters-no_lumped_par))
 
-                par_hru=HRU(par_g,raster,no_parameters,no_lumped_par,lumped_par_pos,kub=1,klb=0.5)
+            par_hru=HRU(par_g,raster,no_parameters,no_lumped_par,lumped_par_pos,kub=1,klb=0.5)
 
 
-            EX2: HRU with one lumped parameters
-                given values of parameters are of this order
-                [fc, beta, etf, lp, c_flux, k, alpha, perc, pcorr, Kmuskingum, Xmuskingum,k1]
-                K1 is lumped so its value is inserted at the end and its order should
-                be after K
+        EX2: HRU with one lumped parameters
+            given values of parameters are of this order
+            [fc, beta, etf, lp, c_flux, k, alpha, perc, pcorr, Kmuskingum, Xmuskingum,k1]
+            K1 is lumped so its value is inserted at the end and its order should
+            be after K
 
-                raster = gdal.Open("soil_types.tif")
-                no_lumped_par=1
-                lumped_par_pos=[6]
-                par_g=np.random.random(no_elem* (no_parameters-no_lumped_par))
-                # insert the value of k1 at the end
-                par_g=np.append(par_g,0.005)
+            raster = gdal.Open("soil_types.tif")
+            no_lumped_par=1
+            lumped_par_pos=[6]
+            par_g=np.random.random(no_elem* (no_parameters-no_lumped_par))
+            # insert the value of k1 at the end
+            par_g=np.append(par_g,0.005)
 
-                par_hru=HRU(par_g,raster,no_parameters,no_lumped_par,lumped_par_pos,kub=1,klb=0.5)
+            par_hru=HRU(par_g,raster,no_parameters,no_lumped_par,lumped_par_pos,kub=1,klb=0.5)
         """
         # input data validation
         # data type
@@ -639,27 +634,26 @@ class DistParameters:
         this function calculates inputs for the HAND (height above nearest drainage)
         method for land use classification
 
-        Inputs:
+        Parameters
         ----------
-            1- DEM :
-                raster to get the spatial information of the catchment
-                (DEM raster)
-            2-FD : [gdal.dataset]
-                flow direction  raster to get the spatial information of the catchment
-            3-FPL : [gdal.dataset]
-                raster to get the spatial information of the catchment
-            4-River : [gdal.dataset]
-                raster to get the spatial information of the catchment
+        DEM :
+            raster to get the spatial information of the catchment
+            (DEM raster)
+        FD : [gdal.dataset]
+            flow direction  raster to get the spatial information of the catchment
+        FPL : [gdal.dataset]
+            raster to get the spatial information of the catchment
+        River : [gdal.dataset]
+            raster to get the spatial information of the catchment
 
 
-        Outputs:
-        ----------
-            1-HAND:
-                [numpy ndarray] Height above nearest drainage
+        Returns
+        -------
+        HAND: [numpy ndarray]
+            Height above nearest drainage
 
-            2-DTND:
-                [numpy ndarray] Distance to nearest drainage
-
+        DTND: [numpy ndarray]
+            Distance to nearest drainage
         """
         # Use DEM raster information to run all loops
         dem_A = DEM.ReadAsArray()
@@ -668,7 +662,7 @@ class DistParameters:
         cols = DEM.RasterXSize
 
         # get the indices of the flow direction path
-        fd_index = GC.FlowDirectIndex(FD)
+        fd_index = GC.flowDirectionIndex(FD)
 
         # read the river location raster
         river_A = River.ReadAsArray()
@@ -865,13 +859,13 @@ class DistParameters:
                 "18_perc",
             ]
 
-        if Path != None:
+        if Path is not None:
             pnme = [
                 Path + i + "_" + str(dt.datetime.now())[0:10] + ".tif" for i in pnme
             ]
 
         for i in range(np.shape(self.Par3d)[2]):
-            Raster.RasterLike(self.raster, self.Par3d[:, :, i], pnme[i])
+            Raster.rasterLike(self.raster, self.Par3d[:, :, i], pnme[i])
 
 
     def ListAttributes(self):
