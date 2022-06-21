@@ -192,10 +192,6 @@ Rusli, S. R., Yudianto, D. & Liu, J. tao. (2015) Effects of temporal variability
    :hidden:
    :maxdepth: 1
 
-   Installation <00Installation.rst>
-   Inputs <01Inputs.rst>
-   Available Models <02availablemodels.rst>
-   Tutorial <03tutorial.rst>
-   GIS <05GIS.rst>
-   Visualitation <06visualization.rst>
-   Statistics <04Statistics tutorial.rst>
+   Installation <Installation.rst>
+   Hydrological model <Hydrological model.rst>
+   Hydrodynamic model <Hydrodynamic model.rst>
