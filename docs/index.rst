@@ -127,13 +127,6 @@ IHE-Delft sessions
 
 .. digraph:: Linking
 
-    GIS -> raster;
-    GIS -> vector;
-    GIS -> giscatchment;
-    dpi=200;
-
-.. digraph:: Linking
-
     RRM -> HBV;
     RRM -> calibration;
     RRM -> distparameters;
@@ -155,17 +148,6 @@ IHE-Delft sessions
     HM -> crosssection;
     HM -> interface;
     dpi=400;
-
-.. digraph:: Linking
-
-    Statistics -> performancecriteria;
-    Statistics -> statisticaltools;
-    Statistics -> sensitivityanalysis;
-    dpi=400;
-
-.. digraph:: Linking
-    RemoteSensing -> remotesensing;
-    dpi=200;
 
 Future work
 -------------
