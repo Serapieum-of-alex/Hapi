@@ -1,0 +1,11 @@
+# Ignore everything in this directory
+
+*
+
+# Except this file
+
+!.gitignore
+parameters.py
+maxbas.py
+Max_MinParametervalues.py
+beta.py

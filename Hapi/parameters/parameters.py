@@ -1,4 +1,5 @@
 """Hydrological model parameter  """
+from typing import Union
 import json
 import os
 from urllib.request import urlretrieve
@@ -13,10 +14,10 @@ class Parameter:
     Parameter class
     """
     def __init__(self):
-        self.parameterset_id = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, "avg", "max"]
-        self.parameterser_path = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "avg", "max"]
+        self.parameterset_id = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, "avg", "max", "min"]
+        self.parameterser_path = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "avg", "max", "min"]
         self.article_id = [19999901, 19999988, 19999997, 20000006, 20000012, 20000018, 20000015, 20000024, 20000027,
-                      20000030, 20153402, 20153405]
+                      20000030, 20153402, 20153405, 20362374]
         self.baseurl = "https://api.figshare.com/v2"
         self.headers = {'Content-Type': 'application/json'}
         self.param_list = [
@@ -175,7 +176,7 @@ class Parameter:
             urlretrieve(file_dict['download_url'], os.path.join(directory, file_dict['name']))
 
 
-    def getParameterSet(self, set_id: int, directory: str = None):
+    def getParameterSet(self, set_id: Union[int, str], directory: str = None):
         """getParameterSet.
 
             getParameterSet retrieve parameter set
@@ -197,7 +198,7 @@ class Parameter:
             rpath = directory
         else:
             par_path = par.parameterser_path[ind]
-            rpath = f"{os.path.dirname(Hapi.__file__)}/Parameters/{par_path}"
+            rpath = f"{os.path.dirname(Hapi.__file__)}/parameters/{par_path}"
         par.retrieveParameterSet(article_id, directory=rpath)
 
     def getParameters(self):
@@ -214,14 +215,11 @@ class Parameter:
             set_id = self.parameterset_id[i]
             self.getParameterSet(set_id)
 
-parameter_set = 1
-
+# parameter_set = 1
+parameter_set = "min"
 
 par = Parameter()
-# par.getExampleData(20000030)
-# par.retrieveArticleFiles(20000030)
-
+par.getParameterSet(parameter_set)
 # get parameter set
 par.getParameters()
-#%%
 
