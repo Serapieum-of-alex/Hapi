@@ -1,5 +1,4 @@
-"""
-Created on Fri Apr  3 09:33:24 2020
+"""Created on Fri Apr  3 09:33:24 2020.
 
 @author: mofarrag
 """
@@ -75,7 +74,6 @@ class CrossSections:
 
         This function was developed first. The two following functions
         have been adapted from this one to meet some particular requirements.
-
         """
         for key in kwargs.keys():
             if key == "XLim":
@@ -144,7 +142,7 @@ class CrossSections:
 
             # Plot for log-log regression
             if log is True:
-                plt.plot(x_plot, coeff * (x_plot ** exp))
+                plt.plot(x_plot, coeff * (x_plot**exp))
                 plt.xscale("log")
                 plt.yscale("log")
                 plt.annotate(
@@ -196,7 +194,7 @@ class CrossSections:
             # Plot on a log-log scale
             plt.scatter(x, y, c="grey", marker="x")
             x_plot = np.linspace(x.min(), x.max(), 1000)
-            plt.plot(x_plot, coeff * (x_plot ** exp))
+            plt.plot(x_plot, coeff * (x_plot**exp))
             plt.xscale("log")
             plt.yscale("log")
             plt.annotate(
@@ -229,7 +227,7 @@ class CrossSections:
             # Plot on a linear scale
             plt.scatter(x, y, c="grey", marker="x")
             x_plot = np.linspace(x.min(), x.max(), 1000)
-            plt.plot(x_plot, coeff * (x_plot ** exp))
+            plt.plot(x_plot, coeff * (x_plot**exp))
             plt.annotate(
                 "$%s = %.4f%s^{%.4f}$" % (ylgd, coeff, xlgd, exp)
                 + "\n"
@@ -260,12 +258,10 @@ class CrossSections:
     def reg_plot_river(
         self, river_lst, data, minmax_XS_area, filename, log, Save=False, *args, **kargs
     ):
-        """
-        Use the ordinary least squares to make a regression and plot the
-        output.
+        """Use the ordinary least squares to make a regression and plot the output.
 
-        This version makes use of the field 'river' in data to define a subset
-        of gauges used for the regression.
+        This version makes use of the field 'river' in data to define a
+        subset of gauges used for the regression.
         """
         # for key in kwargs.keys():
         #     if key == "XLim":
@@ -379,9 +375,7 @@ class CrossSections:
     def reg_plot_subbasin(
         self, subbasin_lst, data, minmax_XS_area, filename, log, redfact, Save=False
     ):
-        """
-        Use the ordinary least squares to make a regression and plot the
-        output.
+        """Use the ordinary least squares to make a regression and plot the output.
 
         This version makes use of the field 'Subbasin' in data to define a subset
         of gauges used for the regression.
@@ -496,10 +490,7 @@ class CrossSections:
 
     @staticmethod
     def results_summary_to_dataframe(res):
-        """
-        Take the result of a statsmodel results table and transforms
-        it into a dataframe
-        """
+        """Take the result of a statsmodel results table and transforms it into a dataframe."""
 
         pvals = res.pvalues
         coeff = res.params
@@ -542,9 +533,7 @@ class CrossSections:
         return res_df
 
     def ListAttributes(self):
-        """
-        Print Attributes List
-        """
+        """Print Attributes List."""
 
         print("\n")
         print(

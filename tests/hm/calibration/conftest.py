@@ -4,7 +4,7 @@ import pytest
 
 # @pytest.fixture(scope="module")
 # def gauges_file_extension() -> str:
-    # return ".csv"
+# return ".csv"
 
 
 @pytest.fixture(scope="module")
@@ -16,6 +16,7 @@ def gauge_date_format() -> str:
 def gauge_long_ts_date_format() -> str:
     return "%Y-%m-%d"
 
+
 @pytest.fixture(scope="module")
 def gauges_table_path() -> str:
     return "examples/Hydrodynamic models/test_case/inputs/gauges/gauges.geojson"
@@ -24,6 +25,7 @@ def gauges_table_path() -> str:
 @pytest.fixture(scope="module")
 def gauges_numbers() -> int:
     return 3
+
 
 @pytest.fixture(scope="module")
 def ReadObservedQ_Path() -> str:
@@ -39,6 +41,7 @@ def ObservedQ_long_ts_Path() -> str:
 def ObservedQ_long_ts_dates() -> List[str]:
     return ["1951-01-01", "2003-12-31"]
 
+
 @pytest.fixture(scope="module")
 def ObservedQ_long_ts_len() -> int:
     return 54
@@ -48,17 +51,21 @@ def ObservedQ_long_ts_len() -> int:
 def ReadObservedWL_Path() -> str:
     return "examples/Hydrodynamic models/test_case/inputs/gauges/water_level/"
 
+
 @pytest.fixture(scope="module")
 def calibrateProfile_DS_bedlevel() -> float:
     return 61
+
 
 @pytest.fixture(scope="module")
 def calibrateProfile_mn() -> float:
     return 0.06
 
+
 @pytest.fixture(scope="module")
 def calibrateProfile_slope() -> float:
     return -0.03
+
 
 @pytest.fixture(scope="module")
 def DownWardBedLevel_height() -> float:
@@ -89,9 +96,12 @@ def rrmgauges() -> List[int]:
 def hm_separated_q_results_path() -> str:
     return r"examples\Hydrodynamic models\test_case\results\separated-results\discharge"
 
+
 @pytest.fixture(scope="module")
 def hm_separated_wl_results_path() -> str:
-    return r"examples\Hydrodynamic models\test_case\results\separated-results\water_level"
+    return (
+        r"examples\Hydrodynamic models\test_case\results\separated-results\water_level"
+    )
 
 
 @pytest.fixture(scope="module")
@@ -103,19 +113,41 @@ def hm_separated_results_q_long_ts_path() -> str:
 def hm_long_ts_number() -> int:
     return 61
 
+
 @pytest.fixture(scope="module")
 def Metrics_table_columns() -> List[str]:
-    return ['start', 'end', 'rmse', 'KGE', 'WB', 'NSE', 'NSEModified', 'MBE', 'MAE',
-       'id', 'gid', 'name', 'oid', 'river', 'xsid', 'datum(m)', 'discharge',
-       'waterlevel', 'geometry']
+    return [
+        "start",
+        "end",
+        "rmse",
+        "KGE",
+        "WB",
+        "NSE",
+        "NSEModified",
+        "MBE",
+        "MAE",
+        "id",
+        "gid",
+        "name",
+        "oid",
+        "river",
+        "xsid",
+        "datum(m)",
+        "discharge",
+        "waterlevel",
+        "geometry",
+    ]
+
 
 @pytest.fixture(scope="module")
 def start() -> str:
     return "1955-01-01"
 
+
 @pytest.fixture(scope="module")
 def InspectGauge_sub_id() -> int:
     return 1
+
 
 @pytest.fixture(scope="module")
 def hm_saveto() -> str:

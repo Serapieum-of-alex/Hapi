@@ -1,19 +1,21 @@
 import datetime as dt
+
 import numpy as np
 
 # from Hapi.run import Run
 import statista.metrics as PC
-from Hapi.rrm.routing import Routing
-from Hapi.rrm.calibration import Calibration
+
 import Hapi.rrm.hbv_bergestrom92 as HBVLumped
+from Hapi.rrm.calibration import Calibration
+from Hapi.rrm.routing import Routing
 
 
 def test_ReadParametersBounds(
-        coello_rrm_date: list,
-        lower_bound: list,
-        upper_bound: list,
+    coello_rrm_date: list,
+    lower_bound: list,
+    upper_bound: list,
 ):
-    Coello = Calibration('rrm', coello_rrm_date[0], coello_rrm_date[1])
+    Coello = Calibration("rrm", coello_rrm_date[0], coello_rrm_date[1])
     Maxbas = True
     Snow = False
     Coello.ReadParametersBounds(lower_bound, upper_bound, Snow, Maxbas=Maxbas)
@@ -24,19 +26,19 @@ def test_ReadParametersBounds(
 
 
 def test_LumpedCalibration(
-        coello_rrm_date: list,
-        lumped_meteo_data_path: str,
-        coello_AreaCoeff: float,
-        coello_InitialCond: list,
-        lumped_parameters_path: str,
-        coello_Snow: bool,
-        lower_bound: list,
-        upper_bound: list,
-        lumped_gauges_path: str,
-        coello_gauges_date_fmt: str,
-        history_files: str,
+    coello_rrm_date: list,
+    lumped_meteo_data_path: str,
+    coello_AreaCoeff: float,
+    coello_InitialCond: list,
+    lumped_parameters_path: str,
+    coello_Snow: bool,
+    lower_bound: list,
+    upper_bound: list,
+    lumped_gauges_path: str,
+    coello_gauges_date_fmt: str,
+    history_files: str,
 ):
-    Coello = Calibration('rrm', coello_rrm_date[0], coello_rrm_date[1])
+    Coello = Calibration("rrm", coello_rrm_date[0], coello_rrm_date[1])
     Coello.ReadLumpedInputs(lumped_meteo_data_path)
     Coello.ReadLumpedModel(HBVLumped, coello_AreaCoeff, coello_InitialCond)
     Maxbas = True
@@ -57,8 +59,15 @@ def test_LumpedCalibration(
 
     Coello.ReadObjectiveFn(OF, OF_args)
 
-    ApiObjArgs = dict(hms=100, hmcr=0.95, par=0.65, dbw=2000, fileout=1, xinit=0,
-                      filename=history_files)
+    ApiObjArgs = dict(
+        hms=100,
+        hmcr=0.95,
+        par=0.65,
+        dbw=2000,
+        fileout=1,
+        xinit=0,
+        filename=history_files,
+    )
 
     for i in range(len(ApiObjArgs)):
         print(list(ApiObjArgs.keys())[i], str(ApiObjArgs[list(ApiObjArgs.keys())[i]]))
@@ -66,7 +75,9 @@ def test_LumpedCalibration(
     # pll_type = 'POA'
     pll_type = None
 
-    ApiSolveArgs = dict(store_sol=True, display_opts=True, store_hst=False, hot_start=False)
+    ApiSolveArgs = dict(
+        store_sol=True, display_opts=True, store_hst=False, hot_start=False
+    )
 
     OptimizationArgs = [ApiObjArgs, pll_type, ApiSolveArgs]
 

@@ -1,11 +1,9 @@
-"""
-Created on Fri Apr  2 03:34:11 2021
+"""Created on Fri Apr  2 03:34:11 2021.
 
 @author: mofarrag
 
 Make sure the working directory is set to the examples folder in the Hapi repo"
 currunt_work_directory = Hapi/Example
-
 """
 import os
 

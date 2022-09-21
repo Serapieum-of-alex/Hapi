@@ -98,6 +98,12 @@ of catchment response based on dynamic weighting of hydrological models" on apri
     perc: float
         percolation
 """
+
+import numpy as np
+from scipy.interpolate import InterpolatedUnivariateSpline as interp11
+
+# import sklearn.metrics as error
+
 # HBV base model parameters
 P_LB = [
     -1.5,  # ltt
@@ -145,11 +151,6 @@ P_UB = [
 
 DEF_ST = [0.0, 10.0, 10.0, 10.0, 0.0]
 DEF_q0 = 0
-
-import numpy as np
-from scipy.interpolate import InterpolatedUnivariateSpline as interp11
-
-# import sklearn.metrics as error
 
 
 def Precipitation(temp, ltt, utt, prec, rfcf, sfcf, tfac):
@@ -679,7 +680,7 @@ def Simulate(
     ):  # If Long term average temptearature unspecified, calculated from temp
         ll_temp = [np.mean(temp)] * len(prec)
 
-    if q_init == None:
+    if q_init is None:
         q_sim = [DEF_q0]
     else:
         q_sim = [q_init]

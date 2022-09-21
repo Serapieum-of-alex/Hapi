@@ -14,8 +14,7 @@ import numpy as np
 
 
 class Routing:
-    """
-    Routing class contains routing method
+    """Routing class contains routing method.
 
     Methods
     1- Muskingum
@@ -79,11 +78,11 @@ class Routing:
 
     @staticmethod
     def Muskingum_V(
-            inflow: np.ndarray,
-            Qinitial: Union[int, float],
-            k: Union[int, float],
-            x: Union[int, float],
-            dt: Union[int, float]
+        inflow: np.ndarray,
+        Qinitial: Union[int, float],
+        k: Union[int, float],
+        x: Union[int, float],
+        dt: Union[int, float],
     ) -> np.ndarray:
         """Muskingum_V.
 
@@ -134,8 +133,7 @@ class Routing:
 
     @staticmethod
     def Tf(maxbas):
-        """
-        Transfer function weight generator in a shape of a triangle
+        """Transfer function weight generator in a shape of a triangle.
 
         Inputs:
         ----------
@@ -171,9 +169,7 @@ class Routing:
 
     @staticmethod
     def TriangularRouting2(q, maxbas=1):
-        """
-        TriangularRouting implements the transfer function using a triangular
-        function (considers only integer values of Maxbas parameter)
+        """TriangularRouting implements the transfer function using a triangular function (considers only integer values of Maxbas parameter)
 
         Inputs:
         ----------
@@ -213,9 +209,7 @@ class Routing:
 
     @staticmethod
     def CalculateWeights(MAXBAS):
-        """
-        CalculateMaxBas calculate the MAXBAS Weights based on a MAXBAX number
-        The MAXBAS is a HBV parameter that controls the routing
+        """CalculateMaxBas calculate the MAXBAS Weights based on a MAXBAX number The MAXBAS is a HBV parameter that controls the routing.
 
         Inputs:
         ----------
@@ -269,7 +263,7 @@ class Routing:
 
                     flag = 2
                 else:
-                    #'sum of the two height in the descending part of the triangle
+                    # 'sum of the two height in the descending part of the triangle
                     ynow = MAXBAS * np.sin(np.pi / 3) - np.tan(np.pi / 3) * (
                         x + 1 - MAXBAS / 2.0
                     )
@@ -298,10 +292,7 @@ class Routing:
 
     @staticmethod
     def TriangularRouting1(Q, MAXBAS):
-        """
-        TriangularRouting1 calculate the routing from a input hydrograph using
-        the MAXBAS parameter from the HBV model (considers float values of Maxbas
-                                                 parameter).
+        """TriangularRouting1 calculate the routing from a input hydrograph using the MAXBAS parameter from the HBV model (considers float values of Maxbas parameter).
 
         EXAMPLE:
         ----------

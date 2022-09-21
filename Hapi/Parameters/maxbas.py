@@ -1,18 +1,9 @@
-"""
-Created on Sat Feb  3 02:04:13 2018
+"""Created on Sat Feb  3 02:04:13 2018.
 
 @author: Mostafa
 """
-#% links
-# from IPython import get_ipython  # to reset the variable explorer each time
-
-# get_ipython().magic("reset -f")
-# import os
-
 # import HBV_explicit
 import matplotlib.pyplot as plt
-
-#%% library
 import numpy as np
 import plotly.plotly as py
 import plotly.tools as tls
@@ -21,13 +12,11 @@ from matplotlib import gridspec
 import Hapi.Routing as RT
 
 # os.chdir("F:/02Private/02Research/thesis/My Thesis/Data_and_Models/Model/Code/05Distributed/")
-
-
 # import sys
 # sys.path.append("F:/02Private/02Research/thesis/My Thesis/Data_and_Models/Model/Code/python_functions")
 
 
-#%%
+# %%
 Q = np.array([1.5, 1, 2, 6, 10, 20, 15, 7, 3, 2, 1.5, 2])
 n1 = RT.Tf(1)
 
@@ -47,7 +36,7 @@ Q7 = RT.TriangularRouting(Q, 7)
 Q9 = RT.TriangularRouting(Q, 9)
 Q12 = RT.TriangularRouting(Q, 12)
 
-#%% plot
+# %% plot
 # plt.figure(1,figsize=(15,8))
 fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(15, 8))
 # plt.plot(n1, label="MAXBAS=1",linewidth=3)
@@ -75,7 +64,7 @@ ax1.set_xticks([])
 ax1.set_yticks([])
 # ax1.legend(fontsize=15)
 # fig.savefig("maxbas.tif", transparent=True)
-#%%
+# %%
 fig = plt.figure(5, figsize=(15, 8))
 gs = gridspec.GridSpec(2, 5)
 
@@ -106,13 +95,13 @@ ax5.set_xlabel("Time step", fontsize=15)
 ax5.set_ylabel("Discharge m3/s", fontsize=15)
 ax5.legend(fontsize=15)
 gs.update(wspace=0.35, hspace=0.1)
-#%%
+# %%
 fig = plt.gcf()
 plotly_fig = tls.mpl_to_plotly(fig)
 plotly_fig["layout"]["title"] = "Subplots with variable widths and heights"
 plotly_fig["layout"]["margin"].update({"t": 40})
 plot_url = py.plot(plotly_fig, filename="mpl-subplot-variable-width")
-#%%
+# %%
 plt.xlabel("Time step (hour)")
 plt.ylabel("Discharge m3/s")
 plt.legend(fontsize=15)

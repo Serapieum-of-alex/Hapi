@@ -5,17 +5,23 @@ import pytest
 def interface_Laterals_table_path() -> str:
     return "examples/Hydrodynamic models/test_case/inputs/1d/topo/laterals.txt"
 
+
 @pytest.fixture(scope="module")
 def interface_Laterals_folder() -> str:
     return "examples/Hydrodynamic models/test_case/inputs/1d/hydro/"
 
+
 @pytest.fixture(scope="module")
 def interface_Laterals_date_format() -> str:
-    return '%d_%m_%Y'
+    return "%d_%m_%Y"
+
 
 @pytest.fixture(scope="module")
 def interface_bc_path() -> str:
-    return "examples/Hydrodynamic models/test_case/inputs/1d/topo/boundaryconditions.txt"
+    return (
+        "examples/Hydrodynamic models/test_case/inputs/1d/topo/boundaryconditions.txt"
+    )
+
 
 @pytest.fixture(scope="module")
 def interface_bc_folder() -> str:
@@ -24,7 +30,7 @@ def interface_bc_folder() -> str:
 
 @pytest.fixture(scope="module")
 def interface_bc_date_format() -> str:
-    return '%d_%m_%Y'
+    return "%d_%m_%Y"
 
 
 @pytest.fixture(scope="module")
@@ -35,6 +41,7 @@ def rrm_resutls_hm_location() -> str:
 @pytest.fixture(scope="module")
 def laterals_number_ts() -> int:
     return 80
+
 
 @pytest.fixture(scope="module")
 def no_laterals() -> int:

@@ -55,8 +55,15 @@ P_UB = [
 DEF_ST = [0.0, 10.0, 10.0, 10.0, 0.0]
 DEF_q0 = 2.3
 
-# Get random parameter set
+
 def get_random_pars():
+    """get_random_pars.
+
+        get_random_pars generates random parameter values
+
+    Returns:
+    array of random values between the upper and lower bounds.
+    """
     return np.random.uniform(P_LB, P_UB)
 
 
@@ -284,11 +291,9 @@ def _soil(fc, beta, etf, temp, tm, e_corr, lp, tfac, c_flux, inf, ep, sm_old, uz
 
 
 def _response(tfac, perc, alpha, k, k1, area, lz_old, uz_int_1):
-    """
-    ========
-    Response
-    ========
-    The response routine of the HBV-96 model.
+    """Response.
+
+        The response routine of the HBV-96 model.
 
     The response routine is in charge of transforming the current values of
     upper and lower zone into discharge. This routine also controls the
@@ -313,9 +318,6 @@ def _response(tfac, perc, alpha, k, k1, area, lz_old, uz_int_1):
         Previous lower zone value [mm]
     uz_int_1 : float
         Previous upper zone value before percolation [mm]
-    qdr : float
-        Direct runoff [mm]
-
     """
     # upper zone
     # if perc > Quz then perc = Quz and Quz = 0 if not perc = value and Quz= Quz-perc so take the min
@@ -347,7 +349,7 @@ def _response(tfac, perc, alpha, k, k1, area, lz_old, uz_int_1):
 
 
 def _tf(maxbas):
-    """ Transfer function weight generator """
+    """Transfer function weight generator."""
     wi = []
     for x in range(1, maxbas + 1):
         if x <= (maxbas) / 2.0:
@@ -363,10 +365,7 @@ def _tf(maxbas):
 
 
 def _routing(q, maxbas=1):
-    """
-    This function implements the transfer function using a triangular
-    function
-    """
+    """This function implements the transfer function using a triangular function."""
     assert maxbas >= 1, "Maxbas value has to be larger than 1"
     # Get integer part of maxbas
     #    maxbas = int(maxbas)

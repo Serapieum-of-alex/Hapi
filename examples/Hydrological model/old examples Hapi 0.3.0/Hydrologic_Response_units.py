@@ -1,5 +1,4 @@
-"""
-Created on Wed Jul 04 23:03:55 2018
+"""Created on Wed Jul 04 23:03:55 2018.
 
 @author: Mostafa
 This function is used durin the calibration of the model to distribute generated parameters by the calibation

@@ -1,5 +1,4 @@
-"""
-Created on Sun Jun 24 21:02:34 2018
+"""Created on Sun Jun 24 21:02:34 2018.
 
 @author: Mostafa
 """
@@ -136,17 +135,17 @@ def OF(Qobs, Qout, q_uz_routed, q_lz_trans, coordinates):
     for i in range(len(coordinates) - 1):
         Quz = np.reshape(
             q_uz_routed[
-            int(coordinates.loc[coordinates.index[i], "cell_row"]),
-            int(coordinates.loc[coordinates.index[i], "cell_col"]),
-            :-1,
+                int(coordinates.loc[coordinates.index[i], "cell_row"]),
+                int(coordinates.loc[coordinates.index[i], "cell_col"]),
+                :-1,
             ],
             len(Qobs),
         )
         Qlz = np.reshape(
             q_lz_trans[
-            int(coordinates.loc[coordinates.index[i], "cell_row"]),
-            int(coordinates.loc[coordinates.index[i], "cell_col"]),
-            :-1,
+                int(coordinates.loc[coordinates.index[i], "cell_row"]),
+                int(coordinates.loc[coordinates.index[i], "cell_col"]),
+                :-1,
             ],
             len(Qobs),
         )

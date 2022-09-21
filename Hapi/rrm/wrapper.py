@@ -1,5 +1,4 @@
-"""
-Created on Sun Apr 29 17:17:54 2018
+"""Created on Sun Apr 29 17:17:54 2018.
 
 @author: Mostafa
 """
@@ -11,9 +10,7 @@ from Hapi.rrm.routing import Routing as routing
 
 
 class Wrapper:
-    """
-    Wrapper class connect different commponent together (lumped run of the
-    distributed with the spatial routing) for Hapi and for FW1
+    """Wrapper class connect different commponent together (lumped run of the distributed with the spatial routing) for Hapi and for FW1.
 
     Methods:
         1- HapiModel
@@ -23,10 +20,8 @@ class Wrapper:
         5- Lumped
     """
 
-
     def __init__(self):
         pass
-
 
     @staticmethod
     def RRMModel(Model, ll_temp=None, q_0=None):
@@ -96,7 +91,6 @@ class Wrapper:
 
         # Model.qout = Model.qout[:-1]
 
-
     @staticmethod
     def RRMWithlake(Model, Lake, ll_temp=None, q_0=None):
         """RRMWithlake.
@@ -163,14 +157,13 @@ class Wrapper:
         qlake = np.append(qlake, qlake[-1])
         # both lake & Quz are in m3/s
         Model.quz[Lake.OutflowCell[0], Lake.OutflowCell[1], :] = (
-                Model.quz[Lake.OutflowCell[0], Lake.OutflowCell[1], :] + qlake
+            Model.quz[Lake.OutflowCell[0], Lake.OutflowCell[1], :] + qlake
         )
 
         # run the GIS part to rout from cell to another
         distrrm.SpatialRouting(Model)
 
         # Model.qout = Model.qout[:-1]
-
 
     @staticmethod
     def FW1(Model, ll_temp=None, q_0=None):
@@ -208,7 +201,6 @@ class Wrapper:
         Model.qout = qlz1 + quz1
 
         Model.qout = Model.qout[:-1]
-
 
     @staticmethod
     def FW1Withlake(Model, Lake, ll_temp=None, q_0=None):
@@ -288,38 +280,37 @@ class Wrapper:
 
         Model.qout = qout[:-1] + Lake.QlakeR
 
-
     @staticmethod
     def Lumped(Model, Routing=0, RoutingFn=[]):
-        """
+        """Lumped.
 
-        Inputs:
+        Parameters
         ----------
-            1-ConceptualModel:
-                [function] conceptual model and it should contain a function called simulate
-            2-data:
-                [numpy array] meteorological data as array with the first column as precipitation
-                second as evapotranspiration, third as temperature and forth column as
-                long term average temperature
-            3- parameters:
-                [numpy array] conceptual model parameters as array
-            4-p2:
-                [List] list of unoptimized parameters
-                p2[0] = tfac, 1 for hourly, 0.25 for 15 min time step and 24 for daily time step
-                p2[1] = catchment area in km2
-            5-init_st:
-                [list] initial state variables values [sp, sm, uz, lz, wc].
-            6-Routing:
-                [0 or 1] to decide wether t route the generated discharge hydrograph or not
-            7-RoutingFn:
-                [function] function to route the dischrge hydrograph.
+        ConceptualModel:
+            [function] conceptual model and it should contain a function called simulate
+        data:
+            [numpy array] meteorological data as array with the first column as precipitation
+            second as evapotranspiration, third as temperature and forth column as
+            long term average temperature
+        parameters:
+            [numpy array] conceptual model parameters as array
+        p2:
+            [List] list of unoptimized parameters
+            p2[0] = tfac, 1 for hourly, 0.25 for 15 min time step and 24 for daily time step
+            p2[1] = catchment area in km2
+        init_st:
+            [list] initial state variables values [sp, sm, uz, lz, wc].
+        Routing:
+            [0 or 1] to decide wether t route the generated discharge hydrograph or not
+        RoutingFn:
+            [function] function to route the dischrge hydrograph.
 
-        Outputs:
-        ----------
-            1- st:
-                [numpy array] 3d array of the 5 state variable data for each cell
-            2- q_lz:
-                [numpy array] 1d array of the calculated discharge.
+        Returns
+        -------
+        st:
+            [numpy array] 3d array of the 5 state variable data for each cell
+        q_lz:
+            [numpy array] 1d array of the calculated discharge.
 
         examples:
         ----------

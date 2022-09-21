@@ -1,5 +1,4 @@
-"""
-Created on Tue Mar 16 22:25:59 2021
+"""Created on Tue Mar 16 22:25:59 2021.
 
 @author: mofarrag
 """
@@ -212,9 +211,9 @@ def HBC(Sub, River, Hbnd, dt, dx, inih, storewl, MinQ):
                             ) / 2  # mean radius
 
                         # upper discharge
-                        xs[x, 6] = (1.0 / Sub.mn[x]) * Area_UM * (R_UM ** power)
+                        xs[x, 6] = (1.0 / Sub.mn[x]) * Area_UM * (R_UM**power)
                         # diffusive wave coefficient for upper wave
-                        Diff_coeff[x, 0] = (1.0 / Sub.mn[x]) * (R_UM ** power)
+                        Diff_coeff[x, 0] = (1.0 / Sub.mn[x]) * (R_UM**power)
 
                         # Lower mean area and hydraulic radius
                         Area_LM = (xs[x, 4] + xs[x + 1, 4]) / 2  # mean area
@@ -251,9 +250,9 @@ def HBC(Sub, River, Hbnd, dt, dx, inih, storewl, MinQ):
                             ) / 2  # mean radius
 
                         # upper discharge
-                        xs[x, 6] = (1.0 / Sub.mn[x]) * Area_UM * (R_UM ** power)
+                        xs[x, 6] = (1.0 / Sub.mn[x]) * Area_UM * (R_UM**power)
                         # diffusive wave coefficient for upper wave
-                        Diff_coeff[x, 0] = (1.0 / Sub.mn[x]) * (R_UM ** power)
+                        Diff_coeff[x, 0] = (1.0 / Sub.mn[x]) * (R_UM**power)
 
                         # Lower mean area and hydraulic radius
                         Area_LM = (
@@ -269,7 +268,7 @@ def HBC(Sub, River, Hbnd, dt, dx, inih, storewl, MinQ):
                     Diff_coeff[x, 0] = Diff_coeff[x, 0] / np.sqrt(abs(sf))
                     # diffusive wave coefficient for Lower wave
                     Diff_coeff[x, 1] = (
-                        (1.0 / Sub.mn[x]) * (R_LM ** power) / np.sqrt(abs(sf))
+                        (1.0 / Sub.mn[x]) * (R_LM**power) / np.sqrt(abs(sf))
                     )
                     # total diffusion coefficient
                     Diff_coeff[x, 2] = Diff_coeff[x, 0] + Diff_coeff[x, 1]
@@ -280,7 +279,7 @@ def HBC(Sub, River, Hbnd, dt, dx, inih, storewl, MinQ):
                     xs[x, 7] = (
                         (1.0 / Sub.mn[x])
                         * Area_LM
-                        * (R_LM ** power)
+                        * (R_LM**power)
                         * (np.sqrt(abs(sf)) * sf / abs(sf))
                     )
                 else:
@@ -289,7 +288,7 @@ def HBC(Sub, River, Hbnd, dt, dx, inih, storewl, MinQ):
 
                     # diffusive wave coefficient for Lower wave
                     Diff_coeff[x, 1] = (
-                        (1.0 / Sub.mn[x]) * (R_LM ** power) / np.sqrt(HLIN / dx)
+                        (1.0 / Sub.mn[x]) * (R_LM**power) / np.sqrt(HLIN / dx)
                     )
                     # total diffusion coefficient
                     Diff_coeff[x, 2] = Diff_coeff[x, 0] + Diff_coeff[x, 1]
@@ -302,7 +301,7 @@ def HBC(Sub, River, Hbnd, dt, dx, inih, storewl, MinQ):
                     xs[x, 7] = (
                         (1.0 / Sub.mn[x])
                         * Area_LM
-                        * (R_LM ** power)
+                        * (R_LM**power)
                         * (np.sqrt(dx / HLIN) * sf)
                     )
                     # xs[x,8] = (1.0/mn[x]] * Area_LM * (R_LM** (2.0/3.0]] * (np.sqrt(HLINQ/dx]]
@@ -333,7 +332,7 @@ def HBC(Sub, River, Hbnd, dt, dx, inih, storewl, MinQ):
             # print(*,'(a17,f8.3]'] 'max diff coeff = ', maxval[Diff_coeff(:,3]]
 
             # adjusting the time step
-            dto = (dx ** 2) / (2 * max(Diff_coeff[:, 2]))
+            dto = (dx**2) / (2 * max(Diff_coeff[:, 2]))
 
             if dto > dt:
                 dto = dt
@@ -468,5 +467,5 @@ def HBC(Sub, River, Hbnd, dt, dx, inih, storewl, MinQ):
 
 
 def QuadraticEqn(a, b, c):
-    delta = (b ** 2) - 4 * a * c
+    delta = (b**2) - 4 * a * c
     return (-b + np.sqrt(delta)) / (2 * a)

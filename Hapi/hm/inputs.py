@@ -1,5 +1,4 @@
-"""
-Created on Sat Feb 15 22:51:02 2020
+"""Created on Sat Feb 15 22:51:02 2020.
 
 @author: mofarrag
 """
@@ -7,15 +6,16 @@ import datetime as dt
 import os
 import zipfile
 from typing import Union
-from loguru import logger
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from loguru import logger
 from osgeo import gdal
 from scipy.stats import gumbel_r  # genextreme,
+from statista.distributions import GEV, Gumbel, PlottingPosition
 
 from Hapi.hm.river import River
-from statista.distributions import GEV, Gumbel, PlottingPosition
 
 # from matplotlib import gridspec
 
@@ -68,7 +68,7 @@ class Inputs(River):
         None.
         """
         if WeatherGenerator:
-            """ WeatherGenerator """
+            """WeatherGenerator."""
             SWIMResultFile = FilePrefix + str(realization) + ".dat"
             # 4-5
             # check whether the the name of the realization the same as the name of 3
@@ -82,7 +82,7 @@ class Inputs(River):
                     SavePath[-2:]
                 ), " Wrong files sync "
         else:
-            """ Observed data """
+            """Observed data."""
             SWIMResultFile = FilePrefix + str(realization) + ".dat"
 
         """
@@ -111,13 +111,13 @@ class Inputs(River):
         WarmUpPeriod: int,
         SavePlots: bool,
         SavePath: str,
-        Filter: Union[bool, float, int]=False,
-        Distibution: str="GEV",
-        method: str="lmoments",
-        EstimateParameters: bool=False,
-        Quartile: float=0,
-        SignificanceLevel: float=0.1,
-        file_extension: str = '.txt',
+        Filter: Union[bool, float, int] = False,
+        Distibution: str = "GEV",
+        method: str = "lmoments",
+        EstimateParameters: bool = False,
+        Quartile: float = 0,
+        SignificanceLevel: float = 0.1,
+        file_extension: str = ".txt",
         date_format: str = "%Y-%m-%d",
     ):
         """StatisticalProperties.
@@ -185,19 +185,24 @@ class Inputs(River):
 
         TS = pd.DataFrame()
         # for the hydraulic model results
-        logger.info("The function ignores the date column in the time series files and starts from the "
-                    "given start parameter to the function so check if it is the same start date as in "
-                    "the files")
+        logger.info(
+            "The function ignores the date column in the time series files and starts from the "
+            "given start parameter to the function so check if it is the same start date as in "
+            "the files"
+        )
 
         skip = []
         for i in range(len(ComputationalNodes)):
             try:
                 TS.loc[:, int(ComputationalNodes[i])] = pd.read_csv(
                     f"{TSdirectory}/{int(ComputationalNodes[i])}{file_extension}",
-                    skiprows=1, header=None,
+                    skiprows=1,
+                    header=None,
                 )[1].tolist()
             except FileNotFoundError:
-                logger.warning(f" File {int(ComputationalNodes[i])}{file_extension} does not exist")
+                logger.warning(
+                    f" File {int(ComputationalNodes[i])}{file_extension} does not exist"
+                )
                 skip.append(int(ComputationalNodes[i]))
 
         StartDate = dt.datetime.strptime(start, date_format)
@@ -246,11 +251,15 @@ class Inputs(River):
         StatisticalPr.index.name = "id"
         if Distibution == "GEV":
             DistributionPr = pd.DataFrame(
-                np.nan, index=ComputationalNodes, columns=["c", "loc", "scale", "D-static", "P-Value"]
+                np.nan,
+                index=ComputationalNodes,
+                columns=["c", "loc", "scale", "D-static", "P-Value"],
             )
         else:
             DistributionPr = pd.DataFrame(
-                np.nan, index=ComputationalNodes, columns=["loc", "scale", "D-static", "P-Value"]
+                np.nan,
+                index=ComputationalNodes,
+                columns=["loc", "scale", "D-static", "P-Value"],
             )
         DistributionPr.index.name = "id"
         # required return periods
@@ -291,14 +300,14 @@ class Inputs(River):
                 if Distibution == "GEV":
                     dist = GEV(amax)
                     param_dist = dist.estimateParameter(
-                        method='optimization',
+                        method="optimization",
                         ObjFunc=Gumbel.ObjectiveFn,
                         threshold=threshold,
                     )
                 else:
                     dist = Gumbel(amax)
                     param_dist = dist.estimateParameter(
-                        method='optimization',
+                        method="optimization",
                         ObjFunc=Gumbel.ObjectiveFn,
                         threshold=threshold,
                     )
@@ -314,7 +323,10 @@ class Inputs(River):
                     # defult parameter estimation method is maximum liklihood method
                     param_dist = dist.estimateParameter(method=method)
 
-            DistributionPr.loc[i,"D-static"], DistributionPr.loc[i,"P-Value"] = dist.ks()
+            (
+                DistributionPr.loc[i, "D-static"],
+                DistributionPr.loc[i, "P-Value"],
+            ) = dist.ks()
             if Distibution == "GEV":
                 DistributionPr.loc[i, "c"] = param_dist[0]
                 DistributionPr.loc[i, "loc"] = param_dist[1]
@@ -343,11 +355,19 @@ class Inputs(River):
             if SavePlots:
 
                 if Distibution == "GEV":
-                    fig, ax = dist.probapilityPlot(param_dist[0], param_dist[1], param_dist[2], cdf_Weibul,
-                                                   alpha=SignificanceLevel)
+                    fig, ax = dist.probapilityPlot(
+                        param_dist[0],
+                        param_dist[1],
+                        param_dist[2],
+                        cdf_Weibul,
+                        alpha=SignificanceLevel,
+                    )
                 else:
                     fig, ax = dist.probapilityPlot(
-                        param_dist[0], param_dist[1], cdf_Weibul, alpha=SignificanceLevel
+                        param_dist[0],
+                        param_dist[1],
+                        cdf_Weibul,
+                        alpha=SignificanceLevel,
                     )
 
                 fig[0].savefig(f"{SavePath}/Figures/{i}.png", format="png")
@@ -377,13 +397,16 @@ class Inputs(River):
             logger.info(f"Gauge {i} done.")
 
         # Output file
-        StatisticalPr.to_csv(f"{SavePath}/Statistical Properties.csv", float_format="%.4f")
+        StatisticalPr.to_csv(
+            f"{SavePath}/Statistical Properties.csv", float_format="%.4f"
+        )
         self.StatisticalPr = StatisticalPr
-        DistributionPr.to_csv(f"{SavePath}/DistributionProperties.csv" , float_format="%.4f")
+        DistributionPr.to_csv(
+            f"{SavePath}/DistributionProperties.csv", float_format="%.4f"
+        )
         self.DistributionPr = DistributionPr
 
-
-    def WriteHQFile(self, NoNodes: int, StatisticalPropertiesFile:str, SaveTo:str):
+    def WriteHQFile(self, NoNodes: int, StatisticalPropertiesFile: str, SaveTo: str):
         """WriteHQFile.
 
         Parameters
@@ -669,7 +692,6 @@ class Inputs(River):
         if len(check) > 0:
             np.savetxt(wpath + "CheckWaterDepth.txt", check, fmt="%6d")
 
-
     def CreateTraceALL(
         self,
         ConfigFilePath,
@@ -696,7 +718,6 @@ class Inputs(River):
         Returns
         -------
         None.
-
         """
         # reading the file
         Config = pd.read_csv(ConfigFilePath, header=None)
@@ -713,7 +734,6 @@ class Inputs(River):
         # get RIM Sub-basins
         Subs = pd.read_csv(RIMSubsFilePath, header=None)
         Subs = Subs.rename(columns={0: "SubID"})
-
 
         Subs["US"] = None
         Subs["DS"] = None

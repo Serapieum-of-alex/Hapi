@@ -1,4 +1,4 @@
-"""Hydaulic model calibration related function module"""
+"""Hydaulic model calibration related function module."""
 import datetime as dt
 from typing import Any, Union  # , Optional,Tuple,
 
@@ -7,6 +7,7 @@ import geopandas as gpd
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import statista.metrics as pf
 from geopandas import GeoDataFrame
 from loguru import logger
 from matplotlib.figure import Figure
@@ -15,7 +16,6 @@ from matplotlib.figure import Figure
 from pandas._libs.tslibs.timestamps import Timestamp
 from pandas.core.frame import DataFrame
 
-import statista.metrics as pf
 from Hapi.hapi_warnings import SilenceNumpyWarning, SilenceShapelyWarning
 from Hapi.hm.river import River
 
@@ -24,14 +24,25 @@ datafn = lambda x: dt.datetime.strptime(x, "%Y-%m-%d")
 SilenceNumpyWarning()
 SilenceShapelyWarning()
 
+
 class Calibration(River):
     """Hydraulic model Calibration.
 
     Hydraulic model calibration class
     """
-    def __init__(self, name: str, version: int=3, start: Union[str, dt.datetime]="1950-1-1",
-                 days: int=36890, fmt: str="%Y-%m-%d", rrmstart: str="", rrmdays: int=36890,
-                 novalue: int= -9, gauge_id_col: Any='oid'):
+
+    def __init__(
+        self,
+        name: str,
+        version: int = 3,
+        start: Union[str, dt.datetime] = "1950-1-1",
+        days: int = 36890,
+        fmt: str = "%Y-%m-%d",
+        rrmstart: str = "",
+        rrmdays: int = 36890,
+        novalue: int = -9,
+        gauge_id_col: Any = "oid",
+    ):
         """HMCalibration.
 
         To instantiate the HMCalibration object you have to provide the
@@ -94,11 +105,11 @@ class Calibration(River):
         self.rrmreferenceindex = pd.DataFrame(index=list(range(1, rrmdays + 1)))
         self.rrmreferenceindex["date"] = ref_ind[:-1]
 
-        self.q_hm = None #ReadHMQ
-        self.WLHM = None #ReadHMWL
-        self.q_rrm = None # ReadRRM
-        self.QRRM2 = None # ReadRRM
-        self.rrm_gauges = None # ReadRRM
+        self.q_hm = None  # ReadHMQ
+        self.WLHM = None  # ReadHMWL
+        self.q_rrm = None  # ReadRRM
+        self.QRRM2 = None  # ReadRRM
+        self.rrm_gauges = None  # ReadRRM
 
         self.hm_gauges = None
         self.q_gauges = None
@@ -118,7 +129,6 @@ class Calibration(River):
         self.MetricsHMQvsObs = None
         self.WLgaugesList = None
         self.QgaugesList = None
-
 
     def readGaugesTable(self, path: str):
         """ReadGaugesTable.
@@ -162,10 +172,8 @@ class Calibration(River):
         # sort the gauges table based on the segment
         self.hm_gauges.sort_values(by="id", inplace=True, ignore_index=True)
 
-
-    def GetGauges(self, subid: int, gaugei: int=0) -> DataFrame:
-        """Get_Gauge_ID.
-            Get_Gauge_ID get the id of the station for a given river segment
+    def GetGauges(self, subid: int, gaugei: int = 0) -> DataFrame:
+        """Get_Gauge_ID. Get_Gauge_ID get the id of the station for a given river segment.
 
         parameters:
         ----------
@@ -182,9 +190,11 @@ class Calibration(River):
         gauge xs: [int]
             the nearest cross section to the gauge
         """
-        gauges = self.hm_gauges.loc[self.hm_gauges['id'] == subid, :].reset_index()
+        gauges = self.hm_gauges.loc[self.hm_gauges["id"] == subid, :].reset_index()
         if len(gauges) == 0:
-            raise KeyError("The given river segment does not have gauges in the gauge table")
+            raise KeyError(
+                "The given river segment does not have gauges in the gauge table"
+            )
         elif len(gauges) > 1:
             f = gauges.loc[gaugei, :].to_frame()
             gauge = pd.DataFrame(index=[0], columns=f.index.to_list())
@@ -197,13 +207,18 @@ class Calibration(River):
         # gaugexs = gauges.loc[gaugei, 'xsid']
         # segment_xs = str(subid) + "_" + str(gaugexs)
 
-         #stationname, gaugename, gaugexs
+        # stationname, gaugename, gaugexs
 
-
-    def ReadObservedWL(self, path: str, start: Union[str, dt.datetime],
-                       end: Union[str, dt.datetime], novalue: Union[int, float],
-                       fmt="%Y-%m-%d", file_extension: str=".txt",
-                       gauge_date_format="%Y-%m-%d"):
+    def ReadObservedWL(
+        self,
+        path: str,
+        start: Union[str, dt.datetime],
+        end: Union[str, dt.datetime],
+        novalue: Union[int, float],
+        fmt="%Y-%m-%d",
+        file_extension: str = ".txt",
+        gauge_date_format="%Y-%m-%d",
+    ):
         """ReadObservedWL.
 
         read the water level data of the gauges.
@@ -256,7 +271,9 @@ class Calibration(River):
                         path + str(int(name)) + file_extension, delimiter=",", header=0
                     )
                     f.columns = [0, 1]
-                    f[0] = f[0].map(lambda x: dt.datetime.strptime(x, gauge_date_format))
+                    f[0] = f[0].map(
+                        lambda x: dt.datetime.strptime(x, gauge_date_format)
+                    )
                     # sort by date as some values are missed up
                     f.sort_values(by=[0], ascending=True, inplace=True)
                     # filter to the range we want
@@ -266,8 +283,8 @@ class Calibration(River):
                     f.index = list(range(len(f)))
                     # add datum and convert to meter
                     f.loc[f[1] != novalue, 1] = (
-                                                        f.loc[f[1] != novalue, 1] / 100
-                                                ) + self.hm_gauges.loc[i, "datum(m)"]
+                        f.loc[f[1] != novalue, 1] / 100
+                    ) + self.hm_gauges.loc[i, "datum(m)"]
                     f = f.rename(columns={1: columns[i]})
 
                     # use merge as there are some gaps in the middle
@@ -288,8 +305,12 @@ class Calibration(River):
         self.hm_gauges["WLend"] = 0
         for i in range(len(columns)):
             if self.hm_gauges.loc[i, "waterlevel"] == 1:
-                st1 = self.WLGauges[columns[i]][self.WLGauges[columns[i]] != novalue].index[0]
-                end1 = self.WLGauges[columns[i]][self.WLGauges[columns[i]] != novalue].index[-1]
+                st1 = self.WLGauges[columns[i]][
+                    self.WLGauges[columns[i]] != novalue
+                ].index[0]
+                end1 = self.WLGauges[columns[i]][
+                    self.WLGauges[columns[i]] != novalue
+                ].index[-1]
                 self.hm_gauges.loc[i, "WLstart"] = st1
                 self.hm_gauges.loc[i, "WLend"] = end1
 
@@ -328,11 +349,16 @@ class Calibration(River):
     #     Gauges.index = ind
     #     del Gauges[0]
 
-
-    def readObservedQ(self, path: str, start: Union[str, dt.datetime],
-                      end: Union[str, dt.datetime], novalue: Union[int, float],
-                      fmt: str="%Y-%m-%d", file_extension: str=".txt",
-                      gauge_date_format="%Y-%m-%d"):
+    def readObservedQ(
+        self,
+        path: str,
+        start: Union[str, dt.datetime],
+        end: Union[str, dt.datetime],
+        novalue: Union[int, float],
+        fmt: str = "%Y-%m-%d",
+        file_extension: str = ".txt",
+        gauge_date_format="%Y-%m-%d",
+    ):
         """readObservedQ.
 
             ReadObservedQ method reads discharge data and store it in a dataframe
@@ -386,7 +412,7 @@ class Calibration(River):
                 except FileNotFoundError:
                     logger.debug(f"{i} - {path}{name}{file_extension} has a problem")
                     continue
-                f.columns = [0,1]
+                f.columns = [0, 1]
                 f[0] = f[0].map(lambda x: dt.datetime.strptime(x, gauge_date_format))
                 # sort by date as some values are missed up
                 f.sort_values(by=[0], ascending=True, inplace=True)
@@ -426,15 +452,14 @@ class Calibration(River):
                 self.hm_gauges.loc[i, "Qstart"] = st1
                 self.hm_gauges.loc[i, "Qend"] = end1
 
-
     def readRRM(
-            self,
-            path: str,
-            fromday: Union[str, int]="",
-            today: Union[str, int]="",
-            fmt: str="%Y-%m-%d",
-            location: int=1,
-            path2: str=""
+        self,
+        path: str,
+        fromday: Union[str, int] = "",
+        today: Union[str, int] = "",
+        fmt: str = "%Y-%m-%d",
+        location: int = 1,
+        path2: str = "",
     ):
         """ReadRRM.
 
@@ -464,7 +489,9 @@ class Calibration(River):
         rrm_gauges: [list]
             list og gauges id
         """
-        gauges = self.hm_gauges.loc[self.hm_gauges["discharge"] == 1, self.gauge_id_col].tolist()
+        gauges = self.hm_gauges.loc[
+            self.hm_gauges["discharge"] == 1, self.gauge_id_col
+        ].tolist()
 
         self.q_rrm = pd.DataFrame()
         if location == 2:
@@ -478,8 +505,10 @@ class Calibration(River):
 
         if location == 2:
             if path2 == "":
-                raise ValueError("path2 argument has to be given for the location of the 2nd rainfall run-off time "
-                                 "series")
+                raise ValueError(
+                    "path2 argument has to be given for the location of the 2nd rainfall run-off time "
+                    "series"
+                )
 
         if location == 1:
             for i in range(len(gauges)):
@@ -497,7 +526,9 @@ class Calibration(River):
                     logger.info(f"{i} - {path}{station_id}.txt is read")
                     self.rrm_gauges.append(station_id)
                 except FileNotFoundError:
-                    logger.info(f"{i} - {path}{station_id}.txt does not exist or have a problem")
+                    logger.info(
+                        f"{i} - {path}{station_id}.txt does not exist or have a problem"
+                    )
         else:
             for i in range(len(gauges)):
                 station_id = gauges[i]
@@ -523,7 +554,9 @@ class Calibration(River):
                     logger.info(f"{i} - {path}{station_id}.txt is read")
                     self.rrm_gauges.append(station_id)
                 except FileNotFoundError:
-                    logger.info(f"{i} - {path}{station_id}.txt does not exist or have a problem")
+                    logger.info(
+                        f"{i} - {path}{station_id}.txt does not exist or have a problem"
+                    )
         # logger.debug("RRM time series for the gauge " + str(station_id) + " is read")
 
         if fromday == "":
@@ -540,17 +573,16 @@ class Calibration(River):
             self.q_rrm.index = pd.date_range(start, end, freq="D")
             self.QRRM2.index = pd.date_range(start, end, freq="D")
 
-
     def readHMQ(
-            self,
-            path: str,
-            fromday: Union[str, int]="",
-            today: Union[str, int]="",
-            novalue: Union[int, float]=-9,
-            addHQ2: bool = False,
-            shift: bool =False,
-            shiftsteps: int = 0,
-            fmt: str = "%Y-%m-%d",
+        self,
+        path: str,
+        fromday: Union[str, int] = "",
+        today: Union[str, int] = "",
+        novalue: Union[int, float] = -9,
+        addHQ2: bool = False,
+        shift: bool = False,
+        shiftsteps: int = 0,
+        fmt: str = "%Y-%m-%d",
     ):
         """ReadHMQ.
 
@@ -591,7 +623,9 @@ class Calibration(River):
             msg = "please read the HQ file first using ReturnPeriod method"
             assert hasattr(self, "RP"), msg
 
-        gauges = self.hm_gauges.loc[self.hm_gauges["discharge"] == 1, self.gauge_id_col].tolist()
+        gauges = self.hm_gauges.loc[
+            self.hm_gauges["discharge"] == 1, self.gauge_id_col
+        ].tolist()
         self.QgaugesList = gauges
         self.q_hm = pd.DataFrame()
 
@@ -605,25 +639,28 @@ class Calibration(River):
         # fill non modelled time steps with zeros
         for i in range(len(gauges)):
             nodeid = gauges[i]
-            self.q_hm[nodeid] = self.ReadRRMResults(self.version,
-                                                    self.ReferenceIndex,
-                                                    path,
-                                                    nodeid,
-                                                    fromday='',
-                                                    today='',
-                                                    date_format=fmt,
-                                                    )[nodeid].tolist()
+            self.q_hm[nodeid] = self.ReadRRMResults(
+                self.version,
+                self.ReferenceIndex,
+                path,
+                nodeid,
+                fromday="",
+                today="",
+                date_format=fmt,
+            )[nodeid].tolist()
             logger.debug(f"{i} - {path}{nodeid}.txt is read")
 
             if addHQ2 and self.version == 1:
                 USnode = self.rivernetwork.loc[
                     np.where(
-                        self.rivernetwork["id"] == self.hm_gauges.loc[i, self.gauge_id_col]
+                        self.rivernetwork["id"]
+                        == self.hm_gauges.loc[i, self.gauge_id_col]
                     )[0][0],
                     "us",
                 ]
 
                 CutValue = self.RP.loc[np.where(self.RP["node"] == USnode)[0][0], "HQ2"]
+                print(CutValue)
 
             # for j in range(len(f1)):
             #     # if the index exist in the original list
@@ -651,11 +688,18 @@ class Calibration(River):
 
         self.q_hm.index = pd.date_range(start, end, freq="D")
 
-
-    def ReadHMWL(self, path: str, fromday: Union[str, int]="", today: Union[str, int]="",
-                 novalue: Union[int, float]=-9, shift=False, shiftsteps=0,
-                 column: str = "oid", fmt: str = "%Y-%m-%d"):
-        """ReadRIMWL
+    def ReadHMWL(
+        self,
+        path: str,
+        fromday: Union[str, int] = "",
+        today: Union[str, int] = "",
+        novalue: Union[int, float] = -9,
+        shift=False,
+        shiftsteps=0,
+        column: str = "oid",
+        fmt: str = "%Y-%m-%d",
+    ):
+        """ReadRIMWL.
 
         Parameters
         ----------
@@ -685,22 +729,24 @@ class Calibration(River):
             WLHM : [dataframe attribute]
                 dataframe containing the simulated water level hydrograph for
                 each river segment in the catchment.
-
         """
-        gauges = self.hm_gauges.loc[self.hm_gauges["waterlevel"] == 1, self.gauge_id_col].tolist()
+        gauges = self.hm_gauges.loc[
+            self.hm_gauges["waterlevel"] == 1, self.gauge_id_col
+        ].tolist()
         self.WLgaugesList = gauges
 
         self.WLHM = pd.DataFrame()
         for i in range(len(gauges)):
             nodeid = gauges[i]
-            self.WLHM[nodeid] = self.ReadRRMResults(self.version,
-                                                   self.ReferenceIndex,
-                                                   path,
-                                                   nodeid,
-                                                   fromday='',
-                                                   today='',
-                                                   date_format=fmt,
-                                                   )[nodeid].tolist()
+            self.WLHM[nodeid] = self.ReadRRMResults(
+                self.version,
+                self.ReferenceIndex,
+                path,
+                nodeid,
+                fromday="",
+                today="",
+                date_format=fmt,
+            )[nodeid].tolist()
             logger.debug(f"{i} - {path}{nodeid}.txt is read")
         # for i in range(len(WLHM.columns)):
         #     f = np.loadtxt(path + str(int(WLHM.columns[i])) + ".txt", delimiter=",")
@@ -719,7 +765,7 @@ class Calibration(River):
         #     if shift:
         #         f2[shiftsteps:-1] = f2[0 : -(shiftsteps + 1)]
 
-            # WLHM.loc[ind[f1[0] - 1] : ind[f1[-1] - 1], WLHM.columns[i]] = f2
+        # WLHM.loc[ind[f1[0] - 1] : ind[f1[-1] - 1], WLHM.columns[i]] = f2
         if fromday == "":
             fromday = 1
         if today == "":
@@ -730,8 +776,7 @@ class Calibration(River):
 
         self.WLHM.index = pd.date_range(start, end, freq="D")
 
-
-    def ReadCalirationResult(self, subid, path: str=""):
+    def ReadCalirationResult(self, subid, path: str = ""):
         """ReadCalirationResult.
 
         ReadCalirationResult method reads the 1D results and fill the missing
@@ -771,11 +816,8 @@ class Calibration(River):
         self.CalibrationQ[subid] = q[1].resample("D").mean()
         self.CalibrationWL[subid] = wl[1].resample("D").mean()
 
-
     def getAnnualMax(
-            self,
-            option=1,
-            CorespondingTo=dict(MaxObserved=" ", TimeWindow=0)
+        self, option=1, CorespondingTo=dict(MaxObserved=" ", TimeWindow=0)
     ):
         """GetAnnualMax.
 
@@ -827,32 +869,44 @@ class Calibration(River):
         """
         if option == 1:
             if not isinstance(self.q_gauges, DataFrame):
-                raise ValueError("please read the observed Discharge data first with the"
-                                 "ReadObservedQ method ")
+                raise ValueError(
+                    "please read the observed Discharge data first with the"
+                    "ReadObservedQ method "
+                )
             columns = self.q_gauges.columns.tolist()
         elif option == 2:
             if not isinstance(self.WLGauges, DataFrame):
-                raise ValueError("please read the observed Water level data first with the "
-                                 "ReadObservedWL method")
+                raise ValueError(
+                    "please read the observed Water level data first with the "
+                    "ReadObservedWL method"
+                )
             columns = self.WLGauges.columns.tolist()
         elif option == 3:
             if not isinstance(self.q_rrm, DataFrame):
-                raise ValueError("please read the Rainfall-runoff data first with the "
-                                 "ReadRRM method")
+                raise ValueError(
+                    "please read the Rainfall-runoff data first with the "
+                    "ReadRRM method"
+                )
             columns = self.q_rrm.columns.tolist()
         elif option == 4:
             if not isinstance(self.q_hm, DataFrame):
-                raise ValueError("please read the RIM results first with the ReadRIMQ method ")
+                raise ValueError(
+                    "please read the RIM results first with the ReadRIMQ method "
+                )
             columns = self.q_hm.columns.tolist()
         else:
             if not isinstance(self.WLHM, DataFrame):
-                raise ValueError("please read the RIM results first with the ReadRIMWL method")
+                raise ValueError(
+                    "please read the RIM results first with the ReadRIMWL method"
+                )
             columns = self.WLHM.columns.tolist()
 
         if CorespondingTo["MaxObserved"] == "WL":
             if not isinstance(self.WLGauges, DataFrame):
-                raise ValueError("please read the observed Water level data first with the "
-                                 "ReadObservedWL method")
+                raise ValueError(
+                    "please read the observed Water level data first with the "
+                    "ReadObservedWL method"
+                )
 
             startdate = self.WLGauges.index[0]
             AnnualMax = (
@@ -927,8 +981,10 @@ class Calibration(River):
 
         elif CorespondingTo["MaxObserved"] == "Q":
             if not isinstance(self.q_gauges, DataFrame):
-                raise ValueError("please read the observed Discharge data first with the"
-                                 "ReadObservedQ method")
+                raise ValueError(
+                    "please read the observed Discharge data first with the"
+                    "ReadObservedQ method"
+                )
             startdate = self.q_gauges.index[0]
             AnnualMax = (
                 self.q_gauges.loc[:, self.q_gauges.columns[0]].resample("A-OCT").max()
@@ -942,7 +998,7 @@ class Calibration(River):
                 sub = self.q_gauges.columns[i]
                 for j in range(len(AnnualMax)):
                     if j == 0:
-                        f = self.q_gauges.loc[startdate: AnnualMax.index[j], sub]
+                        f = self.q_gauges.loc[startdate : AnnualMax.index[j], sub]
                         self.AnnualMaxDates.loc[AnnualMax.index[j], sub] = f.index[
                             f.argmax()
                         ]
@@ -1033,7 +1089,9 @@ class Calibration(River):
         else:
             self.annual_max_hm_wl = AnnualMax
 
-    def CalculateProfile(self, Segmenti: int, BedlevelDS: float, Manning: float, BC_slope: float):
+    def CalculateProfile(
+        self, Segmenti: int, BedlevelDS: float, Manning: float, BC_slope: float
+    ):
         """CalculateProfile.
 
         CalculateProfile method takes the river segment ID and the calibration
@@ -1096,9 +1154,8 @@ class Calibration(River):
         except AttributeError:
             logger.debug(f"The Given river segment- {Segmenti} does not have a slope")
 
-
     def SmoothBedLevel(self, segmenti):
-        """SmoothXS
+        """SmoothXS.
 
         SmoothBedLevel method smoothes the bed level of a given segment ID by
         calculating the moving average of three cross sections
@@ -1189,7 +1246,6 @@ class Calibration(River):
 
         # copy back the segment to the whole XS df
         self.crosssections.loc[self.crosssections["id"] == segmenti, :] = segment
-
 
     def SmoothFloodplainHeight(self, segmenti):
         """SmoothFloodplainHeight.
@@ -1292,7 +1348,6 @@ class Calibration(River):
         # copy back the segment to the whole XS df
         self.crosssections.loc[self.crosssections["id"] == segmenti, :] = segment
 
-
     def DownWardBedLevel(self, segmenti: int, height: Union[int, float]):
         """SmoothBedWidth.
 
@@ -1309,8 +1364,6 @@ class Calibration(River):
         -------
         crosssections: [dataframe attribute]
             the "b" column in the crosssections attribute will be smoothed
-
-
         """
         g = self.crosssections.loc[self.crosssections["id"] == segmenti, :].index[0]
 
@@ -1324,7 +1377,6 @@ class Calibration(River):
         segment.index = range(g, g + len(segment))
         # copy back the segment to the whole XS df
         self.crosssections.loc[self.crosssections["id"] == segmenti, :] = segment
-
 
     def SmoothMaxSlope(self, segmenti, SlopePercentThreshold=1.5):
         """SmoothMaxSlope.
@@ -1445,63 +1497,69 @@ class Calibration(River):
 
     @staticmethod
     def Metrics(
-            df1: DataFrame,
-            df2: DataFrame,
-            gauges: list,
-            novalue: int,
-            start: str='',
-            end: str='',
-            shift: int=0,
-            fmt: str="%Y-%m-%d"
+        df1: DataFrame,
+        df2: DataFrame,
+        gauges: list,
+        novalue: int,
+        start: str = "",
+        end: str = "",
+        shift: int = 0,
+        fmt: str = "%Y-%m-%d",
     ) -> DataFrame:
 
-        Metrics = gpd.GeoDataFrame(index=gauges,
-                               columns=["start", "end", "rmse",
-                                        "KGE", "WB", "NSE", "NSEModified"])
+        Metrics = gpd.GeoDataFrame(
+            index=gauges,
+            columns=["start", "end", "rmse", "KGE", "WB", "NSE", "NSEModified"],
+        )
 
         for i in range(len(gauges)):
             # get the index of the first value in the column that is not -9 or Nan
-            st1 = df1.loc[:, df1.columns[i]][df1.loc[:, df1.columns[i]] != novalue].index[0]
-            st2 = df2.loc[:, df2.columns[i]][df2.loc[:, df2.columns[i]] != novalue].index[0]
+            st1 = df1.loc[:, df1.columns[i]][
+                df1.loc[:, df1.columns[i]] != novalue
+            ].index[0]
+            st2 = df2.loc[:, df2.columns[i]][
+                df2.loc[:, df2.columns[i]] != novalue
+            ].index[0]
 
-            Metrics.loc[gauges[i], 'start'] = max(st1, st2)
+            Metrics.loc[gauges[i], "start"] = max(st1, st2)
             end1 = df1[df1.columns[i]][df1[df1.columns[i]] != novalue].index[-1]
             end2 = df2[df2.columns[i]][df2[df2.columns[i]] != novalue].index[-1]
-            Metrics.loc[gauges[i], 'end'] = min(end1, end2)
+            Metrics.loc[gauges[i], "end"] = min(end1, end2)
 
         # manually adjust and start or end date to calculate the performance between
         # two dates
-        if start != '':
-            Metrics.loc[:, 'start'] = dt.datetime.strptime(start, fmt)
-        if end != '':
-            Metrics.loc[:, 'end'] = dt.datetime.strptime(end, fmt)
+        if start != "":
+            Metrics.loc[:, "start"] = dt.datetime.strptime(start, fmt)
+        if end != "":
+            Metrics.loc[:, "end"] = dt.datetime.strptime(end, fmt)
 
         # calculate th metrics
         for i in range(len(gauges)):
-            obs = df1[gauges[i]].loc[Metrics.loc[gauges[i], 'start']:Metrics.loc[
-                gauges[i], 'end']].values.tolist()
-            sim = df2[gauges[i]].loc[Metrics.loc[gauges[i], 'start']:Metrics.loc[
-                gauges[i], 'end']].values.tolist()
+            obs = (
+                df1[gauges[i]]
+                .loc[Metrics.loc[gauges[i], "start"] : Metrics.loc[gauges[i], "end"]]
+                .values.tolist()
+            )
+            sim = (
+                df2[gauges[i]]
+                .loc[Metrics.loc[gauges[i], "start"] : Metrics.loc[gauges[i], "end"]]
+                .values.tolist()
+            )
             # shift hm result
-            sim[shift:-shift] = sim[0:-shift * 2]
+            sim[shift:-shift] = sim[0 : -shift * 2]
 
-            Metrics.loc[gauges[i], 'rmse'] = round(pf.RMSE(obs, sim), 0)
-            Metrics.loc[gauges[i], 'KGE'] = round(pf.KGE(obs, sim), 3)
-            Metrics.loc[gauges[i], 'NSE'] = round(pf.NSE(obs, sim), 3)
-            Metrics.loc[gauges[i], 'NSEModified'] = round(pf.NSEHF(obs, sim), 3)
-            Metrics.loc[gauges[i], 'WB'] = round(pf.WB(obs, sim), 0)
-            Metrics.loc[gauges[i], 'MBE'] = round(pf.MBE(obs, sim), 3)
-            Metrics.loc[gauges[i], 'MAE'] = round(pf.MAE(obs, sim), 3)
+            Metrics.loc[gauges[i], "rmse"] = round(pf.RMSE(obs, sim), 0)
+            Metrics.loc[gauges[i], "KGE"] = round(pf.KGE(obs, sim), 3)
+            Metrics.loc[gauges[i], "NSE"] = round(pf.NSE(obs, sim), 3)
+            Metrics.loc[gauges[i], "NSEModified"] = round(pf.NSEHF(obs, sim), 3)
+            Metrics.loc[gauges[i], "WB"] = round(pf.WB(obs, sim), 0)
+            Metrics.loc[gauges[i], "MBE"] = round(pf.MBE(obs, sim), 3)
+            Metrics.loc[gauges[i], "MAE"] = round(pf.MAE(obs, sim), 3)
 
         return Metrics
 
-
     def HMvsRRM(
-            self,
-            start: str='',
-            end: str='',
-            fmt: str="%Y-%m-%d",
-            shift: int=0
+        self, start: str = "", end: str = "", fmt: str = "%Y-%m-%d", shift: int = 0
     ):
         """HMvsRRM.
 
@@ -1527,44 +1585,41 @@ class Calibration(River):
             dataframe with the gauges id as rows and ['start', 'end', 'rmse', 'KGE', 'WB', 'NSE',
             'NSEModefied'], as columns.
         """
-        if not isinstance(self.hm_gauges, DataFrame) and not isinstance(self.hm_gauges, GeoDataFrame):
-            raise ValueError("rrm_gauges variable does not exist please read the RRM results "
-                             "with 'ReadRRM' method")
+        if not isinstance(self.hm_gauges, DataFrame) and not isinstance(
+            self.hm_gauges, GeoDataFrame
+        ):
+            raise ValueError(
+                "rrm_gauges variable does not exist please read the RRM results "
+                "with 'ReadRRM' method"
+            )
         if not isinstance(self.rrm_gauges, list):
-            raise ValueError("rrm_gauges variable does not exist please read the RRM results "
-                             "with 'ReadRRM' method")
+            raise ValueError(
+                "rrm_gauges variable does not exist please read the RRM results "
+                "with 'ReadRRM' method"
+            )
         if not isinstance(self.q_rrm, DataFrame):
             raise ValueError("please read the RRM results with the 'ReadRRM' method")
         if not isinstance(self.q_hm, DataFrame):
             raise ValueError("please read the HM results with the 'ReadHMQ' method")
         ### HM vs RRM
-        self.MetricsHMvsRRM = self.Metrics(self.q_rrm,
-                                           self.q_hm,
-                                           self.rrm_gauges,
-                                           self.novalue,
-                                           start,
-                                           end,
-                                           shift,
-                                           fmt)
+        self.MetricsHMvsRRM = self.Metrics(
+            self.q_rrm, self.q_hm, self.rrm_gauges, self.novalue, start, end, shift, fmt
+        )
         # get the point geometry from the hm_gauges
-        self.MetricsHMvsRRM = self.MetricsHMvsRRM.merge(self.hm_gauges, left_index=True,
-                                                        right_on=self.gauge_id_col,
-                                                        how="left",
-                                                        sort=False)
+        self.MetricsHMvsRRM = self.MetricsHMvsRRM.merge(
+            self.hm_gauges,
+            left_index=True,
+            right_on=self.gauge_id_col,
+            how="left",
+            sort=False,
+        )
         self.MetricsHMvsRRM.index = self.MetricsHMvsRRM[self.gauge_id_col]
-        self.MetricsHMvsRRM.index.name = 'index'
+        self.MetricsHMvsRRM.index.name = "index"
         if isinstance(self.hm_gauges, GeoDataFrame):
             self.MetricsHMvsRRM.crs = self.hm_gauges.crs
 
-
-
-
     def RRMvsObserved(
-            self,
-            start: str='',
-            end: str='',
-            fmt: str="%Y-%m-%d",
-            shift: int=0
+        self, start: str = "", end: str = "", fmt: str = "%Y-%m-%d", shift: int = 0
     ):
         """RRM_vs_observed.
 
@@ -1591,42 +1646,50 @@ class Calibration(River):
             'NSEModefied'], as columns.
         """
         if not isinstance(self.rrm_gauges, list):
-            raise ValueError("rrm_gauges variable does not exist please read the RRM results "
-                             "with 'ReadRRM' method")
+            raise ValueError(
+                "rrm_gauges variable does not exist please read the RRM results "
+                "with 'ReadRRM' method"
+            )
         if not isinstance(self.q_rrm, DataFrame):
             raise ValueError("please read the RRM results with the 'ReadRRM' method")
 
         if not isinstance(self.q_gauges, DataFrame):
-            raise ValueError("q_gauges variable does not exist please read the gauges data "
-                             "with 'ReadObservedQ' method")
+            raise ValueError(
+                "q_gauges variable does not exist please read the gauges data "
+                "with 'ReadObservedQ' method"
+            )
 
         ### RRM vs observed
-        self.MetricsRRMvsObs = self.Metrics(self.q_gauges,
-                                            self.q_rrm,
-                                            self.rrm_gauges,
-                                            self.novalue,
-                                            start,
-                                            end,
-                                            shift,
-                                            fmt)
+        self.MetricsRRMvsObs = self.Metrics(
+            self.q_gauges,
+            self.q_rrm,
+            self.rrm_gauges,
+            self.novalue,
+            start,
+            end,
+            shift,
+            fmt,
+        )
 
-        self.MetricsRRMvsObs = self.MetricsRRMvsObs.merge(self.hm_gauges, left_index=True,
-                                                          right_on=self.gauge_id_col,
-                                                          how="left",
-                                                          sort=False)
+        self.MetricsRRMvsObs = self.MetricsRRMvsObs.merge(
+            self.hm_gauges,
+            left_index=True,
+            right_on=self.gauge_id_col,
+            how="left",
+            sort=False,
+        )
 
         self.MetricsRRMvsObs.index = self.MetricsRRMvsObs[self.gauge_id_col]
-        self.MetricsRRMvsObs.index.name = 'index'
+        self.MetricsRRMvsObs.index.name = "index"
         if isinstance(self.hm_gauges, GeoDataFrame):
             self.MetricsRRMvsObs.crs = self.hm_gauges.crs
 
-
     def HMQvsObserved(
-            self,
-            start: str='',
-            end: str='',
-            fmt: str="%Y-%m-%d",
-            shift: int=0,
+        self,
+        start: str = "",
+        end: str = "",
+        fmt: str = "%Y-%m-%d",
+        shift: int = 0,
     ):
         """HMQvsObserved.
 
@@ -1653,40 +1716,48 @@ class Calibration(River):
             'NSEModefied'], as columns.
         """
         if not isinstance(self.q_gauges, DataFrame):
-            raise ValueError("q_gauges variable does not exist please read the gauges data "
-                             "with 'ReadObservedQ' method")
+            raise ValueError(
+                "q_gauges variable does not exist please read the gauges data "
+                "with 'ReadObservedQ' method"
+            )
 
         if not isinstance(self.q_hm, DataFrame):
-            raise ValueError("q_hm variable does not exist please read the HM results "
-                             "with 'ReadHMQ' method")
+            raise ValueError(
+                "q_hm variable does not exist please read the HM results "
+                "with 'ReadHMQ' method"
+            )
 
         ### HM Q vs observed
-        self.MetricsHMQvsObs = self.Metrics(self.q_gauges,
-                                            self.q_hm,
-                                            self.QgaugesList,
-                                            self.novalue,
-                                            start,
-                                            end,
-                                            shift,
-                                            fmt)
+        self.MetricsHMQvsObs = self.Metrics(
+            self.q_gauges,
+            self.q_hm,
+            self.QgaugesList,
+            self.novalue,
+            start,
+            end,
+            shift,
+            fmt,
+        )
 
-        self.MetricsHMQvsObs = self.MetricsHMQvsObs.merge(self.hm_gauges, left_index=True,
-                                                          right_on=self.gauge_id_col,
-                                                          how="left",
-                                                          sort=False)
+        self.MetricsHMQvsObs = self.MetricsHMQvsObs.merge(
+            self.hm_gauges,
+            left_index=True,
+            right_on=self.gauge_id_col,
+            how="left",
+            sort=False,
+        )
 
         self.MetricsHMQvsObs.index = self.MetricsHMQvsObs[self.gauge_id_col]
-        self.MetricsHMQvsObs.index.name = 'index'
+        self.MetricsHMQvsObs.index.name = "index"
         if isinstance(self.hm_gauges, GeoDataFrame):
             self.MetricsHMQvsObs.crs = self.hm_gauges.crs
 
-
     def HMWLvsObserved(
-            self,
-            start: str='',
-            end: str='',
-            fmt: str="%Y-%m-%d",
-            shift: int=0,
+        self,
+        start: str = "",
+        end: str = "",
+        fmt: str = "%Y-%m-%d",
+        shift: int = 0,
     ):
         """HMWLvsObserved.
 
@@ -1713,42 +1784,52 @@ class Calibration(River):
             'NSEModefied'], as columns.
         """
         if not isinstance(self.WLGauges, DataFrame):
-            raise ValueError("WLGauges variable does not exist please read the water level gauges "
-                             "with 'ReadObservedWL' method")
+            raise ValueError(
+                "WLGauges variable does not exist please read the water level gauges "
+                "with 'ReadObservedWL' method"
+            )
 
         if not isinstance(self.WLHM, DataFrame):
-            raise ValueError("WLHM variable does not exist please read the water level simulated by the HM "
-                             "with 'ReadHMWL' method")
+            raise ValueError(
+                "WLHM variable does not exist please read the water level simulated by the HM "
+                "with 'ReadHMWL' method"
+            )
 
         ### HM WL vs observed
-        self.MetricsHMWLvsObs = self.Metrics(self.WLGauges,
-                                             self.WLHM,
-                                             self.WLgaugesList,
-                                             self.novalue,
-                                             start,
-                                             end,
-                                             shift,
-                                             fmt)
+        self.MetricsHMWLvsObs = self.Metrics(
+            self.WLGauges,
+            self.WLHM,
+            self.WLgaugesList,
+            self.novalue,
+            start,
+            end,
+            shift,
+            fmt,
+        )
 
-        self.MetricsHMWLvsObs = self.MetricsHMWLvsObs.merge(self.hm_gauges, left_index=True,
-                                                            right_on=self.gauge_id_col,
-                                                            how="left",
-                                                            sort=False)
+        self.MetricsHMWLvsObs = self.MetricsHMWLvsObs.merge(
+            self.hm_gauges,
+            left_index=True,
+            right_on=self.gauge_id_col,
+            how="left",
+            sort=False,
+        )
 
         self.MetricsHMWLvsObs.index = self.MetricsHMWLvsObs[self.gauge_id_col]
-        self.MetricsHMWLvsObs.index.name = 'index'
+        self.MetricsHMWLvsObs.index.name = "index"
         if isinstance(self.hm_gauges, GeoDataFrame):
             self.MetricsHMWLvsObs.crs = self.hm_gauges.crs
 
-
     def InspectGauge(
-            self,
-            subid: int,
-            gaugei: int=0,
-            start: str="",
-            end: str="",
-            fmt: str = "%Y-%m-%d",
-    ) -> Union[tuple[DataFrame, Figure, tuple[Any, Any]], tuple[DataFrame, Figure, Any]]:
+        self,
+        subid: int,
+        gaugei: int = 0,
+        start: str = "",
+        end: str = "",
+        fmt: str = "%Y-%m-%d",
+    ) -> Union[
+        tuple[DataFrame, Figure, tuple[Any, Any]], tuple[DataFrame, Figure, Any]
+    ]:
         """InspectGauge.
 
             InspectGauge returns the metrices of the gauge simulated discharge and water level
@@ -1771,75 +1852,88 @@ class Calibration(River):
         summary: [DataFrame]
             performance metrix
         """
-        if not isinstance(self.MetricsHMvsRRM, DataFrame) and not isinstance(self.MetricsHMvsRRM, GeoDataFrame):
-            raise ValueError("please calculate first the MetricsHMvsRRM by the method HMvsRRM")
+        if not isinstance(self.MetricsHMvsRRM, DataFrame) and not isinstance(
+            self.MetricsHMvsRRM, GeoDataFrame
+        ):
+            raise ValueError(
+                "please calculate first the MetricsHMvsRRM by the method HMvsRRM"
+            )
 
         gauge = self.GetGauges(subid, gaugei)
         gauge_id = gauge.loc[0, self.gauge_id_col]
-        gaugename = str(gauge.loc[0, 'name'])
+        gaugename = str(gauge.loc[0, "name"])
 
-        summary = pd.DataFrame(index=["HM-RRM", "RRM-Observed", "HM-Q-Observed", "HM-WL-Observed"],
-                               columns=self.MetricsHMvsRRM.columns
-                               )
+        summary = pd.DataFrame(
+            index=["HM-RRM", "RRM-Observed", "HM-Q-Observed", "HM-WL-Observed"],
+            columns=self.MetricsHMvsRRM.columns,
+        )
         # for each gauge in the segment
-        if isinstance(self.MetricsHMQvsObs, DataFrame) or isinstance(self.MetricsHMQvsObs, GeoDataFrame):
+        if isinstance(self.MetricsHMQvsObs, DataFrame) or isinstance(
+            self.MetricsHMQvsObs, GeoDataFrame
+        ):
             summary.loc["HM-Q-Observed", :] = self.MetricsHMQvsObs.loc[gauge_id, :]
 
-        if gauge.loc[0, 'waterlevel'] == 1 and gauge.loc[0, 'discharge'] == 1:
-            fig, (ax1, ax2) = plt.subplots(ncols=1, nrows=2, sharex=True, figsize=(15, 8))
+        if gauge.loc[0, "waterlevel"] == 1 and gauge.loc[0, "discharge"] == 1:
+            fig, (ax1, ax2) = plt.subplots(
+                ncols=1, nrows=2, sharex=True, figsize=(15, 8)
+            )
         else:
             fig, ax1 = plt.subplots(ncols=1, nrows=1, figsize=(15, 8))
 
         if gauge_id in self.rrm_gauges:
             # there are RRM simulated data
             summary.loc["HM-RRM", :] = self.MetricsHMvsRRM.loc[gauge_id, :]
-            if isinstance(self.MetricsRRMvsObs, DataFrame) or isinstance(self.MetricsRRMvsObs, GeoDataFrame):
+            if isinstance(self.MetricsRRMvsObs, DataFrame) or isinstance(
+                self.MetricsRRMvsObs, GeoDataFrame
+            ):
                 summary.loc["RRM-Observed", :] = self.MetricsRRMvsObs.loc[gauge_id, :]
 
             if start == "":
-                start_1 = self.MetricsHMvsRRM.loc[gauge_id, 'start']
+                start_1 = self.MetricsHMvsRRM.loc[gauge_id, "start"]
             else:
                 s1 = dt.datetime.strptime(start, fmt)
-                s2 = self.MetricsHMvsRRM.loc[gauge_id, 'start']
+                s2 = self.MetricsHMvsRRM.loc[gauge_id, "start"]
                 start_1 = max(s1, s2)
 
-            if end == "" :
-                end_1 = self.MetricsHMvsRRM.loc[gauge_id, 'end']
+            if end == "":
+                end_1 = self.MetricsHMvsRRM.loc[gauge_id, "end"]
             else:
                 e1 = dt.datetime.strptime(end, fmt)
-                e2 = self.MetricsHMvsRRM.loc[gauge_id, 'end']
+                e2 = self.MetricsHMvsRRM.loc[gauge_id, "end"]
                 end_1 = min(e1, e2)
 
-            ax1.plot(self.q_hm[gauge_id].loc[start_1: end_1], label="HM", zorder=5)
-            ax1.plot(self.q_gauges[gauge_id].loc[start_1: end_1], label="Observed")
-            ax1.plot(self.q_rrm[gauge_id].loc[start_1: end_1], label="RRM")
+            ax1.plot(self.q_hm[gauge_id].loc[start_1:end_1], label="HM", zorder=5)
+            ax1.plot(self.q_gauges[gauge_id].loc[start_1:end_1], label="Observed")
+            ax1.plot(self.q_rrm[gauge_id].loc[start_1:end_1], label="RRM")
             ax1.set_ylabel("Discharge m3/s", fontsize=12)
             ax1.legend(fontsize=15)
             # SimMax = max(self.q_hm[gauge_id].loc[start:end])
             # ObsMax = max(self.q_rrm[gauge_id].loc[start:end])
             # pos = max(SimMax, ObsMax)
-        if gauge.loc[0, 'waterlevel'] == 1:
+        if gauge.loc[0, "waterlevel"] == 1:
             # there are water level observed data
             summary.loc["HM-WL-Observed", :] = self.MetricsHMWLvsObs.loc[gauge_id, :]
 
             if start == "":
-                start_2 = self.MetricsHMWLvsObs.loc[gauge_id, 'start']
+                start_2 = self.MetricsHMWLvsObs.loc[gauge_id, "start"]
             else:
                 s1 = dt.datetime.strptime(start, fmt)
-                s2 = self.MetricsHMWLvsObs.loc[gauge_id, 'start']
+                s2 = self.MetricsHMWLvsObs.loc[gauge_id, "start"]
                 start_2 = max(s1, s2)
 
             if end == "":
-                end_2 = self.MetricsHMWLvsObs.loc[gauge_id, 'end']
+                end_2 = self.MetricsHMWLvsObs.loc[gauge_id, "end"]
             else:
                 e1 = dt.datetime.strptime(end, fmt)
-                e2 = self.MetricsHMWLvsObs.loc[gauge_id, 'end']
+                e2 = self.MetricsHMWLvsObs.loc[gauge_id, "end"]
                 end_2 = min(e1, e2)
 
-            ax2.plot(self.WLHM[gauge_id].loc[start_2: end_2],
-                     label="HM", linewidth=2)
-            ax2.plot(self.WLGauges[gauge_id].loc[start_2: end_2],
-                     label="Observed", linewidth=2)
+            ax2.plot(self.WLHM[gauge_id].loc[start_2:end_2], label="HM", linewidth=2)
+            ax2.plot(
+                self.WLGauges[gauge_id].loc[start_2:end_2],
+                label="Observed",
+                linewidth=2,
+            )
             ax2.set_ylabel("Water Level m", fontsize=12)
             ax2.legend(fontsize=15)
 
@@ -1850,7 +1944,7 @@ class Calibration(River):
         ax1.set_title(gaugename, fontsize=30)
         ax1.set_title(gaugename, fontsize=30)
 
-        if gauge.loc[0, 'waterlevel'] == 1:
+        if gauge.loc[0, "waterlevel"] == 1:
             return summary, fig, (ax1, ax2)
         else:
             return summary, fig, ax1
@@ -1869,26 +1963,33 @@ class Calibration(River):
         -------
         Dataframe
         """
-        df.drop(['start', 'end'], axis=1, inplace=True)
+        df.drop(["start", "end"], axis=1, inplace=True)
         if "Qstart" in df.columns.tolist():
-            start = df['Qstart'].tolist()
+            start = df["Qstart"].tolist()
         else:
-            start = df['WLstart'].tolist()
+            start = df["WLstart"].tolist()
 
         for i in range(len(start)):
             if "Qstart" in df.columns.tolist():
-                if isinstance(df.loc[df.index[i], 'Qstart'], Timestamp):
-                    df.loc[df.index[i], 'Qstart'] = str(df.loc[df.index[i], 'Qstart'].date())
-                if isinstance(df.loc[df.index[i], 'Qend'], Timestamp):
-                    df.loc[df.index[i], 'Qend'] = str(df.loc[df.index[i], 'Qend'].date())
+                if isinstance(df.loc[df.index[i], "Qstart"], Timestamp):
+                    df.loc[df.index[i], "Qstart"] = str(
+                        df.loc[df.index[i], "Qstart"].date()
+                    )
+                if isinstance(df.loc[df.index[i], "Qend"], Timestamp):
+                    df.loc[df.index[i], "Qend"] = str(
+                        df.loc[df.index[i], "Qend"].date()
+                    )
 
             if "WLstart" in df.columns.tolist():
-                if isinstance(df.loc[df.index[i], 'WLstart'], Timestamp):
-                    df.loc[df.index[i], 'WLstart'] = str(df.loc[df.index[i], 'WLstart'].date())
-                if isinstance(df.loc[df.index[i], 'WLend'], Timestamp):
-                    df.loc[df.index[i], 'WLend'] = str(df.loc[df.index[i], 'WLend'].date())
-        return  df
-
+                if isinstance(df.loc[df.index[i], "WLstart"], Timestamp):
+                    df.loc[df.index[i], "WLstart"] = str(
+                        df.loc[df.index[i], "WLstart"].date()
+                    )
+                if isinstance(df.loc[df.index[i], "WLend"], Timestamp):
+                    df.loc[df.index[i], "WLend"] = str(
+                        df.loc[df.index[i], "WLend"].date()
+                    )
+        return df
 
     def SaveMetices(self, path):
         """SaveMetices.
@@ -1903,34 +2004,41 @@ class Calibration(River):
         -------
         None
         """
-        if isinstance(self.MetricsHMvsRRM, GeoDataFrame) or isinstance(self.MetricsHMvsRRM, DataFrame):
+        if isinstance(self.MetricsHMvsRRM, GeoDataFrame) or isinstance(
+            self.MetricsHMvsRRM, DataFrame
+        ):
             df = self.PrepareToSave(self.MetricsHMvsRRM.copy())
             if isinstance(self.MetricsHMvsRRM, GeoDataFrame):
                 df.to_file(path + "MetricsHM_Q_RRM.geojson", driver="GeoJSON")
             if isinstance(self.MetricsHMvsRRM, DataFrame):
                 df.to_csv(path + "MetricsHM_Q_RRM.geojson.csv")
 
-        if isinstance(self.MetricsHMQvsObs, GeoDataFrame) or isinstance(self.MetricsHMQvsObs, DataFrame):
+        if isinstance(self.MetricsHMQvsObs, GeoDataFrame) or isinstance(
+            self.MetricsHMQvsObs, DataFrame
+        ):
             df = self.PrepareToSave(self.MetricsHMQvsObs.copy())
             if isinstance(self.MetricsHMQvsObs, GeoDataFrame):
                 df.to_file(path + "MetricsHM_Q_Obs.geojson", driver="GeoJSON")
             if isinstance(self.MetricsHMQvsObs, DataFrame):
                 df.to_csv(path + "MetricsHM_Q_Obs.geojson.csv")
 
-        if isinstance(self.MetricsRRMvsObs, GeoDataFrame) or isinstance(self.MetricsRRMvsObs, DataFrame):
+        if isinstance(self.MetricsRRMvsObs, GeoDataFrame) or isinstance(
+            self.MetricsRRMvsObs, DataFrame
+        ):
             df = self.PrepareToSave(self.MetricsRRMvsObs.copy())
             if isinstance(self.MetricsRRMvsObs, GeoDataFrame):
                 df.to_file(path + "MetricsRRM_Q_Obs.geojson", driver="GeoJSON")
             if isinstance(self.MetricsRRMvsObs, DataFrame):
                 df.to_csv(path + "MetricsRRM_Q_Obs.geojson.csv")
 
-        if isinstance(self.MetricsHMWLvsObs, GeoDataFrame) or isinstance(self.MetricsHMWLvsObs, DataFrame):
+        if isinstance(self.MetricsHMWLvsObs, GeoDataFrame) or isinstance(
+            self.MetricsHMWLvsObs, DataFrame
+        ):
             df = self.PrepareToSave(self.MetricsHMWLvsObs.copy())
             if isinstance(self.MetricsHMWLvsObs, GeoDataFrame):
                 df.to_file(path + "MetricsHM_WL_Obs.geojson", driver="GeoJSON")
             if isinstance(self.MetricsHMWLvsObs, DataFrame):
                 df.to_csv(path + "MetricsHM_WL_Obs.geojson.csv")
-
 
     def ListAttributes(self):
         """ListAttributes.

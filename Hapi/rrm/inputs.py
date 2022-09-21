@@ -1,6 +1,4 @@
-
-"""
-Created on Wed May 16 03:50:00 2018
+"""Created on Wed May 16 03:50:00 2018.
 
 @author: Mostafa
 """
@@ -11,6 +9,8 @@ import shutil
 import numpy as np
 import pandas as pd
 import rasterio
+from loguru import logger
+from pyramids.raster import Raster as raster
 from rasterio.plot import show
 
 # from datetime import datetime
@@ -18,7 +18,6 @@ from rasterio.plot import show
 from rasterstats import zonal_stats
 
 import Hapi
-from pyramids.raster import Raster as raster
 
 
 class Inputs:
@@ -43,26 +42,28 @@ class Inputs:
         pass
 
     @staticmethod
-    def PrepareInputs(Rasteri, InputFolder, FolderName):
+    def PrepareInputs(src, input_folder, folder_name):
         """PrepareInputs.
 
         this function prepare downloaded raster data to have the same align and
         nodatavalue from a GIS raster (DEM, flow accumulation, flow direction raster)
         and return a folder with the output rasters with a name "New_Rasters"
 
-        Inputs:
-            1-Raster:
-                [String] path to the spatial information source raster to get the spatial information
-                (coordinate system, no of rows & columns) A_path should include the name of the raster
-                and the extension like "data/dem.tif".
-            2-InputFolder:
-                [String] path of the folder of the rasters you want to adjust their
-                no of rows, columns and resolution (alignment) like raster A
-                the folder should not have any other files except the rasters.
-            3-FolderName:
-                [String] name to create a folder to store resulted rasters.
+        Parameters
+        ----------
+        src: [str]
+            path to the spatial information source raster to get the spatial information
+            (coordinate system, no of rows & columns) A_path should include the name of the raster
+            and the extension like "data/dem.tif".
+        input_folder: [str]
+            path of the folder of the rasters you want to adjust their
+            no of rows, columns and resolution (alignment) like raster A
+            the folder should not have any other files except the rasters.
+        folder_name: [str]
+            name to create a folder to store resulted rasters.
 
-        Example:
+        Example
+        -------
             Ex1:
                 dem_path="01GIS/inputs/4000/acc4000.tif"
                 prec_in_path="02Precipitation/CHIRPS/Daily/"
@@ -75,7 +76,7 @@ class Inputs:
         """
         # input data validation
         # data type
-        assert type(FolderName) == str, "FolderName input should be string type"
+        assert type(folder_name) == str, "FolderName input should be string type"
         # create a new folder for new created alligned rasters in temp
         # check if you can create the folder
         try:
@@ -91,14 +92,14 @@ class Inputs:
         print(
             "First alligned files will be created in a folder 'AllignedRasters' in the Temp folder in you environment variable"
         )
-        raster.matchDataAlignment(Rasteri, InputFolder, temp)
+        raster.matchDataAlignment(src, input_folder, temp)
         # create new folder in the current directory for alligned and nodatavalue matched cells
         try:
-            os.makedirs(os.path.join(os.getcwd(), FolderName))
+            os.makedirs(os.path.join(os.getcwd(), folder_name))
         except (WindowsError, FileExistsError):
             msg = (
                 "please The function is trying to create a folder with a name "
-                + str(FolderName)
+                + str(folder_name)
                 + " to complete the "
                 "process if there is a folder with the same name please rename it to other name"
             )
@@ -107,7 +108,7 @@ class Inputs:
         print(
             "second matching NoDataValue from the DEM raster too all raster will be created in the outputpath"
         )
-        raster.cropAlignedFolder(temp, Rasteri, FolderName + "/")
+        raster.cropAlignedFolder(temp, src, f"{folder_name}/")
         # delete the processing folder from temp
         shutil.rmtree(temp)
 
@@ -135,7 +136,7 @@ class Inputs:
              "lp","k0","k1","k2","uzl","perc", "maxbas"]
         """
         ParametersPath = os.path.dirname(Hapi.__file__)
-        ParametersPath = ParametersPath + "/Parameters"
+        ParametersPath = ParametersPath + "/parameters"
         ParamList = [
             "01_tt",
             "02_rfcf",
@@ -224,7 +225,7 @@ class Inputs:
              'x_muskingum']
         """
         ParametersPath = os.path.dirname(Hapi.__file__)
-        ParametersPath = ParametersPath + "/Parameters/" + scenario
+        ParametersPath = ParametersPath + "/parameters/" + scenario
         ParamList = [
             "01_tt",
             "02_rfcf",
@@ -286,7 +287,6 @@ class Inputs:
         -------
         data : [array]
             array contains the average values of the distributed parameters.
-
         """
         # data type
         assert type(Path) == str, "PrecPath input should be string type"
@@ -329,9 +329,7 @@ class Inputs:
         -------
         1- "MSWEP_2009010100.tif" the fmt = '%Y%m%d00'
         2-
-
         """
-
         files = os.listdir(Path)
         if "desktop.ini" in files:
             files.remove("desktop.ini")
@@ -388,7 +386,8 @@ class Inputs:
     def changetext2time(string):
         """changetext2time.
 
-        this functions changes the date from a string to a date time format
+        this functions changes the date from a string to a date time
+        format
         """
         time = dt.datetime(
             int(string[:4]),
@@ -444,22 +443,15 @@ class Inputs:
         return Q
 
     def ListAttributes(self):
-        """
-        Print Attributes List
-        """
-
-        print("\n")
-        print(
-            "Attributes List of: "
-            + repr(self.__dict__["name"])
-            + " - "
-            + self.__class__.__name__
-            + " Instance\n"
+        """Print Attributes List."""
+        logger.info("\n")
+        logger.info(
+            f"Attributes List of: {repr(self.__dict__['name'])} - {self.__class__.__name__} Instance\n"
         )
         self_keys = list(self.__dict__.keys())
         self_keys.sort()
         for key in self_keys:
             if key != "name":
-                print(str(key) + " : " + repr(self.__dict__[key]))
+                logger.info(f"{key} : {repr(self.__dict__[key])}")
 
-        print("\n")
+        logger.info("\n")

@@ -1,5 +1,4 @@
-"""
-Created on Sun Jun 24 21:02:34 2018
+"""Created on Sun Jun 24 21:02:34 2018.
 
 @author: Mostafa
 """
@@ -28,7 +27,6 @@ from Hapi.rrm.distparameters import DistParameters as DP
 # from pyOpt import Optimization, ALHSO,Optimizer
 
 
-
 path = Comp + "/Coello/HAPI/Data/00inputs/"  # GIS/4000/
 SaveTo = Comp + "/Coello/Hapi/Model/results/"
 # %%
@@ -48,8 +46,8 @@ Snow = False
 """
 Create the model object and read the input data
 """
-start_date = '2009-01-01'
-end_date = '2011-12-31'
+start_date = "2009-01-01"
+end_date = "2011-12-31"
 name = "Coello"
 Coello = Calibration(name, start_date, end_date, SpatialResolution="Distributed")
 Coello.ReadRainfall(PrecPath)
@@ -85,8 +83,14 @@ no_parameters = 12
 no_lumped_par = 1
 lumped_par_pos = [7]
 
-SpatialVarFun = DP(raster, no_parameters, no_lumped_par=no_lumped_par,
-                   lumped_par_pos=lumped_par_pos, HRUs=1, Function=4)
+SpatialVarFun = DP(
+    raster,
+    no_parameters,
+    no_lumped_par=no_lumped_par,
+    lumped_par_pos=lumped_par_pos,
+    HRUs=1,
+    Function=4,
+)
 
 # calculate no of parameters that optimization algorithm is going to generate
 print("Number of parameters = " + str(SpatialVarFun.ParametersNO))
@@ -99,9 +103,9 @@ print("Number of parameters = " + str(SpatialVarFun.ParametersNO))
 # %% Gauges
 Coello.ReadGaugeTable(path + "Discharge/stations/gauges.csv", FlowAccPath)
 GaugesPath = path + "Discharge/stations/"
-Coello.ReadDischargeGauges(GaugesPath, column='id', fmt="%Y-%m-%d")
+Coello.ReadDischargeGauges(GaugesPath, column="id", fmt="%Y-%m-%d")
 # %% Objective function
-coordinates = Coello.GaugesTable[['id', 'x', 'y', 'weight']][:]
+coordinates = Coello.GaugesTable[["id", "x", "y", "weight"]][:]
 
 # define the objective function and its arguments
 OF_args = [coordinates]
@@ -131,8 +135,14 @@ to see all options import Optimizer class and check the documentation of the
 method setOption
 
 """
-ApiObjArgs = dict(hms=50, hmcr=0.95, par=0.65, dbw=2000, fileout=1,
-                  filename=SaveTo + "parameters/Coello_" + str(dt.datetime.now())[0:10] + ".txt")
+ApiObjArgs = dict(
+    hms=50,
+    hmcr=0.95,
+    par=0.65,
+    dbw=2000,
+    fileout=1,
+    filename=SaveTo + "parameters/Coello_" + str(dt.datetime.now())[0:10] + ".txt",
+)
 
 for i in range(len(ApiObjArgs)):
     print(list(ApiObjArgs.keys())[i], str(ApiObjArgs[list(ApiObjArgs.keys())[i]]))
@@ -143,8 +153,7 @@ pll_type = None
 ApiSolveArgs = dict(store_sol=True, display_opts=True, store_hst=True, hot_start=False)
 OptimizationArgs = [ApiObjArgs, pll_type, ApiSolveArgs]
 # %% run calibration
-cal_parameters = Coello.RunCalibration(SpatialVarFun, OptimizationArgs,
-                                       printError=0)
+cal_parameters = Coello.RunCalibration(SpatialVarFun, OptimizationArgs, printError=0)
 # %% convert parameters to rasters
 SpatialVarFun.Function(Coello.Parameters, kub=SpatialVarFun.Kub, klb=SpatialVarFun.Klb)
 SpatialVarFun.SaveParameters(SaveTo)

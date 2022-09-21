@@ -1,5 +1,4 @@
-"""
-Created on Sun Jun 24 21:02:34 2018
+"""Created on Sun Jun 24 21:02:34 2018.
 
 @author: Mostafa
 """

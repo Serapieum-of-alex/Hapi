@@ -21,6 +21,7 @@ from scipy.stats import gumbel_r
 
 hours = list(range(1, 25))
 
+
 class Visualize:
     """Visualize.
 
@@ -65,7 +66,7 @@ class Visualize:
             ("loosely dashdotdotted", (0, (3, 10, 1, 10, 1, 10))),  # 10
             ("dashdotdotted", (0, (3, 5, 1, 5, 1, 5))),  # 11
             ("densely dashdotdotted", (0, (3, 1, 1, 1, 1, 1))),  # 12
-            ("densely dashdotdottededited", (0, (6, 1, 1, 1, 1, 1))),# 13
+            ("densely dashdotdottededited", (0, (6, 1, 1, 1, 1, 1))),  # 13
         ]
     )
 
@@ -83,13 +84,12 @@ class Visualize:
         "-.h",
     ]
 
-    def __init__(self, resolution: str="Hourly"):
+    def __init__(self, resolution: str = "Hourly"):
         self.resolution = resolution
         self.Anim = None
 
-
     @staticmethod
-    def LineStyle(Style: Union[str, int]="loosely dotted"):
+    def LineStyle(Style: Union[str, int] = "loosely dotted"):
         """LineStyle.
 
         Line styles for plotting
@@ -103,7 +103,6 @@ class Visualize:
         -------
         TYPE
             DESCRIPTION.
-
         """
         if isinstance(Style, str):
             try:
@@ -133,7 +132,6 @@ class Visualize:
         -------
         TYPE
             DESCRIPTION.
-
         """
         if Style > len(Visualize.MarkerStyleList) - 1:
             Style = Style % len(Visualize.MarkerStyleList)
@@ -142,16 +140,16 @@ class Visualize:
     def GroundSurface(
         self,
         Sub,
-        fromxs: Union[str, int]="",
-        toxs: Union[str, int]="",
-        floodplain: bool=False,
-        plotlateral: bool=False,
-        nxlabels: int=10,
-        figsize: tuple=(20, 10),
-        LateralsColor: Union[str, tuple]="red",
-        LaterlasLineWidth: int=1,
-        option: int=1,
-        size: int=50,
+        fromxs: Union[str, int] = "",
+        toxs: Union[str, int] = "",
+        floodplain: bool = False,
+        plotlateral: bool = False,
+        nxlabels: int = 10,
+        figsize: tuple = (20, 10),
+        LateralsColor: Union[str, tuple] = "red",
+        LaterlasLineWidth: int = 1,
+        option: int = 1,
+        size: int = 50,
     ):
         """Plot the longitudinal profile of the segment.
 
@@ -183,7 +181,6 @@ class Visualize:
         Returns
         -------
         None.
-
         """
         GroundSurfacefig = plt.figure(70, figsize=figsize)
         gs = gridspec.GridSpec(nrows=2, ncols=6, figure=GroundSurfacefig)
@@ -315,21 +312,21 @@ class Visualize:
         Sub,
         start: Union[str, dt.datetime],
         end: Union[str, dt.datetime],
-        fps: int=100,
-        fromxs: Union[str, int]="",
-        toxs: Union[str, int]="",
-        fmt: str="%Y-%m-%d",
-        figsize: tuple=(20, 10),
-        textlocation: tuple=(1, 1),
-        LateralsColor: Union[int, str]="#3D59AB",
-        LaterlasLineWidth: int=1,
-        xaxislabelsize: int=10,
-        yaxislabelsize: int=10,
-        nxlabels: int=10,
-        xticklabelsize: int=8,
-        Lastsegment: bool=True,
-        floodplain: bool=True,
-        repeat: bool=True,
+        fps: int = 100,
+        fromxs: Union[str, int] = "",
+        toxs: Union[str, int] = "",
+        fmt: str = "%Y-%m-%d",
+        figsize: tuple = (20, 10),
+        textlocation: tuple = (1, 1),
+        LateralsColor: Union[int, str] = "#3D59AB",
+        LaterlasLineWidth: int = 1,
+        xaxislabelsize: int = 10,
+        yaxislabelsize: int = 10,
+        nxlabels: int = 10,
+        xticklabelsize: int = 8,
+        Lastsegment: bool = True,
+        floodplain: bool = True,
+        repeat: bool = True,
     ) -> FuncAnimation:
         """WaterSurfaceProfile.
 
@@ -379,10 +376,6 @@ class Visualize:
 
         Returns
         -------
-
-
-
-
         """
         if isinstance(start, str):
             start = dt.datetime.strptime(start, fmt)
@@ -743,20 +736,20 @@ class Visualize:
         Sub,
         start: Union[str, dt.datetime],
         end: Union[str, dt.datetime],
-        interval: float=0.00002,
-        fromxs: Union[str, int]="",
-        toxs: Union[str, int]="",
-        fmt: str="%Y-%m-%d",
-        figsize: tuple=(20, 10),
-        textlocation: tuple=(1, 1),
-        LateralsColor: Union[str, tuple]="#3D59AB",
-        LaterlasLineWidth: int=1,
-        xaxislabelsize: int=10,
-        yaxislabelsize: int=10,
-        nxlabels: int=20,
-        xticklabelsize: int=8,
-        floodplain: bool=True,
-        repeat: bool=True,
+        interval: float = 0.00002,
+        fromxs: Union[str, int] = "",
+        toxs: Union[str, int] = "",
+        fmt: str = "%Y-%m-%d",
+        figsize: tuple = (20, 10),
+        textlocation: tuple = (1, 1),
+        LateralsColor: Union[str, tuple] = "#3D59AB",
+        LaterlasLineWidth: int = 1,
+        xaxislabelsize: int = 10,
+        yaxislabelsize: int = 10,
+        nxlabels: int = 20,
+        xticklabelsize: int = 8,
+        floodplain: bool = True,
+        repeat: bool = True,
     ) -> FuncAnimation:
         """WaterSurfaceProfile1Min.
 
@@ -805,7 +798,6 @@ class Visualize:
         -------
         TYPE
             DESCRIPTION.
-
         """
         start = dt.datetime.strptime(start, fmt)
         end = dt.datetime.strptime(end, fmt) - dt.timedelta(minutes=int(Sub.dt / 60))
@@ -843,7 +835,7 @@ class Visualize:
                 fromxs = Sub.xsname[0]
 
             # if toxs > Sub.xsname[-1]:
-                # toxs = Sub.xsname[-1]
+            # toxs = Sub.xsname[-1]
 
         if toxs == "":
             toxs = Sub.xsname[-1]
@@ -1162,7 +1154,6 @@ class Visualize:
         -------
         TYPE
             DESCRIPTION.
-
         """
         if isinstance(start, str):
             start = dt.datetime.strptime(start, fmt)
@@ -1422,19 +1413,19 @@ class Visualize:
     def CrossSections(
         self,
         Sub,
-        fromxs: Union[str, int]="",
-        toxs: Union[str, int]="",
-        xsrows: int=3,
-        xscolumns: int=3,
-        bedlevel: bool=False,
-        titlesize: int=15,
-        textsize: int=15,
-        figsize: tuple=(18, 10),
-        linewidth: int=6,
-        samescale: bool=False,
-        textspacing: List[tuple]=[(1, 1), (1, 2)],
-        plottingoption: int=1,
-        plotannotation: bool=True,
+        fromxs: Union[str, int] = "",
+        toxs: Union[str, int] = "",
+        xsrows: int = 3,
+        xscolumns: int = 3,
+        bedlevel: bool = False,
+        titlesize: int = 15,
+        textsize: int = 15,
+        figsize: tuple = (18, 10),
+        linewidth: int = 6,
+        samescale: bool = False,
+        textspacing: List[tuple] = [(1, 1), (1, 2)],
+        plottingoption: int = 1,
+        plotannotation: bool = True,
     ):
         """CrossSections.
 
@@ -1476,7 +1467,6 @@ class Visualize:
         Returns
         -------
         None.
-
         """
         if fromxs == "":
             startxs_ind = 0
@@ -1677,9 +1667,13 @@ class Visualize:
 
         return fig, ax_XS
 
-
     def Plot1minProfile(
-        self, Sub, date: str, xaxislabelsize: int=10, nxlabels: int=50, fmt: str="%Y-%m-%d"
+        self,
+        Sub,
+        date: str,
+        xaxislabelsize: int = 10,
+        nxlabels: int = 50,
+        fmt: str = "%Y-%m-%d",
     ):
         """Plot1minProfile.
 
@@ -1701,7 +1695,6 @@ class Visualize:
         Returns
         -------
         None.
-
         """
         if isinstance(date, str):
             date = dt.datetime.strptime(date, fmt)
@@ -1718,7 +1711,6 @@ class Visualize:
         ax1.locator_params(axis="x", nbins=nxlabels)
 
         ax1.grid()
-
 
     @staticmethod
     def SaveProfileAnimation(Anim, Path="", fps=3, ffmpegPath=""):
@@ -1748,7 +1740,6 @@ class Visualize:
         Returns
         -------
         None.
-
         """
         message = """
             please visit https://ffmpeg.org/ and download a version of ffmpeg
@@ -1784,7 +1775,6 @@ class Visualize:
                     """
                 print("{0}".format(msg))
 
-
     def SaveAnimation(anim, VideoFormat="gif", Path="", SaveFrames=20):
         """SaveAnimation.
 
@@ -1810,7 +1800,6 @@ class Visualize:
         Returns
         -------
         None.
-
         """
         ffmpegPath = os.getenv("HOME") + "/.matplotlib/ffmpeg-static/bin/ffmpeg.exe"
 
@@ -1839,7 +1828,6 @@ class Visualize:
                     "please visit https://ffmpeg.org/ and download a version of ffmpeg compitable with your operating system, for more details please check the method definition"
                 )
 
-
     @staticmethod
     def Histogram(v1, v2, NoAxis=2, filter1=0.2, Save=False, pdf=True, **kwargs):
         """Histogram.
@@ -1864,7 +1852,6 @@ class Visualize:
                          fontsize=15, labelsize = 15, Axisfontsize = 11,
                          legend = ['RIM1.0', 'RIM2.0'], pdf = False, Save = False,
                          name = str(Event1.EventIndex.loc[EndInd,'id']))
-
         """
         # update the default options
         Fkeys = list(kwargs.keys())
@@ -2040,7 +2027,6 @@ class MidpointNormalize(colors.Normalize):
     """MidpointNormalize.
 
     !TODO needs docs
-
     """
 
     def __init__(self, vmin=None, vmax=None, midpoint=None, clip=False):
@@ -2063,7 +2049,6 @@ class MidpointNormalize(colors.Normalize):
         -------
         TYPE
             DESCRIPTION.
-
         """
         # I'm ignoring masked values and all kinds of edge cases to make a
         # simple example...

@@ -1,21 +1,14 @@
-"""
-this code creates the max and min values of the parameters from the 10 scenarios
-of the HBV
+"""this code creates the max and min values of the parameters from the 10 scenarios of the HBV.
 
 @author: mofarrag
 """
-from IPython import get_ipython
-
-get_ipython().magic("reset -f")
-# Comp = "F:/"
-Comp = "F:/Users/mofarrag/Documents/"
-# import os
-import gdal
+from osgeo import gdal
+from pyramids.raster import Raster as R
 
 # import osr
 # import numpy as np
 # import gdalconst
-from Hapi.raster import Raster as R
+Comp = "F:/Users/mofarrag/Documents/"
 
 ParamList = [
     "01_tt",

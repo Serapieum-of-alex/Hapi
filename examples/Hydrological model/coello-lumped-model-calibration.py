@@ -9,6 +9,7 @@ import datetime as dt
 
 import numpy as np
 import pandas as pd
+
 import Hapi.rrm.hbv_bergestrom92 as HBVLumped
 import Hapi.sm.performancecriteria as PC
 from Hapi.rrm.calibration import Calibration
@@ -18,8 +19,13 @@ from Hapi.run import Run
 # %%
 path = r"C:\MyComputer\01Algorithms\hydrology\Hapi/"
 ### Paths
-Parameterpath = path + "examples/Hydrological model/data/lumped_model/Coello_Lumped2021-03-08_muskingum.txt"
-MeteoDataPath = path + "examples/Hydrological model/data/lumped_model/meteo_data-MSWEP.csv"
+Parameterpath = (
+    path
+    + "examples/Hydrological model/data/lumped_model/Coello_Lumped2021-03-08_muskingum.txt"
+)
+MeteoDataPath = (
+    path + "examples/Hydrological model/data/lumped_model/meteo_data-MSWEP.csv"
+)
 Path = path + "examples/Hydrological model/data/lumped_model/"
 
 ### Meteorological data
@@ -83,8 +89,15 @@ Coello.ReadObjectiveFn(PC.RMSE, OF_args)
 # to see all options import Optimizer class and check the documentation of the
 # method setOption
 
-ApiObjArgs = dict(hms=100, hmcr=0.95, par=0.65, dbw=2000, fileout=1, xinit=0,
-                  filename=Path + "/Lumped_History" + str(dt.datetime.now())[0:10] + ".txt")
+ApiObjArgs = dict(
+    hms=100,
+    hmcr=0.95,
+    par=0.65,
+    dbw=2000,
+    fileout=1,
+    xinit=0,
+    filename=Path + "/Lumped_History" + str(dt.datetime.now())[0:10] + ".txt",
+)
 
 for i in range(len(ApiObjArgs)):
     print(list(ApiObjArgs.keys())[i], str(ApiObjArgs[list(ApiObjArgs.keys())[i]]))
@@ -98,11 +111,13 @@ OptimizationArgs = [ApiObjArgs, pll_type, ApiSolveArgs]
 
 # %% Run Calibration
 
-cal_parameters = Coello.LumpedCalibration(Basic_inputs, OptimizationArgs, printError=None)
+cal_parameters = Coello.LumpedCalibration(
+    Basic_inputs, OptimizationArgs, printError=None
+)
 
 print("Objective Function = " + str(round(cal_parameters[0], 2)))
 print("Parameters are " + str(cal_parameters[1]))
-print("Time = " + str(round(cal_parameters[2]['time'] / 60, 2)) + " min")
+print("Time = " + str(round(cal_parameters[2]["time"] / 60, 2)) + " min")
 
 # cal_parameters[2]['time']
 
@@ -117,17 +132,17 @@ Metrics = dict()
 
 Qobs = Coello.QGauges[Coello.QGauges.columns[0]]
 
-Metrics['RMSE'] = PC.RMSE(Qobs, Coello.Qsim['q'])
-Metrics['NSE'] = PC.NSE(Qobs, Coello.Qsim['q'])
-Metrics['NSEhf'] = PC.NSEHF(Qobs, Coello.Qsim['q'])
-Metrics['KGE'] = PC.KGE(Qobs, Coello.Qsim['q'])
-Metrics['WB'] = PC.WB(Qobs, Coello.Qsim['q'])
+Metrics["RMSE"] = PC.RMSE(Qobs, Coello.Qsim["q"])
+Metrics["NSE"] = PC.NSE(Qobs, Coello.Qsim["q"])
+Metrics["NSEhf"] = PC.NSEHF(Qobs, Coello.Qsim["q"])
+Metrics["KGE"] = PC.KGE(Qobs, Coello.Qsim["q"])
+Metrics["WB"] = PC.WB(Qobs, Coello.Qsim["q"])
 
-print("RMSE= " + str(round(Metrics['RMSE'], 2)))
-print("NSE= " + str(round(Metrics['NSE'], 2)))
-print("NSEhf= " + str(round(Metrics['NSEhf'], 2)))
-print("KGE= " + str(round(Metrics['KGE'], 2)))
-print("WB= " + str(round(Metrics['WB'], 2)))
+print("RMSE= " + str(round(Metrics["RMSE"], 2)))
+print("NSE= " + str(round(Metrics["NSE"], 2)))
+print("NSEhf= " + str(round(Metrics["NSEhf"], 2)))
+print("KGE= " + str(round(Metrics["KGE"], 2)))
+print("WB= " + str(round(Metrics["WB"], 2)))
 
 ### Plotting Hydrograph
 
@@ -140,7 +155,7 @@ Coello.PlotHydrograph(plotstart, plotend, gaugei, Title="Lumped Model")
 
 ParPath = Path + "Parameters" + str(dt.datetime.now())[0:10] + ".txt"
 parameters = pd.DataFrame(index=parnames)
-parameters['values'] = cal_parameters[1]
+parameters["values"] = cal_parameters[1]
 parameters.to_csv(ParPath, header=None, float_format="%0.4f")
 
 ### Save Results

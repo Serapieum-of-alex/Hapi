@@ -298,11 +298,7 @@ def Soil(fc, beta, etf, temp, tm, e_corr, lp, c_flux, inf, ep, sm_old, uz_old): 
 
 
 def Response(perc, alpha, k, k1, lz_old, uz_int_1):  # tfac,area,
-    """
-    ============================================================
-        Response(tfac, perc, alpha, k, k1, area, lz_old, uz_int_1)
-    ============================================================
-    The response routine of the HBV-96 model.
+    """The response routine of the HBV-96 model.
 
     The response routine is in charge of transforming the current values of
     upper and lower zone into discharge. This routine also controls the
@@ -311,9 +307,7 @@ def Response(perc, alpha, k, k1, lz_old, uz_int_1):  # tfac,area,
 
     Parameters
     ----------
-    tfac : float
-        Number of hours in the time step
-    perc : float
+    perc : [float]
         Percolation value [mm\hr]
     alpha : float
         Response box parameter
@@ -321,15 +315,10 @@ def Response(perc, alpha, k, k1, lz_old, uz_int_1):  # tfac,area,
         Upper zone recession coefficient
     k1 : float
         Lower zone recession coefficient
-    area : float
-        Catchment area [Km2]
     lz_old : float
         Previous lower zone value [mm]
     uz_int_1 : float
         Previous upper zone value before percolation [mm]
-    qdr : float
-        Direct runoff [mm]
-
     """
     # upper zone
     # if perc > Quz then perc = Quz and Quz = 0 if not perc = value and Quz= Quz-perc so take the min
@@ -361,7 +350,7 @@ def Response(perc, alpha, k, k1, lz_old, uz_int_1):  # tfac,area,
 
 
 def Tf(maxbas):
-    """ Transfer function weight generator """
+    """Transfer function weight generator."""
     wi = []
     for x in range(1, maxbas + 1):
         if x <= (maxbas) / 2.0:
@@ -377,10 +366,7 @@ def Tf(maxbas):
 
 
 def Routing(q, maxbas=1):
-    """
-    This function implements the transfer function using a triangular
-    function
-    """
+    """This function implements the transfer function using a triangular function."""
     assert maxbas >= 1, "Maxbas value has to be larger than 1"
     # Get integer part of maxbas
     #    maxbas = int(maxbas)
@@ -571,7 +557,7 @@ def Simulate(
         snow == 0 or snow == 1
     ), " snow input defines whether to consider snow subroutine or not it has to be 0 or 1"
 
-    if init_st is None:  #   0  1  2  3  4  5
+    if init_st is None:  # 0  1  2  3  4  5
         st = [DEF_ST]  # [sp,sm,uz,lz,wc,LA]
     else:
         st = [init_st]
@@ -579,7 +565,7 @@ def Simulate(
     if ll_temp is None:
         ll_temp = [np.mean(temp)] * len(prec)
 
-    if q_init == None:
+    if q_init is None:
         if snow == 0:
             q_uz = [par[6] * ((st[0][2]) ** (1.0 + par[8]))]
             q_lz = [par[7] * st[0][3]]

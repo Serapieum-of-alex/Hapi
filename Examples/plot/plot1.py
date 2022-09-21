@@ -1,5 +1,4 @@
-"""
-Created on Sat Apr 17 20:16:53 2021
+"""Created on Sat Apr 17 20:16:53 2021.
 
 @author: mofarrag
 """
@@ -8,7 +7,6 @@ import numpy as np
 
 from Hapi.visualizer import Visualize
 
-#%%
 distance = [
     19.5,
     43.0,

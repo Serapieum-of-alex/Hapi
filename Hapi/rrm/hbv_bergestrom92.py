@@ -33,8 +33,7 @@ DEF_q0 = 0
 
 
 def Precipitation(prec, temp, tt, rfcf, sfcf):
-    """
-    Precipitaiton routine of the HBV96 model.
+    """Precipitaiton routine of the HBV96 model.
 
     If temperature is lower than TT [degree C], all the precipitation is considered as
     snow. If the temperature is higher than tt, all the precipitation is
@@ -73,8 +72,7 @@ def Precipitation(prec, temp, tt, rfcf, sfcf):
 
 
 def Snow(temp, rf, sf, wc_old, sp_old, tt, cfmax, cfr, cwh):
-    """
-    Snow routine.
+    """Snow routine.
 
     The snow pack consists of two states: Water Content (wc) and Snow Pack
     (sp). The first corresponds to the liquid part of the water in the snow,
@@ -127,12 +125,12 @@ def Snow(temp, rf, sf, wc_old, sp_old, tt, cfmax, cfr, cwh):
     if temp > tt:  # if temp > melting threshold
         # then either some snow will melt or the entire snow will melt
         if (
-                cfmax * (temp - tt) < sp_old + sf
+            cfmax * (temp - tt) < sp_old + sf
         ):  # if amount of melted snow < the entire existing snow (previous amount+new)
             melt = cfmax * (temp - tt)
         else:  # if amount of melted snow > the entire existing snow (previous amount+new)
             melt = (
-                    sp_old + sf
+                sp_old + sf
             )  # then the entire existing snow will melt (old snow pack + the current snowfall)
 
         sp_new = sp_old + sf - melt
@@ -141,10 +139,10 @@ def Snow(temp, rf, sf, wc_old, sp_old, tt, cfmax, cfr, cwh):
     else:  # if temp < melting threshold
         # then either some water will freeze or all the water willfreeze
         if (
-                cfr * cfmax * (tt - temp) < wc_old + rf
+            cfr * cfmax * (tt - temp) < wc_old + rf
         ):  # then either some water will freeze or all the water willfreeze
             refr = (
-                    cfr * cfmax * (tt - temp)
+                cfr * cfmax * (tt - temp)
             )  # cfmax*(ttm-temp) is the rate of melting of snow while cfr*cfmax*(ttm-temp) is the rate of freeze of melted water  (rate of freezing > rate of melting)
         else:  # if the amount of frozen water > entire water available
             refr = wc_old + rf
@@ -164,8 +162,7 @@ def Snow(temp, rf, sf, wc_old, sp_old, tt, cfmax, cfr, cwh):
 
 
 def Soil(temp, inf, ep, sm_old, uz_old, tm, fc, beta, e_corr, lp):
-    """
-    Soil routine of the HBV-96 model.
+    """Soil routine of the HBV-96 model.
 
     The model checks for the amount of water that can infiltrate the soil,
     coming from the liquid precipitation and the snow pack melting. A part of
@@ -242,8 +239,7 @@ def Soil(temp, inf, ep, sm_old, uz_old, tm, fc, beta, e_corr, lp):
 
 
 def Response(lz_old, uz_int_1, perc, k, k1, k2, uzl):
-    """
-    The response routine of the HBV-96 model.
+    """The response routine of the HBV-96 model.
 
     The response routine is in charge of transforming the current values of
     upper and lower zone into discharge. This routine also controls the
@@ -315,9 +311,7 @@ def Response(lz_old, uz_int_1, perc, k, k1, k2, uzl):
 
 
 def Tf(maxbas):
-    """
-    Transfer function weight generator
-    """
+    """Transfer function weight generator."""
     wi = []
     for x in range(1, maxbas + 1):
         if x <= maxbas / 2.0:
@@ -333,10 +327,7 @@ def Tf(maxbas):
 
 
 def Routing(q, maxbas=1):
-    """
-    This function implements the transfer function using a triangular
-    function
-    """
+    """This function implements the transfer function using a triangular function."""
     assert maxbas >= 1, "Maxbas value has to be larger than 1"
     # Get integer part of maxbas
     maxbas = int(round(maxbas, 0))

@@ -1,9 +1,9 @@
-""" Distributed model with a maxbas routing scheme """
+"""Distributed model with a maxbas routing scheme."""
 import os
 
 # comp = "F:/02Case studies/"
 Comp = r"C:\MyComputer\01Algorithms\Hydrology\Hapi/"
-os.chdir(Comp+ "examples/")
+os.chdir(Comp + "examples/")
 import datetime as dt
 
 import matplotlib.pyplot as plt
@@ -29,7 +29,7 @@ FlowAccPath = path + "GIS/4000/acc4000.tif"
 ParPath = "F:/Users/mofarrag/coello/Hapi/Data/00inputs/Basic_inputs/default parameters/initial"
 #%% Meteorological data
 AreaCoeff = 1530
-InitialCond = [0,5,5,5,0]
+InitialCond = [0, 5, 5, 5, 0]
 Snow = 0
 """
 Create the model object and read the input data
@@ -37,7 +37,7 @@ Create the model object and read the input data
 start = "2009-01-01"
 end = "2011-12-31"
 name = "Coello"
-Coello = Catchment(name, start, end, SpatialResolution = "Distributed")
+Coello = Catchment(name, start, end, SpatialResolution="Distributed")
 Coello.ReadRainfall(PrecPath)
 Coello.ReadTemperature(TempPath)
 Coello.ReadET(Evap_Path)
@@ -46,12 +46,12 @@ Coello.ReadFlowAcc(FlowAccPath)
 # Coello.ReadFlowDir(FlowDPath)
 # Coello.ReadFlowPathLength(FlowPathLengthPath)
 
-Coello.ReadParameters(ParPath, Snow,Maxbas=True)
+Coello.ReadParameters(ParPath, Snow, Maxbas=True)
 Coello.ReadLumpedModel(HBV, AreaCoeff, InitialCond)
 #%% Gauges
-Coello.ReadGaugeTable(path+"Discharge/stations/gauges.csv", FlowAccPath)
-GaugesPath = path+"Discharge/stations/"
-Coello.ReadDischargeGauges(GaugesPath, column='id', fmt="%Y-%m-%d")
+Coello.ReadGaugeTable(path + "Discharge/stations/gauges.csv", FlowAccPath)
+GaugesPath = path + "Discharge/stations/"
+Coello.ReadDischargeGauges(GaugesPath, column="id", fmt="%Y-%m-%d")
 #%% Run the model
 """
 Outputs:
@@ -75,14 +75,14 @@ Run.RunFW1(Coello)
 #%% calculate performance criteria
 Coello.ExtractDischarge(CalculateMetrics=True, FW1=True)
 
-gaugeid = Coello.GaugesTable.loc[Coello.GaugesTable.index[-1],'id']
+gaugeid = Coello.GaugesTable.loc[Coello.GaugesTable.index[-1], "id"]
 print("----------------------------------")
-print("Gauge - " +str(gaugeid))
-print("RMSE= " + str(round(Coello.Metrics.loc['RMSE',gaugeid],2)))
-print("NSE= " + str(round(Coello.Metrics.loc['NSE',gaugeid],2)))
-print("NSEhf= " + str(round(Coello.Metrics.loc['NSEhf',gaugeid],2)))
-print("KGE= " + str(round(Coello.Metrics.loc['KGE',gaugeid],2)))
-print("WB= " + str(round(Coello.Metrics.loc['WB',gaugeid],2)))
+print("Gauge - " + str(gaugeid))
+print("RMSE= " + str(round(Coello.Metrics.loc["RMSE", gaugeid], 2)))
+print("NSE= " + str(round(Coello.Metrics.loc["NSE", gaugeid], 2)))
+print("NSEhf= " + str(round(Coello.Metrics.loc["NSEhf", gaugeid], 2)))
+print("KGE= " + str(round(Coello.Metrics.loc["KGE", gaugeid], 2)))
+print("WB= " + str(round(Coello.Metrics.loc["WB", gaugeid], 2)))
 #%% plot
 i = 5
 gaugei = 5
@@ -92,14 +92,14 @@ plotend = "2011-12-31"
 Coello.PlotHydrograph(plotstart, plotend, gaugei)
 #%% store the result into rasters
 # create list of names
-src=gdal.Open(FlowAccPath)
-s=dt.datetime(2012,6,14,19,00,00)
-e=dt.datetime(2013,12,23,00,00,00)
-index=pd.date_range(s,e,freq="1H")
-resultspath="results/"
-names=[resultspath+str(i)[:-6] for i in index]
-names=[i.replace("-","_") for i in names]
-names=[i.replace(" ","_") for i in names]
-names=[i+".tif" for i in names]
+src = gdal.Open(FlowAccPath)
+s = dt.datetime(2012, 6, 14, 19, 00, 00)
+e = dt.datetime(2013, 12, 23, 00, 00, 00)
+index = pd.date_range(s, e, freq="1H")
+resultspath = "results/"
+names = [resultspath + str(i)[:-6] for i in index]
+names = [i.replace("-", "_") for i in names]
+names = [i.replace(" ", "_") for i in names]
+names = [i + ".tif" for i in names]
 
-#Raster.RastersLike(src,q_uz_routed[:,:,:-1],names)
+# Raster.RastersLike(src,q_uz_routed[:,:,:-1],names)

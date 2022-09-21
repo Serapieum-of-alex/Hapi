@@ -2,16 +2,22 @@ import datetime as dt
 
 import matplotlib
 
-matplotlib.use('TkAgg')
+matplotlib.use("TkAgg")
 import Hapi.rrm.hbv_bergestrom92 as HBVLumped
 import Hapi.sm.performancecriteria as PC
 from Hapi.catchment import Catchment
 from Hapi.rrm.routing import Routing
 from Hapi.run import Run
+
 path = r"C:\MyComputer\01Algorithms\hydrology\Hapi/"
 # %% data
-Parameterpath = path + "examples/Hydrological model/data/lumped_model/Coello_Lumped2021-03-08_muskingum.txt"
-MeteoDataPath = path + "examples/Hydrological model/data/lumped_model/meteo_data-MSWEP.csv"
+Parameterpath = (
+    path
+    + "examples/Hydrological model/data/lumped_model/Coello_Lumped2021-03-08_muskingum.txt"
+)
+MeteoDataPath = (
+    path + "examples/Hydrological model/data/lumped_model/meteo_data-MSWEP.csv"
+)
 Path = path + "examples/Hydrological model/data/lumped_model/"
 SaveTo = path + "examples/Hydrological model/data/lumped_model/"
 ### Meteorological data
@@ -59,19 +65,19 @@ Run.RunLumped(Coello, Route, RoutingFn)
 Metrics = dict()
 
 # gaugeid = Coello.QGauges.columns[-1]
-Qobs = Coello.QGauges['q']
+Qobs = Coello.QGauges["q"]
 
-Metrics['RMSE'] = PC.RMSE(Qobs, Coello.Qsim['q'])
-Metrics['NSE'] = PC.NSE(Qobs, Coello.Qsim['q'])
-Metrics['NSEhf'] = PC.NSEHF(Qobs, Coello.Qsim['q'])
-Metrics['KGE'] = PC.KGE(Qobs, Coello.Qsim['q'])
-Metrics['WB'] = PC.WB(Qobs, Coello.Qsim['q'])
+Metrics["RMSE"] = PC.RMSE(Qobs, Coello.Qsim["q"])
+Metrics["NSE"] = PC.NSE(Qobs, Coello.Qsim["q"])
+Metrics["NSEhf"] = PC.NSEHF(Qobs, Coello.Qsim["q"])
+Metrics["KGE"] = PC.KGE(Qobs, Coello.Qsim["q"])
+Metrics["WB"] = PC.WB(Qobs, Coello.Qsim["q"])
 
-print("RMSE= " + str(round(Metrics['RMSE'], 2)))
-print("NSE= " + str(round(Metrics['NSE'], 2)))
-print("NSEhf= " + str(round(Metrics['NSEhf'], 2)))
-print("KGE= " + str(round(Metrics['KGE'], 2)))
-print("WB= " + str(round(Metrics['WB'], 2)))
+print("RMSE= " + str(round(Metrics["RMSE"], 2)))
+print("NSE= " + str(round(Metrics["NSE"], 2)))
+print("NSEhf= " + str(round(Metrics["NSEhf"], 2)))
+print("KGE= " + str(round(Metrics["KGE"], 2)))
+print("WB= " + str(round(Metrics["WB"], 2)))
 # %% ### Plot Hydrograph
 gaugei = 0
 plotstart = "2009-01-01"

@@ -4,7 +4,7 @@ import pytest
 
 coello_dates = ["2009-01-01", "2011-12-31"]
 area = 1530.0
-IC = [0,10,10,10,0]
+IC = [0, 10, 10, 10, 0]
 snow = False
 gauges_datefmt = "%Y-%m-%d"
 
@@ -38,13 +38,16 @@ def coello_AreaCoeff() -> float:
 def coello_InitialCond() -> list:
     return IC
 
+
 @pytest.fixture(scope="module")
 def coello_Snow() -> int:
     return snow
 
+
 @pytest.fixture(scope="module")
 def coello_gauges_date_fmt() -> str:
     return gauges_datefmt
+
 
 # @pytest.fixture(scope="module")
 # def coello_lumpedmodel_RoutingFn() -> (inflow: Any, Qinitial: Any, k: Any, x: Any, dt: Any):

@@ -1,9 +1,11 @@
 from typing import List
+
 import numpy as np
 import pandas as pd
 import pytest
 from osgeo import gdal
 from osgeo.gdal import Dataset
+
 
 @pytest.fixture(scope="module")
 def src() -> Dataset:
@@ -29,9 +31,11 @@ def cmap() -> str:
 def ColorScale() -> List[int]:
     return [1, 2, 3, 4, 5]
 
+
 @pytest.fixture(scope="module")
 def TicksSpacing() -> int:
     return 500
+
 
 @pytest.fixture(scope="module")
 def color_scale_2_gamma() -> float:
@@ -52,6 +56,7 @@ def color_scale_3_linthresh() -> float:
 def midpoint() -> int:
     return 20
 
+
 @pytest.fixture(scope="module")
 def display_cellvalue() -> bool:
     return True
@@ -66,17 +71,21 @@ def NumSize() -> int:
 def Backgroundcolorthreshold():
     return None
 
+
 @pytest.fixture(scope="module")
 def points() -> pd.DataFrame:
     return pd.read_csv("examples/GIS/data/points.csv")
+
 
 @pytest.fixture(scope="module")
 def IDsize() -> int:
     return 20
 
+
 @pytest.fixture(scope="module")
 def IDcolor() -> str:
     return "green"
+
 
 @pytest.fixture(scope="module")
 def Gaugesize() -> int:

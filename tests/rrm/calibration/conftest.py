@@ -1,11 +1,11 @@
+import datetime as dt
 from typing import List
 
-import pytest
-import datetime as dt
 # @pytest.fixture(scope="module")
 # def gauges_file_extension() -> str:
-    # return ".csv"
+# return ".csv"
 import pandas as pd
+import pytest
 
 
 @pytest.fixture(scope="module")
@@ -22,4 +22,8 @@ def upper_bound() -> list:
 
 @pytest.fixture(scope="module")
 def history_files() -> str:
-    return "examples\Hydrological model\Lumped_History" + str(dt.datetime.now())[0:10] + ".txt"
+    return (
+        "examples\Hydrological model\Lumped_History"
+        + str(dt.datetime.now())[0:10]
+        + ".txt"
+    )

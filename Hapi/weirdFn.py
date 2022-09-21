@@ -1,18 +1,11 @@
-"""
-Created on Wed Jul 18 23:55:20 2018
+"""Created on Wed Jul 18 23:55:20 2018.
 
 @author: Mostafa
 """
-
-
 import datetime
-
-#%library
 import pickle
 
-# import numpy as np
 
-# functions
 def save_obj(obj, saved_name):
     """
     ===============================================================
@@ -97,8 +90,7 @@ def dateformated(x):
 
 
 def printWaitBar(i, total, prefix="", suffix="", decimals=1, length=100, fill="█"):
-    """
-    This function will print a waitbar in the console
+    """This function will print a waitbar in the console.
 
     Variables:
 

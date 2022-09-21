@@ -1,5 +1,4 @@
-"""
-Calibration
+"""Calibration.
 
 calibration contains functions to to connect the parameter spatial distribution
 function with the with both component of the spatial representation of the hydrological
@@ -7,8 +6,6 @@ process (conceptual model & spatial routing) to calculate the performance of pre
 runoff at known locations based on given performance function
 
 @author: Mostafa
-
-
 """
 import datetime as dt
 from typing import Any, Optional, Union
@@ -33,19 +30,17 @@ class Calibration(Catchment):
 
     The calibration class is sub-class from the Catchment super class so you
     need to create the Catchment object first to be able to run the calibration
-
     """
 
-
     def __init__(
-            self,
-            name: Any,
-            start: str,
-            end: str,
-            fmt: str = "%Y-%m-%d",
-            SpatialResolution: Optional[str] = "Lumped",
-            TemporalResolution: Optional[str] = "Daily",
-            RouteRiver: Optional[str] = "Muskingum",
+        self,
+        name: Any,
+        start: str,
+        end: str,
+        fmt: str = "%Y-%m-%d",
+        SpatialResolution: Optional[str] = "Lumped",
+        TemporalResolution: Optional[str] = "Daily",
+        RouteRiver: Optional[str] = "Muskingum",
     ):
         """Calibration.
 
@@ -70,7 +65,6 @@ class Calibration(Catchment):
         Returns
         -------
         None.
-
         """
         self.name = name
         self.start = dt.datetime.strptime(start, fmt)
@@ -78,7 +72,7 @@ class Calibration(Catchment):
         self.SpatialResolution = SpatialResolution
         self.TemporalResolution = TemporalResolution
 
-        conversionfactor = (1000 * 24 * 60 * 60) / (1000 ** 2)
+        conversionfactor = (1000 * 24 * 60 * 60) / (1000**2)
 
         if TemporalResolution.lower() == "daily":
             self.dt = 1  # 24
@@ -126,8 +120,13 @@ class Calibration(Catchment):
         self.FlowDirArr = None
         self.FDT = None
         self.FPLArr = None
-        self.DEM, self.BankfullDepth, self.RiverWidth, self.RiverRoughness, self.FloodPlainRoughness = \
-            None, None, None, None, None
+        (
+            self.DEM,
+            self.BankfullDepth,
+            self.RiverWidth,
+            self.RiverRoughness,
+            self.FloodPlainRoughness,
+        ) = (None, None, None, None, None)
         self.qout, self.Qtot = None, None
         self.quz_routed, self.qlz_translated, self.statevariables = None, None, None
         self.anim = None
@@ -137,9 +136,8 @@ class Calibration(Catchment):
 
         pass
 
-
     def ReadObjectiveFn(self, OF, args):
-        """ReadObjectiveFn
+        """ReadObjectiveFn.
 
         ReadObjectiveFn method takes the objective function and and any arguments
         that are needed to be passed to the objective function.
@@ -155,7 +153,6 @@ class Calibration(Catchment):
         Returns
         -------
         None.
-
         """
         # check objective_function
         assert callable(OF), "The Objective function should be a function"
@@ -168,9 +165,8 @@ class Calibration(Catchment):
 
         print("Objective function is read successfully")
 
-
     def ExtractDischarge(self, Factor=None):
-        """ExtractDischarge
+        """ExtractDischarge.
 
         ExtractDischarge method extracts the discharge hydrograph in the
         Q
@@ -185,7 +181,6 @@ class Calibration(Catchment):
         Returns
         -------
         None.
-
         """
         self.Qsim = np.zeros((self.TS - 1, len(self.GaugesTable)))
         # error = 0
@@ -210,9 +205,8 @@ class Calibration(Catchment):
 
         # return error
 
-
     def RunCalibration(self, SpatialVarFun, OptimizationArgs, printError=None):
-        """RunCalibration
+        """RunCalibration.
 
         this function runs the calibration algorithm for the conceptual distributed
         hydrological model
@@ -277,22 +271,22 @@ class Calibration(Catchment):
         # [rows,cols] = self.FlowAcc.ReadAsArray().shape
         [fd_rows, fd_cols] = self.FlowDirArr.shape
         assert (
-                fd_rows == self.rows and fd_cols == self.cols
+            fd_rows == self.rows and fd_cols == self.cols
         ), "all input data should have the same number of rows"
 
         # input dimensions
         assert (
-                np.shape(self.Prec)[0] == self.rows
-                and np.shape(self.ET)[0] == self.rows
-                and np.shape(self.Temp)[0] == self.rows
+            np.shape(self.Prec)[0] == self.rows
+            and np.shape(self.ET)[0] == self.rows
+            and np.shape(self.Temp)[0] == self.rows
         ), "all input data should have the same number of rows"
         assert (
-                np.shape(self.Prec)[1] == self.cols
-                and np.shape(self.ET)[1] == self.cols
-                and np.shape(self.Temp)[1] == self.cols
+            np.shape(self.Prec)[1] == self.cols
+            and np.shape(self.ET)[1] == self.cols
+            and np.shape(self.Temp)[1] == self.cols
         ), "all input data should have the same number of columns"
         assert (
-                np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2]
+            np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2]
         ), "all meteorological input data should have the same length"
 
         # basic inputs
@@ -310,7 +304,6 @@ class Calibration(Catchment):
         assert type(ApiSolveArgs) == dict, "history_fname should be of type string "
 
         print("Calibration starts")
-
 
         ### calculate the objective function
         def opt_fun(par):
@@ -353,7 +346,6 @@ class Calibration(Catchment):
 
             return error, g, fail
 
-
         ### define the optimization components
         opt_prob = Optimization("HBV Calibration", opt_fun)
         for i in range(len(self.LB)):
@@ -388,7 +380,6 @@ class Calibration(Catchment):
         self.OFvalue = res[0]
 
         return res
-
 
     def FW1Calibration(self, SpatialVarFun, OptimizationArgs, printError=None):
         """RunCalibration.
@@ -459,17 +450,17 @@ class Calibration(Catchment):
 
         # input dimensions
         assert (
-                np.shape(self.Prec)[0] == self.rows
-                and np.shape(self.ET)[0] == self.rows
-                and np.shape(self.Temp)[0] == self.rows
+            np.shape(self.Prec)[0] == self.rows
+            and np.shape(self.ET)[0] == self.rows
+            and np.shape(self.Temp)[0] == self.rows
         ), "all input data should have the same number of rows"
         assert (
-                np.shape(self.Prec)[1] == self.cols
-                and np.shape(self.ET)[1] == self.cols
-                and np.shape(self.Temp)[1] == self.cols
+            np.shape(self.Prec)[1] == self.cols
+            and np.shape(self.ET)[1] == self.cols
+            and np.shape(self.Temp)[1] == self.cols
         ), "all input data should have the same number of columns"
         assert (
-                np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2]
+            np.shape(self.Prec)[2] == np.shape(self.ET)[2] and np.shape(self.Temp)[2]
         ), "all meteorological input data should have the same length"
 
         # basic inputs
@@ -487,7 +478,6 @@ class Calibration(Catchment):
         assert type(ApiSolveArgs) == dict, "history_fname should be of type string "
 
         print("Calibration starts")
-
 
         ### calculate the objective function
         def opt_fun(par):
@@ -520,7 +510,6 @@ class Calibration(Catchment):
 
             return error, [], fail
 
-
         ### define the optimization components
         opt_prob = Optimization("HBV Calibration", opt_fun)
         for i in range(len(self.LB)):
@@ -549,7 +538,6 @@ class Calibration(Catchment):
         self.OFvalue = res[0]
 
         return res
-
 
     def LumpedCalibration(self, Basic_inputs, OptimizationArgs, printError=None):
         """RunCalibration.
@@ -642,7 +630,6 @@ class Calibration(Catchment):
 
         print("Calibration starts")
 
-
         ### calculate the objective function
         def opt_fun(par):
             try:
@@ -665,7 +652,9 @@ class Calibration(Catchment):
                     ), "the objective function you have entered needs more inputs please enter then in a list as *args"
 
                 if printError != 0:
-                    print(f"Error = {round(error, 3)} Inequality Const = {np.round(g, 2)}")
+                    print(
+                        f"Error = {round(error, 3)} Inequality Const = {np.round(g, 2)}"
+                    )
                     # print(par)
                 fail = 0
             except:
@@ -673,7 +662,6 @@ class Calibration(Catchment):
                 g = []
                 fail = 1
             return error, g, fail
-
 
         ### define the optimization components
         opt_prob = Optimization("HBV Calibration", opt_fun)
@@ -725,11 +713,8 @@ class Calibration(Catchment):
 
         return res
 
-
     def ListAttributes(self):
-        """
-        Print Attributes List
-        """
+        """Print Attributes List."""
 
         print("\n")
         print(

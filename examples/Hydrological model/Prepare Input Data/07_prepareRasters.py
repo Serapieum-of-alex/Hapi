@@ -1,11 +1,9 @@
-"""
-Created on Sat Mar 27 19:09:20 2021
+"""Created on Sat Mar 27 19:09:20 2021.
 
 @author: mofarrag
 
 Make sure the working directory is set to the examples folder in the Hapi repo"
 currunt_work_directory = Hapi/Example
-
 """
 import gdal
 

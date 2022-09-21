@@ -55,8 +55,7 @@ def git_branch():
 
 
 def git_info():
-    """
-    A hash of Git data that can be used to display more information to users.
+    """A hash of Git data that can be used to display more information to users.
 
     Example:
     -------

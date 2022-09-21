@@ -1,5 +1,4 @@
-"""
-Created on Tue Mar 16 22:25:59 2021
+"""Created on Tue Mar 16 22:25:59 2021.
 
 @author: mofarrag
 """
@@ -8,9 +7,8 @@ from numpy.linalg import inv
 
 
 class SaintVenant:
-    """
-    SaintVenant equation solver
-    """
+    """SaintVenant equation solver."""
+
     def __init__(self, maxiteration=10, beta=1, epsi=0.5, theta=0.5):
         # preismann scheme parameters
         self.theta = theta
@@ -135,9 +133,7 @@ class SaintVenant:
 
     @staticmethod
     def kinematic1d(Model, usbc):
-        """
-        Kkinematic wave approx solver for 1D river reach considering very wide
-        cross section
+        """Kkinematic wave approx solver for 1D river reach considering very wide cross section.
 
         Parameters
         ----------
@@ -147,7 +143,6 @@ class SaintVenant:
         Returns
         -------
         None.
-
         """
 
         nt = len(usbc)  # int(24*60*60/Model.dt)
@@ -474,10 +469,10 @@ class SaintVenant:
 
                             # upper discharge
                             xs[x, 6] = (
-                                (1.0 / Sub.mn[x]) * Area_UM * (R_UM ** self.power)
+                                (1.0 / Sub.mn[x]) * Area_UM * (R_UM**self.power)
                             )
                             # diffusive wave coefficient for upper wave
-                            Diff_coeff[x, 0] = (1.0 / Sub.mn[x]) * (R_UM ** self.power)
+                            Diff_coeff[x, 0] = (1.0 / Sub.mn[x]) * (R_UM**self.power)
 
                             # Lower mean area and hydraulic radius
                             Area_LM = (xs[x, 4] + xs[x + 1, 4]) / 2  # mean area
@@ -515,10 +510,10 @@ class SaintVenant:
 
                             # upper discharge
                             xs[x, 6] = (
-                                (1.0 / Sub.mn[x]) * Area_UM * (R_UM ** self.power)
+                                (1.0 / Sub.mn[x]) * Area_UM * (R_UM**self.power)
                             )
                             # diffusive wave coefficient for upper wave
-                            Diff_coeff[x, 0] = (1.0 / Sub.mn[x]) * (R_UM ** self.power)
+                            Diff_coeff[x, 0] = (1.0 / Sub.mn[x]) * (R_UM**self.power)
 
                             # Lower mean area and hydraulic radius
                             Area_LM = (
@@ -534,7 +529,7 @@ class SaintVenant:
                         Diff_coeff[x, 0] = Diff_coeff[x, 0] / np.sqrt(abs(sf))
                         # diffusive wave coefficient for Lower wave
                         Diff_coeff[x, 1] = (
-                            (1.0 / Sub.mn[x]) * (R_LM ** self.power) / np.sqrt(abs(sf))
+                            (1.0 / Sub.mn[x]) * (R_LM**self.power) / np.sqrt(abs(sf))
                         )
                         # total diffusion coefficient
                         Diff_coeff[x, 2] = Diff_coeff[x, 0] + Diff_coeff[x, 1]
@@ -545,7 +540,7 @@ class SaintVenant:
                         xs[x, 7] = (
                             (1.0 / Sub.mn[x])
                             * Area_LM
-                            * (R_LM ** self.power)
+                            * (R_LM**self.power)
                             * (np.sqrt(abs(sf)) * sf / abs(sf))
                         )
                     else:
@@ -555,7 +550,7 @@ class SaintVenant:
                         # diffusive wave coefficient for Lower wave
                         Diff_coeff[x, 1] = (
                             (1.0 / Sub.mn[x])
-                            * (R_LM ** self.power)
+                            * (R_LM**self.power)
                             / np.sqrt(self.HLIN / dx)
                         )
                         # total diffusion coefficient
@@ -569,7 +564,7 @@ class SaintVenant:
                         xs[x, 7] = (
                             (1.0 / Sub.mn[x])
                             * Area_LM
-                            * (R_LM ** self.power)
+                            * (R_LM**self.power)
                             * (np.sqrt(dx / self.HLIN) * sf)
                         )
                         # xs[x,8] = (1.0/mn[x]] * Area_LM * (R_LM** (2.0/3.0]] * (np.sqrt(HLINQ/dx]]
@@ -600,7 +595,7 @@ class SaintVenant:
                 # print(*,'(a17,f8.3]'] 'max diff coeff = ', maxval[Diff_coeff(:,3]]
 
                 # adjusting the time step
-                dto = (dx ** 2) / (2 * max(Diff_coeff[:, 2]))
+                dto = (dx**2) / (2 * max(Diff_coeff[:, 2]))
 
                 if dto > dt:
                     dto = dt
@@ -739,7 +734,7 @@ class SaintVenant:
 
     @staticmethod
     def QuadraticEqn(a, b, c):
-        delta = (b ** 2) - 4 * a * c
+        delta = (b**2) - 4 * a * c
         return (-b + np.sqrt(delta)) / (2 * a)
 
     def preissmann(self, Model):
@@ -864,7 +859,7 @@ class SaintVenant:
                         + (1 - epsi)
                         * 9.81
                         * Ax_thalf
-                        * (abs(q[t - 1, x]) / (Kx_thalf ** 2))
+                        * (abs(q[t - 1, x]) / (Kx_thalf**2))
                     )
                     B2[x] = -9.81 * Axhalf_thalf * (theta / dx)
                     C2[x] = (
@@ -873,7 +868,7 @@ class SaintVenant:
                         + epsi
                         * 9.81
                         * Axhalf_thalf
-                        * (abs(q[t - 1, x + 1]) / (Kx1_thalf ** 2))
+                        * (abs(q[t - 1, x + 1]) / (Kx1_thalf**2))
                     )
                     D2[x] = 9.81 * Axhalf_thalf * (theta / dx)
                     E2[x] = (

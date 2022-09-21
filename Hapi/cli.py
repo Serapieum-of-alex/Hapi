@@ -6,12 +6,11 @@ import sys
 def main():
     """Console script for HapiSM."""
     parser = argparse.ArgumentParser()
-    parser.add_argument('_', nargs='*')
+    parser.add_argument("_", nargs="*")
     args = parser.parse_args()
 
     print("Arguments: " + str(args._))
-    print("Replace this message by putting your code into "
-          "Hapi.cli.main")
+    print("Replace this message by putting your code into " "Hapi.cli.main")
     return 0
 
 

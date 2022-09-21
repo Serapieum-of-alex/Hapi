@@ -1,5 +1,4 @@
-"""
-Created on Tue Feb  4 14:57:30 2020
+"""Created on Tue Feb  4 14:57:30 2020.
 
 @author: mofarrag
 """
@@ -9,12 +8,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from pandas.core.frame import DataFrame
-
 from pyramids.raster import Raster
 
 # import os
-
-
 
 
 class Event:
@@ -86,7 +82,6 @@ class Event:
         Returns
         -------
         None.
-
         """
         # instance attribute
         self.name = name
@@ -120,7 +115,6 @@ class Event:
         # get the date the column 'id'
         date = self.EventIndex.loc[:, "id"].to_frame().applymap(dateFn)
         self.EventIndex["date"] = date
-
 
     def CreateEventIndex(self, IndexPath: str):
         """CreateEventIndex.
@@ -198,7 +192,6 @@ class Event:
                 IDs.append(self.EventIndex.loc[i - 1, "id"])
 
         self.EndDays = IDs
-
 
     def Overtopping(self, OvertoppingPath: str):
         """Overtopping.
@@ -568,9 +561,7 @@ class Event:
         # return FilteredEvent.index[len(FilteredEvent)-1-i]
 
     def GetEventEnd(self, loc):
-        """
-        GetEventEnd method returns the index of the beginning of the event
-        in the EventIndex dataframe
+        """GetEventEnd method returns the index of the beginning of the event in the EventIndex dataframe.
 
         Inputs:
             2-ind:
@@ -583,7 +574,6 @@ class Event:
             overtopping
             HighOvertoppingInd = EventIndex['Overtopping'].idxmax()
             ind = EventBeginning(HighOvertoppingInd)
-
         """
         # loc = np.where(self.EventIndex['id'] == day)[0][0]
         # get all the days in the same event before that day as the inundation in the maps may
@@ -632,9 +622,7 @@ class Event:
         return NewDataFrame
 
     def ListAttributes(self):
-        """
-        Print Attributes List
-        """
+        """Print Attributes List."""
 
         print("\n")
         print(

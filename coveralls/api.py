@@ -21,8 +21,7 @@ class Coveralls:
     config_filename = ".coveralls.yml"
 
     def __init__(self, token_required=True, service_name=None, **kwargs):
-        """
-        Initialize the main Coveralls collection entrypoint.
+        """Initialize the main Coveralls collection entrypoint.
 
         * repo_token
           The secret token for your repository, found at the bottom of your
@@ -62,13 +61,12 @@ class Coveralls:
         )
 
     def load_config(self, kwargs, service_name):
-        """
-        Loads all coveralls configuration in the following precedence order.
+        """Loads all coveralls configuration in the following precedence order.
 
-            1. automatic CI configuration
-            2. COVERALLS_* env vars
-            3. .coveralls.yml config file
-            4. CLI flags
+        1. automatic CI configuration
+        2. COVERALLS_* env vars
+        3. .coveralls.yml config file
+        4. CLI flags
         """
         self.load_config_from_ci_environment()
         self.load_config_from_environment()

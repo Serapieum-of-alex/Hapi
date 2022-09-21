@@ -5,7 +5,7 @@ from scipy.interpolate import InterpolatedUnivariateSpline as interp11
 
 # initial values for state variables
 # [sp, sm, uz, lz, wc]
-DEF_ST = [0.0, 10.0, 10.0, 10.0, 0.0, 10.163 * 10 ** 9]
+DEF_ST = [0.0, 10.0, 10.0, 10.0, 0.0, 10.163 * 10**9]
 # initial value for discarge
 DEF_q0 = 2.3  # 10.0
 
@@ -346,9 +346,7 @@ def _lake(temp, curve, tfac, rf, sf, q_new, lv_old, ltt, c_le, ep, lakeA):
 
 
 def _tf(maxbas):
-    """Transfer function weight generator
-    in a shape of a triangle
-    """
+    """Transfer function weight generator in a shape of a triangle."""
 
     wi = []
     for x in range(1, maxbas + 1):  # if maxbas=3 so x=[1,2,3]
@@ -367,10 +365,7 @@ def _tf(maxbas):
 
 
 def _routing(q, maxbas=1):
-    """
-    This function implements the transfer function using a triangular
-    function
-    """
+    """This function implements the transfer function using a triangular function."""
     assert maxbas >= 1, "Maxbas value has to be larger than 1"
     # Get integer part of maxbas
     maxbas = int(round(maxbas, 0))

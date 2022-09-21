@@ -1,28 +1,14 @@
-"""
-Created on Tue Mar 13 00:51:22 2018
+"""Created on Tue Mar 13 00:51:22 2018.
 
 @author: Mostafa
 """
-#%links
-# from IPython import get_ipython  # to reset the variable explorer each time
 
-# get_ipython().magic("reset -f")
-# import os
-# import sys
 from collections import OrderedDict
 
 import matplotlib.pyplot as plt
-
-#%%library
 import numpy as np
 
 # from matplotlib.transforms import blended_transform_factory
-
-# os.chdir("")
-
-
-# sys.path.append("")
-
 
 linestyles = OrderedDict(
     [
@@ -45,7 +31,7 @@ linestyles = OrderedDict(
 # functions
 
 
-#%%
+# %%
 x = np.linspace(0, 1, 1000)
 y1 = np.power(x, 0)
 y2 = np.power(x, 0.2)
@@ -58,7 +44,7 @@ y7 = np.power(x, 2)
 # y8=np.power(x,3)
 y9 = np.power(x, 4)
 y10 = np.power(x, 6)
-#%%plot
+# %%plot
 plt.figure(2, figsize=(8, 5))
 plt.plot(x, y5, label="Beta=1", linewidth=5)
 # plt.plot(x,y6,label="Beta=0.2",linewidth=5)
@@ -76,7 +62,7 @@ plt.yticks(fontsize=15)
 plt.xlabel("SM/FC", fontsize=20)
 plt.ylabel("(SM/FC)^beta", fontsize=20)
 plt.legend(fontsize=20)
-#%%
+# %%
 plt.figure(1, figsize=(8, 5))
 plt.plot(x, y1, label="Beta=0", linewidth=5)
 plt.plot(x, y2, label="Beta=0.2", linewidth=5)
@@ -92,7 +78,7 @@ plt.xlabel("SM/FC", fontsize=20)
 plt.ylabel("(SM/FC)^beta", fontsize=20)
 plt.legend(fontsize=30)
 
-#%%
+# %%
 plt.figure(3, figsize=(10, 8))
 # ax = plt.subplot(1, 1, 1)
 plt.plot(x, y5, label="Beta=1", linewidth=5)

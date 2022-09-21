@@ -1,20 +1,14 @@
-"""
-Created on Thu May 10 16:45:09 2018
+"""Created on Thu May 10 16:45:09 2018.
 
 @author: Mostafa
 """
-#%links
-
-#%library
 
 
 def javaupload():
-    """
-    # =============================================================================
-    #     javaupload()
-    # =============================================================================
-    this function takes no argument and return a script (string) of java code to
-    be used in upload buttons
+    """javaupload.
+
+    this function takes no argument and return a script (string) of java
+    code to be used in upload buttons
     """
     javaupload_code = """
     //function 1
@@ -64,8 +58,8 @@ def javaupload():
 
 
 def upload_stations():
-    """
-    # =============================================================================
+    """# =============================================================================
+
     #     javaupload()
     # =============================================================================
     this function takes no argument and return a script (string) of java code to

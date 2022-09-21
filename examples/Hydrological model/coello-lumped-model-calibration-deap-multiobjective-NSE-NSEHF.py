@@ -12,17 +12,22 @@ import numpy as np
 import pandas as pd
 
 matplotlib.use("TkAgg")
+import random
+
+from deap import algorithms, base, creator, tools
+
 import Hapi.rrm.hbv_bergestrom92 as HBVLumped
 import Hapi.sm.performancecriteria as PC
 from Hapi.rrm.calibration import Calibration
 from Hapi.rrm.routing import Routing
 from Hapi.run import Run
-import random
-from deap import algorithms, base, creator, tools
+
 path = r"C:\MyComputer\01Algorithms\hydrology\Hapi/"
 # %% Paths
 # Parameterpath = path + "examples/Hydrological model/data/lumped_model/Coello_Lumped2021-03-08_muskingum.txt"
-MeteoDataPath = path + "examples/Hydrological model/data/lumped_model/meteo_data-MSWEP.csv"
+MeteoDataPath = (
+    path + "examples/Hydrological model/data/lumped_model/meteo_data-MSWEP.csv"
+)
 Path = path + "examples/Hydrological model/data/lumped_model/"
 
 ### Meteorological data
@@ -80,7 +85,9 @@ def initializer():
 
 
 toolbox.register("initialRange", initializer)
-toolbox.register("individual", tools.initIterate, creator.IndividualContainer, toolbox.initialRange)
+toolbox.register(
+    "individual", tools.initIterate, creator.IndividualContainer, toolbox.initialRange
+)
 print(toolbox.individual())
 # define the population to be a list of 'individual's
 toolbox.register("population", tools.initRepeat, list, toolbox.individual)
@@ -158,17 +165,17 @@ Metrics = dict()
 
 Qobs = Coello.QGauges[Coello.QGauges.columns[0]]
 
-Metrics['RMSE'] = PC.RMSE(Qobs, Coello.Qsim['q'])
-Metrics['NSE'] = PC.NSE(Qobs, Coello.Qsim['q'])
-Metrics['NSEhf'] = PC.NSEHF(Qobs, Coello.Qsim['q'])
-Metrics['KGE'] = PC.KGE(Qobs, Coello.Qsim['q'])
-Metrics['WB'] = PC.WB(Qobs, Coello.Qsim['q'])
+Metrics["RMSE"] = PC.RMSE(Qobs, Coello.Qsim["q"])
+Metrics["NSE"] = PC.NSE(Qobs, Coello.Qsim["q"])
+Metrics["NSEhf"] = PC.NSEHF(Qobs, Coello.Qsim["q"])
+Metrics["KGE"] = PC.KGE(Qobs, Coello.Qsim["q"])
+Metrics["WB"] = PC.WB(Qobs, Coello.Qsim["q"])
 
-print("RMSE= " + str(round(Metrics['RMSE'], 2)))
-print("NSE= " + str(round(Metrics['NSE'], 2)))
-print("NSEhf= " + str(round(Metrics['NSEhf'], 2)))
-print("KGE= " + str(round(Metrics['KGE'], 2)))
-print("WB= " + str(round(Metrics['WB'], 2)))
+print("RMSE= " + str(round(Metrics["RMSE"], 2)))
+print("NSE= " + str(round(Metrics["NSE"], 2)))
+print("NSEhf= " + str(round(Metrics["NSEhf"], 2)))
+print("KGE= " + str(round(Metrics["KGE"], 2)))
+print("WB= " + str(round(Metrics["WB"], 2)))
 
 # %% Plotting Hydrograph
 
@@ -179,7 +186,12 @@ Coello.PlotHydrograph(plotstart, plotend, gaugei, Title="Lumped Model")
 
 # %% Save the Parameters
 
-ParPath = Path + f"{Coello.name}-lumped-parameters-multi-obj" + str(dt.datetime.now())[0:10] + ".txt"
+ParPath = (
+    Path
+    + f"{Coello.name}-lumped-parameters-multi-obj"
+    + str(dt.datetime.now())[0:10]
+    + ".txt"
+)
 parameters = pd.DataFrame(index=parnames)
 # parameters['values'] = cal_parameters[1]
 # parameters.to_csv(ParPath, header=None, float_format="%0.4f")
@@ -189,5 +201,10 @@ parameters = pd.DataFrame(index=parnames)
 StartDate = "2009-01-01"
 EndDate = "2010-04-20"
 
-Path = Path + f"{Coello.name}-results-lumped-model-multi-obj" + str(dt.datetime.now())[0:10] + ".txt"
+Path = (
+    Path
+    + f"{Coello.name}-results-lumped-model-multi-obj"
+    + str(dt.datetime.now())[0:10]
+    + ".txt"
+)
 Coello.SaveResults(Result=5, start=StartDate, end=EndDate, Path=Path)

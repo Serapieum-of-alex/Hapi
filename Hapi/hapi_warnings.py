@@ -12,8 +12,10 @@ class InstabilityWarning(UserWarning):
 warnings.simplefilter("always", InstabilityWarning)
 warnings.simplefilter("always", UserWarning)
 
+
 def SilenceNumpyWarning():
-    np.warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)
+    np.warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
+
 
 def SilenceShapelyWarning():
     warnings.filterwarnings("ignore", category=DeprecationWarning)

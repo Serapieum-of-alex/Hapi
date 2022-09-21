@@ -1,25 +1,53 @@
-"""Hydrological model parameter  """
-from typing import Union
+"""Hydrological model parameter."""
 import json
 import os
+from typing import Union
 from urllib.request import urlretrieve
 
 import requests
 from loguru import logger
 from requests.exceptions import HTTPError
+
 import Hapi
 
+
 class Parameter:
-    """
-    Parameter class
-    """
+    """Parameter class."""
+
     def __init__(self):
         self.parameterset_id = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, "avg", "max", "min"]
-        self.parameterser_path = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "avg", "max", "min"]
-        self.article_id = [19999901, 19999988, 19999997, 20000006, 20000012, 20000018, 20000015, 20000024, 20000027,
-                      20000030, 20153402, 20153405, 20362374]
+        self.parameterser_path = [
+            "01",
+            "02",
+            "03",
+            "04",
+            "05",
+            "06",
+            "07",
+            "08",
+            "09",
+            "10",
+            "avg",
+            "max",
+            "min",
+        ]
+        self.article_id = [
+            19999901,
+            19999988,
+            19999997,
+            20000006,
+            20000012,
+            20000018,
+            20000015,
+            20000024,
+            20000027,
+            20000030,
+            20153402,
+            20153405,
+            20362374,
+        ]
         self.baseurl = "https://api.figshare.com/v2"
-        self.headers = {'Content-Type': 'application/json'}
+        self.headers = {"Content-Type": "application/json"}
         self.param_list = [
             "01_tt",
             "02_rfcf",
@@ -44,9 +72,8 @@ class Parameter:
 
     # def get_parameter_set(self, parameter_set_id, directory=None):
 
-
     def issueRequest(self, method, url, headers, data=None, binary=False):
-        """Wrapper for HTTP request
+        """Wrapper for HTTP request.
 
         Parameters
         ----------
@@ -78,12 +105,11 @@ class Parameter:
             except ValueError:
                 response_data = response.content
         except HTTPError as error:
-            print('Caught an HTTPError: {}'.format(error))
-            print('Body:\n', response.text)
+            print("Caught an HTTPError: {}".format(error))
+            print("Body:\n", response.text)
             raise
 
         return response_data
-
 
     def getSetDetails(self, set_id, version=None):
         """getArticleDetails.
@@ -116,12 +142,11 @@ class Parameter:
         else:
             url = f"{self.baseurl}/articles/{article_id}/versions/{version}"
 
-        response = self.issueRequest('GET', url, headers=self.headers)
+        response = self.issueRequest("GET", url, headers=self.headers)
         return response
 
-
     def listParameters(self, article_id, version=None):
-        """listFiles
+        """listFiles.
 
             List all the files associated with a given article.
 
@@ -140,12 +165,11 @@ class Parameter:
         """
         if version is None:
             url = f"{self.baseurl}/articles/{article_id}/files"
-            response = self.issueRequest('GET', url, headers=self.headers)
+            response = self.issueRequest("GET", url, headers=self.headers)
             return response
         else:
             request = self.getSetDetails(article_id, version)
-            return request['files']
-
+            return request["files"]
 
     def retrieveParameterSet(self, article_id, directory=None):
         """retrieveParameterSet.
@@ -160,7 +184,6 @@ class Parameter:
         ----------
         article_id : str or int
             Figshare article ID
-
         """
 
         if directory is None:
@@ -170,11 +193,16 @@ class Parameter:
         file_list = self.listParameters(article_id)
 
         # dir0 = os.path.join(directory, f"figshare_{article_id}/")
-        os.makedirs(directory, exist_ok=True) # This might require Python >=3.2
+        os.makedirs(directory, exist_ok=True)  # This might require Python >=3.2
+        logger.info(
+            f"The download of the parameter set starts to the following directory: {directory}"
+        )
 
         for file_dict in file_list:
-            urlretrieve(file_dict['download_url'], os.path.join(directory, file_dict['name']))
-
+            urlretrieve(
+                file_dict["download_url"], os.path.join(directory, file_dict["name"])
+            )
+            logger.info(f"{file_dict['name']} has been downloaded")
 
     def getParameterSet(self, set_id: Union[int, str], directory: str = None):
         """getParameterSet.
@@ -192,14 +220,14 @@ class Parameter:
         -------
         None
         """
-        ind = par.parameterset_id.index(set_id)
-        article_id = par.article_id[ind]
+        ind = self.parameterset_id.index(set_id)
+        article_id = self.article_id[ind]
         if directory is not None:
             rpath = directory
         else:
-            par_path = par.parameterser_path[ind]
+            par_path = self.parameterser_path[ind]
             rpath = f"{os.path.dirname(Hapi.__file__)}/parameters/{par_path}"
-        par.retrieveParameterSet(article_id, directory=rpath)
+        self.retrieveParameterSet(article_id, directory=rpath)
 
     def getParameters(self):
         """getParameters.
@@ -213,13 +241,5 @@ class Parameter:
         """
         for i in range(len(self.parameterset_id)):
             set_id = self.parameterset_id[i]
+            logger.info(f"Dowload the Hydrological parameters for the dataset-{set_id}")
             self.getParameterSet(set_id)
-
-# parameter_set = 1
-parameter_set = "min"
-
-par = Parameter()
-par.getParameterSet(parameter_set)
-# get parameter set
-par.getParameters()
-

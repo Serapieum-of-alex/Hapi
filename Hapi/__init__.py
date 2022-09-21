@@ -1,5 +1,4 @@
-"""
-Created on Tue May 22 09:01:55 2018
+"""Created on Tue May 22 09:01:55 2018.
 
 @author: Mostafa
 """
@@ -16,7 +15,7 @@ except PackageNotFoundError:  # pragma: no cover
 
 # documentation format
 __author__ = "Mostafa Farrag"
-__email__ = 'moah.farag@gmail.com'
+__email__ = "moah.farag@gmail.com"
 __docformat__ = "restructuredtext"
 
 # Let users know if they're missing any of our hard dependencies
@@ -28,6 +27,7 @@ for dependency in hard_dependencies:
         __import__(dependency)
     except ImportError as e:
         missing_dependencies.append(dependency)
+        print(e)
 
 if missing_dependencies:
     raise ImportError("Missing required dependencies {0}".format(missing_dependencies))
@@ -57,14 +57,11 @@ def configuration(parent_package="", top_path=None):
 
 
 import Hapi.catchment
-# import Hapi.gis
-import Hapi.plot
 import Hapi.hm
 import Hapi.java_functions
+import Hapi.plot
 import Hapi.rrm
-# import Hapi.rs
 import Hapi.run
-# import Hapi.sm
 import Hapi.weirdFn
 
 # import Hapi.saintvenant

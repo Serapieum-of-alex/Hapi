@@ -1,9 +1,7 @@
-"""
-This code is used to Run the distributed model for jiboa rover in El Salvador
-wher the catchment is consisted os a ustream lake and a volcanic area
+"""This code is used to Run the distributed model for jiboa rover in El Salvador wher the catchment is consisted os a ustream lake and a volcanic area.
+
 -   you have to make the root directory to the examples folder to enable the code
     from reading input files
-
 """
 import os
 

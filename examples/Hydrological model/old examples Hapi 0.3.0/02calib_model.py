@@ -1,9 +1,7 @@
-"""
-This code is used to calibrate the model
+"""This code is used to calibrate the model.
 
 -   you have to make the root directory to the examples folder to enable the code
     from reading input files
-
 """
 #%links
 from IPython import get_ipython  # to reset the variable explorer each time

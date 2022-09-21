@@ -1,5 +1,4 @@
-"""
-Created on Wed Jul 11 05:32:05 2018
+"""Created on Wed Jul 11 05:32:05 2018.
 
 @author: Mostafa
 """
@@ -17,12 +16,13 @@ os.chdir(
 # import sys
 # sys.path.append("C:/Users/Mostafa/Desktop/My Files/thesis/My Thesis/Data_and_Models/Interface/Distributed_Hydrological_model/HBV_distributed/function")
 
-from osgeo import gdal
 #%library
 import numpy as np
+from osgeo import gdal
+from scipy.stats import norm
+
 # functions
 from Hapi.rrm.distparameters import DistParameters as DP
-from scipy.stats import norm
 
 # from Hapi.catchment import GISCatchment as GC
 

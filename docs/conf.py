@@ -9,17 +9,16 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-# General information about the project.
-project = u"Hapi"
-author = "Mostafa Farrag"
-
-# copyright = u"2013-2019, "
-
-
 import os
 import sys
 
 # import sphinx_rtd_theme
+
+# General information about the project.
+project = "Hapi"
+author = "Mostafa Farrag"
+
+# copyright = u"2013-2019, "
 
 html_theme = "sphinxdoc"
 # html_theme = "agogo"
@@ -207,7 +206,7 @@ htmlhelp_basename = "Hapidoc"
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-    ("index", "Hapi.tex", u"Hapi Documentation", u"Mostafa Farrag", "report")
+    ("index", "Hapi.tex", "Hapi Documentation", "Mostafa Farrag", "report")
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -250,8 +249,8 @@ texinfo_documents = [
     (
         "index",
         "Hapi",
-        u"Hapi Documentation",
-        u"Mostafa Farrag",
+        "Hapi Documentation",
+        "Mostafa Farrag",
         "Hapi",
         "One line description of project.",
         "Miscellaneous",

@@ -95,17 +95,16 @@ class CoverallReporter:
                 self.parse_file(fr, analysis)
 
     def report(self, cov, conf, morfs=None):
-        """
-        Generate a part of json report for coveralls.
+        """Generate a part of json report for coveralls.
 
-        `morfs` is a list of modules or filenames.
-        `outfile` is a file object to write the json to.
+        `morfs` is a list of modules or filenames. `outfile` is a file
+        object to write the json to.
         """
         # pylint: disable=too-many-branches
         try:
             from coverage.report import (
-                Reporter,  # pylint: disable=import-outside-toplevel
-            )
+                Reporter,
+            )  # pylint: disable=import-outside-toplevel
 
             self.reporter = Reporter(cov, conf)
         except ImportError:  # coverage >= 5.0
@@ -129,8 +128,7 @@ class CoverallReporter:
 
     @staticmethod
     def get_hits(line_num, analysis):
-        """
-        Source file stats for each line.
+        """Source file stats for each line.
 
         * A positive integer if the line is covered, representing the number
           of times the line is hit during the test suite.
@@ -148,8 +146,7 @@ class CoverallReporter:
 
     @staticmethod
     def get_arcs(analysis):
-        """
-        Hit stats for each branch.
+        """Hit stats for each branch.
 
         Returns a flat list where every four values represent a branch:
         1. line-number

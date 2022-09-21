@@ -1,9 +1,4 @@
-"""
-This code is developed to calibrate the HBV model in a lumped spatial representation
-using
-
-
-"""
+"""This code is developed to calibrate the HBV model in a lumped spatial representation using."""
 #%library
 import numpy as np
 import pandas as pd

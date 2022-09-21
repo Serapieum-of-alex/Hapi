@@ -1,5 +1,4 @@
-"""
-Created on Wed Mar  3 12:40:23 2021
+"""Created on Wed Mar  3 12:40:23 2021.
 
 @author: mofarrag
 """
@@ -9,6 +8,7 @@ from typing import Any, Union
 import pandas as pd
 from loguru import logger
 from pandas import DataFrame
+
 from Hapi.hm.river import River
 
 
@@ -25,15 +25,16 @@ class Interface(River):
         4- ReadBoundaryConditions
         5- ListAttributes
     """
+
     Laterals: DataFrame
 
     def __init__(
-            self,
-            name: Any,
-            version: int=3,
-            start: str="1952-1-1",
-            days: int=36890,
-            fmt: str="%Y-%m-%d"
+        self,
+        name: Any,
+        version: int = 3,
+        start: str = "1952-1-1",
+        days: int = 36890,
+        fmt: str = "%Y-%m-%d",
     ):
         if not isinstance(start, str):
             raise ValueError("start argument has to be string")
@@ -59,10 +60,7 @@ class Interface(River):
         pass
 
     def ReadLateralsTable(
-            self,
-            path: str,
-            prefix: str="lf_xsid",
-            suffix: str=".txt"
+        self, path: str, prefix: str = "lf_xsid", suffix: str = ".txt"
     ) -> None:
         """ReadLateralsTable.
 
@@ -111,15 +109,16 @@ class Interface(River):
                 ):
                     self.crosssections.loc[i, "lateral"] = 1
         else:
-            raise ValueError("Please read the cross section file first using the method 'ReadCrossSections'")
-
+            raise ValueError(
+                "Please read the cross section file first using the method 'ReadCrossSections'"
+            )
 
     def ReadLaterals(
-            self,
-            fromday: Union[str, int]="",
-            today: Union[str, int]="",
-            path: str="",
-            date_format: str="'%Y-%m-%d'"
+        self,
+        fromday: Union[str, int] = "",
+        today: Union[str, int] = "",
+        path: str = "",
+        date_format: str = "'%Y-%m-%d'",
     ):
         """ReadUSHydrograph.
 
@@ -144,7 +143,9 @@ class Interface(River):
             sum of all the hydrographs.
         """
         if not isinstance(self.LateralsTable, DataFrame):
-            raise ValueError("Please read the laterals table first using the 'ReadLateralsTable' method")
+            raise ValueError(
+                "Please read the laterals table first using the 'ReadLateralsTable' method"
+            )
 
         self.Laterals = pd.DataFrame()
 
@@ -178,13 +179,12 @@ class Interface(River):
         else:
             logger.info("There are no Laterals table please check")
 
-
     def ReadRRMProgression(
-            self,
-            fromday: int="",
-            today: int="",
-            path: str="",
-            date_format: str="'%Y-%m-%d'"
+        self,
+        fromday: int = "",
+        today: int = "",
+        path: str = "",
+        date_format: str = "'%Y-%m-%d'",
     ):
         """ReadRRMProgression.
 
@@ -210,8 +210,10 @@ class Interface(River):
             sum of all the hydrographs.
         """
         if self.LateralsTable is None:
-            raise ValueError("Please read the laterals table first using the"
-                             "'ReadLateralsTable' method ")
+            raise ValueError(
+                "Please read the laterals table first using the"
+                "'ReadLateralsTable' method "
+            )
 
         self.RRMProgression = pd.DataFrame()
 
@@ -275,11 +277,11 @@ class Interface(River):
         ]
 
     def ReadBoundaryConditions(
-            self,
-            fromday: Union[str, int]="",
-            today: Union[str, int]="",
-            path: str="",
-            date_format: str="'%Y-%m-%d'"
+        self,
+        fromday: Union[str, int] = "",
+        today: Union[str, int] = "",
+        path: str = "",
+        date_format: str = "'%Y-%m-%d'",
     ):
         """ReadUSHydrograph.
 
@@ -303,7 +305,8 @@ class Interface(River):
             with segment id as a column name and a column 'total' contains the
             sum of all the hydrographs.
         """
-        assert isinstance(self.BCTable, DataFrame
+        assert isinstance(
+            self.BCTable, DataFrame
         ), "Please read the lateras table first using the 'ReadLateralsTable' method"
 
         # if path == '':

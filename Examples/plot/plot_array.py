@@ -9,7 +9,7 @@ from osgeo import gdal
 
 from Hapi.plot.map import Map
 
-#%% Paths
+# %% Paths
 RasterAPath = "examples/data/GIS/Hapi_GIS_Data/dem_100_f.tif"
 RasterBPath = "examples/data/GIS/Hapi_GIS_Data/acc4000.tif"
 pointsPath = "examples/GIS/data/points.csv"
@@ -79,7 +79,7 @@ Map.PlotArray(
     rotation=rotation,
     TicksSpacing=TicksSpacing,
 )
-#%%
+# %%
 """
 color schame
 
@@ -107,7 +107,7 @@ cmap : [str], optional
 ColorScale = 1
 cmap = "terrain"
 Map.PlotArray(src, ColorScale=ColorScale, cmap=cmap, TicksSpacing=TicksSpacing)
-#%%
+# %%
 # for power scale
 """
 the more you lower the value of gamma the more of the color bar you give to the lower value range
@@ -116,22 +116,34 @@ ColorScale = 2
 gamma = 0.5
 
 Map.PlotArray(
-    src, ColorScale=ColorScale, cmap=cmap, gamma=gamma, TicksSpacing=TicksSpacing,
-    Title= f"gamma = {gamma}"
+    src,
+    ColorScale=ColorScale,
+    cmap=cmap,
+    gamma=gamma,
+    TicksSpacing=TicksSpacing,
+    Title=f"gamma = {gamma}",
 )
-#%%
+# %%
 gamma = 0.4
 Map.PlotArray(
-    src, ColorScale=ColorScale, cmap=cmap, gamma=gamma, TicksSpacing=TicksSpacing,
-    Title= f"gamma = {gamma}"
+    src,
+    ColorScale=ColorScale,
+    cmap=cmap,
+    gamma=gamma,
+    TicksSpacing=TicksSpacing,
+    Title=f"gamma = {gamma}",
 )
-#%%
+# %%
 gamma = 0.2
 Map.PlotArray(
-    src, ColorScale=ColorScale, cmap=cmap, gamma=gamma, TicksSpacing=TicksSpacing,
-    Title= f"gamma = {gamma}"
+    src,
+    ColorScale=ColorScale,
+    cmap=cmap,
+    gamma=gamma,
+    TicksSpacing=TicksSpacing,
+    Title=f"gamma = {gamma}",
 )
-#%%  SymLogNorm scale
+# %%  SymLogNorm scale
 ColorScale = 3
 linscale = 0.001
 linthresh = 0.0001
@@ -143,23 +155,23 @@ Map.PlotArray(
     cmap=cmap,
     TicksSpacing=TicksSpacing,
 )
-#%% PowerNorm scale
+# %% PowerNorm scale
 ColorScale = 4
 Map.PlotArray(src, ColorScale=ColorScale, cmap=cmap, TicksSpacing=TicksSpacing)
-#%% color scale 5
+# %% color scale 5
 ColorScale = 5
 midpoint = 20
 Map.PlotArray(
     src, ColorScale=ColorScale, midpoint=midpoint, cmap=cmap, TicksSpacing=TicksSpacing
 )
-#%%
+# %%
 src = gdal.Open(RasterBPath)
 arr = src.ReadAsArray()
 #%% PowerNorm scale
 ColorScale = 4
 TicksSpacing = 10
 Map.PlotArray(src, ColorScale=ColorScale, cmap=cmap, TicksSpacing=TicksSpacing)
-#%%
+# %%
 """
 Cell value label
 
@@ -184,7 +196,7 @@ Map.PlotArray(
     Backgroundcolorthreshold=Backgroundcolorthreshold,
     TicksSpacing=TicksSpacing,
 )
-#%%
+# %%
 """
 if you have points that you want to display in the map you can read it into a dataframe
 in condition that it has two columns "x", "y" which are the coordinates of the points of theand they have to be
