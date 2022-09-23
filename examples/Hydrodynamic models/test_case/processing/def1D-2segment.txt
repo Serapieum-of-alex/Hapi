@@ -1,0 +1,54 @@
+## SIMULATION LOCATION
+F:\02Case-studies\ClimXtreme\rim_base_data\src\rim\test_case\ideal_case
+## 1D SETUP FILES-------------------------------------
+# topo file
+xs_same_downward-2segment.csv
+# Laterals file, boundary condition
+no_laterals.txt, boundaryconditions.txt
+# River network file
+rivernetwork-2segments.txt
+# Slope file
+slope.csv
+# calibration location data
+calibration.csv
+# 1D-2D coupling
+1D2Dcoupling.csv
+# customized run (1=yes, 0 = No)----------------------
+0 1 # Mode sub-basin ID (If no algorithm will run the selected subs only)
+# Path to results of previous run (boundary conditions)
+customized_BC.txt
+"F:\02Case-studies\ClimXtreme\rim_base_data\src\rim\test_case\ideal_case\results\customized_results"
+#Results----------------------------------------------
+#delete old results(1=yes, 0 = No)
+1
+# save Hourly data, overtopping total, overtopping XS
+1 1 1
+# save 1 min data (1=yes, 0 = No)
+1 1 1	# first for discharge data, second for water level, third for USBC
+# 1min resutlt format
+'(I7,2x,I2,2x,I5,2x,F9.3,2x,F9.3,2x,F9.3)','(F8.2,2x)'
+## PARAMETERS ----------------------------------------
+# Temporal resolution
+Daily	# Rainfall runoff model (daily/hourly)
+60	# RIM (sec)
+60	# Store time step (sec)
+# period of simulation
+1 80
+# minQ(m3/s) for 1D to start-mininum dike threshold (in m)
+0 3.5
+## MODEL MODE: 1 for only 1D (HBC), and 2 for the coupling (1D2D), onlyOvertop(1 or 0)
+2 1
+# trigegring threshold (to avoid small (trivial) events)
+100
+# simulation mode: 0-setup, 1-production
+1
+# result format: 0-ascii, 1-zip, 2-both
+1
+# inundation duration? 0-no,1-yes
+1
+# return period? 0-no;1-yes
+0
+# if yes is selected for the return period option, provide the following 3 files:
+gisCode.asc		'grid which codes the subbasin ID
+hqref.txt		'hq values the the ref subbasins
+90 addSub.info 	'additional subbasins' info: number of added subbasins and the file name

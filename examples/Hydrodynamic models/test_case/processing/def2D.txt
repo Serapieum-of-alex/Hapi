@@ -1,0 +1,24 @@
+# 2D Rhine
+# working path of the 2D
+F:\02Case-studies\ClimXtreme\rim_base_data\src\rim\test_case\ideal_case
+# dem-ascii-grid-file
+dem.asc
+# surface roughness file (Mannings Value)
+FILE
+roughness.asc
+# data file with sourcepointlocation table
+coupling1d_2d_rhine.txt
+###########################################
+# alpha-Value. vaules between: 0.2 -0.7
+0.4
+# Model parameters
+# initial water depth
+uniform
+0
+# Model time step in seconds
+20
+# Hardware
+# Choose CPU (1) or GPU (2) processing
+2
+device
+1

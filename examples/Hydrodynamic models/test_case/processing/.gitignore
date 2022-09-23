@@ -1,0 +1,18 @@
+# Ignore everything in this directory
+
+*
+
+# Except this file
+
+!.gitignore
+!Run.bat
+!def1D.txt
+!def2D.txt
+!def1D-1segment.txt
+!def1D-2segment.txt
+!def1D-3segment.txt
+!def1D-hz.txt
+!def1D-hz-laterals.txt
+!def1D-laterals.txt
+!def1D-random.txt
+!compressingsoftware.txt

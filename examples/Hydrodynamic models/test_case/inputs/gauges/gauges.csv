@@ -1,0 +1,4 @@
+gid,name,oid,river,id,xsid,datum(m),discharge,waterlevel,source
+150,Segment-1,999666,Spree,1,100,100,1,1,https://www.pegelonline.wsv.de/gast/pegelinformationen
+151,Segment-2,888555,Rhine,2,200,80.2,1,1,https://www.pegelonline.wsv.de/gast/pegelinformationen
+152,Segment-3,444222,Elbe,3,300,60.2,1,1,https://www.pegelonline.wsv.de/gast/pegelinformationen

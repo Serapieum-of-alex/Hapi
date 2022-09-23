@@ -1,0 +1,10 @@
+# Ignore everything in this directory
+
+*
+
+# Except this file
+
+!.gitignore
+!coupling1d_2d_*.txt
+!dem_*.asc
+!roughness_*.asc
