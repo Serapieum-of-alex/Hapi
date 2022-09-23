@@ -6,8 +6,7 @@ with open("README.md", "r") as readme_file:
 with open("HISTORY.rst") as history_file:
     history = history_file.read()
 
-# requirements = [line.strip() for line in open("requirements.txt").readlines()]
-# requirements = requirements[1:]
+requirements = [line.strip() for line in open("requirements.txt").readlines()]
 
 test_requirements = [
     "pytest>=3",
@@ -15,7 +14,7 @@ test_requirements = [
 
 setup(
     name="HAPI-Nile",
-    version="1.3.0",
+    version="1.3.1",
     description="Distributed Hydrological model",
     author="Mostafa Farrag",
     author_email="moah.farag@gmail.come",
@@ -28,12 +27,12 @@ setup(
     packages=find_packages(include=["Hapi", "Hapi.*"]),
     test_suite="tests",
     tests_require=test_requirements,
-    # install_requires=requirements,
-    entry_points={
-        "console_scripts": [
-            "Hapi=Hapi.cli:main",
-        ],
-    },
+    install_requires=requirements,
+    # entry_points={
+    #     "console_scripts": [
+    #         "Hapi=Hapi.cli:main",
+    #     ],
+    # },
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Environment :: Console",

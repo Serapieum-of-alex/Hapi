@@ -21,11 +21,13 @@ class Wrapper:
     """
 
     def __init__(self):
+        """wrapper object does not need any information to be created."""
         pass
 
     @staticmethod
     def RRMModel(Model, ll_temp=None, q_0=None):
-        """
+        """RRMModel.
+
             HapiModel connect two modules :
             1- The distributed rainfall runoff: model runs separately for each cell
             2- The Spatial routing scheme (routing is following river network)
@@ -95,8 +97,8 @@ class Wrapper:
     def RRMWithlake(Model, Lake, ll_temp=None, q_0=None):
         """RRMWithlake.
 
-        RRMWithlake connects three modules the lake, the distributed
-        ranfall-runoff module and spatial routing module
+            RRMWithlake connects three modules the lake, the distributed
+            ranfall-runoff module and spatial routing module
 
         Parameters
         ----------
@@ -167,7 +169,8 @@ class Wrapper:
 
     @staticmethod
     def FW1(Model, ll_temp=None, q_0=None):
-        """
+        """FW1.
+
         FW1 connects two module :
             1- The distributed rainfall-runoff module
             2- Triangular function-1 routing method
@@ -183,7 +186,6 @@ class Wrapper:
         Returns
         -------
         None.
-
         """
 
         # subcatchment
@@ -204,7 +206,8 @@ class Wrapper:
 
     @staticmethod
     def FW1Withlake(Model, Lake, ll_temp=None, q_0=None):
-        """
+        """FW1Withlake.
+
         FW1 connects two module :
             1- The distributed rainfall-runoff module
             2- Triangular function-1 routing method
@@ -224,7 +227,6 @@ class Wrapper:
         Returns
         -------
         None.
-
         """
 
         plake = Lake.MeteoData[:, 0]

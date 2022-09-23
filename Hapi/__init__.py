@@ -56,13 +56,13 @@ def configuration(parent_package="", top_path=None):
     return config
 
 
-import Hapi.catchment
-import Hapi.hm
-import Hapi.java_functions
-import Hapi.plot
-import Hapi.rrm
-import Hapi.run
-import Hapi.weirdFn
+# import Hapi.catchment
+# import Hapi.hm
+# import Hapi.java_functions
+# import Hapi.plot
+# import Hapi.rrm
+# import Hapi.run
+# import Hapi.weirdFn
 
 # import Hapi.saintvenant
 # module level doc-string
