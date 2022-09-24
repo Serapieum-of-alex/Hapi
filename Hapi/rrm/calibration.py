@@ -382,66 +382,66 @@ class Calibration(Catchment):
         return res
 
     def FW1Calibration(self, SpatialVarFun, OptimizationArgs, printError=None):
-        """RunCalibration.
+        """FW1Calibration.
 
         this function runs the calibration algorithm for the conceptual distributed
         hydrological model
 
-        Inputs:
+        Parameters
         ----------
-            1-ConceptualModel:
-                [function] conceptual model and it should contain a function called simulate
+        ConceptualModel: [function]
+            conceptual model and it should contain a function called simulate
 
-            2-Basic_inputs:
-                1-p2:
-                    [List] list of unoptimized parameters
-                    p2[0] = tfac, 1 for hourly, 0.25 for 15 min time step and 24 for daily time step
-                    p2[1] = catchment area in km2
-                2-init_st:
-                    [list] initial values for the state variables [sp,sm,uz,lz,wc] in mm
-                3-UB:
-                    [Numeric] upper bound of the values of the parameters
-                4-LB:
-                    [Numeric] Lower bound of the values of the parameters
-            3-Q_obs:
-                [Numeric] Observed values of discharge
+        2-Basic_inputs:
+            1-p2: [List]
+                list of unoptimized parameters
+                p2[0] = tfac, 1 for hourly, 0.25 for 15 min time step and 24 for daily time step
+                p2[1] = catchment area in km2
+            2-init_st: [list]
+                initial values for the state variables [sp,sm,uz,lz,wc] in mm
+            3-UB: [Numeric]
+                upper bound of the values of the parameters
+            4-LB: [Numeric]
+                Lower bound of the values of the parameters
+        3-Q_obs: [Numeric]
+            Observed values of discharge
 
-            6-lumpedParNo:
-                [int] nomber of lumped parameters, you have to enter the value of
-                the lumped parameter at the end of the list, default is 0 (no lumped parameters)
-            7-lumpedParPos:
-                [List] list of order or position of the lumped parameter among all
-                the parameters of the lumped model (order starts from 0 to the length
-                of the model parameters), default is [] (empty), the following order
-                of parameters is used for the lumped HBV model used
-                [ltt, utt, rfcf, sfcf, ttm, cfmax, cwh, cfr, fc, beta, e_corr, etf, lp,
-                c_flux, k, k1, alpha, perc, pcorr, Kmuskingum, Xmuskingum]
-            8-objective_function:
-                [function] objective function to calculate the performance of the model
-                and to be used in the calibration
-            9-*args:
-                other arguments needed on the objective function
+        6-lumpedParNo: [int]
+            nomber of lumped parameters, you have to enter the value of
+            the lumped parameter at the end of the list, default is 0 (no lumped parameters)
+        7-lumpedParPos: [List]
+            list of order or position of the lumped parameter among all
+            the parameters of the lumped model (order starts from 0 to the length
+            of the model parameters), default is [] (empty), the following order
+            of parameters is used for the lumped HBV model used
+            [ltt, utt, rfcf, sfcf, ttm, cfmax, cwh, cfr, fc, beta, e_corr, etf, lp,
+            c_flux, k, k1, alpha, perc, pcorr, Kmuskingum, Xmuskingum]
+        8-objective_function: [function]
+            objective function to calculate the performance of the model
+            and to be used in the calibration
+        9-*args:
+            other arguments needed on the objective function
 
-        Outputs:
-        ----------
-            1- st:
-                [4D array] state variables
-            2- q_out:
-                [1D array] calculated Discharge at the outlet of the catchment
-            3- q_uz:
-                [3D array] Distributed discharge for each cell
+        Returns
+        -------
+        st: [4D array]
+            state variables
+        q_out: [1D array]
+            calculated Discharge at the outlet of the catchment
+        q_uz: [3D array]
+            Distributed discharge for each cell
 
-        Example:
-        ----------
-            PrecPath = prec_path="meteodata/4000/calib/prec"
-            Evap_Path = evap_path="meteodata/4000/calib/evap"
-            TempPath = temp_path="meteodata/4000/calib/temp"
-            FlowAccPath = "GIS/4000/acc4000.tif"
-            FlowDPath = "GIS/4000/fd4000.tif"
-            ParPath = "meteodata/4000/"+"parameters.txt"
-            p2=[1, 227.31]
-            st, q_out, q_uz_routed = RunModel(PrecPath,Evap_Path,TempPath,DemPath,
-                                              FlowAccPath,FlowDPath,ParPath,p2)
+        Example
+        -------
+        PrecPath = prec_path="meteodata/4000/calib/prec"
+        Evap_Path = evap_path="meteodata/4000/calib/evap"
+        TempPath = temp_path="meteodata/4000/calib/temp"
+        FlowAccPath = "GIS/4000/acc4000.tif"
+        FlowDPath = "GIS/4000/fd4000.tif"
+        ParPath = "meteodata/4000/"+"parameters.txt"
+        p2=[1, 227.31]
+        st, q_out, q_uz_routed = RunModel(PrecPath,Evap_Path,TempPath,DemPath,
+                                          FlowAccPath,FlowDPath,ParPath,p2)
         """
         # input dimensions
         # [rows,cols] = self.FlowAcc.ReadAsArray().shape

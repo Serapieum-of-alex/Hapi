@@ -1,7 +1,4 @@
-"""
-======
-Lumped Conceptual HBV model
-======
+"""Lumped Conceptual HBV model.
 
 HBV is lumped conceptual model consists of precipitation, snow melt,
 soil moisture and response subroutine to convert precipitation into o runoff,
@@ -33,11 +30,7 @@ DEF_q0 = 0
 
 
 def Precipitation(prec, temp, tt, rfcf, sfcf):
-    """Precipitaiton routine of the HBV96 model.
-
-    If temperature is lower than TT [degree C], all the precipitation is considered as
-    snow. If the temperature is higher than tt, all the precipitation is
-    considered as rainfall.
+    """Precipitaiton routine of the HBV96 model. If temperature is lower than TT [degree C], all the precipitation is considered as snow. If the temperature is higher than tt, all the precipitation is considered as rainfall.
 
     Parameters
     ----------
@@ -72,24 +65,16 @@ def Precipitation(prec, temp, tt, rfcf, sfcf):
 
 
 def Snow(temp, rf, sf, wc_old, sp_old, tt, cfmax, cfr, cwh):
-    """Snow routine.
+    """Snow routine. The snow pack consists of two states: Water Content (wc) and Snow Pack (sp). The first corresponds to the liquid part of the water in the snow, while the latter corresponds to the solid part. If the temperature is higher than the melting point, the snow pack will melt and the solid snow will become liquid. In the opposite case, the liquid part of the snow will refreeze, and turn into solid. The water that cannot be stored by the solid part of the snow pack will drain into the soil as part of infiltration.
 
-    The snow pack consists of two states: Water Content (wc) and Snow Pack
-    (sp). The first corresponds to the liquid part of the water in the snow,
-    while the latter corresponds to the solid part. If the temperature is
-    higher than the melting point, the snow pack will melt and the solid snow
-    will become liquid. In the opposite case, the liquid part of the snow will
-    refreeze, and turn into solid. The water that cannot be stored by the solid
-    part of the snow pack will drain into the soil as part of infiltration.
+        All precipitation simulated to be snow, i.e. falling when the temperature
+        is bellow TT, is multiplied by a snowfall correction factor, SFCF [-].
 
-    All precipitation simulated to be snow, i.e. falling when the temperature
-    is bellow TT, is multiplied by a snowfall correction factor, SFCF [-].
+        Snowmelt is calculated with the degree-day method (cfmax). Meltwater and
+        rainfall is retained within the snowpack until it exceeds a certain
+        fraction, CWH [%] of the water equivalent of the snow
 
-    Snowmelt is calculated with the degree-day method (cfmax). Meltwater and
-    rainfall is retained within the snowpack until it exceeds a certain
-    fraction, CWH [%] of the water equivalent of the snow
-
-    Liquid water within the snowpack refreezes using cfr
+        Liquid water within the snowpack refreezes using cfr
 
     Parameters
     ----------
@@ -162,19 +147,14 @@ def Snow(temp, rf, sf, wc_old, sp_old, tt, cfmax, cfr, cwh):
 
 
 def Soil(temp, inf, ep, sm_old, uz_old, tm, fc, beta, e_corr, lp):
-    """Soil routine of the HBV-96 model.
+    """Soil soil routine of the HBV-96 model. The model checks for the amount of water that can infiltrate the soil, coming from the liquid precipitation and the snow pack melting. A part of the water will be stored as soil moisture, while other will become runoff, and routed to the upper zone tank.
 
-    The model checks for the amount of water that can infiltrate the soil,
-    coming from the liquid precipitation and the snow pack melting. A part of
-    the water will be stored as soil moisture, while other will become runoff,
-    and routed to the upper zone tank.
-
-    -Actual evaporation from the soil box equals the potential evaporation if
-    SM/FC is above LP [%] while a linear reduction is used when SM/FC is below
-    LP.
-    -Groundwater recharge (r) is added to the upper groundwater box (UZ [mm])
-    -PERC [mm d-1]defines the maximum percolation rate from the upper to the
-    lower groundwater box (LZ [mm])
+        -Actual evaporation from the soil box equals the potential evaporation if
+        SM/FC is above LP [%] while a linear reduction is used when SM/FC is below
+        LP.
+        -Groundwater recharge (r) is added to the upper groundwater box (UZ [mm])
+        -PERC [mm d-1]defines the maximum percolation rate from the upper to the
+        lower groundwater box (LZ [mm])
 
     Parameters
     ----------
@@ -239,43 +219,41 @@ def Soil(temp, inf, ep, sm_old, uz_old, tm, fc, beta, e_corr, lp):
 
 
 def Response(lz_old, uz_int_1, perc, k, k1, k2, uzl):
-    """The response routine of the HBV-96 model.
-
-    The response routine is in charge of transforming the current values of
-    upper and lower zone into discharge. This routine also controls the
-    recharge of the lower zone tank (baseflow). The transformation of units
-    also occurs in this point.
-
-    - PERC [mm d-1]defines the maximum percolation rate from the upper to the
-    lower groundwater box (SLZ [mm])
-
-    - Runoff from the groundwater boxes is computed as the sum of two or three
-    linear outflow equatins depending on whether UZ is above a threshold value,
-    UZL [mm], or not
+    r"""Response.
+        The response routine of the HBV-96 model.
+        The response routine is in charge of transforming the current values of
+        upper and lower zone into discharge. This routine also controls the
+        recharge of the lower zone tank (baseflow). The transformation of units
+        also occurs in this point.
+        - PERC [mm d-1]defines the maximum percolation rate from the upper to the
+        lower groundwater box (SLZ [mm])
+        - Runoff from the groundwater boxes is computed as the sum of two or three
+        linear outflow equatins depending on whether UZ is above a threshold value,
+        UZL [mm], or not
 
     Parameters
     ----------
-        perc : float
-            Percolation value [mm\hr]
-        k : float
-            direct runoff recession coefficient
-        k1 : float
-            Upper zone recession coefficient
-        k2 : float
-            Lower zone recession coefficient
-        uzl: float
-            Upper zone threshold value
-        lz_old : float
-            Previous lower zone value [mm]
-        uz_int_1 : float
-            Previous upper zone value before percolation [mm]
+    perc : float
+        Percolation value [mm\hr]
+    k : float
+        direct runoff recession coefficient
+    k1 : float
+        Upper zone recession coefficient
+    k2 : float
+        Lower zone recession coefficient
+    uzl: float
+        Upper zone threshold value
+    lz_old : float
+        Previous lower zone value [mm]
+    uz_int_1 : float
+        Previous upper zone value before percolation [mm]
 
-    Return:
-    ----------
-        1-q_uz:[float]
-            upper zone discharge (mm/timestep) for both surface runoff & interflow
-        2-q_2:[float]
-            Lower zone discharge (mm/timestep).
+    Returns
+    -------
+    q_uz:[float]
+        upper zone discharge (mm/timestep) for both surface runoff & interflow
+    q_2:[float]
+        Lower zone discharge (mm/timestep).
     """
     # upper zone
     # if perc > Quz then perc = Quz and Quz = 0 if not perc = value and Quz= Quz-perc so take the min
@@ -327,7 +305,15 @@ def Tf(maxbas):
 
 
 def Routing(q, maxbas=1):
-    """This function implements the transfer function using a triangular function."""
+    """Routing. This function implements the transfer function using a triangular function.
+
+    Parameters
+    ----------
+    q: [array]
+        discharge array
+    maxbas: [int]
+        maxbas parameter value.
+    """
     assert maxbas >= 1, "Maxbas value has to be larger than 1"
     # Get integer part of maxbas
     maxbas = int(round(maxbas, 0))
@@ -448,12 +434,10 @@ def Routing(q, maxbas=1):
 
 
 def Simulate(prec, temp, et, ll_temp, par, init_st=None, q_init=None, snow=0):
-    """
-    ================================================================
-        Simulate(prec, temp, et, par, p2, init_st=None, ll_temp=None, q_init=None, snow=0):
-    ================================================================
-    Run the HBV model for the number of steps (n) in precipitation. The
-    resluts are (n+1) simulation of discharge as the model calculates step n+1
+    """Simulate.
+
+        Run the HBV model for the number of steps (n) in precipitation. The
+        resluts are (n+1) simulation of discharge as the model calculates step n+1
 
 
     Parameters
@@ -475,7 +459,8 @@ def Simulate(prec, temp, et, ll_temp, par, init_st=None, q_init=None, snow=0):
         Long term average temptearature. If unspecified, calculated from temp.
     q_init : float, optional
         Initial discharge value. If unspecified set to 10.0
-
+    snow: [int]
+        1 if snow is considered 0 if not.
 
     Returns
     -------

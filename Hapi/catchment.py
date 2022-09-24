@@ -27,7 +27,10 @@ from Hapi.plot.visualizer import Visualize as Vis
 
 
 class Catchment:
-    """Catchment class include methods to read the meteorological and Spatial inputs of the distributed hydrological model. Catchment class also reads the data of the gauges, it is a super class that has the run subclass, so you need to build the catchment object and hand it as an inpit to the Run class to run the model.
+    """Catchment.
+    The class include methods to read the meteorological and Spatial inputs of the distributed hydrological
+    model. Catchment class also reads the data of the gauges, it is a super class that has the run subclass, so you
+    need to build the catchment object and hand it as an inpit to the Run class to run the model.
 
     methods:
         1-ReadRainfall
@@ -493,6 +496,7 @@ class Catchment:
 
         Returns
         -------
+        None
         """
         DEM = gdal.Open(DEMF)
         self.DEM = DEM.ReadAsArray()
@@ -650,9 +654,8 @@ class Catchment:
         logger.debug("Lumped model is read successfully")
 
     def ReadLumpedInputs(self, Path: str, ll_temp: Union[list, np.ndarray] = None):
-        """ReadLumpedInputs.
+        """ReadLumpedInputs. ReadLumpedInputs method read the meteorological data of lumped mode.
 
-        ReadLumpedInputs method read the meteorological data of lumped mode
         [precipitation, Evapotranspiration, temperature, long term average temperature]
 
         Parameters
@@ -687,9 +690,8 @@ class Catchment:
         logger.debug("Lumped Model inputs are read successfully")
 
     def ReadGaugeTable(self, Path: str, FlowaccPath: str = "", fmt: str = "%Y-%m-%d"):
-        """ReadGaugeTable.
+        """ReadGaugeTable. ReadGaugeTable reads the table where the data about the gauges are listed.
 
-        ReadGaugeTable reads the table where the data about the gauges are listed
         [x coordinate, y coordinate, 'area ratio', 'weight'], the coordinates are
         mandatory to enter , to locate the gauges and be able to extract the
         discharge at the coresponding cells.
@@ -744,12 +746,7 @@ class Catchment:
         Date2: str = "",
         readfrom: str = "",
     ):
-        """ReadDischargeGauges.
-
-        ReadDischargeGauges method read the gauge discharge data, discharge of
-        each gauge has to be stored separetly in a file, and the name of the file
-        has to be stored in the Gauges table you entered ubing the method "ReadGaugeTable"
-        under the column "id", the file should contains the date at the first column
+        """ReadDischargeGauges. ReadDischargeGauges method read the gauge discharge data, discharge of each gauge has to be stored separetly in a file, and the name of the file has to be stored in the Gauges table you entered ubing the method "ReadGaugeTable" under the column "id", the file should contains the date at the first column.
 
         Parameters
         ----------
@@ -829,10 +826,7 @@ class Catchment:
         Snow: bool = False,
         Maxbas: bool = False,
     ):
-        """ReadParametersBounds.
-
-        ReadParametersBounds method reads the lower and upper boundarys for each
-        parameter
+        """ReadParametersBounds. ReadParametersBounds method reads the lower and upper boundarys for each parameter.
 
         Parameters
         ----------
@@ -873,10 +867,7 @@ class Catchment:
     def ExtractDischarge(
         self, CalculateMetrics=True, FW1=False, Factor=None, OnlyOutlet=False
     ):
-        """ExtractDischarge.
-
-        ExtractDischarge method extracts and sums the discharge from the
-        Quz_routed and Qlz_translated arrays at the location of the gauges.
+        """ExtractDischarge. ExtractDischarge method extracts and sums the discharge from the Quz_routed and Qlz_translated arrays at the location of the gauges.
 
         Parameters
         ----------
@@ -981,7 +972,8 @@ class Catchment:
         label: str = "",
         fmt: str = "%Y-%m-%d",
     ):
-        """PlotHydrograph plot the simulated and gauge hydrograph.
+        """PlotHydrograph.
+        plot the simulated and gauge hydrograph.
 
         Parameters
         ----------
@@ -1114,11 +1106,7 @@ class Catchment:
         Gauges: bool = False,
         **kwargs,
     ):
-        """PlotDistributedResults.
-
-        PlotDistributedResults animate the time series of the meteorological inputs and
-        the result calculated by the model  like the total discharge, upper zone,
-        and lower zone discharge and the state variables
+        """PlotDistributedResults. PlotDistributedResults animate the time series of the meteorological inputs and the result calculated by the model  like the total discharge, upper zone, and lower zone discharge and the state variables.
 
         Parameters
         ----------
@@ -1268,9 +1256,7 @@ class Catchment:
         return anim
 
     def SaveAnimation(self, VideoFormat="gif", Path="", SaveFrames=20):
-        """SaveAnimation.
-
-            SaveAnimation
+        """SaveAnimation. SaveAnimation.
 
         Parameters
         ----------
@@ -1299,9 +1285,7 @@ class Catchment:
         Prefix: str = "",
         fmt: str = "%Y-%m-%d",
     ):
-        """SaveResults.
-
-            SaveResults save the results into rasters
+        """SaveResults. SaveResults save the results into rasters.
 
         Parameters
         ----------
@@ -1435,15 +1419,11 @@ class Catchment:
 
 
 class Lake:
-    """
-    ================================
-        Lake class
-    ================================
-    Lake class reads the meteorological inputs, and the module to simulate a lake
-    as a lumped model, using a rating curve, the lake and the upstream sub-catchments
-    are going to be considered as one lumped model than result in a discharge input
-    to the lake, the discharge input is going to change the volume of the water
-    in the lake, and from the volume-outflow curve the outflow can be obtained.
+    """Lake.
+    Lake class reads the meteorological inputs, and the module to simulate a lake as a lumped model,
+    using a rating curve, the lake and the upstream sub-catchments are going to be considered as one lumped model than
+    result in a discharge input to the lake, the discharge input is going to change the volume of the water in the lake,
+    and from the volume-outflow curve the outflow can be obtained.
 
     methods:
         1- ReadMeteoData
@@ -1459,9 +1439,7 @@ class Lake:
         TemporalResolution="Daily",
         Split=False,
     ):
-        """Lake.
-
-        Lake class for lake simulation
+        """Lake. Lake class for lake simulation.
 
         Parameters
         ----------
@@ -1504,9 +1482,8 @@ class Lake:
         self.StageDischargeCurve = None
 
     def ReadMeteoData(self, Path: str, fmt: str):
-        """ReadMeteoData.
+        """ReadMeteoData. ReadMeteoData reads the meteorological data for the lake.
 
-        ReadMeteoData reads the meteorological data for the lake
         [rainfall, ET, temperature]
 
         Parameters
@@ -1534,9 +1511,7 @@ class Lake:
         logger.debug("Lake Meteo data are read successfully")
 
     def ReadParameters(self, Path):
-        """ReadParameters.
-
-        ReadParameters method reads the lake parameters
+        """ReadParameters. ReadParameters method reads the lake parameters.
 
         Parameters
         ----------

@@ -1,7 +1,4 @@
-"""
-======
-Lumped Conceptual HBV model
-======
+"""Lumped Conceptual HBV model.
 
 HBV is lumped conceptual model consists of precipitation, snow melt,
 soil moisture and response subroutine to convert precipitation into o runoff,
@@ -79,12 +76,7 @@ DEF_q0 = 0
 
 
 def Precipitation(temp, ltt, utt, prec, rfcf, sfcf):  # , tfac
-    """
-    ==============
-    Precipitation
-    ==============
-
-    Precipitaiton routine of the HBV96 model.
+    """Precipitation Precipitaiton routine of the HBV96 model.
 
     If temperature is lower than ltt, all the precipitation is considered as
     snow. If the temperature is higher than utt, all the precipitation is
@@ -130,12 +122,7 @@ def Precipitation(temp, ltt, utt, prec, rfcf, sfcf):  # , tfac
 
 
 def Snow(cfmax, temp, ttm, cfr, cwh, rf, sf, wc_old, sp_old):  # tfac,
-    """
-    ====
-    Snow
-    ====
-
-    Snow routine of the HBV-96 model.
+    """Snow Snow routine of the HBV-96 model.
 
     The snow pack consists of two states: Water Content (wc) and Snow Pack
     (sp). The first corresponds to the liquid part of the water in the snow,
@@ -217,12 +204,7 @@ def Snow(cfmax, temp, ttm, cfr, cwh, rf, sf, wc_old, sp_old):  # tfac,
 
 
 def Soil(fc, beta, etf, temp, tm, e_corr, lp, c_flux, inf, ep, sm_old, uz_old):  # tfac,
-    """
-    ============================================================
-        Soil(fc, beta, etf, temp, tm, e_corr, lp, tfac, c_flux, inf, ep, sm_old, uz_old)
-    ============================================================
-
-    Soil routine of the HBV-96 model.
+    """Soil Soil routine of the HBV-96 model.
 
     The model checks for the amount of water that can infiltrate the soil,
     coming from the liquid precipitation and the snow pack melting. A part of
@@ -298,7 +280,7 @@ def Soil(fc, beta, etf, temp, tm, e_corr, lp, c_flux, inf, ep, sm_old, uz_old): 
 
 
 def Response(perc, alpha, k, k1, lz_old, uz_int_1):  # tfac,area,
-    """The response routine of the HBV-96 model.
+    """Response The response routine of the HBV-96 model.
 
     The response routine is in charge of transforming the current values of
     upper and lower zone into discharge. This routine also controls the
@@ -366,7 +348,7 @@ def Tf(maxbas):
 
 
 def Routing(q, maxbas=1):
-    """This function implements the transfer function using a triangular function."""
+    """Routing This function implements the transfer function using a triangular function."""
     assert maxbas >= 1, "Maxbas value has to be larger than 1"
     # Get integer part of maxbas
     #    maxbas = int(maxbas)
@@ -385,13 +367,9 @@ def Routing(q, maxbas=1):
     return q_r
 
 
-def StepRun(p, v, St, snow=0):  # p2,
-    """
-    ============================================================
-        StepRun(p, p2, v, St, snow=0)
-    ============================================================
-
-    Makes the calculation of next step of discharge and states
+def StepRun(p, v, St, snow=0):
+    """StepRun
+    Makes the calculation of next step of discharge and states.
 
     Parameters
     ----------
@@ -399,9 +377,6 @@ def StepRun(p, v, St, snow=0):  # p2,
         Parameter vector, set up as:
         [ltt, utt, ttm, cfmax, fc, ecorr, etf, lp, k, k1,
         alpha, beta, cwh, cfr, c_flux, perc, rfcf, sfcf]
-    p2 : array_like [2]
-        Problem parameter vector setup as:
-        [tfac, area]
     v : array_like [4]
         Input vector setup as:
         [prec, temp, evap, llt]
@@ -504,16 +479,8 @@ def StepRun(p, v, St, snow=0):  # p2,
     return q_uz, q_lz, [sp_new, sm_new, uz_new, lz_new, wc_new]
 
 
-def Simulate(
-    prec, temp, et, par, init_st=None, ll_temp=None, q_init=None, snow=0  # p2,
-):
-    """
-    ================================================================
-        Simulate(prec, temp, et, par, p2, init_st=None, ll_temp=None, q_0=None, snow=0):
-    ================================================================
-    Run the HBV model for the number of steps (n) in precipitation. The
-    resluts are (n+1) simulation of discharge as the model calculates step n+1
-
+def Simulate(prec, temp, et, par, init_st=None, ll_temp=None, q_init=None, snow=0):
+    """Simulate Run the HBV model for the number of steps (n) in precipitation. The resluts are (n+1) simulation of discharge as the model calculates step n+1.
 
     Parameters
     ----------
@@ -527,17 +494,13 @@ def Simulate(
         Parameter vector, set up as:
         [ltt, utt, ttm, cfmax, fc, ecorr, etf, lp, k, k1,
         alpha, beta, cwh, cfr, c_flux, perc, rfcf, sfcf]
-    p2 : array_like [2]
-        Problem parameter vector setup as:
-        [tfac, area]
     init_st : array_like [5], optional
         Initial model states, [sp, sm, uz, lz, wc]. If unspecified,
         [0.0, 30.0, 30.0, 30.0, 0.0] mm
     ll_temp : array_like [n], optional
         Long term average temptearature. If unspecified, calculated from temp.
-    q_0 : float, optional
+    q_init : float, optional
         Initial discharge value. If unspecified set to 10.0
-
 
     Returns
     -------
@@ -546,7 +509,6 @@ def Simulate(
     st : array_like [n, 5]
         Model states for the complete time series [mm]
     """
-    ### inputs validation
     # data type
     assert (
         len(init_st) == 5

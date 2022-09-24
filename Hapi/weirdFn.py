@@ -53,18 +53,18 @@ def load_obj(saved_name):
 
 
 def dateformated(x):
-    """
-    ===========================================================
-        dateformated(x)
-    ===========================================================
+    """dateformated
+
     this function converts the the date read from a list to a datetime format
 
-    input:
-        x is a list of tuples of string date read from database
+    Parameters
+    ----------
+    x: [list]
+        is a list of tuples of string date read from database
 
-    output:
+    Returns
+    -------
         list od dates as a datetime format  YYYY-MM-DD HH:MM:SS
-
     """
     x = [i[0] for i in x]
     #

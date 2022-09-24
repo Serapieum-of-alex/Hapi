@@ -10,7 +10,10 @@ from Hapi.rrm.routing import Routing as routing
 
 
 class Wrapper:
-    """Wrapper class connect different commponent together (lumped run of the distributed with the spatial routing) for Hapi and for FW1.
+    """Wrapper
+
+    The class connect different commponent together (lumped run of the distributed with the spatial routing) for Hapi
+    and for FW1.
 
     Methods:
         1- HapiModel
@@ -288,34 +291,34 @@ class Wrapper:
 
         Parameters
         ----------
-        ConceptualModel:
-            [function] conceptual model and it should contain a function called simulate
-        data:
-            [numpy array] meteorological data as array with the first column as precipitation
-            second as evapotranspiration, third as temperature and forth column as
-            long term average temperature
-        parameters:
-            [numpy array] conceptual model parameters as array
-        p2:
-            [List] list of unoptimized parameters
-            p2[0] = tfac, 1 for hourly, 0.25 for 15 min time step and 24 for daily time step
-            p2[1] = catchment area in km2
-        init_st:
-            [list] initial state variables values [sp, sm, uz, lz, wc].
-        Routing:
-            [0 or 1] to decide wether t route the generated discharge hydrograph or not
-        RoutingFn:
-            [function] function to route the dischrge hydrograph.
+        Model: [function]
+            conceptual model and it should contain a function called simulate
+            data: [numpy array]
+                meteorological data as array with the first column as precipitation
+                second as evapotranspiration, third as temperature and forth column as
+                long term average temperature
+            parameters: [numpy array]
+                conceptual model parameters as array
+            p2: [List]
+                list of unoptimized parameters
+                p2[0] = tfac, 1 for hourly, 0.25 for 15 min time step and 24 for daily time step
+                p2[1] = catchment area in km2
+            init_st: [list]
+                initial state variables values [sp, sm, uz, lz, wc].
+        Routing: [0 or 1]
+            to decide wether t route the generated discharge hydrograph or not
+        RoutingFn: [function]
+            function to route the dischrge hydrograph.
 
         Returns
         -------
-        st:
-            [numpy array] 3d array of the 5 state variable data for each cell
-        q_lz:
-            [numpy array] 1d array of the calculated discharge.
+        st: [numpy array]
+            3d array of the 5 state variable data for each cell
+        q_lz: [numpy array]
+            1d array of the calculated discharge.
 
-        examples:
-        ----------
+        examples
+        --------
             p2=[24, 1530]
             #[sp,sm,uz,lz,wc]
             init_st=[0,5,5,5,0]

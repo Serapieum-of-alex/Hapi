@@ -1,7 +1,7 @@
 import logging
 import os
 
-from coverage import __version__
+# from coverage import __version__
 from coverage.misc import NoSource, NotPython
 
 log = logging.getLogger("coveralls.reporter")

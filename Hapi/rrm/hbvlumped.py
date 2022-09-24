@@ -1,7 +1,5 @@
 """
-======
 Lumped Conceptual HBV model
-======
 
 HBV is lumped conceptual model consists of precipitation, snow melt,
 soil moisture and response subroutine to convert precipitation into o runoff,
@@ -154,11 +152,7 @@ DEF_q0 = 0
 
 
 def Precipitation(temp, ltt, utt, prec, rfcf, sfcf, tfac):
-    """
-    ==============
-    Precipitation
-    ==============
-
+    """Precipitation
     Precipitaiton routine of the HBV96 model.
 
     If temperature is lower than ltt, all the precipitation is considered as
@@ -205,11 +199,7 @@ def Precipitation(temp, ltt, utt, prec, rfcf, sfcf, tfac):
 
 
 def Snow(cfmax, tfac, temp, ttm, cfr, cwh, rf, sf, wc_old, sp_old):
-    """
-    ====
-    Snow
-    ====
-
+    """Snow
     Snow routine of the HBV-96 model.
 
     The snow pack consists of two states: Water Content (wc) and Snow Pack
@@ -292,11 +282,7 @@ def Snow(cfmax, tfac, temp, ttm, cfr, cwh, rf, sf, wc_old, sp_old):
 
 
 def Soil(fc, beta, etf, temp, tm, e_corr, lp, tfac, c_flux, inf, ep, sm_old, uz_old):
-    """
-    ============================================================
-        Soil(fc, beta, etf, temp, tm, e_corr, lp, tfac, c_flux, inf, ep, sm_old, uz_old)
-    ============================================================
-
+    """Soil
     Soil routine of the HBV-96 model.
 
     The model checks for the amount of water that can infiltrate the soil,
@@ -366,17 +352,12 @@ def Soil(fc, beta, etf, temp, tm, e_corr, lp, tfac, c_flux, inf, ep, sm_old, uz_
         uz_int_1 = uz_old + r - cf + qdr
 
     sm_new = max(sm_old + inf - r + cf - ea, 0)
-
     #    uz_int_1 = uz_old + _r - _cf + qdr
-
     return sm_new, uz_int_1
 
 
 def Response(tfac, perc, alpha, k, k1, area, lz_old, uz_int_1):
-    """
-    ============================================================
-        Response(tfac, perc, alpha, k, k1, area, lz_old, uz_int_1)
-    ============================================================
+    """Response
     The response routine of the HBV-96 model.
 
     The response routine is in charge of transforming the current values of
@@ -438,7 +419,6 @@ def Response(tfac, perc, alpha, k, k1, area, lz_old, uz_int_1):
 
 
 def Lake(temp, curve, tfac, rf, sf, q_new, lv_old, ltt, c_le, ep, lakeA):
-
     # lower zone
     # explicit representation of the lake where lake will be represented by a rating curve
     """
@@ -482,10 +462,7 @@ def Lake(temp, curve, tfac, rf, sf, q_new, lv_old, ltt, c_le, ep, lakeA):
 
 
 def Step_run(p, p2, v, St, curve, lake_sim, snow=0):
-    """
-    ========
-    Step run
-    ========
+    """Step run.
 
     Makes the calculation of next step of discharge and states
 
@@ -623,10 +600,8 @@ def Simulate(
     lake_sim=False,
     curve=None,
 ):
-    """
-    ================================================================
-        Simulate(prec, temp, et, par, p2, init_st=None, ll_temp=None, q_0=None, snow=0, lake_sim=False, curve=None)
-    ================================================================
+    """Simulate.
+
     Run the HBV model for the number of steps (n) in precipitation. The
     resluts are (n+1) simulation of discharge as the model calculates step n+1
 

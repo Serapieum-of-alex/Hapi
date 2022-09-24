@@ -1,10 +1,8 @@
 """
-======
 Lumped Conceptual HBV model
-======
-
 """
-# libraries
+
+
 import numpy as np
 
 # HBV base model parameters
@@ -62,23 +60,19 @@ def get_random_pars():
         get_random_pars generates random parameter values
 
     Returns:
-    array of random values between the upper and lower bounds.
+        array of random values between the upper and lower bounds.
     """
     return np.random.uniform(P_LB, P_UB)
 
 
 def _precipitation(temp, ltt, utt, prec, rfcf, sfcf, tfac, pcorr):
-    """
-    ==============
-    Precipitation
-    ==============
+    """Precipitation.
 
-    Precipitaiton routine of the HBV96 model.
-
-    If temperature is lower than ltt, all the precipitation is considered as
-    snow. If the temperature is higher than utt, all the precipitation is
-    considered as rainfall. In case that the temperature is between ltt and
-    utt, precipitation is a linear mix of rainfall and snowfall.
+        Precipitaiton routine of the HBV96 model.
+        If temperature is lower than ltt, all the precipitation is considered as
+        snow. If the temperature is higher than utt, all the precipitation is
+        considered as rainfall. In case that the temperature is between ltt and
+        utt, precipitation is a linear mix of rainfall and snowfall.
 
     Parameters
     ----------
@@ -121,11 +115,7 @@ def _precipitation(temp, ltt, utt, prec, rfcf, sfcf, tfac, pcorr):
 
 
 def _snow(cfmax, tfac, temp, ttm, cfr, cwh, _rf, _sf, wc_old, sp_old):
-    """
-    ====
-    Snow
-    ====
-
+    """Snow.
     Snow routine of the HBV-96 model.
 
     The snow pack consists of two states: Water Content (wc) and Snow Pack
@@ -385,11 +375,7 @@ def _routing(q, maxbas=1):
 
 
 def _step_run(p, p2, v, St, extra_out=False):
-    """
-    ========
-    Step run
-    ========
-
+    """Step run.
     Makes the calculation of next step of discharge and states
 
     Parameters
@@ -475,12 +461,7 @@ def _step_run(p, p2, v, St, extra_out=False):
 def simulate(
     avg_prec, temp, et, par, p2, init_st=None, ll_temp=None, q_0=DEF_q0, extra_out=False
 ):
-    """
-    ===================================================
-       Simulate
-    ===================================================
-
-
+    """Simulate
     Run the HBV model for the number of steps (n) in precipitation. The
     resluts are (n+1) simulation of discharge as the model calculates step n+1
 
@@ -556,11 +537,7 @@ def simulate(
 def simulate_new_model(
     avg_prec, temp, et, par, p2, init_st=None, ll_temp=None, q_0=DEF_q0, extra_out=False
 ):
-    """
-    ========
-    Simulate
-    ========
-
+    """Simulate
     Run the HBV model for the number of steps (n) in precipitation. The
     resluts are (n+1) simulation of discharge as the model calculates step n+1
 

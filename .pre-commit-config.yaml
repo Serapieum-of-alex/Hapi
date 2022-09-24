@@ -57,7 +57,7 @@ repos:
     - id: flake8
       name: "[py   - check] flake8"
       language_version: python3.9
-      exclude: ^(examples/|tests/|Examples/)
+      exclude: ^(examples/|tests/)
 
 - repo: https://github.com/psf/black
   rev: 22.8.0

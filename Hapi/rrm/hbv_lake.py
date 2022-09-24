@@ -1,3 +1,4 @@
+"""HBV model with a lake function."""
 from __future__ import division, print_function
 
 import numpy as np
@@ -11,21 +12,19 @@ DEF_q0 = 2.3  # 10.0
 
 
 def _precipitation(temp, ltt, utt, prec, rfcf, sfcf, tfac, pcorr):
-    """
-    ==============
-    Precipitation
-    ==============
-    inputs:
-        1-precipitation
-        2- Temperature
-    outputs:
-        1- rainfall
-        2- snowfall
-    Precipitaiton routine of the HBV96 model.
-    If temperature is lower than ltt, all the precipitation is considered as
-    snow. If the temperature is higher than utt, all the precipitation is
-    considered as rainfall. In case that the temperature is between ltt and
-    utt, precipitation is a linear mix of rainfall and snowfall.
+    """Precipitation.
+        inputs:
+            1-precipitation
+            2- Temperature
+        outputs:
+            1- rainfall
+            2- snowfall
+        Precipitaiton routine of the HBV96 model.
+        If temperature is lower than ltt, all the precipitation is considered as
+        snow. If the temperature is higher than utt, all the precipitation is
+        considered as rainfall. In case that the temperature is between ltt and
+        utt, precipitation is a linear mix of rainfall and snowfall.
+
     Parameters
     ----------
     temp : float
@@ -66,20 +65,17 @@ def _precipitation(temp, ltt, utt, prec, rfcf, sfcf, tfac, pcorr):
 
 
 def _snow(cfmax, tfac, temp, ttm, cfr, cwh, _rf, _sf, wc_old, sp_old):
-    """
-    ====
-    Snow
-    ====
-
+    """Snow.
     Snow routine of the HBV-96 model.
 
-    The snow pack consists of two states: Water Content (wc) and Snow Pack
-    (sp). The first corresponds to the liquid part of the water in the snow,
-    while the latter corresponds to the solid part. If the temperature is
-    higher than the melting point, the snow pack will melt and the solid snow
-    will become liquid. In the opposite case, the liquid part of the snow will
-    refreeze, and turn into solid. The water that cannot be stored by the solid
-    part of the snow pack will drain into the soil as part of infiltration.
+        The snow pack consists of two states: Water Content (wc) and Snow Pack
+        (sp). The first corresponds to the liquid part of the water in the snow,
+        while the latter corresponds to the solid part. If the temperature is
+        higher than the melting point, the snow pack will melt and the solid snow
+        will become liquid. In the opposite case, the liquid part of the snow will
+        refreeze, and turn into solid. The water that cannot be stored by the solid
+        part of the snow pack will drain into the soil as part of infiltration.
+
     Parameters
     ----------
     cfmax : float
@@ -154,17 +150,13 @@ def _snow(cfmax, tfac, temp, ttm, cfr, cwh, _rf, _sf, wc_old, sp_old):
 
 
 def _soil(fc, beta, etf, temp, tm, e_corr, lp, tfac, c_flux, inf, ep, sm_old, uz_old):
-    """
-    ====
-    Soil
-    ====
+    """Soil. Soil routine of the HBV-96 model.
 
-    Soil routine of the HBV-96 model.
+        The model checks for the amount of water that can infiltrate the soil,
+        coming from the liquid precipitation and the snow pack melting. A part of
+        the water will be stored as soil moisture, while other will become runoff,
+        and routed to the upper zone tank.
 
-    The model checks for the amount of water that can infiltrate the soil,
-    coming from the liquid precipitation and the snow pack melting. A part of
-    the water will be stored as soil moisture, while other will become runoff,
-    and routed to the upper zone tank.
     Parameters
     ----------
     fc : float
@@ -237,16 +229,12 @@ def _soil(fc, beta, etf, temp, tm, e_corr, lp, tfac, c_flux, inf, ep, sm_old, uz
 
 
 def _response(tfac, perc, alpha, k, k1, area, lz_old, uz_int_1, qdr):
-    """
-    ========
-    Response
-    ========
-    The response routine of the HBV-96 model.
+    """Response. The response routine of the HBV-96 model.
 
-    The response routine is in charge of transforming the current values of
-    upper and lower zone into discharge. This routine also controls the
-    recharge of the lower zone tank (baseflow). The transformation of units
-    also occurs in this point.
+        The response routine is in charge of transforming the current values of
+        upper and lower zone into discharge. This routine also controls the
+        recharge of the lower zone tank (baseflow). The transformation of units
+        also occurs in this point.
 
     Parameters
     ----------
@@ -271,7 +259,6 @@ def _response(tfac, perc, alpha, k, k1, area, lz_old, uz_int_1, qdr):
         Previous upper zone value before percolation [mm]
     qdr : float
         Direct runoff [mm]
-
     """
     # upper zone
     # if perc > Quz then perc = Quz and Quz = 0 if not perc = value and Quz= Quz-perc so take the min
@@ -302,7 +289,25 @@ def _response(tfac, perc, alpha, k, k1, area, lz_old, uz_int_1, qdr):
 
 
 def _lake(temp, curve, tfac, rf, sf, q_new, lv_old, ltt, c_le, ep, lakeA):
+    """lake. lake model.
 
+    Parameters
+    ----------
+    temp
+    curve
+    tfac
+    rf
+    sf
+    q_new
+    lv_old
+    ltt
+    c_le
+    ep
+    lakeA
+
+    Returns
+    -------
+    """
     # lower zone
     # explicit representation of the lake where lake will be represented by a rating curve
     """
@@ -346,7 +351,10 @@ def _lake(temp, curve, tfac, rf, sf, q_new, lv_old, ltt, c_le, ep, lakeA):
 
 
 def _tf(maxbas):
-    """Transfer function weight generator in a shape of a triangle."""
+    """tf.
+
+    Transfer function weight generator in a shape of a triangle.
+    """
 
     wi = []
     for x in range(1, maxbas + 1):  # if maxbas=3 so x=[1,2,3]
@@ -365,7 +373,11 @@ def _tf(maxbas):
 
 
 def _routing(q, maxbas=1):
-    """This function implements the transfer function using a triangular function."""
+    """routing.
+
+    This function implements the transfer function using a triangular
+    function.
+    """
     assert maxbas >= 1, "Maxbas value has to be larger than 1"
     # Get integer part of maxbas
     maxbas = int(round(maxbas, 0))
@@ -384,10 +396,15 @@ def _routing(q, maxbas=1):
 
 
 def CalculateMaxBas(MAXBAS):
-    """
-    This function calculate the MAXBAS Weights based on a MAXBAX number
-    The MAXBAS is a HBV parameter that controls the routing
-    Example:
+    """CalculateMaxBas. This function calculate the MAXBAS Weights based on a MAXBAX number The MAXBAS is a HBV parameter that controls the routing.
+
+    Parameters
+    ----------
+    MAXBAS: [int]
+        maxbas weight
+
+    Example
+    -------
     maxbasW = CalculateMaxBas(5)
     maxbasW =
 
@@ -396,7 +413,6 @@ def CalculateMaxBas(MAXBAS):
     It is important to mention that this function allows to obtain weights
     not only for interger values but from decimals values as well.
     """
-
     yant = 0
     Total = 0  # Just to verify how far from the unit is the result
 
@@ -440,7 +456,7 @@ def CalculateMaxBas(MAXBAS):
             else:
                 ynow = MAXBAS * np.sin(np.pi / 3) - np.tan(np.pi / 3) * (
                     x + 1 - MAXBAS / 2.0
-                )  #'sum of the two height in the descending part of the triangle
+                )  # 'sum of the two height in the descending part of the triangle
                 maxbasW[x] = ((ynow + yant) / 2) / TotalA
                 # Multiplying by the height of the trapezoidal and dividing by 2
 
@@ -466,21 +482,18 @@ def CalculateMaxBas(MAXBAS):
 
 
 def RoutingMAXBAS(Q, MAXBAS):
-    """
-    This function calculate the routing from a input hydrograph using
-    the MAXBAS parameter from the HBV model.
-    EXAMPLE:
+    """RoutingMAXBAS.
+    This function calculate the routing from a input hydrograph using the MAXBAS parameter from the HBV model.
 
-    [Qout,maxbasW]=RoutingMAXBAS(Q,5);
-    where:
+    Parameters
+    ---------
+    Q: [array]
+        input hydrograph
+    MAXBAS: []
+        MAXBAS weight
     Qout = output hydrograph
-    maxbasW = MAXBAS weight
-    Q = input hydrograph
-    5 = MAXBAS parameter value.
     """
-
     # CALCULATE MAXBAS WEIGHTS
-
     maxbasW = CalculateMaxBas(MAXBAS)
     Qw = np.ones((len(Q), len(maxbasW)))
     # Calculate the matrix discharge
@@ -522,12 +535,7 @@ def RoutingMAXBAS(Q, MAXBAS):
 
 
 def _step_run(p, p2, v, St, curve):
-    """
-    ========
-    Step run
-    ========
-
-    Makes the calculation of next step of discharge and states
+    """Step run. Makes the calculation of next step of discharge and states.
 
     Parameters
     ----------
@@ -544,6 +552,7 @@ def _step_run(p, p2, v, St, curve):
     St : array_like [5]
         Previous model states setup as:
         [sp, sm, uz, lz, wc]
+
     Returns
     -------
     q_new : float
@@ -640,12 +649,10 @@ def simulate(
     ll_temp=None,
     lake_sim=False,
 ):
-    """
-    ========
-    Simulate
-    ========
-    Run the HBV model for the number of steps (n) in precipitation. The
-    resluts are (n+1) simulation of discharge as the model calculates step n+1
+    """Simulate.
+
+        Run the HBV model for the number of steps (n) in precipitation. The
+        resluts are (n+1) simulation of discharge as the model calculates step n+1
 
     Parameters
     ----------

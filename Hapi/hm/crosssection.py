@@ -1,4 +1,4 @@
-"""Created on Fri Apr  3 09:33:24 2020.
+"""Cross section model Created on Fri Apr  3 09:33:24 2020.
 
 @author: mofarrag
 """
@@ -9,6 +9,8 @@ from statsmodels import api as sm
 
 
 class CrossSections:
+    """Cross-Section class."""
+
     def __init__(self, name):
         self.name = name
 
@@ -258,10 +260,11 @@ class CrossSections:
     def reg_plot_river(
         self, river_lst, data, minmax_XS_area, filename, log, Save=False, *args, **kargs
     ):
-        """Use the ordinary least squares to make a regression and plot the output.
+        """reg_plot_river.
 
-        This version makes use of the field 'river' in data to define a
-        subset of gauges used for the regression.
+        Use the ordinary least squares to make a regression and plot the
+        output. This version makes use of the field 'river' in data to
+        define a subset of gauges used for the regression.
         """
         # for key in kwargs.keys():
         #     if key == "XLim":
@@ -375,7 +378,7 @@ class CrossSections:
     def reg_plot_subbasin(
         self, subbasin_lst, data, minmax_XS_area, filename, log, redfact, Save=False
     ):
-        """Use the ordinary least squares to make a regression and plot the output.
+        """reg_plot_subbasin Use the ordinary least squares to make a regression and plot the output.
 
         This version makes use of the field 'Subbasin' in data to define a subset
         of gauges used for the regression.

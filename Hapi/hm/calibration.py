@@ -173,7 +173,8 @@ class Calibration(River):
         self.hm_gauges.sort_values(by="id", inplace=True, ignore_index=True)
 
     def GetGauges(self, subid: int, gaugei: int = 0) -> DataFrame:
-        """Get_Gauge_ID. Get_Gauge_ID get the id of the station for a given river segment.
+        """GetGauges.
+        Get_Gauge_ID get the id of the station for a given river segment.
 
         parameters:
         ----------
@@ -819,7 +820,7 @@ class Calibration(River):
     def getAnnualMax(
         self, option=1, CorespondingTo=dict(MaxObserved=" ", TimeWindow=0)
     ):
-        """GetAnnualMax.
+        """getAnnualMax.
 
         GetAnnualMax method get the max annual time series out of time series
         of any temporal resolution, the code assumes that the hydrological
@@ -863,9 +864,6 @@ class Calibration(River):
         annual_max_hm_wl: [dataframe attribute]
             when using option = 5
         AnnualMaxDates : [dataframe attribute]
-
-        Examples
-        --------
         """
         if option == 1:
             if not isinstance(self.q_gauges, DataFrame):

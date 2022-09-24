@@ -21,7 +21,6 @@ import Hapi
 
 
 class Inputs:
-
     """Inputs.
 
     Inputs class contains methods to prepare the inputs for the distributed
@@ -39,6 +38,7 @@ class Inputs:
     """
 
     def __init__(self):
+        """no parameters needed for instantiating the object."""
         pass
 
     @staticmethod
@@ -403,25 +403,27 @@ class Inputs:
     def ReadExcelData(path, years, months):
         """ReadExcelData.
 
-        this function reads data listed in excel sheet with years and months are
-        listed as columns and days are listed in the first row
-        year month 1 2 3 4 5 6 7 8 9 .....................31
-        2012  1    5 6 2 6 8 6 9 7 4 3 ...................31
-        2012  2    9 8 7 6 3 2 1 5 5 9 ...................31
+            this function reads data listed in excel sheet with years and months are
+            listed as columns and days are listed in the first row
+            year month 1 2 3 4 5 6 7 8 9 .....................31
+            2012  1    5 6 2 6 8 6 9 7 4 3 ...................31
+            2012  2    9 8 7 6 3 2 1 5 5 9 ...................31
 
-        inputs:
+        Parameters
         ----------
-            1- path:
-                [string] path of the excel file
-            2-years:
-                [list] list of the years you want to read
-            3-months:
-                [list] list of the months you you want to read
-        Outputs:
-        ----------
-            1- List of the values in the excel file
-        examples:
-        ----------
+        path:
+            [string] path of the excel file
+        years:
+            [list] list of the years you want to read
+        months:
+            [list] list of the months you you want to read
+
+        Returns
+        -------
+         List of the values in the excel file
+
+        examples
+        --------
             years=[2009,2010,2011]#,2012,2013]
             months=[1,2,3,4,5,6,7,8,9,10,11,12]
             Q=ReadExcelData(path+"Discharge/Qout.xlsx",years,months)

@@ -1521,7 +1521,7 @@ class River:
 
     def statisticalProperties(
         self, path: str, Distibution: str = "GEV"
-    ):  # Filter: bool=True,
+    ):
         """StatisticalProperties.
 
             StatisticalProperties method reads the parameters of the distribution and
@@ -3302,14 +3302,7 @@ class Sub(River):
         path="",
         xsid: Union[int, str] = "",
     ):
-        """Read1DResult.
-
-        Read1DResult method reads the 1D (1D-2D coupled) result of the
-        sub-basin the object is created for and return the hydrograph of the
-        first and last cross section.
-        the method will not read the 1D result file again if you tried to read
-        results of the same sub-basin again, so you have to re-instantiate
-        the object.
+        """Read1DResult. Read1DResult method reads the 1D (1D-2D coupled) result of the sub-basin the object is created for and return the hydrograph of the first and last cross section. the method will not read the 1D result file again if you tried to read results of the same sub-basin again, so you have to re-instantiate the object.
 
         Parameters
         ----------
@@ -3498,11 +3491,7 @@ class Sub(River):
             ].values
 
     def CheckNegativeQ(self, plot: bool = False, TS: str = "hourly"):
-        """CheckNegativeQ.
-
-        CheckNegativeQ check whether there are any negative discharge values
-        in the 'q' column in the 1D results or not, you need to read the result first
-
+        """CheckNegativeQ. CheckNegativeQ check whether there are any negative discharge values in the 'q' column in the 1D results or not, you need to read the result first.
 
         Returns
         -------
@@ -3569,10 +3558,7 @@ class Sub(River):
         location: int = 1,
         path2: str = "",
     ):
-        """ReadRRMHydrograph.
-
-        ReadHydrographs method reads the results of the Rainfall-runoff model
-        for the given node id for a specific period.
+        """ReadRRMHydrograph. ReadHydrographs method reads the results of the Rainfall-runoff model for the given node id for a specific period.
 
         Parameters
         ----------
@@ -3672,9 +3658,8 @@ class Sub(River):
         today: Union[int, str] = "",
         Delete=False,
     ):
-        """Resample.
+        """Resample. Resample method extract the value at the last hour of the dat.
 
-        Resample method extract the value at the last hour of the dat
         [hour == 24] from the 1D Result  file, for the discharge, water level,
         and water depth.
 
@@ -3751,10 +3736,7 @@ class Sub(River):
             self.ResampledH.loc[:, xsid] = Q.tolist()
 
     def DetailedStatisticalCalculation(self, T):
-        """DetailedStatisticalCalculation.
-
-        DetailedStatisticalCalculation method calculates the discharge related
-        to a specific given return period
+        """DetailedStatisticalCalculation. DetailedStatisticalCalculation method calculates the discharge related to a specific given return period.
 
         Parameters
         ----------
@@ -3774,10 +3756,7 @@ class Sub(River):
         )
 
     def DetailedOvertopping(self, eventdays):
-        """DetailedOvertopping.
-
-        DetailedOvertopping method takes list of days and get the left and right
-        overtopping for the sub-basin each day
+        """DetailedOvertopping. DetailedOvertopping method takes list of days and get the left and right overtopping for the sub-basin each day.
 
         Parameters
         ----------
@@ -3921,14 +3900,7 @@ class Sub(River):
         ).tolist()
 
     def SaveHydrograph(self, xsid: int, path: str = "", Option: int = 1):
-        """Save Hydrograph.
-
-        SaveHydrograph method saves the hydrograph of any cross-section in
-        the segment.
-        Mainly the method is created to to be used to save the last
-        cross-section hydrograph to use it as as a boundary condition for the
-        downstream segment
-
+        """Save Hydrograph. SaveHydrograph method saves the hydrograph of any cross-section in the segment. Mainly the method is created to to be used to save the last cross-section hydrograph to use it as as a boundary condition for the downstream segment.
 
         Parameters
         ----------
@@ -3989,10 +3961,8 @@ class Sub(River):
         fmt="%Y-%m-%d",
     ) -> Tuple[Figure, object]:
         """PlotHydrographProgression.
-
-        plot the hydrograph for several vross section in the segment, cross
-        section are chosen based on the spacing (spacing equal 5 mean from the
-        beginning take eavery fifth cross section)
+        plot the hydrograph for several vross section in the segment, cross section are chosen based on the spacing
+        (spacing equal 5 mean from the beginning take eavery fifth cross section)
 
         Parameters
         ----------
@@ -4079,9 +4049,7 @@ class Sub(River):
         path: str = "",
         date_format: str = "'%Y-%m-%d'",
     ):
-        """ReadUSHydrograph.
-
-            Read the hydrograph of the upstream segment.
+        """ReadUSHydrograph. Read the hydrograph of the upstream segment.
 
         Parameters
         ----------
@@ -4172,10 +4140,7 @@ class Sub(River):
         self.USHydrographs.index = pd.date_range(start, end, freq="D")
 
     def GetUSHydrograph(self, River):
-        """GetUSHydrograph.
-
-        GetUSHydrograph methods gets the sum of all the upstream hydrographs
-        whither it is routed inside the model or a boundary condition.
+        """GetUSHydrograph. GetUSHydrograph methods gets the sum of all the upstream hydrographs whither it is routed inside the model or a boundary condition.
 
         Parameters
         ----------
@@ -4214,10 +4179,7 @@ class Sub(River):
             )
 
     def GetXSGeometry(self):
-        """GetXSGeometry.
-
-        calculate the area and  perimeter for the cross section highest and
-        lowest point
+        """GetXSGeometry. calculate the area and  perimeter for the cross section highest and lowest point.
 
         Returns
         -------
@@ -4259,10 +4221,7 @@ class Sub(River):
         today: Union[int, str] = "",
         date_format="%d_%m_%Y",
     ):
-        """GetFlow.
-
-        Extract the lateral flow and boundary condition (if exist) time series
-        of the segment from the whole river data.
+        """GetFlow. Extract the lateral flow and boundary condition (if exist) time series of the segment from the whole river data.
 
         Parameters
         ----------
@@ -4347,10 +4306,7 @@ class Sub(River):
             self.Laterals = pd.DataFrame()
 
     def GetLaterals(self, xsid: int):
-        """GetLaterals.
-
-        GetLaterals method gets the sum of the laterals of all the cross sections
-        in the segment upstream of a given xsid
+        """GetLaterals. GetLaterals method gets the sum of the laterals of all the cross sections in the segment upstream of a given xsid.
 
         Parameters
         ----------
@@ -4372,10 +4328,7 @@ class Sub(River):
         return self.Laterals[USgauge].sum(axis=1).to_frame()
 
     def GetTotalFlow(self, gaugexs: int):
-        """GetTotalFlow.
-
-            GetTotalFlow extracts all the laterals upstream of a certain xs and
-            also extracts the Upstream/BC hydrograph.
+        """GetTotalFlow. GetTotalFlow extracts all the laterals upstream of a certain xs and also extracts the Upstream/BC hydrograph.
 
         Parameters
         ----------
@@ -4431,10 +4384,7 @@ class Sub(River):
             )
 
     def H2Q(self, Q):
-        """H2Q.
-
-        H2Q method convert the discharge for a certain cross section into water
-        depth using manning equation.
+        """H2Q. H2Q method convert the discharge for a certain cross section into water depth using manning equation.
 
         Parameters
         ----------
@@ -4507,10 +4457,8 @@ class Sub(River):
         ylabels: Union[bool, int, list] = False,
     ):
         """PlotQ.
-
-        plot the hydrograph at the  gauge location for the hm, rrm  (at two
-        location is availabe), sum of all laterals, upstream hydrograph,
-        boundary condition hydrograph and the gauge time series.
+        plot the hydrograph at the  gauge location for the hm, rrm  (at two location is availabe), sum of all laterals,
+        upstream hydrograph, boundary condition hydrograph and the gauge time series.
 
         Parameters
         ----------
@@ -4832,10 +4780,8 @@ class Sub(River):
         ylabels: Union[int, bool, list] = False,
     ):
         """PlotRRMProgression.
-
-        plot the hydrograph at the  gauge location for the hm, rrm  (at two
-        location is availabe), sum of all laterals, upstream hydrograph,
-        boundary condition hydrograph and the gauge time series.
+        plot the hydrograph at the  gauge location for the hm, rrm  (at two location is availabe), sum of all laterals,
+        upstream hydrograph, boundary condition hydrograph and the gauge time series.
 
         Parameters
         ----------
@@ -5024,9 +4970,7 @@ class Sub(River):
         end: str = "",
         fmt: str = "%Y-%m-%d",
     ):
-        """CalculateQMetrics.
-
-        calculates the performance metrices for the discharge time series
+        """CalculateQMetrics. calculates the performance metrices for the discharge time series.
 
         Parameters
         ----------
@@ -5275,8 +5219,7 @@ class Sub(River):
         fmt: str = "%Y-%m-%d",
     ):
         """CalculateWLMetrics.
-
-        calculate the performance metrics for the water level time series
+        calculate the performance metrics for the water level time series.
 
         fmt: [string]
             format of the date. fmt="%Y-%m-%d %H:%M:%S"
@@ -5425,9 +5368,7 @@ class Sub(River):
         ax1.tick_params(axis="y", color="#27408B")
 
     def PlotBC(self, date: str, fmt: str = "%Y-%m-%d"):
-        """PlotBC.
-
-        plot the boundary condition discharge and water depth
+        """PlotBC. plot the boundary condition discharge and water depth.
 
         Parameters
         ----------

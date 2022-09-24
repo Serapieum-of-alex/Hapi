@@ -373,9 +373,6 @@ class Visualize:
             Default is True.
         repeat: [bool]
             Defaut is True
-
-        Returns
-        -------
         """
         if isinstance(start, str):
             start = dt.datetime.strptime(start, fmt)

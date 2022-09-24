@@ -33,6 +33,17 @@ class Inputs(River):
     """
 
     def __init__(self, Name, version=3):
+        """Inputs.
+
+            Inputs is an object to create the inputs for the river model
+
+        Parameters
+        ----------
+        Name: [str]
+
+        version: [int]
+            model version
+        """
         self.Name = Name
         self.version = version
         self.StatisticalPr = None

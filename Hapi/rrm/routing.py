@@ -1,5 +1,5 @@
-"""
-Routing File contains all Routing functions
+"""Routing File contains all Routing functions.
+
 1- Muskingum cunge
 2- triangular (MAXBAS) routing function
 
@@ -28,11 +28,12 @@ class Routing:
     """
 
     def __init__(self):
+        """Routing model does not need any parameters to be instantiated."""
         pass
 
     @staticmethod
     def Muskingum(inflow, Qinitial, k, x, dt):
-        """
+        """Muskingum.
 
         inputs:
         ----------
@@ -120,20 +121,22 @@ class Routing:
         #    if c1+c2+c3!=1:
         #        raise("sim of c1,c2 & c3 is not 1")
 
-        O = np.zeros_like(inflow)
-        O[0] = Qinitial
-        O[1:] = c1 * np.asarray(inflow[1:]) + c2 * np.asarray(inflow[0:-1])
+        Q = np.zeros_like(inflow)
+        Q[0] = Qinitial
+        Q[1:] = c1 * np.asarray(inflow[1:]) + c2 * np.asarray(inflow[0:-1])
 
         for i in range(1, len(inflow)):
             # only if the
-            if not O[i] + c3 * O[i - 1] < 0:
-                O[i] = O[i] + c3 * O[i - 1]
+            if not Q[i] + c3 * Q[i - 1] < 0:
+                Q[i] = Q[i] + c3 * Q[i - 1]
 
-        return O
+        return Q
 
     @staticmethod
     def Tf(maxbas):
-        """Transfer function weight generator in a shape of a triangle.
+        """Tf.
+
+            Transfer function weight generator in a shape of a triangle.
 
         Inputs:
         ----------

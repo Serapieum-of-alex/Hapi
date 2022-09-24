@@ -381,7 +381,7 @@ class Run(Catchment):
 
         this function runs the conceptual distributed hydrological model
 
-        Inputs:
+        Parameters
         ----------
         1-Paths:
             1-PrecPath:
@@ -403,27 +403,27 @@ class Run(Catchment):
             p2[0] = tfac, 1 for hourly, 0.25 for 15 min time step and 24 for daily time step
             p2[1] = catchment area in km2
 
-        Outputs:
-        ----------
-        1- st:
-            [4D array] state variables
-        2- q_out:
-            [1D array] calculated Discharge at the outlet of the catchment
-        3- q_uz:
-            [3D array] Distributed discharge for each cell
+        Returns
+        -------
+        st: [4D array]
+            state variables
+        q_out: [1D array]
+            calculated Discharge at the outlet of the catchment
+        q_uz: [3D array]
+            Distributed discharge for each cell
 
-        Example:
-        ----------
-            PrecPath = prec_path="meteodata/4000/calib/prec"
-            Evap_Path = evap_path="meteodata/4000/calib/evap"
-            TempPath = temp_path="meteodata/4000/calib/temp"
-            DemPath = "GIS/4000/dem4000.tif"
-            FlowAccPath = "GIS/4000/acc4000.tif"
-            FlowDPath = "GIS/4000/fd4000.tif"
-            ParPath = "meteodata/4000/parameters"
-            p2=[1, 227.31]
-            st, q_out, q_uz_routed = RunModel(PrecPath,Evap_Path,TempPath,DemPath,
-                                              FlowAccPath,FlowDPath,ParPath,p2)
+        Example
+        -------
+        PrecPath = prec_path="meteodata/4000/calib/prec"
+        Evap_Path = evap_path="meteodata/4000/calib/evap"
+        TempPath = temp_path="meteodata/4000/calib/temp"
+        DemPath = "GIS/4000/dem4000.tif"
+        FlowAccPath = "GIS/4000/acc4000.tif"
+        FlowDPath = "GIS/4000/fd4000.tif"
+        ParPath = "meteodata/4000/parameters"
+        p2=[1, 227.31]
+        st, q_out, q_uz_routed = RunModel(PrecPath,Evap_Path,TempPath,DemPath,
+                                          FlowAccPath,FlowDPath,ParPath,p2)
         """
         # input data validation
 

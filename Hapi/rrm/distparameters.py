@@ -1,4 +1,4 @@
-"""DistParameters contains functions that is responible for distributing parameters spatially (totally distributed, totally distriby-uted with some parameters lumped, all parameters are lumped, hydrologic response units) and also save generated parameters into rasters.
+"""DistParameters The module contains functions that is responible for distributing parameters spatially (totally distributed, totally distriby-uted with some parameters lumped, all parameters are lumped, hydrologic response units) and also save generated parameters into rasters.
 
 @author: Mostafa
 """
@@ -42,9 +42,7 @@ class DistParameters:
         Maskingum=False,
     ):
         """DistParameters.
-
-        To initiate the DistParameters class you have to provide the Flow Acc
-        raster
+         To initiate the DistParameters class you have to provide the Flow Acc raster.
 
         Parameters
         ----------
@@ -375,7 +373,7 @@ class DistParameters:
 
     @staticmethod
     def calculateK(x, position, UB, LB):
-        """calculateK method takes value of x parameter and generate 100 random value of k parameters between upper & lower constraint then the output will be the value coresponding to the giving position.
+        """calculateK. calculateK method takes value of x parameter and generate 100 random value of k parameters between upper & lower constraint then the output will be the value coresponding to the giving position.
 
         Parameters
         ----------
@@ -607,7 +605,7 @@ class DistParameters:
 
     @staticmethod
     def HRU_HAND(DEM, FD, FPL, River):
-        """this function calculates inputs for the HAND (height above nearest drainage) method for land use classification.
+        """HRU_HAND this function calculates inputs for the HAND (height above nearest drainage) method for land use classification.
 
         Parameters
         ----------
@@ -708,21 +706,23 @@ class DistParameters:
         return HAND, DTND
 
     def ParametersNumber(self):
-        """ParametersNO method calculates the nomber of parameters that the optimization algorithm is going top search for, use it only in case of totally distributed catchment parameters (in case of lumped parameters no of parameters are the same as the no of parameters of the conceptual model)
+        """ParametersNumber.
+        ParametersNO method calculates the nomber of parameters that the optimization algorithm
+        is going top search for, use it only in case of totally distributed catchment parameters (in case of lumped parameters no of parameters are the same as the no of parameters of the conceptual model)
 
-        Inputs:
+        Parameters
         ----------
-            1- raster : [gdal.dataset]
-                raster to get the spatial information of the catchment
-                (DEM, flow accumulation or flow direction raster)
-            2- no_parameters : [integer]
-                no of parameters of the cell according to the rainfall runoff model
-            3-no_lumped_par : [integer]
-                nomber of lumped parameters, you have to enter the value of
-                the lumped parameter at the end of the list, default is 0 (no lumped parameters)
-            4-HRUs : [0 or 1]
-                0 to define that no hydrologic response units (HRUs), 1 to define that
-                HRUs are used
+        raster : [gdal.dataset]
+            raster to get the spatial information of the catchment
+            (DEM, flow accumulation or flow direction raster)
+        no_parameters : [integer]
+            no of parameters of the cell according to the rainfall runoff model
+        no_lumped_par : [integer]
+            nomber of lumped parameters, you have to enter the value of
+            the lumped parameter at the end of the list, default is 0 (no lumped parameters)
+        HRUs : [0 or 1]
+            0 to define that no hydrologic response units (HRUs), 1 to define that
+            HRUs are used
         """
         if not self.HRUs:
             if self.no_lumped_par > 0:
@@ -744,30 +744,32 @@ class DistParameters:
                 self.ParametersNO = self.no_elem * self.no_parameters
 
     def SaveParameters(self, Path):
-        """SaveParameters method takes generated parameters by the calibration algorithm, distributed them with a given function and save them as a rasters.
+        """SaveParameters.
+        saveParameters method takes generated parameters by the calibration algorithm, distributed them with a given
+        function and save them as a rasters.
 
-         Inputs:
+         Parameters
          ----------
-             1-DistParFn:
-                 [function] function to distribute the parameters (all functions are
-                 in Hapi.DistParameters )
-             2-raster:
-                 [gdal.dataset] raster to get the spatial information
-             3-Par
-                 [list or numpy ndarray] parameters as 1D array or list
-             4-no_parameters:
-                 [int] number of the parameters in the conceptual model
-             5-snow:
-                 [integer] number to define whether to take parameters of
-                 the conceptual model with snow subroutine or without
-             5-kub:
-                 [numeric] upper bound for k parameter in muskingum function
-             6-klb:
-                 [numeric] lower bound for k parameter in muskingum function
-              7-Path:
-                  [string] path to the folder you want to save the parameters in
-                  default value is None (parameters are going to be saved in the
-                  current directory)
+         DistParFn:
+             [function] function to distribute the parameters (all functions are
+             in Hapi.DistParameters )
+         raster:
+             [gdal.dataset] raster to get the spatial information
+         Par
+             [list or numpy ndarray] parameters as 1D array or list
+         no_parameters:
+             [int] number of the parameters in the conceptual model
+         snow:
+             [integer] number to define whether to take parameters of
+             the conceptual model with snow subroutine or without
+         kub:
+             [numeric] upper bound for k parameter in muskingum function
+         klb:
+             [numeric] lower bound for k parameter in muskingum function
+         Path:
+              [string] path to the folder you want to save the parameters in
+              default value is None (parameters are going to be saved in the
+              current directory)
 
          Outputs:
          ----------
