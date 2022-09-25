@@ -41,8 +41,7 @@ class DistParameters:
         Klb=50,
         Maskingum=False,
     ):
-        """DistParameters.
-         To initiate the DistParameters class you have to provide the Flow Acc raster.
+        """DistParameters. To initiate the DistParameters class you have to provide the Flow Acc raster.
 
         Parameters
         ----------
@@ -706,9 +705,7 @@ class DistParameters:
         return HAND, DTND
 
     def ParametersNumber(self):
-        """ParametersNumber.
-        ParametersNO method calculates the nomber of parameters that the optimization algorithm
-        is going top search for, use it only in case of totally distributed catchment parameters (in case of lumped parameters no of parameters are the same as the no of parameters of the conceptual model)
+        """ParametersNumber. ParametersNO method calculates the nomber of parameters that the optimization algorithm is going top search for, use it only in case of totally distributed catchment parameters (in case of lumped parameters no of parameters are the same as the no of parameters of the conceptual model)
 
         Parameters
         ----------
@@ -744,9 +741,7 @@ class DistParameters:
                 self.ParametersNO = self.no_elem * self.no_parameters
 
     def SaveParameters(self, Path):
-        """SaveParameters.
-        saveParameters method takes generated parameters by the calibration algorithm, distributed them with a given
-        function and save them as a rasters.
+        """SaveParameters. saveParameters method takes generated parameters by the calibration algorithm, distributed them with a given function and save them as a rasters.
 
          Parameters
          ----------

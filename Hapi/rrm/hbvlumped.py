@@ -1,5 +1,4 @@
-"""
-Lumped Conceptual HBV model
+"""Lumped Conceptual HBV model.
 
 HBV is lumped conceptual model consists of precipitation, snow melt,
 soil moisture and response subroutine to convert precipitation into o runoff,
@@ -152,8 +151,7 @@ DEF_q0 = 0
 
 
 def Precipitation(temp, ltt, utt, prec, rfcf, sfcf, tfac):
-    """Precipitation
-    Precipitaiton routine of the HBV96 model.
+    """Precipitation Precipitaiton routine of the HBV96 model.
 
     If temperature is lower than ltt, all the precipitation is considered as
     snow. If the temperature is higher than utt, all the precipitation is
@@ -199,8 +197,7 @@ def Precipitation(temp, ltt, utt, prec, rfcf, sfcf, tfac):
 
 
 def Snow(cfmax, tfac, temp, ttm, cfr, cwh, rf, sf, wc_old, sp_old):
-    """Snow
-    Snow routine of the HBV-96 model.
+    """Snow Snow routine of the HBV-96 model.
 
     The snow pack consists of two states: Water Content (wc) and Snow Pack
     (sp). The first corresponds to the liquid part of the water in the snow,
@@ -282,8 +279,7 @@ def Snow(cfmax, tfac, temp, ttm, cfr, cwh, rf, sf, wc_old, sp_old):
 
 
 def Soil(fc, beta, etf, temp, tm, e_corr, lp, tfac, c_flux, inf, ep, sm_old, uz_old):
-    """Soil
-    Soil routine of the HBV-96 model.
+    """Soil Soil routine of the HBV-96 model.
 
     The model checks for the amount of water that can infiltrate the soil,
     coming from the liquid precipitation and the snow pack melting. A part of
@@ -357,8 +353,7 @@ def Soil(fc, beta, etf, temp, tm, e_corr, lp, tfac, c_flux, inf, ep, sm_old, uz_
 
 
 def Response(tfac, perc, alpha, k, k1, area, lz_old, uz_int_1):
-    """Response
-    The response routine of the HBV-96 model.
+    """Response The response routine of the HBV-96 model.
 
     The response routine is in charge of transforming the current values of
     upper and lower zone into discharge. This routine also controls the
@@ -388,7 +383,6 @@ def Response(tfac, perc, alpha, k, k1, area, lz_old, uz_int_1):
         Previous upper zone value before percolation [mm]
     qdr : float
         Direct runoff [mm]
-
     """
     # upper zone
     # if perc > Quz then perc = Quz and Quz = 0 if not perc = value and Quz= Quz-perc so take the min

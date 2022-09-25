@@ -53,7 +53,7 @@ def load_obj(saved_name):
 
 
 def dateformated(x):
-    """dateformated
+    """dateformated.
 
     this function converts the the date read from a list to a datetime format
 

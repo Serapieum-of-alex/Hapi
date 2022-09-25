@@ -27,10 +27,7 @@ from Hapi.plot.visualizer import Visualize as Vis
 
 
 class Catchment:
-    """Catchment.
-    The class include methods to read the meteorological and Spatial inputs of the distributed hydrological
-    model. Catchment class also reads the data of the gauges, it is a super class that has the run subclass, so you
-    need to build the catchment object and hand it as an inpit to the Run class to run the model.
+    """Catchment. The class include methods to read the meteorological and Spatial inputs of the distributed hydrological model. Catchment class also reads the data of the gauges, it is a super class that has the run subclass, so you need to build the catchment object and hand it as an inpit to the Run class to run the model.
 
     methods:
         1-ReadRainfall
@@ -972,8 +969,7 @@ class Catchment:
         label: str = "",
         fmt: str = "%Y-%m-%d",
     ):
-        """PlotHydrograph.
-        plot the simulated and gauge hydrograph.
+        """PlotHydrograph. plot the simulated and gauge hydrograph.
 
         Parameters
         ----------
@@ -1419,11 +1415,7 @@ class Catchment:
 
 
 class Lake:
-    """Lake.
-    Lake class reads the meteorological inputs, and the module to simulate a lake as a lumped model,
-    using a rating curve, the lake and the upstream sub-catchments are going to be considered as one lumped model than
-    result in a discharge input to the lake, the discharge input is going to change the volume of the water in the lake,
-    and from the volume-outflow curve the outflow can be obtained.
+    """Lake. Lake class reads the meteorological inputs, and the module to simulate a lake as a lumped model, using a rating curve, the lake and the upstream sub-catchments are going to be considered as one lumped model than result in a discharge input to the lake, the discharge input is going to change the volume of the water in the lake, and from the volume-outflow curve the outflow can be obtained.
 
     methods:
         1- ReadMeteoData

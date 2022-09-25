@@ -1,6 +1,4 @@
-"""
-Lumped Conceptual HBV model
-"""
+"""Lumped Conceptual HBV model."""
 
 
 import numpy as np
@@ -115,8 +113,7 @@ def _precipitation(temp, ltt, utt, prec, rfcf, sfcf, tfac, pcorr):
 
 
 def _snow(cfmax, tfac, temp, ttm, cfr, cwh, _rf, _sf, wc_old, sp_old):
-    """Snow.
-    Snow routine of the HBV-96 model.
+    """Snow. Snow routine of the HBV-96 model.
 
     The snow pack consists of two states: Water Content (wc) and Snow Pack
     (sp). The first corresponds to the liquid part of the water in the snow,
@@ -375,8 +372,7 @@ def _routing(q, maxbas=1):
 
 
 def _step_run(p, p2, v, St, extra_out=False):
-    """Step run.
-    Makes the calculation of next step of discharge and states
+    """Step run. Makes the calculation of next step of discharge and states.
 
     Parameters
     ----------
@@ -461,10 +457,7 @@ def _step_run(p, p2, v, St, extra_out=False):
 def simulate(
     avg_prec, temp, et, par, p2, init_st=None, ll_temp=None, q_0=DEF_q0, extra_out=False
 ):
-    """Simulate
-    Run the HBV model for the number of steps (n) in precipitation. The
-    resluts are (n+1) simulation of discharge as the model calculates step n+1
-
+    """Simulate Run the HBV model for the number of steps (n) in precipitation. The resluts are (n+1) simulation of discharge as the model calculates step n+1.
 
     Parameters
     ----------
@@ -537,10 +530,7 @@ def simulate(
 def simulate_new_model(
     avg_prec, temp, et, par, p2, init_st=None, ll_temp=None, q_0=DEF_q0, extra_out=False
 ):
-    """Simulate
-    Run the HBV model for the number of steps (n) in precipitation. The
-    resluts are (n+1) simulation of discharge as the model calculates step n+1
-
+    """Simulate Run the HBV model for the number of steps (n) in precipitation. The resluts are (n+1) simulation of discharge as the model calculates step n+1.
 
     Parameters
     ----------

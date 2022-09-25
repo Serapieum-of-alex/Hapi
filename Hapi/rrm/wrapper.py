@@ -10,7 +10,7 @@ from Hapi.rrm.routing import Routing as routing
 
 
 class Wrapper:
-    """Wrapper
+    """Wrapper.
 
     The class connect different commponent together (lumped run of the distributed with the spatial routing) for Hapi
     and for FW1.

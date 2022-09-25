@@ -368,8 +368,7 @@ def Routing(q, maxbas=1):
 
 
 def StepRun(p, v, St, snow=0):
-    """StepRun
-    Makes the calculation of next step of discharge and states.
+    """StepRun Makes the calculation of next step of discharge and states.
 
     Parameters
     ----------

@@ -15,9 +15,7 @@ from pyramids.raster import Raster
 
 class Event:
     # class attributes
-    """Event.
-    The Event class reads all the results of the Hydraulic model to preform all kind of analysis on flood event basis
-    and the overtopping.
+    """Event. The Event class reads all the results of the Hydraulic model to preform all kind of analysis on flood event basis and the overtopping.
 
     Methods:
         1- IndexToDate
@@ -120,9 +118,7 @@ class Event:
         self.EventIndex["date"] = date
 
     def CreateEventIndex(self, IndexPath: str):
-        """CreateEventIndex.
-        CreateEventIndex takes the path to the index file result from the 2D model and creates a data frame to start
-        adding the components of the EventIndex table.
+        """CreateEventIndex. CreateEventIndex takes the path to the index file result from the 2D model and creates a data frame to start adding the components of the EventIndex table.
 
         Parameters
         ---------
@@ -174,8 +170,7 @@ class Event:
                 self.EventBeginning = self.EventIndex.loc[i, "date"]
 
     def GetAllEvents(self):
-        """GetAllEvents.
-        GetAllEvents methods returns the end day of all events.
+        """GetAllEvents. GetAllEvents methods returns the end day of all events.
 
         Returns
         -------
@@ -260,8 +255,7 @@ class Event:
         )
 
     def VolumeError(self, Path):
-        """VolumeError.
-        VolumeError method reads the VoleError file, assign values to the the coresponding time step.
+        """VolumeError. VolumeError method reads the VoleError file, assign values to the the coresponding time step.
 
         Parameters
         ----------
@@ -297,9 +291,7 @@ class Event:
         self.EventIndex["VolError2"] = self.EventIndex["VolError"] / 20
 
     def OverlayMaps(self, Path, BaseMapF, ExcludedValue, OccupiedCellsOnly, SavePath):
-        """OverlayMaps.
-        OverlayMaps method reads all the maps in the folder given by Path input and overlay them with
-        the basemap and for each value in the basemap it create a dictionary with the intersected values from all maps.
+        """OverlayMaps. OverlayMaps method reads all the maps in the folder given by Path input and overlay them with the basemap and for each value in the basemap it create a dictionary with the intersected values from all maps.
 
         Parameters
         ----------
@@ -483,8 +475,7 @@ class Event:
         self.EventIndex.to_csv(Path, header=True, index=None)  # index_label = "Index"
 
     def GetEventBeginning(self, loc):
-        """GetEventBeginning.
-            EventBeginning method returns the index of the beginning of the event in the EventIndex dataframe.
+        """GetEventBeginning. EventBeginning method returns the index of the beginning of the event in the EventIndex dataframe.
 
         Parameters
         ----------
@@ -524,8 +515,7 @@ class Event:
         # return FilteredEvent.index[len(FilteredEvent)-1-i]
 
     def GetEventEnd(self, loc):
-        """GetEventEnd.
-        method returns the index of the beginning of the event in the EventIndex dataframe.
+        """GetEventEnd. method returns the index of the beginning of the event in the EventIndex dataframe.
 
         Parameters
         ----------
@@ -562,10 +552,7 @@ class Event:
         return ind, day
 
     def PrepareForPlotting(self, ColumnName):
-        """PrepareForPlotting.
-        PrepareForPlotting takes a time series in the EventIndex dataframe and fill the days that does not exist in
-        date column and fill it with zero to properly plot it without letting the graph mislead the viewer of
-        connecting the data over the gap period.
+        """PrepareForPlotting. PrepareForPlotting takes a time series in the EventIndex dataframe and fill the days that does not exist in date column and fill it with zero to properly plot it without letting the graph mislead the viewer of connecting the data over the gap period.
 
         Parameters
         ----------

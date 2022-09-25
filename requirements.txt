@@ -13,5 +13,5 @@ pyramids-gis >=0.2.4
 rasterio >=1.3.2
 rasterstats >=0.17.0
 scipy >=1.9.1
-statista >=0.1.5
+statista >=0.1.6
 statsmodels >=0.13.2

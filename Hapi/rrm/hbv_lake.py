@@ -65,8 +65,7 @@ def _precipitation(temp, ltt, utt, prec, rfcf, sfcf, tfac, pcorr):
 
 
 def _snow(cfmax, tfac, temp, ttm, cfr, cwh, _rf, _sf, wc_old, sp_old):
-    """Snow.
-    Snow routine of the HBV-96 model.
+    """Snow. Snow routine of the HBV-96 model.
 
         The snow pack consists of two states: Water Content (wc) and Snow Pack
         (sp). The first corresponds to the liquid part of the water in the snow,
@@ -482,8 +481,7 @@ def CalculateMaxBas(MAXBAS):
 
 
 def RoutingMAXBAS(Q, MAXBAS):
-    """RoutingMAXBAS.
-    This function calculate the routing from a input hydrograph using the MAXBAS parameter from the HBV model.
+    """RoutingMAXBAS. This function calculate the routing from a input hydrograph using the MAXBAS parameter from the HBV model.
 
     Parameters
     ---------

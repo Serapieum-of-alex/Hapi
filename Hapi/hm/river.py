@@ -1519,9 +1519,7 @@ class River:
         self.US = []
         self.Trace2(sub_id, self.US)
 
-    def statisticalProperties(
-        self, path: str, Distibution: str = "GEV"
-    ):
+    def statisticalProperties(self, path: str, Distibution: str = "GEV"):
         """StatisticalProperties.
 
             StatisticalProperties method reads the parameters of the distribution and
@@ -3960,9 +3958,7 @@ class Sub(River):
         xlabels: Union[bool, int] = False,
         fmt="%Y-%m-%d",
     ) -> Tuple[Figure, object]:
-        """PlotHydrographProgression.
-        plot the hydrograph for several vross section in the segment, cross section are chosen based on the spacing
-        (spacing equal 5 mean from the beginning take eavery fifth cross section)
+        """PlotHydrographProgression. plot the hydrograph for several vross section in the segment, cross section are chosen based on the spacing (spacing equal 5 mean from the beginning take eavery fifth cross section)
 
         Parameters
         ----------
@@ -4456,9 +4452,7 @@ class Sub(River):
         xlabels: Union[bool, int, list] = False,
         ylabels: Union[bool, int, list] = False,
     ):
-        """PlotQ.
-        plot the hydrograph at the  gauge location for the hm, rrm  (at two location is availabe), sum of all laterals,
-        upstream hydrograph, boundary condition hydrograph and the gauge time series.
+        """PlotQ. plot the hydrograph at the  gauge location for the hm, rrm  (at two location is availabe), sum of all laterals, upstream hydrograph, boundary condition hydrograph and the gauge time series.
 
         Parameters
         ----------
@@ -4779,9 +4773,7 @@ class Sub(River):
         xlabels: Union[int, bool, list] = False,
         ylabels: Union[int, bool, list] = False,
     ):
-        """PlotRRMProgression.
-        plot the hydrograph at the  gauge location for the hm, rrm  (at two location is availabe), sum of all laterals,
-        upstream hydrograph, boundary condition hydrograph and the gauge time series.
+        """PlotRRMProgression. plot the hydrograph at the  gauge location for the hm, rrm  (at two location is availabe), sum of all laterals, upstream hydrograph, boundary condition hydrograph and the gauge time series.
 
         Parameters
         ----------
@@ -5218,8 +5210,7 @@ class Sub(River):
         end: Union[dt.datetime, str] = "",
         fmt: str = "%Y-%m-%d",
     ):
-        """CalculateWLMetrics.
-        calculate the performance metrics for the water level time series.
+        """CalculateWLMetrics. calculate the performance metrics for the water level time series.
 
         fmt: [string]
             format of the date. fmt="%Y-%m-%d %H:%M:%S"

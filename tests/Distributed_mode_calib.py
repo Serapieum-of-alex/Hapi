@@ -6,7 +6,7 @@ Comp = "F:/01Algorithms/Hydrology/HAPI/examples"
 
 import datetime as dt
 
-import gdal
+from osgeo import gdal
 import numpy as np
 
 import Hapi.rrm.hbv_bergestrom92 as HBV

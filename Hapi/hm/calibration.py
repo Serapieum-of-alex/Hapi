@@ -173,8 +173,7 @@ class Calibration(River):
         self.hm_gauges.sort_values(by="id", inplace=True, ignore_index=True)
 
     def GetGauges(self, subid: int, gaugei: int = 0) -> DataFrame:
-        """GetGauges.
-        Get_Gauge_ID get the id of the station for a given river segment.
+        """GetGauges. Get_Gauge_ID get the id of the station for a given river segment.
 
         parameters:
         ----------
