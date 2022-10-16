@@ -1,18 +1,12 @@
 import datetime as dt
-import os
-
-# Comp = "F:/01Algorithms/Hydrology/HAPI/examples"
 import numpy as np
 from osgeo import gdal
-
 import Hapi.rrm.hbv_bergestrom92 as HBV
-import Hapi.sm.performancecriteria as PC
+from statista.metrics import RMSE
 from Hapi.rrm.calibration import Calibration
 from Hapi.rrm.distparameters import DistParameters as DP
-
-root = r"C:\MyComputer\01Algorithms\hydrology\Hapi/"
 # %% Paths
-Path = root + "examples/Hydrological model/data/distributed_model/"
+Path = "examples/Hydrological model/data/distributed_model/"
 PrecPath = Path + "/prec"
 Evap_Path = Path + "/evap"
 TempPath = Path + "/temp"
@@ -77,7 +71,7 @@ SpatialVarFun = DP(
     Kub=kub,
 )
 # calculate no of parameters that optimization algorithm is going to generate
-SpatialVarFun.ParametersNO
+print(SpatialVarFun.ParametersNO)
 # %% Gauges
 Coello.ReadGaugeTable(Path + "/stations/gauges.csv", FlowAccPath)
 GaugesPath = Path + "/stations/"
@@ -97,7 +91,7 @@ def OF(Qobs, coordinates):
     # error for all internal stations
     for i in range(len(coordinates)):
         all_errors.append(
-            (PC.RMSE(Qobs.loc[:, Qobs.columns[0]], Coello.Qsim[:, i]))
+            (RMSE(Qobs.loc[:, Qobs.columns[0]], Coello.Qsim[:, i]))
         )  # *coordinates.loc[coordinates.index[i],'weight']
     print(all_errors)
     error = sum(all_errors)
