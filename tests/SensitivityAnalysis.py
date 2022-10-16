@@ -2,22 +2,17 @@
 
 @author: mofarrag
 """
-
-Comp = "F:/01Algorithms/Hydrology/HAPI/examples"
-
 import pandas as pd
-
 import Hapi.rrm.hbv_bergestrom92 as HBVLumped
-import Hapi.sm.performancecriteria as PC
+import statista.metrics as PC
 from Hapi.catchment import Catchment
 from Hapi.rrm.routing import Routing
 from Hapi.run import Run
-from Hapi.sm.sensitivityanalysis import SensitivityAnalysis as SA
-
+from statista.sensitivity import Sensitivity as SA
 #%% Paths
-Parameterpath = Comp + "/data/lumped/Coello_Lumped2021-03-08_muskingum.txt"
-MeteoDataPath = Comp + "/data/lumped/meteo_data-MSWEP.csv"
-Path = Comp + "/data/lumped/"
+Parameterpath = "examples/data/lumped/Coello_Lumped2021-03-08_muskingum.txt"
+MeteoDataPath = "examples/data/lumped/meteo_data-MSWEP.csv"
+Path = "examples/data/lumped/"
 #%%
 ### meteorological data
 start = "2009-01-01"
