@@ -511,7 +511,7 @@ class Catchment:
         FloodPlainRoughness = gdal.Open(FloodPlainRoughnessF)
         self.FloodPlainRoughness = FloodPlainRoughness.ReadAsArray()
 
-    def ReadParameters(self, Path: str, Snow: int = False, Maxbas: bool = False):
+    def ReadParameters(self, Path: str, Snow: bool = False, Maxbas: bool = False):
         """ReadParameters.
 
         ReadParameters method reads the parameters' raster
