@@ -547,7 +547,7 @@ class Catchment:
             # parameters
             self.Parameters = Raster.readRastersFolder(Path)
         else:
-            if os.path.exists(Path):
+            if not os.path.exists(Path):
                 raise FileNotFoundError ("The parameters file you have entered does not exist")
 
             self.Parameters = pd.read_csv(Path, index_col=0, header=None)[1].tolist()
@@ -805,6 +805,9 @@ class Catchment:
 
                 self.QGauges[int(name)] = f.loc[self.start : self.end, f.columns[-1]]
         else:
+            if not os.path.exists(Path):
+                raise FileNotFoundError(f"The file you have entered{Path} does not exist")
+
             self.QGauges = pd.DataFrame(index=ind)
             f = pd.read_csv(
                 Path, header=0, index_col=0, delimiter=delimiter
@@ -1081,7 +1084,7 @@ class Catchment:
         ax.set_ylabel("Discharge m3/s", fontsize=12)
         plt.tight_layout()
 
-        if hasattr(self, "Metrics"):
+        if self.Metrics:
             logger.debug("----------------------------------")
             logger.debug("Gauge - " + str(gaugeid))
             logger.debug("RMSE= " + str(round(self.Metrics.loc["RMSE", gaugeid], 2)))
