@@ -179,7 +179,8 @@ class Catchment:
             # data type
             assert isinstance(Path, str), "PrecPath input should be string type"
             # check wether the path exists or not
-            assert os.path.exists(Path), f"{Path} you have provided does not exist"
+            if not os.path.exists(Path):
+                raise FileNotFoundError(f"{Path} you have provided does not exist")
             # check wether the folder has the rasters or not
             assert (
                 len(os.listdir(Path)) > 0
@@ -587,10 +588,9 @@ class Catchment:
                     + str(len(self.Parameters))
                 )
             elif not Snow and Maxbas:
-                assert len(self.Parameters) == 11, (
-                    "current version of HBV (with snow) takes 11 parameter you have entered "
-                    + str(len(self.Parameters))
-                )
+                if len(self.Parameters) != 11:
+                    raise ValueError ( f"current version of HBV (with snow) takes 11 parameter you have entered {len(self.Parameters)}")
+
             elif Snow and not Maxbas:
                 assert len(self.Parameters) == 17, (
                     "current version of HBV (with snow) takes 17 parameter you have entered "

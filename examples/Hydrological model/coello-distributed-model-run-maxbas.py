@@ -1,14 +1,12 @@
 """Distributed model with a maxbas routing scheme."""
 import datetime as dt
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import pandas as pd
 from osgeo import gdal
 
 import Hapi.rrm.hbv_bergestrom92 as HBV
-import statista.metrics as PC
 from Hapi.catchment import Catchment
 from Hapi.run import Run
-
 #%% Paths
 Path = "examples/Hydrological model/data/distributed_model/"
 PrecPath = Path + "/prec"
@@ -17,8 +15,7 @@ TempPath = Path + "/temp"
 FlowAccPath = Path + "/GIS/acc4000.tif"
 FlowDPath = Path + "/GIS/fd4000.tif"
 # FlowPathLengthPath = path + "GIS/FPL4000.tif"
-ParPath = Path + "results/parameters/4000/lumped/2021-03-09/rasters"
-# ParPath = "F:/Users/mofarrag/coello/Hapi/Data/00inputs/Basic_inputs/default parameters/initial"
+ParPath = Path + "\parameters_initial_maxbas"
 #%% Meteorological data
 AreaCoeff = 1530
 InitialCond = [0, 5, 5, 5, 0]
@@ -37,13 +34,11 @@ Coello.ReadET(Evap_Path)
 Coello.ReadFlowAcc(FlowAccPath)
 # Coello.ReadFlowDir(FlowDPath)
 # Coello.ReadFlowPathLength(FlowPathLengthPath)
-
 Coello.ReadParameters(ParPath, Snow, Maxbas=True)
 Coello.ReadLumpedModel(HBV, AreaCoeff, InitialCond)
 #%% Gauges
-Coello.ReadGaugeTable(path + "Discharge/stations/gauges.csv", FlowAccPath)
-GaugesPath = path + "Discharge/stations/"
-Coello.ReadDischargeGauges(GaugesPath, column="id", fmt="%Y-%m-%d")
+Coello.ReadGaugeTable(f"{Path}stations/gauges.csv", FlowAccPath)
+Coello.ReadDischargeGauges(f"{Path}stations/", column="id", fmt="%Y-%m-%d")
 #%% Run the model
 """
 Outputs:
