@@ -7,7 +7,7 @@ from Hapi.catchment import Catchment
 from Hapi.rrm.routing import Routing
 from Hapi.run import Run
 # %% data
-Parameterpath = "examples/Hydrological model/data/lumped_model/distributed-lumped-parameters2022-03-13-maxbas.txt"
+Parameterpath = "examples/Hydrological model/data/lumped_model/coello-lumped-parameters2022-03-13-maxbas.txt"
 MeteoDataPath = "examples/Hydrological model/data/lumped_model/meteo_data-MSWEP.csv"
 Path = "examples/Hydrological model/data/lumped_model/"
 SaveTo = "examples/Hydrological model/data/lumped_model/"
@@ -79,10 +79,5 @@ Coello.PlotHydrograph(plotstart, plotend, gaugei, Title="Lumped Model")
 StartDate = "2009-01-01"
 EndDate = "2010-04-20"
 
-Path = (
-    SaveTo
-    + f"{Coello.name}Results-Lumped-Model_"
-    + str(dt.datetime.now())[0:10]
-    + ".txt"
-)
+Path = f"{SaveTo}{Coello.name}Results-Lumped-Model_{str(dt.datetime.now())[0:10]}.txt"
 Coello.SaveResults(Result=5, start=StartDate, end=EndDate, Path=Path)
