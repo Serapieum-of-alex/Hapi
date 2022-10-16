@@ -17,7 +17,7 @@ import random
 from deap import algorithms, base, creator, tools
 
 import Hapi.rrm.hbv_bergestrom92 as HBVLumped
-import Hapi.sm.performancecriteria as PC
+import statista.metrics as PC
 from Hapi.rrm.calibration import Calibration
 from Hapi.rrm.routing import Routing
 from Hapi.run import Run

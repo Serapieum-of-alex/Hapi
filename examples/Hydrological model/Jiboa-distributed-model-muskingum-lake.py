@@ -1,4 +1,6 @@
-"""This code is used to Run the distributed model for jiboa rover in El Salvador wher the catchment is consisted os a ustream lake and a volcanic area.
+"""
+This code is used to Run the distributed model for jiboa river in El Salvador where the catchment has an a
+ustream lake and a volcanic area.
 
 -   you have to make the root directory to the examples folder to enable the code
     from reading input files
@@ -15,7 +17,7 @@ import numpy as np
 matplotlib.use("TkAgg")
 import Hapi.rrm.hbv as HBV
 import Hapi.rrm.hbv_lake as HBVLake
-import Hapi.sm.performancecriteria as Pf
+import statista.metrics as Pf
 from Hapi.catchment import Catchment, Lake
 from Hapi.run import Run
 

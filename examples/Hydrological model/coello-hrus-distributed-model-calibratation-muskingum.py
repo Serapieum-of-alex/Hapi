@@ -3,30 +3,20 @@
 @author: Mostafa
 """
 import os
-
 # Comp = "F:/Users/mofarrag/"
 Comp = "E:\case studies"
 os.chdir(Comp + "/Coello/HAPI/Model")
-
 import datetime as dt
-
 import numpy as np
-
 # import pandas as pd
 from osgeo import gdal
-
 import Hapi.rrm.hbv_bergestrom92 as HBV
-import Hapi.sm.performancecriteria as PC
-
+from statista.metrics import RMSE
 # functions
 from Hapi.rrm.calibration import Calibration
-
 # import Hapi.HBV as HBV
 from Hapi.rrm.distparameters import DistParameters as DP
-
 # from pyOpt import Optimization, ALHSO,Optimizer
-
-
 path = Comp + "/Coello/HAPI/Data/00inputs/"  # GIS/4000/
 SaveTo = Comp + "/Coello/Hapi/Model/results/"
 # %%
@@ -116,7 +106,7 @@ def OF(Qobs, coordinates):  # Qout, q_uz_routed, q_lz_trans,
     all_errors = []
     # error for all internal stations
     for i in range(len(coordinates)):
-        all_errors.append((PC.RMSE(Qobs.loc[:, Qobs.columns[0]], Coello.Qsim[:, i])))
+        all_errors.append((RMSE(Qobs.loc[:, Qobs.columns[0]], Coello.Qsim[:, i])))
     # outlet observed discharge is at the end of the array
     # all_errors.append((PC.RMSE(Qobs.loc[:,Qobs.columns[-1]],Qout))*coordinates.loc[coordinates.index[-1],'weight'])
     print(str(np.round(all_errors, 3)))

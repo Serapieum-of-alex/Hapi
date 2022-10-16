@@ -1,34 +1,20 @@
 # Lumped Model Calibration
-
 # - Please change the Path in the following cell to the directory where you stored the case study data
-
-# Comp = "F:/01Algorithms/Hydrology/HAPI/examples"
 
 ### Modules
 import datetime as dt
 
 import numpy as np
 import pandas as pd
-
 import Hapi.rrm.hbv_bergestrom92 as HBVLumped
-import Hapi.sm.performancecriteria as PC
+import statista.metrics as PC
 from Hapi.rrm.calibration import Calibration
 from Hapi.rrm.routing import Routing
 from Hapi.run import Run
-
-# %%
-path = r"C:\MyComputer\01Algorithms\hydrology\Hapi/"
-### Paths
-Parameterpath = (
-    path
-    + "examples/Hydrological model/data/lumped_model/Coello_Lumped2021-03-08_muskingum.txt"
-)
-MeteoDataPath = (
-    path + "examples/Hydrological model/data/lumped_model/meteo_data-MSWEP.csv"
-)
-Path = path + "examples/Hydrological model/data/lumped_model/"
-
-### Meteorological data
+# %% Paths
+Parameterpath = "examples/Hydrological model/data/lumped_model/Coello_Lumped2021-03-08_muskingum.txt"
+MeteoDataPath = "examples/Hydrological model/data/lumped_model/meteo_data-MSWEP.csv"
+Path = "examples/Hydrological model/data/lumped_model/"
 
 start = "2009-01-01"
 end = "2011-12-31"
@@ -36,8 +22,7 @@ name = "Coello"
 
 Coello = Calibration(name, start, end)
 Coello.ReadLumpedInputs(MeteoDataPath)
-
-### Basic_inputs
+# %% Basic_inputs
 
 # catchment area
 AreaCoeff = 1530
@@ -118,9 +103,6 @@ cal_parameters = Coello.LumpedCalibration(
 print("Objective Function = " + str(round(cal_parameters[0], 2)))
 print("Parameters are " + str(cal_parameters[1]))
 print("Time = " + str(round(cal_parameters[2]["time"] / 60, 2)) + " min")
-
-# cal_parameters[2]['time']
-
 # %% Run the Model
 
 Coello.Parameters = cal_parameters[1]

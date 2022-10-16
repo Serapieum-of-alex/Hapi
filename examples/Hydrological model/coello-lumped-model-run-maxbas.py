@@ -1,25 +1,16 @@
 import datetime as dt
-
 import matplotlib
-
 matplotlib.use("TkAgg")
 import Hapi.rrm.hbv_bergestrom92 as HBVLumped
-import Hapi.sm.performancecriteria as PC
+import statista.metrics as PC
 from Hapi.catchment import Catchment
 from Hapi.rrm.routing import Routing
 from Hapi.run import Run
-
-path = r"C:\MyComputer\01Algorithms\hydrology\Hapi/"
 # %% data
-Parameterpath = (
-    path
-    + "examples/Hydrological model/data/lumped_model/distributed-lumped-parameters2022-03-13-maxbas.txt"
-)
-MeteoDataPath = (
-    path + "examples/Hydrological model/data/lumped_model/meteo_data-MSWEP.csv"
-)
-Path = path + "examples/Hydrological model/data/lumped_model/"
-SaveTo = path + "examples/Hydrological model/data/lumped_model/"
+Parameterpath = "examples/Hydrological model/data/lumped_model/distributed-lumped-parameters2022-03-13-maxbas.txt"
+MeteoDataPath = "examples/Hydrological model/data/lumped_model/meteo_data-MSWEP.csv"
+Path = "examples/Hydrological model/data/lumped_model/"
+SaveTo = "examples/Hydrological model/data/lumped_model/"
 ### Meteorological data
 start = "2009-01-01"
 end = "2011-12-31"

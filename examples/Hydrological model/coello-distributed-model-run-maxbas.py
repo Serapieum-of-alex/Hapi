@@ -1,32 +1,24 @@
 """Distributed model with a maxbas routing scheme."""
-import os
-
-# comp = "F:/02Case studies/"
-Comp = r"C:\MyComputer\01Algorithms\Hydrology\Hapi/"
-os.chdir(Comp + "examples/")
 import datetime as dt
-
 import matplotlib.pyplot as plt
 import pandas as pd
-
-# import numpy as np
 from osgeo import gdal
 
 import Hapi.rrm.hbv_bergestrom92 as HBV
-import Hapi.sm.performancecriteria as PC
+import statista.metrics as PC
 from Hapi.catchment import Catchment
 from Hapi.run import Run
 
 #%% Paths
-path = Comp + "/Coello/Hapi/Data/00inputs/"
-PrecPath = path + "meteodata/4000/calib/prec-MSWEP"
-Evap_Path = path + "meteodata/4000/calib/evap"
-TempPath = path + "meteodata/4000/calib/temp"
-FlowAccPath = path + "GIS/4000/acc4000.tif"
-# FlowDPath = path+"GIS/4000/fd4000.tif"
-# FlowPathLengthPath = path + "GIS/4000/FPL4000.tif"
-# ParPath = "results/parameters/4000/lumped/2021-03-09/rasters"
-ParPath = "F:/Users/mofarrag/coello/Hapi/Data/00inputs/Basic_inputs/default parameters/initial"
+Path = "examples/Hydrological model/data/distributed_model/"
+PrecPath = Path + "/prec"
+Evap_Path = Path + "/evap"
+TempPath = Path + "/temp"
+FlowAccPath = Path + "/GIS/acc4000.tif"
+FlowDPath = Path + "/GIS/fd4000.tif"
+# FlowPathLengthPath = path + "GIS/FPL4000.tif"
+ParPath = Path + "results/parameters/4000/lumped/2021-03-09/rasters"
+# ParPath = "F:/Users/mofarrag/coello/Hapi/Data/00inputs/Basic_inputs/default parameters/initial"
 #%% Meteorological data
 AreaCoeff = 1530
 InitialCond = [0, 5, 5, 5, 0]
