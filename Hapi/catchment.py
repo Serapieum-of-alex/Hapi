@@ -547,6 +547,9 @@ class Catchment:
             # parameters
             self.Parameters = Raster.readRastersFolder(Path)
         else:
+            if os.path.exists(Path):
+                raise FileNotFoundError ("The parameters file you have entered does not exist")
+
             self.Parameters = pd.read_csv(Path, index_col=0, header=None)[1].tolist()
 
         assert (
@@ -766,7 +769,7 @@ class Catchment:
 
         Returns
         -------
-        q_gauges : [dataframe].
+        GaugesTable : [dataframe].
             dataframe containing the discharge data
         """
         if self.TemporalResolution.lower() == "daily":
@@ -775,7 +778,7 @@ class Catchment:
             ind = pd.date_range(self.start, self.end, freq="H")
 
         if self.SpatialResolution.lower() == "distributed":
-            assert hasattr(self, "hm_gauges"), "please read the gauges table first"
+            assert hasattr(self, "GaugesTable"), "please read the gauges table first"
 
             self.QGauges = pd.DataFrame(
                 index=ind, columns=self.GaugesTable[column].tolist()
