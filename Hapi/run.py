@@ -11,7 +11,7 @@ Created on Sun Jun 24 21:02:34 2018
 """
 import numpy as np
 import pandas as pd
-
+from loguru import logger
 from Hapi.catchment import Catchment
 from Hapi.hm.saintvenant import SaintVenant
 from Hapi.rrm.wrapper import Wrapper
@@ -510,8 +510,7 @@ class Run(Catchment):
         Wrapper.Lumped(self, Route, RoutingFn)
         Qsim["q"] = self.Qsim
         self.Qsim = Qsim[:]
-
-        # print("Model Run has finished")
+        logger.info("Lumped model run has finished successfully")
 
 
 if __name__ == "__main__":
