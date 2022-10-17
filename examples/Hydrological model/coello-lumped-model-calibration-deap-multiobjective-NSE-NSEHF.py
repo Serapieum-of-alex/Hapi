@@ -2,35 +2,25 @@
 
 # - Please change the Path in the following cell to the directory where you stored the case study data
 
-# Comp = "F:/01Algorithms/Hydrology/HAPI/examples"
-
 ### Modules
 import datetime as dt
-
 import matplotlib
 import numpy as np
 import pandas as pd
 
 matplotlib.use("TkAgg")
 import random
-
 from deap import algorithms, base, creator, tools
-
 import Hapi.rrm.hbv_bergestrom92 as HBVLumped
 import statista.metrics as PC
 from Hapi.rrm.calibration import Calibration
 from Hapi.rrm.routing import Routing
 from Hapi.run import Run
-
-path = r"C:\MyComputer\01Algorithms\hydrology\Hapi/"
 # %% Paths
 # Parameterpath = path + "examples/Hydrological model/data/lumped_model/Coello_Lumped2021-03-08_muskingum.txt"
-MeteoDataPath = (
-    path + "examples/Hydrological model/data/lumped_model/meteo_data-MSWEP.csv"
-)
-Path = path + "examples/Hydrological model/data/lumped_model/"
-
-### Meteorological data
+MeteoDataPath = "examples/Hydrological model/data/lumped_model/meteo_data-MSWEP.csv"
+Path = "examples/Hydrological model/data/lumped_model/"
+# %% Meteorological data
 
 start = "2009-01-01"
 end = "2011-12-31"
@@ -47,7 +37,7 @@ AreaCoeff = 1530
 # [Snow pack, Soil moisture, Upper zone, Lower Zone, Water content]
 InitialCond = [0, 10, 10, 10, 0]
 # no snow subroutine
-Snow = 0
+Snow = False
 Coello.ReadLumpedModel(HBVLumped, AreaCoeff, InitialCond)
 
 # Calibration parameters
@@ -176,7 +166,6 @@ print("NSE= " + str(round(Metrics["NSE"], 2)))
 print("NSEhf= " + str(round(Metrics["NSEhf"], 2)))
 print("KGE= " + str(round(Metrics["KGE"], 2)))
 print("WB= " + str(round(Metrics["WB"], 2)))
-
 # %% Plotting Hydrograph
 
 gaugei = 0

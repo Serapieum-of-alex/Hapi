@@ -2,11 +2,8 @@
 
 # - Please change the Path in the following cell to the directory where you stored the case study data
 
-# Comp = "F:/01Algorithms/Hydrology/HAPI/examples"
-
 ### Modules
 import datetime as dt
-
 import matplotlib
 import numpy as np
 import pandas as pd
@@ -17,8 +14,6 @@ import statista.metrics as PC
 from Hapi.rrm.calibration import Calibration
 from Hapi.rrm.routing import Routing
 from Hapi.run import Run
-
-path = r"C:\MyComputer\01Algorithms\hydrology\Hapi/"
 # %%
 import random
 
@@ -26,10 +21,8 @@ from deap import algorithms, base, creator, tools
 
 ### Paths
 # Parameterpath = path + "examples/Hydrological model/data/lumped_model/Coello_Lumped2021-03-08_muskingum.txt"
-MeteoDataPath = (
-    path + "examples/Hydrological model/data/lumped_model/meteo_data-MSWEP.csv"
-)
-Path = path + "examples/Hydrological model/data/lumped_model/"
+MeteoDataPath = "examples/Hydrological model/data/lumped_model/meteo_data-MSWEP.csv"
+Path = "examples/Hydrological model/data/lumped_model/"
 
 ### Meteorological data
 
@@ -47,8 +40,6 @@ AreaCoeff = 1530
 # temporal resolution
 # [Snow pack, Soil moisture, Upper zone, Lower Zone, Water content]
 InitialCond = [0, 10, 10, 10, 0]
-# no snow subroutine
-Snow = 0
 Coello.ReadLumpedModel(HBVLumped, AreaCoeff, InitialCond)
 
 # Calibration parameters
@@ -60,6 +51,8 @@ UB = UB[1].tolist()
 LB = pd.read_csv(Path + "/LB-3.txt", index_col=0, header=None)
 LB = LB[1].tolist()
 
+# no snow subroutine
+Snow = False
 Maxbas = True
 Coello.ReadParametersBounds(UB, LB, Snow, Maxbas=Maxbas)
 

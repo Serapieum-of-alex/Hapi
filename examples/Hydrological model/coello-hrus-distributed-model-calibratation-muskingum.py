@@ -4,11 +4,10 @@
 """
 import os
 # Comp = "F:/Users/mofarrag/"
-Comp = "E:\case studies"
+Comp = "L:\My Drive\case studies"
 os.chdir(Comp + "/Coello/HAPI/Model")
 import datetime as dt
 import numpy as np
-# import pandas as pd
 from osgeo import gdal
 import Hapi.rrm.hbv_bergestrom92 as HBV
 from statista.metrics import RMSE
@@ -16,18 +15,15 @@ from statista.metrics import RMSE
 from Hapi.rrm.calibration import Calibration
 # import Hapi.HBV as HBV
 from Hapi.rrm.distparameters import DistParameters as DP
-# from pyOpt import Optimization, ALHSO,Optimizer
 path = Comp + "/Coello/HAPI/Data/00inputs/"  # GIS/4000/
 SaveTo = Comp + "/Coello/Hapi/Model/results/"
-# %%
-### Meteorological & GIS Data
+# %% Meteorological & GIS Data
 PrecPath = path + "meteodata/4000/calib/prec-MSWEP"
 Evap_Path = path + "meteodata/4000/calib/evap"
 TempPath = path + "meteodata/4000/calib/temp"
 FlowAccPath = path + "GIS/4000/acc4000.tif"
 FlowDPath = path + "GIS/4000/fd4000.tif"
-
-### Basic_inputs
+# %% Basic_inputs
 AreaCoeff = 1530
 # [sp,sm,uz,lz,wc]
 InitialCond = [0, 5, 5, 5, 0]

@@ -1,6 +1,5 @@
 # Lumped Model Calibration
 # - Please change the Path in the following cell to the directory where you stored the case study data
-
 ### Modules
 import datetime as dt
 

@@ -1,12 +1,8 @@
 # Lumped Model Calibration
-
 # - Please change the Path in the following cell to the directory where you stored the case study data
-
-# Comp = "F:/01Algorithms/Hydrology/HAPI/examples"
 
 ### Modules
 import datetime as dt
-
 import matplotlib
 import numpy as np
 import pandas as pd
@@ -21,33 +17,26 @@ import statista.metrics as PC
 from Hapi.rrm.calibration import Calibration
 from Hapi.rrm.routing import Routing
 from Hapi.run import Run
-
-path = r"C:\MyComputer\01Algorithms\hydrology\Hapi/"
 # %% Paths
 # Parameterpath = path + "examples/Hydrological model/data/lumped_model/Coello_Lumped2021-03-08_muskingum.txt"
-MeteoDataPath = (
-    path + "examples/Hydrological model/data/lumped_model/meteo_data-MSWEP.csv"
-)
-Path = path + "examples/Hydrological model/data/lumped_model/"
+MeteoDataPath = "examples/Hydrological model/data/lumped_model/meteo_data-MSWEP.csv"
+Path = "examples/Hydrological model/data/lumped_model/"
 
 ### Meteorological data
-
 start = "2009-01-01"
 end = "2011-12-31"
 name = "Coello"
 
 Coello = Calibration(name, start, end)
 Coello.ReadLumpedInputs(MeteoDataPath)
-
-### Basic_inputs
-
+# %% Basic_inputs
 # catchment area
 AreaCoeff = 1530
 # temporal resolution
 # [Snow pack, Soil moisture, Upper zone, Lower Zone, Water content]
 InitialCond = [0, 10, 10, 10, 0]
 # no snow subroutine
-Snow = 0
+Snow = False
 Coello.ReadLumpedModel(HBVLumped, AreaCoeff, InitialCond)
 
 # Calibration parameters
@@ -93,7 +82,8 @@ print(toolbox.individual())
 toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 print(toolbox.population(1))
 
-Snow = 0  # no snow subroutine
+# no snow subroutine
+Snow = False
 
 Coello.OFArgs = []
 

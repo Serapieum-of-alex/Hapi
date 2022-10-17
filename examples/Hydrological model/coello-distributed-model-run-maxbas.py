@@ -1,9 +1,7 @@
 """Distributed model with a maxbas routing scheme."""
 import datetime as dt
-# import matplotlib.pyplot as plt
 import pandas as pd
 from osgeo import gdal
-
 import Hapi.rrm.hbv_bergestrom92 as HBV
 from Hapi.catchment import Catchment
 from Hapi.run import Run
