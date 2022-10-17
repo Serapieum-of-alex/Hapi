@@ -1,11 +1,11 @@
 """
 Make sure the working directory is set to the examples folder in the Hapi repo"
-currunt_work_directory = Hapi/Example
+currunt_work_directory = Hapi/example
+
+install and use earth2observe package https://github.com/MAfarrag/earth2observe
 """
-# Libraries
-from Hapi.rs.remotesensing import CHIRPS
-from Hapi.rs.remotesensing import RemoteSensing as RS
-from Hapi.rs.remotesensing import Variables
+from earth2observe.chirps import CHIRPS
+from earth2observe.ecmwf import ECMWF, Variables
 
 root_path = "C:/MyComputer/01Algorithms/Hydrology/Hapi/"
 # %% Basin data
@@ -35,17 +35,17 @@ lonlim = [-75.649243, -74.727286]
 # Temperature, Evapotranspiration
 variables = ["T", "E"]
 
-Coello = RS(
+Coello = ECMWF(
+    time=time,
     start=start,
     end=end,
-    Time=ts,
-    latlim=latlim,
-    lonlim=lonlim,
-    Path=Path,
-    Vars=variables,
+    lat_lim=latlim,
+    lon_lim=lonlim,
+    path=path,
+    variables=variables,
 )
 
-Coello.ECMWF()
+Coello.download()
 # %% CHRIPS
 Coello = CHIRPS(
     StartDate=StartDate,
