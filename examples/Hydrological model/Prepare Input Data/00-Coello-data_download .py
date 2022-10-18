@@ -11,12 +11,12 @@ root_path = "C:/MyComputer/01Algorithms/Hydrology/Hapi/"
 # %% Basin data
 StartDate = "2009-01-01"
 EndDate = "2009-02-01"
-Time = "daily"
+time = "daily"
 latlim = [4.190755, 4.643963]
 lonlim = [-75.649243, -74.727286]
 # make sure to provide a full path not relative path
 # please replace the following root_path to the repo main directory in your machine
-Path = root_path + "examples/data/satellite_data/"
+path = root_path + "examples/data/satellite_data/"
 # %%
 """
 check the ECMWF variable names that you have to provide to the RemoteSensing object
@@ -50,10 +50,10 @@ Coello.download()
 Coello = CHIRPS(
     StartDate=StartDate,
     EndDate=EndDate,
-    Time=Time,
+    Time=time,
     latlim=latlim,
     lonlim=lonlim,
-    Path=Path,
+    Path=path,
 )
 Coello.Download()
 # %%
@@ -68,9 +68,9 @@ cores = 4
 Coello = CHIRPS(
     StartDate=StartDate,
     EndDate=EndDate,
-    Time=Time,
+    Time=time,
     latlim=latlim,
     lonlim=lonlim,
-    Path=Path,
+    Path=path,
 )
 Coello.Download(cores=cores)

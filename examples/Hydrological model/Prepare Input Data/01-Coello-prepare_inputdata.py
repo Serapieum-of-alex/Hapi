@@ -1,40 +1,32 @@
-"""Created on Sat Jun 23 23:51:26 2018.
-
-@author: Mostafa
-"""
-
 """
 Make sure the working directory is set to the examples folder in the Hapi repo"
-currunt_work_directory = Hapi/Example
+currunt_work_directory = Hapi/
 """
-
-# library
 import numpy as np
 from osgeo import gdal
-
-# functions
-from Hapi.gis.raster import Raster
+from pyramids.raster import Raster
 from Hapi.rrm.inputs import Inputs
-
+metao_data_path = "examples/Hydrological model/data/meteo_data"
+gis_data_path = "examples/Hydrological model/data/gis_data"
 """
 this function prepare downloaded raster data to have the same align and
 nodatavalue from a GIS raster (DEM, flow accumulation, flow direction raster)
 and return a folder with the output rasters with a name “New_Rasters”
 """
 
-dem_path = "Data/GIS/Hapi_GIS_Data/acc4000.tif"
-outputpath = "data/PrepareMeteodata/meteodata_prepared/"
+dem_path = f"{gis_data_path}/acc4000.tif"
+outputpath = f"{metao_data_path}/meteodata_prepared/"
 
 # prec
-prec_in_path = "data/PrepareMeteodata/raw_data/prec/"
-Inputs.PrepareInputs(dem_path, prec_in_path, outputpath + "prec")
+prec_in_path = f"{metao_data_path}/raw_data/prec/"
+Inputs.PrepareInputs(dem_path, prec_in_path, outputpath + "prec0")
 
 # evap
-evap_in_path = "data/PrepareMeteodata/raw_data/evap/"
-Inputs.PrepareInputs(dem_path, evap_in_path, outputpath + "evap")
+evap_in_path = f"{metao_data_path}/raw_data/evap/"
+Inputs.PrepareInputs(dem_path, evap_in_path, outputpath + "evap0")
 # temp
-temp_in_path = "data/PrepareMeteodata/raw_data/temp/"
-Inputs.PrepareInputs(dem_path, temp_in_path, outputpath + "temp")
+temp_in_path = f"{metao_data_path}/raw_data/temp/"
+Inputs.PrepareInputs(dem_path, temp_in_path, outputpath + "temp0")
 
 """
 in case you want to manipulate the value in all the rasters of one of the inputs
@@ -48,7 +40,7 @@ The meteorological convention for all vertical fluxes is that downwards is posit
 Positive evaporation represents condensation'.
 Link: https://confluence.ecmwf.int/pages/viewpage.action?pageId=111155327
 """
-evap_out_path = "data/PrepareMeteodata/meteodata_prepared/evap/"
+evap_out_path = f"{metao_data_path}/meteodata_prepared/evap/"
 
 
 # define your function
@@ -62,13 +54,13 @@ def function(args):
     path = args[1]
     func = np.abs
     # first function
-    B = Raster.MapAlgebra(A, func)
-    Raster.SaveRaster(B, path)
+    B = Raster.mapAlgebra(A, func)
+    Raster.saveRaster(B, path)
 
 
 folder_path = evap_out_path
-new_folder_path = "data/PrepareMeteodata/meteodata_prepared/new_evap/"
-Raster.FolderCalculator(folder_path, new_folder_path, function)
+new_folder_path = f"{metao_data_path}/meteodata_prepared/new_evap/"
+Raster.folderCalculator(folder_path, new_folder_path, function)
 
 """
 in order to run the model all inputs have to have the same number of rows and columns
@@ -76,14 +68,14 @@ for this purpose MatchRasterAlignment function was made to resample, change the 
 system of the second raster and give it the same alignment like a source raster (DEM raster)
 """
 
-soil_path = "Data/GIS/Hapi_GIS_Data/soil_raster.tif"
+soil_path = f"{gis_data_path}/soil_classes.tif"
 DEM = gdal.Open(dem_path)
 dem_A = DEM.ReadAsArray()
 soil = gdal.Open(soil_path)
 soil_A = soil.ReadAsArray()
 
 # align
-aligned_soil = Raster.MatchRasterAlignment(DEM, soil)
+aligned_soil = Raster.matchRasterAlignment(DEM, soil)
 
 # to check alignment of DEM raster compared to aligned_soil_A raster
 aligned_soil_A = aligned_soil.ReadAsArray()
@@ -91,8 +83,8 @@ aligned_soil_A = aligned_soil.ReadAsArray()
 # nodatavalue is still different and some cells are no data value in the soil type raster but it is not in the dem raster
 # to match use Match MatchNoDataValue
 # match
-dst_Aligned_M = Raster.MatchNoDataValue(DEM, aligned_soil)
+dst_Aligned_M = Raster.cropAlligned(DEM, aligned_soil)
 dst_Aligned_M_A = dst_Aligned_M.ReadAsArray()
 
 # save the new raster
-Raster.SaveRaster(dst_Aligned_M, "Data/GIS/Hapi_GIS_Data/soil_type.tif")
+Raster.saveRaster(dst_Aligned_M, f"{gis_data_path}/soil_classes_aligned.tif")
