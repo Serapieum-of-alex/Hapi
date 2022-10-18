@@ -12,7 +12,7 @@ import rasterio
 from loguru import logger
 from pyramids.raster import Raster as raster
 from rasterio.plot import show
-
+from osgeo import gdal
 # from datetime import datetime
 # import geopandas as gpd
 from rasterstats import zonal_stats
@@ -74,9 +74,8 @@ class Inputs:
                 evap_in_path="03Weather_Data/evap/"
                 Inputs.PrepareInputs(dem_path,evap_in_path,outputpath+"evap")
         """
-        # input data validation
-        # data type
-        assert type(folder_name) == str, "FolderName input should be string type"
+        if not isinstance(folder_name, str):
+            print("folder_name input should be string type")
         # create a new folder for new created alligned rasters in temp
         # check if you can create the folder
         try:
@@ -90,23 +89,20 @@ class Inputs:
 
         # match alignment
         print(
-            "First alligned files will be created in a folder 'AllignedRasters' in the Temp folder in you environment variable"
+            "- First alligned files will be created in a folder 'AllignedRasters' in the Temp folder in you "
+            "environment variable"
         )
         raster.matchDataAlignment(src, input_folder, temp)
         # create new folder in the current directory for alligned and nodatavalue matched cells
         try:
             os.makedirs(os.path.join(os.getcwd(), folder_name))
         except (WindowsError, FileExistsError):
-            msg = (
-                "please The function is trying to create a folder with a name "
-                + str(folder_name)
-                + " to complete the "
-                "process if there is a folder with the same name please rename it to other name"
-            )
-            assert False, msg
+            raise FileExistsError(f"please The function is trying to create a folder with a name {folder_name}  "
+                                  f"to complete the process if there is a folder with the same name please rename "
+                                  f"it to other name")
         # match nodata value
         print(
-            "second matching NoDataValue from the DEM raster too all raster will be created in the outputpath"
+            "- Second matching NoDataValue from the DEM raster too all raster will be created in the outputpath"
         )
         raster.cropAlignedFolder(temp, src, f"{folder_name}/")
         # delete the processing folder from temp
@@ -297,7 +293,8 @@ class Inputs:
         # read data
         data = raster.readRastersFolder(Path)
         # get the No data value from the first raster in the folder
-        _, NoDataValue = raster.getRasterData(Path + "/" + os.listdir(Path)[0])
+        scr = gdal.Open(f"{Path}/{os.listdir(Path)[0]}")
+        _, NoDataValue = raster.getRasterData(scr)
         data[data == NoDataValue] = np.nan
 
         data = np.nanmean(data, axis=0)
@@ -306,7 +303,7 @@ class Inputs:
         return data
 
     @staticmethod
-    def RenameFiles(Path, Prefix="", fmt="%Y.%m.%d", freq="daily"):
+    def RenameFiles(path: str, prefix: str="", fmt: str="%Y.%m.%d", freq: str="daily"):
         """RenameFiles.
 
         RenameFiles method takes the path to a folder where you want to put a number
@@ -315,24 +312,26 @@ class Inputs:
 
         Parameters
         ----------
-        Path : [String]
+        path : [str]
             path where the rasters are stored.
+        prefix: [str]
+            any string you want to add to the raster names, (i.e the dataset name precipitation_ecmwf). Default is "".
         fmt : [String], optional
             the format of the date. The default is '%Y.%m.%d'.
+        freq: [str]
+            Default is "daily".
 
         Returns
         -------
         files in the Path are going to have a new name including the order at
         the begining of the name.
-
-        examples
-        -------
-        1- "MSWEP_2009010100.tif" the fmt = '%Y%m%d00'
-        2-
         """
-        files = os.listdir(Path)
-        if "desktop.ini" in files:
-            files.remove("desktop.ini")
+        if not os.path.exists(path):
+            raise FileNotFoundError(f"The directory you have entered does not exist")
+
+        files = os.listdir(path)
+        # get only the tif files
+        files = [i for i in files if i.endswith(".tif")]
 
         # get the date
         dates_str = [files[i].split("_")[-1][:-4] for i in range(len(files))]
@@ -348,18 +347,7 @@ class Inputs:
                 for i in dates
             ]
         else:
-            new_date_str = [
-                str(i.year)
-                + "_"
-                + str(i.month)
-                + "_"
-                + str(i.day)
-                + "_"
-                + str(i.hour)
-                + "_"
-                + str(i.minute)
-                for i in dates
-            ]
+            new_date_str = [f"{i.year}-{i.month}-{i.day}-{i.hour}-{i.minute}" for i in dates]
 
         df = pd.DataFrame()
         df["files"] = files
@@ -369,18 +357,11 @@ class Inputs:
         df.reset_index(inplace=True)
         df["order"] = [i for i in range(len(files))]
 
-        # df['new_names'] = [str(df.loc[i,'order']) + "_"+ df.loc[i,'files'] for i in range(len(files))]
-        df["new_names"] = [
-            str(df.loc[i, "order"]) + "_" + Prefix + "_" + df.loc[i, "DateStr"] + ".tif"
-            for i in range(len(files))
-        ]
+        df["new_names"] = [f"{df.loc[i, 'order']}_{prefix}_{df.loc[i, 'DateStr']}.tif" for i in range(len(files))]
         # rename the files
         for i in range(len(files)):
-            os.rename(
-                Path + "/" + df.loc[i, "files"], Path + "/" + df.loc[i, "new_names"]
-            )
+            os.rename(f"{path}/{df.loc[i, 'files']}", f"{path}/{df.loc[i, 'new_names']}")
 
-    # def LoadParameters():
 
     @staticmethod
     def changetext2time(string):
