@@ -177,3 +177,5 @@ Hapi/java_functions.py
 Hapi/parameters/*.tif
 *.bin
 *.cue
+examples/Hydrological model/data/distributed_model/calibration/LB - tot.txt
+examples/Hydrological model/data/distributed_model/calibration/LB - tot.txt
