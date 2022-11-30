@@ -13,4 +13,4 @@ src_path = f"{rpath}/gis_data/acc4000.tif"
 outputpath = f"{rpath}/meteo_data/meteodata_prepared/prec"
 prec_in_path = f"{rpath}/meteo_data/raw_data/prec/"
 
-Inputs.PrepareInputs(src_path, prec_in_path, outputpath)
+Inputs.prepareInputs(src_path, prec_in_path, outputpath)

@@ -1773,7 +1773,7 @@ class Visualize:
                 print("{0}".format(msg))
 
     def SaveAnimation(anim, VideoFormat="gif", Path="", SaveFrames=20):
-        """SaveAnimation.
+        """saveAnimation.
 
         Save animation
 

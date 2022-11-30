@@ -16,4 +16,4 @@ from the download script from CHIRPS or ECMWF.
 from Hapi.rrm.inputs import Inputs as IN
 path = "examples/Hydrological model/data/meteo_data/meteodata_prepared/temp-rename-example"
 
-IN.RenameFiles(path, prefix="Tair2m_ECMWF_ERA-Interim_C_daily", fmt="%Y.%m.%d", freq="daily")
+IN.renameFiles(path, prefix="Tair2m_ECMWF_ERA-Interim_C_daily", fmt="%Y.%m.%d", freq="daily")

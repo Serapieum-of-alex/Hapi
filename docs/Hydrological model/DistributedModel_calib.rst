@@ -35,20 +35,20 @@ After preparing all the meteorological, GIS inputs required for the model, and E
     Coello = Calibration(name, Sdate, Edate, SpatialResolution = "Distributed")
 
     # Meteorological & GIS Data
-    Coello.ReadRainfall(PrecPath)
-    Coello.ReadTemperature(TempPath)
-    Coello.ReadET(Evap_Path)
+    Coello.readRainfall(PrecPath)
+    Coello.readTemperature(TempPath)
+    Coello.readET(Evap_Path)
 
-    Coello.ReadFlowAcc(FlowAccPath)
-    Coello.ReadFlowDir(FlowDPath)
+    Coello.readFlowAcc(FlowAccPath)
+    Coello.readFlowDir(FlowDPath)
 
     # Lumped Model
-    Coello.ReadLumpedModel(HBV, AreaCoeff, InitialCond)
+    Coello.readLumpedModel(HBV, AreaCoeff, InitialCond)
 
     # Gauges Data
-    Coello.ReadGaugeTable(Path+"/stations/gauges.csv", FlowAccPath)
+    Coello.readGaugeTable(Path+"/stations/gauges.csv", FlowAccPath)
     GaugesPath = Path+"/stations/"
-    Coello.ReadDischargeGauges(GaugesPath, column='id', fmt="%Y-%m-%d")
+    Coello.readDischargeGauges(GaugesPath, column='id', fmt="%Y-%m-%d")
 
 
 
@@ -89,7 +89,7 @@ from Hapi.rrm.distparameters import DistParameters as DP
     OF_args = [coordinates]
 
     def OF(Qobs, Qout, q_uz_routed, q_lz_trans, coordinates):
-        Coello.ExtractDischarge()
+        Coello.extractDischarge()
         all_errors=[]
         # error for all internal stations
         for i in range(len(coordinates)):
@@ -98,7 +98,7 @@ from Hapi.rrm.distparameters import DistParameters as DP
         error = sum(all_errors)
         return error
 
-    Coello.ReadObjectiveFn(OF, OF_args)
+    Coello.readObjectiveFn(OF, OF_args)
 
 -Calibration algorithm Arguments
 ------------------------------------
@@ -129,7 +129,7 @@ method setOption
 
 .. code-block:: py
 
-    cal_parameters = Coello.RunCalibration(SpatialVarFun, OptimizationArgs,printError=0)
+    cal_parameters = Coello.runCalibration(SpatialVarFun, OptimizationArgs,printError=0)
 
 - Save results
 ----------------
@@ -137,4 +137,4 @@ method setOption
 .. code-block:: py
 
     SpatialVarFun.Function(Coello.Parameters, kub=SpatialVarFun.Kub, klb=SpatialVarFun.Klb)
-    SpatialVarFun.SaveParameters(SaveTo)
+    SpatialVarFun.saveParameters(SaveTo)

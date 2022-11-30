@@ -25,18 +25,18 @@ start = "2009-01-01"
 end = "2011-12-31"
 name = "Coello"
 Coello = Catchment(name, start, end, SpatialResolution="Distributed")
-Coello.ReadRainfall(PrecPath)
-Coello.ReadTemperature(TempPath)
-Coello.ReadET(Evap_Path)
+Coello.readRainfall(PrecPath)
+Coello.readTemperature(TempPath)
+Coello.readET(Evap_Path)
 
-Coello.ReadFlowAcc(FlowAccPath)
-# Coello.ReadFlowDir(FlowDPath)
+Coello.readFlowAcc(FlowAccPath)
+# Coello.readFlowDir(FlowDPath)
 # Coello.ReadFlowPathLength(FlowPathLengthPath)
-Coello.ReadParameters(ParPath, Snow, Maxbas=True)
-Coello.ReadLumpedModel(HBV, AreaCoeff, InitialCond)
+Coello.readParameters(ParPath, Snow, Maxbas=True)
+Coello.readLumpedModel(HBV, AreaCoeff, InitialCond)
 #%% Gauges
-Coello.ReadGaugeTable(f"{Path}stations/gauges.csv", FlowAccPath)
-Coello.ReadDischargeGauges(f"{Path}stations/", column="id", fmt="%Y-%m-%d")
+Coello.readGaugeTable(f"{Path}stations/gauges.csv", FlowAccPath)
+Coello.readDischargeGauges(f"{Path}stations/", column="id", fmt="%Y-%m-%d")
 #%% Run the model
 """
 Outputs:
@@ -56,9 +56,9 @@ Outputs:
     6-qlz_translated: [numpy attribute]
         3D array of the lower zone discharge translated at each time step
 """
-Run.RunFW1(Coello)
+Run.runFW1(Coello)
 #%% calculate performance criteria
-Coello.ExtractDischarge(CalculateMetrics=True, FW1=True)
+Coello.extractDischarge(CalculateMetrics=True, FW1=True)
 
 gaugeid = Coello.GaugesTable.loc[Coello.GaugesTable.index[-1], "id"]
 print("----------------------------------")
@@ -74,7 +74,7 @@ gaugei = 5
 plotstart = "2009-01-01"
 plotend = "2011-12-31"
 
-Coello.PlotHydrograph(plotstart, plotend, gaugei)
+Coello.plotHydrograph(plotstart, plotend, gaugei)
 #%% store the result into rasters
 # create list of names
 src = gdal.Open(FlowAccPath)

@@ -8,5 +8,5 @@ rpath = "examples/Hydrological model/data/meteo_data/meteodata_prepared/"
 Path = f"{rpath}/temp-lumped-example"
 SaveTo = f"{rpath}/lumped_temp.txt"
 
-data = IN.CreateLumpedInputs(Path)
+data = IN.createLumpedInputs(Path)
 np.savetxt(SaveTo, data, fmt="%7.2f")

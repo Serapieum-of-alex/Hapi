@@ -31,7 +31,7 @@ end = "2011-12-31"
 name = "Coello"
 
 Coello = Calibration(name, start, end)
-Coello.ReadLumpedInputs(MeteoDataPath)
+Coello.readLumpedInputs(MeteoDataPath)
 
 ### Basic_inputs
 
@@ -40,7 +40,7 @@ AreaCoeff = 1530
 # temporal resolution
 # [Snow pack, Soil moisture, Upper zone, Lower Zone, Water content]
 InitialCond = [0, 10, 10, 10, 0]
-Coello.ReadLumpedModel(HBVLumped, AreaCoeff, InitialCond)
+Coello.readLumpedModel(HBVLumped, AreaCoeff, InitialCond)
 
 # Calibration parameters
 
@@ -54,7 +54,7 @@ LB = LB[1].tolist()
 # no snow subroutine
 Snow = False
 Maxbas = True
-Coello.ReadParametersBounds(UB, LB, Snow, Maxbas=Maxbas)
+Coello.readParametersBounds(UB, LB, Snow, Maxbas=Maxbas)
 
 ### Additional arguments
 
@@ -64,7 +64,7 @@ Route = 1
 RoutingFn = Routing.TriangularRouting1
 
 # outlet discharge
-Coello.ReadDischargeGauges(Path + "Qout_c.csv", fmt="%Y-%m-%d")
+Coello.readDischargeGauges(Path + "Qout_c.csv", fmt="%Y-%m-%d")
 # %% Calibration
 creator.create("Fitness", base.Fitness, weights=(1.0, -1.0))
 creator.create("IndividualContainer", list, fitness=creator.Fitness)
@@ -93,9 +93,9 @@ Coello.OFArgs = []
 
 
 def objfn(individual):
-    # Coello.ReadParameters(Parameterpath, Snow)
+    # Coello.readParameters(Parameterpath, Snow)
     Coello.Parameters = individual
-    Run.RunLumped(Coello, Route, RoutingFn)
+    Run.runLumped(Coello, Route, RoutingFn)
     # [Coello.QGauges.columns[-1]]
     NSE = PC.NSEHF(Coello.QGauges, Coello.Qsim, *Coello.OFArgs)
     RMSE = PC.RMSE(Coello.QGauges, Coello.Qsim, *Coello.OFArgs)
@@ -151,7 +151,7 @@ Coello.Parameters = best_ind
 # [0.7686518278956287, 144.35510831203874, 1.9922719933560913, 0.1439126168555068, 0.9474744708723734,
 #                  0.749219030317463, 0.8074091462437563, 0.07289588281400794, 68.83482640397304, 5.123384184968337,
 #                  1.9922719933560913]
-Run.RunLumped(Coello, Route, RoutingFn)
+Run.runLumped(Coello, Route, RoutingFn)
 
 ### Calculate Performance Criteria
 
@@ -176,7 +176,7 @@ print("WB= " + str(round(Metrics["WB"], 2)))
 gaugei = 0
 plotstart = "2009-01-01"
 plotend = "2011-12-31"
-Coello.PlotHydrograph(plotstart, plotend, gaugei, Title="Lumped Model")
+Coello.plotHydrograph(plotstart, plotend, gaugei, Title="Lumped Model")
 
 # %% Save the Parameters
 
@@ -201,4 +201,4 @@ Path = (
     + str(dt.datetime.now())[0:10]
     + ".txt"
 )
-Coello.SaveResults(Result=5, start=StartDate, end=EndDate, Path=Path)
+Coello.saveResults(Result=5, start=StartDate, end=EndDate, Path=Path)

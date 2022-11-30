@@ -19,10 +19,10 @@ Basin = gpd.read_file(BasinF)
 # ind = ["tt","sfcf","cfmax","cwh","cfr","fc","beta","lp","k0","k1","k2","uzl","perc","maxbas"]
 # Par = pd.DataFrame(index = ind)
 # extract parameters boundaries
-Par = IN.ExtractParametersBoundaries(Basin)
+Par = IN.extractParametersBoundaries(Basin)
 
 # extract parameters in a specific scenarion from the 10 scenarios
-Par["1"] = IN.ExtractParameters(Basin, "10")
+Par["1"] = IN.extractParameters(Basin, "10")
 """
 zoom to the place where the catchment exist to check if the basin polygon overlay
 the right location, if not there is a problem in the coordinate reference system

@@ -29,17 +29,17 @@ name = "Coello"
 Coello = Calibration(name, start_date, end_date, SpatialResolution="Distributed")
 # %% Meteorological & GIS Data
 
-Coello.ReadRainfall(PrecPath)
-Coello.ReadTemperature(TempPath)
-Coello.ReadET(Evap_Path)
+Coello.readRainfall(PrecPath)
+Coello.readTemperature(TempPath)
+Coello.readET(Evap_Path)
 
-Coello.ReadFlowAcc(FlowAccPath)
-Coello.ReadFlowDir(FlowDPath)
-Coello.ReadLumpedModel(HBV, AreaCoeff, InitialCond)
+Coello.readFlowAcc(FlowAccPath)
+Coello.readFlowDir(FlowDPath)
+Coello.readLumpedModel(HBV, AreaCoeff, InitialCond)
 # %%
 UB = np.loadtxt(CalibPath + "/UB - tot.txt", usecols=0)
 LB = np.loadtxt(CalibPath + "/LB - tot.txt", usecols=0)
-Coello.ReadParametersBounds(UB, LB, Snow)
+Coello.readParametersBounds(UB, LB, Snow)
 # %% ### spatial variability function
 """
 define how generated parameters are going to be distributed spatially
@@ -73,9 +73,9 @@ SpatialVarFun = DP(
 # calculate no of parameters that optimization algorithm is going to generate
 print(SpatialVarFun.ParametersNO)
 # %% Gauges
-Coello.ReadGaugeTable(Path + "/stations/gauges.csv", FlowAccPath)
+Coello.readGaugeTable(Path + "/stations/gauges.csv", FlowAccPath)
 GaugesPath = Path + "/stations/"
-Coello.ReadDischargeGauges(GaugesPath, column="id", fmt="%Y-%m-%d")
+Coello.readDischargeGauges(GaugesPath, column="id", fmt="%Y-%m-%d")
 print(Coello.GaugesTable)
 # %% ### Objective function
 
@@ -86,7 +86,7 @@ OF_args = [coordinates]
 
 
 def OF(Qobs, coordinates):
-    Coello.ExtractDischarge()
+    Coello.extractDischarge()
     all_errors = []
     # error for all internal stations
     for i in range(len(coordinates)):
@@ -98,7 +98,7 @@ def OF(Qobs, coordinates):
     return error
 
 
-Coello.ReadObjectiveFn(OF, OF_args)
+Coello.readObjectiveFn(OF, OF_args)
 # %% Optimization
 """
 
@@ -131,7 +131,7 @@ ApiSolveArgs = dict(store_sol=True, display_opts=True, store_hst=True, hot_start
 
 OptimizationArgs = [ApiObjArgs, pll_type, ApiSolveArgs]
 # %% ### Run Calibration
-cal_parameters = Coello.RunCalibration(SpatialVarFun, OptimizationArgs, printError=1)
+cal_parameters = Coello.runCalibration(SpatialVarFun, OptimizationArgs, printError=1)
 # %%
 SpatialVarFun.Function(Coello.Parameters, kub=SpatialVarFun.Kub, klb=SpatialVarFun.Klb)
-SpatialVarFun.SaveParameters(SaveTo)
+SpatialVarFun.saveParameters(SaveTo)

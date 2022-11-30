@@ -20,7 +20,7 @@ end = "2011-12-31"
 name = "Coello"
 
 Coello = Calibration(name, start, end)
-Coello.ReadLumpedInputs(MeteoDataPath)
+Coello.readLumpedInputs(MeteoDataPath)
 # %% Basic_inputs
 
 # catchment area
@@ -30,7 +30,7 @@ AreaCoeff = 1530
 InitialCond = [0, 10, 10, 10, 0]
 # no snow subroutine
 Snow = False
-Coello.ReadLumpedModel(HBVLumped, AreaCoeff, InitialCond)
+Coello.readLumpedModel(HBVLumped, AreaCoeff, InitialCond)
 
 # Calibration parameters
 
@@ -42,7 +42,7 @@ LB = pd.read_csv(Path + "/LB-3.txt", index_col=0, header=None)
 LB = LB[1].tolist()
 
 Maxbas = True
-Coello.ReadParametersBounds(UB, LB, Snow, Maxbas=Maxbas)
+Coello.readParametersBounds(UB, LB, Snow, Maxbas=Maxbas)
 
 ### Additional arguments
 
@@ -56,12 +56,12 @@ Basic_inputs = dict(Route=Route, RoutingFn=RoutingFn, InitialValues=parameters)
 ### Objective function
 
 # outlet discharge
-Coello.ReadDischargeGauges(Path + "Qout_c.csv", fmt="%Y-%m-%d")
+Coello.readDischargeGauges(Path + "Qout_c.csv", fmt="%Y-%m-%d")
 
 OF_args = []
 OF = PC.RMSE
 
-Coello.ReadObjectiveFn(PC.RMSE, OF_args)
+Coello.readObjectiveFn(PC.RMSE, OF_args)
 
 # Calibration
 
@@ -95,7 +95,7 @@ OptimizationArgs = [ApiObjArgs, pll_type, ApiSolveArgs]
 
 # %% Run Calibration
 
-cal_parameters = Coello.LumpedCalibration(
+cal_parameters = Coello.lumpedCalibration(
     Basic_inputs, OptimizationArgs, printError=None
 )
 
@@ -105,7 +105,7 @@ print("Time = " + str(round(cal_parameters[2]["time"] / 60, 2)) + " min")
 # %% Run the Model
 
 Coello.Parameters = cal_parameters[1]
-Run.RunLumped(Coello, Route, RoutingFn)
+Run.runLumped(Coello, Route, RoutingFn)
 
 ### Calculate Performance Criteria
 
@@ -130,7 +130,7 @@ print("WB= " + str(round(Metrics["WB"], 2)))
 gaugei = 0
 plotstart = "2009-01-01"
 plotend = "2011-12-31"
-Coello.PlotHydrograph(plotstart, plotend, gaugei, Title="Lumped Model")
+Coello.plotHydrograph(plotstart, plotend, gaugei, Title="Lumped Model")
 
 ### Save the Parameters
 
@@ -145,4 +145,4 @@ StartDate = "2009-01-01"
 EndDate = "2010-04-20"
 
 Path = Path + "Results-Lumped-Model" + str(dt.datetime.now())[0:10] + ".txt"
-Coello.SaveResults(Result=5, StartDate=StartDate, EndDate=EndDate, Path=Path)
+Coello.saveResults(Result=5, StartDate=StartDate, EndDate=EndDate, Path=Path)

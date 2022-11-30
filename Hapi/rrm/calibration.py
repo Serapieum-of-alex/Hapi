@@ -136,10 +136,10 @@ class Calibration(Catchment):
 
         pass
 
-    def ReadObjectiveFn(self, OF, args):
-        """ReadObjectiveFn.
+    def readObjectiveFn(self, OF, args):
+        """readObjectiveFn.
 
-        ReadObjectiveFn method takes the objective function and and any arguments
+        readObjectiveFn method takes the objective function and and any arguments
         that are needed to be passed to the objective function.
 
         Parameters
@@ -165,10 +165,10 @@ class Calibration(Catchment):
 
         print("Objective function is read successfully")
 
-    def ExtractDischarge(self, Factor=None):
-        """ExtractDischarge.
+    def extractDischarge(self, Factor=None):
+        """extractDischarge.
 
-        ExtractDischarge method extracts the discharge hydrograph in the
+        extractDischarge method extracts the discharge hydrograph in the
         Q
 
         Parameters
@@ -205,8 +205,8 @@ class Calibration(Catchment):
 
         # return error
 
-    def RunCalibration(self, SpatialVarFun, OptimizationArgs, printError=None):
-        """RunCalibration.
+    def runCalibration(self, SpatialVarFun, OptimizationArgs, printError=None):
+        """runCalibration.
 
         this function runs the calibration algorithm for the conceptual distributed
         hydrological model
@@ -539,8 +539,8 @@ class Calibration(Catchment):
 
         return res
 
-    def LumpedCalibration(self, Basic_inputs, OptimizationArgs, printError=None):
-        """RunCalibration.
+    def lumpedCalibration(self, Basic_inputs, OptimizationArgs, printError=None):
+        """runCalibration.
 
         this function runs the calibration algorithm for the Lumped conceptual hydrological model
 

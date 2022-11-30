@@ -28,18 +28,18 @@ start = "2009-01-01"
 end = "2009-04-10"
 name = "Coello"
 Coello = Catchment(name, start, end, SpatialResolution="Distributed")
-Coello.ReadRainfall(PrecPath)
-Coello.ReadTemperature(TempPath)
-Coello.ReadET(Evap_Path)
+Coello.readRainfall(PrecPath)
+Coello.readTemperature(TempPath)
+Coello.readET(Evap_Path)
 
-Coello.ReadFlowAcc(FlowAccPath)
-Coello.ReadFlowDir(FlowDPath)
-Coello.ReadParameters(ParPathRun, Snow)
-Coello.ReadLumpedModel(HBV, AreaCoeff, InitialCond)
+Coello.readFlowAcc(FlowAccPath)
+Coello.readFlowDir(FlowDPath)
+Coello.readParameters(ParPathRun, Snow)
+Coello.readLumpedModel(HBV, AreaCoeff, InitialCond)
 #%% Gauges
-Coello.ReadGaugeTable(Path + "/stations/gauges.csv", FlowAccPath)
+Coello.readGaugeTable(Path + "/stations/gauges.csv", FlowAccPath)
 GaugesPath = Path + "/stations/"
-Coello.ReadDischargeGauges(GaugesPath, column="id", fmt="%Y-%m-%d")
+Coello.readDischargeGauges(GaugesPath, column="id", fmt="%Y-%m-%d")
 #%% Run the model
 """
 Outputs:
@@ -61,7 +61,7 @@ Outputs:
 """
 Run.RunHapi(Coello)
 #%% calculate performance criteria
-Coello.ExtractDischarge(Factor=Coello.GaugesTable["area ratio"].tolist())
+Coello.extractDischarge(Factor=Coello.GaugesTable["area ratio"].tolist())
 
 for i in range(len(Coello.GaugesTable)):
     gaugeid = Coello.GaugesTable.loc[i, "id"]
@@ -79,7 +79,7 @@ gaugei = 5
 plotstart = "2009-01-01"
 plotend = "2011-12-31"
 
-Coello.PlotHydrograph(plotstart, plotend, gaugei)
+Coello.plotHydrograph(plotstart, plotend, gaugei)
 #%%
 """
 =============================================================================
@@ -173,7 +173,7 @@ animation.FuncAnimation.
 plotstart = "2009-01-01"
 plotend = "2009-02-01"
 
-Anim = Coello.PlotDistributedResults(
+Anim = Coello.plotDistributedResults(
     plotstart,
     plotend,
     Figsize=(9, 9),
@@ -193,14 +193,14 @@ Anim = Coello.PlotDistributedResults(
 
 #%%
 SaveTo = Path + "/results/anim.gif"
-Coello.SaveAnimation(VideoFormat="gif", Path=SaveTo, SaveFrames=3)
+Coello.saveAnimation(VideoFormat="gif", Path=SaveTo, SaveFrames=3)
 #%% Save the result into rasters
 
 StartDate = "2009-01-01"
 EndDate = "2009-04-10"
 Prefix = "Qtot_"
 SaveTo = Path + "/results/"
-Coello.SaveResults(
+Coello.saveResults(
     FlowAccPath,
     Result=1,
     StartDate=StartDate,

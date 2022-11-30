@@ -18,7 +18,7 @@ def test_ReadParametersBounds(
     Coello = Calibration("rrm", coello_rrm_date[0], coello_rrm_date[1])
     Maxbas = True
     Snow = False
-    Coello.ReadParametersBounds(lower_bound, upper_bound, Snow, Maxbas=Maxbas)
+    Coello.readParametersBounds(lower_bound, upper_bound, Snow, Maxbas=Maxbas)
     assert isinstance(Coello.UB, np.ndarray)
     assert isinstance(Coello.LB, np.ndarray)
     assert isinstance(Coello.Snow, bool)
@@ -39,10 +39,10 @@ def test_LumpedCalibration(
     history_files: str,
 ):
     Coello = Calibration("rrm", coello_rrm_date[0], coello_rrm_date[1])
-    Coello.ReadLumpedInputs(lumped_meteo_data_path)
-    Coello.ReadLumpedModel(HBVLumped, coello_AreaCoeff, coello_InitialCond)
+    Coello.readLumpedInputs(lumped_meteo_data_path)
+    Coello.readLumpedModel(HBVLumped, coello_AreaCoeff, coello_InitialCond)
     Maxbas = True
-    Coello.ReadParametersBounds(lower_bound, upper_bound, coello_Snow, Maxbas=Maxbas)
+    Coello.readParametersBounds(lower_bound, upper_bound, coello_Snow, Maxbas=Maxbas)
 
     parameters = []
     # Routing
@@ -52,12 +52,12 @@ def test_LumpedCalibration(
     Basic_inputs = dict(Route=Route, RoutingFn=RoutingFn, InitialValues=parameters)
 
     # discharge gauges
-    Coello.ReadDischargeGauges(lumped_gauges_path, fmt=coello_gauges_date_fmt)
+    Coello.readDischargeGauges(lumped_gauges_path, fmt=coello_gauges_date_fmt)
 
     OF_args = []
     OF = PC.RMSE
 
-    Coello.ReadObjectiveFn(OF, OF_args)
+    Coello.readObjectiveFn(OF, OF_args)
 
     ApiObjArgs = dict(
         hms=100,
@@ -81,6 +81,6 @@ def test_LumpedCalibration(
 
     OptimizationArgs = [ApiObjArgs, pll_type, ApiSolveArgs]
 
-    # cal_parameters = Coello.LumpedCalibration(Basic_inputs, OptimizationArgs, printError=None)
+    # cal_parameters = Coello.lumpedCalibration(Basic_inputs, OptimizationArgs, printError=None)
 
     # assert len(Coello.Qsim) == 1095 and Coello.Qsim.columns.to_list() == ['q']

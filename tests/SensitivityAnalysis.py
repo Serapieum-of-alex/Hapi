@@ -19,7 +19,7 @@ start = "2009-01-01"
 end = "2011-12-31"
 name = "Coello"
 Coello = Catchment(name, start, end)
-Coello.ReadLumpedInputs(MeteoDataPath)
+Coello.readLumpedInputs(MeteoDataPath)
 
 ### Basic_inputs
 # catchment area
@@ -28,11 +28,11 @@ CatArea = 1530
 # [Snow pack, Soil moisture, Upper zone, Lower Zone, Water content]
 InitialCond = [0, 10, 10, 10, 0]
 
-Coello.ReadLumpedModel(HBVLumped, CatArea, InitialCond)
+Coello.readLumpedModel(HBVLumped, CatArea, InitialCond)
 
 ### parameters
 Snow = 0  # no snow subroutine
-Coello.ReadParameters(Parameterpath, Snow)
+Coello.readParameters(Parameterpath, Snow)
 
 parameters = pd.read_csv(Parameterpath, index_col=0, header=None)
 parameters.rename(columns={1: "value"}, inplace=True)
@@ -42,18 +42,18 @@ parnames = UB.index
 UB = UB[1].tolist()
 LB = pd.read_csv(Path + "/UB-1-Muskinguk.txt", index_col=0, header=None)
 LB = LB[1].tolist()
-Coello.ReadParametersBounds(UB, LB, Snow)
+Coello.readParametersBounds(UB, LB, Snow)
 
 #%%
 # observed flow
-Coello.ReadDischargeGauges(Path + "Qout_c.csv", fmt="%Y-%m-%d")
+Coello.readDischargeGauges(Path + "Qout_c.csv", fmt="%Y-%m-%d")
 ### Routing
 Route = 1
 # RoutingFn=Routing.TriangularRouting2
 RoutingFn = Routing.Muskingum
 #%%
 ### run the model
-Run.RunLumped(Coello, Route, RoutingFn)
+Run.runLumped(Coello, Route, RoutingFn)
 #%%
 Metrics = dict()
 
@@ -87,7 +87,7 @@ first the SensitivityAnalysis method takes 4 arguments :
     the following defined function contains two inner function that calculates discharge
     for lumped HBV model and calculates the RMSE of the calculated discharge.
 
-    the first function "RUN.RunLumped" takes some arguments we need to pass it through
+    the first function "RUN.runLumped" takes some arguments we need to pass it through
     the SensitivityAnalysis method [ConceptualModel,data,p2,init_st,snow,Routing, RoutingFn]
     with the same order in the defined function "wrapper"
 
@@ -111,7 +111,7 @@ Each parameter has a disctionary with two keys 0: list of parameters woth relati
 def WrapperType1(Randpar, Route, RoutingFn, Qobs):
     Coello.Parameters = Randpar
 
-    Run.RunLumped(Coello, Route, RoutingFn)
+    Run.runLumped(Coello, Route, RoutingFn)
     rmse = PC.RMSE(Qobs, Coello.Qsim["q"])
     return rmse
 
@@ -120,7 +120,7 @@ def WrapperType1(Randpar, Route, RoutingFn, Qobs):
 def WrapperType2(Randpar, Route, RoutingFn, Qobs):
     Coello.Parameters = Randpar
 
-    Run.RunLumped(Coello, Route, RoutingFn)
+    Run.runLumped(Coello, Route, RoutingFn)
     rmse = PC.RMSE(Qobs, Coello.Qsim["q"])
     return rmse, Coello.Qsim["q"]
 

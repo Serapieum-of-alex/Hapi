@@ -19,14 +19,14 @@ outputpath = f"{metao_data_path}/meteodata_prepared/"
 
 # prec
 prec_in_path = f"{metao_data_path}/raw_data/prec/"
-Inputs.PrepareInputs(dem_path, prec_in_path, outputpath + "prec0")
+Inputs.prepareInputs(dem_path, prec_in_path, outputpath + "prec0")
 
 # evap
 evap_in_path = f"{metao_data_path}/raw_data/evap/"
-Inputs.PrepareInputs(dem_path, evap_in_path, outputpath + "evap0")
+Inputs.prepareInputs(dem_path, evap_in_path, outputpath + "evap0")
 # temp
 temp_in_path = f"{metao_data_path}/raw_data/temp/"
-Inputs.PrepareInputs(dem_path, temp_in_path, outputpath + "temp0")
+Inputs.prepareInputs(dem_path, temp_in_path, outputpath + "temp0")
 
 """
 in case you want to manipulate the value in all the rasters of one of the inputs
