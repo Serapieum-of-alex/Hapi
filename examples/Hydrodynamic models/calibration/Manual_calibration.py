@@ -18,78 +18,104 @@ import Hapi.hm.river as R
 from Hapi.hm.interface import Interface
 from Hapi.plot.visualizer import Visualize as V
 
+# %% Paths
 """change directory to the processing folder inside the project folder"""
-os.chdir(r"C:\MyComputer\01Algorithms\Hydrology\Hapi")
-rpath = os.path.abspath(os.getcwd() + "/examples/Hydrodynamic models/test_case")
+rpath = os.path.join(os.getcwd() + "/examples/Hydrodynamic models/test_case")
+# rpath = ""
 saveto = rpath
-# %% gauges
+tolopogy_file = rpath + "/inputs/1d/topo/"
+savepath = rpath + "/results/customized_results/"
+
+xs_file = tolopogy_file + "xs_same_downward-1segment_very_steep.csv"
+river_network = tolopogy_file + "/rivernetwork-1segments.txt"
+river_slope = tolopogy_file + "/slope.csv"
+laterals_table_path = rpath + "/inputs/1d/topo/no_laterals.txt"
+laterals_path = path=rpath + "/inputs/1d/hydro/"
+boundary_condition_table = rpath + "/inputs/1d/topo/boundaryconditions.txt"
+boundary_condition_path=rpath + "/inputs/1d/hydro/"
+
+## result files
+onedresultpath = rpath + "/results/1d/"
+usbcpath = rpath + "/results/USbnd/"
+oneminresultpath = rpath + "/results/"
+customized_runs_path = rpath + "/results/customized_results/"
+rrmpath = rpath + "/inputs/rrm/hm_location"
+twodresultpath = rpath + "/results/2d/zip/"
+
+## gauges files
 GaugesF = rpath + "/inputs/gauges/gauges.csv"
 WLGaugesPath = rpath + "/inputs/gauges/water_level/"
 QgaugesPath = rpath + "/inputs/gauges/discharge/"
-
+# %% gauges
 novalue = -9
 start = "1955-01-01"
 end = "1955-03-21"
 Calib = RC.Calibration("HM", version=3)
 Calib.readGaugesTable(GaugesF)
+# read the gauges data
 Calib.readObservedQ(
     QgaugesPath,
     start,
     end,
     novalue,
-    file_extension=".csv",
+    file_extension=".txt",
     gauge_date_format="'%Y-%m-%d'",
 )
-Calib.ReadObservedWL(
+Calib.readObservedWL(
     WLGaugesPath,
     start,
     end,
     novalue,
-    file_extension=".csv",
+    file_extension=".txt",
     gauge_date_format="'%Y-%m-%d'",
 )
 # sort the gauges table based on the segment
 Calib.hm_gauges.sort_values(by="id", inplace=True, ignore_index=True)
-# %% Paths
-# the working directory of the project
-RIM2Files = rpath + "/inputs/1d/topo/"
-savepath = rpath + "/results/customized_results/"
-
+# %% create the river object
 start = "1955-1-1"
 rrmstart = "1955-1-1"
-
 River = R.River("HM", version=3, start=start, rrmstart=rrmstart)
-#%%
-River.onedresultpath = rpath + "/results/1d/"
-River.usbcpath = rpath + "/results/USbnd/"
-River.oneminresultpath = rpath + "/results/"
-# River.twodresultpath = rpath + "/results/2d/zip/"
-River.CustomizedRunspath = rpath + "/results/customized_results/"
+
+# read the data of the river
+"""the hourly results"""
+River.onedresultpath = onedresultpath
+River.usbcpath = usbcpath
+"""the 1min results if exist"""
+River.oneminresultpath = oneminresultpath
+"""river slope, cross-sections, and river network"""
+River.readSlope(river_slope)
+River.readXS(xs_file)
+River.readRiverNetwork(river_network)
+"""If you run part of the river and want to use its results as a boundary conditions for another run """
+River.customized_runs_path = customized_runs_path
+""" the results of the rain-runoff model"""
+River.rrmpath = rrmpath
+"""2D model results"""
+# River.twodresultpath = twodresultpath
 # River.Compressed = True
-River.rrmpath = rpath + "/inputs/rrm/hm_location"
-River.Slope(RIM2Files + "/slope.csv")
-River.ReadCrossSections(RIM2Files + "/xs_same_downward-3segment.csv")
-River.RiverNetwork(RIM2Files + "/rivernetwork-3segments.txt")
 # %% Interface
+# The interface between the rainfall-runoff model and the hydraulic model
 IF = Interface("Rhine", start=start)
-IF.ReadCrossSections(RIM2Files + "/xs_same_downward-3segment.csv")
-IF.RiverNetwork(RIM2Files + "/rivernetwork-3segments.txt")
-IF.ReadLateralsTable(rpath + "/inputs/1d/topo/laterals.txt")
-IF.ReadLaterals(path=rpath + "/inputs/1d/hydro/", date_format="%d_%m_%Y")
-IF.ReadBoundaryConditionsTable(rpath + "/inputs/1d/topo/boundaryconditions.txt")
-IF.ReadBoundaryConditions(path=rpath + "/inputs/1d/hydro/", date_format="%d_%m_%Y")
-# %% Sub-basin
-""" Write the Sub-ID you want to visualize its results """
-SubID = 2
+IF.readXS(xs_file)
+IF.readRiverNetwork(river_network)
+IF.readLateralsTable(laterals_table_path)
+IF.readLaterals(laterals_path, date_format="%d_%m_%Y")
+IF.readBoundaryConditionsTable(boundary_condition_table)
+IF.readBoundaryConditions(path=boundary_condition_path, date_format="%d_%m_%Y")
+# %% river segment
+""" Write the segment-ID you want to visualize its results """
+SubID = 1
 Sub = R.Sub(SubID, River)
-Sub.GetFlow(IF)
-# %% read RIM results
+Sub.getFlow(IF)
+
+## read RIM results
 """
-read the 1D result file and extract only the first and last xs wl and
-hydrograph
+read the 1D result file and extract only the first and last xs wl and hydrograph
+
+if the results exists in a separate path than the project path (not in the results/1d) provide the new results path here
 """
 # path = "F:/RFM/ClimXtreme/rim_base_data/setup/rhine/results/1d/New folder/"
-Sub.Read1DResult()  # path=path,XSID=gaugexs
+Sub.read1DResult()
 # %% Select the gauge
 """
 if the river segment has more than one gauge change this variable to the gauge
@@ -129,7 +155,7 @@ to be filled with zero values
 # read rainfall runoff model result
 # check if there is a rainfall runoff hydrograph with the name of the segment
 try:
-    Sub.ReadRRMHydrograph(
+    Sub.readRRMHydrograph(
         stationname,
         date_format="'%Y-%m-%d'",
         location=2,
@@ -142,18 +168,18 @@ try:
     # read the 1D result file and extract only the first and last xs wl
     # and hydrograph
     # Path = "F:/RFM/mHM2RIM_testcase/RIM/results/1d/finished/"
-    Sub.Read1DResult(xsid=gaugexs)  # ,Path = Path,FromDay = 18264, ToDay=18556
+    Sub.read1DResult(xsid=gaugexs)  # ,Path = Path,FromDay = 18264, ToDay=18556
     print("Extract the XS results")
 except:
     # read results of at the gauge
     CalibPath = "F:/RFM/mHM2RIM_testcase/RIM/results/calibration/"
-    Calib.ReadCalirationResult(segment_xs, CalibPath)
+    Calib.readCalirationResult(segment_xs, CalibPath)
     print("calibration result of the XS is read")
 
 # read US boundary  hydrographs
-Sub.ReadUSHydrograph()
+Sub.readUSHydrograph()
 # Sum the laterals and the BC/US hydrograph
-Sub.GetTotalFlow(gaugexs)
+Sub.getTotalFlow(gaugexs)
 # %% Discharge
 hmorder = 11
 gaugeorder = 7
@@ -262,8 +288,8 @@ BedlevelDS = 88
 Manning = 0.06
 BC_slope = -0.03
 Calib.CalculateProfile(SubID, BedlevelDS, Manning, BC_slope)
-# River.crosssections.to_csv(RIM2Files + "/xs_rhine2.csv", index=False, float_format="%.3f")
-# River.slope.to_csv(RIM2Files + "/slope2.csv",header=None,index=False)
+# River.crosssections.to_csv(tolopogy_file + "/xs_rhine2.csv", index=False, float_format="%.3f")
+# River.slope.to_csv(tolopogy_file + "/slope2.csv",header=None,index=False)
 #%% Smooth cross section
 Calib.crosssections = River.crosssections[:]
 Calib.SmoothMaxSlope(SubID)
@@ -273,7 +299,7 @@ Calib.DownWardBedLevel(SubID, 0.05)
 # Calib.SmoothFloodplainHeight(SubID)
 Calib.SmoothBedWidth(SubID)
 # Calib.CheckFloodplain()
-# Calib.crosssections.to_csv(RIM2Files + "/XS2.csv", index=None, float_format="%.3f")
+# Calib.crosssections.to_csv(tolopogy_file + "/XS2.csv", index=None, float_format="%.3f")
 #%% customized Run result saveing
 # the last cross section results to use it in calibration
 """
@@ -314,7 +340,7 @@ dataX = Sub.Result1D[Sub.Result1D["h"] == 0.01]
 start = "1955-01-01"
 end = "1955-03-21"
 
-Sub.ReadBoundaryConditions(start=start, end=end)
+Sub.readBoundaryConditions(start=start, end=end)
 #%% Visualize
 fromxs = ""  # 16030
 toxs = ""  # 16067
