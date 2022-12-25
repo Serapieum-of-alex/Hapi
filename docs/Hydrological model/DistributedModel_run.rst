@@ -23,22 +23,22 @@ The calibration of the Distributed rainfall runoff model follows the same steps 
         to run the model
 
         methods:
-            1-ReadRainfall
-            2-ReadTemperature
-            3-ReadET
-            4-ReadFlowAcc
-            5-ReadFlowDir
+            1-readRainfall
+            2-readTemperature
+            3-readET
+            4-readFlowAcc
+            5-readFlowDir
             6-ReadFlowPathLength
-            7-ReadParameters
-            8-ReadLumpedModel
-            9-ReadLumpedInputs
-            10-ReadGaugeTable
-            11-ReadDischargeGauges
-            12-ReadParametersBounds
-            13-ExtractDischarge
-            14-PlotHydrograph
+            7-readParameters
+            8-readLumpedModel
+            9-readLumpedInputs
+            10-readGaugeTable
+            11-readDischargeGauges
+            12-readParametersBounds
+            13-extractDischarge
+            14-plotHydrograph
             15-PlotDistributedQ
-            16-SaveResults
+            16-saveResults
 
         def __init__(self, name, StartDate, EndDate, fmt="%Y-%m-%d", SpatialResolution = 'Lumped',
                      TemporalResolution = "Daily"):
@@ -99,11 +99,11 @@ Read Meteorological Inputs
 .. code-block:: py
     :linenos:
 
-    Coello.ReadRainfall(PrecPath)
-    Coello.ReadTemperature(TempPath)
-    Coello.ReadET(Evap_Path)
-    Coello.ReadFlowAcc(FlowAccPath)
-    Coello.ReadFlowDir(FlowDPath)
+    Coello.readRainfall(PrecPath)
+    Coello.readTemperature(TempPath)
+    Coello.readET(Evap_Path)
+    Coello.readFlowAcc(FlowAccPath)
+    Coello.readFlowDir(FlowDPath)
 
 
 - To read the parameters you need to provide whether you need to consider the snow subroutine or not
@@ -111,7 +111,7 @@ Read Meteorological Inputs
 .. code-block:: py
     :linenos:
 			Snow = 0
-			Coello.ReadParameters(ParPathRun, Snow)
+			Coello.readParameters(ParPathRun, Snow)
 
 
 2- Lumped Model
@@ -127,7 +127,7 @@ Read Meteorological Inputs
 
     CatchmentArea = 1530
     InitialCond = [0,5,5,5,0]
-    Coello.ReadLumpedModel(HBV, CatchmentArea, InitialCond)
+    Coello.readLumpedModel(HBV, CatchmentArea, InitialCond)
 
 - If the Inpus are consistent in dimensions you will get a the following message
 
@@ -142,9 +142,9 @@ Read Meteorological Inputs
 .. code-block:: py
     :linenos:
 
-    Coello.ReadGaugeTable("Hapi/Data/00inputs/Discharge/stations/gauges.csv", FlowAccPath)
+    Coello.readGaugeTable("Hapi/Data/00inputs/Discharge/stations/gauges.csv", FlowAccPath)
     GaugesPath = "Hapi/Data/00inputs/Discharge/stations/"
-    Coello.ReadDischargeGauges(GaugesPath, column='id', fmt="%Y-%m-%d")
+    Coello.readDischargeGauges(GaugesPath, column='id', fmt="%Y-%m-%d")
 
 
 3-Run Object
@@ -184,11 +184,11 @@ Read Meteorological Inputs
 -----------------------
 
 - The final step is to extract the simulated Hydrograph from the cells at the location of the gauges to compare
-- The `ExtractDischarge` method extracts the hydrographs, however you have to provide in the gauge file the coordinates of the gauges with the same coordinate system of the `FlowAcc` raster
+- The `extractDischarge` method extracts the hydrographs, however you have to provide in the gauge file the coordinates of the gauges with the same coordinate system of the `FlowAcc` raster
 
 .. code-block:: py
     :linenos:
-    Coello.ExtractDischarge(Factor=Coello.GaugesTable['area ratio'].tolist())
+    Coello.extractDischarge(Factor=Coello.GaugesTable['area ratio'].tolist())
 
     for i in range(len(Coello.GaugesTable)):
     	gaugeid = Coello.GaugesTable.loc[i,'id']
@@ -203,14 +203,14 @@ Read Meteorological Inputs
     	print("R2 = " + str(round(Coello.Metrics.loc['R2',gaugeid],2)))
 
 
-- The `ExtractDischarge` will print the performance metics
+- The `extractDischarge` will print the performance metics
 
 
 5-Visualization
 -------------------
 
 - Firts type of visualization we can do with the results is to compare the gauge hydrograph with the simulatied hydrographs
-- Call the `PlotHydrograph` method and provide the period you want to visualize with the order of the gauge
+- Call the `plotHydrograph` method and provide the period you want to visualize with the order of the gauge
 
 .. code-block:: py
 
@@ -218,7 +218,7 @@ Read Meteorological Inputs
     plotstart = "2009-01-01"
     plotend = "2011-12-31"
 
-    Coello.PlotHydrograph(plotstart, plotend, gaugei)
+    Coello.plotHydrograph(plotstart, plotend, gaugei)
 
 
 
@@ -229,7 +229,7 @@ Read Meteorological Inputs
 6-Animation
 -----------------
 
-- the best way to visualize time series of distributed data is through visualization, for theis reason, The `Catchment` object has `PlotDistributedResults` method which can animate all the results of the model
+- the best way to visualize time series of distributed data is through visualization, for theis reason, The `Catchment` object has `plotDistributedResults` method which can animate all the results of the model
 
 .. code-block:: py
 
@@ -327,7 +327,7 @@ Read Meteorological Inputs
     plotstart = "2009-01-01"
     plotend = "2009-02-01"
 
-    Anim = Coello.PlotDistributedResults(plotstart, plotend, Figsize=(9,9), Option = 1,threshold=160, PlotNumbers=True,
+    Anim = Coello.plotDistributedResults(plotstart, plotend, Figsize=(9,9), Option = 1,threshold=160, PlotNumbers=True,
                                 TicksSpacing = 5,Interval = 200, Gauges=True, cmap='inferno', Textloc=[0.1,0.2],
                                 Gaugecolor='red',ColorScale = 1, IDcolor='blue', IDsize=25)
 
@@ -352,7 +352,7 @@ Read Meteorological Inputs
 
 .. code-block:: py
     Path = SaveTo + "anim.gif"
-    Coello.SaveAnimation(VideoFormat="gif",Path=Path,SaveFrames=3)
+    Coello.saveAnimation(VideoFormat="gif",Path=Path,SaveFrames=3)
 
 
 
@@ -367,4 +367,4 @@ Read Meteorological Inputs
     EndDate = "2010-04-20"
     Prefix = 'Qtot_'
 
-    Coello.SaveResults(FlowAccPath, Result=1, StartDate=StartDate, EndDate=EndDate, Path="F:/02Case studies/Coello/Hapi/Model/results/", Prefix=Prefix)
+    Coello.saveResults(FlowAccPath, Result=1, StartDate=StartDate, EndDate=EndDate, Path="F:/02Case studies/Coello/Hapi/Model/results/", Prefix=Prefix)

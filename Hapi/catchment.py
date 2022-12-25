@@ -30,22 +30,22 @@ class Catchment:
     """Catchment. The class include methods to read the meteorological and Spatial inputs of the distributed hydrological model. Catchment class also reads the data of the gauges, it is a super class that has the run subclass, so you need to build the catchment object and hand it as an inpit to the Run class to run the model.
 
     methods:
-        1-ReadRainfall
-        2-ReadTemperature
-        3-ReadET
-        4-ReadFlowAcc
-        5-ReadFlowDir
+        1-readRainfall
+        2-readTemperature
+        3-readET
+        4-readFlowAcc
+        5-readFlowDir
         6-ReadFlowPathLength
-        7-ReadParameters
-        8-ReadLumpedModel
-        9-ReadLumpedInputs
-        10-ReadGaugeTable
-        11-ReadDischargeGauges
-        12-ReadParametersBounds
-        13-ExtractDischarge
-        14-PlotHydrograph
+        7-readParameters
+        8-readLumpedModel
+        9-readLumpedInputs
+        10-readGaugeTable
+        11-readDischargeGauges
+        12-readParametersBounds
+        13-extractDischarge
+        14-plotHydrograph
         15-PlotDistributedQ
-        16-SaveResults
+        16-saveResults
     """
 
     def __init__(
@@ -153,8 +153,8 @@ class Catchment:
         self.Qsim = None
         self.Metrics = None
 
-    def ReadRainfall(self, Path: str, start: str = "", end: str = "", fmt: str = ""):
-        """ReadRainfall.
+    def readRainfall(self, Path: str, start: str = "", end: str = "", fmt: str = ""):
+        """readRainfall.
 
         Parameters
         ----------
@@ -196,7 +196,7 @@ class Catchment:
 
             logger.debug("Rainfall data are read successfully")
 
-    def ReadTemperature(
+    def readTemperature(
         self,
         Path: str,
         ll_temp: Union[list, np.ndarray] = None,
@@ -204,7 +204,7 @@ class Catchment:
         end: str = "",
         fmt: str = "",
     ):
-        """ReadTemperature.
+        """readTemperature.
 
         Parameters
         ----------
@@ -248,8 +248,8 @@ class Catchment:
 
             logger.debug("Temperature data are read successfully")
 
-    def ReadET(self, Path: str, start: str = "", end: str = "", fmt: str = ""):
-        """ReadET.
+    def readET(self, Path: str, start: str = "", end: str = "", fmt: str = ""):
+        """readET.
 
         Parameters
         ----------
@@ -283,8 +283,8 @@ class Catchment:
             assert type(self.ET) == np.ndarray, "array should be of type numpy array"
             logger.debug("Potential Evapotranspiration data are read successfully")
 
-    def ReadFlowAcc(self, Path: str):
-        """ReadFlowAcc.
+    def readFlowAcc(self, Path: str):
+        """readFlowAcc.
 
         Parameters
         ----------
@@ -374,8 +374,8 @@ class Catchment:
 
         logger.debug("Flow Accmulation input is read successfully")
 
-    def ReadFlowDir(self, Path: str):
-        """ReadFlowDir method reads the flow direction raster.
+    def readFlowDir(self, Path: str):
+        """readFlowDir method reads the flow direction raster.
 
         Parameters
         ----------
@@ -511,10 +511,10 @@ class Catchment:
         FloodPlainRoughness = gdal.Open(FloodPlainRoughnessF)
         self.FloodPlainRoughness = FloodPlainRoughness.ReadAsArray()
 
-    def ReadParameters(self, Path: str, Snow: bool = False, Maxbas: bool = False):
-        """ReadParameters.
+    def readParameters(self, Path: str, Snow: bool = False, Maxbas: bool = False):
+        """readParameters.
 
-        ReadParameters method reads the parameters' raster
+        readParameters method reads the parameters' raster
 
         Parameters
         ----------
@@ -604,10 +604,10 @@ class Catchment:
 
         logger.debug("Parameters are read successfully")
 
-    def ReadLumpedModel(
+    def readLumpedModel(
         self, LumpedModel, CatArea: Union[float, int], InitialCond: list, q_init=None
     ):
-        """ReadLumpedModel.
+        """readLumpedModel.
 
         Parameters
         ----------
@@ -653,8 +653,8 @@ class Catchment:
 
         logger.debug("Lumped model is read successfully")
 
-    def ReadLumpedInputs(self, Path: str, ll_temp: Union[list, np.ndarray] = None):
-        """ReadLumpedInputs. ReadLumpedInputs method read the meteorological data of lumped mode.
+    def readLumpedInputs(self, Path: str, ll_temp: Union[list, np.ndarray] = None):
+        """readLumpedInputs. readLumpedInputs method read the meteorological data of lumped mode.
 
         [precipitation, Evapotranspiration, temperature, long term average temperature]
 
@@ -689,8 +689,8 @@ class Catchment:
 
         logger.debug("Lumped Model inputs are read successfully")
 
-    def ReadGaugeTable(self, Path: str, FlowaccPath: str = "", fmt: str = "%Y-%m-%d"):
-        """ReadGaugeTable. ReadGaugeTable reads the table where the data about the gauges are listed.
+    def readGaugeTable(self, Path: str, FlowaccPath: str = "", fmt: str = "%Y-%m-%d"):
+        """readGaugeTable. readGaugeTable reads the table where the data about the gauges are listed.
 
         [x coordinate, y coordinate, 'area ratio', 'weight'], the coordinates are
         mandatory to enter , to locate the gauges and be able to extract the
@@ -735,7 +735,7 @@ class Catchment:
 
         logger.debug("Gauge Table is read successfully")
 
-    def ReadDischargeGauges(
+    def readDischargeGauges(
         self,
         Path: str,
         delimiter: str = ",",
@@ -746,7 +746,7 @@ class Catchment:
         Date2: str = "",
         readfrom: str = "",
     ):
-        """ReadDischargeGauges. ReadDischargeGauges method read the gauge discharge data, discharge of each gauge has to be stored separetly in a file, and the name of the file has to be stored in the Gauges table you entered ubing the method "ReadGaugeTable" under the column "id", the file should contains the date at the first column.
+        """readDischargeGauges. readDischargeGauges method read the gauge discharge data, discharge of each gauge has to be stored separetly in a file, and the name of the file has to be stored in the Gauges table you entered ubing the method "readGaugeTable" under the column "id", the file should contains the date at the first column.
 
         Parameters
         ----------
@@ -822,14 +822,14 @@ class Catchment:
 
         logger.debug("Gauges data are read successfully")
 
-    def ReadParametersBounds(
+    def readParametersBounds(
         self,
         UB: Union[list, np.ndarray],
         LB: Union[list, np.ndarray],
         Snow: bool = False,
         Maxbas: bool = False,
     ):
-        """ReadParametersBounds. ReadParametersBounds method reads the lower and upper boundarys for each parameter.
+        """readParametersBounds. readParametersBounds method reads the lower and upper boundarys for each parameter.
 
         Parameters
         ----------
@@ -867,10 +867,10 @@ class Catchment:
 
         logger.debug("Parameters bounds are read successfully")
 
-    def ExtractDischarge(
+    def extractDischarge(
         self, CalculateMetrics=True, FW1=False, Factor=None, OnlyOutlet=False
     ):
-        """ExtractDischarge. ExtractDischarge method extracts and sums the discharge from the Quz_routed and Qlz_translated arrays at the location of the gauges.
+        """extractDischarge. extractDischarge method extracts and sums the discharge from the Quz_routed and Qlz_translated arrays at the location of the gauges.
 
         Parameters
         ----------
@@ -957,7 +957,7 @@ class Catchment:
                 )
                 self.Metrics.loc["R2", gaugeid] = round(PC.R2(Qobs, Qsim), 3)
 
-    def PlotHydrograph(
+    def plotHydrograph(
         self,
         plotstart: str,
         plotend: str,
@@ -975,7 +975,7 @@ class Catchment:
         label: str = "",
         fmt: str = "%Y-%m-%d",
     ):
-        """PlotHydrograph. plot the simulated and gauge hydrograph.
+        """plotHydrograph. plot the simulated and gauge hydrograph.
 
         Parameters
         ----------
@@ -1099,7 +1099,7 @@ class Catchment:
 
         return fig, ax
 
-    def PlotDistributedResults(
+    def plotDistributedResults(
         self,
         start: str,
         end: str,
@@ -1108,7 +1108,7 @@ class Catchment:
         Gauges: bool = False,
         **kwargs,
     ):
-        """PlotDistributedResults. PlotDistributedResults animate the time series of the meteorological inputs and the result calculated by the model  like the total discharge, upper zone, and lower zone discharge and the state variables.
+        """plotDistributedResults. plotDistributedResults animate the time series of the meteorological inputs and the result calculated by the model  like the total discharge, upper zone, and lower zone discharge and the state variables.
 
         Parameters
         ----------
@@ -1257,8 +1257,8 @@ class Catchment:
 
         return anim
 
-    def SaveAnimation(self, VideoFormat="gif", Path="", SaveFrames=20):
-        """SaveAnimation. SaveAnimation.
+    def saveAnimation(self, VideoFormat="gif", Path="", SaveFrames=20):
+        """saveAnimation. saveAnimation.
 
         Parameters
         ----------
@@ -1277,7 +1277,7 @@ class Catchment:
             self.anim, VideoFormat=VideoFormat, Path=Path, SaveFrames=SaveFrames
         )
 
-    def SaveResults(
+    def saveResults(
         self,
         FlowAccPath: str = "",
         Result: int = 1,
@@ -1287,7 +1287,7 @@ class Catchment:
         Prefix: str = "",
         fmt: str = "%Y-%m-%d",
     ):
-        """SaveResults. SaveResults save the results into rasters.
+        """saveResults. saveResults save the results into rasters.
 
         Parameters
         ----------
@@ -1329,7 +1329,7 @@ class Catchment:
         if self.SpatialResolution == "distributed":
             assert (
                 FlowAccPath != ""
-            ), "Please enter the  FlowAccPath parameter to the SaveResults method"
+            ), "Please enter the  FlowAccPath parameter to the saveResults method"
             src = gdal.Open(FlowAccPath)
 
             if Prefix == "":
@@ -1424,9 +1424,9 @@ class Lake:
     """Lake. Lake class reads the meteorological inputs, and the module to simulate a lake as a lumped model, using a rating curve, the lake and the upstream sub-catchments are going to be considered as one lumped model than result in a discharge input to the lake, the discharge input is going to change the volume of the water in the lake, and from the volume-outflow curve the outflow can be obtained.
 
     methods:
-        1- ReadMeteoData
-        2- ReadParameters
-        3- ReadLumpedModel
+        1- readMeteoData
+        2- readParameters
+        3- readLumpedModel
     """
 
     def __init__(
@@ -1479,8 +1479,8 @@ class Lake:
         )
         self.StageDischargeCurve = None
 
-    def ReadMeteoData(self, Path: str, fmt: str):
-        """ReadMeteoData. ReadMeteoData reads the meteorological data for the lake.
+    def readMeteoData(self, Path: str, fmt: str):
+        """readMeteoData. readMeteoData reads the meteorological data for the lake.
 
         [rainfall, ET, temperature]
 
@@ -1508,8 +1508,8 @@ class Lake:
 
         logger.debug("Lake Meteo data are read successfully")
 
-    def ReadParameters(self, Path):
-        """ReadParameters. ReadParameters method reads the lake parameters.
+    def readParameters(self, Path):
+        """readParameters. readParameters method reads the lake parameters.
 
         Parameters
         ----------
@@ -1524,7 +1524,7 @@ class Lake:
         self.Parameters = Parameters
         logger.debug("Lake Parameters are read successfully")
 
-    def ReadLumpedModel(
+    def readLumpedModel(
         self,
         LumpedModel,
         CatArea,
@@ -1534,9 +1534,9 @@ class Lake:
         StageDischargeCurve,
         Snow,
     ):
-        """ReadLumpedModel.
+        """readLumpedModel.
 
-        ReadLumpedModel reads the lumped model module
+        readLumpedModel reads the lumped model module
 
         Parameters
         ----------

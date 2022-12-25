@@ -23,11 +23,11 @@ The only input we need to extract parameters to our catchment is the DEM or any 
 	dem_path = "../../data/GIS/Hapi_GIS_Data/acc4000.tif"
 	outputpath = "../../data/parameters/03/"
 
-- call the `ExtractParameters` method
+- call the `extractParameters` method
 
 .. code:: py
 
-	Inputs.ExtractParameters(dem_path, '03', AsRaster=True, SaveTo=outputpath)
+	Inputs.extractParameters(dem_path, '03', AsRaster=True, SaveTo=outputpath)
 
 
 
@@ -52,18 +52,18 @@ To Extract the parameters range needed for the Calibration you have to prepare a
 	Par = pd.DataFrame(index = ind)
 
 
-the `inputs` module in Hapi has a `ExtractParametersBoundaries` method to overlay the basin shapefile with the global parameters rasters and extract the max and min parameter values within the basin and plots your basin shapefile in top of the world map to make sure of the projection transformation from whatever projection your basin shapefile to the `WGS64` that the parameters rasters have
+the `inputs` module in Hapi has a `extractParametersBoundaries` method to overlay the basin shapefile with the global parameters rasters and extract the max and min parameter values within the basin and plots your basin shapefile in top of the world map to make sure of the projection transformation from whatever projection your basin shapefile to the `WGS64` that the parameters rasters have
 
 .. code:: py
 
 	# extract parameters boundaries
-	Par['UB'], Par['LB'] = IN.ExtractParametersBoundaries(Basin)
+	Par['UB'], Par['LB'] = IN.extractParametersBoundaries(Basin)
 
-To extract the parameters from one of the ten scenarios developed to derive the Global model `ExtractParameters` method takes the number of the scenario as a string and return the parameters
+To extract the parameters from one of the ten scenarios developed to derive the Global model `extractParameters` method takes the number of the scenario as a string and return the parameters
 
 .. code:: py
 
 	# extract parameters in a specific scenarion from the 10 scenarios
-	Par['1'] = IN.ExtractParameters(Basin,"01")
+	Par['1'] = IN.extractParameters(Basin,"01")
 
 the extracted parameters needs to be modified incase you are not considering the snow bucket the first 5 parameters are disregarded

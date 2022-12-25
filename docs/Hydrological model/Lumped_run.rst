@@ -26,7 +26,7 @@ To run the HBV lumped model inside Hapi you need to prepare the meteorological i
     end = "2011-12-31"
     name = "Coello"
     Coello = Catchment(name, start, end)
-    Coello.ReadLumpedInputs(MeteoDataPath)
+    Coello.readLumpedInputs(MeteoDataPath)
 
 - Meteorological data
 
@@ -37,7 +37,7 @@ To run the HBV lumped model inside Hapi you need to prepare the meteorological i
     end = "2011-12-31"
     name = "Coello"
     Coello = Catchment(name, start, end)
-    Coello.ReadLumpedInputs(MeteoDataPath)
+    Coello.readLumpedInputs(MeteoDataPath)
 
 - Lumped model
 
@@ -51,7 +51,7 @@ To run the HBV lumped model inside Hapi you need to prepare the meteorological i
     # [Snow pack, Soil moisture, Upper zone, Lower Zone, Water content]
     InitialCond = [0,10,10,10,0]
 
-    Coello.ReadLumpedModel(HBVLumped, AreaCoeff, InitialCond)
+    Coello.readLumpedModel(HBVLumped, AreaCoeff, InitialCond)
 
 - Load the pre-estimated parameters
     snow option (if you want to simulate snow accumulation and snow melt or not)
@@ -61,7 +61,7 @@ To run the HBV lumped model inside Hapi you need to prepare the meteorological i
 
     Snow = 0 # no snow subroutine
     # if routing using Maxbas True, if Muskingum False
-    Coello.ReadParameters(Parameterpath, Snow)
+    Coello.readParameters(Parameterpath, Snow)
 
 
 - Prepare the routing options.
@@ -73,12 +73,12 @@ To run the HBV lumped model inside Hapi you need to prepare the meteorological i
     RoutingFn = Routing.Muskingum_V
     Route = 1
 
-- now all the data required for the model are prepared in the right form, now you can call the `RunLumped` wrapper to initiate the calculation
+- now all the data required for the model are prepared in the right form, now you can call the `runLumped` wrapper to initiate the calculation
 
 .. code-block:: py
     :linenos:
 
-    Run.RunLumped(Coello, Route, RoutingFn)
+    Run.runLumped(Coello, Route, RoutingFn)
 
 to calculate some metrics for the quality assessment of the calculate discharge the `performancecriteria` contains some metrics like `RMSE`, `NSE`, `KGE` and `WB` , you need to load it, a measured time series of doscharge for the same period of the simulation is also needed for the comparison.
 
@@ -111,7 +111,7 @@ To plot the calculated and measured discharge import matplotlib
     gaugei = 0
     plotstart = "2009-01-01"
     plotend = "2011-12-31"
-    Coello.PlotHydrograph(plotstart, plotend, gaugei, Title= "Lumped Model")
+    Coello.plotHydrograph(plotstart, plotend, gaugei, Title= "Lumped Model")
 
 
     .. image:: /img/lumpedmodel.png
@@ -126,4 +126,4 @@ To plot the calculated and measured discharge import matplotlib
     EndDate = "2010-04-20"
 
     Path = SaveTo + "Results-Lumped-Model" + str(dt.datetime.now())[0:10] + ".txt"
-    Coello.SaveResults(Result=5, StartDate=StartDate, EndDate=EndDate, Path=Path)
+    Coello.saveResults(Result=5, StartDate=StartDate, EndDate=EndDate, Path=Path)

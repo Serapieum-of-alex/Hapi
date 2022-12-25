@@ -24,7 +24,7 @@ class DistParameters:
     4- HRU
     5- HRU_HAND
     6- ParametersNumber
-    7- SaveParameters
+    7- saveParameters
     """
 
     def __init__(
@@ -740,8 +740,8 @@ class DistParameters:
                 # if there is no lumped parameters
                 self.ParametersNO = self.no_elem * self.no_parameters
 
-    def SaveParameters(self, Path):
-        """SaveParameters. saveParameters method takes generated parameters by the calibration algorithm, distributed them with a given function and save them as a rasters.
+    def saveParameters(self, Path):
+        """saveParameters. saveParameters method takes generated parameters by the calibration algorithm, distributed them with a given function and save them as a rasters.
 
          Parameters
          ----------
@@ -783,7 +783,7 @@ class DistParameters:
              Path="parameters/"
              snow=0
 
-             SaveParameters(DistParFn, raster, par, no_parameters,snow ,kub, klb,Path)
+             saveParameters(DistParFn, raster, par, no_parameters,snow ,kub, klb,Path)
         """
         assert type(Path) == str, "path should be of type string"
         assert os.path.exists(Path), Path + " you have provided does not exist"

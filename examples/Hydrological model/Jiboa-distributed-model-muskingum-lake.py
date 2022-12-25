@@ -55,14 +55,14 @@ Jiboa = Catchment(
     TemporalResolution="Hourly",
     fmt="%Y-%m-%d %H:%M:%S",
 )
-Jiboa.ReadRainfall(PrecPath)
-Jiboa.ReadTemperature(TempPath)
-Jiboa.ReadET(Evap_Path)
-Jiboa.ReadFlowAcc(FlowAccPath)
-Jiboa.ReadFlowDir(FlowDPath)
-Jiboa.ReadParameters(ParPath, Snow)
+Jiboa.readRainfall(PrecPath)
+Jiboa.readTemperature(TempPath)
+Jiboa.readET(Evap_Path)
+Jiboa.readFlowAcc(FlowAccPath)
+Jiboa.readFlowDir(FlowDPath)
+Jiboa.readParameters(ParPath, Snow)
 
-Jiboa.ReadLumpedModel(HBV, CatchmentArea, InitialCond)
+Jiboa.readLumpedModel(HBV, CatchmentArea, InitialCond)
 # %% Lake Object
 """
 lake meteorological data
@@ -89,28 +89,28 @@ JiboaLake = Lake(
     Split=True,
 )
 
-JiboaLake.ReadMeteoData(LakeMeteoPath, fmt="%d.%m.%Y %H:%M")
-JiboaLake.ReadParameters(LakeParametersPath)
+JiboaLake.readMeteoData(LakeMeteoPath, fmt="%d.%m.%Y %H:%M")
+JiboaLake.readParameters(LakeParametersPath)
 
 StageDischargeCurve = np.loadtxt("inputs/Hapi/meteodata/curve.txt")
 LakeInitCond = np.loadtxt("inputs/Hapi/meteodata/Initia-lake.txt", usecols=0).tolist()
 LakeCatArea = 133.98
 LakeArea = 70.64
 Snow = 0
-JiboaLake.ReadLumpedModel(
+JiboaLake.readLumpedModel(
     HBVLake, LakeCatArea, LakeArea, LakeInitCond, OutflowCell, StageDischargeCurve, Snow
 )
 # %% Gauges
 Date1 = "14.06.2012 19:00"
 Date2 = "23.12.2013 00:00"
-Jiboa.ReadGaugeTable(GaugesPath + "GaugesTable.csv", FlowAccPath)
-Jiboa.ReadDischargeGauges(
+Jiboa.readGaugeTable(GaugesPath + "GaugesTable.csv", FlowAccPath)
+Jiboa.readDischargeGauges(
     GaugesPath, column="id", fmt="%d.%m.%Y %H:%M", Split=True, Date1=Date1, Date2=Date2
 )
 # %% run the model
-Run.RunHAPIwithLake(Jiboa, JiboaLake)
+Run.runHAPIwithLake(Jiboa, JiboaLake)
 # %% calculate some metrics
-Jiboa.ExtractDischarge(OnlyOutlet=True)
+Jiboa.extractDischarge(OnlyOutlet=True)
 
 for i in range(len(Jiboa.GaugesTable)):
     gaugeid = Jiboa.GaugesTable.loc[i, "id"]
@@ -152,11 +152,11 @@ gaugei = 0
 plotstart = "2012-06-16"
 plotend = "2013-12-23"
 
-Jiboa.PlotHydrograph(plotstart, plotend, gaugei)
+Jiboa.plotHydrograph(plotstart, plotend, gaugei)
 # %%
 """
 =============================================================================
-PlotDistributedResults(StartDate, EndDate, fmt="%Y-%m-%d", Option = 1, Gauges=False,
+plotDistributedResults(StartDate, EndDate, fmt="%Y-%m-%d", Option = 1, Gauges=False,
                     TicksSpacing = 2, Figsize=(8,8), PlotNumbers=True,
                     NumSize= 8, Title = 'Total Discharge',titlesize = 15, Backgroundcolorthreshold=None,
                     cbarlabel = 'Discharge m3/s', cbarlabelsize = 12, textcolors=("white","black"),
@@ -165,7 +165,7 @@ PlotDistributedResults(StartDate, EndDate, fmt="%Y-%m-%d", Option = 1, Gauges=Fa
                     linscale=0.001, midpoint=0, orientation='vertical', rotation=-90,
                     **kwargs):
 =============================================================================
-PlotDistributedResults animate the time series of the meteorological inputs and
+plotDistributedResults animate the time series of the meteorological inputs and
 the result calculated by the model  like the total discharge, upper zone,
 and lower zone discharge and the state variables
 
@@ -254,7 +254,7 @@ animation.FuncAnimation.
 plotstart = "2012-07-20"
 plotend = "2012-08-20"
 
-Anim = Jiboa.PlotDistributedResults(
+Anim = Jiboa.plotDistributedResults(
     plotstart,
     plotend,
     Figsize=(8, 8),
@@ -274,12 +274,12 @@ Anim = Jiboa.PlotDistributedResults(
 )
 # %%
 Path = SaveTo + "anim.mov"
-Jiboa.SaveAnimation(VideoFormat="mov", Path=Path, SaveFrames=3)
+Jiboa.saveAnimation(VideoFormat="mov", Path=Path, SaveFrames=3)
 # %% Save Results
 StartDate = "2012-07-20"
 EndDate = "2012-08-20"
 
 Path = SaveTo + "Lumped_Parameters_" + str(dt.datetime.now())[0:10] + "_"
-Jiboa.SaveResults(
+Jiboa.saveResults(
     Result=1, StartDate=StartDate, EndDate=EndDate, Path=Path, FlowAccPath=FlowAccPath
 )

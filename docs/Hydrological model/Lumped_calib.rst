@@ -25,7 +25,7 @@ To calibrate the HBV lumped model inside Hapi you need to follow the same steps 
 	name = "Coello"
 
 	Coello = Calibration(name, start, end)
-	Coello.ReadLumpedInputs(MeteoDataPath)
+	Coello.readLumpedInputs(MeteoDataPath)
 
 
 	# catchment area
@@ -35,7 +35,7 @@ To calibrate the HBV lumped model inside Hapi you need to follow the same steps 
 	InitialCond = [0,10,10,10,0]
 	# no snow subroutine
 	Snow = 0
-	Coello.ReadLumpedModel(HBVLumped, AreaCoeff, InitialCond)
+	Coello.readLumpedModel(HBVLumped, AreaCoeff, InitialCond)
 
 	# Calibration boundaries
 	UB = pd.read_csv(Path + "/lumped/UB-3.txt", index_col = 0, header = None)
@@ -45,7 +45,7 @@ To calibrate the HBV lumped model inside Hapi you need to follow the same steps 
 	LB = LB[1].tolist()
 
 	Maxbas = True
-	Coello.ReadParametersBounds(UB, LB, Snow, Maxbas=Maxbas)
+	Coello.readParametersBounds(UB, LB, Snow, Maxbas=Maxbas)
 
 	parameters = []
 	# Routing
@@ -56,12 +56,12 @@ To calibrate the HBV lumped model inside Hapi you need to follow the same steps 
 
 	### Objective function
 	# outlet discharge
-	Coello.ReadDischargeGauges(Path+"Qout_c.csv", fmt="%Y-%m-%d")
+	Coello.readDischargeGauges(Path+"Qout_c.csv", fmt="%Y-%m-%d")
 
 	OF_args=[]
 	OF=PC.RMSE
 
-	Coello.ReadObjectiveFn(PC.RMSE, OF_args)
+	Coello.readObjectiveFn(PC.RMSE, OF_args)
 
 - after defining all the components of the lumped model, we have to define the calibration arguments
 
@@ -87,7 +87,7 @@ To calibrate the HBV lumped model inside Hapi you need to follow the same steps 
 .. code-block:: py
 	:linenos:
 
-	cal_parameters = Coello.LumpedCalibration(Basic_inputs, OptimizationArgs, printError=None)
+	cal_parameters = Coello.lumpedCalibration(Basic_inputs, OptimizationArgs, printError=None)
 
 	print("Objective Function = " + str(round(cal_parameters[0],2)))
 	print("Parameters are " + str(cal_parameters[1]))

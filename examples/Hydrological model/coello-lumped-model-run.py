@@ -16,21 +16,21 @@ start = "2009-01-01"
 end = "2011-12-31"
 name = "Coello"
 Coello = Catchment(name, start, end)
-Coello.ReadLumpedInputs(MeteoDataPath)
+Coello.readLumpedInputs(MeteoDataPath)
 # %% Lumped model
 # catchment area
 AreaCoeff = 1530
 # [Snow pack, Soil moisture, Upper zone, Lower Zone, Water content]
 InitialCond = [0, 10, 10, 10, 0]
 
-Coello.ReadLumpedModel(HBVLumped, AreaCoeff, InitialCond)
+Coello.readLumpedModel(HBVLumped, AreaCoeff, InitialCond)
 # %% ### Model Parameters
 
 Snow = False  # no snow subroutine
-Coello.ReadParameters(Parameterpath, Snow)
+Coello.readParameters(Parameterpath, Snow)
 # Coello.Parameters
 # %% ### Observed flow
-Coello.ReadDischargeGauges(Path + "Qout_c.csv", fmt="%Y-%m-%d")
+Coello.readDischargeGauges(Path + "Qout_c.csv", fmt="%Y-%m-%d")
 # %%  ### Routing
 
 # RoutingFn = Routing.TriangularRouting2
@@ -49,9 +49,9 @@ Route = 1
 #                      3.126313569552141,
 #                      1.9894177368962747]
 
-Run.RunLumped(Coello, Route, RoutingFn)
+Run.runLumped(Coello, Route, RoutingFn)
 # %% ### Calculate performance criteria
-# Coello.ExtractDischarge(OnlyOutlet=True)
+# Coello.extractDischarge(OnlyOutlet=True)
 Metrics = dict()
 
 # gaugeid = Coello.QGauges.columns[-1]
@@ -72,11 +72,11 @@ print("WB= " + str(round(Metrics["WB"], 2)))
 gaugei = 0
 plotstart = "2009-01-01"
 plotend = "2011-12-31"
-Coello.PlotHydrograph(plotstart, plotend, gaugei, Title="Lumped Model")
+Coello.plotHydrograph(plotstart, plotend, gaugei, Title="Lumped Model")
 # %% ### Save Results
 
 StartDate = "2009-01-01"
 EndDate = "2010-04-20"
 
 Path = SaveTo + "Results-Lumped-Model_" + str(dt.datetime.now())[0:10] + ".txt"
-Coello.SaveResults(Result=5, start=StartDate, end=EndDate, Path=Path)
+Coello.saveResults(Result=5, start=StartDate, end=EndDate, Path=Path)

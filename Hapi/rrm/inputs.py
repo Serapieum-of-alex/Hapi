@@ -27,11 +27,11 @@ class Inputs:
     hydrological model
 
     Methods:
-        1- PrepareInputs
-        2- ExtractParametersBoundaries
-        3- ExtractParameters
-        4- CreateLumpedInputs
-        5- RenameFiles
+        1- prepareInputs
+        2- extractParametersBoundaries
+        3- extractParameters
+        4- createLumpedInputs
+        5- renameFiles
         6- changetext2time
         7- ReadExcelData
         8- ListAttributes
@@ -42,8 +42,8 @@ class Inputs:
         pass
 
     @staticmethod
-    def PrepareInputs(src, input_folder, folder_name):
-        """PrepareInputs.
+    def prepareInputs(src: str, input_folder: str, folder_name: str):
+        """prepareInputs.
 
         this function prepare downloaded raster data to have the same align and
         nodatavalue from a GIS raster (DEM, flow accumulation, flow direction raster)
@@ -64,15 +64,15 @@ class Inputs:
 
         Example
         -------
-            Ex1:
-                dem_path="01GIS/inputs/4000/acc4000.tif"
-                prec_in_path="02Precipitation/CHIRPS/Daily/"
-                Inputs.PrepareInputs(dem_path,prec_in_path,"prec")
-            Ex2:
-                dem_path="01GIS/inputs/4000/acc4000.tif"
-                outputpath="00inputs/meteodata/4000/"
-                evap_in_path="03Weather_Data/evap/"
-                Inputs.PrepareInputs(dem_path,evap_in_path,outputpath+"evap")
+        Ex1:
+            >>> dem_path="01GIS/inputs/4000/acc4000.tif"
+            >>> prec_in_path="02Precipitation/CHIRPS/Daily/"
+            >>> Inputs.prepareInputs(dem_path,prec_in_path,"prec")
+        Ex2:
+            >>> dem_path="01GIS/inputs/4000/acc4000.tif"
+            >>> outputpath="00inputs/meteodata/4000/"
+            >>> evap_in_path="03Weather_Data/evap/"
+            >>> Inputs.prepareInputs(dem_path,evap_in_path,outputpath+"evap")
         """
         if not isinstance(folder_name, str):
             print("folder_name input should be string type")
@@ -109,10 +109,10 @@ class Inputs:
         shutil.rmtree(temp)
 
     @staticmethod
-    def ExtractParametersBoundaries(Basin):
-        """ExtractParametersBoundaries.
+    def extractParametersBoundaries(Basin):
+        """extractParametersBoundaries.
 
-        ExtractParametersBoundaries
+        extractParametersBoundaries
 
         Parameters
         ----------
@@ -187,10 +187,10 @@ class Inputs:
         return Par
 
     @staticmethod
-    def ExtractParameters(src, scenario, AsRaster=False, SaveTo=""):
-        """ExtractParameters.
+    def extractParameters(src, scenario, AsRaster=False, SaveTo=""):
+        """extractParameters.
 
-        ExtractParameters method extracts the parameter rasters at the location
+        extractParameters method extracts the parameter rasters at the location
         of the source raster, there are 12 set of parameters 10 sets of parameters
         (Beck et al., (2016)) and the max, min and average of all sets
 
@@ -266,13 +266,13 @@ class Inputs:
 
             return Par
         else:
-            Inputs.PrepareInputs(src, ParametersPath + "/", SaveTo)
+            Inputs.prepareInputs(src, ParametersPath + "/", SaveTo)
 
     @staticmethod
-    def CreateLumpedInputs(Path):
-        """CreateLumpedInputs.
+    def createLumpedInputs(Path):
+        """createLumpedInputs.
 
-        CreateLumpedInputs method generate a lumped parameters from
+        createLumpedInputs method generate a lumped parameters from
         distributed parameters by taking the average
         Parameters
         ----------
@@ -303,10 +303,10 @@ class Inputs:
         return data
 
     @staticmethod
-    def RenameFiles(path: str, prefix: str="", fmt: str="%Y.%m.%d", freq: str="daily"):
-        """RenameFiles.
+    def renameFiles(path: str, prefix: str= "", fmt: str= "%Y.%m.%d", freq: str= "daily"):
+        """renameFiles.
 
-        RenameFiles method takes the path to a folder where you want to put a number
+        renameFiles method takes the path to a folder where you want to put a number
         at the begining of the raster names indicating the order of the raster based on
         its date
 

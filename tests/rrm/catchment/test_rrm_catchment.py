@@ -22,7 +22,7 @@ def test_read_lumped_meteo_inputs(
     lumped_meteo_data_path: str,
 ):
     Coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
-    Coello.ReadLumpedInputs(lumped_meteo_data_path)
+    Coello.readLumpedInputs(lumped_meteo_data_path)
     assert isinstance(Coello.data, np.ndarray)
 
 
@@ -32,7 +32,7 @@ def test_read_lumped_model(
     coello_InitialCond: list,
 ):
     Coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
-    Coello.ReadLumpedModel(HBVLumped, coello_AreaCoeff, coello_InitialCond)
+    Coello.readLumpedModel(HBVLumped, coello_AreaCoeff, coello_InitialCond)
     assert isinstance(Coello.LumpedModel, ModuleType)
     assert isinstance(Coello.CatArea, float)
     assert isinstance(Coello.InitialCond, list)
@@ -44,7 +44,7 @@ def test_read_lumped_ReadParameters(
     coello_Snow: int,
 ):
     Coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
-    Coello.ReadParameters(lumped_parameters_path, coello_Snow)
+    Coello.readParameters(lumped_parameters_path, coello_Snow)
     assert isinstance(Coello.Parameters, list)
     assert Coello.Snow == coello_Snow
 
@@ -55,7 +55,7 @@ def test_ReadDischargeGauges(
     coello_gauges_date_fmt: str,
 ):
     Coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
-    Coello.ReadDischargeGauges(lumped_gauges_path, fmt=coello_gauges_date_fmt)
+    Coello.readDischargeGauges(lumped_gauges_path, fmt=coello_gauges_date_fmt)
     assert isinstance(Coello.QGauges, DataFrame)
 
 
@@ -70,19 +70,19 @@ def test_RunLumped(
     coello_gauges_date_fmt: str,
 ):
     Coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
-    Coello.ReadLumpedInputs(lumped_meteo_data_path)
-    Coello.ReadLumpedModel(HBVLumped, coello_AreaCoeff, coello_InitialCond)
-    Coello.ReadParameters(lumped_parameters_path, coello_Snow)
+    Coello.readLumpedInputs(lumped_meteo_data_path)
+    Coello.readLumpedModel(HBVLumped, coello_AreaCoeff, coello_InitialCond)
+    Coello.readParameters(lumped_parameters_path, coello_Snow)
     # discharge gauges
-    Coello.ReadDischargeGauges(lumped_gauges_path, fmt=coello_gauges_date_fmt)
+    Coello.readDischargeGauges(lumped_gauges_path, fmt=coello_gauges_date_fmt)
     RoutingFn = Routing.Muskingum_V
     Route = 1
-    Run.RunLumped(Coello, Route, RoutingFn)
+    Run.runLumped(Coello, Route, RoutingFn)
 
     assert len(Coello.Qsim) == 1095 and Coello.Qsim.columns.to_list() == ["q"]
 
 
-# TODO: still not finished as it does not run the PlotHydrograph method
+# TODO: still not finished as it does not run the plotHydrograph method
 def test_PlotHydrograph(
     coello_rrm_date: list,
     lumped_meteo_data_path: str,
@@ -94,14 +94,14 @@ def test_PlotHydrograph(
     coello_gauges_date_fmt: str,
 ):
     Coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
-    Coello.ReadLumpedInputs(lumped_meteo_data_path)
-    Coello.ReadLumpedModel(HBVLumped, coello_AreaCoeff, coello_InitialCond)
-    Coello.ReadParameters(lumped_parameters_path, coello_Snow)
+    Coello.readLumpedInputs(lumped_meteo_data_path)
+    Coello.readLumpedModel(HBVLumped, coello_AreaCoeff, coello_InitialCond)
+    Coello.readParameters(lumped_parameters_path, coello_Snow)
     # discharge gauges
-    Coello.ReadDischargeGauges(lumped_gauges_path, fmt=coello_gauges_date_fmt)
+    Coello.readDischargeGauges(lumped_gauges_path, fmt=coello_gauges_date_fmt)
     RoutingFn = Routing.Muskingum_V
     Route = 1
-    Run.RunLumped(Coello, Route, RoutingFn)
+    Run.runLumped(Coello, Route, RoutingFn)
 
     assert len(Coello.Qsim) == 1095 and Coello.Qsim.columns.to_list() == ["q"]
 
@@ -117,13 +117,13 @@ def test_save_lumped_results(
     coello_gauges_date_fmt: str,
 ):
     Coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
-    Coello.ReadLumpedInputs(lumped_meteo_data_path)
-    Coello.ReadLumpedModel(HBVLumped, coello_AreaCoeff, coello_InitialCond)
-    Coello.ReadParameters(lumped_parameters_path, coello_Snow)
+    Coello.readLumpedInputs(lumped_meteo_data_path)
+    Coello.readLumpedModel(HBVLumped, coello_AreaCoeff, coello_InitialCond)
+    Coello.readParameters(lumped_parameters_path, coello_Snow)
     # discharge gauges
-    Coello.ReadDischargeGauges(lumped_gauges_path, fmt=coello_gauges_date_fmt)
+    Coello.readDischargeGauges(lumped_gauges_path, fmt=coello_gauges_date_fmt)
     RoutingFn = Routing.Muskingum_V
     Route = 1
-    Run.RunLumped(Coello, Route, RoutingFn)
+    Run.runLumped(Coello, Route, RoutingFn)
     Path = "examples/Hydrological model/data/lumped_model/test-Lumped-Model_results.txt"
-    Coello.SaveResults(Result=5, Path=Path)
+    Coello.saveResults(Result=5, Path=Path)
