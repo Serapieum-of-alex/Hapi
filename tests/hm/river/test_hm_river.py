@@ -616,6 +616,7 @@ def test_ReadBoundaryConditions(
     river_cross_section_path: str,
     river_network_path: str,
     dates: list,
+    onemin_days: int,
     Read1DResult_path: str,
     usbc_path: str,
     segment3: int,
@@ -629,12 +630,17 @@ def test_ReadBoundaryConditions(
     River.usbcpath = usbc_path
     Sub = R.Sub(segment3, River)
     Sub.read1DResult()
-    Sub.readBoundaryConditions(start=dates[0], end=dates[1])
+    # read only 10 days
 
-    assert len(Sub.QBC) == test_time_series_length and all(
+    days = int(dates[0].split("-")[-1]) + onemin_days
+    day2 = f"{dates[0][:-2]}{days}"
+
+    Sub.readBoundaryConditions(start=dates[0], end=day2)
+
+    assert len(Sub.QBC) == onemin_days + 1 and all(
         elem in test_hours for elem in Sub.QBC.columns.tolist()
     )
-    assert len(Sub.HBC) == test_time_series_length and all(
+    assert len(Sub.HBC) == onemin_days + 1 and all(
         elem in test_hours for elem in Sub.HBC.columns.tolist()
     )
 

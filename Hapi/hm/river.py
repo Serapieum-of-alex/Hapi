@@ -810,6 +810,13 @@ class River:
             path = self.onedresultpath
 
         data = pd.read_csv(f"{path}{Subid}.txt", header=None, delimiter=r"\s+")
+        #--------
+        # TODO: read the file in chunks
+        # data = pd.DataFrame()
+        # chunksize = 10e5
+        # data1 = pd.read_csv(f"{path}{Subid}.txt", header=None, delimiter=r"\s+", chunksize=chunksize, iterator=True)
+        # [data1.get_chunk(chunksize)]
+        # --------
 
         data.columns = ["day", "hour", "xs", "q", "h", "wl"]
         days = list(set(data["day"]))

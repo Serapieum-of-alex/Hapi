@@ -174,6 +174,10 @@ def onemin_results_dates() -> list:
 
 
 @pytest.fixture(scope="module")
+def onemin_days() -> int:
+    return 9
+
+@pytest.fixture(scope="module")
 def onemin_results_len() -> int:
     return 10
 
