@@ -7,7 +7,7 @@ with open("HISTORY.rst") as history_file:
     history = history_file.read()
 
 requirements = [line.strip() for line in open("requirements.txt").readlines()]
-requirements = requirements[1:]
+# requirements = requirements[1:]
 
 requirements_dev = [line.strip() for line in open("requirements-dev.txt").readlines()]
 
