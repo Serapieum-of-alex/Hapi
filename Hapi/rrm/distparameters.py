@@ -741,7 +741,7 @@ class DistParameters:
                 self.ParametersNO = self.no_elem * self.no_parameters
 
     def saveParameters(self, Path):
-        """saveParameters. saveParameters method takes generated parameters by the calibration algorithm, distributed them with a given function and save them as a rasters.
+        """SaveParameters. saveParameters method takes generated parameters by the calibration algorithm, distributed them with a given function and save them as a rasters.
 
          Parameters
          ----------
@@ -768,22 +768,21 @@ class DistParameters:
 
          Returns
          -------
-              Rasters for parameters of the distributed model
+          Rasters for parameters of the distributed model
 
-        examples:
+        Examples
         ----------
-         >>> DemPath = path+"GIS/4000/dem4000.tif"
-         >>> raster=gdal.Open(DemPath)
+         >>> DemPath = "GIS/4000/dem4000.tif"
+         >>> raster = gdal.Open(DemPath)
          >>> ParPath = "par15_7_2018.txt"
-         >>> par=np.loadtxt(ParPath)
-         >>> klb=0.5
-             kub=1
-             no_parameters=12
-             DistParFn=DP.par3dLumped
-             Path="parameters/"
-             snow=0
-
-             saveParameters(DistParFn, raster, par, no_parameters,snow ,kub, klb,Path)
+         >>> par = np.loadtxt(ParPath)
+         >>> klb = 0.5
+         >>> kub = 1
+         >>> no_parameters = 12
+         >>> DistParFn = DP.par3dLumped
+         >>> Path = "parameters/"
+         >>> snow = 0
+         >>> saveParameters(DistParFn, raster, par, no_parameters, snow, kub, klb, Path)
         """
         assert type(Path) == str, "path should be of type string"
         assert os.path.exists(Path), Path + " you have provided does not exist"

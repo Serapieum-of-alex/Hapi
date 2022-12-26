@@ -13,17 +13,15 @@ DEF_q0 = 2.3  # 10.0
 
 def _precipitation(temp, ltt, utt, prec, rfcf, sfcf, tfac, pcorr):
     """Precipitation.
-        inputs:
-            1-precipitation
-            2- Temperature
-        outputs:
-            1- rainfall
-            2- snowfall
+
         Precipitaiton routine of the HBV96 model.
         If temperature is lower than ltt, all the precipitation is considered as
         snow. If the temperature is higher than utt, all the precipitation is
         considered as rainfall. In case that the temperature is between ltt and
         utt, precipitation is a linear mix of rainfall and snowfall.
+
+        inputs (precipitation, Temperature)
+        outputs: (rainfall, snowfall)
 
     Parameters
     ----------
@@ -65,7 +63,9 @@ def _precipitation(temp, ltt, utt, prec, rfcf, sfcf, tfac, pcorr):
 
 
 def _snow(cfmax, tfac, temp, ttm, cfr, cwh, _rf, _sf, wc_old, sp_old):
-    """Snow. Snow routine of the HBV-96 model.
+    """Snow.
+
+        Snow routine of the HBV-96 model.
 
         The snow pack consists of two states: Water Content (wc) and Snow Pack
         (sp). The first corresponds to the liquid part of the water in the snow,
@@ -98,6 +98,7 @@ def _snow(cfmax, tfac, temp, ttm, cfr, cwh, _rf, _sf, wc_old, sp_old):
         Water content in previous state [mm]
     sp_old : float
         snow pack in previous state [mm]
+
     Returns
     -------
     _in : float
@@ -303,9 +304,6 @@ def _lake(temp, curve, tfac, rf, sf, q_new, lv_old, ltt, c_le, ep, lakeA):
     c_le
     ep
     lakeA
-
-    Returns
-    -------
     """
     # lower zone
     # explicit representation of the lake where lake will be represented by a rating curve
@@ -481,10 +479,12 @@ def CalculateMaxBas(MAXBAS):
 
 
 def RoutingMAXBAS(Q, MAXBAS):
-    """RoutingMAXBAS. This function calculate the routing from a input hydrograph using the MAXBAS parameter from the HBV model.
+    """RoutingMAXBAS.
+
+        This function calculate the routing from a input hydrograph using the MAXBAS parameter from the HBV model.
 
     Parameters
-    ---------
+    ----------
     Q: [array]
         input hydrograph
     MAXBAS: []

@@ -10,12 +10,14 @@ from Hapi.rrm.routing import Routing as routing
 
 
 class Wrapper:
+
     """Wrapper.
 
     The class connect different commponent together (lumped run of the distributed with the spatial routing) for Hapi
     and for FW1.
 
-    Methods:
+    Methods
+    -------
         1- HapiModel
         2- RRMWithlake
         3- FW1

@@ -3,12 +3,12 @@
 @author: mofarrag
 """
 import datetime as dt
-from typing import Any, Union, Optional, Union
+from typing import Any, Optional, Union
 
 import pandas as pd
+from joblib import Parallel, cpu_count, delayed
 from loguru import logger
 from pandas import DataFrame
-from joblib import Parallel, delayed, cpu_count
 
 from Hapi.hm.river import River
 
@@ -115,14 +115,14 @@ class Interface(River):
             )
 
     def _readRRMwrapper(
-            self,
-            table: DataFrame,
-            fromday: Union[str, int] = "",
-            today: Union[str, int] = "",
-            path: str = "",
-            date_format: str = "'%Y-%m-%d'",
-            prefix: str = "lf_xsid",
-            cores: Optional[Union[int, bool]]=None,
+        self,
+        table: DataFrame,
+        fromday: Union[str, int] = "",
+        today: Union[str, int] = "",
+        path: str = "",
+        date_format: str = "'%Y-%m-%d'",
+        prefix: str = "lf_xsid",
+        cores: Optional[Union[int, bool]] = None,
     ):
         """_readRRMwrapper.
 
@@ -158,11 +158,21 @@ class Interface(River):
             if isinstance(cores, bool):
                 cores = cpu_count() - 1
 
-            node_ids  = table.loc[:, "xsid"].to_list()
+            node_ids = table.loc[:, "xsid"].to_list()
             fnames = [f"{prefix}{NodeID}" for NodeID in node_ids]
             func = self.readRRMResults
-            results = Parallel(n_jobs=cores)(delayed(func)(self.version, self.ReferenceIndex, path, fname,
-                                                           fromday, today, date_format) for fname in fnames)
+            results = Parallel(n_jobs=cores)(
+                delayed(func)(
+                    self.version,
+                    self.ReferenceIndex,
+                    path,
+                    fname,
+                    fromday,
+                    today,
+                    date_format,
+                )
+                for fname in fnames
+            )
             # results is a list of dataframes that have the same length (supposedly)
             results = [results[i][fnames[i]].to_list() for i in range(len(fnames))]
             for i in range(len(node_ids)):
@@ -196,16 +206,15 @@ class Interface(River):
 
         return rrm_ts
 
-
     def readLaterals(
-            self,
-            fromday: Union[str, int] = "",
-            today: Union[str, int] = "",
-            path: str = "",
-            date_format: str = "'%Y-%m-%d'",
-            cores: Optional[Union[int, bool]]=None,
-            prefix: str = "lf_xsid",
-            laterals: Optional[bool]= True,
+        self,
+        fromday: Union[str, int] = "",
+        today: Union[str, int] = "",
+        path: str = "",
+        date_format: str = "'%Y-%m-%d'",
+        cores: Optional[Union[int, bool]] = None,
+        prefix: str = "lf_xsid",
+        laterals: Optional[bool] = True,
     ):
         """readLaterals.
             TODO: rename this function as it is better to name if readRRMoutputs
@@ -253,7 +262,6 @@ class Interface(River):
                 "Please read the laterals table first using the 'ReadLateralsTable' method"
             )
 
-
         if len(self.LateralsTable) > 0:
             rrm_df = self._readRRMwrapper(
                 self.LateralsTable,
@@ -261,8 +269,8 @@ class Interface(River):
                 today=today,
                 path=path,
                 date_format=date_format,
-                prefix= prefix,
-                cores=cores
+                prefix=prefix,
+                cores=cores,
             )
 
             if laterals:
@@ -271,7 +279,6 @@ class Interface(River):
                 self.routedRRM = rrm_df
         else:
             logger.info("There are no Laterals table please check")
-
 
     def readBoundaryConditionsTable(self, path, prefix="bc_xsid", suffix=".txt"):
         """readBoundaryConditionsTable.
@@ -305,13 +312,13 @@ class Interface(River):
         ]
 
     def readBoundaryConditions(
-            self,
-            fromday: Union[str, int] = "",
-            today: Union[str, int] = "",
-            path: str = "",
-            date_format: str = "'%Y-%m-%d'",
-            prefix: str = "bc_xsid",
-            cores: Optional[Union[int, bool]] = None,
+        self,
+        fromday: Union[str, int] = "",
+        today: Union[str, int] = "",
+        path: str = "",
+        date_format: str = "'%Y-%m-%d'",
+        prefix: str = "bc_xsid",
+        cores: Optional[Union[int, bool]] = None,
     ):
         """ReadUSHydrograph.
 
@@ -342,7 +349,9 @@ class Interface(River):
             sum of all the hydrographs.
         """
         if not isinstance(self.BCTable, DataFrame):
-            raise ValueError("Please read the lateras table first using the 'ReadLateralsTable' method")
+            raise ValueError(
+                "Please read the lateras table first using the 'ReadLateralsTable' method"
+            )
 
         self.BC = pd.DataFrame()
         self.BC = self._readRRMwrapper(
@@ -352,9 +361,8 @@ class Interface(River):
             path=path,
             date_format=date_format,
             prefix=prefix,
-            cores=cores
+            cores=cores,
         )
-
 
     def ListAttributes(self):
         """ListAttributes.

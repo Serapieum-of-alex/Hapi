@@ -16,15 +16,16 @@ def test_readLateralsTable(
 
     assert len(IF.LateralsTable) == 9 and len(IF.LateralsTable.columns) == 2
 
+
 class TestreadLaterals:
     def test_without_parallel_io(
-            self,
-            dates: list,
-            river_cross_section_path: str,
-            interface_Laterals_table_path: str,
-            interface_Laterals_folder: str,
-            interface_Laterals_date_format: str,
-            test_time_series_length: int,
+        self,
+        dates: list,
+        river_cross_section_path: str,
+        interface_Laterals_table_path: str,
+        interface_Laterals_folder: str,
+        interface_Laterals_date_format: str,
+        test_time_series_length: int,
     ):
         IF = Interface("Rhine", start=dates[0])
         IF.readXS(river_cross_section_path)
@@ -33,26 +34,30 @@ class TestreadLaterals:
             path=interface_Laterals_folder, date_format=interface_Laterals_date_format
         )
         assert (
-            len(IF.Laterals) == test_time_series_length and len(IF.Laterals.columns) == 10
+            len(IF.Laterals) == test_time_series_length
+            and len(IF.Laterals.columns) == 10
         )
 
     def test_with_parallel_io(
-            self,
-            dates: list,
-            river_cross_section_path: str,
-            interface_Laterals_table_path: str,
-            interface_Laterals_folder: str,
-            interface_Laterals_date_format: str,
-            test_time_series_length: int,
+        self,
+        dates: list,
+        river_cross_section_path: str,
+        interface_Laterals_table_path: str,
+        interface_Laterals_folder: str,
+        interface_Laterals_date_format: str,
+        test_time_series_length: int,
     ):
         IF = Interface("Rhine", start=dates[0])
         IF.readXS(river_cross_section_path)
         IF.readLateralsTable(interface_Laterals_table_path)
         IF.readLaterals(
-            path=interface_Laterals_folder, date_format=interface_Laterals_date_format, cores=True,
+            path=interface_Laterals_folder,
+            date_format=interface_Laterals_date_format,
+            cores=True,
         )
         assert (
-            len(IF.Laterals) == test_time_series_length and len(IF.Laterals.columns) == 10
+            len(IF.Laterals) == test_time_series_length
+            and len(IF.Laterals.columns) == 10
         )
 
 
@@ -94,8 +99,11 @@ def test_ReadRRMProgression(
     IF = Interface("Rhine", start=dates[0])
     IF.readXS(river_cross_section_path)
     IF.readLateralsTable(interface_Laterals_table_path)
-    IF.readRRMProgression(
-        path=rrm_resutls_hm_location, date_format=interface_Laterals_date_format
+    IF.readLaterals(
+        path=rrm_resutls_hm_location,
+        date_format=interface_Laterals_date_format,
+        laterals=False,
     )
-    assert len(IF.RRMProgression) == laterals_number_ts
-    assert len(IF.RRMProgression.columns) == no_laterals
+    assert len(IF.routedRRM) == laterals_number_ts
+    # number of laterals + the total column
+    assert len(IF.routedRRM.columns) == no_laterals + 1

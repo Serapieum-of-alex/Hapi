@@ -1545,7 +1545,7 @@ class River:
             period discharge for each sub-basin to create the parameters file use
             the code StatisticalProperties in the 07ReturnPeriod folder
 
-        Parameters:
+        Parameters
         ----------
         path : [String]
             path to the "Statistical Properties.txt" file including the
@@ -1559,7 +1559,7 @@ class River:
         Distibution: [str]
             The distribution used to fit the data. Default is "GEV".
 
-        Returns:
+        Returns
         -------
         SP: [data frame attribute]
             containing the river computational nodes US of the sub basins
@@ -3192,6 +3192,7 @@ class River:
 
 
 class Sub(River):
+
     """Sub segment object.
 
     represent a segment of the river to create the Sub instance the
@@ -4324,9 +4325,7 @@ class Sub(River):
                     columns=self.LateralsTable,
                 )
                 for i in self.LateralsTable:
-                    self.RRMProgression.loc[:, i] = IF.routedRRM.loc[
-                        fromday:today, i
-                    ]
+                    self.RRMProgression.loc[:, i] = IF.routedRRM.loc[fromday:today, i]
         else:
             self.LateralsTable = []
             self.Laterals = pd.DataFrame()
@@ -4482,7 +4481,10 @@ class Sub(River):
         xlabels: Union[bool, int, list] = False,
         ylabels: Union[bool, int, list] = False,
     ):
-        """PlotQ. plot the hydrograph at the  gauge location for the hm, rrm  (at two location is availabe), sum of all laterals, upstream hydrograph, boundary condition hydrograph and the gauge time series.
+        """PlotQ.
+
+            plot the hydrograph at the  gauge location for the hm, rrm  (at two location is availabe),
+            sum of all laterals, upstream hydrograph, boundary condition hydrograph and the gauge time series.
 
         Parameters
         ----------
@@ -4566,6 +4568,7 @@ class Sub(River):
             default is 6.
         figsize: [tuple]
             default is (6, 5).
+
         Returns
         -------
         fig : TYPE
@@ -4803,7 +4806,10 @@ class Sub(River):
         xlabels: Union[int, bool, list] = False,
         ylabels: Union[int, bool, list] = False,
     ):
-        """PlotRRMProgression. plot the hydrograph at the  gauge location for the hm, rrm  (at two location is availabe), sum of all laterals, upstream hydrograph, boundary condition hydrograph and the gauge time series.
+        """PlotRRMProgression.
+
+            plot the hydrograph at the  gauge location for the hm, rrm  (at two location is availabe),
+            sum of all laterals, upstream hydrograph, boundary condition hydrograph and the gauge time series.
 
         Parameters
         ----------
@@ -4861,6 +4867,7 @@ class Sub(River):
             default is 11.
         plothm: [bool]
             default is True.
+
         Returns
         -------
         fig : TYPE
