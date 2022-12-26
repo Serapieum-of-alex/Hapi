@@ -11,8 +11,6 @@ Oasis-Optimization >=1.0.2
 pandas >=1.4.4
 pip >=22.3.1
 pyramids-gis >=0.2.10
-pytest >=7.1.3
-pytest-cov ==4.0.0
 # python >=3.9,<3.11
 rasterio >=1.3.2
 rasterstats >=0.17.0
