@@ -180,3 +180,6 @@ Hapi/parameters/*.tif
 examples/Hydrological model/data/distributed_model/calibration/LB - tot.txt
 examples/Hydrological model/data/distributed_model/calibration/LB - tot.txt
 /examples/Hydrological model/data/meteo_data/meteodata_prepared/temp-rename-example/*.tif
+examples/Hydrodynamic models/test_case/results/q/*
+examples/Hydrodynamic models/test_case/results/h/*
+examples/Hydrodynamic models/test_case/results/USbnd/*
