@@ -5,7 +5,9 @@ currunt_work_directory = Hapi/
 import numpy as np
 from osgeo import gdal
 from pyramids.raster import Raster
+
 from Hapi.rrm.inputs import Inputs
+
 metao_data_path = "examples/Hydrological model/data/meteo_data"
 gis_data_path = "examples/Hydrological model/data/gis_data"
 """

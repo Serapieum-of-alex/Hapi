@@ -4,20 +4,22 @@
 
 ### Modules
 import datetime as dt
+
 import matplotlib
 import numpy as np
 import pandas as pd
 
 matplotlib.use("TkAgg")
-import Hapi.rrm.hbv_bergestrom92 as HBVLumped
-import statista.metrics as PC
-from Hapi.rrm.calibration import Calibration
-from Hapi.rrm.routing import Routing
-from Hapi.run import Run
 # %%
 import random
 
+import statista.metrics as PC
 from deap import algorithms, base, creator, tools
+
+import Hapi.rrm.hbv_bergestrom92 as HBVLumped
+from Hapi.rrm.calibration import Calibration
+from Hapi.rrm.routing import Routing
+from Hapi.run import Run
 
 ### Paths
 # Parameterpath = path + "examples/Hydrological model/data/lumped_model/Coello_Lumped2021-03-08_muskingum.txt"

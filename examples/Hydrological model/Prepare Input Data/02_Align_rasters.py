@@ -3,6 +3,7 @@ Make sure the working directory is set to the examples folder in the Hapi repo"
 currunt_work_directory = Hapi
 """
 from Hapi.rrm.inputs import Inputs
+
 rpath = "examples/Hydrological model/data"
 """
 this function prepare downloaded raster data to have the same align and
