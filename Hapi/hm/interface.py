@@ -3,11 +3,12 @@
 @author: mofarrag
 """
 import datetime as dt
-from typing import Any, Union
+from typing import Any, Union, Optional, Union
 
 import pandas as pd
 from loguru import logger
 from pandas import DataFrame
+from joblib import Parallel, delayed, cpu_count
 
 from Hapi.hm.river import River
 
@@ -114,11 +115,13 @@ class Interface(River):
             )
 
     def readLaterals(
-        self,
-        fromday: Union[str, int] = "",
-        today: Union[str, int] = "",
-        path: str = "",
-        date_format: str = "'%Y-%m-%d'",
+            self,
+            fromday: Union[str, int] = "",
+            today: Union[str, int] = "",
+            path: str = "",
+            date_format: str = "'%Y-%m-%d'",
+            cores: Optional[Union[int, bool]]=None,
+
     ):
         """readLaterals.
 
@@ -134,6 +137,10 @@ class Interface(River):
             path to read the results from. The default is ''.
         date_format : "TYPE, optional
             format of the given date string. The default is "'%Y-%m-%d'".
+        cores: Optional[Union[int, bool]]
+            if True the code will use all the cores except one, if integer the code will use the given number
+            of cores for parallel io. Default is
+            None.
 
         Returns
         -------
@@ -150,21 +157,34 @@ class Interface(River):
         self.Laterals = pd.DataFrame()
 
         if len(self.LateralsTable) > 0:
+            if cores:
+                if isinstance(cores, bool):
+                    cores = cpu_count() - 1
 
-            for i in range(len(self.LateralsTable)):
-                NodeID = self.LateralsTable.loc[i, "xsid"]
-                fname = f"lf_xsid{NodeID}"
-
-                self.Laterals[NodeID] = self.readRRMResults(
-                    self.version,
-                    self.ReferenceIndex,
-                    path,
-                    fname,
-                    fromday,
-                    today,
-                    date_format,
-                )[fname].tolist()
-                logger.info(f"Lateral file {fname} is read")
+                NodeIDs  = self.LateralsTable.loc[:, "xsid"].to_list()
+                fnames = [f"lf_xsid{NodeID}" for NodeID in NodeIDs]
+                func = self.readRRMResults
+                results = Parallel(n_jobs=cores)(delayed(func)(self.version, self.ReferenceIndex, path, fname,
+                                                               fromday, today, date_format) for fname in fnames)
+                # results is a list of dataframes that have the same length (supposedly)
+                results = [results[i][fnames[i]].to_list() for i in range(len(fnames))]
+                for i in range(len(NodeIDs)):
+                    node_id = NodeIDs[i]
+                    self.Laterals[node_id] = results[i]
+            else:
+                for i in range(len(self.LateralsTable)):
+                    NodeID = self.LateralsTable.loc[i, "xsid"]
+                    fname = f"lf_xsid{NodeID}"
+                    self.Laterals[NodeID] = self.readRRMResults(
+                        self.version,
+                        self.ReferenceIndex,
+                        path,
+                        fname,
+                        fromday,
+                        today,
+                        date_format,
+                    )[fname].tolist()
+                    logger.info(f"Lateral file {fname} is read")
 
             self.Laterals["total"] = self.Laterals.sum(axis=1)
             if fromday == "":

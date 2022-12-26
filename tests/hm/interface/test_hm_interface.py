@@ -1,7 +1,7 @@
 from Hapi.hm.interface import Interface
 
 
-def create_interface_instance(dates: list):
+def test_create_interface_instance(dates: list):
     Interface("Rhine", start=dates[0])
 
 
@@ -16,24 +16,44 @@ def test_readLateralsTable(
 
     assert len(IF.LateralsTable) == 9 and len(IF.LateralsTable.columns) == 2
 
+class TestreadLaterals:
+    def test_without_parallel_io(
+            self,
+            dates: list,
+            river_cross_section_path: str,
+            interface_Laterals_table_path: str,
+            interface_Laterals_folder: str,
+            interface_Laterals_date_format: str,
+            test_time_series_length: int,
+    ):
+        IF = Interface("Rhine", start=dates[0])
+        IF.readXS(river_cross_section_path)
+        IF.readLateralsTable(interface_Laterals_table_path)
+        IF.readLaterals(
+            path=interface_Laterals_folder, date_format=interface_Laterals_date_format
+        )
+        assert (
+            len(IF.Laterals) == test_time_series_length and len(IF.Laterals.columns) == 10
+        )
 
-def test_readLaterals(
-    dates: list,
-    river_cross_section_path: str,
-    interface_Laterals_table_path: str,
-    interface_Laterals_folder: str,
-    interface_Laterals_date_format: str,
-    test_time_series_length: int,
-):
-    IF = Interface("Rhine", start=dates[0])
-    IF.readXS(river_cross_section_path)
-    IF.readLateralsTable(interface_Laterals_table_path)
-    IF.readLaterals(
-        path=interface_Laterals_folder, date_format=interface_Laterals_date_format
-    )
-    assert (
-        len(IF.Laterals) == test_time_series_length and len(IF.Laterals.columns) == 10
-    )
+    def test_with_parallel_io(
+            self,
+            dates: list,
+            river_cross_section_path: str,
+            interface_Laterals_table_path: str,
+            interface_Laterals_folder: str,
+            interface_Laterals_date_format: str,
+            test_time_series_length: int,
+    ):
+        IF = Interface("Rhine", start=dates[0])
+        IF.readXS(river_cross_section_path)
+        IF.readLateralsTable(interface_Laterals_table_path)
+        IF.readLaterals(
+            path=interface_Laterals_folder, date_format=interface_Laterals_date_format, cores=True,
+        )
+        assert (
+            len(IF.Laterals) == test_time_series_length and len(IF.Laterals.columns) == 10
+        )
 
 
 def test_readBoundaryConditionsTable(
