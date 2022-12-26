@@ -63,7 +63,7 @@ def HBC(Sub, River, Hbnd, dt, dx, inih, storewl, MinQ):
             for x in range(0, Sub.XSno):
                 # xs[:,:] = 0
                 # calculate the area & perimeter of the whole XS
-                Coords = River.GetVortices(
+                Coords = River.getVortices(
                     hx[x],
                     Sub.hl[x],
                     Sub.hr[x],
@@ -72,7 +72,7 @@ def HBC(Sub, River, Hbnd, dt, dx, inih, storewl, MinQ):
                     Sub.mw[x],
                     Sub.Dbf[x],
                 )
-                xs[x, 0:2] = River.PolygonGeometry(Coords)
+                xs[x, 0:2] = River.polygonGeometry(Coords)
 
                 # area & perimeter of the Upper part only
                 if hx[x] <= Sub.Dbf[x]:

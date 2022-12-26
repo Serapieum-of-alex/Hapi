@@ -10,9 +10,10 @@ import numpy as np
 import pandas as pd
 import rasterio
 from loguru import logger
+from osgeo import gdal
 from pyramids.raster import Raster as raster
 from rasterio.plot import show
-from osgeo import gdal
+
 # from datetime import datetime
 # import geopandas as gpd
 from rasterstats import zonal_stats
@@ -41,7 +42,6 @@ class Inputs:
         """no parameters needed for instantiating the object."""
         pass
 
-    @staticmethod
     def prepareInputs(src: str, input_folder: str, folder_name: str):
         """prepareInputs.
 
@@ -97,9 +97,11 @@ class Inputs:
         try:
             os.makedirs(os.path.join(os.getcwd(), folder_name))
         except (WindowsError, FileExistsError):
-            raise FileExistsError(f"please The function is trying to create a folder with a name {folder_name}  "
-                                  f"to complete the process if there is a folder with the same name please rename "
-                                  f"it to other name")
+            raise FileExistsError(
+                f"please The function is trying to create a folder with a name {folder_name}  "
+                f"to complete the process if there is a folder with the same name please rename "
+                f"it to other name"
+            )
         # match nodata value
         print(
             "- Second matching NoDataValue from the DEM raster too all raster will be created in the outputpath"
@@ -186,8 +188,7 @@ class Inputs:
 
         return Par
 
-    @staticmethod
-    def extractParameters(src, scenario, AsRaster=False, SaveTo=""):
+    def extractParameters(self, gdf, scenario, as_raster=False, save_to=""):
         """extractParameters.
 
         extractParameters method extracts the parameter rasters at the location
@@ -202,18 +203,22 @@ class Inputs:
 
         Parameters
         ----------
-        src : [Geodataframe]
+        gdf: [Geodataframe]
             gepdataframe of catchment polygon, make sure that the geodataframe contains
             one row only, if not merge all the polygons in the shapefile first.
+        scenario: [str]
+            name of the parameter set, there are 12 sets of parameters
+            ["1","2","3","4","5","6","7","8","9","10","avg","max","min"]
+        as_raster: [bool]
+            Default is False.
+        save_to: [str]
+            path to a directory where you want to save the rasters.
 
         Returns
         -------
         Parameters : [list]
             list of the upper bound of the parameters.
 
-        scenario : [str]
-            name of the parameter set, there are 12 sets of parameters
-            ["1","2","3","4","5","6","7","8","9","10","avg","max","min"]
 
         the parameters are
             ["tt", rfcf,"sfcf","cfmax","cwh","cfr","fc","beta",'etf'
@@ -243,30 +248,30 @@ class Inputs:
             "18_x_muskingum",
         ]
 
-        if not AsRaster:
-            raster_obj = rasterio.open(ParametersPath + "/" + ParamList[0] + ".tif")
-            src = src.to_crs(crs=raster_obj.crs)
+        if not as_raster:
+            raster_obj = rasterio.open(f"{ParametersPath}/{ParamList[0]}.tif")
+            gdf = gdf.to_crs(crs=raster_obj.crs)
             # max values
             Par = list()
             for i in range(len(ParamList)):
-                raster_obj = rasterio.open(ParametersPath + "/" + ParamList[i] + ".tif")
+                raster_obj = rasterio.open(f"{ParametersPath}/{ParamList[i]}.tif")
                 array = raster_obj.read(1)
                 affine = raster_obj.transform
                 Par.append(
-                    zonal_stats(src, array, affine=affine, stats=["max"])[0]["max"]
+                    zonal_stats(gdf, array, affine=affine, stats=["max"])[0]["max"]
                 )  # stats=['min', 'max', 'mean', 'median', 'majority']
 
             # plot the given basin with the parameters raster
 
             # Plot DEM
             ax = show((raster_obj, 1), with_bounds=True)
-            src.plot(facecolor="None", edgecolor="blue", linewidth=2, ax=ax)
+            gdf.plot(facecolor="None", edgecolor="blue", linewidth=2, ax=ax)
             # ax.set_xbound([Basin.bounds.loc[0,'minx']-10,Basin.bounds.loc[0,'maxx']+10])
             # ax.set_ybound([Basin.bounds.loc[0,'miny']-1, Basin.bounds.loc[0,'maxy']+1])
 
             return Par
         else:
-            Inputs.prepareInputs(src, ParametersPath + "/", SaveTo)
+            Inputs.prepareInputs(gdf, f"{ParametersPath}/", save_to)
 
     @staticmethod
     def createLumpedInputs(Path):
@@ -303,7 +308,9 @@ class Inputs:
         return data
 
     @staticmethod
-    def renameFiles(path: str, prefix: str= "", fmt: str= "%Y.%m.%d", freq: str= "daily"):
+    def renameFiles(
+        path: str, prefix: str = "", fmt: str = "%Y.%m.%d", freq: str = "daily"
+    ):
         """renameFiles.
 
         renameFiles method takes the path to a folder where you want to put a number
@@ -327,7 +334,7 @@ class Inputs:
         the begining of the name.
         """
         if not os.path.exists(path):
-            raise FileNotFoundError(f"The directory you have entered does not exist")
+            raise FileNotFoundError("The directory you have entered does not exist")
 
         files = os.listdir(path)
         # get only the tif files
@@ -347,7 +354,9 @@ class Inputs:
                 for i in dates
             ]
         else:
-            new_date_str = [f"{i.year}-{i.month}-{i.day}-{i.hour}-{i.minute}" for i in dates]
+            new_date_str = [
+                f"{i.year}-{i.month}-{i.day}-{i.hour}-{i.minute}" for i in dates
+            ]
 
         df = pd.DataFrame()
         df["files"] = files
@@ -357,11 +366,15 @@ class Inputs:
         df.reset_index(inplace=True)
         df["order"] = [i for i in range(len(files))]
 
-        df["new_names"] = [f"{df.loc[i, 'order']}_{prefix}_{df.loc[i, 'DateStr']}.tif" for i in range(len(files))]
+        df["new_names"] = [
+            f"{df.loc[i, 'order']}_{prefix}_{df.loc[i, 'DateStr']}.tif"
+            for i in range(len(files))
+        ]
         # rename the files
         for i in range(len(files)):
-            os.rename(f"{path}/{df.loc[i, 'files']}", f"{path}/{df.loc[i, 'new_names']}")
-
+            os.rename(
+                f"{path}/{df.loc[i, 'files']}", f"{path}/{df.loc[i, 'new_names']}"
+            )
 
     @staticmethod
     def changetext2time(string):

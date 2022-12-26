@@ -12,6 +12,7 @@ Created on Sun Jun 24 21:02:34 2018
 import numpy as np
 import pandas as pd
 from loguru import logger
+
 from Hapi.catchment import Catchment
 from Hapi.hm.saintvenant import SaintVenant
 from Hapi.rrm.wrapper import Wrapper

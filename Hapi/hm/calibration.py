@@ -209,7 +209,7 @@ class Calibration(River):
 
         # stationname, gaugename, gaugexs
 
-    def ReadObservedWL(
+    def readObservedWL(
         self,
         path: str,
         start: Union[str, dt.datetime],
@@ -514,7 +514,7 @@ class Calibration(River):
             for i in range(len(gauges)):
                 station_id = gauges[i]
                 try:
-                    self.q_rrm[station_id] = self.ReadRRMResults(
+                    self.q_rrm[station_id] = self.readRRMResults(
                         self.version,
                         self.rrmreferenceindex,
                         path,
@@ -533,7 +533,7 @@ class Calibration(River):
             for i in range(len(gauges)):
                 station_id = gauges[i]
                 try:
-                    self.q_rrm[station_id] = self.ReadRRMResults(
+                    self.q_rrm[station_id] = self.readRRMResults(
                         self.version,
                         self.rrmreferenceindex,
                         path,
@@ -542,7 +542,7 @@ class Calibration(River):
                         today,
                         date_format=fmt,
                     )[station_id].tolist()
-                    self.QRRM2[station_id] = self.ReadRRMResults(
+                    self.QRRM2[station_id] = self.readRRMResults(
                         self.version,
                         self.rrmreferenceindex,
                         path2,
@@ -639,7 +639,7 @@ class Calibration(River):
         # fill non modelled time steps with zeros
         for i in range(len(gauges)):
             nodeid = gauges[i]
-            self.q_hm[nodeid] = self.ReadRRMResults(
+            self.q_hm[nodeid] = self.readRRMResults(
                 self.version,
                 self.ReferenceIndex,
                 path,
@@ -738,7 +738,7 @@ class Calibration(River):
         self.WLHM = pd.DataFrame()
         for i in range(len(gauges)):
             nodeid = gauges[i]
-            self.WLHM[nodeid] = self.ReadRRMResults(
+            self.WLHM[nodeid] = self.readRRMResults(
                 self.version,
                 self.ReferenceIndex,
                 path,
@@ -776,7 +776,7 @@ class Calibration(River):
 
         self.WLHM.index = pd.date_range(start, end, freq="D")
 
-    def ReadCalirationResult(self, subid, path: str = ""):
+    def readCalirationResult(self, subid: int, path: str = ""):
         """ReadCalirationResult.
 
         ReadCalirationResult method reads the 1D results and fill the missing
@@ -784,16 +784,16 @@ class Calibration(River):
 
         Parameters
         ----------
-        1-subid : [integer]
+        subid : [integer]
             ID of the sub-basin you want to read its data.
-        4-path : [String], optional
+        path : [String], optional
             Path to read the results from. The default is ''.
 
         Returns
         -------
-        1-CalibrationQ : [dataframe]
+        CalibrationQ : [dataframe]
             the discharge time series of the  calibrated gauges
-        2-CalibrationWL : [dataframe]
+        CalibrationWL : [dataframe]
             the water level time series of the  calibrated gauges
         """
         hasattr(self, "q_gauges"), "Please read the discharge gauges first"

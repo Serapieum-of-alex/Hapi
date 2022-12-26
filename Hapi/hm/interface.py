@@ -59,7 +59,7 @@ class Interface(River):
         self.BC = None
         pass
 
-    def ReadLateralsTable(
+    def readLateralsTable(
         self, path: str, prefix: str = "lf_xsid", suffix: str = ".txt"
     ) -> None:
         """ReadLateralsTable.
@@ -82,7 +82,7 @@ class Interface(River):
 
         Returns
         -------
-        LateralsTable: [dataframe attribute]
+        IF: [dataframe attribute]
             dataframe with two columns ["filename", "sxid"]
         """
         try:
@@ -113,14 +113,14 @@ class Interface(River):
                 "Please read the cross section file first using the method 'ReadCrossSections'"
             )
 
-    def ReadLaterals(
+    def readLaterals(
         self,
         fromday: Union[str, int] = "",
         today: Union[str, int] = "",
         path: str = "",
         date_format: str = "'%Y-%m-%d'",
     ):
-        """ReadUSHydrograph.
+        """readLaterals.
 
             read the upstream hydrograph
 
@@ -149,13 +149,13 @@ class Interface(River):
 
         self.Laterals = pd.DataFrame()
 
-        if isinstance(self.LateralsTable, DataFrame):
+        if len(self.LateralsTable) > 0:
 
             for i in range(len(self.LateralsTable)):
                 NodeID = self.LateralsTable.loc[i, "xsid"]
                 fname = f"lf_xsid{NodeID}"
 
-                self.Laterals[NodeID] = self.ReadRRMResults(
+                self.Laterals[NodeID] = self.readRRMResults(
                     self.version,
                     self.ReferenceIndex,
                     path,
@@ -179,7 +179,7 @@ class Interface(River):
         else:
             logger.info("There are no Laterals table please check")
 
-    def ReadRRMProgression(
+    def readRRMProgression(
         self,
         fromday: int = "",
         today: int = "",
@@ -223,7 +223,7 @@ class Interface(River):
                 NodeID = self.LateralsTable.loc[i, "xsid"]
                 fname = "lf_xsid" + str(NodeID)
 
-                self.RRMProgression[NodeID] = self.ReadRRMResults(
+                self.RRMProgression[NodeID] = self.readRRMResults(
                     self.version,
                     self.ReferenceIndex,
                     path,
@@ -245,8 +245,8 @@ class Interface(River):
 
             self.RRMProgression.index = pd.date_range(start, end, freq="D")
 
-    def ReadBoundaryConditionsTable(self, path, prefix="bc_xsid", suffix=".txt"):
-        """ReadBoundaryConditionsTable.
+    def readBoundaryConditionsTable(self, path, prefix="bc_xsid", suffix=".txt"):
+        """readBoundaryConditionsTable.
 
         ReadLateralsTable method reads the laterals file
             laterals file : file contains the xsid of the cross-sections that
@@ -276,7 +276,7 @@ class Interface(River):
             int(i[l1 : len(i) - l2]) for i in self.BCTable[self.BCTable.columns[0]]
         ]
 
-    def ReadBoundaryConditions(
+    def readBoundaryConditions(
         self,
         fromday: Union[str, int] = "",
         today: Union[str, int] = "",
@@ -317,7 +317,7 @@ class Interface(River):
         for i in range(len(self.BCTable)):
             NodeID = self.BCTable.loc[i, "id"]
             fname = "bc_xsid" + str(NodeID)
-            self.BC[NodeID] = self.ReadRRMResults(
+            self.BC[NodeID] = self.readRRMResults(
                 self.version,
                 self.ReferenceIndex,
                 path,
@@ -347,11 +347,7 @@ class Interface(River):
         """
         logger.debug("\n")
         logger.debug(
-            "Attributes List of: "
-            + repr(self.__dict__["name"])
-            + " - "
-            + self.__class__.__name__
-            + " Instance\n"
+            f"Attributes List of: {repr(self.__dict__['name'])} - {self.__class__.__name__} Instance\n"
         )
         self_keys = list(self.__dict__.keys())
         self_keys.sort()

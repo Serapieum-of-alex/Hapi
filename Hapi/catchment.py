@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import statista.metrics as PC
-from digitalearth.map import Map
+from digitalearth.static import Map
 from loguru import logger
 from osgeo import gdal
 from pyramids.catchment import Catchment as GC
@@ -549,7 +549,9 @@ class Catchment:
             self.Parameters = Raster.readRastersFolder(Path)
         else:
             if not os.path.exists(Path):
-                raise FileNotFoundError ("The parameters file you have entered does not exist")
+                raise FileNotFoundError(
+                    "The parameters file you have entered does not exist"
+                )
 
             self.Parameters = pd.read_csv(Path, index_col=0, header=None)[1].tolist()
 
@@ -589,7 +591,9 @@ class Catchment:
                 )
             elif not Snow and Maxbas:
                 if len(self.Parameters) != 11:
-                    raise ValueError ( f"current version of HBV (with snow) takes 11 parameter you have entered {len(self.Parameters)}")
+                    raise ValueError(
+                        f"current version of HBV (with snow) takes 11 parameter you have entered {len(self.Parameters)}"
+                    )
 
             elif Snow and not Maxbas:
                 assert len(self.Parameters) == 17, (
@@ -806,7 +810,9 @@ class Catchment:
                 self.QGauges[int(name)] = f.loc[self.start : self.end, f.columns[-1]]
         else:
             if not os.path.exists(Path):
-                raise FileNotFoundError(f"The file you have entered{Path} does not exist")
+                raise FileNotFoundError(
+                    f"The file you have entered{Path} does not exist"
+                )
 
             self.QGauges = pd.DataFrame(index=ind)
             f = pd.read_csv(

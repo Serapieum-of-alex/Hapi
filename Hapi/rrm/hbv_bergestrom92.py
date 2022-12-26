@@ -219,7 +219,8 @@ def Soil(temp, inf, ep, sm_old, uz_old, tm, fc, beta, e_corr, lp):
 
 
 def Response(lz_old, uz_int_1, perc, k, k1, k2, uzl):
-    r"""Response.
+    """Response.
+
         The response routine of the HBV-96 model.
         The response routine is in charge of transforming the current values of
         upper and lower zone into discharge. This routine also controls the

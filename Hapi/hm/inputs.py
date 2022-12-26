@@ -453,7 +453,7 @@ class Inputs(River):
     def StringSpace(Inp):
         return str(Inp) + "  "
 
-    def ReturnPeriod(
+    def returnPeriod(
         self,
         MapsPath,
         prefix,

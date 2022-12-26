@@ -267,7 +267,7 @@ def _response(tfac, perc, alpha, k, k1, area, lz_old, uz_int_1, qdr):
     if _q_0 > uz_int_2:  # if q_0 =30 and UZ=20
         _q_0 = uz_int_2  # q_0=20
 
-    uz_new = uz_int_2 - (_q_0)
+    uz_new = uz_int_2 - _q_0
 
     lz_int_1 = lz_old + np.min(
         [perc, uz_int_1]
@@ -278,7 +278,7 @@ def _response(tfac, perc, alpha, k, k1, area, lz_old, uz_int_1, qdr):
     if _q_1 > lz_int_1:
         _q_1 = lz_int_1
 
-    lz_new = lz_int_1 - (_q_1)
+    lz_new = lz_int_1 - _q_1
 
     q_new = ((_q_0 + _q_1) * area) / (
         3.6 * tfac
@@ -358,10 +358,10 @@ def _tf(maxbas):
     wi = []
     for x in range(1, maxbas + 1):  # if maxbas=3 so x=[1,2,3]
         if (
-            x <= (maxbas) / 2.0
+            x <= maxbas / 2.0
         ):  # x <= 1.5  # half of values will form the rising limb and half falling limb
             # Growing transfer    # rising limb
-            wi.append((x) / (maxbas + 2.0))
+            wi.append(x / (maxbas + 2.0))
         else:
             # Receding transfer    # falling limb
             wi.append(1.0 - (x + 1) / (maxbas + 2.0))
@@ -470,7 +470,7 @@ def CalculateMaxBas(MAXBAS):
             maxbasW[x] = 1
             NumberofWeights = 1
         else:
-            maxbasW[x] = (yant * (MAXBAS - (x)) / 2) / TotalA
+            maxbasW[x] = (yant * (MAXBAS - x) / 2) / TotalA
             Total = Total + maxbasW[x]
             NumberofWeights = x
     else:

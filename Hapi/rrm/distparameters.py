@@ -766,17 +766,17 @@ class DistParameters:
               default value is None (parameters are going to be saved in the
               current directory)
 
-         Outputs:
-         ----------
+         Returns
+         -------
               Rasters for parameters of the distributed model
 
         examples:
         ----------
-             DemPath = path+"GIS/4000/dem4000.tif"
-             raster=gdal.Open(DemPath)
-             ParPath = "par15_7_2018.txt"
-             par=np.loadtxt(ParPath)
-             klb=0.5
+         >>> DemPath = path+"GIS/4000/dem4000.tif"
+         >>> raster=gdal.Open(DemPath)
+         >>> ParPath = "par15_7_2018.txt"
+         >>> par=np.loadtxt(ParPath)
+         >>> klb=0.5
              kub=1
              no_parameters=12
              DistParFn=DP.par3dLumped

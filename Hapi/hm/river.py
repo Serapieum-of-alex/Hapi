@@ -24,6 +24,26 @@ from Hapi.hm.saintvenant import SaintVenant
 from Hapi.plot.visualizer import Visualize as V
 
 hours = list(range(1, 25))
+initial_args = dict(
+    dto={"default": 60, "type": int},
+    dx={"default": 500, "type": int},
+    leftovertopping_suffix={"default": "_left.txt", "type": str},
+    rightovertopping_suffix={"default": "_right.txt", "type": str},
+    depthprefix={"default": "DepthMax", "type": str},
+    durationprefix={"default": "Duration", "type": str},
+    returnperiod_prefix={"default": "ReturnPeriod", "type": str},
+    compressed={"default": True, "type": bool},
+    fmt={"default": "%Y-%m-%d", "type": str},
+    onedresultpath={"default": "/results/1d", "type": str},
+    twodresultpath={"default": "/results/2d", "type": str},
+)
+# def _get_attr(attribute):
+#     attribute = "dto"
+#     default_val = initial_args[attribute].get("default")
+#     attr_type = initial_args.get(attribute).get("type")
+#     # attr_type = eval(attr_type)
+#     # check the type of the entered value
+#     if
 
 
 class River:
@@ -43,7 +63,7 @@ class River:
         rrmstart: str = "",
         rrmdays: int = 36890,
         dto: int = 60,
-        dx: Union[float, str] = 500,
+        dx: int = 500,
         leftovertopping_suffix: str = "_left.txt",
         rightovertopping_suffix: str = "_right.txt",
         depthprefix: str = "DepthMax",
@@ -247,7 +267,7 @@ class River:
         self.EventIndex = None
         self.rivernetwork = None
         self.SP = None  # StatisticalProperties
-        self.CustomizedRunspath = None
+        self.customized_runs_path = None
         self.Segments = None
         self.RP = None
         self.SP = None
@@ -372,15 +392,15 @@ class River:
         self.wd = wholefile[1][:-1]
         # cross sections file
         self.XSF = wholefile[4][:-1]
-        self.ReadCrossSections(self.wd + "/inputs/1d/topo/" + self.XSF)
+        self.readXS(self.wd + "/inputs/1d/topo/" + self.XSF)
         # Laterals file, BC file
         self.LateralsF, self.BCF = wholefile[6][:-1].split(" ")
         # RiverNetwork file
         self.RiverNetworkF = wholefile[8][:-1]
-        self.RiverNetwork(self.wd + "/inputs/1d/topo/" + self.RiverNetworkF)
+        self.readRiverNetwork(self.wd + "/inputs/1d/topo/" + self.RiverNetworkF)
         # Slope File
         self.SlopeF = wholefile[10][:-1]
-        self.Slope(self.wd + "/inputs/1d/topo/" + self.SlopeF)
+        self.readSlope(self.wd + "/inputs/1d/topo/" + self.SlopeF)
         self.NoSeg = len(self.slope)
         # Calibration file
         self.CalibrationF = wholefile[12][:-1]
@@ -393,7 +413,7 @@ class River:
         self.Subid = int(Subid)
         # Customized Run file
         self.Customized_BC_F = wholefile[18][:-1]
-        self.CustomizedRunspath = wholefile[19][:-1]
+        self.customized_runs_path = wholefile[19][:-1]
 
         # Results
         DeleteOld = wholefile[22][:-1]
@@ -466,12 +486,12 @@ class River:
             CalcReturnPerion=CalcReturnPerion,
         )
 
-    def ReadCrossSections(self, path: str):
-        """ReadCrossSections.
+    def readXS(self, path: str):
+        """readXS.
 
             Read crossSections file
 
-        CrossSections method reads the cross section data of the river and assign it
+        readXS method reads the cross section data of the river and assign it
         to an attribute "Crosssections" of type dataframe
 
         Parameters
@@ -495,7 +515,7 @@ class River:
             self.xsname = self.crosssections["xsid"].tolist()
             self.segments = list(set(self.crosssections["id"].tolist()))
 
-    def ReadBoundaryConditions(
+    def readBoundaryConditions(
         self,
         start: str = "",
         end: str = "",
@@ -750,7 +770,7 @@ class River:
                 self.firstdayresults, self.lastday, freq="D"
             )
 
-    def Read1DResult(
+    def read1DResult(
         self,
         Subid: int,
         fromday: Union[int, str] = "",
@@ -870,8 +890,6 @@ class River:
                 missing["q"] = 0
                 missing["h"] = 0
                 missing["wl"] = 0
-                #    missing['area'] = 0
-                #    missing['perimeter'] = 0
                 data = data.append(missing)
 
                 del missing, missing_1, missing_2, missing_3, missing_days
@@ -881,7 +899,7 @@ class River:
         self.Result1D = data
 
     @staticmethod
-    def Collect1DResults(
+    def collect1DResults(
         path,
         FolderNames,
         Left,
@@ -1025,7 +1043,7 @@ class River:
                 exec(var + ".to_csv(path ,index= None, sep = ' ', header = None)")
 
     @staticmethod
-    def ReadRRMResults(
+    def readRRMResults(
         version: int,
         rrmreferenceindex,
         path: str,
@@ -1330,7 +1348,7 @@ class River:
         )
         return anim
 
-    def SaveResult(self, path: str):  # , fmt="%.3f"):
+    def saveResult(self, path: str):  # , fmt="%.3f"):
         """SaveResult.
 
         Save Result
@@ -1363,10 +1381,10 @@ class River:
                 delimiter=",",
             )
 
-    def Slope(self, path: str):
-        """Slope.
+    def readSlope(self, path: str):
+        """readSlope.
 
-        Slope
+            readSlope
 
         Parameters
         ----------
@@ -1382,7 +1400,7 @@ class River:
         self.slope = pd.read_csv(path, delimiter=",", header=None, skiprows=1)
         self.slope.columns = ["id", "slope"]
 
-    def ReturnPeriod(self, path):
+    def returnPeriod(self, path):
         """ReturnPeriod.
 
         ReturnPeriod method reads the HQ file which contains all the computational nodes
@@ -1402,7 +1420,7 @@ class River:
         self.RP = pd.read_csv(path, delimiter=",", header=None)
         self.RP.columns = ["node", "HQ2", "HQ10", "HQ100"]
 
-    def RiverNetwork(self, path):
+    def readRiverNetwork(self, path):
         """RiverNetwork.
 
         RiverNetwork method rad the table of each computational node followed by
@@ -1443,7 +1461,7 @@ class River:
         self.rivernetwork = rivernetwork[:]
         self.Segments = self.rivernetwork["id"].tolist()
 
-    def TraceSegment(self, sub_id):
+    def traceSegment(self, sub_id):
         """TraceSegment.
 
         Trace method takes sub basin id and trace it to get the upstream and
@@ -1465,7 +1483,7 @@ class River:
         Examples
         --------
         >>> Subid = 42
-        >>> River.TraceSegment(Subid)
+        >>> River.traceSegment(Subid)
         """
         US = self.rivernetwork["us"][np.where(self.rivernetwork["id"] == sub_id)[0][0]]
         for i in range(len(self.rivernetwork)):
@@ -1477,7 +1495,7 @@ class River:
 
         return US, DS
 
-    def Trace2(self, sub_id, US):
+    def trace2(self, sub_id, US):
         """Trace2.
 
         trace the river network
@@ -1494,13 +1512,13 @@ class River:
         None.
         """
         # trace the given segment
-        US1, _ = self.TraceSegment(sub_id)
+        US1, _ = self.traceSegment(sub_id)
         if len(US1) > 0:
             for i in range(len(US1)):
                 US.append(US1[i])
-                self.Trace2(US1[i], US)
+                self.trace2(US1[i], US)
 
-    def Trace(self, sub_id):
+    def trace(self, sub_id):
         """Trace.
 
         Trace method takes the id of the segment and trace it upstream
@@ -1517,7 +1535,7 @@ class River:
             attribute.
         """
         self.US = []
-        self.Trace2(sub_id, self.US)
+        self.trace2(sub_id, self.US)
 
     def statisticalProperties(self, path: str, Distibution: str = "GEV"):
         """StatisticalProperties.
@@ -1704,7 +1722,7 @@ class River:
         except:
             return -1
 
-    def GetBankfullDepth(self, function, ColumnName):
+    def getBankfullDepth(self, function, ColumnName):
         """GetBankfullDepth.
 
         GetBankfullDepth method takes a function that calculates the bankful
@@ -1727,7 +1745,7 @@ class River:
             self.crosssections["b"].to_frame().applymap(function)
         )
 
-    def GetCapacity(self, ColumnName: str, Option: int = 1, distribution: str = "GEV"):
+    def getCapacity(self, ColumnName: str, Option: int = 1, distribution: str = "GEV"):
         """GetCapacity.
 
             GetCapacity method calculates the discharge that is enough to fill the
@@ -1800,9 +1818,9 @@ class River:
                     i, ["hl", "hr", "bl", "br", "b", "dbf"]
                 ].tolist()
                 BedLevel = self.crosssections.loc[i, "gl"]
-                Coords = self.GetVortices(H - BedLevel, Hl, Hr, Bl, Br, B, dbf)
+                Coords = self.getVortices(H - BedLevel, Hl, Hr, Bl, Br, B, dbf)
                 # get the area and perimeters
-                Area, Perimeter = self.PolygonGeometry(Coords)
+                Area, Perimeter = self.polygonGeometry(Coords)
                 # self.crosssections.loc[i,'Area'] = Area
                 # self.crosssections.loc[i,'Perimeter'] = Perimeter
                 self.crosssections.loc[i, ColumnName] = (
@@ -1829,7 +1847,7 @@ class River:
                     RP = -1
                 self.crosssections.loc[i, ColumnName + "RP"] = round(RP, 2)
 
-    def CalibrateDike(self, ObjectiveRP: Union[str, int], CurrentRP: Union[str, int]):
+    def calibrateDike(self, ObjectiveRP: Union[str, int], CurrentRP: Union[str, int]):
         """CalibrateDike.
 
             CalibrateDike method takes cross section and based on a given return period
@@ -1931,9 +1949,9 @@ class River:
                         )
 
                     H = self.crosssections.loc[i, ["zlnew", "zrnew"]].min()
-                    Coords = self.GetVortices(H - BedLevel, Hl, Hr, Bl, Br, B, dbf)
+                    Coords = self.getVortices(H - BedLevel, Hl, Hr, Bl, Br, B, dbf)
                     # get the area and perimeters
-                    Area, Perimeter = self.PolygonGeometry(Coords)
+                    Area, Perimeter = self.polygonGeometry(Coords)
                     self.crosssections.loc[i, "New Capacity"] = (
                         (1 / self.crosssections.loc[i, "m"])
                         * Area
@@ -1954,7 +1972,7 @@ class River:
                 logger.info(f"New H = {round(H, 2)}")
                 logger.info("---------------------------")
 
-    def Overtopping(self, OvertoppingResultpath=""):
+    def overtopping(self, OvertoppingResultpath=""):
         """Overtopping.
 
         Overtopping method reads the overtopping files and for each cross section
@@ -2049,7 +2067,7 @@ class River:
         self.OverToppingSubsLeft = OverToppingSubsLeft
         self.OverToppingSubsRight = OverToppingSubsRight
 
-    def GetOvertoppedXS(self, day, allEventdays=True):
+    def getOvertoppedXS(self, day, allEventdays=True):
         """GetOvertoppedXS.
 
         GetOvertoppedXS method get the cross sections that was overtopped in
@@ -2128,7 +2146,7 @@ class River:
 
         return XSLeft, XSRight
 
-    def GetSubBasin(self, xsid):
+    def getSubBasin(self, xsid):
         """GetSubBasin.
 
         GetSubBasin method returned the sub-basin that the Cross section belong
@@ -2145,7 +2163,7 @@ class River:
         loc = np.where(self.crosssections["xsid"] == xsid)[0][0]
         return self.crosssections.loc[loc, "id"]
 
-    def GetFloodedSubs(self, OvertoppedXS=[], day=[1], allEventdays=True):
+    def getFloodedSubs(self, OvertoppedXS=[], day=[1], allEventdays=True):
         """GetFloodedSubs.
 
         GetFloodedSubs gets the inundeated sub-basins
@@ -2183,21 +2201,21 @@ class River:
         if len(OvertoppedXS) > 0:
             OvertoppedXS = list(set(OvertoppedXS))
             for i in range(len(OvertoppedXS)):
-                Subs.append(self.GetSubBasin(OvertoppedXS[i]))
+                Subs.append(self.getSubBasin(OvertoppedXS[i]))
         else:
             for j in range(len(day)):
-                XSLeft, XSRight = self.GetOvertoppedXS(day[j], allEventdays)
+                XSLeft, XSRight = self.getOvertoppedXS(day[j], allEventdays)
                 OvertoppedXS = XSLeft + XSRight
                 OvertoppedXS = list(set(OvertoppedXS))
 
                 for i in range(len(OvertoppedXS)):
-                    Subs.append(self.GetSubBasin(OvertoppedXS[i]))
+                    Subs.append(self.getSubBasin(OvertoppedXS[i]))
 
         # to remove duplicate subs
         Subs = list(set(Subs))
         return Subs
 
-    def DetailedOvertopping(self, floodedSubs, eventdays):
+    def detailedOvertopping(self, floodedSubs, eventdays):
         """DetailedOvertopping.
 
         DetailedOvertopping method takes list of days and the flooded subs-basins
@@ -2307,7 +2325,7 @@ class River:
         # self.DetailedOvertoppingLeft.loc['sum','sum'] = self.DetailedOvertoppingLeft.loc[:,'sum'].sum()
         # self.DetailedOvertoppingRight.loc['sum','sum'] = self.DetailedOvertoppingRight.loc[:,'sum'].sum()
 
-    def Coordinates(self, Bankful=False):
+    def coordinates(self, Bankful=False):
         """Coordinates.
 
         Coordinates method calculate the real coordinates for all the vortixes
@@ -2356,7 +2374,7 @@ class River:
                 ].tolist()
                 dbf = self.crosssections.loc[i, list(self.crosssections.columns)[16]]
 
-                outputs = self.GetCoordinates(inputs, dbf)
+                outputs = self.getCoordinates(inputs, dbf)
 
                 self.crosssections.loc[
                     i, ["x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8"]
@@ -2396,7 +2414,7 @@ class River:
                     i, list(self.crosssections.columns)[3:15]
                 ].tolist()
 
-                outputs = self.GetCoordinates(inputs, dbf)
+                outputs = self.getCoordinates(inputs, dbf)
 
                 self.crosssections.loc[
                     i, ["x1", "x2", "x3", "x4", "x5", "x6"]
@@ -2418,7 +2436,7 @@ class River:
     # def CreatePolygons(self):
 
     @staticmethod
-    def PolygonGeometry(Coords):
+    def polygonGeometry(Coords):
         """PolygonGeometry.
 
         PolygonGeometry method calculates the area and perimeter of some coordinates
@@ -2464,7 +2482,7 @@ class River:
         return area, peri
 
     @staticmethod
-    def PolyArea(Coords):
+    def polyArea(Coords):
         """PolyArea.
 
         PolyArea method calculates the the area between given coordinates
@@ -2501,7 +2519,7 @@ class River:
         return area
 
     @staticmethod
-    def PolyPerimeter(Coords):
+    def polyPerimeter(Coords):
         """PolyPerimeter.
 
         PolyPerimeter method calculates the the perimeter between given coordinates
@@ -2536,7 +2554,7 @@ class River:
         return peri
 
     @staticmethod
-    def GetCoordinates(XSGeometry, dbf):
+    def getCoordinates(XSGeometry, dbf):
         """GetCoordinates.
 
         GetCoordinates calculates the coordinates of all the points (vortices)
@@ -2652,7 +2670,7 @@ class River:
         return Xcoords, Ycoords, Zcoords
 
     @staticmethod
-    def GetVortices(H, Hl, Hr, Bl, Br, B, dbf):
+    def getVortices(H, Hl, Hr, Bl, Br, B, dbf):
         """GetVortices.
 
         GetCoordinates calculates the coordinates of all the points (vortices)
@@ -2816,7 +2834,7 @@ class River:
 
         return Coords
 
-    def GetRatingCurve(self, MaxH=20, interval=0.02, dx=500):
+    def getRatingCurve(self, MaxH=20, interval=0.02, dx=500):
         """GetRatingCurve.
 
         calculate the depth coresponding to each discharge value for a given
@@ -2851,7 +2869,7 @@ class River:
         for i in range(Nint):
             Table[i, 0] = interval * (i + 1)
             # calculate area & perimeter
-            Coords = self.GetVortices(
+            Coords = self.getVortices(
                 Table[i, 0],
                 geom["hl"],
                 geom["hr"],
@@ -2860,7 +2878,7 @@ class River:
                 geom["b"],
                 geom["dbf"],
             )
-            Table[i, 1:3] = self.PolygonGeometry(Coords)
+            Table[i, 1:3] = self.polygonGeometry(Coords)
 
             # area & perimeter of the Upper part only
             if Table[i, 0] <= geom["dbf"]:
@@ -2895,7 +2913,7 @@ class River:
 
         self.HQ = HQ[:, :]
 
-    def GetDays(self, fromday: int, today: int):
+    def getDays(self, fromday: int, today: int):
         """GetDays.
 
         GetDays method check if input days exist in the 1D result data
@@ -3031,7 +3049,7 @@ class River:
         return Alt1, Alt3
 
     @staticmethod
-    def CorrectMaps(DEMpath, Filelist, Resultpath, MapsPrefix, FilterValue, Saveto):
+    def correctMaps(DEMpath, Filelist, Resultpath, MapsPrefix, FilterValue, Saveto):
         """CorrectMaps.
 
         CorrectMaps method check every 2D result that starts with the given Mapsprefix
@@ -3183,7 +3201,7 @@ class Sub(River):
 
     def __init__(self, sub_id: int, River, RunModel: bool = False):
         self.id = sub_id
-        self.RIM = River.name
+        self.rim = River.name
         self.version = River.version
         self.freq = River.freq
         self.dt = River.dt
@@ -3201,8 +3219,8 @@ class Sub(River):
             self.compressed = River.compressed
         if River.twodresultpath:
             self.twodresultpath = River.twodresultpath
-        if River.CustomizedRunspath:
-            self.CustomizedRunspath = River.CustomizedRunspath
+        if River.customized_runs_path:
+            self.CustomizedRunspath = River.customized_runs_path
         if River.usbcpath:
             self.usbcpath = River.usbcpath
         if River.oneminresultpath:
@@ -3248,7 +3266,7 @@ class Sub(River):
             self.slope = River.slope[River.slope["id"] == sub_id]["slope"].tolist()[0]
 
         if isinstance(River.rivernetwork, DataFrame):
-            self.usnode, self.dsnode = River.TraceSegment(sub_id)
+            self.usnode, self.dsnode = River.traceSegment(sub_id)
         else:
             self.usnode, self.dsnode = [], []
 
@@ -3291,59 +3309,64 @@ class Sub(River):
         self.Result1D = None  # DataFrame
         self.USHydrographs = None
 
-    def Read1DResult(
+    def read1DResult(
         self,
         fromday: Union[int, str] = "",
         today: Union[int, str] = "",
-        FillMissing=True,
-        addHQ2=False,
-        path="",
+        FillMissing: bool = True,
+        addHQ2: bool = False,
+        path: str = "",
         xsid: Union[int, str] = "",
     ):
-        """Read1DResult. Read1DResult method reads the 1D (1D-2D coupled) result of the sub-basin the object is created for and return the hydrograph of the first and last cross section. the method will not read the 1D result file again if you tried to read results of the same sub-basin again, so you have to re-instantiate the object.
+        """read1DResult.
+
+        Read1DResult method reads the 1D (1D-2D coupled) result of the sub-basin the object is
+        created for and return the hydrograph of the first and last cross section. the method will not read the 1
+        D result file again if you tried to read results of the same sub-basin again, so you have to re-instantiate
+        the object.
 
         Parameters
         ----------
-            1-fromday : [integer], optional
-                the index of the day you want the data to start from.
-                The default is empty. it means read everything
-            2-today : [integer], optional
-                the index of the day you want the data to end to. The default
-                is empty. means read everything
-            3-FillMissing : [Bool], optional
-                Fill the missing days. The default is False.
-            4-addHQ2 : [Bool], optional
-                to add the value of HQ2. The default is False.
-            5-path : [String], optional
-                path to read the results from. The default is ''.
-            6-xsid : [Integer], optional
-                id of a specific cross section you want to get the results on
-                it. The default is ''.
+        fromday : [integer], optional
+            the index of the day you want the data to start from.
+            The default is empty. it means read everything
+        today : [integer], optional
+            the index of the day you want the data to end to. The default
+            is empty. means read everything
+        FillMissing : [Bool], optional
+            Fill the missing days. The default is False.
+        addHQ2 : [Bool], optional
+            to add the value of HQ2. The default is False.
+        path : [String], optional
+            path to read the results from. The default is ''.
+        xsid : [Integer], optional
+            id of a specific cross section you want to get the results on
+            it. The default is ''.
 
         Returns
         -------
-            1-Result1D : [attribute]
-                the results read will be stored (as it is without any filter)
-                in the attribute "Result1D"
-            2-XSHydrographs : [dataframe attribute]
-                dataframe containing hydrographs at the position of the first
-                and last cross section
-            3-XSWaterLevel : [dataframe attribute]
-                dataframe containing waterlevels at the position of the first
-                and last cross section
-            4-firstdayresults:[attribute]
-                the first day in the 1D result
-            5-lastday:[attribute]
-                the last day in the 1D result
+        Result1D : [attribute]
+            the results read will be stored (as it is without any filter)
+            in the attribute "Result1D"
+        XSHydrographs : [dataframe attribute]
+            dataframe containing hydrographs at the position of the first
+            and last cross section
+        XSWaterLevel : [dataframe attribute]
+            dataframe containing waterlevels at the position of the first
+            and last cross section
+        firstdayresults:[attribute]
+            the first day in the 1D result
+        lastday:[attribute]
+            the last day in the 1D result
         """
-        if path == "" and not hasattr(self, "onedresultpath"):
+        if path == "" and self.onedresultpath == "":
             raise ValueError(
                 "User have to either enter the value of the 'path' parameter or"
                 " define the 'onedresultpath' parameter for the River object"
             )
         # if the results are not read yet read it
         if not isinstance(self.Result1D, DataFrame):
-            River.Read1DResult(
+            River.read1DResult(
                 self, self.id, fromday, today, path=path, FillMissing=FillMissing
             )
 
@@ -3452,7 +3475,7 @@ class Sub(River):
             self.firstdayresults, self.lastday, freq="D"
         )
 
-    def ExtractXS(self, xsid: int, addHQ2: bool = False, WaterLevel: bool = True):
+    def extractXS(self, xsid: int, addHQ2: bool = False, WaterLevel: bool = True):
         """ExtractXS.
 
         ExtractXS method extracts the hydrodraph and water levels of a specific
@@ -3546,7 +3569,7 @@ class Sub(River):
 
             self.NegQmin = f
 
-    def ReadRRMHydrograph(
+    def readRRMHydrograph(
         self,
         station_id: int,
         fromday: Union[int, str] = "",
@@ -3556,7 +3579,10 @@ class Sub(River):
         location: int = 1,
         path2: str = "",
     ):
-        """ReadRRMHydrograph. ReadHydrographs method reads the results of the Rainfall-runoff model for the given node id for a specific period.
+        """readRRMHydrograph.
+
+            ReadHydrographs method reads the results of the Rainfall-runoff model for the given node id for
+            a specific period.
 
         Parameters
         ----------
@@ -3602,7 +3628,7 @@ class Sub(River):
             ), "path2 argument has to be given fot the location of the 2nd rainfall run-off time series"
 
         if location == 1:
-            self.RRM[station_id] = self.ReadRRMResults(
+            self.RRM[station_id] = self.readRRMResults(
                 self.version,
                 self.rrmreferenceindex,
                 path,
@@ -3612,7 +3638,7 @@ class Sub(River):
                 date_format,
             )[station_id].tolist()
         else:
-            self.RRM[station_id] = self.ReadRRMResults(
+            self.RRM[station_id] = self.readRRMResults(
                 self.version,
                 self.rrmreferenceindex,
                 path,
@@ -3621,7 +3647,7 @@ class Sub(River):
                 today,
                 date_format,
             )[station_id].tolist()
-            self.RRM2[station_id] = self.ReadRRMResults(
+            self.RRM2[station_id] = self.readRRMResults(
                 self.version,
                 self.rrmreferenceindex,
                 path2,
@@ -3648,7 +3674,7 @@ class Sub(River):
             self.RRM2.index = pd.date_range(start, end, freq="D")
         # get the simulated hydrograph and add the cutted HQ2
 
-    def Resample(
+    def resample(
         self,
         xsid,
         ColumnName,
@@ -3733,7 +3759,7 @@ class Sub(River):
         elif ColumnName == "h":
             self.ResampledH.loc[:, xsid] = Q.tolist()
 
-    def DetailedStatisticalCalculation(self, T):
+    def detailedStatisticalCalculation(self, T):
         """DetailedStatisticalCalculation. DetailedStatisticalCalculation method calculates the discharge related to a specific given return period.
 
         Parameters
@@ -3753,7 +3779,7 @@ class Sub(River):
             F, loc=self.SP.loc[0, "loc"], scale=self.SP.loc[0, "scale"]
         )
 
-    def DetailedOvertopping(self, eventdays):
+    def detailedOvertopping(self, eventdays):
         """DetailedOvertopping. DetailedOvertopping method takes list of days and get the left and right overtopping for the sub-basin each day.
 
         Parameters
@@ -3897,7 +3923,7 @@ class Sub(River):
             self.referenceindex.loc[eventdays[0] : eventdays[-1], "date"]
         ).tolist()
 
-    def SaveHydrograph(self, xsid: int, path: str = "", Option: int = 1):
+    def saveHydrograph(self, xsid: int, path: str = "", Option: int = 1):
         """Save Hydrograph. SaveHydrograph method saves the hydrograph of any cross-section in the segment. Mainly the method is created to to be used to save the last cross-section hydrograph to use it as as a boundary condition for the downstream segment.
 
         Parameters
@@ -3906,7 +3932,7 @@ class Sub(River):
             the id of the cross section.
         path : [string], optional
             path to the directory where you want to save the file to. if not given
-            the files are going to be saved in the 'CustomizedRunspath' path, The
+            the files are going to be saved in the 'customized_runs_path' path, The
             default is ''.
         Option : [integer]
             1 to write water depth results, 2 to write water level results
@@ -3918,7 +3944,7 @@ class Sub(River):
         if path == "":
             if not self.CustomizedRunspath:
                 raise ValueError(
-                    "please enter the value of the CustomizedRunspath or use the path "
+                    "please enter the value of the customized_runs_path or use the path "
                     "argument to specify where to save the file"
                 )
             path = self.CustomizedRunspath
@@ -3945,7 +3971,7 @@ class Sub(River):
 
         f.to_csv(path + str(self.id) + ".txt", index=False, float_format="%.3f")
 
-    def PlotHydrographProgression(
+    def plotHydrographProgression(
         self,
         xss: list,
         start: str,
@@ -4013,7 +4039,7 @@ class Sub(River):
         xslist = list(set(xslist))
         # extract the XS hydrographs
         for i in range(len(xslist)):
-            self.Read1DResult(xsid=xslist[i])
+            self.read1DResult(xsid=xslist[i])
 
         # xslist = [self.firstxs] + xslist + [self.lastxs]
         xslist.sort()
@@ -4038,14 +4064,16 @@ class Sub(River):
 
         return fig, ax
 
-    def ReadUSHydrograph(
+    def readUSHydrograph(
         self,
         fromday: [str, int] = "",
         today: Union[str, int] = "",
         path: str = "",
         date_format: str = "'%Y-%m-%d'",
     ):
-        """ReadUSHydrograph. Read the hydrograph of the upstream segment.
+        """readUSHydrograph.
+
+            Read the hydrograph of the upstream segment.
 
         Parameters
         ----------
@@ -4054,7 +4082,7 @@ class Sub(River):
         today : [int], optional
                 the day you want to read the result to.
         path : [str], optional
-            path to read the results from. if path is not given the CustomizedRunspath
+            path to read the results from. if path is not given the customized_runs_path
              attribute for the river instance should be given. The default is ''.
         date_format : "TYPE, optional
             DESCRIPTION. The default is "'%Y-%m-%d'".
@@ -4079,7 +4107,7 @@ class Sub(River):
                 for i in range(len(self.usnode)):
                     Nodeid = self.usnode[i]
                     try:
-                        self.USHydrographs[Nodeid] = self.ReadRRMResults(
+                        self.USHydrographs[Nodeid] = self.readRRMResults(
                             self.version,
                             self.rrmreferenceindex,
                             path,
@@ -4101,7 +4129,7 @@ class Sub(River):
         elif self.usnode:
             Nodeid = self.usnode[0]
             try:
-                self.USHydrographs[Nodeid] = self.ReadRRMResults(
+                self.USHydrographs[Nodeid] = self.readRRMResults(
                     self.version,
                     self.rrmreferenceindex,
                     path,
@@ -4135,7 +4163,7 @@ class Sub(River):
 
         self.USHydrographs.index = pd.date_range(start, end, freq="D")
 
-    def GetUSHydrograph(self, River):
+    def getUSHydrograph(self, River):
         """GetUSHydrograph. GetUSHydrograph methods gets the sum of all the upstream hydrographs whither it is routed inside the model or a boundary condition.
 
         Parameters
@@ -4174,7 +4202,7 @@ class Sub(River):
                 len(self.USHydrographs)
             )
 
-    def GetXSGeometry(self):
+    def getXSGeometry(self):
         """GetXSGeometry. calculate the area and  perimeter for the cross section highest and lowest point.
 
         Returns
@@ -4186,7 +4214,7 @@ class Sub(River):
         for i in range(self.xsno):
             geom = self.crosssections.loc[i, :]
             H = min(geom["hl"], geom["hr"]) + geom["dbf"]
-            Coords = self.GetVortices(
+            Coords = self.getVortices(
                 H,
                 geom["hl"],
                 geom["hr"],
@@ -4195,9 +4223,9 @@ class Sub(River):
                 geom["b"],
                 geom["dbf"],
             )
-            AreaPerLow[i, :] = self.PolygonGeometry(Coords)
+            AreaPerLow[i, :] = self.polygonGeometry(Coords)
             H = max(geom["hl"], geom["hr"]) + geom["dbf"]
-            Coords = self.GetVortices(
+            Coords = self.getVortices(
                 H,
                 geom["hl"],
                 geom["hr"],
@@ -4206,18 +4234,20 @@ class Sub(River):
                 geom["b"],
                 geom["dbf"],
             )
-            AreaPerHigh[i, :] = self.PolygonGeometry(Coords)
+            AreaPerHigh[i, :] = self.polygonGeometry(Coords)
         self.AreaPerHigh = AreaPerHigh[:, :]
         self.AreaPerLow = AreaPerLow[:, :]
 
-    def GetFlow(
+    def getFlow(
         self,
         IF,
         fromday: Union[int, str] = "",
         today: Union[int, str] = "",
         date_format="%d_%m_%Y",
     ):
-        """GetFlow. Extract the lateral flow and boundary condition (if exist) time series of the segment from the whole river data.
+        """getFlow.
+
+            Extract the lateral flow and boundary condition (if exist) time series of the segment from the whole river data.
 
         Parameters
         ----------
@@ -4301,7 +4331,7 @@ class Sub(River):
             self.LateralsTable = []
             self.Laterals = pd.DataFrame()
 
-    def GetLaterals(self, xsid: int):
+    def getLaterals(self, xsid: int):
         """GetLaterals. GetLaterals method gets the sum of the laterals of all the cross sections in the segment upstream of a given xsid.
 
         Parameters
@@ -4323,8 +4353,8 @@ class Sub(River):
         USgauge = self.LateralsTable[: bisect(self.LateralsTable, xsid)]
         return self.Laterals[USgauge].sum(axis=1).to_frame()
 
-    def GetTotalFlow(self, gaugexs: int):
-        """GetTotalFlow. GetTotalFlow extracts all the laterals upstream of a certain xs and also extracts the Upstream/BC hydrograph.
+    def getTotalFlow(self, gaugexs: int):
+        """getTotalFlow. GetTotalFlow extracts all the laterals upstream of a certain xs and also extracts the Upstream/BC hydrograph.
 
         Parameters
         ----------
@@ -4341,7 +4371,7 @@ class Sub(River):
         if not isinstance(self.Laterals, DataFrame):
             raise ValueError("Please read the lateral flows first using the 'GetFlow'")
 
-        Laterals = self.GetLaterals(gaugexs)
+        Laterals = self.getLaterals(gaugexs)
         try:
             s1 = Laterals.index[0]
             e1 = Laterals.index[-1]
@@ -4409,7 +4439,7 @@ class Sub(River):
 
         return H
 
-    def PlotQ(
+    def plotQ(
         self,
         Calib,
         gaugexs: int,
@@ -4567,7 +4597,7 @@ class Sub(River):
             # laterals
             if plotlaterals:
                 try:
-                    Laterals = self.GetLaterals(gaugexs)
+                    Laterals = self.getLaterals(gaugexs)
                 except AssertionError:
                     logger.debug("please read the laterals first to be able to plot it")
 
@@ -4642,7 +4672,7 @@ class Sub(River):
             # specific XS
             if not isinstance(specificxs, bool):
                 # first extract the time series of the given xs
-                self.Read1DResult(xsid=specificxs)
+                self.read1DResult(xsid=specificxs)
                 # plot the xs
                 ax.plot(
                     self.XSHydrographs.loc[start:end, specificxs],
@@ -4744,7 +4774,7 @@ class Sub(River):
 
         return fig, ax
 
-    def PlotRRMProgression(
+    def plotRRMProgression(
         self,
         specificxs,
         start,
@@ -4845,7 +4875,7 @@ class Sub(River):
 
         # laterals
         if plotlaterals:
-            Laterals = self.GetLaterals(specificxs)
+            Laterals = self.getLaterals(specificxs)
 
             # BC
             if type(self.BC) != bool:
@@ -4869,7 +4899,7 @@ class Sub(River):
                 )
             if plottotal:
                 # total flow
-                self.GetTotalFlow(specificxs)
+                self.getTotalFlow(specificxs)
                 ax.plot(
                     self.TotalFlow.loc[start:end, "total"],
                     label="US/BC \n+ Laterals",
@@ -4893,7 +4923,7 @@ class Sub(River):
         # specific XS
         if plothm:
             # first extract the time series of the given xs
-            self.Read1DResult(xsid=specificxs)
+            self.read1DResult(xsid=specificxs)
             # plot the xs
             ax.plot(
                 self.XSHydrographs.loc[start:end, specificxs],
@@ -4952,7 +4982,7 @@ class Sub(River):
 
         return fig, ax
 
-    def CalculateQMetrics(
+    def calculateQMetrics(
         self,
         Calib,
         stationname: int,
@@ -5069,7 +5099,7 @@ class Sub(River):
 
         return rmse, kge, wb, nsehf, nse
 
-    def PlotWL(
+    def plotWL(
         self,
         Calib,
         start: str,
@@ -5168,7 +5198,7 @@ class Sub(River):
         fig, ax = plt.subplots(ncols=1, nrows=1, figsize=figsize)
 
         # extract the water levels at the gauge cross section
-        self.ExtractXS(gaugexs)
+        self.extractXS(gaugexs)
 
         ax.plot(
             self.XSWaterLevel.loc[start:end, gaugexs],
@@ -5200,7 +5230,7 @@ class Sub(River):
 
         return fig, ax
 
-    def CalculateWLMetrics(
+    def calculateWLMetrics(
         self,
         Calib,
         stationname: int,
@@ -5303,7 +5333,7 @@ class Sub(River):
 
         return MBE, MAE, RMSE, KGE, NSEHF, NSE
 
-    def Histogram(
+    def histogram(
         self,
         Day,
         BaseMapF,
@@ -5358,7 +5388,21 @@ class Sub(River):
 
         ax1.tick_params(axis="y", color="#27408B")
 
-    def PlotBC(self, date: str, fmt: str = "%Y-%m-%d"):
+    def ListAttributes(self):
+        """Print Attributes List."""
+        logger.debug("\n")
+        logger.debug(
+            f"Attributes List of: {repr(self.__dict__['name'])} - {self.__class__.__name__}  Instance\n"
+        )
+        self_keys = list(self.__dict__.keys())
+        self_keys.sort()
+        for key in self_keys:
+            if key != "name":
+                logger.debug(str(key) + " : " + repr(self.__dict__[key]))
+
+        logger.debug("\n")
+
+    def plotBC(self, date: str, fmt: str = "%Y-%m-%d"):
         """PlotBC. plot the boundary condition discharge and water depth.
 
         Parameters
@@ -5382,17 +5426,3 @@ class Sub(River):
         ax1.set_xlim(0, 1440)
         ax2.plot(self.QBCmin.loc[date])
         ax2.set_ylabel("Q", fontsize=15)
-
-    def ListAttributes(self):
-        """Print Attributes List."""
-        logger.debug("\n")
-        logger.debug(
-            f"Attributes List of: {repr(self.__dict__['name'])} - {self.__class__.__name__}  Instance\n"
-        )
-        self_keys = list(self.__dict__.keys())
-        self_keys.sort()
-        for key in self_keys:
-            if key != "name":
-                logger.debug(str(key) + " : " + repr(self.__dict__[key]))
-
-        logger.debug("\n")
