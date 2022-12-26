@@ -102,9 +102,9 @@ class CoverallReporter:
         """
         # pylint: disable=too-many-branches
         try:
-            from coverage.report import (  # pylint: disable=import-outside-toplevel
+            from coverage.report import (
                 Reporter,
-            )
+            )  # pylint: disable=import-outside-toplevel
 
             self.reporter = Reporter(cov, conf)
         except ImportError:  # coverage >= 5.0
