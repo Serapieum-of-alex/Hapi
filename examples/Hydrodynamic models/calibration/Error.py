@@ -39,7 +39,7 @@ end = "1955-03-21"
 Calib = RC.Calibration("HM", start=start)
 Calib.readGaugesTable(gauges_file)
 Calib.readObservedQ(q_obs_path, start, end, novalue, gauge_date_format="'%Y-%m-%d'")
-Calib.ReadObservedWL(wl_obs_path, start, end, novalue, gauge_date_format="'%Y-%m-%d'")
+Calib.readObservedWL(wl_obs_path, start, end, novalue, gauge_date_format="'%Y-%m-%d'")
 # sort the gauges table based on the segment
 Calib.hm_gauges.sort_values(by="id", inplace=True, ignore_index=True)
 #%% Read RIM results
@@ -52,7 +52,7 @@ Calib.readRRM(
     location=2,
     path2=f"{rrm_path}/rrm_location",
 )
-Calib.RiverNetwork(hm_files + "/rivernetwork-3segments.txt")
+Calib.readRiverNetwork(hm_files + "/rivernetwork-3segments.txt")
 #%% calculate metrics
 Calib.HMvsRRM()  # start ="1990-01-01"
 # mHM vs observed

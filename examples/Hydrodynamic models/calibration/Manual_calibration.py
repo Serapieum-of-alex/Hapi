@@ -5,9 +5,7 @@ model
 """
 import datetime as dt
 import os
-
 import matplotlib
-
 matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 import numpy as np
@@ -17,7 +15,6 @@ import Hapi.hm.calibration as RC
 import Hapi.hm.river as R
 from Hapi.hm.interface import Interface
 from Hapi.plot.visualizer import Visualize as V
-
 # %% Paths
 """change directory to the processing folder inside the project folder"""
 rpath = os.path.join(os.getcwd() + "/examples/Hydrodynamic models/test_case")
@@ -26,11 +23,11 @@ saveto = rpath
 tolopogy_file = rpath + "/inputs/1d/topo/"
 savepath = rpath + "/results/customized_results/"
 
-xs_file = tolopogy_file + "xs_same_downward-1segment_very_steep.csv"
-river_network = tolopogy_file + "/rivernetwork-1segments.txt"
+xs_file = tolopogy_file + "xs_same_downward-3segment.csv"
+river_network = tolopogy_file + "/rivernetwork-3segments.txt"
 river_slope = tolopogy_file + "/slope.csv"
 laterals_table_path = rpath + "/inputs/1d/topo/no_laterals.txt"
-laterals_path = path=rpath + "/inputs/1d/hydro/"
+laterals_path = rpath + "/inputs/1d/hydro/"
 boundary_condition_table = rpath + "/inputs/1d/topo/boundaryconditions.txt"
 boundary_condition_path=rpath + "/inputs/1d/hydro/"
 
@@ -43,18 +40,18 @@ rrmpath = rpath + "/inputs/rrm/hm_location"
 twodresultpath = rpath + "/results/2d/zip/"
 
 ## gauges files
-GaugesF = rpath + "/inputs/gauges/gauges.csv"
-WLGaugesPath = rpath + "/inputs/gauges/water_level/"
-QgaugesPath = rpath + "/inputs/gauges/discharge/"
+gauges_file = rpath + "/inputs/gauges/gauges.csv"
+wl_files_rpath = rpath + "/inputs/gauges/water_level/"
+q_files_rpath = rpath + "/inputs/gauges/discharge/"
 # %% gauges
 novalue = -9
 start = "1955-01-01"
 end = "1955-03-21"
 Calib = RC.Calibration("HM", version=3)
-Calib.readGaugesTable(GaugesF)
+Calib.readGaugesTable(gauges_file)
 # read the gauges data
 Calib.readObservedQ(
-    QgaugesPath,
+    q_files_rpath,
     start,
     end,
     novalue,
@@ -62,7 +59,7 @@ Calib.readObservedQ(
     gauge_date_format="'%Y-%m-%d'",
 )
 Calib.readObservedWL(
-    WLGaugesPath,
+    wl_files_rpath,
     start,
     end,
     novalue,
@@ -131,7 +128,7 @@ try:
     gaugename = str(gauges.loc[gaugei, "name"])
     gaugexs = gauges.loc[gaugei, "xsid"]
     segment_xs = str(SubID) + "_" + str(gaugexs)
-    Laterals = Sub.GetLaterals(gaugexs)
+    Laterals = Sub.getLaterals(gaugexs)
     print(print(gauges))
 except KeyError:
     print("No gauge - choose another gauge to compare")
@@ -180,7 +177,7 @@ except:
 Sub.readUSHydrograph()
 # Sum the laterals and the BC/US hydrograph
 Sub.getTotalFlow(gaugexs)
-# %% Discharge
+# %% Plot the Discharge hydrograph
 hmorder = 11
 gaugeorder = 7
 rrmorder = 8
@@ -194,7 +191,7 @@ specificxs = False
 start = str(Sub.firstday)[:-9]
 end = str(Sub.lastday)[:-9]
 
-fig, ax = Sub.PlotQ(
+fig, ax = Sub.plotQ(
     Calib,
     gaugexs,
     start,
@@ -229,7 +226,7 @@ endError = end
 # startgauge = gauges.loc[gaugei, 'Qstart']
 # endgauge = gauges.loc[gaugei, 'Qend']
 
-Sub.CalculateQMetrics(
+Sub.calculateQMetrics(
     Calib, stationname, gaugexs, Filter=Filter, start=startError, end=endError
 )
 
@@ -242,7 +239,7 @@ start = str(Sub.firstday)[:-9]
 end = "1955-03-01"
 fromxs = ""
 toxs = ""
-fig, ax = Sub.PlotHydrographProgression(
+fig, ax = Sub.plotHydrographProgression(
     xss,
     start,
     end,
@@ -258,15 +255,15 @@ fig, ax = Sub.PlotHydrographProgression(
 #             str(gauges.loc[gaugei, 'name']) +
 #             str(dt.datetime.now())[0:11] + ".png")
 # %% Water Level
-start = str(Sub.firstday)[:-9]
-end = str(Sub.lastday)[:-9]
+start = str(Sub.firstday.date())
+end = str(Sub.lastday.date())
 
-Sub.PlotWL(Calib, start, end, gaugexs, stationname, gaugename, plotgauge=True)
+Sub.plotWL(Calib, start, end, gaugexs, stationname, gaugename, plotgauge=True)
 
 startError = start
 endError = end
 
-Sub.CalculateWLMetrics(
+Sub.calculateWLMetrics(
     Calib,
     stationname,
     gaugexs,
@@ -310,7 +307,7 @@ without the need to run all the upstream sub-basins
 you have to un comment the following two lines
 """
 # Path = wpath + "/results/customized_results/"
-Sub.SaveHydrograph(Sub.lastxs)  # Path
+Sub.saveHydrograph(Sub.lastxs)  # Path
 # %% Filters
 """
 check the max sf
@@ -430,7 +427,7 @@ date = "1955-01-05"
 Vis.Plot1minProfile(Sub, date, nxlabels=20)
 #%%  plot BC
 date = "1955-01-05"
-Sub.PlotBC(date)
+Sub.plotBC(date)
 #%% new table
 """
 this part is to plot the geometric properties of the cross sectin
