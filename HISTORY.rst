@@ -17,4 +17,4 @@ History
 1.3.4 (2022-12-27)
 ------------------
 
-* merge two function readLaterals and readRRMProgression
+* merge two function readLaterals and readRRMProgression, rename RRMProgression to routedRRM
