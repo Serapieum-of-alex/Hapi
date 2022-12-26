@@ -117,15 +117,6 @@ def hm_long_ts_number() -> int:
 @pytest.fixture(scope="module")
 def Metrics_table_columns() -> List[str]:
     return [
-        "start",
-        "end",
-        "rmse",
-        "KGE",
-        "WB",
-        "NSE",
-        "NSEModified",
-        "MBE",
-        "MAE",
         "id",
         "gid",
         "name",
@@ -136,6 +127,15 @@ def Metrics_table_columns() -> List[str]:
         "discharge",
         "waterlevel",
         "geometry",
+        "start",
+        "end",
+        "rmse",
+        "KGE",
+        "WB",
+        "NSE",
+        "NSEModified",
+        "MBE",
+        "MAE",
     ]
 
 

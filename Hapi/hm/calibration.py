@@ -1503,7 +1503,32 @@ class Calibration(River):
         shift: int = 0,
         fmt: str = "%Y-%m-%d",
     ) -> DataFrame:
+        """
 
+        Parameters
+        ----------
+        df1: [DataFrame]
+            first dataframe, with columns as the gauges id and rows as the time series
+        df2: [DataFrame]
+            second dataframe, with columns as the gauges id and rows as the time series
+        gauges: [list]
+            list of gauges ids
+        novalue:
+            the value used to fill the missing values
+        start:
+            start date
+        end:
+            end date
+        shift:
+            shift in the days
+        fmt:
+            date format
+
+        Returns
+        -------
+        GeoDataFrame:
+            with the following columns ["start", "end", "rmse", "KGE", "WB", "NSE", "NSEModified"]
+        """
         Metrics = gpd.GeoDataFrame(
             index=gauges,
             columns=["start", "end", "rmse", "KGE", "WB", "NSE", "NSEModified"],
@@ -1532,16 +1557,11 @@ class Calibration(River):
 
         # calculate th metrics
         for i in range(len(gauges)):
-            obs = (
-                df1[gauges[i]]
-                .loc[Metrics.loc[gauges[i], "start"] : Metrics.loc[gauges[i], "end"]]
-                .values.tolist()
-            )
-            sim = (
-                df2[gauges[i]]
-                .loc[Metrics.loc[gauges[i], "start"] : Metrics.loc[gauges[i], "end"]]
-                .values.tolist()
-            )
+            start_date = Metrics.loc[gauges[i], "start"]
+            end_date = Metrics.loc[gauges[i], "end"]
+            obs = df1.loc[start_date : end_date, gauges[i]].values.tolist()
+            sim = df2.loc[start_date : end_date, gauges[i]].values.tolist()
+
             # shift hm result
             sim[shift:-shift] = sim[0 : -shift * 2]
 
@@ -1603,13 +1623,13 @@ class Calibration(River):
             self.q_rrm, self.q_hm, self.rrm_gauges, self.novalue, start, end, shift, fmt
         )
         # get the point geometry from the hm_gauges
-        self.MetricsHMvsRRM = self.MetricsHMvsRRM.merge(
-            self.hm_gauges,
-            left_index=True,
-            right_on=self.gauge_id_col,
+        self.MetricsHMvsRRM = self.hm_gauges.merge(
+            self.MetricsHMvsRRM,
+            left_on=self.gauge_id_col,
+            right_index=True,
             how="left",
             sort=False,
-        )
+        )#.set_geometry("geometry")
         self.MetricsHMvsRRM.index = self.MetricsHMvsRRM[self.gauge_id_col]
         self.MetricsHMvsRRM.index.name = "index"
         if isinstance(self.hm_gauges, GeoDataFrame):
@@ -1668,10 +1688,10 @@ class Calibration(River):
             fmt,
         )
 
-        self.MetricsRRMvsObs = self.MetricsRRMvsObs.merge(
-            self.hm_gauges,
-            left_index=True,
-            right_on=self.gauge_id_col,
+        self.MetricsRRMvsObs = self.hm_gauges.merge(
+            self.MetricsRRMvsObs,
+            left_on=self.gauge_id_col,
+            right_index=True,
             how="left",
             sort=False,
         )
@@ -1736,10 +1756,10 @@ class Calibration(River):
             fmt,
         )
 
-        self.MetricsHMQvsObs = self.MetricsHMQvsObs.merge(
-            self.hm_gauges,
-            left_index=True,
-            right_on=self.gauge_id_col,
+        self.MetricsHMQvsObs = self.hm_gauges.merge(
+            self.MetricsHMQvsObs,
+            left_on=self.gauge_id_col,
+            right_index=True,
             how="left",
             sort=False,
         )
@@ -1804,10 +1824,10 @@ class Calibration(River):
             fmt,
         )
 
-        self.MetricsHMWLvsObs = self.MetricsHMWLvsObs.merge(
-            self.hm_gauges,
-            left_index=True,
-            right_on=self.gauge_id_col,
+        self.MetricsHMWLvsObs = self.hm_gauges.merge(
+            self.MetricsHMWLvsObs,
+            left_on=self.gauge_id_col,
+            right_index=True,
             how="left",
             sort=False,
         )
