@@ -809,7 +809,7 @@ class River:
         if path == "":
             path = self.onedresultpath
 
-        data = pd.read_csv(path + str(Subid) + ".txt", header=None, delimiter=r"\s+")
+        data = pd.read_csv(f"{path}{Subid}.txt", header=None, delimiter=r"\s+")
 
         data.columns = ["day", "hour", "xs", "q", "h", "wl"]
         days = list(set(data["day"]))
@@ -4248,7 +4248,8 @@ class Sub(River):
     ):
         """getFlow.
 
-            Extract the lateral flow and boundary condition (if exist) time series of the segment from the whole river data.
+            Extract the lateral flow and boundary condition (if exist) time series of the segment from the whole
+            river segment.
 
         Parameters
         ----------
@@ -4293,7 +4294,7 @@ class Sub(River):
 
         # get the id of the boundary condition
         xs_as_set = set(self.xsname)
-        bclist = [int(i) for i in IF.BCTable["id"].tolist()]
+        bclist = [int(i) for i in IF.BCTable["xsid"].tolist()]
         bcids = list(xs_as_set.intersection(bclist))
 
         if len(bcids) == 0:
@@ -4331,7 +4332,9 @@ class Sub(River):
             self.Laterals = pd.DataFrame()
 
     def getLaterals(self, xsid: int):
-        """GetLaterals. GetLaterals method gets the sum of the laterals of all the cross sections in the segment upstream of a given xsid.
+        """GetLaterals.
+
+            GetLaterals method gets the sum of the laterals of all the cross sections in the segment upstream of a given xsid.
 
         Parameters
         ----------
@@ -4353,7 +4356,9 @@ class Sub(River):
         return self.Laterals[USgauge].sum(axis=1).to_frame()
 
     def getTotalFlow(self, gaugexs: int):
-        """getTotalFlow. GetTotalFlow extracts all the laterals upstream of a certain xs and also extracts the Upstream/BC hydrograph.
+        """getTotalFlow.
+
+            GetTotalFlow extracts all the laterals upstream of a certain xs and also extracts the Upstream/BC hydrograph.
 
         Parameters
         ----------
@@ -4370,6 +4375,10 @@ class Sub(River):
         if not isinstance(self.Laterals, DataFrame):
             raise ValueError("Please read the lateral flows first using the 'GetFlow'")
 
+        if gaugexs not in self.crosssections["xsid"].values:
+            raise ValueError(f"The given XS {gaugexs} does not locate in the current river segment"
+                             f"First XS is {self.firstxs} and "
+                             f"Last XS is {self.lastxs}")
         Laterals = self.getLaterals(gaugexs)
         try:
             s1 = Laterals.index[0]

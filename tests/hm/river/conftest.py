@@ -93,6 +93,13 @@ def sub_GetFlow_lateralTable() -> List[int]:
 def create_sub_instance_lastxs() -> int:
     return last_xs
 
+@pytest.fixture(scope="module")
+def segment1_xs() -> int:
+    return 50
+
+@pytest.fixture(scope="module")
+def segment3_xs() -> int:
+    return 250
 
 @pytest.fixture(scope="module")
 def Read1DResult_path() -> str:

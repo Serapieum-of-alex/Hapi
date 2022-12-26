@@ -255,45 +255,98 @@ def test_ReadUSHydrograph(
     assert all(elem in Sub.USHydrographs.columns.tolist() for elem in segment3_us_subs)
 
 
-def test_GetTotalFlow(
-    version: int,
-    river_cross_section_path: str,
-    river_network_path: str,
-    CustomizedRunspath: str,
-    segment3: int,
-    create_sub_instance_lastxs: int,
-    dates: list,
-    interface_bc_path: str,
-    interface_bc_folder: str,
-    interface_bc_date_format: str,
-    interface_Laterals_table_path: str,
-    interface_Laterals_folder: str,
-    interface_Laterals_date_format: str,
-    test_time_series_length: int,
-):
-    River = R.River("HM", version=version)
-    River.readXS(river_cross_section_path)
-    River.readRiverNetwork(river_network_path)
-    River.customized_runs_path = CustomizedRunspath
-    IF = Interface("Rhine", start=dates[0])
-    IF.readBoundaryConditionsTable(interface_bc_path)
-    IF.readBoundaryConditions(
-        path=interface_bc_folder, date_format=interface_bc_date_format
-    )
+class TestGetTotalFlow:
+    def test_segment_without_bc(
+            self,
+            version: int,
+            river_cross_section_path: str,
+            river_network_path: str,
+            CustomizedRunspath: str,
+            segment3: int,
+            segment3_xs: int,
+            dates: list,
+            interface_bc_path: str,
+            interface_bc_folder: str,
+            interface_bc_date_format: str,
+            interface_Laterals_table_path: str,
+            interface_Laterals_folder: str,
+            interface_Laterals_date_format: str,
+            test_time_series_length: int,
+    ):
+        """Test_segment_without_bc.
 
-    IF.readXS(river_cross_section_path)
-    IF.readLateralsTable(interface_Laterals_table_path)
-    IF.readLaterals(
-        path=interface_Laterals_folder, date_format=interface_Laterals_date_format
-    )
+        extract the total flow for a river segment that is in the middle of the river and does not have a
+        boundary condition
+        """
+        River = R.River("HM", version=version)
+        River.readXS(river_cross_section_path)
+        River.readRiverNetwork(river_network_path)
+        River.customized_runs_path = CustomizedRunspath
+        IF = Interface("Rhine", start=dates[0])
+        IF.readBoundaryConditionsTable(interface_bc_path)
+        IF.readBoundaryConditions(
+            path=interface_bc_folder, date_format=interface_bc_date_format
+        )
 
-    Sub = R.Sub(segment3, River)
-    Sub.getFlow(IF)
-    Sub.readUSHydrograph()
+        IF.readXS(river_cross_section_path)
+        IF.readLateralsTable(interface_Laterals_table_path)
+        IF.readLaterals(
+            path=interface_Laterals_folder, date_format=interface_Laterals_date_format
+        )
 
-    Sub.getTotalFlow(create_sub_instance_lastxs)
-    assert len(Sub.TotalFlow) == test_time_series_length
-    assert "total" in Sub.TotalFlow.columns.to_list()
+        Sub = R.Sub(segment3, River)
+        Sub.getFlow(IF)
+        Sub.readUSHydrograph()
+
+        Sub.getTotalFlow(segment3_xs)
+        assert len(Sub.TotalFlow) == test_time_series_length
+        assert "total" in Sub.TotalFlow.columns.to_list()
+
+    def test_segment_wit_bc(
+            self,
+            version: int,
+            river_cross_section_path: str,
+            river_network_path: str,
+            CustomizedRunspath: str,
+            segment1: int,
+            segment1_xs: int,
+            dates: list,
+            interface_bc_path: str,
+            interface_bc_folder: str,
+            interface_bc_date_format: str,
+            interface_Laterals_table_path: str,
+            interface_Laterals_folder: str,
+            interface_Laterals_date_format: str,
+            test_time_series_length: int,
+    ):
+        """Test_segment_without_bc.
+
+        extract the total flow for a river segment that is in the middle of the river and does not have a
+        boundary condition
+        """
+        River = R.River("HM", version=version)
+        River.readXS(river_cross_section_path)
+        River.readRiverNetwork(river_network_path)
+        River.customized_runs_path = CustomizedRunspath
+        IF = Interface("Rhine", start=dates[0])
+        IF.readBoundaryConditionsTable(interface_bc_path)
+        IF.readBoundaryConditions(
+            path=interface_bc_folder, date_format=interface_bc_date_format
+        )
+
+        IF.readXS(river_cross_section_path)
+        IF.readLateralsTable(interface_Laterals_table_path)
+        IF.readLaterals(
+            path=interface_Laterals_folder, date_format=interface_Laterals_date_format
+        )
+
+        Sub = R.Sub(segment1, River)
+        Sub.getFlow(IF)
+        Sub.readUSHydrograph()
+
+        Sub.getTotalFlow(segment1_xs)
+        assert len(Sub.TotalFlow) == test_time_series_length
+        assert "total" in Sub.TotalFlow.columns.to_list()
 
 
 def test_PlotQ(
