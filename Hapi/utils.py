@@ -7,46 +7,50 @@ import pickle
 
 
 def save_obj(obj, saved_name):
-    """
-    ===============================================================
-        save_obj(obj, saved_name )
-    ===============================================================
+    """save_obj.
+
     this function is used to save any python object to your hard desk
 
-    Inputs:
+    Parameters
     ----------
-        1-obj:
+    obj:
 
-        2-saved_name:
-            ['String'] name of the object
-    Outputs:
-    ----------
+    saved_name:
+        ['String'] name of the object
+
+    Returns
+    -------
         the object will be saved to the given path/current working directory
         with the given name
-    Example:
-        data={"key1":[1,2,3,5],"key2":[6,2,9,7]}
-        save_obj(data,path+'/flow_acc_table')
+
+    Examples
+    --------
+    >>> path = "c:\my_computer\files"
+    >>> data={"key1":[1,2,3,5],"key2":[6,2,9,7]}
+    >>> save_obj(data, f'{path}/flow_acc_table')
     """
     with open(saved_name + ".pkl", "wb") as f:
         pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
 
 
 def load_obj(saved_name):
-    """
-    ===============================================================
-        load_obj(saved_name)
-    ===============================================================
-    this function is used to save any python object to your hard desk
+    """load_obj.
 
-    Inputs:
+        this function is used to save any python object to your hard desk
+
+    Parameters
     ----------
-        1-saved_name:
-            ['String'] name of the object
-    Outputs:
-    ----------
-        the object will be loaded
-    Example:
-        load_obj(path+'/flow_acc_table')
+    1-saved_name:
+        ['String'] name of the object
+
+    Returns
+    -------
+    the object will be loaded
+
+    Examples
+    --------
+    >>> path = "c:\my_computer\files"
+    >>> load_obj(f'{path}/flow_acc_table')
     """
     with open(saved_name + ".pkl", "rb") as f:
         return pickle.load(f)

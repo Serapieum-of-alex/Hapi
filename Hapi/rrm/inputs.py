@@ -22,12 +22,14 @@ import Hapi
 
 
 class Inputs:
+
     """Inputs.
 
     Inputs class contains methods to prepare the inputs for the distributed
     hydrological model
 
-    Methods:
+    Methods
+    -------
         1- prepareInputs
         2- extractParametersBoundaries
         3- extractParameters
@@ -416,11 +418,11 @@ class Inputs:
         -------
          List of the values in the excel file
 
-        examples
+        Examples
         --------
-            years=[2009,2010,2011]#,2012,2013]
-            months=[1,2,3,4,5,6,7,8,9,10,11,12]
-            Q=ReadExcelData(path+"Discharge/Qout.xlsx",years,months)
+        >>> years = [2009,2010,2011]#,2012,2013]
+        >>> months = [1,2,3,4,5,6,7,8,9,10,11,12]
+        >>> Q = Inputs.ReadExcelData("{path}/Discharge/Qout.xlsx", years, months)
         """
 
         Qout = pd.read_excel(path)

@@ -19,13 +19,15 @@ from Hapi.rrm.wrapper import Wrapper
 
 
 class Run(Catchment):
+
     """Run.
 
     Run sub-class validate the spatial data and hand it to the wrapper class, It is
     a sub-class from the catchment class, so you need to create the Catchment
     object first to run the model
 
-    Methods:
+    Methods
+    -------
         1- RunHapi
         2- runHAPIwithLake
         3- runFW1

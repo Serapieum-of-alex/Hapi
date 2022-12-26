@@ -451,6 +451,7 @@ class Inputs(River):
 
     @staticmethod
     def StringSpace(Inp):
+        """StringSpace."""
         return str(Inp) + "  "
 
     def returnPeriod(
