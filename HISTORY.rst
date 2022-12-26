@@ -2,7 +2,8 @@
 History
 =======
 
-0.1.0 (2021-11-21)
+1.3.2 (2022-12-26)
 ------------------
 
-* First release on PyPI.
+* remove parameters from the package and retrieve them with the parameter package.
+
