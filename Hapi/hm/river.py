@@ -4318,13 +4318,13 @@ class Sub(River):
 
             self.Laterals["total"] = self.Laterals.sum(axis=1)
             # if the rrm hydrograph at the location of the hm or at the location of the rrm is read
-            if isinstance(IF.RRMProgression, DataFrame):
+            if isinstance(IF.routedRRM, DataFrame):
                 self.RRMProgression = pd.DataFrame(
                     index=pd.date_range(fromday, today, freq="D"),
                     columns=self.LateralsTable,
                 )
                 for i in self.LateralsTable:
-                    self.RRMProgression.loc[:, i] = IF.RRMProgression.loc[
+                    self.RRMProgression.loc[:, i] = IF.routedRRM.loc[
                         fromday:today, i
                     ]
         else:
@@ -4935,7 +4935,7 @@ class Sub(River):
             )
         # RRM
         # if plotrrm:
-        if hasattr(self, "RRMProgression"):
+        if hasattr(self, "routedRRM"):
             try:
                 ax.plot(
                     self.RRMProgression.loc[start:end, specificxs],
@@ -4947,7 +4947,7 @@ class Sub(River):
                 )
             except KeyError:
                 logger.debug(
-                    " XS " + str(specificxs) + "does not exist in the  'RRMProgression'"
+                    " XS " + str(specificxs) + "does not exist in the  'routedRRM'"
                 )
         else:
             msg = (
