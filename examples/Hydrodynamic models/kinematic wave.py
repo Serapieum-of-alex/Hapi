@@ -21,8 +21,8 @@ Test = River(
 )
 Test.oneminresultpath = path + "/data/hydrodynamic model/"
 #%% Read Input Data
-Test.ReadCrossSections(path + "/data/hydrodynamic model/xs.csv")
-Test.ReadBoundaryConditions(
+Test.readXS(path + "/data/hydrodynamic model/xs.csv")
+Test.readBoundaryConditions(
     path=path + "/data/hydrodynamic model/BCQ-constant.txt", fmt="%Y-%m-%d %H:%M:%S"
 )
 Test.Laterals = False

@@ -73,7 +73,7 @@ Inputs35.statisticalProperties(
 #%% using gumbel
 Inputs35 = IN.Inputs("Observed_Q")
 
-Inputs35.ReadCrossSections(
+Inputs35.readXS(
     "examples/Hydrodynamic models/test_case/inputs/1d/topo/xs_same_downward-3segment.csv"
 )
 computationalnodes = Calib.hm_gauges["oid"].tolist()
@@ -95,7 +95,7 @@ Inputs35.statisticalProperties(
 TSdirectory = "examples/Hydrodynamic models/test_case/results/customized_results/discharge_long_ts/"
 saveto = TSdirectory + "/Statistical analysis results/"
 Inputs35 = IN.Inputs("HM_results")
-Inputs35.ReadCrossSections(
+Inputs35.readXS(
     "examples/Hydrodynamic models/test_case/inputs/1d/topo/xs_same_downward-3segment.csv"
 )
 

@@ -16,11 +16,11 @@ Test.oneminresultpath = path + "/data/hydrodynamic model/"
 
 Test.Time = 5 * 60 * 60  # (hrs to seconds)
 # Read Input Data
-Test.ReadCrossSections(path + "/data/hydrodynamic model/xs_hz.csv")
+Test.readXS(path + "/data/hydrodynamic model/xs_hz.csv")
 #%% Initial and Boundary condition
 Test.icq = 0
 Test.ich = 12
-Test.ReadBoundaryConditions(
+Test.readBoundaryConditions(
     path=path + "/data/hydrodynamic model/BCH-2.txt",
     fmt="%Y-%m-%d %H:%M:%S",
     ds=True,

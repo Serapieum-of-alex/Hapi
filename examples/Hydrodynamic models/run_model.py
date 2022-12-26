@@ -44,14 +44,14 @@ Path = wpath + "/processing/def1D.txt"
 River.Read1DConfigFile(Path)
 #%%
 IF = Interface("Rhine")
-IF.ReadCrossSections(RIM2Files + "/XS.csv")
-IF.RiverNetwork(RIM2Files + "/rivernetwork.txt")
-IF.ReadLateralsTable(wpath + "/inputs/1d/topo/laterals-segment24.txt")
-IF.ReadLaterals(Path=wpath + "/inputs/1d/hydro/", date_format="%d_%m_%Y")
-IF.ReadBoundaryConditionsTable(
+IF.readXS(RIM2Files + "/XS.csv")
+IF.readRiverNetwork(RIM2Files + "/rivernetwork.txt")
+IF.readLateralsTable(wpath + "/inputs/1d/topo/laterals-segment24.txt")
+IF.readLaterals(Path=wpath + "/inputs/1d/hydro/", date_format="%d_%m_%Y")
+IF.readBoundaryConditionsTable(
     wpath + "/inputs/1d/topo/BonundaryConditions-segment24.txt"
 )
-IF.ReadBoundaryConditions(Path=wpath + "/inputs/1d/hydro/", date_format="%d_%m_%Y")
+IF.readBoundaryConditions(Path=wpath + "/inputs/1d/hydro/", date_format="%d_%m_%Y")
 #%% Sub-basin
 """ Write the Sub-ID you want to visualize its results """
 
@@ -70,15 +70,15 @@ storewl = np.zeros(shape=(River.XSno, 2))
 for i in range(River.NoSeg):
     SubID = River.Segments[i]
     Sub = R.Sub(SubID, River, RunModel=True)
-    Sub.GetFlow(IF, SubID)
+    Sub.getFlow(IF, SubID)
     # HQ : is a rating curve table contains discharge at the first column and coresponding
     # water depth at the second column
     # HQ is allocated inside the RatingCurve subroutine
-    Sub.GetRatingCurve()
+    Sub.getRatingCurve()
     # get the area and perimeters of the cross section if the water level is at
     # min of the intermediate point left and right and then the max of both
-    Sub.GetXSGeometry()
-    Sub.GetUSHydrograph(River)
+    Sub.getXSGeometry()
+    Sub.getUSHydrograph(River)
 
     s = River.DateToIndex(str(River.SimStart)[:-9])
 
