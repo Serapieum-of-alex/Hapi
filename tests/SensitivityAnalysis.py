@@ -3,12 +3,14 @@
 @author: mofarrag
 """
 import pandas as pd
-import Hapi.rrm.hbv_bergestrom92 as HBVLumped
 import statista.metrics as PC
+from statista.sensitivity import Sensitivity as SA
+
+import Hapi.rrm.hbv_bergestrom92 as HBVLumped
 from Hapi.catchment import Catchment
 from Hapi.rrm.routing import Routing
 from Hapi.run import Run
-from statista.sensitivity import Sensitivity as SA
+
 #%% Paths
 Parameterpath = "examples/data/lumped/Coello_Lumped2021-03-08_muskingum.txt"
 MeteoDataPath = "examples/data/lumped/meteo_data-MSWEP.csv"

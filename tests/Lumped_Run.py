@@ -5,9 +5,11 @@
 import datetime as dt
 
 Comp = "examples"
+import statista.metrics as PC
+
 #%% Modules
 import Hapi.rrm.hbv_bergestrom92 as HBVLumped
-import statista.metrics as PC
+
 # import Hapi.sm.performancecriteria as PC
 from Hapi.catchment import Catchment
 from Hapi.rrm.routing import Routing

@@ -30,25 +30,25 @@ def test_GroundSurface(
     Read1DResult_path: str,
 ):
     River = R.River("HM", version=version, start=dates[0])
-    River.ReadCrossSections(river_cross_section_path)
-    River.RiverNetwork(river_network_path)
+    River.readXS(river_cross_section_path)
+    River.readRiverNetwork(river_network_path)
     River.onedresultpath = Read1DResult_path
     Sub = R.Sub(segment3, River)
 
     IF = Interface("Rhine", start=dates[0])
-    IF.ReadBoundaryConditionsTable(interface_bc_path)
-    IF.ReadBoundaryConditions(
+    IF.readBoundaryConditionsTable(interface_bc_path)
+    IF.readBoundaryConditions(
         path=interface_bc_folder, date_format=interface_bc_date_format
     )
 
-    IF.ReadCrossSections(river_cross_section_path)
-    IF.ReadLateralsTable(interface_Laterals_table_path)
-    IF.ReadLaterals(
+    IF.readXS(river_cross_section_path)
+    IF.readLateralsTable(interface_Laterals_table_path)
+    IF.readLaterals(
         path=interface_Laterals_folder, date_format=interface_Laterals_date_format
     )
 
-    Sub.GetFlow(IF)
-    Sub.Read1DResult()
+    Sub.getFlow(IF)
+    Sub.read1DResult()
 
     Vis = V(resolution="Hourly")
     Vis.GroundSurface(Sub, floodplain=True, plotlateral=True, nxlabels=20, option=2)
@@ -74,8 +74,8 @@ def test_CrossSections(
     plot_xs_seg3_toxs: int,
 ):
     River = R.River("HM", version=version, start=dates[0])
-    River.ReadCrossSections(river_cross_section_path)
-    River.RiverNetwork(river_network_path)
+    River.readXS(river_cross_section_path)
+    River.readRiverNetwork(river_network_path)
     River.onedresultpath = Read1DResult_path
     Sub = R.Sub(segment3, River)
     Vis = V(resolution="Hourly")
@@ -202,8 +202,8 @@ def test_Plot1minProfile(
 ):
 
     River = R.River("HM", version=version, start=dates[0])
-    River.ReadCrossSections(river_cross_section_path)
-    River.RiverNetwork(river_network_path)
+    River.readXS(river_cross_section_path)
+    River.readRiverNetwork(river_network_path)
     River.usbcpath = usbc_path
     River.oneminresultpath = subdailyresults_path
     Sub = R.Sub(segment3, River)

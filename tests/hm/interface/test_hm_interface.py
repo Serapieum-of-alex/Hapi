@@ -5,19 +5,19 @@ def create_interface_instance(dates: list):
     Interface("Rhine", start=dates[0])
 
 
-def test_ReadLateralsTable(
+def test_readLateralsTable(
     dates: list,
     river_cross_section_path: str,
     interface_Laterals_table_path: str,
 ):
     IF = Interface("Rhine", start=dates[0])
-    IF.ReadCrossSections(river_cross_section_path)
-    IF.ReadLateralsTable(interface_Laterals_table_path)
+    IF.readXS(river_cross_section_path)
+    IF.readLateralsTable(interface_Laterals_table_path)
 
     assert len(IF.LateralsTable) == 9 and len(IF.LateralsTable.columns) == 2
 
 
-def test_ReadLaterals(
+def test_readLaterals(
     dates: list,
     river_cross_section_path: str,
     interface_Laterals_table_path: str,
@@ -26,9 +26,9 @@ def test_ReadLaterals(
     test_time_series_length: int,
 ):
     IF = Interface("Rhine", start=dates[0])
-    IF.ReadCrossSections(river_cross_section_path)
-    IF.ReadLateralsTable(interface_Laterals_table_path)
-    IF.ReadLaterals(
+    IF.readXS(river_cross_section_path)
+    IF.readLateralsTable(interface_Laterals_table_path)
+    IF.readLaterals(
         path=interface_Laterals_folder, date_format=interface_Laterals_date_format
     )
     assert (
@@ -36,12 +36,12 @@ def test_ReadLaterals(
     )
 
 
-def test_ReadBoundaryConditionsTable(
+def test_readBoundaryConditionsTable(
     dates: list,
     interface_bc_path: str,
 ):
     IF = Interface("Rhine", start=dates[0])
-    IF.ReadBoundaryConditionsTable(interface_bc_path)
+    IF.readBoundaryConditionsTable(interface_bc_path)
 
     assert len(IF.BCTable) == 2 and len(IF.BCTable.columns) == 2
 
@@ -54,8 +54,8 @@ def test_ReadBoundaryConditions(
     test_time_series_length: int,
 ):
     IF = Interface("Rhine", start=dates[0])
-    IF.ReadBoundaryConditionsTable(interface_bc_path)
-    IF.ReadBoundaryConditions(
+    IF.readBoundaryConditionsTable(interface_bc_path)
+    IF.readBoundaryConditions(
         path=interface_bc_folder, date_format=interface_bc_date_format
     )
 
@@ -72,9 +72,9 @@ def test_ReadRRMProgression(
     no_laterals: int,
 ):
     IF = Interface("Rhine", start=dates[0])
-    IF.ReadCrossSections(river_cross_section_path)
-    IF.ReadLateralsTable(interface_Laterals_table_path)
-    IF.ReadRRMProgression(
+    IF.readXS(river_cross_section_path)
+    IF.readLateralsTable(interface_Laterals_table_path)
+    IF.readRRMProgression(
         path=rrm_resutls_hm_location, date_format=interface_Laterals_date_format
     )
     assert len(IF.RRMProgression) == laterals_number_ts

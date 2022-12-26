@@ -56,7 +56,7 @@ def test_ReadObservedWL(
 ):
     Calib = RC.Calibration("HM", version=version)
     Calib.readGaugesTable(gauges_table_path)
-    Calib.ReadObservedWL(
+    Calib.readObservedWL(
         ReadObservedWL_Path,
         dates[0],
         dates[1],
@@ -80,7 +80,7 @@ def test_CalculateProfile(
     calibrateProfile_slope: float,
 ):
     Calib = RC.Calibration("HM", version=version)
-    Calib.ReadCrossSections(river_cross_section_path)
+    Calib.readXS(river_cross_section_path)
     Calib.CalculateProfile(
         segment3,
         calibrateProfile_DS_bedlevel,
@@ -100,7 +100,7 @@ def test_SmoothMaxSlope(
     segment3: int,
 ):
     Calib = RC.Calibration("HM", version=version)
-    Calib.ReadCrossSections(river_cross_section_path)
+    Calib.readXS(river_cross_section_path)
     Calib.SmoothMaxSlope(segment3)
 
 
@@ -110,7 +110,7 @@ def test_SmoothBedLevel(
     segment3: int,
 ):
     Calib = RC.Calibration("HM", version=version)
-    Calib.ReadCrossSections(river_cross_section_path)
+    Calib.readXS(river_cross_section_path)
     Calib.SmoothBedLevel(segment3)
 
 
@@ -121,7 +121,7 @@ def test_DownWardBedLevel(
     DownWardBedLevel_height: float,
 ):
     Calib = RC.Calibration("HM", version=version)
-    Calib.ReadCrossSections(river_cross_section_path)
+    Calib.readXS(river_cross_section_path)
     Calib.DownWardBedLevel(segment3, DownWardBedLevel_height)
 
 
@@ -131,7 +131,7 @@ def test_SmoothBankLevel(
     segment3: int,
 ):
     Calib = RC.Calibration("HM", version=version)
-    Calib.ReadCrossSections(river_cross_section_path)
+    Calib.readXS(river_cross_section_path)
     Calib.SmoothBankLevel(segment3)
 
 
@@ -141,7 +141,7 @@ def test_SmoothFloodplainHeight(
     segment3: int,
 ):
     Calib = RC.Calibration("HM", version=version)
-    Calib.ReadCrossSections(river_cross_section_path)
+    Calib.readXS(river_cross_section_path)
     Calib.SmoothFloodplainHeight(segment3)
 
 
@@ -151,7 +151,7 @@ def test_SmoothBedWidth(
     segment3: int,
 ):
     Calib = RC.Calibration("HM", version=version)
-    Calib.ReadCrossSections(river_cross_section_path)
+    Calib.readXS(river_cross_section_path)
     Calib.SmoothBedWidth(segment3)
 
 
@@ -161,7 +161,7 @@ def test_CheckFloodplain(
     segment3: int,
 ):
     Calib = RC.Calibration("HM", version=version)
-    Calib.ReadCrossSections(river_cross_section_path)
+    Calib.readXS(river_cross_section_path)
     Calib.CheckFloodplain()
 
 
@@ -367,7 +367,7 @@ def test_HMWLvsObserved(
 ):
     Calib = RC.Calibration("HM", version=3, start=dates[0])
     Calib.readGaugesTable(gauges_table_path)
-    Calib.ReadObservedWL(
+    Calib.readObservedWL(
         ReadObservedWL_Path,
         dates[0],
         dates[1],
@@ -402,7 +402,7 @@ def test_InspectGauge(
 ):
     Calib = RC.Calibration("HM", version=3, start=dates[0])
     Calib.readGaugesTable(gauges_table_path)
-    Calib.ReadObservedWL(
+    Calib.readObservedWL(
         ReadObservedWL_Path,
         dates[0],
         dates[1],
@@ -446,7 +446,7 @@ def test_SaveMetices(
 ):
     Calib = RC.Calibration("HM", version=3, start=dates[0])
     Calib.readGaugesTable(gauges_table_path)
-    Calib.ReadObservedWL(
+    Calib.readObservedWL(
         ReadObservedWL_Path,
         dates[0],
         dates[1],

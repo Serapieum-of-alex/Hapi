@@ -6,8 +6,8 @@ Comp = "F:/01Algorithms/Hydrology/HAPI/examples"
 
 import datetime as dt
 
-from osgeo import gdal
 import numpy as np
+from osgeo import gdal
 
 import Hapi.rrm.hbv_bergestrom92 as HBV
 import Hapi.sm.performancecriteria as PC
