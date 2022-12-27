@@ -3620,9 +3620,9 @@ class Sub(River):
 
         logger.debug("RRM time series for the gauge " + str(station_id) + " is read")
 
-        if fromday == "":
+        if not fromday:
             fromday = 1
-        if today == "":
+        if not today:
             today = len(self.RRM[station_id])
 
         start = self.rrmreferenceindex.loc[fromday, "date"]
