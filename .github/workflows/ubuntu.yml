@@ -35,7 +35,7 @@ jobs:
             gdalinfo --version
       - name: libgeo and cartopy
         run: |
-            apt -y install libgeos-dev
+            sudo apt -y install libgeos-dev
             pip install cartopy
       - name: Install dependencies
         run: |
