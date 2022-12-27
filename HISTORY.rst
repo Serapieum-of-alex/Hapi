@@ -18,3 +18,10 @@ History
 ------------------
 
 * merge two function readLaterals and readRRMProgression, rename RRMProgression to routedRRM
+
+1.3.5 (2022-12-27)
+------------------
+
+* fix pypi package names in the requirements.txt file for all internal packages
+* fix python version number
+* tests are all passing
