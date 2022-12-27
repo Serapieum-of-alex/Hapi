@@ -11,7 +11,7 @@ requirements_dev = [line.strip() for line in open("requirements-dev.txt").readli
 
 setup(
     name="HAPI-Nile",
-    version="1.3.4",
+    version="1.3.5",
     description="Distributed Hydrological model",
     author="Mostafa Farrag",
     author_email="moah.farag@gmail.come",
