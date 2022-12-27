@@ -23,7 +23,6 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           architecture: x64
-
       - name: Install GDAL
         run: |
             python -m pip install --upgrade pip
@@ -41,22 +40,6 @@ jobs:
         run: |
             pip install -r requirements.txt -r requirements-dev.txt
             python setup.py install
-
-#      - name: Install dependencies
-#        run: |
-#          $CONDA/bin/mamba env update --file environment.yml --name base
-#          python setup.py install
-#    - name: Lint with flake8
-#      run: |
-#        # add CONDA/bin/ in front of everything
-#        $CONDA/bin/conda install flake8
-#        # stop the build if there are Python syntax errors or undefined names
-#        $CONDA/bin/flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-#        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-#        $CONDA/bin/flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-#      - name: Generate coverage report
-#        working-directory: ../
-
         run: |
           pwd
           python -m pytest -vvv --cov=hapi --cov-report=xml
