@@ -806,6 +806,7 @@ class River:
             in the attribute "Result1D"
         """
         # if the path is not given try to read from the object predefined onedresultpath
+        t1 = dt.datetime.now()
         if not path:
             path = self.onedresultpath
 
@@ -882,6 +883,10 @@ class River:
                 data = data.sort_values(by=["day", "hour", "xs"], ascending=True)
                 data.reset_index(inplace=True)
 
+        # calculate time and print it
+        t2 = dt.datetime.now()
+        time_min = (t2 - t1).seconds / 60
+        print(time_min)
         self.Result1D = data
 
     @staticmethod
