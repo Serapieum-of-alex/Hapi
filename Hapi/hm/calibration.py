@@ -167,8 +167,10 @@ class Calibration(River):
         """
         try:
             self.hm_gauges = gpd.read_file(path, driver="GeoJSON")
-        except fiona.errors.DriverError:
+        except Exception as e:
+            logger.warning(f"the {path} could not be opened with geopandas and will be opened with pandas instead")
             self.hm_gauges = pd.read_csv(path)
+
         # sort the gauges table based on the segment
         self.hm_gauges.sort_values(by="id", inplace=True, ignore_index=True)
 
@@ -1559,8 +1561,8 @@ class Calibration(River):
         for i in range(len(gauges)):
             start_date = Metrics.loc[gauges[i], "start"]
             end_date = Metrics.loc[gauges[i], "end"]
-            obs = df1.loc[start_date : end_date, gauges[i]].values.tolist()
-            sim = df2.loc[start_date : end_date, gauges[i]].values.tolist()
+            obs = df1.loc[start_date:end_date, gauges[i]].values.tolist()
+            sim = df2.loc[start_date:end_date, gauges[i]].values.tolist()
 
             # shift hm result
             sim[shift:-shift] = sim[0 : -shift * 2]
@@ -1629,7 +1631,7 @@ class Calibration(River):
             right_index=True,
             how="left",
             sort=False,
-        )#.set_geometry("geometry")
+        )
         self.MetricsHMvsRRM.index = self.MetricsHMvsRRM[self.gauge_id_col]
         self.MetricsHMvsRRM.index.name = "index"
         if isinstance(self.hm_gauges, GeoDataFrame):
