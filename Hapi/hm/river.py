@@ -809,32 +809,37 @@ class River:
         if not path:
             path = self.onedresultpath
 
-        data = pd.read_csv(f"{path}{Subid}.txt", header=None, delimiter=r"\s+", index_col=False)
-        #--------
+        data = pd.read_csv(
+            f"{path}{Subid}.txt", header=None, delimiter=r"\s+", index_col=False
+        )
         # TODO: read the file in chunks
-        # --------
+
         data.columns = ["day", "hour", "xs", "q", "h", "wl"]
         days = list(set(data["day"]))
         days.sort()
 
         if fromday:
             if fromday not in days:
-                raise ValueError(f"Please use the GetDays method to select fromday:{fromday} that exist in the data")
+                raise ValueError(
+                    f"Please use the GetDays method to select fromday:{fromday} that exist in the data"
+                )
         if today:
             if today not in days:
-                raise ValueError(f"please use the GetDays method to select today: {today} that exist in the data")
+                raise ValueError(
+                    f"please use the GetDays method to select today: {today} that exist in the data"
+                )
 
-        if fromday:
+        if fromday :
             data = data.loc[data["day"] >= fromday, :]
 
-        if today:
+        if today :
             data = data.loc[data["day"] <= today]
 
-        # data.index = list(range(0, len(data)))
+        #  data.index = list(range(0, len(data)))
 
         # Cross section data add one more xs at the end
-        xsname = self.xsname + [self.xsname[-1] +1]
-        #data["xs"][data["day"] == data["day"][1]][data["hour"] == 1].tolist()
+        xsname = self.xsname + [self.xsname[-1] + 1]
+        # data["xs"][data["day"] == data["day"][1]][data["hour"] == 1].tolist()
 
         if FillMissing:
             # check if there is missing days (Q was < threshold so the model didn't run)
@@ -861,7 +866,9 @@ class River:
                     missing_hours = [i[1] for i in missing]
                     missing_xs = [i[2] for i in missing]
 
-                missing = pd.DataFrame(index=range(len(missing_days_list)), dtype=np.float64)
+                missing = pd.DataFrame(
+                    index=range(len(missing_days_list)), dtype=np.float64
+                )
                 missing["day"] = missing_days_list
                 missing["hour"] = missing_hours
                 missing["xs"] = missing_xs
@@ -3372,7 +3379,7 @@ class Sub(River):
         # check if the xsid is in the sub-basin
         if xsid:
             if xsid not in self.xsname:
-                raise ValueError (
+                raise ValueError(
                     f"The given cross-section {xsid} does not exist inside the "
                     f"current Segment of the river, first XS is {self.firstxs}, and last "
                     f"XS is {self.lastxs}"
@@ -3395,20 +3402,38 @@ class Sub(River):
                     + self.RP["HQ2"].tolist()[0]
                 )
         else:
-            self.XSHydrographs[self.lastxs] = self.Result1D.loc[self.Result1D["xs"] == self.lastxs, "q"].values
-            self.XSHydrographs[self.firstxs] = self.Result1D.loc[self.Result1D["xs"] == self.firstxs, "q"].values
+            self.XSHydrographs[self.lastxs] = self.Result1D.loc[
+                self.Result1D["xs"] == self.lastxs, "q"
+            ].values
+            self.XSHydrographs[self.firstxs] = self.Result1D.loc[
+                self.Result1D["xs"] == self.firstxs, "q"
+            ].values
             if xsid:
-                self.XSHydrographs[xsid] = self.Result1D.loc[self.Result1D["xs"] == xsid, "q"].values
+                self.XSHydrographs[xsid] = self.Result1D.loc[
+                    self.Result1D["xs"] == xsid, "q"
+                ].values
 
-        self.XSWaterLevel[self.lastxs] = self.Result1D.loc[self.Result1D["xs"] == self.lastxs, "wl"].values
-        self.XSWaterLevel[self.firstxs] = self.Result1D.loc[self.Result1D["xs"] == self.firstxs, "wl"].values
+        self.XSWaterLevel[self.lastxs] = self.Result1D.loc[
+            self.Result1D["xs"] == self.lastxs, "wl"
+        ].values
+        self.XSWaterLevel[self.firstxs] = self.Result1D.loc[
+            self.Result1D["xs"] == self.firstxs, "wl"
+        ].values
 
-        self.XSWaterDepth[self.lastxs] = self.Result1D.loc[self.Result1D["xs"] == self.lastxs, "h"].values
-        self.XSWaterDepth[self.firstxs] = self.Result1D.loc[self.Result1D["xs"] == self.firstxs, "h"].values
+        self.XSWaterDepth[self.lastxs] = self.Result1D.loc[
+            self.Result1D["xs"] == self.lastxs, "h"
+        ].values
+        self.XSWaterDepth[self.firstxs] = self.Result1D.loc[
+            self.Result1D["xs"] == self.firstxs, "h"
+        ].values
 
         if xsid:
-            self.XSWaterLevel[xsid] = self.Result1D.loc[self.Result1D["xs"] == xsid, "wl"].values
-            self.XSWaterDepth[xsid] = self.Result1D.loc[self.Result1D["xs"] == xsid, "h"].values
+            self.XSWaterLevel[xsid] = self.Result1D.loc[
+                self.Result1D["xs"] == xsid, "wl"
+            ].values
+            self.XSWaterDepth[xsid] = self.Result1D.loc[
+                self.Result1D["xs"] == xsid, "h"
+            ].values
 
         # check the first day in the results and get the date of the first day and last day
         ## create time series
@@ -4229,16 +4254,18 @@ class Sub(River):
         Laterals : [dataframe attribute].
             dataframe containing a column for each cross section that has a lateral.
         """
-        if not isinstance(IF.BC, DataFrame):
-            raise ValueError(
-                "the boundary condition does not exist you have to read it first using the "
-                "'ReadBoundaryConditions' method in the interface model"
-            )
-        if not isinstance(IF.Laterals, DataFrame):
-            raise ValueError(
-                "the Laterals does not exist you have to read it first "
-                "using the 'ReadLaterals' method in the interface model"
-            )
+        if hasattr(IF, "BC"):
+            if not isinstance(IF.BC, DataFrame):
+                raise ValueError(
+                    "The boundary condition does not exist you have to read it first using the "
+                    "'ReadBoundaryConditions' method in the interface model"
+                )
+        if hasattr(IF, "Laterals"):
+            if not isinstance(IF.Laterals, DataFrame):
+                raise ValueError(
+                    "The Laterals does not exist you have to read it first "
+                    "using the 'ReadLaterals' method in the interface model"
+                )
 
         if fromday == "":
             fromday = IF.BC.index[0]
@@ -4334,9 +4361,11 @@ class Sub(River):
             raise ValueError("Please read the lateral flows first using the 'GetFlow'")
 
         if gaugexs not in self.crosssections["xsid"].values:
-            raise ValueError(f"The given XS {gaugexs} does not locate in the current river segment"
-                             f"First XS is {self.firstxs} and "
-                             f"Last XS is {self.lastxs}")
+            raise ValueError(
+                f"The given XS {gaugexs} does not locate in the current river segment"
+                f"First XS is {self.firstxs} and "
+                f"Last XS is {self.lastxs}"
+            )
         Laterals = self.getLaterals(gaugexs)
         try:
             s1 = Laterals.index[0]
