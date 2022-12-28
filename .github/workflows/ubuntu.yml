@@ -39,7 +39,7 @@ jobs:
             pip install cartopy
       - name: Install dependencies
         run: |
-#          $CONDA/bin/mamba env update --file environment.yml --name base
+            #$CONDA/bin/mamba env update --file environment.yml --name base
             pip install -r requirements.txt -r requirements-dev.txt
             python setup.py install
 
