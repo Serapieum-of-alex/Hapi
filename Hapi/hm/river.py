@@ -3633,17 +3633,21 @@ class Sub(River):
                 today,
                 date_format,
             )[station_id].tolist()
-            self.RRM2[station_id] = self.readRRMResults(
-                self.version,
-                self.rrmreferenceindex,
-                path2,
-                station_id,
-                fromday,
-                today,
-                date_format,
-            )[station_id].tolist()
+            try:
+                self.RRM2[station_id] = self.readRRMResults(
+                    self.version,
+                    self.rrmreferenceindex,
+                    path2,
+                    station_id,
+                    fromday,
+                    today,
+                    date_format,
+                )[station_id].tolist()
+            except FileNotFoundError:
+                raise FileNotFoundError(f"The directory you have given for the location 2 {path2}, is not correct "
+                                        f"please check")
 
-        logger.debug("RRM time series for the gauge " + str(station_id) + " is read")
+        logger.info("RRM time series for the gauge " + str(station_id) + " is read")
 
         if not fromday:
             fromday = 1
@@ -5030,12 +5034,8 @@ class Sub(River):
         QHM = pd.DataFrame()
 
         try:
-            GaugeStart = Calib.hm_gauges[Calib.hm_gauges["xsid"] == gaugexs][
-                "Qstart"
-            ].values[0]
-            GaugeEnd = Calib.hm_gauges[Calib.hm_gauges["xsid"] == gaugexs][
-                "Qend"
-            ].values[0]
+            GaugeStart = Calib.hm_gauges.loc[Calib.hm_gauges["xsid"] == gaugexs, "Qstart"].values[0]
+            GaugeEnd = Calib.hm_gauges.loc[Calib.hm_gauges["xsid"] == gaugexs, "Qend"].values[0]
         except IndexError:
             logger.debug("The XS you provided does not exist in the hm_gauges")
             return
@@ -5043,8 +5043,7 @@ class Sub(River):
         if Filter:
             start = dt.datetime.strptime(start, fmt)
             end = dt.datetime.strptime(end, fmt)
-            # get the latest date of the filter date and the first date in
-            # the result
+            # get the latest date of the filter date and the first date in the result
             # get the earliest date of the end and the last date in the result
             st2 = max(GaugeStart, start, self.firstdayresults)
             end2 = min(GaugeEnd, end, self.lastday)
