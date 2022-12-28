@@ -257,26 +257,26 @@ def test_ReadUSHydrograph(
 
 class TestGetTotalFlow:
     def test_segment_without_bc(
-            self,
-            version: int,
-            river_cross_section_path: str,
-            river_network_path: str,
-            CustomizedRunspath: str,
-            segment3: int,
-            segment3_xs: int,
-            dates: list,
-            interface_bc_path: str,
-            interface_bc_folder: str,
-            interface_bc_date_format: str,
-            interface_Laterals_table_path: str,
-            interface_Laterals_folder: str,
-            interface_Laterals_date_format: str,
-            test_time_series_length: int,
+        self,
+        version: int,
+        river_cross_section_path: str,
+        river_network_path: str,
+        CustomizedRunspath: str,
+        segment3: int,
+        segment3_xs: int,
+        dates: list,
+        interface_bc_path: str,
+        interface_bc_folder: str,
+        interface_bc_date_format: str,
+        interface_Laterals_table_path: str,
+        interface_Laterals_folder: str,
+        interface_Laterals_date_format: str,
+        test_time_series_length: int,
     ):
         """Test_segment_without_bc.
 
-        extract the total flow for a river segment that is in the middle of the river and does not have a
-        boundary condition
+        extract the total flow for a river segment that is in the middle
+        of the river and does not have a boundary condition
         """
         River = R.River("HM", version=version)
         River.readXS(river_cross_section_path)
@@ -303,26 +303,26 @@ class TestGetTotalFlow:
         assert "total" in Sub.TotalFlow.columns.to_list()
 
     def test_segment_wit_bc(
-            self,
-            version: int,
-            river_cross_section_path: str,
-            river_network_path: str,
-            CustomizedRunspath: str,
-            segment1: int,
-            segment1_xs: int,
-            dates: list,
-            interface_bc_path: str,
-            interface_bc_folder: str,
-            interface_bc_date_format: str,
-            interface_Laterals_table_path: str,
-            interface_Laterals_folder: str,
-            interface_Laterals_date_format: str,
-            test_time_series_length: int,
+        self,
+        version: int,
+        river_cross_section_path: str,
+        river_network_path: str,
+        CustomizedRunspath: str,
+        segment1: int,
+        segment1_xs: int,
+        dates: list,
+        interface_bc_path: str,
+        interface_bc_folder: str,
+        interface_bc_date_format: str,
+        interface_Laterals_table_path: str,
+        interface_Laterals_folder: str,
+        interface_Laterals_date_format: str,
+        test_time_series_length: int,
     ):
         """Test_segment_without_bc.
 
-        extract the total flow for a river segment that is in the middle of the river and does not have a
-        boundary condition
+        extract the total flow for a river segment that is in the middle
+        of the river and does not have a boundary condition
         """
         River = R.River("HM", version=version)
         River.readXS(river_cross_section_path)
