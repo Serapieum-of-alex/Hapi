@@ -21,9 +21,10 @@ from Hapi.hm.river import River
 
 
 class Inputs(River):
-    """Inputs.
+    """Hydraulic model Inputs class.
 
     Methods
+    -------
         1- ExtractHydrologicalInputs
         2- StatisticalProperties
         3- WriteHQFile
