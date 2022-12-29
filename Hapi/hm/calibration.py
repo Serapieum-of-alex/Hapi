@@ -1,8 +1,7 @@
 """Hydaulic model calibration related function module."""
 import datetime as dt
-from typing import Any, Union  # , Optional,Tuple,
+from typing import Any, Union
 
-import fiona
 import geopandas as gpd
 import matplotlib.pyplot as plt
 import numpy as np
@@ -168,7 +167,9 @@ class Calibration(River):
         try:
             self.hm_gauges = gpd.read_file(path, driver="GeoJSON")
         except Exception as e:
-            logger.warning(f"the {path} could not be opened with geopandas and will be opened with pandas instead")
+            logger.warning(
+                f"the {path} could not be opened with geopandas and will be opened with pandas instead"
+            )
             self.hm_gauges = pd.read_csv(path)
 
         # sort the gauges table based on the segment
@@ -516,7 +517,7 @@ class Calibration(River):
             for i in range(len(gauges)):
                 station_id = gauges[i]
                 try:
-                    self.q_rrm[station_id] = self.readRRMResults(
+                    self.q_rrm[station_id] = self._readRRMResults(
                         self.version,
                         self.rrmreferenceindex,
                         path,
@@ -535,7 +536,7 @@ class Calibration(River):
             for i in range(len(gauges)):
                 station_id = gauges[i]
                 try:
-                    self.q_rrm[station_id] = self.readRRMResults(
+                    self.q_rrm[station_id] = self._readRRMResults(
                         self.version,
                         self.rrmreferenceindex,
                         path,
@@ -544,7 +545,7 @@ class Calibration(River):
                         today,
                         date_format=fmt,
                     )[station_id].tolist()
-                    self.QRRM2[station_id] = self.readRRMResults(
+                    self.QRRM2[station_id] = self._readRRMResults(
                         self.version,
                         self.rrmreferenceindex,
                         path2,
@@ -641,7 +642,7 @@ class Calibration(River):
         # fill non modelled time steps with zeros
         for i in range(len(gauges)):
             nodeid = gauges[i]
-            self.q_hm[nodeid] = self.readRRMResults(
+            self.q_hm[nodeid] = self._readRRMResults(
                 self.version,
                 self.ReferenceIndex,
                 path,
@@ -740,7 +741,7 @@ class Calibration(River):
         self.WLHM = pd.DataFrame()
         for i in range(len(gauges)):
             nodeid = gauges[i]
-            self.WLHM[nodeid] = self.readRRMResults(
+            self.WLHM[nodeid] = self._readRRMResults(
                 self.version,
                 self.ReferenceIndex,
                 path,
