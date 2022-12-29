@@ -830,10 +830,10 @@ class River:
                     f"please use the GetDays method to select today: {today} that exist in the data"
                 )
 
-        if fromday :
+        if fromday:
             data = data.loc[data["day"] >= fromday, :]
 
-        if today :
+        if today:
             data = data.loc[data["day"] <= today]
 
         #  data.index = list(range(0, len(data)))
@@ -1034,7 +1034,7 @@ class River:
                 exec(var + ".to_csv(path ,index= None, sep = ' ', header = None)")
 
     @staticmethod
-    def readRRMResults(
+    def _readRRMResults(
         version: int,
         rrmreferenceindex,
         path: str,
@@ -3212,7 +3212,7 @@ class Sub(River):
         if River.twodresultpath:
             self.twodresultpath = River.twodresultpath
         if River.customized_runs_path:
-            self.CustomizedRunspath = River.customized_runs_path
+            self.customized_runs_path = River.customized_runs_path
         if River.usbcpath:
             self.usbcpath = River.usbcpath
         if River.oneminresultpath:
@@ -3619,7 +3619,7 @@ class Sub(River):
             )
 
         if location == 1:
-            self.RRM[station_id] = self.readRRMResults(
+            self.RRM[station_id] = self._readRRMResults(
                 self.version,
                 self.rrmreferenceindex,
                 path,
@@ -3629,7 +3629,7 @@ class Sub(River):
                 date_format,
             )[station_id].tolist()
         else:
-            self.RRM[station_id] = self.readRRMResults(
+            self.RRM[station_id] = self._readRRMResults(
                 self.version,
                 self.rrmreferenceindex,
                 path,
@@ -3639,7 +3639,7 @@ class Sub(River):
                 date_format,
             )[station_id].tolist()
             try:
-                self.RRM2[station_id] = self.readRRMResults(
+                self.RRM2[station_id] = self._readRRMResults(
                     self.version,
                     self.rrmreferenceindex,
                     path2,
@@ -3649,8 +3649,10 @@ class Sub(River):
                     date_format,
                 )[station_id].tolist()
             except FileNotFoundError:
-                raise FileNotFoundError(f"The directory you have given for the location 2 {path2}, is not correct "
-                                        f"please check")
+                raise FileNotFoundError(
+                    f"The directory you have given for the location 2 {path2}, is not correct "
+                    f"please check"
+                )
 
         logger.info("RRM time series for the gauge " + str(station_id) + " is read")
 
@@ -3918,7 +3920,7 @@ class Sub(River):
             self.referenceindex.loc[eventdays[0] : eventdays[-1], "date"]
         ).tolist()
 
-    def saveHydrograph(self, xsid: int, path: str = "", Option: int = 1):
+    def saveHydrograph(self, xsid: int, path: str = None, Option: int = 1):
         """Save Hydrograph. SaveHydrograph method saves the hydrograph of any cross-section in the segment. Mainly the method is created to to be used to save the last cross-section hydrograph to use it as as a boundary condition for the downstream segment.
 
         Parameters
@@ -3936,22 +3938,23 @@ class Sub(River):
         -------
         None.
         """
-        if path == "":
-            if not self.CustomizedRunspath:
+        if not path:
+            if not self.customized_runs_path:
                 raise ValueError(
                     "please enter the value of the customized_runs_path or use the path "
                     "argument to specify where to save the file"
                 )
-            path = self.CustomizedRunspath
+            path = self.customized_runs_path
 
-        saveDS = self.XSHydrographs[xsid].resample("D").last().to_frame()
+        ts = self.XSHydrographs[xsid].resample("D").last().to_frame()
         val = [self.XSHydrographs[xsid][0]] + self.XSHydrographs[xsid].resample(
             "D"
         ).last().values.tolist()[:-1]
-        saveDS[xsid] = val
-        f = pd.DataFrame(index=saveDS.index)
-        f["date"] = ["'" + str(i)[:10] + "'" for i in saveDS.index]
-        f["discharge(m3/s)"] = saveDS
+        ts[xsid] = val
+
+        f = pd.DataFrame(index = ts.index)
+        f["date"] = ["'" + str(i)[:10] + "'" for i in ts.index]
+        f["discharge(m3/s)"] = ts
 
         if Option == 1:
             val = [self.XSWaterDepth[xsid][0]] + self.XSWaterDepth[xsid].resample(
@@ -3964,7 +3967,7 @@ class Sub(River):
             ).last().values.tolist()[:-1]
             f["water level(m)"] = val
 
-        f.to_csv(path + str(self.id) + ".txt", index=False, float_format="%.3f")
+        f.to_csv(f"{path}{self.id}.txt", index=False, float_format="%.3f")
 
     def plotHydrographProgression(
         self,
@@ -4092,7 +4095,7 @@ class Sub(River):
         self.USHydrographs = pd.DataFrame()
 
         if not path:
-            path = self.CustomizedRunspath
+            path = self.customized_runs_path
 
         if len(self.usnode) > 1:
             # there is more than one upstream segment
@@ -4100,7 +4103,7 @@ class Sub(River):
                 for i in range(len(self.usnode)):
                     Nodeid = self.usnode[i]
                     try:
-                        self.USHydrographs[Nodeid] = self.readRRMResults(
+                        self.USHydrographs[Nodeid] = self._readRRMResults(
                             self.version,
                             self.rrmreferenceindex,
                             path,
@@ -4122,7 +4125,7 @@ class Sub(River):
         elif self.usnode:
             Nodeid = self.usnode[0]
             try:
-                self.USHydrographs[Nodeid] = self.readRRMResults(
+                self.USHydrographs[Nodeid] = self._readRRMResults(
                     self.version,
                     self.rrmreferenceindex,
                     path,
@@ -5039,8 +5042,12 @@ class Sub(River):
         QHM = pd.DataFrame()
 
         try:
-            GaugeStart = Calib.hm_gauges.loc[Calib.hm_gauges["xsid"] == gaugexs, "Qstart"].values[0]
-            GaugeEnd = Calib.hm_gauges.loc[Calib.hm_gauges["xsid"] == gaugexs, "Qend"].values[0]
+            GaugeStart = Calib.hm_gauges.loc[
+                Calib.hm_gauges["xsid"] == gaugexs, "Qstart"
+            ].values[0]
+            GaugeEnd = Calib.hm_gauges.loc[
+                Calib.hm_gauges["xsid"] == gaugexs, "Qend"
+            ].values[0]
         except IndexError:
             logger.debug("The XS you provided does not exist in the hm_gauges")
             return
