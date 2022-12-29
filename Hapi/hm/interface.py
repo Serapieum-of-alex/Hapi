@@ -117,8 +117,8 @@ class Interface(River):
     def _readRRMwrapper(
         self,
         table: DataFrame,
-        fromday: Union[str, int] = "",
-        today: Union[str, int] = "",
+        fromday: int = None,
+        today: int = None,
         path: str = "",
         date_format: str = "'%Y-%m-%d'",
         prefix: str = "lf_xsid",
@@ -160,7 +160,7 @@ class Interface(River):
 
             node_ids = table.loc[:, "xsid"].to_list()
             fnames = [f"{prefix}{NodeID}" for NodeID in node_ids]
-            func = self.readRRMResults
+            func = self._readRRMResults
             results = Parallel(n_jobs=cores)(
                 delayed(func)(
                     self.version,
@@ -183,7 +183,7 @@ class Interface(River):
                 node_id = table.loc[i, "xsid"]
                 fname = f"{prefix}{node_id}"
 
-                rrm_ts[node_id] = self.readRRMResults(
+                rrm_ts[node_id] = self._readRRMResults(
                     self.version,
                     self.ReferenceIndex,
                     path,
@@ -195,9 +195,9 @@ class Interface(River):
                 logger.info(f"Lateral file {fname} is read")
 
         rrm_ts["total"] = rrm_ts.sum(axis=1)
-        if fromday == "":
+        if not fromday:
             fromday = 1
-        if today == "":
+        if not today:
             today = len(rrm_ts[rrm_ts.columns[0]])
 
         start = self.ReferenceIndex.loc[fromday, "date"]
@@ -208,8 +208,8 @@ class Interface(River):
 
     def readLaterals(
         self,
-        fromday: Union[str, int] = "",
-        today: Union[str, int] = "",
+        fromday: int = None,
+        today: int = None,
         path: str = "",
         date_format: str = "'%Y-%m-%d'",
         cores: Optional[Union[int, bool]] = None,
