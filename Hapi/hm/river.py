@@ -7,8 +7,9 @@ import datetime as dt
 import os
 import zipfile
 from bisect import bisect
-from typing import Tuple, Union  # List, Optional,
+from typing import Tuple, Union, Optional  # List
 
+import yaml
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -24,19 +25,7 @@ from Hapi.hm.saintvenant import SaintVenant
 from Hapi.plot.visualizer import Visualize as V
 
 hours = list(range(1, 25))
-initial_args = dict(
-    dto={"default": 60, "type": int},
-    dx={"default": 500, "type": int},
-    leftovertopping_suffix={"default": "_left.txt", "type": str},
-    rightovertopping_suffix={"default": "_right.txt", "type": str},
-    depthprefix={"default": "DepthMax", "type": str},
-    durationprefix={"default": "Duration", "type": str},
-    returnperiod_prefix={"default": "ReturnPeriod", "type": str},
-    compressed={"default": True, "type": bool},
-    fmt={"default": "%Y-%m-%d", "type": str},
-    onedresultpath={"default": "/results/1d", "type": str},
-    twodresultpath={"default": "/results/2d", "type": str},
-)
+
 # def _get_attr(attribute):
 #     attribute = "dto"
 #     default_val = initial_args[attribute].get("default")
@@ -44,7 +33,20 @@ initial_args = dict(
 #     # attr_type = eval(attr_type)
 #     # check the type of the entered value
 #     if
-
+river_attributes = dict(
+    oneminresultpath=None, usbcpath=None, firstday=None, referenceindex_results=None,
+    wd=None, XSF=None, LateralsF=None, BCF=None, RiverNetworkF=None,
+    SlopeF=None, NoSeg=None, CalibrationF=None, Coupling1D2DF=None, RunMode=None, Subid=None,
+    Customized_BC_F=None, ResultsDetails=None, RRMTemporalResolution=None, HMTemporalResolution=None,
+    HMStoreTimeStep=None, TS=None, SimStartIndex=None, SimEndIndex=None, SimStart=None,
+    SimEnd=None, OneDTempR=None, D1=None, D2=None, crosssections=None, xsno=None,
+    xsname=None, QBCmin=None, HBCmin=None, h=None, q=None, from_beginning=None, firstdayresults=None,
+    lastday=None, daylist=None, id=None, QBC=None, HBC=None, usbc=None, dsbc=None, Result1D=None,
+    Q=None, H=None, slope=None, EventIndex=None, rivernetwork=None, SP=None, customized_runs_path=None,
+    Segments=None, RP=None, rrmpath=None, segments=None, customized_runs_config=None, parameters=None,
+    results_config=None, rrm_paths=None, rrm_config=None, river_1d_paths=None, river_1d_config=None,
+    config=None, results_paths=None, one_min_results_config=None, hourlt_results_config=None
+)
 
 class River:
     """River.
@@ -52,27 +54,30 @@ class River:
     River class reads all the data of the river, (cross sections,
     simulation results) and analyse the results and do visualisation
     """
+    initial_args = dict(
+        dto={"default": 60, "type": int},
+        dx={"default": 500, "type": int},
+        days={"default": 36890, "type": int},  # 100 years
+        rrmstart={"default": None, "type": str},
+        rrmdays={"default": 36890, "type": int},  # 100 years
+        leftovertopping_suffix={"default": "_left.txt", "type": str},
+        rightovertopping_suffix={"default": "_right.txt", "type": str},
+        depthprefix={"default": "DepthMax", "type": str},
+        durationprefix={"default": "Duration", "type": str},
+        returnperiod_prefix={"default": "ReturnPeriod", "type": str},
+        compressed={"default": True, "type": bool},
+        fmt={"default": "%Y-%m-%d", "type": str},
+        onedresultpath={"default": "/results/1d", "type": str},
+        twodresultpath={"default": "/results/2d", "type": str},
+    )
 
     def __init__(
-        self,
-        name: str,
-        version: int = 3,
-        start: str = "1950-1-1",
-        end: Union[int, str] = "",
-        days: int = 36890,
-        rrmstart: str = "",
-        rrmdays: int = 36890,
-        dto: int = 60,
-        dx: int = 500,
-        leftovertopping_suffix: str = "_left.txt",
-        rightovertopping_suffix: str = "_right.txt",
-        depthprefix: str = "DepthMax",
-        durationprefix: str = "Duration",
-        returnperiod_prefix: str = "ReturnPeriod",
-        compressed: str = True,
-        onedresultpath: str = "",
-        twodresultpath: str = "",
-        fmt: str = "%Y-%m-%d",
+            self,
+            name: str,
+            version: int = 3,
+            start: str = "1950-1-1",
+            end: Union[int, str] = None,
+            *args, **kwargs
     ):
         """River.
 
@@ -129,150 +134,78 @@ class River:
         -------
         None.
         """
+        # get wrong kwargs
+        wrong_kwargs = set(kwargs) - set(self.initial_args)
+        if len(wrong_kwargs) > 0:
+            print(self.initial_args)
+            raise KeyError(f"Invalid parameter {wrong_kwargs}")
+
+        for key, val in self.initial_args.items():
+            # if the parameter is given by user
+            if key in kwargs.keys():
+                default = self.initial_args.get(key)
+                # check the type
+                key_type = default.get("type")
+                # get the given value
+                val = kwargs.get(key)
+                if isinstance(val, key_type):
+                    # set the given value
+                    setattr(self, key, val)
+                else:
+                    raise TypeError(f"The parameter {key} should be of type {key_type}")
+            else:
+                setattr(self, key, val["default"])
+
+        # initialize attributes
+        for key, val in river_attributes.items():
+            setattr(self, key, val)
+
         assert isinstance(start, str), "start argument has to be string"
         assert isinstance(version, int), "version argument has to be integer number"
-        assert isinstance(days, int), "number of days has to be integer number"
-        assert isinstance(fmt, str), "date format 'fmt' has to be a string"
-        assert isinstance(dto, int), " delta time 'dto' has to be integer"
-        assert isinstance(rrmdays, int), "rrmdays has to be integer number"
-        assert isinstance(rrmstart, str), "rrmstart has to be string"
-
-        assert isinstance(
-            leftovertopping_suffix, str
-        ), "leftovertopping_suffix should be string"
-        assert isinstance(
-            rightovertopping_suffix, str
-        ), "rightovertopping_suffix should be string"
-        assert isinstance(depthprefix, str), "depthprefix should be string"
-        assert isinstance(durationprefix, str), "durationprefix should be string"
-        assert isinstance(
-            returnperiod_prefix, str
-        ), "returnperiod_prefix should be string"
-        assert isinstance(compressed, bool), "compressed should be string"
-        assert isinstance(onedresultpath, str), "onedresultpath should be string"
-        assert isinstance(twodresultpath, str), "twodresultpath should be string"
 
         self.name = name
         self.version = version
-        self.start = dt.datetime.strptime(start, fmt)
+        self.start = dt.datetime.strptime(start, self.fmt)
 
-        if end == "":
-            self.end = self.start + dt.timedelta(days=days)
+        if end is None:
+            self.end = self.start + dt.timedelta(days=self.days)
         else:
-            self.end = dt.datetime.strptime(end, fmt)
-            days = (self.end - self.start).days
+            self.end = dt.datetime.strptime(end, self.fmt)
+            self.days = (self.end - self.start).days
 
-        self.dt = dto
+        self.dt = self.dto
         if self.dt < 60:
             self.freq = str(self.dt) + "S"
         else:
             self.freq = str(int(self.dt / 60)) + "Min"
-        self.dx = dx
-
-        self.leftovertopping_suffix = leftovertopping_suffix
-        self.rightovertopping_suffix = rightovertopping_suffix
-        self.onedresultpath = onedresultpath
-        self.twodresultpath = twodresultpath
-        self.depthprefix = depthprefix
-        self.durationprefix = durationprefix
-        self.returnperiod_prefix = returnperiod_prefix
-        self.compressed = compressed
-        self.oneminresultpath = None
-        self.usbcpath = None
-        # attributes related to the results
-        self.firstday = None
-        self.referenceindex_results = None
-        self.firstday = None
         # ----------------------------------------------------
         ref_ind = pd.date_range(self.start, self.end, freq="D")
         # the last day is not in the results day Ref_ind[-1]
         # write the number of days + 1 as python does not include the last
         # number in the range
         # 19723 days so write 19724
-        if days == 1:
-            days = 2
-            self.referenceindex = pd.DataFrame(index=list(range(1, days + 1)))
+        if self.days == 1:
+            self.days = 2
+            self.referenceindex = pd.DataFrame(index=list(range(1, self.days + 1)))
             self.referenceindex["date"] = ref_ind
         else:
-            self.referenceindex = pd.DataFrame(index=list(range(1, days + 1)))
+            self.referenceindex = pd.DataFrame(index=list(range(1, self.days + 1)))
             self.referenceindex["date"] = ref_ind[:-1]
 
-        if rrmstart == "":
+        if self.rrmstart is None:
             self.rrmstart = self.start
         else:
-            try:
-                self.rrmstart = dt.datetime.strptime(rrmstart, fmt)
-            except ValueError:
-                msg = (
-                    "plese check the fmt ({0}) you entered as it is different from the"
-                    " rrmstart data ({1})"
-                )
-                logger.debug(msg.format(fmt, rrmstart))
-                return
+            self.rrmstart = dt.datetime.strptime(self.rrmstart, self.fmt)
 
-        self.rrmend = self.rrmstart + dt.timedelta(days=rrmdays)
+
+        self.rrmend = self.rrmstart + dt.timedelta(days=self.rrmdays)
         ref_ind = pd.date_range(self.rrmstart, self.rrmend, freq="D")
-        self.rrmreferenceindex = pd.DataFrame(index=list(range(1, rrmdays + 1)))
+        self.rrmreferenceindex = pd.DataFrame(index=list(range(1, self.rrmdays + 1)))
         self.rrmreferenceindex["date"] = ref_ind[:-1]
         self.notimesteps = len(self.rrmreferenceindex)
 
         self.indsub = pd.date_range(self.start, self.end, freq=self.freq)
 
-        self.wd = None
-        self.XSF = None
-        self.LateralsF = None
-        self.BCF = None
-        self.RiverNetworkF = None
-        self.SlopeF = None
-        self.NoSeg = None
-        self.CalibrationF = None
-        self.Coupling1D2DF = None
-        self.RunMode = None
-        self.Subid = None
-        self.Customized_BC_F = None
-        self.ResultsDetails = None
-        self.RRMTemporalResolution = None
-        self.HMTemporalResolution = None
-        self.HMStoreTimeStep = None
-        self.TS = None
-        self.SimStartIndex = None
-        self.SimEndIndex = None
-        self.SimStart = None
-        self.SimEnd = None
-        self.OneDTempR = None
-        self.D1 = None
-        self.D2 = None
-
-        # self.USHydrographs = None
-        self.crosssections = None
-        self.xsno = None
-        self.xsname = None
-        self.QBCmin = None
-        self.HBCmin = None
-        self.h = None
-        self.q = None
-        self.from_beginning = None
-        self.firstdayresults = None
-        self.lastday = None
-        self.daylist = None
-        self.id = None
-        self.QBC = None
-        self.HBC = None
-        self.usbc = None
-        self.dsbc = None
-        self.Result1D = None
-        self.Q = None
-        self.H = None
-        self.slope = None
-        self.EventIndex = None
-        self.rivernetwork = None
-        self.SP = None  # StatisticalProperties
-        self.customized_runs_path = None
-        self.Segments = None
-        self.RP = None
-        self.SP = None
-        self.rrmpath = None
-        self.segments = None  # read cross sections
 
     def IndexToDate(self, index: int):
         """IndexToDate.
@@ -370,6 +303,74 @@ class River:
     @staticmethod
     def round(number, roundto):
         return round(number / roundto) * roundto
+
+
+    def readConfig(self, path):
+        """reads the hydraulic model configuration file
+
+        Parameters
+        ----------
+        path: [str]
+            path to the configuration file (yaml files)
+        """
+        if not os.path.exists(path):
+            raise FileNotFoundError(f"The Configuration file You have entered: {path} does not exist")
+        with open(path, "r") as stream:
+            config = yaml.safe_load(stream)
+        # project directory
+        self.wd = config.get("project directory")
+        self.config = config
+        # river
+        river_files = config.get("river description")
+        self.river_1d_config = river_files
+        river_rdir = Path(river_files.get("root directory"))
+        self.river_1d_paths = dict(
+            river_rdir=river_rdir,
+            xs_file=river_rdir.joinpath(river_files.get("cross sections")),
+            river_network=river_rdir.joinpath(river_files.get("river network")),
+            river_slope=river_rdir.joinpath(river_files.get("slope")),
+            coupling_2d=river_rdir.joinpath(river_files.get("1D-2D coupling")),
+            calibration_table=river_rdir.joinpath(river_files.get("results locations")),
+        )
+        # rainfall runoff model
+        rrm_files = config.get("rainfall-runoff files")
+        self.rrm_config = rrm_files
+        rrm_rdir = Path(rrm_files.get("root directory"))
+        rrm_results = rrm_files.get("river routing blocked results")
+        self.rrm_paths = dict(
+            rrm_rdir=rrm_rdir,
+            laterals_table_path=rrm_rdir.joinpath(rrm_files.get("laterals")),
+            boundary_condition_table=rrm_rdir.joinpath(rrm_files.get("boundary condition")),
+            laterals_dir=rrm_rdir,
+            boundary_condition_path=rrm_rdir,
+            rrm_location_1=Path(rrm_results.get("location-1")),  # rrmpath
+            rrm_location_2=Path(rrm_results.get("location-2")),
+        )
+        # result files
+        results_files = config.get("Results 1D")
+        self.results_config = results_files
+        results_rdir = Path(results_files.get("root directory"))
+        hourlt_results = results_files.get("hourly")
+        self.hourlt_results_config = hourlt_results
+        one_min_results = results_files.get("one min")
+        self.one_min_results_config = one_min_results
+        # 2D
+        results_files = config.get("Results 2D")
+        self.results_paths = dict(
+            results_rdir=results_rdir,
+            onedresultpath=results_rdir.joinpath(hourlt_results.get("folder")),
+            oneminresultpath=results_rdir,
+            usbcpath=results_rdir.joinpath(one_min_results.get("usbc").get("folder")),
+            twodresultpath=Path(results_files.get("root directory"))
+        )
+        # parameters
+        parameters = config.get("simulation parameters")
+        self.parameters = parameters
+        customized_runs = parameters.get("customized simulation")
+        self.customized_runs_config = customized_runs
+        customized_runs_path = Path(customized_runs.get("previous run results"))
+        self.customized_runs_path = customized_runs_path
+
 
     def Read1DConfigFile(self, path: str):
         """Read1DConfigFile.
@@ -640,7 +641,7 @@ class River:
     ):
         """ReadSubDailyResults.
 
-        Read Sub-Daily Results
+        Read Reach-Daily Results
 
         Read1DResults1Min method is used by the sub sub-class, so most of the
         parameters (xsname,...) are assigned to values after reading results
@@ -669,7 +670,7 @@ class River:
             assert self.crosssections, "please read the cross sections first"
 
         assert isinstance(self.usbcpath, str), (
-            "please input the 'usbcpath' attribute in " "the River or the Sub instance"
+            "please input the 'usbcpath' attribute in " "the River or the Reach instance"
         )
 
         if isinstance(start, str):
@@ -773,8 +774,8 @@ class River:
     def read1DResult(
         self,
         Subid: int,
-        fromday: Union[int, str] = None,
-        today: Union[int, str] = None,
+        fromday: Optional[int] = None,
+        today: Optional[int] = None,
         path: str = None,
         FillMissing: bool = False,
     ):
@@ -811,7 +812,7 @@ class River:
             path = self.onedresultpath
 
         data = pd.read_csv(
-            f"{path}{Subid}.txt", header=None, delimiter=r"\s+", index_col=False
+            rf"{path}\{Subid}.txt", header=None, delimiter=r"\s+", index_col=False
         )
         # TODO: read the file in chunks
 
@@ -1963,7 +1964,7 @@ class River:
                 logger.info(f"New H = {round(H, 2)}")
                 logger.info("---------------------------")
 
-    def overtopping(self, OvertoppingResultpath=""):
+    def overtopping(self, overtopping_result_path: str=None):
         """Overtopping.
 
         Overtopping method reads the overtopping files and for each cross section
@@ -1976,8 +1977,8 @@ class River:
 
         Inputs:
         -------
-            1-OvertoppingResultF:
-                [String] a path to the folder includng 2D results.
+        overtopping_result_path: [str]
+            a path to the folder includng 2D results.
 
         Returns
         -------
@@ -2018,7 +2019,7 @@ class River:
             try:
                 # open the file (if there is no column sthe file is empty)
                 data = pd.read_csv(
-                    self.onedresultpath + leftOverTop[i], header=None, delimiter=r"\s+"
+                    rf"{overtopping_result_path}\{leftOverTop[i]}", header=None, delimiter=r"\s+"
                 )
                 # add the sub basin to the overtopping dictionary of sub-basins
                 OverToppingSubsLeft[
@@ -2039,7 +2040,7 @@ class River:
             try:
                 # open the file
                 data = pd.read_csv(
-                    self.onedresultpath + RightOverTop[i], header=None, delimiter=r"\s+"
+                    rf"{overtopping_result_path}\{RightOverTop[i]}", header=None, delimiter=r"\s+"
                 )
                 # add the sub basin to the overtopping dictionary of sub-basins
                 OverToppingSubsRight[
@@ -2243,9 +2244,7 @@ class River:
             try:
                 # try to open and read the overtopping file
                 data = pd.read_csv(
-                    self.onedresultpath
-                    + str(floodedSubs[i])
-                    + self.leftovertopping_suffix,
+                    rf"{self.onedresultpath}\{floodedSubs[i]}{self.leftovertopping_suffix}",
                     header=None,
                     delimiter=r"\s+",
                 )
@@ -2272,9 +2271,7 @@ class River:
             try:
                 # try to open and read the overtopping file
                 data = pd.read_csv(
-                    self.onedresultpath
-                    + str(floodedSubs[i])
-                    + self.rightovertopping_suffix,
+                    rf"{self.onedresultpath}\{floodedSubs[i]}{self.rightovertopping_suffix}",
                     header=None,
                     delimiter=r"\s+",
                 )
@@ -2927,9 +2924,7 @@ class River:
                                             and the earliest day after the given
                                             day).
         """
-        data = pd.read_csv(
-            self.onedresultpath + str(self.id) + ".txt", header=None, delimiter=r"\s+"
-        )
+        data = pd.read_csv(rf"{self.onedresultpath}\{self.id}.txt", header=None, delimiter=r"\s+")
         data.columns = ["day", "hour", "xs", "q", "h", "wl"]
         days = list(set(data["day"]))
         days.sort()
@@ -3182,43 +3177,34 @@ class River:
         logger.debug("\n")
 
 
-class Sub(River):
+class Reach(River):
 
-    """Sub segment object.
+    """Reach segment object.
 
-    represent a segment of the river to create the Sub instance the
+    represent a segment of the river to create the Reach instance the
     river object has to have the cross-sections read using the
     'ReadCrossSections' method
     """
+    reach_attr = dict(
+        ExtractedValues = dict(), XSHydrographs=None, NegQmin=None, Negative=None, XSWaterLevel=None, XSWaterDepth=None,
+        RRM=None, RRM2=None, ResampledQ=None, ResampledWL=None, ResampledH=None, Qrp=None, DetailedOvertoppingLeft=None,
+        DetailedOvertoppingRight=None, AllOvertoppingVSXS=None, AllOvertoppingVSTime=None, BC=None, AreaPerHigh=None,
+        AreaPerLow=None, TotalFlow=None, RRMProgression=None, LateralsTable=None, Laterals=None, Result1D=None,
+        USHydrographs=None
+    )
 
-    def __init__(self, sub_id: int, River, RunModel: bool = False):
+
+    def __init__(self, sub_id: int, River, run_model: bool = False, *args, **kwargs):
+        # super().__init__(*args, **kwargs)
+        # initializa the attributes with the river attributes
+        for key, val in River.__dict__.items():
+            setattr(self, key, val)
+
+        # initialize attributes
+        for key, val in self.reach_attr.items():
+            setattr(self, key, val)
+
         self.id = sub_id
-        self.rim = River.name
-        self.version = River.version
-        self.freq = River.freq
-        self.dt = River.dt
-        if River.rightovertopping_suffix:
-            self.rightovertopping_suffix = River.rightovertopping_suffix
-        if River.leftovertopping_suffix:
-            self.leftovertopping_suffix = River.leftovertopping_suffix
-        if River.depthprefix:
-            self.depthprefix = River.depthprefix
-        if River.durationprefix:
-            self.durationprefix = River.durationprefix
-        if River.returnperiod_prefix:
-            self.returnperiod_prefix = River.returnperiod_prefix
-        if River.compressed:
-            self.compressed = River.compressed
-        if River.twodresultpath:
-            self.twodresultpath = River.twodresultpath
-        if River.customized_runs_path:
-            self.customized_runs_path = River.customized_runs_path
-        if River.usbcpath:
-            self.usbcpath = River.usbcpath
-        if River.oneminresultpath:
-            self.oneminresultpath = River.oneminresultpath
-        # if River.usbcpath:
-        #     self.usbcpath = River.usbcpath
 
         if not isinstance(River.crosssections, DataFrame):
             raise ValueError(
@@ -3226,33 +3212,8 @@ class Sub(River):
                 "method before creating the sub-segment instance"
             )
         # filter the whole cross section file and get the cross section of the segment
-
         self.crosssections = River.crosssections[River.crosssections["id"] == sub_id]
-        if RunModel:
-            self.xsid = self.crosssections.loc[:, "xsid"].values
-            self.dbf = self.crosssections.loc[:, "dbf"].values
-            self.bedlevel = self.crosssections.loc[:, "gl"].values
-            self.hl = self.crosssections.loc[:, "hl"].values
-            self.cl = self.crosssections.loc[:, "bl"].values
-            self.zl = self.crosssections.loc[:, "zl"].values
-            self.hr = self.crosssections.loc[:, "hr"].values
-            self.cr = self.crosssections.loc[:, "br"].values
-            self.zr = self.crosssections.loc[:, "zr"].values
-            self.mw = self.crosssections.loc[:, "b"].values
-            self.mn = self.crosssections.loc[:, "m"].values
-
-        self.crosssections.index = list(range(len(self.crosssections)))
-        self.lastxs = self.crosssections.loc[len(self.crosssections) - 1, "xsid"]
-        self.firstxs = self.crosssections.loc[0, "xsid"]
-        self.xsname = self.crosssections["xsid"].tolist()
-        self.xsno = len(self.xsname)
-
-        self.referenceindex = River.referenceindex
-
-        if isinstance(River.rrmreferenceindex, DataFrame):
-            self.rrmreferenceindex = River.rrmreferenceindex
-
-        self.onedresultpath = River.onedresultpath
+        self._getXS(run_model=run_model)
 
         if isinstance(River.slope, DataFrame) and self.id in River.slope["id"].tolist():
             self.slope = River.slope[River.slope["id"] == sub_id]["slope"].tolist()[0]
@@ -3271,35 +3232,47 @@ class Sub(River):
             self.SP = River.SP.loc[River.SP["id"] == self.id, :]
             self.SP.index = list(range(len(self.SP)))
 
-        if River.rrmpath:
-            self.rrmpath = River.rrmpath
+    def _getXS(self, run_model: bool):
+        """get the cross sections of the current river reach.
 
-        # Create dictionary to store any extracted values from maps
-        self.ExtractedValues = dict()
-        self.XSHydrographs = None
-        self.NegQmin = None
-        self.Negative = None
-        self.XSWaterLevel = None
-        self.XSWaterDepth = None
-        self.RRM = None
-        self.RRM2 = None
-        self.ResampledQ = None
-        self.ResampledWL = None
-        self.ResampledH = None
-        self.Qrp = None
-        self.DetailedOvertoppingLeft = None
-        self.DetailedOvertoppingRight = None
-        self.AllOvertoppingVSXS = None
-        self.AllOvertoppingVSTime = None
-        self.BC = None
-        self.AreaPerHigh = None
-        self.AreaPerLow = None
-        self.TotalFlow = None
-        self.RRMProgression = None  # DataFrame
-        self.LateralsTable = None  # list
-        self.Laterals = None  # DataFrame
-        self.Result1D = None  # DataFrame
-        self.USHydrographs = None
+        Parameters
+        ----------
+        run_model: [bool]
+            If True the values (as array) for each attribute of the cross section will be stored in the reach object
+
+        Returns
+        -------
+        crosssections: [DataFrame]
+            Replaces the crosssections attributes in the reach object from the whole river cross sections
+            to the cross section of the current reach only
+        lastxs: [int]
+            the id of the last cross section
+        firstxs: [int]
+            the id of the last cross section
+        xsname: [List]
+            list of current reach cross sections id
+        xsno: [int]
+            number of cross sections in the current river reach
+        """
+        if run_model:
+            self.xsid = self.crosssections.loc[:, "xsid"].values
+            self.dbf = self.crosssections.loc[:, "dbf"].values
+            self.bedlevel = self.crosssections.loc[:, "gl"].values
+            self.hl = self.crosssections.loc[:, "hl"].values
+            self.cl = self.crosssections.loc[:, "bl"].values
+            self.zl = self.crosssections.loc[:, "zl"].values
+            self.hr = self.crosssections.loc[:, "hr"].values
+            self.cr = self.crosssections.loc[:, "br"].values
+            self.zr = self.crosssections.loc[:, "zr"].values
+            self.mw = self.crosssections.loc[:, "b"].values
+            self.mn = self.crosssections.loc[:, "m"].values
+
+        self.crosssections.index = list(range(len(self.crosssections)))
+        self.lastxs = self.crosssections.loc[len(self.crosssections) - 1, "xsid"]
+        self.firstxs = self.crosssections.loc[0, "xsid"]
+        self.xsname = self.crosssections["xsid"].tolist()
+        self.xsno = len(self.xsname)
+
 
     def read1DResult(
         self,
@@ -3810,9 +3783,7 @@ class Sub(River):
         try:
             # try to open and read the overtopping file
             data = pd.read_csv(
-                self.onedresultpath + str(self.id) + self.leftovertopping_suffix,
-                header=None,
-                delimiter=r"\s+",
+                f"{self.onedresultpath}{self.id}{self.leftovertopping_suffix}", header=None, delimiter=r"\s+",
             )
 
             data.columns = ["day", "hour", "xsid", "q", "wl"]
@@ -3847,9 +3818,7 @@ class Sub(River):
         try:
             # try to open and read the overtopping file
             data = pd.read_csv(
-                self.onedresultpath + str(self.id) + self.rightovertopping_suffix,
-                header=None,
-                delimiter=r"\s+",
+                rf"{self.onedresultpath}\{self.id}{self.rightovertopping_suffix}", header=None, delimiter=r"\s+",
             )
             data.columns = ["day", "hour", "xsid", "q", "wl"]
             # get the days in the sub
@@ -4297,7 +4266,7 @@ class Sub(River):
         if len(bcids) == 0:
             self.BC = False
         elif len(bcids) > 1:
-            raise ValueError("There are more than one BC for this Sub-basin")
+            raise ValueError("There are more than one BC for this Reach-basin")
         else:
             self.BC = IF.BC.loc[fromday:today, bcids[0]].to_frame()
 
@@ -5359,7 +5328,7 @@ class Sub(River):
     ):
         """Histogram.
 
-        Histogram Extracts the values that are located in the same location in the BaseMap as the Sub-basin
+        Histogram Extracts the values that are located in the same location in the BaseMap as the Reach-basin
 
         :param Day:
         :param BaseMapF:
