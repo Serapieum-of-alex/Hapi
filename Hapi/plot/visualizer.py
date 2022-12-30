@@ -8,7 +8,7 @@ import datetime as dt
 import math
 import os
 from collections import OrderedDict
-from typing import List, Union
+from typing import List, Union, Optional
 
 import matplotlib as mpl
 import matplotlib.colors as colors
@@ -140,8 +140,8 @@ class Visualize:
     def GroundSurface(
         self,
         Sub,
-        fromxs: Union[str, int] = "",
-        toxs: Union[str, int] = "",
+        fromxs: Optional[int] = None,
+        toxs: Optional[int] = None,
         floodplain: bool = False,
         plotlateral: bool = False,
         nxlabels: int = 10,
@@ -186,10 +186,10 @@ class Visualize:
         gs = gridspec.GridSpec(nrows=2, ncols=6, figure=GroundSurfacefig)
         axGS = GroundSurfacefig.add_subplot(gs[0:2, 0:6])
 
-        if fromxs == "":
+        if not fromxs:
             fromxs = Sub.xsname[0]
 
-        if toxs == "":
+        if not toxs:
             toxs = Sub.xsname[-1]
 
         # not the whole sub-basin
@@ -313,8 +313,8 @@ class Visualize:
         start: Union[str, dt.datetime],
         end: Union[str, dt.datetime],
         fps: int = 100,
-        fromxs: Union[str, int] = "",
-        toxs: Union[str, int] = "",
+        fromxs: Optional[int] = None,
+        toxs: Optional[int] = None,
         fmt: str = "%Y-%m-%d",
         figsize: tuple = (20, 10),
         textlocation: tuple = (1, 1),
@@ -335,7 +335,7 @@ class Visualize:
         Parameters
         ----------
         Sub : [Object]
-            Sub-object created as a sub class from River object.
+            Reach-object created as a sub class from River object.
         start : [datetime object]
             starting date of the simulation.
         end : [datetime object]
@@ -418,7 +418,7 @@ class Visualize:
         ax1 = fig.add_subplot(gs[0, 2:6])
         ax1.set_ylim(0, int(Sub.Result1D["q"].max()))
 
-        if fromxs == "":
+        if not fromxs:
             # xs = 0
             # plot the whole sub-basin
             fromxs = Sub.xsname[0]
@@ -428,7 +428,7 @@ class Visualize:
             if fromxs < Sub.xsname[0]:
                 fromxs = Sub.xsname[0]
 
-        if toxs == "":
+        if not toxs:
             toxs = Sub.xsname[-1]
         else:
             if toxs > Sub.xsname[-1]:
@@ -443,7 +443,7 @@ class Visualize:
 
         ax1.set_xlabel("Cross section No", fontsize=xaxislabelsize)
         ax1.set_ylabel("Discharge (m3/s)", fontsize=yaxislabelsize, labelpad=0.3)
-        ax1.set_title("Sub-Basin" + " " + str(Sub.id), fontsize=15)
+        ax1.set_title("Reach-Basin" + " " + str(Sub.id), fontsize=15)
         ax1.legend(["Discharge"], fontsize=15)
 
         # plot location of laterals
@@ -826,13 +826,13 @@ class Visualize:
 
         if fromxs == "":
             fromxs = Sub.xsname[0]
-            # toxs = Sub.xsname[-1]
+            # toxs = Reach.xsname[-1]
         else:
             if fromxs < Sub.xsname[0]:
                 fromxs = Sub.xsname[0]
 
-            # if toxs > Sub.xsname[-1]:
-            # toxs = Sub.xsname[-1]
+            # if toxs > Reach.xsname[-1]:
+            # toxs = Reach.xsname[-1]
 
         if toxs == "":
             toxs = Sub.xsname[-1]
@@ -850,12 +850,12 @@ class Visualize:
 
         ax1.set_xlabel("Cross section No", fontsize=xaxislabelsize)
         ax1.set_ylabel("Discharge (m3/s)", fontsize=yaxislabelsize, labelpad=0.5)
-        ax1.set_title("Sub-Basin" + " " + str(Sub.id), fontsize=15)
+        ax1.set_title("Reach-Basin" + " " + str(Sub.id), fontsize=15)
         ax1.legend(["Discharge"], fontsize=15)
         ax1.set_ylim(0, int(Sub.q.max().max()))
 
         if Sub.version < 4:
-            # ax1.set_ylim(0, int(Sub.Result1D['q'].max()))
+            # ax1.set_ylim(0, int(Reach.Result1D['q'].max()))
 
             # plot location of laterals
             for i in range(len(Sub.LateralsTable)):
@@ -1378,13 +1378,13 @@ class Visualize:
             dsbc_line.set_data(x, y)
 
             # x = counter[i][1]
-            # y = Sub.referenceindex.loc[counter[i][0], 'date']
-            # ax2.scatter(x, Sub.QBC[x][y])
+            # y = Reach.referenceindex.loc[counter[i][0], 'date']
+            # ax2.scatter(x, Reach.QBC[x][y])
 
             # # BC Q point (ax2)
             # x = ((counter[i] - dt.datetime(counter[i].year, counter[i].month, counter[i].day)).seconds / 60) + 1
             # y = dt.datetime(counter[i].year, counter[i].month, counter[i].day)
-            # ax2.scatter(x, Sub.USBC[x][y])
+            # ax2.scatter(x, Reach.USBC[x][y])
 
             return (
                 q_line,
@@ -1392,7 +1392,7 @@ class Visualize:
                 day_text,
                 usbc_line,
                 dsbc_line,
-            )  # ax2.scatter(x, Sub.USBC[x][y], s=150),
+            )  # ax2.scatter(x, Reach.USBC[x][y], s=150),
 
         # plt.tight_layout()
 
@@ -1410,8 +1410,8 @@ class Visualize:
     def CrossSections(
         self,
         Sub,
-        fromxs: Union[str, int] = "",
-        toxs: Union[str, int] = "",
+        fromxs: Optional[int] = None,
+        toxs: Optional[int] = None,
         xsrows: int = 3,
         xscolumns: int = 3,
         bedlevel: bool = False,
@@ -1431,7 +1431,7 @@ class Visualize:
         Parameters
         ----------
         Sub : [Object]
-            Sub-object created as a sub class from River object..
+            Reach-object created as a sub class from River object..
         fromxs : TYPE, optional
             DESCRIPTION. The default is ''.
         toxs : TYPE, optional
@@ -1465,12 +1465,12 @@ class Visualize:
         -------
         None.
         """
-        if fromxs == "":
+        if not fromxs:
             startxs_ind = 0
         else:
             startxs_ind = Sub.xsname.index(fromxs)
 
-        if toxs == "":
+        if not toxs:
             endxs_ind = Sub.xsno - 1
         else:
             endxs_ind = Sub.xsname.index(toxs)
@@ -1488,9 +1488,9 @@ class Visualize:
             XSS[1].loc[XSS.index == ind] = 0
             XSS[2].loc[XSS.index == ind] = 0
 
-            bl = Sub.crosssections["bl"].loc[Sub.crosssections.index == ind2].values[0]
-            b = Sub.crosssections["b"].loc[Sub.crosssections.index == ind2].values[0]
-            br = Sub.crosssections["br"].loc[Sub.crosssections.index == ind2].values[0]
+            bl = Sub.crosssections.loc[Sub.crosssections.index == ind2, "bl"].values[0]
+            b = Sub.crosssections.loc[Sub.crosssections.index == ind2, "b"].values[0]
+            br = Sub.crosssections.loc[Sub.crosssections.index == ind2, "br"].values[0]
 
             XSS[3].loc[XSS.index == ind] = bl
             XSS[4].loc[XSS.index == ind] = bl
@@ -1499,29 +1499,25 @@ class Visualize:
             XSS[7].loc[XSS.index == ind] = bl + b + br
             XSS[8].loc[XSS.index == ind] = bl + b + br
 
-            gl = Sub.crosssections["gl"].loc[Sub.crosssections.index == ind2].values[0]
+            gl = Sub.crosssections.loc[Sub.crosssections.index == ind2, "gl"].values[0]
 
             if bedlevel:
                 subtract = 0
             else:
                 subtract = gl
 
-            zl = Sub.crosssections["zl"].loc[Sub.crosssections.index == ind2].values[0]
-            zr = Sub.crosssections["zr"].loc[Sub.crosssections.index == ind2].values[0]
+            zl = Sub.crosssections.loc[Sub.crosssections.index == ind2, "zl"].values[0]
+            zr = Sub.crosssections.loc[Sub.crosssections.index == ind2, "zr"].values[0]
 
-            if Sub.version > 1:
-                dbf = (
-                    Sub.crosssections["dbf"]
-                    .loc[Sub.crosssections.index == ind2]
-                    .values[0]
-                )
+            if "dbf" in Sub.crosssections.columns:
+                dbf = Sub.crosssections.loc[Sub.crosssections.index == ind2, "dbf"].values[0]
 
-            hl = Sub.crosssections["hl"].loc[Sub.crosssections.index == ind2].values[0]
-            hr = Sub.crosssections["hr"].loc[Sub.crosssections.index == ind2].values[0]
+            hl = Sub.crosssections.loc[Sub.crosssections.index == ind2, "hl"].values[0]
+            hr = Sub.crosssections.loc[Sub.crosssections.index == ind2, "hr"].values[0]
 
             XSS[9].loc[XSS.index == ind] = zl - subtract
 
-            if Sub.version == 1:
+            if "dbf" not in Sub.crosssections.columns:
                 XSS[10].loc[XSS.index == ind] = gl + hl - subtract
                 XSS[11].loc[XSS.index == ind] = gl - subtract
                 XSS[14].loc[XSS.index == ind] = gl - subtract
@@ -1545,8 +1541,6 @@ class Visualize:
         ind = XSS.index[ind2 - startxs_ind]
         for i in range(figno):
 
-            # fig = plt.figure(1000 + i, figsize=figsize)
-            # -----------------
             if samescale:
                 sharex = True
                 sharey = True
@@ -1566,28 +1560,16 @@ class Visualize:
             for j in range(xsrows):
                 for k in range(xscolumns):
                     if ind2 <= endxs_ind:
-                        XsId = Sub.crosssections["xsid"][Sub.crosssections.index[ind2]]
+                        XsId = Sub.crosssections.loc[Sub.crosssections.index[ind2], "xsid"]
                         xcoord = (
                             XSS[names[0:8]].loc[XSS.index == ind].values.tolist()[0]
                         )
                         ycoord = (
                             XSS[names[8:16]].loc[XSS.index == ind].values.tolist()[0]
                         )
-                        b = (
-                            Sub.crosssections["b"]
-                            .loc[Sub.crosssections["xsid"] == ind]
-                            .values[0]
-                        )
-                        bl = (
-                            Sub.crosssections["bl"]
-                            .loc[Sub.crosssections["xsid"] == ind]
-                            .values[0]
-                        )
-                        gl = (
-                            Sub.crosssections["gl"]
-                            .loc[Sub.crosssections["xsid"] == ind]
-                            .values[0]
-                        )
+                        b = Sub.crosssections.loc[Sub.crosssections["xsid"] == ind, "b"].values[0]
+                        bl = Sub.crosssections.loc[Sub.crosssections["xsid"] == ind, "bl"].values[0]
+                        gl = Sub.crosssections.loc[Sub.crosssections["xsid"] == ind, "gl"].values[0]
 
                         # ax_XS = fig.add_subplot(gs[j, k])
                         if plottingoption == 1:
@@ -1618,16 +1600,8 @@ class Visualize:
 
                         if plotannotation:
                             if Sub.version > 1:
-                                dbf = (
-                                    Sub.crosssections["dbf"]
-                                    .loc[Sub.crosssections["xsid"] == ind]
-                                    .values[0]
-                                )
-                                b = (
-                                    Sub.crosssections["b"]
-                                    .loc[Sub.crosssections["xsid"] == ind]
-                                    .values[0]
-                                )
+                                dbf = Sub.crosssections.loc[Sub.crosssections["xsid"] == ind, "dbf"].values[0]
+                                b = Sub.crosssections.loc[Sub.crosssections["xsid"] == ind, "b"].values[0]
 
                                 if bedlevel:
                                     ax_XS[j, k].annotate(
@@ -1950,7 +1924,7 @@ class Visualize:
             # ax2.yaxis.label.set_color(color2)
 
             # ax2.tick_params(axis='y', color = color2)
-            # plt.title("Sub-Basin = " + str(Subid), fontsize = 15)
+            # plt.title("Reach-Basin = " + str(Subid), fontsize = 15)
 
             # minall = min(min(n1[1]), min(n2[1]))
             # if minall < 0:
