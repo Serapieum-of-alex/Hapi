@@ -7,8 +7,8 @@ import datetime as dt
 import os
 import zipfile
 from bisect import bisect
-from typing import Tuple, Union, Optional  # List
-
+from typing import Tuple, Union, Optional, Any
+from pathlib import Path
 import yaml
 import matplotlib.pyplot as plt
 import numpy as np
@@ -23,30 +23,9 @@ from statista.distributions import GEV, Gumbel  # , PlottingPosition
 
 from Hapi.hm.saintvenant import SaintVenant
 from Hapi.plot.visualizer import Visualize as V
-
+from Hapi.utils import class_method_parse, class_attr_initialize
 hours = list(range(1, 25))
 
-# def _get_attr(attribute):
-#     attribute = "dto"
-#     default_val = initial_args[attribute].get("default")
-#     attr_type = initial_args.get(attribute).get("type")
-#     # attr_type = eval(attr_type)
-#     # check the type of the entered value
-#     if
-river_attributes = dict(
-    oneminresultpath=None, usbcpath=None, firstday=None, referenceindex_results=None,
-    wd=None, XSF=None, LateralsF=None, BCF=None, RiverNetworkF=None,
-    SlopeF=None, NoSeg=None, CalibrationF=None, Coupling1D2DF=None, RunMode=None, Subid=None,
-    Customized_BC_F=None, ResultsDetails=None, RRMTemporalResolution=None, HMTemporalResolution=None,
-    HMStoreTimeStep=None, TS=None, SimStartIndex=None, SimEndIndex=None, SimStart=None,
-    SimEnd=None, OneDTempR=None, D1=None, D2=None, crosssections=None, xsno=None,
-    xsname=None, QBCmin=None, HBCmin=None, h=None, q=None, from_beginning=None, firstdayresults=None,
-    lastday=None, daylist=None, id=None, QBC=None, HBC=None, usbc=None, dsbc=None, Result1D=None,
-    Q=None, H=None, slope=None, EventIndex=None, rivernetwork=None, SP=None, customized_runs_path=None,
-    Segments=None, RP=None, rrmpath=None, segments=None, customized_runs_config=None, parameters=None,
-    results_config=None, rrm_paths=None, rrm_config=None, river_1d_paths=None, river_1d_config=None,
-    config=None, results_paths=None, one_min_results_config=None, hourlt_results_config=None
-)
 
 class River:
     """River.
@@ -55,8 +34,11 @@ class River:
     simulation results) and analyse the results and do visualisation
     """
     initial_args = dict(
+        name= {"type": str},
+        version={"default": 3, "type": int},
         dto={"default": 60, "type": int},
         dx={"default": 500, "type": int},
+        start={"default": "1950-1-1", "type": str},
         days={"default": 36890, "type": int},  # 100 years
         rrmstart={"default": None, "type": str},
         rrmdays={"default": 36890, "type": int},  # 100 years
@@ -71,6 +53,23 @@ class River:
         twodresultpath={"default": "/results/2d", "type": str},
     )
 
+    river_attributes = dict(
+        oneminresultpath=None, usbcpath=None, firstday=None, referenceindex_results=None,
+        wd=None, XSF=None, LateralsF=None, BCF=None, RiverNetworkF=None,
+        SlopeF=None, NoSeg=None, CalibrationF=None, Coupling1D2DF=None, RunMode=None, Subid=None,
+        Customized_BC_F=None, ResultsDetails=None, RRMTemporalResolution=None, HMTemporalResolution=None,
+        HMStoreTimeStep=None, TS=None, SimStartIndex=None, SimEndIndex=None, SimStart=None,
+        SimEnd=None, OneDTempR=None, D1=None, D2=None, crosssections=None, xsno=None,
+        xsname=None, QBCmin=None, HBCmin=None, h=None, q=None, from_beginning=None, firstdayresults=None,
+        lastday=None, daylist=None, id=None, QBC=None, HBC=None, usbc=None, dsbc=None, Result1D=None,
+        Q=None, H=None, slope=None, EventIndex=None, rivernetwork=None, SP=None, customized_runs_path=None,
+        Segments=None, RP=None, rrmpath=None, segments=None, customized_runs_config=None, parameters=None,
+        results_config=None, rrm_paths=None, rrm_config=None, river_1d_paths=None, river_1d_config=None,
+        config=None, results_paths=None, one_min_results_config=None, hourlt_results_config=None
+    )
+
+    @class_method_parse(initial_args)
+    @class_attr_initialize(river_attributes)
     def __init__(
             self,
             name: str,
@@ -134,32 +133,7 @@ class River:
         -------
         None.
         """
-        # get wrong kwargs
-        wrong_kwargs = set(kwargs) - set(self.initial_args)
-        if len(wrong_kwargs) > 0:
-            print(self.initial_args)
-            raise KeyError(f"Invalid parameter {wrong_kwargs}")
-
-        for key, val in self.initial_args.items():
-            # if the parameter is given by user
-            if key in kwargs.keys():
-                default = self.initial_args.get(key)
-                # check the type
-                key_type = default.get("type")
-                # get the given value
-                val = kwargs.get(key)
-                if isinstance(val, key_type):
-                    # set the given value
-                    setattr(self, key, val)
-                else:
-                    raise TypeError(f"The parameter {key} should be of type {key_type}")
-            else:
-                setattr(self, key, val["default"])
-
-        # initialize attributes
-        for key, val in river_attributes.items():
-            setattr(self, key, val)
-
+        # positional arguments
         assert isinstance(start, str), "start argument has to be string"
         assert isinstance(version, int), "version argument has to be integer number"
 
@@ -1982,23 +1956,23 @@ class River:
 
         Returns
         -------
-            1-OverToppingSubsLeft : [dictionary attribute]
-                dictionary having sub-basin ids as a key and for each sub-basins
-                it contains dictionary for each cross section having the days of
-                overtopping.
-            1-OverToppingSubsRight : [dictionary attribute]
-                dictionary having sub-basin ids as a key and for each sub-basins
-                it contains dictionary for each cross section having the days of
-                overtopping.
+        OverToppingSubsLeft : [dictionary attribute]
+            dictionary having sub-basin ids as a key and for each sub-basins
+            it contains dictionary for each cross section having the days of
+            overtopping.
+        OverToppingSubsRight : [dictionary attribute]
+            dictionary having sub-basin ids as a key and for each sub-basins
+            it contains dictionary for each cross section having the days of
+            overtopping.
         """
         # sort files
         leftOverTop = list()
         RightOverTop = list()
         # get names of files that has _left or _right at its end
-        if OvertoppingResultpath == "":
-            OvertoppingResultpath = self.onedresultpath
+        if overtopping_result_path is None:
+            overtopping_result_path = self.onedresultpath
 
-        All1DFiles = os.listdir(OvertoppingResultpath)
+        All1DFiles = os.listdir(overtopping_result_path)
         for i in range(len(All1DFiles)):
             if All1DFiles[i].endswith(self.leftovertopping_suffix):
                 leftOverTop.append(All1DFiles[i])
@@ -3194,14 +3168,11 @@ class Reach(River):
     )
 
 
+    @class_attr_initialize(reach_attr)
     def __init__(self, sub_id: int, River, run_model: bool = False, *args, **kwargs):
         # super().__init__(*args, **kwargs)
         # initializa the attributes with the river attributes
         for key, val in River.__dict__.items():
-            setattr(self, key, val)
-
-        # initialize attributes
-        for key, val in self.reach_attr.items():
             setattr(self, key, val)
 
         self.id = sub_id
@@ -4415,48 +4386,69 @@ class Reach(River):
 
         return H
 
+    plot_discharge_args = dict(
+        Calib = {"type": Any},
+        gaugexs = {"type": int},
+        start = {"type": str},
+        end = {"type": str},
+        stationname = {"type": int},
+        gaugename = {"type": [str, int]},
+        segment_xs = {"type":  str},
+        plotlaterals = {"type": bool, "default": True},
+        latcolor = {"type": [str, tuple], "default": (0.3, 0, 0)},
+        latorder = {"type": int, "default": 4},
+        latstyle = {"type": int, "default": 9},
+        plotus = {"type": bool, "default": True},
+        ushcolor = {"type": [str, tuple], "default": "grey"},
+        ushorder = {"type": int, "default": 7},
+        ushstyle = {"type": int, "default": 7},
+        plottotal = {"type": bool, "default": True},
+        totalcolor = {"type": [str, tuple], "default": "k"},
+        totalorder = {"type": int, "default": 6},
+        totalstyle = {"type": int, "default": 4},
+        specificxs = {"type": [bool, int], "default": False},
+        xscolor = {"type": [str, tuple], "default": (164 / 255, 70 / 255, 159 / 255)},
+        xsorder = {"type": int, "default": 1},
+        xslinestyle = {"type": int, "default": 3},
+        plotrrm = {"type": bool, "default": True},
+        rrmcolor = {"type": [str, tuple], "default": "green"},
+        rrmorder = {"type": int, "default": 3},
+        rrmlinestyle = {"type": int, "default": 6},
+        rrm2color = {"type": [str, tuple], "default": (227 / 255, 99 / 255, 80 / 255)},
+        rrm2linesytle = {"type": int, "default": 8},
+        plotgauge = {"type": bool, "default": True},
+        gaugecolor = {"type": [str, tuple], "default": "#DC143C"},
+        gaugeorder = {"type": int, "default": 5},
+        gaugestyle = {"type": int, "default": 7},
+        hmcolor = {"type": [str, tuple], "default": "#004c99"},
+        hmorder = {"type": int, "default": 6},
+        linewidth = {"type": int, "default": 4},
+        figsize = {"type": tuple, "default": (6, 5)},
+        fmt = {"type": str, "default": "%Y-%m-%d"},
+        xlabels = {"type": [bool, int, list], "default": False},
+        ylabels = {"type": [bool, int, list], "default": False},
+        # plotRRMProgression
+        plothm = {"type": bool, "default": True},
+        rrmlinesytle = {"type": int, "default": 8},
+        # plotWL
+        hmstyle = {"type": int, "default": 6},
+        legendsize = {"type": Union[int, float], "default": 15},
+        nxlabels = {"type": int, "default": 4},
+
+    )
+
+    @class_method_parse(plot_discharge_args)
     def plotQ(
-        self,
-        Calib,
-        gaugexs: int,
-        start: str,
-        end: str,
-        stationname: int,
-        gaugename: Union[str, int],
-        segment_xs: str,
-        plotlaterals: bool = True,
-        latcolor: Union[str, tuple] = (0.3, 0, 0),
-        latorder: int = 4,
-        latstyle: int = 9,
-        plotus: bool = True,
-        ushcolor: Union[str, tuple] = "grey",
-        ushorder: int = 7,
-        ushstyle: int = 7,
-        plottotal: bool = True,
-        totalcolor: Union[str, tuple] = "k",
-        totalorder: int = 6,
-        totalstyle: int = 4,
-        specificxs: Union[bool, int] = False,
-        xscolor: Union[str, tuple] = (164 / 255, 70 / 255, 159 / 255),
-        xsorder: int = 1,
-        xslinestyle: int = 3,
-        plotrrm: bool = True,
-        rrmcolor: Union[str, tuple] = "green",
-        rrmorder: int = 3,
-        rrmlinestyle: int = 6,
-        rrm2color: Union[str, tuple] = (227 / 255, 99 / 255, 80 / 255),
-        rrm2linesytle: int = 8,
-        plotgauge: bool = True,
-        gaugecolor: Union[str, tuple] = "#DC143C",
-        gaugeorder: int = 5,
-        gaugestyle: int = 7,
-        hmcolor: Union[str, tuple] = "#004c99",
-        hmorder: int = 6,
-        linewidth: int = 4,
-        figsize: tuple = (6, 5),
-        fmt: str = "%Y-%m-%d",
-        xlabels: Union[bool, int, list] = False,
-        ylabels: Union[bool, int, list] = False,
+            self,
+            Calib,
+            gaugexs: int,
+            start: str,
+            end: str,
+            stationname: int,
+            gaugename: Union[str, int],
+            segment_xs: str,
+            *args,
+            **kwargs
     ):
         """PlotQ.
 
@@ -4479,72 +4471,73 @@ class Reach(River):
             DESCRIPTION.
         segment_xs : TYPE
             DESCRIPTION.
-        plotlaterals : TYPE, optional
-            DESCRIPTION. The default is True.
-        plotus : TYPE, optional
-            DESCRIPTION. The default is True.
-        specificxs : TYPE, optional
-            DESCRIPTION. The default is False.
-        plotrrm : TYPE, optional
-            DESCRIPTION. The default is True.
-        plotgauge : TYPE, optional
-            DESCRIPTION. The default is True.
-        hmcolor : TYPE, optional
-            DESCRIPTION. The default is "#004c99".
-        gaugecolor : TYPE, optional
-            DESCRIPTION. The default is "#DC143C".
-        rrmcolor : TYPE, optional
-            DESCRIPTION. The default is "green".
-        latcolor : TYPE, optional
-            DESCRIPTION. The default is (0.3,0,0).
-        xscolor : TYPE, optional
-            DESCRIPTION. The default is "grey".
-        linewidth : TYPE, optional
-            DESCRIPTION. The default is 4.
-        hmorder : TYPE, optional
-            DESCRIPTION. The default is 6.
-        gaugeorder : TYPE, optional
-            DESCRIPTION. The default is 5.
-        rrmorder : TYPE, optional
-            DESCRIPTION. The default is 4.
-        ushorder : TYPE, optional
-            DESCRIPTION. The default is 2.
-        xsorder : TYPE, optional
-            DESCRIPTION. The default is 1.
-        fmt: [string]
-            format of the date. fmt="%Y-%m-%d %H:%M:%S"
-        xlabels : [bool, int], optional
-            DESCRIPTION. The default is False.
-        ylabels : [bool, int], optional
-            DESCRIPTION. The default is False.
-        rrm2color: []
-            Description
-        gaugestyle: []
-            Description
-        rrm2linesytle: []
-            Description
-        ushstyle: []
-            Description
-        xslinestyle: []
-            Description
-        latorder: []
-            Description
-        ushcolor: []
-            Description
-        latstyle: []
-            Description
-        plottotal: [bool]
-            default is True.
-        totalcolor: [str, tuple]
-            default is "k".
-        totalorder: [int]
-            default is 6.
-        totalstyle: [int]
-            default is 4.
-        rrmlinestyle: [int]
-            default is 6.
-        figsize: [tuple]
-            default is (6, 5).
+        kwargs:
+            plotlaterals : TYPE, optional
+                DESCRIPTION. The default is True.
+            plotus : TYPE, optional
+                DESCRIPTION. The default is True.
+            specificxs : TYPE, optional
+                DESCRIPTION. The default is False.
+            plotrrm : TYPE, optional
+                DESCRIPTION. The default is True.
+            plotgauge : TYPE, optional
+                DESCRIPTION. The default is True.
+            hmcolor : TYPE, optional
+                DESCRIPTION. The default is "#004c99".
+            gaugecolor : TYPE, optional
+                DESCRIPTION. The default is "#DC143C".
+            rrmcolor : TYPE, optional
+                DESCRIPTION. The default is "green".
+            latcolor : TYPE, optional
+                DESCRIPTION. The default is (0.3,0,0).
+            xscolor : TYPE, optional
+                DESCRIPTION. The default is "grey".
+            linewidth : TYPE, optional
+                DESCRIPTION. The default is 4.
+            hmorder : TYPE, optional
+                DESCRIPTION. The default is 6.
+            gaugeorder : TYPE, optional
+                DESCRIPTION. The default is 5.
+            rrmorder : TYPE, optional
+                DESCRIPTION. The default is 4.
+            ushorder : TYPE, optional
+                DESCRIPTION. The default is 2.
+            xsorder : TYPE, optional
+                DESCRIPTION. The default is 1.
+            fmt: [string]
+                format of the date. fmt="%Y-%m-%d %H:%M:%S"
+            xlabels : [bool, int], optional
+                DESCRIPTION. The default is False.
+            ylabels : [bool, int], optional
+                DESCRIPTION. The default is False.
+            rrm2color: []
+                Description
+            gaugestyle: []
+                Description
+            rrm2linesytle: []
+                Description
+            ushstyle: []
+                Description
+            xslinestyle: []
+                Description
+            latorder: []
+                Description
+            ushcolor: []
+                Description
+            latstyle: []
+                Description
+            plottotal: [bool]
+                default is True.
+            totalcolor: [str, tuple]
+                default is "k".
+            totalorder: [int]
+                default is 6.
+            totalstyle: [int]
+                default is 4.
+            rrmlinestyle: [int]
+                default is 6.
+            figsize: [tuple]
+                default is (6, 5).
 
         Returns
         -------
@@ -4553,10 +4546,10 @@ class Reach(River):
         ax : TYPE
             DESCRIPTION.
         """
-        start = dt.datetime.strptime(start, fmt)
-        end = dt.datetime.strptime(end, fmt)
+        start = dt.datetime.strptime(start, self.fmt)
+        end = dt.datetime.strptime(end, self.fmt)
 
-        fig, ax = plt.subplots(ncols=1, nrows=1, figsize=figsize)
+        fig, ax = plt.subplots(ncols=1, nrows=1, figsize=self.figsize)
 
         if self.XSHydrographs is not None:
             # plot if you read the results using ther read1DResults
@@ -4564,10 +4557,10 @@ class Reach(River):
                 ax.plot(
                     self.XSHydrographs.loc[start:end, gaugexs],
                     label="RIM",
-                    zorder=hmorder,
-                    linewidth=linewidth,
+                    zorder=self.hmorder,
+                    linewidth=self.linewidth,
                     linestyle=V.LineStyle(6),
-                    color=hmcolor,
+                    color=self.hmcolor,
                 )
             except KeyError:
                 logger.debug(
@@ -4575,7 +4568,7 @@ class Reach(River):
                 )
 
             # laterals
-            if plotlaterals:
+            if self.plotlaterals:
                 try:
                     Laterals = self.getLaterals(gaugexs)
                 except AssertionError:
@@ -4587,31 +4580,31 @@ class Reach(River):
                     ax.plot(
                         self.BC.loc[start:end, self.BC.columns[0]],
                         label="BC",
-                        zorder=ushorder,
-                        linewidth=linewidth,
-                        linestyle=V.LineStyle(ushstyle),
-                        color=ushcolor,
+                        zorder=self.ushorder,
+                        linewidth=self.linewidth,
+                        linestyle=V.LineStyle(self.ushstyle),
+                        color=self.ushcolor,
                     )
                 # Laterals
                 if isinstance(self.LateralsTable, list) and len(self.LateralsTable) > 0:
                     ax.plot(
                         Laterals.loc[start:end, 0],
                         label="Laterals",
-                        zorder=latorder,
-                        linewidth=linewidth,
-                        linestyle=V.LineStyle(latstyle),
-                        color=latcolor,
+                        zorder=self.latorder,
+                        linewidth=self.linewidth,
+                        linestyle=V.LineStyle(self.latstyle),
+                        color=self.latcolor,
                     )
-                if plottotal:
+                if self.plottotal:
                     # total flow
                     try:
                         ax.plot(
                             self.TotalFlow.loc[start:end, "total"],
                             label="US/BC + Laterals",
-                            zorder=totalorder,
-                            linewidth=linewidth,
-                            linestyle=V.LineStyle(totalstyle),
-                            color=totalcolor,
+                            zorder=self.totalorder,
+                            linewidth=self.linewidth,
+                            linestyle=V.LineStyle(self.totalstyle),
+                            color=self.totalcolor,
                         )
                     except AttributeError:
                         logger.debug(
@@ -4619,15 +4612,15 @@ class Reach(River):
                         )
 
             # US hydrograph
-            if self.usnode != [] and plotus:
+            if self.usnode != [] and self.plotus:
                 try:
                     ax.plot(
                         self.USHydrographs.loc[start:end, "total"],
                         label="US Hydrograph",
-                        zorder=ushorder,
-                        linewidth=linewidth,
-                        linestyle=V.LineStyle(ushstyle),
-                        color=ushcolor,
+                        zorder=self.ushorder,
+                        linewidth=self.linewidth,
+                        linestyle=V.LineStyle(self.ushstyle),
+                        color=self.ushcolor,
                     )
                 except KeyError:
                     msg = (
@@ -4638,41 +4631,41 @@ class Reach(River):
                     logger.debug(msg)
 
             # Gauge
-            if plotgauge:
+            if self.plotgauge:
                 # plot the gauge data
                 ax.plot(
                     Calib.q_gauges.loc[start:end, stationname],
                     label="Gauge",
-                    linewidth=linewidth,
-                    zorder=gaugeorder,
-                    color=gaugecolor,
-                    linestyle=V.LineStyle(gaugestyle),
+                    linewidth=self.linewidth,
+                    zorder=self.gaugeorder,
+                    color=self.gaugecolor,
+                    linestyle=V.LineStyle(self.gaugestyle),
                 )
 
             # specific XS
-            if not isinstance(specificxs, bool):
+            if not isinstance(self.specificxs, bool):
                 # first extract the time series of the given xs
-                self.read1DResult(xsid=specificxs)
+                self.read1DResult(xsid=self.specificxs)
                 # plot the xs
                 ax.plot(
-                    self.XSHydrographs.loc[start:end, specificxs],
-                    label="XS-" + str(specificxs),
-                    zorder=xsorder,
-                    linewidth=linewidth,
-                    color=xscolor,
-                    linestyle=V.LineStyle(xslinestyle),
+                    self.XSHydrographs.loc[start:end, self.specificxs],
+                    label="XS-" + str(self.specificxs),
+                    zorder=self.xsorder,
+                    linewidth=self.linewidth,
+                    color=self.xscolor,
+                    linestyle=V.LineStyle(self.xslinestyle),
                 )
             # RRM
-            if plotrrm:
+            if self.plotrrm:
                 if isinstance(self.RRM, DataFrame):
                     try:
                         ax.plot(
                             self.RRM.loc[start:end, stationname],
                             label="mHM-RIM Loc",
-                            zorder=rrmorder,
-                            linewidth=linewidth,
-                            linestyle=V.LineStyle(rrmlinestyle),
-                            color=rrmcolor,
+                            zorder=self.rrmorder,
+                            linewidth=self.linewidth,
+                            linestyle=V.LineStyle(self.rrmlinestyle),
+                            color=self.rrmcolor,
                         )
                     except KeyError:
                         logger.debug(
@@ -4684,10 +4677,10 @@ class Reach(River):
                         ax.plot(
                             self.RRM2.loc[start:end, stationname],
                             label="mHM-mHM Loc",
-                            zorder=rrmorder,
-                            linewidth=linewidth,
-                            linestyle=V.LineStyle(rrm2linesytle),
-                            color=rrm2color,
+                            zorder=self.rrmorder,
+                            linewidth=self.linewidth,
+                            linestyle=V.LineStyle(self.rrm2linesytle),
+                            color=self.rrm2color,
                         )
                     except KeyError:
                         logger.debug(
@@ -4700,9 +4693,9 @@ class Reach(River):
                 Calib.CalibrationQ[segment_xs],
                 label="RIM",
                 zorder=3,
-                linewidth=linewidth,
+                linewidth=self.linewidth,
                 linestyle=V.LineStyle(6),
-                color=hmcolor,
+                color=self.hmcolor,
             )
             # plot the gauge data
             ax.plot(
@@ -4711,10 +4704,10 @@ class Reach(River):
                     stationname,
                 ],
                 label="Gauge-" + str(self.id),
-                linewidth=linewidth,
-                color=gaugecolor,
+                linewidth=self.linewidth,
+                color=self.gaugecolor,
             )
-            if plotrrm:
+            if self.plotrrm:
                 ax.plot(
                     self.RRM.loc[
                         Calib.CalibrationQ.index[0] : Calib.CalibrationQ.index[-1],
@@ -4723,27 +4716,27 @@ class Reach(River):
                     label="RRM",
                 )
 
-        if not isinstance(xlabels, bool):
+        if not isinstance(self.xlabels, bool):
             start, end = ax.get_xlim()
-            if isinstance(xlabels, int):
-                ax.xaxis.set_ticks(np.linspace(start, end, xlabels))
+            if isinstance(self.xlabels, int):
+                ax.xaxis.set_ticks(np.linspace(start, end, self.xlabels))
             else:
-                start = self.round(start, xlabels[0])
-                end = self.round(end, xlabels[0])
+                start = self.round(start, self.xlabels[0])
+                end = self.round(end, self.xlabels[0])
 
-                ax.yaxis.set_ticks(np.arange(start, end, xlabels[0]))
+                ax.yaxis.set_ticks(np.arange(start, end, self.xlabels[0]))
 
-        if not isinstance(ylabels, bool):
+        if not isinstance(self.ylabels, bool):
             start, end = ax.get_ylim()
-            if isinstance(ylabels, int):
+            if isinstance(self.ylabels, int):
                 if start < 0:
                     start = 0
-                ax.yaxis.set_ticks(np.linspace(start, end, ylabels))
+                ax.yaxis.set_ticks(np.linspace(start, end, self.ylabels))
             else:
-                start = self.round(start, ylabels[0])
-                end = self.round(end, ylabels[0])
+                start = self.round(start, self.ylabels[0])
+                end = self.round(end, self.ylabels[0])
 
-                ax.yaxis.set_ticks(np.arange(start, end, ylabels[0]))
+                ax.yaxis.set_ticks(np.arange(start, end, self.ylabels[0]))
 
         ax.set_title("Discharge - " + gaugename, fontsize=20)
 
@@ -4754,34 +4747,38 @@ class Reach(River):
 
         return fig, ax
 
+
+    @class_method_parse(plot_discharge_args)
     def plotRRMProgression(
-        self,
-        specificxs,
-        start,
-        end,
-        plotlaterals: bool = True,
-        latcolor: Union[str, tuple] = (0.3, 0, 0),
-        latorder: int = 4,
-        latstyle: int = 9,
-        plotus: bool = True,
-        ushcolor: Union[str, tuple] = "grey",
-        ushorder: int = 7,
-        ushstyle: int = 7,
-        plottotal: bool = True,
-        totalcolor: Union[str, tuple] = "k",
-        totalorder: int = 6,
-        totalstyle: int = 11,
-        rrmorder: int = 3,
-        rrmcolor: Union[str, tuple] = (227 / 255, 99 / 255, 80 / 255),
-        plothm: bool = True,
-        hmorder: int = 6,
-        hmcolor: Union[str, tuple] = "#004c99",
-        rrmlinesytle: int = 8,
-        linewidth=4,
-        figsize: tuple = (6, 5),
-        fmt: str = "%Y-%m-%d",
-        xlabels: Union[int, bool, list] = False,
-        ylabels: Union[int, bool, list] = False,
+            self,
+            specificxs,
+            start,
+            end,
+            *args,
+            **kwargs
+        # plotlaterals: bool = True,
+        # latcolor: Union[str, tuple] = (0.3, 0, 0),
+        # latorder: int = 4,
+        # latstyle: int = 9,
+        # plotus: bool = True,
+        # ushcolor: Union[str, tuple] = "grey",
+        # ushorder: int = 7,
+        # ushstyle: int = 7,
+        # plottotal: bool = True,
+        # totalcolor: Union[str, tuple] = "k",
+        # totalorder: int = 6,
+        # totalstyle: int = 11,
+        # rrmorder: int = 3,
+        # rrmcolor: Union[str, tuple] = (227 / 255, 99 / 255, 80 / 255),
+        # plothm: bool = True,
+        # hmorder: int = 6,
+        # hmcolor: Union[str, tuple] = "#004c99",
+        # rrmlinesytle: int = 8,
+        # linewidth=4,
+        # figsize: tuple = (6, 5),
+        # fmt: str = "%Y-%m-%d",
+        # xlabels: Union[int, bool, list] = False,
+        # ylabels: Union[int, bool, list] = False,
     ):
         """PlotRRMProgression.
 
@@ -4796,54 +4793,55 @@ class Reach(River):
             start date of the plot.
         end : [string]
             end date of the plot.
-        plotlaterals : TYPE, optional
-            DESCRIPTION. The default is True.
-        plotus : TYPE, optional
-            DESCRIPTION. The default is True.
-        specificxs : TYPE, optional
-            DESCRIPTION. The default is False.
-        hmcolor : TYPE, optional
-            DESCRIPTION. The default is "#004c99".
-        rrmcolor : TYPE, optional
-            DESCRIPTION. The default is "green".
-        latcolor : TYPE, optional
-            DESCRIPTION. The default is (0.3,0,0).
-        linewidth : TYPE, optional
-            DESCRIPTION. The default is 4.
-        hmorder : TYPE, optional
-            DESCRIPTION. The default is 6.
-        rrmorder : TYPE, optional
-            DESCRIPTION. The default is 4.
-        ushorder : TYPE, optional
-            DESCRIPTION. The default is 2.
-        fmt: [string]
-            format of the date. fmt="%Y-%m-%d %H:%M:%S"
-        ushstyle: []
-            Description
-        latorder: []
-            Description
-        ushcolor: []
-            Description
-        latstyle: []
-            Description
-        xlabels: [int, bool]
-            default is False.
-        ylabels: [int, bool]
-            default is False.
-        figsize: [tuple]
-            default is (6, 5).
-        rrmlinesytle: [int]
-            default is 8
-        plottotal: [bool]
-            default is True.
-        totalcolor: [str, tuple]
-            default is "k".
-        totalorder: [int]
-            default is 6.
-        totalstyle: [int]
-            default is 11.
-        plothm: [bool]
-            default is True.
+        kwargs:
+            plotlaterals : TYPE, optional
+                DESCRIPTION. The default is True.
+            plotus : TYPE, optional
+                DESCRIPTION. The default is True.
+            specificxs : TYPE, optional
+                DESCRIPTION. The default is False.
+            hmcolor : TYPE, optional
+                DESCRIPTION. The default is "#004c99".
+            rrmcolor : TYPE, optional
+                DESCRIPTION. The default is "green".
+            latcolor : TYPE, optional
+                DESCRIPTION. The default is (0.3,0,0).
+            linewidth : TYPE, optional
+                DESCRIPTION. The default is 4.
+            hmorder : TYPE, optional
+                DESCRIPTION. The default is 6.
+            rrmorder : TYPE, optional
+                DESCRIPTION. The default is 4.
+            ushorder : TYPE, optional
+                DESCRIPTION. The default is 2.
+            fmt: [string]
+                format of the date. fmt="%Y-%m-%d %H:%M:%S"
+            ushstyle: []
+                Description
+            latorder: []
+                Description
+            ushcolor: []
+                Description
+            latstyle: []
+                Description
+            xlabels: [int, bool]
+                default is False.
+            ylabels: [int, bool]
+                default is False.
+            figsize: [tuple]
+                default is (6, 5).
+            rrmlinesytle: [int]
+                default is 8
+            plottotal: [bool]
+                default is True.
+            totalcolor: [str, tuple]
+                default is "k".
+            totalorder: [int]
+                default is 6.
+            totalstyle: [int]
+                default is 11.
+            plothm: [bool]
+                default is True.
 
         Returns
         -------
@@ -4852,13 +4850,13 @@ class Reach(River):
         ax : TYPE
             DESCRIPTION.
         """
-        start = dt.datetime.strptime(start, fmt)
-        end = dt.datetime.strptime(end, fmt)
+        start = dt.datetime.strptime(start, self.fmt)
+        end = dt.datetime.strptime(end, self.fmt)
 
-        fig, ax = plt.subplots(ncols=1, nrows=1, figsize=figsize)
+        fig, ax = plt.subplots(ncols=1, nrows=1, figsize=self.figsize)
 
         # laterals
-        if plotlaterals:
+        if self.plotlaterals:
             Laterals = self.getLaterals(specificxs)
 
             # BC
@@ -4866,56 +4864,56 @@ class Reach(River):
                 ax.plot(
                     self.BC.loc[start:end, self.BC.columns[0]],
                     label="BC",
-                    zorder=ushorder,
-                    linewidth=linewidth,
-                    linestyle=V.LineStyle(ushstyle),
-                    color=ushcolor,
+                    zorder=self.ushorder,
+                    linewidth=self.linewidth,
+                    linestyle=V.LineStyle(self.ushstyle),
+                    color=self.ushcolor,
                 )
             # Laterals
             if len(self.LateralsTable) > 0:
                 ax.plot(
                     Laterals.loc[start:end, 0],
                     label="Laterals Sum \n up to - XS-" + str(specificxs),
-                    zorder=latorder,
-                    linewidth=linewidth,
-                    linestyle=V.LineStyle(latstyle),
-                    color=latcolor,
+                    zorder=self.latorder,
+                    linewidth=self.linewidth,
+                    linestyle=V.LineStyle(self.latstyle),
+                    color=self.latcolor,
                 )
-            if plottotal:
+            if self.plottotal:
                 # total flow
                 self.getTotalFlow(specificxs)
                 ax.plot(
                     self.TotalFlow.loc[start:end, "total"],
                     label="US/BC \n+ Laterals",
-                    zorder=totalorder,
-                    linewidth=linewidth,
-                    linestyle=V.LineStyle(totalstyle),
-                    color=totalcolor,
+                    zorder=self.totalorder,
+                    linewidth=self.linewidth,
+                    linestyle=V.LineStyle(self.totalstyle),
+                    color=self.totalcolor,
                 )
 
         # US hydrograph
-        if self.usnode != [] and plotus:
+        if self.usnode != [] and self.plotus:
             ax.plot(
                 self.USHydrographs.loc[start:end, "total"],
                 label="US Hydrograph",
-                zorder=ushorder,
-                linewidth=linewidth,
-                linestyle=V.LineStyle(ushstyle),
-                color=ushcolor,
+                zorder=self.ushorder,
+                linewidth=self.linewidth,
+                linestyle=V.LineStyle(self.ushstyle),
+                color=self.ushcolor,
             )
 
         # specific XS
-        if plothm:
+        if self.plothm:
             # first extract the time series of the given xs
             self.read1DResult(xsid=specificxs)
             # plot the xs
             ax.plot(
                 self.XSHydrographs.loc[start:end, specificxs],
                 label="RIM",
-                zorder=hmorder,
-                linewidth=linewidth,
+                zorder=self.hmorder,
+                linewidth=self.linewidth,
                 linestyle=V.LineStyle(6),
-                color=hmcolor,
+                color=self.hmcolor,
             )
         # RRM
         # if plotrrm:
@@ -4924,10 +4922,10 @@ class Reach(River):
                 ax.plot(
                     self.RRMProgression.loc[start:end, specificxs],
                     label="mHM",
-                    zorder=rrmorder,
-                    linewidth=linewidth,
-                    linestyle=V.LineStyle(rrmlinesytle),
-                    color=rrmcolor,
+                    zorder=self.rrmorder,
+                    linewidth=self.linewidth,
+                    linestyle=V.LineStyle(self.rrmlinesytle),
+                    color=self.rrmcolor,
                 )
             except KeyError:
                 logger.debug(
@@ -4940,22 +4938,22 @@ class Reach(River):
             )
             logger.debug(msg)
 
-        if type(xlabels) != bool:
+        if type(self.xlabels) != bool:
             start, end = ax.get_xlim()
-            if type(xlabels) == int:
-                ax.xaxis.set_ticks(np.linspace(start, end, xlabels))
+            if type(self.xlabels) == int:
+                ax.xaxis.set_ticks(np.linspace(start, end, self.xlabels))
 
-        if type(ylabels) != bool:
+        if type(self.ylabels) != bool:
             start, end = ax.get_ylim()
-            if type(ylabels) == int:
+            if type(self.ylabels) == int:
                 if start < 0:
                     start = 0
-                ax.yaxis.set_ticks(np.linspace(start, end, ylabels))
+                ax.yaxis.set_ticks(np.linspace(start, end, self.ylabels))
             else:
-                start = self.round(start, ylabels[0])
-                end = self.round(end, ylabels[0])
+                start = self.round(start, self.ylabels[0])
+                end = self.round(end, self.ylabels[0])
 
-                ax.yaxis.set_ticks(np.arange(start, end, ylabels[0]))
+                ax.yaxis.set_ticks(np.arange(start, end, self.ylabels[0]))
 
         ax.set_title("XS - " + str(specificxs), fontsize=20)
 
@@ -5082,6 +5080,8 @@ class Reach(River):
 
         return rmse, kge, wb, nsehf, nse
 
+
+    @class_method_parse(plot_discharge_args)
     def plotWL(
         self,
         Calib,
@@ -5090,18 +5090,20 @@ class Reach(River):
         gaugexs: int,
         stationname: str,
         gaugename: str,
-        gaugecolor: Union[tuple, str] = "#DC143C",
-        hmcolor: Union[tuple, str] = "#004c99",
-        linewidth: Union[int, float] = 2,
-        hmorder: int = 1,
-        gaugeorder: int = 0,
-        hmstyle: int = 6,
-        gaugestyle: int = 0,
-        plotgauge=True,
-        fmt: str = "%Y-%m-%d",
-        legendsize: Union[int, float] = 15,
-        figsize: tuple = (6, 5),
-        nxlabels: int = 4,
+            *args,
+            **kwargs,
+        # gaugecolor: Union[tuple, str] = "#DC143C",
+        # hmcolor: Union[tuple, str] = "#004c99",
+        # linewidth: Union[int, float] = 2,
+        # hmorder: int = 1,
+        # gaugeorder: int = 0,
+        # hmstyle: int = 6,
+        # gaugestyle: int = 0,
+        # plotgauge=True,
+        # fmt: str = "%Y-%m-%d",
+        # legendsize: Union[int, float] = 15,
+        # figsize: tuple = (6, 5),
+        # nxlabels: int = 4,
     ):
         """Plot water level surface.
 
@@ -5150,10 +5152,10 @@ class Reach(River):
         ax : TYPE
             DESCRIPTION.
         """
-        start = dt.datetime.strptime(start, fmt)
-        end = dt.datetime.strptime(end, fmt)
+        start = dt.datetime.strptime(start, self.fmt)
+        end = dt.datetime.strptime(end, self.fmt)
 
-        if plotgauge:
+        if self.plotgauge:
 
             GaugeStart = Calib.hm_gauges[Calib.hm_gauges["xsid"] == gaugexs]["WLstart"]
             GaugeEnd = Calib.hm_gauges[Calib.hm_gauges["xsid"] == gaugexs]["WLend"]
@@ -5178,7 +5180,7 @@ class Reach(River):
                 logger.debug("The XS you provided does not exist in the hm_gauges")
                 plotgauge = False
 
-        fig, ax = plt.subplots(ncols=1, nrows=1, figsize=figsize)
+        fig, ax = plt.subplots(ncols=1, nrows=1, figsize=self.figsize)
 
         # extract the water levels at the gauge cross section
         self.extractXS(gaugexs)
@@ -5186,27 +5188,27 @@ class Reach(River):
         ax.plot(
             self.XSWaterLevel.loc[start:end, gaugexs],
             label="RIM",
-            zorder=hmorder,
-            linewidth=linewidth,
-            color=hmcolor,
-            linestyle=V.LineStyle(hmstyle),
+            zorder=self.hmorder,
+            linewidth=self.linewidth,
+            color=self.hmcolor,
+            linestyle=V.LineStyle(self.hmstyle),
         )
 
-        if plotgauge:
+        if self.plotgauge:
             ax.plot(
                 Calib.WLGauges.loc[start:end, stationname],
                 label="Gauge",
-                zorder=gaugeorder,
-                linewidth=linewidth,
-                color=gaugecolor,
-                linestyle=V.LineStyle(gaugestyle),
+                zorder=self.gaugeorder,
+                linewidth=self.linewidth,
+                color=self.gaugecolor,
+                linestyle=V.LineStyle(self.gaugestyle),
             )
 
         start, end = ax.get_xlim()
-        ax.xaxis.set_ticks(np.linspace(start, end, nxlabels))
+        ax.xaxis.set_ticks(np.linspace(start, end, self.nxlabels))
 
         ax.set_title("Water Level - " + gaugename, fontsize=20)
-        plt.legend(fontsize=legendsize)
+        plt.legend(fontsize=self.legendsize)
         ax.set_xlabel("Time", fontsize=15)
         ax.set_ylabel("Water Level m", fontsize=15)
         plt.tight_layout()

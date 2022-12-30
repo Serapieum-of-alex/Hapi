@@ -5,9 +5,7 @@ model
 """
 import datetime as dt
 import os
-
 import matplotlib
-
 matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 import numpy as np
@@ -17,7 +15,6 @@ import Hapi.hm.calibration as RC
 import Hapi.hm.river as R
 from Hapi.hm.interface import Interface
 from Hapi.plot.visualizer import Visualize as V
-
 # %% Paths
 """change directory to the processing folder inside the project folder"""
 rpath = os.path.join(os.getcwd() + "/examples/Hydrodynamic models/test_case")
@@ -37,7 +34,7 @@ boundary_condition_path = rpath + "/inputs/1d/hydro/"
 ## result files
 onedresultpath = rpath + "/results/1d/"
 usbcpath = rpath + "/results/USbnd/"
-oneminresultpath = rpath + "/results/"
+# oneminresultpath = rpath + "/results/"
 customized_runs_path = rpath + "/results/customized_results/"
 rrmpath = rpath + "/inputs/rrm/hm_location"
 twodresultpath = rpath + "/results/2d/zip/"
@@ -76,12 +73,16 @@ start = "1955-1-1"
 rrmstart = "1955-1-1"
 River = R.River("HM", version=3, start=start, rrmstart=rrmstart)
 
+#%%
+path = r"C:\gdrive\01Algorithms\Hydrology\Hapi\examples\Hydrodynamic models\test_case\processing\def1D-1segment.yaml"
+River.readConfig(path)
+#%%
 # read the data of the river
 """the hourly results"""
 River.onedresultpath = onedresultpath
 River.usbcpath = usbcpath
 """the 1min results if exist"""
-River.oneminresultpath = oneminresultpath
+# River.oneminresultpath = oneminresultpath
 """river slope, cross-sections, and river network"""
 River.readSlope(river_slope)
 River.readXS(xs_file)
@@ -105,7 +106,7 @@ IF.readBoundaryConditions(path=boundary_condition_path, date_format="%d_%m_%Y")
 # %% river segment
 """ Write the segment-ID you want to visualize its results """
 SubID = 1
-Sub = R.Sub(SubID, River)
+Sub = R.Reach(SubID, River)
 Sub.getFlow(IF)
 
 ## read RIM results
@@ -233,7 +234,7 @@ Sub.calculateQMetrics(
     Calib, stationname, gaugexs, Filter=Filter, start=startError, end=endError
 )
 
-# plt.savefig(saveto + "/Segment-" + str(Sub.id) + "-" +
+# plt.savefig(saveto + "/Segment-" + str(Reach.id) + "-" +
 #             str(gauges.loc[gaugei, 'name']) + "-Q-C-" +
 # str(dt.datetime.now())[0:11] + ".png")
 # %% Hydrograph progression in a segment
@@ -254,7 +255,7 @@ fig, ax = Sub.plotHydrographProgression(
     xlabels=5,
 )
 
-# plt.savefig(saveto + "/Progression-" + str(Sub.id) + "-" +
+# plt.savefig(saveto + "/Progression-" + str(Reach.id) + "-" +
 #             str(gauges.loc[gaugei, 'name']) +
 #             str(dt.datetime.now())[0:11] + ".png")
 # %% Water Level
@@ -275,7 +276,7 @@ Sub.calculateWLMetrics(
     end=endError,
 )
 
-# plt.savefig(saveto + "/Segment-" + str(Sub.id) + "-"
+# plt.savefig(saveto + "/Segment-" + str(Reach.id) + "-"
 #             + str(gauges.loc[gaugei,'name']) +
 #             "-WL-C-" + str(dt.datetime.now())[0:11] + ".png")
 # %% calibration (the bed level change the levels)
@@ -316,7 +317,7 @@ Sub.saveHydrograph(Sub.lastxs)  # Path
 check the max sf
 """
 ## calculate the water surface difference
-# wl = Sub.Result1D.loc[Sub.Result1D.index[i],'wl']
+# wl = Reach.Result1D.loc[Reach.Result1D.index[i],'wl']
 sf = [
     (
         Sub.Result1D.loc[Sub.Result1D.index[i], "wl"]
@@ -333,9 +334,9 @@ print(Sub.Result1D[Sub.Result1D["sf"] == Sub.Result1D["sf"].min()])
 
 """some filter to get where the min depth (dryness limit)"""
 
-# dataX = Sub.Result1D[Sub.Result1D['xs'] == 700]
+# dataX = Reach.Result1D[Reach.Result1D['xs'] == 700]
 dataX = Sub.Result1D[Sub.Result1D["h"] == 0.01]
-# dataX = Sub.Result1D[Sub.Result1D['xs'] == 121]
+# dataX = Reach.Result1D[Reach.Result1D['xs'] == 121]
 #%% get the boundary conditions
 start = "1955-01-01"
 end = "1955-03-21"
@@ -402,7 +403,7 @@ Sub.ReadSubDailyResults(start, end, Lastsegment=True)
 #%%
 # negative values
 # TODO : check CheckNegativeQ makes problem
-# Sub.CheckNegativeQ(TS = '1min')
+# Reach.CheckNegativeQ(TS = '1min')
 #%% Plotting
 start = "1955-01-01"
 end = "1955-01-10"
@@ -518,7 +519,7 @@ plt.annotate(
 
 plt.xticks(fontsize=15)
 plt.yticks(fontsize=15)
-plt.title("Sub-basin" + str(SubID), fontsize=20)
+plt.title("Reach-basin" + str(SubID), fontsize=20)
 plt.legend(fontsize=20)
 
 #%% XS properties function results
