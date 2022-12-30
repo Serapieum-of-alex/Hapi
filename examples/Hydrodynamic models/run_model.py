@@ -52,8 +52,8 @@ IF.readBoundaryConditionsTable(
     wpath + "/inputs/1d/topo/BonundaryConditions-segment24.txt"
 )
 IF.readBoundaryConditions(Path=wpath + "/inputs/1d/hydro/", date_format="%d_%m_%Y")
-#%% Sub-basin
-""" Write the Sub-ID you want to visualize its results """
+#%% Reach-basin
+""" Write the Reach-ID you want to visualize its results """
 
 River.RoutedQ = np.zeros(shape=(River.NoTimeSteps, River.NoSeg))
 # sum of all US routedQ
@@ -69,7 +69,7 @@ storewl = np.zeros(shape=(River.XSno, 2))
 
 for i in range(River.NoSeg):
     SubID = River.Segments[i]
-    Sub = R.Sub(SubID, River, RunModel=True)
+    Sub = R.Reach(SubID, River, RunModel=True)
     Sub.getFlow(IF, SubID)
     # HQ : is a rating curve table contains discharge at the first column and coresponding
     # water depth at the second column
