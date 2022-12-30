@@ -18,3 +18,5 @@ scipy >=1.9.1
 statista >=0.1.7
 statista >=0.1.7
 statsmodels >=0.13.2
+PyYAML >=0.6.0
+pathlib >=1.0.1
