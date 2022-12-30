@@ -137,3 +137,9 @@ Quick start
 ```
 
 [other code samples](https://hapi-hm.readthedocs.io/en/latest/?badge=latest)
+
+## Naming Convention
+[PEP8](https://peps.python.org/pep-0008/#naming-conventions)
+- module names: lower case word, preferably one word if not, separate words with underscores (module.py, my_module.py).
+- class names: PascalCase (Model, MyClass).
+- class method/function: CamelCase(getFile, readConfig).should have a verb one them, because they perform some action
