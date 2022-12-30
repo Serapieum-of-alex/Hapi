@@ -48,7 +48,7 @@ def test_create_sub_instance(
     River.readXS(river_cross_section_path)
     River.readRiverNetwork(river_network_path)
     River.readSlope(slope_path)
-    Sub = R.Sub(segment1, River)
+    Sub = R.Reach(segment1, River)
     assert (
         Sub.firstxs == create_sub_instance_firstxs
         and Sub.lastxs == create_sub_instance_lastxs
@@ -76,7 +76,7 @@ def test_sub_GetFlow(
     River.readXS(river_cross_section_path)
     River.readRiverNetwork(river_network_path)
     River.readSlope(slope_path)
-    Sub = R.Sub(segment1, River)
+    Sub = R.Reach(segment1, River)
 
     IF = Interface("Rhine", start=dates[0])
     IF.readBoundaryConditionsTable(interface_bc_path)
@@ -111,8 +111,9 @@ def test_Read1DResult(
 
     River = R.River("HM", version=version)
     River.onedresultpath = Read1DResult_path
+    # River.results_paths = {"onedresultpath": Read1DResult_path}
     River.readXS(river_cross_section_path)
-    Sub = R.Sub(segment1, River)
+    Sub = R.Reach(segment1, River)
     Sub.read1DResult()
     assert (
         len(Sub.Result1D) == test_time_series_length * 24 * (len(Sub.crosssections) + 1)
@@ -158,7 +159,7 @@ def test_Sub_GetLaterals(
     River.readXS(river_cross_section_path)
     River.readRiverNetwork(river_network_path)
     River.readSlope(slope_path)
-    Sub = R.Sub(segment1, River)
+    Sub = R.Reach(segment1, River)
 
     IF = Interface("Rhine", start=dates[0])
     IF.readBoundaryConditionsTable(interface_bc_path)
@@ -195,7 +196,7 @@ def test_ReadRRMHydrograph_one_location(
     River = R.River("HM", version=version)
     River.rrmpath = ReadRRMHydrograph_path
     River.readXS(river_cross_section_path)
-    Sub = R.Sub(segment1, River)
+    Sub = R.Reach(segment1, River)
     Sub.readRRMHydrograph(
         ReadRRMHydrograph_station_id,
         date_format=ReadRRMHydrograph_date_format,
@@ -219,7 +220,7 @@ def test_ReadRRMHydrograph_two_location(
     River = R.River("HM", version=version)
     River.rrmpath = ReadRRMHydrograph_path
     River.readXS(river_cross_section_path)
-    Sub = R.Sub(segment1, River)
+    Sub = R.Reach(segment1, River)
     Sub.readRRMHydrograph(
         ReadRRMHydrograph_station_id,
         date_format=ReadRRMHydrograph_date_format,
@@ -246,7 +247,7 @@ def test_ReadUSHydrograph(
     River.customized_runs_path = CustomizedRunspath
     River.readXS(river_cross_section_path)
     River.readRiverNetwork(river_network_path)
-    Sub = R.Sub(segment3, River)
+    Sub = R.Reach(segment3, River)
     Sub.readUSHydrograph()
     assert (
         len(Sub.USHydrographs) == test_time_series_length
@@ -294,7 +295,7 @@ class TestGetTotalFlow:
             path=interface_Laterals_folder, date_format=interface_Laterals_date_format
         )
 
-        Sub = R.Sub(segment3, River)
+        Sub = R.Reach(segment3, River)
         Sub.getFlow(IF)
         Sub.readUSHydrograph()
 
@@ -340,7 +341,7 @@ class TestGetTotalFlow:
             path=interface_Laterals_folder, date_format=interface_Laterals_date_format
         )
 
-        Sub = R.Sub(segment1, River)
+        Sub = R.Reach(segment1, River)
         Sub.getFlow(IF)
         Sub.readUSHydrograph()
 
@@ -406,7 +407,7 @@ def test_PlotQ(
         path=interface_Laterals_folder, date_format=interface_Laterals_date_format
     )
 
-    Sub = R.Sub(segment3, River)
+    Sub = R.Reach(segment3, River)
     Sub.getFlow(IF)
     Sub.readUSHydrograph()
     Sub.read1DResult()
@@ -458,7 +459,7 @@ def test_CalculateQMetrics(
     River.readXS(river_cross_section_path)
     River.readRiverNetwork(river_network_path)
 
-    Sub = R.Sub(segment3, River)
+    Sub = R.Reach(segment3, River)
     Sub.read1DResult()
 
     # without filter
@@ -482,7 +483,7 @@ def test_PlotHydrographProgression(
     River.readXS(river_cross_section_path)
     River.readRiverNetwork(river_network_path)
 
-    Sub = R.Sub(segment3, River)
+    Sub = R.Reach(segment3, River)
     Sub.read1DResult()
 
     xss = []
@@ -539,7 +540,7 @@ def test_PlotWL(
     River.readRiverNetwork(river_network_path)
     River.onedresultpath = Read1DResult_path
 
-    Sub = R.Sub(segment3, River)
+    Sub = R.Reach(segment3, River)
     Sub.read1DResult()
 
     Sub.plotWL(
@@ -580,7 +581,7 @@ def test_CalculateWLMetrics(
     River.readXS(river_cross_section_path)
     River.readRiverNetwork(river_network_path)
 
-    Sub = R.Sub(segment3, River)
+    Sub = R.Reach(segment3, River)
     Sub.read1DResult()
 
     # without filter
@@ -604,7 +605,7 @@ def test_SaveHydrograph(
     River.readRiverNetwork(river_network_path)
     River.customized_runs_path = CustomizedRunspath
     River.onedresultpath = Read1DResult_path
-    Sub = R.Sub(segment3, River)
+    Sub = R.Reach(segment3, River)
     Sub.read1DResult()
     Sub.saveHydrograph(Sub.lastxs)
     # option 2
@@ -628,7 +629,7 @@ def test_ReadBoundaryConditions(
     River.readRiverNetwork(river_network_path)
     River.onedresultpath = Read1DResult_path
     River.usbcpath = usbc_path
-    Sub = R.Sub(segment3, River)
+    Sub = R.Reach(segment3, River)
     Sub.read1DResult()
     # read only 10 days
 
@@ -664,7 +665,7 @@ def test_ReadSubDailyResults(
     River.readRiverNetwork(river_network_path)
     River.usbcpath = usbc_path
     River.oneminresultpath = subdailyresults_path
-    Sub = R.Sub(segment3, River)
+    Sub = R.Reach(segment3, River)
     Sub.ReadSubDailyResults(
         onemin_results_dates[0], onemin_results_dates[1], Lastsegment=lastsegment
     )
@@ -698,7 +699,7 @@ def test_PlotBC(
     River.readRiverNetwork(river_network_path)
     River.usbcpath = usbc_path
     River.oneminresultpath = subdailyresults_path
-    Sub = R.Sub(segment3, River)
+    Sub = R.Reach(segment3, River)
     Sub.ReadSubDailyResults(
         onemin_results_dates[0], onemin_results_dates[1], Lastsegment=lastsegment
     )
