@@ -69,10 +69,10 @@ IF.readLateralsTable(rpath + "/inputs/1d/topo/laterals.txt")
 IF.readLaterals(path=rpath + "/inputs/1d/hydro/", date_format="%d_%m_%Y")
 IF.readBoundaryConditionsTable(rpath + "/inputs/1d/topo/boundaryconditions.txt")
 IF.readBoundaryConditions(path=rpath + "/inputs/1d/hydro/", date_format="%d_%m_%Y")
-# %% Sub-basin
-""" Write the Sub-ID you want to visualize its results """
+# %% Reach-basin
+""" Write the Reach-ID you want to visualize its results """
 SubID = 1
-Sub = R.Sub(SubID, River)
+Sub = R.Reach(SubID, River)
 Sub.getFlow(IF)
 # %% read RIM results
 """
@@ -198,7 +198,7 @@ Sub.calculateQMetrics(
     Calib, stationname, gaugexs, Filter=Filter, start=startError, end=endError
 )
 
-# plt.savefig(saveto + "/Segment-" + str(Sub.id) + "-" +
+# plt.savefig(saveto + "/Segment-" + str(Reach.id) + "-" +
 #             str(gauges.loc[gaugei, 'name']) + "-Q-C-" +
 # str(dt.datetime.now())[0:11] + ".png")
 # %% Hydrograph progression in a segment
@@ -219,7 +219,7 @@ fig, ax = Sub.plotHydrographProgression(
     xlabels=5,
 )
 
-# plt.savefig(saveto + "/Progression-" + str(Sub.id) + "-" +
+# plt.savefig(saveto + "/Progression-" + str(Reach.id) + "-" +
 #             str(gauges.loc[gaugei, 'name']) +
 #             str(dt.datetime.now())[0:11] + ".png")
 # %% Water Level
@@ -240,7 +240,7 @@ Sub.calculateWLMetrics(
     end=endError,
 )
 
-# plt.savefig(saveto + "/Segment-" + str(Sub.id) + "-"
+# plt.savefig(saveto + "/Segment-" + str(Reach.id) + "-"
 #             + str(gauges.loc[gaugei,'name']) +
 #             "-WL-C-" + str(dt.datetime.now())[0:11] + ".png")
 # %% calibration (the bed level change the levels)
@@ -281,7 +281,7 @@ Sub.saveHydrograph(Sub.lastxs)  # Path
 check the max sf
 """
 ## calculate the water surface difference
-# wl = Sub.Result1D.loc[Sub.Result1D.index[i],'wl']
+# wl = Reach.Result1D.loc[Reach.Result1D.index[i],'wl']
 sf = [
     (
         Sub.Result1D.loc[Sub.Result1D.index[i], "wl"]
@@ -298,9 +298,9 @@ print(Sub.Result1D[Sub.Result1D["sf"] == Sub.Result1D["sf"].min()])
 
 """some filter to get where the min depth (dryness limit)"""
 
-# dataX = Sub.Result1D[Sub.Result1D['xs'] == 700]
+# dataX = Reach.Result1D[Reach.Result1D['xs'] == 700]
 dataX = Sub.Result1D[Sub.Result1D["h"] == 0.01]
-# dataX = Sub.Result1D[Sub.Result1D['xs'] == 121]
+# dataX = Reach.Result1D[Reach.Result1D['xs'] == 121]
 #%% get the boundary conditions
 start = "1955-01-01"
 end = "1955-03-21"
@@ -367,7 +367,7 @@ Sub.ReadSubDailyResults(start, end, Lastsegment=True)
 #%%
 # negative values
 # TODO : check CheckNegativeQ makes problem
-# Sub.CheckNegativeQ(TS = '1min')
+# Reach.CheckNegativeQ(TS = '1min')
 #%% Plotting
 start = "1955-01-01"
 end = "1955-01-10"
@@ -483,7 +483,7 @@ plt.annotate(
 
 plt.xticks(fontsize=15)
 plt.yticks(fontsize=15)
-plt.title("Sub-basin" + str(SubID), fontsize=20)
+plt.title("Reach-basin" + str(SubID), fontsize=20)
 plt.legend(fontsize=20)
 
 #%% XS properties function results
