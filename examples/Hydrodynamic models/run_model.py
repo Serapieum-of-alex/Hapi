@@ -41,7 +41,7 @@ River.Compressed = True
 River.RRMPath = RRMPath
 
 Path = wpath + "/processing/def1D.txt"
-River.Read1DConfigFile(Path)
+River.read1DConfigFile(Path)
 #%%
 IF = Interface("Rhine")
 IF.readXS(RIM2Files + "/XS.csv")
@@ -80,14 +80,14 @@ for i in range(River.NoSeg):
     Sub.getXSGeometry()
     Sub.getUSHydrograph(River)
 
-    s = River.DateToIndex(str(River.SimStart)[:-9])
+    s = River.dateToIndex(str(River.SimStart)[:-9])
 
-    e = River.DateToIndex(str(River.SimEnd + dt.timedelta(days=1))[:-9])
+    e = River.dateToIndex(str(River.SimEnd + dt.timedelta(days=1))[:-9])
     for step in range(s, e):
-        step = River.IndexToDate(step)
+        step = River.indexToDate(step)
 
         print("Step-" + str(step))
-        step_ind = River.DateToIndex(step)
+        step_ind = River.dateToIndex(step)
         # get the max discharge
         Q = Sub.Laterals.loc[step : step + dt.timedelta(days=1), :]
         # index starts from 1
