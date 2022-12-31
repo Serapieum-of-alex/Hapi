@@ -666,7 +666,7 @@ def test_ReadSubDailyResults(
     River.usbcpath = usbc_path
     River.oneminresultpath = subdailyresults_path
     Sub = R.Reach(segment3, River)
-    Sub.ReadSubDailyResults(
+    Sub.readSubDailyResults(
         onemin_results_dates[0], onemin_results_dates[1], Lastsegment=lastsegment
     )
     assert len(Sub.h) == onemin_results_len * subdaily_no_timesteps
@@ -700,7 +700,7 @@ def test_PlotBC(
     River.usbcpath = usbc_path
     River.oneminresultpath = subdailyresults_path
     Sub = R.Reach(segment3, River)
-    Sub.ReadSubDailyResults(
+    Sub.readSubDailyResults(
         onemin_results_dates[0], onemin_results_dates[1], Lastsegment=lastsegment
     )
     Sub.plotBC(dates[0])
