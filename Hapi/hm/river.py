@@ -181,7 +181,7 @@ class River:
         self.indsub = pd.date_range(self.start, self.end, freq=self.freq)
 
 
-    def IndexToDate(self, index: int):
+    def indexToDate(self, index: int):
         """IndexToDate.
 
         IndexToDate takes an integer number and returns the date coresponding
@@ -202,7 +202,7 @@ class River:
         # convert the index into date
         return self.referenceindex.loc[index, "date"]
 
-    def DateToIndex(self, date: Union[dt.datetime, str], fmt: str = "%Y-%m-%d"):
+    def dateToIndex(self, date: Union[dt.datetime, str], fmt: str = "%Y-%m-%d"):
         """DateToIndex.
 
         DateToIndex takes a date and returns a the order of the days in the
@@ -231,7 +231,7 @@ class River:
                 f"{self.referenceindex.loc[len(self.referenceindex), 'date']}"
             )
 
-    def IndexToDateRRM(self, index: int):
+    def indexToDateRRM(self, index: int):
         """IndexToDateRRM.
 
         IndexToDate takes an integer number and returns the date coresponding
@@ -252,7 +252,7 @@ class River:
         # convert the index into date
         return self.referenceindex.loc[index, "date"]
 
-    def DateToIndexRRM(self, date: Union[str, dt.datetime], fmt: str = "%Y-%m-%d"):
+    def dateToIndexRRM(self, date: Union[str, dt.datetime], fmt: str = "%Y-%m-%d"):
         """DateToIndexRRM.
 
         DateToIndex takes a date and returns a the order of the days in the
@@ -346,7 +346,7 @@ class River:
         self.customized_runs_path = customized_runs_path
 
 
-    def Read1DConfigFile(self, path: str):
+    def read1DConfigFile(self, path: str):
         """Read1DConfigFile.
 
         Read the configuration file
@@ -426,8 +426,8 @@ class River:
         Start, End = wholefile[35][:-1].split(" ")
         self.SimStartIndex = int(Start)
         self.SimEndIndex = int(End)
-        self.SimStart = self.IndexToDate(self.SimStartIndex)
-        self.SimEnd = self.IndexToDate(self.SimEndIndex)
+        self.SimStart = self.indexToDate(self.SimStartIndex)
+        self.SimEnd = self.indexToDate(self.SimEndIndex)
         self.OneDTempR = 60  # in seconds
 
         # 1D thresholds
@@ -519,13 +519,13 @@ class River:
 
         Parameters
         ----------
-        start : [int/str], optional
+        start: [int/str], optional
                 the day you want to read the result from, the first day is 1
                 not zero, you can also enter the date of the day.
                 The default is ''.
-        end : [int], optional
+        end: [int], optional
                 the day you want to read the result to.
-        path : [String], optional
+        path: [String], optional
             path to read the results from. The default is ''.
         fmt: [string]
             format of the date. fmt="%Y-%m-%d %H:%M:%S"
@@ -610,7 +610,7 @@ class River:
                     BC.loc[:, :].resample(self.freq).mean().interpolate("linear")
                 )
 
-    def ReadSubDailyResults(
+    def readSubDailyResults(
         self, start: str, end: str, fmt: str = "%Y-%m-%d", Lastsegment: bool = False
     ):
         """ReadSubDailyResults.
@@ -669,8 +669,8 @@ class River:
         h = pd.DataFrame(index=indmin, columns=xsname)
         q = pd.DataFrame(index=indmin, columns=xsname)
 
-        ii = self.DateToIndex(start)
-        ii2 = self.DateToIndex(end) + 1
+        ii = self.dateToIndex(start)
+        ii2 = self.dateToIndex(end) + 1
         list2 = list(range(ii, ii2))
 
         if self.version < 4:
@@ -713,9 +713,9 @@ class River:
             self.HBCmin = bc_h[:]
         else:
             for i in list2:
-                path = f"{self.oneminresultpath}H-{str(self.IndexToDate(i))[:10]}.csv"
+                path = f"{self.oneminresultpath}H-{str(self.indexToDate(i))[:10]}.csv"
                 hh = np.transpose(np.loadtxt(path, delimiter=",", dtype=np.float16))
-                path = f"{self.oneminresultpath}Q-{str(self.IndexToDate(i))[:10]}.csv"
+                path = f"{self.oneminresultpath}Q-{str(self.indexToDate(i))[:10]}.csv"
                 qq = np.transpose(np.loadtxt(path, delimiter=",", dtype=np.float16))
 
                 h = h + self.crosssections["bed level"].values
@@ -732,12 +732,12 @@ class River:
             # TODO to be checked later now for testing
             self.from_beginning = 1  # self.Result1D['day'][0]
 
-            self.firstday = self.IndexToDate(self.from_beginning)
+            self.firstday = self.indexToDate(self.from_beginning)
             # if there are empty days at the beginning the filling missing days is not going to detect it
             # so ignore it here by starting from the first day in the data (data['day'][0]) dataframe
             # empty days at the beginning
-            self.firstdayresults = self.IndexToDate(self.from_beginning)
-            self.lastday = self.IndexToDate(len(self.referenceindex))
+            self.firstdayresults = self.indexToDate(self.from_beginning)
+            self.lastday = self.indexToDate(len(self.referenceindex))
 
             # last days+1 as range does not include the last element
             self.daylist = list(range(self.from_beginning, len(self.referenceindex)))
@@ -3129,18 +3129,14 @@ class River:
 
         return Errors
 
-    def ListAttributes(self):
+    def listAttributes(self):
         """ListAttributes.
 
         Print Attributes List
         """
         logger.debug("\n")
         logger.debug(
-            "Attributes List of: "
-            + repr(self.__dict__["name"])
-            + " - "
-            + self.__class__.__name__
-            + " Instance\n"
+            f"Attributes List of: {repr(self.__dict__['name'])} - {self.__class__.__name__} Instance\n"
         )
         self_keys = list(self.__dict__.keys())
         self_keys.sort()
@@ -3311,8 +3307,8 @@ class Reach(River):
         if not today:
             today = self.Result1D.loc[len(self.Result1D) - 1, "day"]
 
-        start = self.IndexToDate(fromday)
-        end = self.IndexToDate(today + 1)
+        start = self.indexToDate(fromday)
+        end = self.indexToDate(today + 1)
 
         if not isinstance(self.XSHydrographs, DataFrame):
             self.XSHydrographs = pd.DataFrame(
@@ -3387,7 +3383,7 @@ class Reach(River):
         # check the first day in the results and get the date of the first day and last day
         ## create time series
         self.from_beginning = self.Result1D["day"][0]
-        self.firstday = self.IndexToDate(self.from_beginning)
+        self.firstday = self.indexToDate(self.from_beginning)
         # if there are empty days at the beginning the filling missing days is
         # not going to detect it so ignore it here by starting from the first
         # day in the data (data['day'][0]) dataframe empty days at the
@@ -3395,9 +3391,9 @@ class Reach(River):
         # TODO
         # the from_beginning and firstdayresults are exactly the same
         # delete one of them
-        self.firstdayresults = self.IndexToDate(self.Result1D.loc[0, "day"])
+        self.firstdayresults = self.indexToDate(self.Result1D.loc[0, "day"])
         lastday = self.Result1D.loc[self.Result1D.index[-1], "day"]
-        self.lastday = self.IndexToDate(lastday)
+        self.lastday = self.indexToDate(lastday)
 
         # last days+1 as range does not include the last element
         self.daylist = list(
@@ -3666,7 +3662,7 @@ class Reach(River):
         # end = self.referenceindex.loc[today,'date']
 
         ind = pd.date_range(
-            self.IndexToDate(fromday), self.IndexToDate(today), freq="D"
+            self.indexToDate(fromday), self.indexToDate(today), freq="D"
         )
 
         if ColumnName == "q" and not hasattr(self, "ResampledQ"):
@@ -4011,7 +4007,7 @@ class Reach(River):
     ):
         """readUSHydrograph.
 
-            Read the hydrograph of the upstream segment.
+            Read the hydrograph of the upstream reaches.
 
         Parameters
         ----------
@@ -4271,7 +4267,7 @@ class Reach(River):
     def getLaterals(self, xsid: int):
         """GetLaterals.
 
-            GetLaterals method gets the sum of the laterals of all the cross sections in the segment upstream of a given xsid.
+            GetLaterals method gets the sum of the laterals of all the cross sections in the reach upstream of a given xsid.
 
         Parameters
         ----------
@@ -4281,7 +4277,7 @@ class Reach(River):
         Returns
         -------
         dataframe
-            sum of the laterals of all the cross sections in the segment
+            sum of the laterals of all the cross sections in the reach
             upstream of a given xsid.
         """
         if not isinstance(self.LateralsTable, list) and not isinstance(
@@ -4312,9 +4308,9 @@ class Reach(River):
         if not isinstance(self.Laterals, DataFrame):
             raise ValueError("Please read the lateral flows first using the 'GetFlow'")
 
-        if gaugexs not in self.crosssections["xsid"].values:
+        if gaugexs not in self.xsname:
             raise ValueError(
-                f"The given XS {gaugexs} does not locate in the current river segment"
+                f"The given XS {gaugexs} does not locate in the current river reach"
                 f"First XS is {self.firstxs} and "
                 f"Last XS is {self.lastxs}"
             )
@@ -4323,7 +4319,7 @@ class Reach(River):
             s1 = Laterals.index[0]
             e1 = Laterals.index[-1]
         except IndexError:
-            logger.info("there are no laterals for the given segment")
+            logger.info("there are no laterals for the given reach")
             return
 
         if isinstance(self.BC, DataFrame):
@@ -4352,7 +4348,7 @@ class Reach(River):
             logger.info(f"Total flow for the XS-{gaugexs} has been calculated")
         else:
             logger.info(
-                f"The US Hydrograph/BC of the given River segment-{self.id} is not read yet "
+                f"The US Hydrograph/BC of the given River reach-{self.id} is not read yet "
                 "please use the 'ReadUSHydrograph' method to read it"
             )
 
@@ -4564,7 +4560,7 @@ class Reach(River):
                 )
             except KeyError:
                 logger.debug(
-                    f"the xs given -{gaugexs} - does not exist in the river segment"
+                    f"the xs given -{gaugexs} - does not exist in the river reach"
                 )
 
             # laterals
@@ -4608,7 +4604,7 @@ class Reach(River):
                         )
                     except AttributeError:
                         logger.debug(
-                            "there are no totalFlow for this segment please use the 'GetTotalFlow' method to create it"
+                            "there are no totalFlow for this reach please use the 'GetTotalFlow' method to create it"
                         )
 
             # US hydrograph
@@ -5123,29 +5119,30 @@ class Reach(River):
             DESCRIPTION.
         gaugename : TYPE
             DESCRIPTION.
-        gaugecolor : TYPE, optional
-            DESCRIPTION. The default is "#DC143C".
-        hmcolor : TYPE, optional
-            DESCRIPTION. The default is "#004c99".
-        linewidth : TYPE, optional
-            DESCRIPTION. The default is 2.
-        hmorder : TYPE, optional
-            DESCRIPTION. The default is 1.
-        gaugeorder : TYPE, optional
-            DESCRIPTION. The default is 0.
-        plotgauge : TYPE, optional
-            DESCRIPTION. The default is True.
-        fmt: [string]
-            format of the date. fmt="%Y-%m-%d %H:%M:%S"
-        hmstyle: [int]
-            default is 6
-        gaugestyle: [int]
-            default is 0.
-        legendsize: [int, float]
-            default is 15.
-        figsize: tuple=(6, 5),
-        nxlabels: [int]
-            default is 4.
+        kwargs:
+            gaugecolor : TYPE, optional
+                DESCRIPTION. The default is "#DC143C".
+            hmcolor : TYPE, optional
+                DESCRIPTION. The default is "#004c99".
+            linewidth : TYPE, optional
+                DESCRIPTION. The default is 2.
+            hmorder : TYPE, optional
+                DESCRIPTION. The default is 1.
+            gaugeorder : TYPE, optional
+                DESCRIPTION. The default is 0.
+            plotgauge : TYPE, optional
+                DESCRIPTION. The default is True.
+            fmt: [string]
+                format of the date. fmt="%Y-%m-%d %H:%M:%S"
+            hmstyle: [int]
+                default is 6
+            gaugestyle: [int]
+                default is 0.
+            legendsize: [int, float]
+                default is 15.
+            figsize: tuple=(6, 5),
+            nxlabels: [int]
+                default is 4.
 
         Returns
         -------
@@ -5242,7 +5239,7 @@ class Reach(River):
             return
 
         if isinstance(GaugeStart, int):
-            logger.debug("No water level data for this river segment")
+            logger.debug("No water level data for this river reach")
             return
 
         if Filter:
