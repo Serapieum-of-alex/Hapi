@@ -407,8 +407,8 @@ class Visualize:
                 + 1
             ]
         else:
-            ii = Sub.DateToIndex(start)
-            ii2 = Sub.DateToIndex(end)
+            ii = Sub.dateToIndex(start)
+            ii2 = Sub.dateToIndex(end)
             Period = list(range(ii, ii2 + 1))
 
         counter = [(i, j) for i in Period for j in hours]

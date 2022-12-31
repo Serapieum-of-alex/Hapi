@@ -399,7 +399,7 @@ Vis.SaveProfileAnimation(Anim, Path=SavePath, fps=30, ffmpegPath=ffmpegPath)
 start = "1955-01-01"
 end = "1955-01-10"
 
-Sub.ReadSubDailyResults(start, end, Lastsegment=True)
+Sub.readSubDailyResults(start, end, Lastsegment=True)
 #%%
 # negative values
 # TODO : check CheckNegativeQ makes problem

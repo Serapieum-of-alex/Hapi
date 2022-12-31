@@ -47,4 +47,4 @@ anim = Test.animatefloodwave(start=plotstart, end=plotend, interval=0.0000002)
 #%% read results
 plotstart = "2010-01-01"
 plotend = "2010-1-2"
-Test.ReadSubDailyResults(plotstart, plotend, fmt="%Y-%m-%d")
+Test.readSubDailyResults(plotstart, plotend, fmt="%Y-%m-%d")

@@ -60,7 +60,7 @@ rrmstart = "1955-1-1"
 
 River = R.River("HM", version=3, start=start, rrmstart=rrmstart)
 # read the configuration file
-River.Read1DConfigFile(rpath + "/processing/def1D-1segment_very_steep.txt")
+River.read1DConfigFile(rpath + "/processing/def1D-1segment_very_steep.txt")
 # %% Interface
 IF = Interface("Rhine", start=start)
 IF.readXS(RIM2Files + "/xs_same_downward-3segment.csv")
@@ -363,7 +363,7 @@ Vis.SaveProfileAnimation(Anim, Path=SavePath, fps=30, ffmpegPath=ffmpegPath)
 start = "1955-01-01"
 end = "1955-01-10"
 
-Sub.ReadSubDailyResults(start, end, Lastsegment=True)
+Sub.readSubDailyResults(start, end, Lastsegment=True)
 #%%
 # negative values
 # TODO : check CheckNegativeQ makes problem
