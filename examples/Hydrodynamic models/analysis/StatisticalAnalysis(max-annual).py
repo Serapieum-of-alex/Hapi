@@ -92,8 +92,8 @@ for i in range(len(Qgauges)):
 
 """
     # to get the Non Exceedance probability for a specific Value
-    loc = River2.SP.loc[River2.SP['ID']== Sub,'loc'].tolist()[0]
-    scale = River2.SP.loc[River2.SP['ID']== Sub,'scale'].tolist()[0]
+    loc = River2.SP.loc[River2.SP['ID']== Reach,'loc'].tolist()[0]
+    scale = River2.SP.loc[River2.SP['ID']== Reach,'scale'].tolist()[0]
     F = gumbel_r.cdf(Qrp, loc=loc, scale=scale)
     T = 1/(1-F)
 """

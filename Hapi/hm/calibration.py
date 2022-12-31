@@ -1,8 +1,7 @@
 """Hydaulic model calibration related function module."""
 import datetime as dt
-from typing import Any, Union  # , Optional,Tuple,
+from typing import Any, Union
 
-import fiona
 import geopandas as gpd
 import matplotlib.pyplot as plt
 import numpy as np
@@ -167,8 +166,12 @@ class Calibration(River):
         """
         try:
             self.hm_gauges = gpd.read_file(path, driver="GeoJSON")
-        except fiona.errors.DriverError:
+        except Exception as e:
+            logger.warning(
+                f"the {path} could not be opened with geopandas and will be opened with pandas instead"
+            )
             self.hm_gauges = pd.read_csv(path)
+
         # sort the gauges table based on the segment
         self.hm_gauges.sort_values(by="id", inplace=True, ignore_index=True)
 
@@ -514,7 +517,7 @@ class Calibration(River):
             for i in range(len(gauges)):
                 station_id = gauges[i]
                 try:
-                    self.q_rrm[station_id] = self.readRRMResults(
+                    self.q_rrm[station_id] = self._readRRMResults(
                         self.version,
                         self.rrmreferenceindex,
                         path,
@@ -533,7 +536,7 @@ class Calibration(River):
             for i in range(len(gauges)):
                 station_id = gauges[i]
                 try:
-                    self.q_rrm[station_id] = self.readRRMResults(
+                    self.q_rrm[station_id] = self._readRRMResults(
                         self.version,
                         self.rrmreferenceindex,
                         path,
@@ -542,7 +545,7 @@ class Calibration(River):
                         today,
                         date_format=fmt,
                     )[station_id].tolist()
-                    self.QRRM2[station_id] = self.readRRMResults(
+                    self.QRRM2[station_id] = self._readRRMResults(
                         self.version,
                         self.rrmreferenceindex,
                         path2,
@@ -639,7 +642,7 @@ class Calibration(River):
         # fill non modelled time steps with zeros
         for i in range(len(gauges)):
             nodeid = gauges[i]
-            self.q_hm[nodeid] = self.readRRMResults(
+            self.q_hm[nodeid] = self._readRRMResults(
                 self.version,
                 self.ReferenceIndex,
                 path,
@@ -738,7 +741,7 @@ class Calibration(River):
         self.WLHM = pd.DataFrame()
         for i in range(len(gauges)):
             nodeid = gauges[i]
-            self.WLHM[nodeid] = self.readRRMResults(
+            self.WLHM[nodeid] = self._readRRMResults(
                 self.version,
                 self.ReferenceIndex,
                 path,
@@ -1559,8 +1562,8 @@ class Calibration(River):
         for i in range(len(gauges)):
             start_date = Metrics.loc[gauges[i], "start"]
             end_date = Metrics.loc[gauges[i], "end"]
-            obs = df1.loc[start_date : end_date, gauges[i]].values.tolist()
-            sim = df2.loc[start_date : end_date, gauges[i]].values.tolist()
+            obs = df1.loc[start_date:end_date, gauges[i]].values.tolist()
+            sim = df2.loc[start_date:end_date, gauges[i]].values.tolist()
 
             # shift hm result
             sim[shift:-shift] = sim[0 : -shift * 2]
@@ -1629,7 +1632,7 @@ class Calibration(River):
             right_index=True,
             how="left",
             sort=False,
-        )#.set_geometry("geometry")
+        )
         self.MetricsHMvsRRM.index = self.MetricsHMvsRRM[self.gauge_id_col]
         self.MetricsHMvsRRM.index.name = "index"
         if isinstance(self.hm_gauges, GeoDataFrame):

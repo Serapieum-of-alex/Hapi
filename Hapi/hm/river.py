@@ -7,8 +7,9 @@ import datetime as dt
 import os
 import zipfile
 from bisect import bisect
-from typing import Tuple, Union  # List, Optional,
-
+from typing import Tuple, Union, Optional, Any
+from pathlib import Path
+import yaml
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -22,28 +23,8 @@ from statista.distributions import GEV, Gumbel  # , PlottingPosition
 
 from Hapi.hm.saintvenant import SaintVenant
 from Hapi.plot.visualizer import Visualize as V
-
+from Hapi.utils import class_method_parse, class_attr_initialize
 hours = list(range(1, 25))
-initial_args = dict(
-    dto={"default": 60, "type": int},
-    dx={"default": 500, "type": int},
-    leftovertopping_suffix={"default": "_left.txt", "type": str},
-    rightovertopping_suffix={"default": "_right.txt", "type": str},
-    depthprefix={"default": "DepthMax", "type": str},
-    durationprefix={"default": "Duration", "type": str},
-    returnperiod_prefix={"default": "ReturnPeriod", "type": str},
-    compressed={"default": True, "type": bool},
-    fmt={"default": "%Y-%m-%d", "type": str},
-    onedresultpath={"default": "/results/1d", "type": str},
-    twodresultpath={"default": "/results/2d", "type": str},
-)
-# def _get_attr(attribute):
-#     attribute = "dto"
-#     default_val = initial_args[attribute].get("default")
-#     attr_type = initial_args.get(attribute).get("type")
-#     # attr_type = eval(attr_type)
-#     # check the type of the entered value
-#     if
 
 
 class River:
@@ -52,27 +33,50 @@ class River:
     River class reads all the data of the river, (cross sections,
     simulation results) and analyse the results and do visualisation
     """
+    initial_args = dict(
+        name= {"type": str},
+        version={"default": 3, "type": int},
+        dto={"default": 60, "type": int},
+        dx={"default": 500, "type": int},
+        start={"default": "1950-1-1", "type": str},
+        days={"default": 36890, "type": int},  # 100 years
+        rrmstart={"default": None, "type": str},
+        rrmdays={"default": 36890, "type": int},  # 100 years
+        leftovertopping_suffix={"default": "_left.txt", "type": str},
+        rightovertopping_suffix={"default": "_right.txt", "type": str},
+        depthprefix={"default": "DepthMax", "type": str},
+        durationprefix={"default": "Duration", "type": str},
+        returnperiod_prefix={"default": "ReturnPeriod", "type": str},
+        compressed={"default": True, "type": bool},
+        fmt={"default": "%Y-%m-%d", "type": str},
+        onedresultpath={"default": "/results/1d", "type": str},
+        twodresultpath={"default": "/results/2d", "type": str},
+    )
 
+    river_attributes = dict(
+        oneminresultpath=None, usbcpath=None, firstday=None, referenceindex_results=None,
+        wd=None, XSF=None, LateralsF=None, BCF=None, RiverNetworkF=None,
+        SlopeF=None, NoSeg=None, CalibrationF=None, Coupling1D2DF=None, RunMode=None, Subid=None,
+        Customized_BC_F=None, ResultsDetails=None, RRMTemporalResolution=None, HMTemporalResolution=None,
+        HMStoreTimeStep=None, TS=None, SimStartIndex=None, SimEndIndex=None, SimStart=None,
+        SimEnd=None, OneDTempR=None, D1=None, D2=None, crosssections=None, xsno=None,
+        xsname=None, QBCmin=None, HBCmin=None, h=None, q=None, from_beginning=None, firstdayresults=None,
+        lastday=None, daylist=None, id=None, QBC=None, HBC=None, usbc=None, dsbc=None, Result1D=None,
+        Q=None, H=None, slope=None, EventIndex=None, rivernetwork=None, SP=None, customized_runs_path=None,
+        Segments=None, RP=None, rrmpath=None, segments=None, customized_runs_config=None, parameters=None,
+        results_config=None, rrm_paths=None, rrm_config=None, river_1d_paths=None, river_1d_config=None,
+        config=None, results_paths=None, one_min_results_config=None, hourlt_results_config=None
+    )
+
+    @class_method_parse(initial_args)
+    @class_attr_initialize(river_attributes)
     def __init__(
-        self,
-        name: str,
-        version: int = 3,
-        start: str = "1950-1-1",
-        end: Union[int, str] = "",
-        days: int = 36890,
-        rrmstart: str = "",
-        rrmdays: int = 36890,
-        dto: int = 60,
-        dx: int = 500,
-        leftovertopping_suffix: str = "_left.txt",
-        rightovertopping_suffix: str = "_right.txt",
-        depthprefix: str = "DepthMax",
-        durationprefix: str = "Duration",
-        returnperiod_prefix: str = "ReturnPeriod",
-        compressed: str = True,
-        onedresultpath: str = "",
-        twodresultpath: str = "",
-        fmt: str = "%Y-%m-%d",
+            self,
+            name: str,
+            version: int = 3,
+            start: str = "1950-1-1",
+            end: Union[int, str] = None,
+            *args, **kwargs
     ):
         """River.
 
@@ -129,152 +133,55 @@ class River:
         -------
         None.
         """
+        # positional arguments
         assert isinstance(start, str), "start argument has to be string"
         assert isinstance(version, int), "version argument has to be integer number"
-        assert isinstance(days, int), "number of days has to be integer number"
-        assert isinstance(fmt, str), "date format 'fmt' has to be a string"
-        assert isinstance(dto, int), " delta time 'dto' has to be integer"
-        assert isinstance(rrmdays, int), "rrmdays has to be integer number"
-        assert isinstance(rrmstart, str), "rrmstart has to be string"
-
-        assert isinstance(
-            leftovertopping_suffix, str
-        ), "leftovertopping_suffix should be string"
-        assert isinstance(
-            rightovertopping_suffix, str
-        ), "rightovertopping_suffix should be string"
-        assert isinstance(depthprefix, str), "depthprefix should be string"
-        assert isinstance(durationprefix, str), "durationprefix should be string"
-        assert isinstance(
-            returnperiod_prefix, str
-        ), "returnperiod_prefix should be string"
-        assert isinstance(compressed, bool), "compressed should be string"
-        assert isinstance(onedresultpath, str), "onedresultpath should be string"
-        assert isinstance(twodresultpath, str), "twodresultpath should be string"
 
         self.name = name
         self.version = version
-        self.start = dt.datetime.strptime(start, fmt)
+        self.start = dt.datetime.strptime(start, self.fmt)
 
-        if end == "":
-            self.end = self.start + dt.timedelta(days=days)
+        if end is None:
+            self.end = self.start + dt.timedelta(days=self.days)
         else:
-            self.end = dt.datetime.strptime(end, fmt)
-            days = (self.end - self.start).days
+            self.end = dt.datetime.strptime(end, self.fmt)
+            self.days = (self.end - self.start).days
 
-        self.dt = dto
+        self.dt = self.dto
         if self.dt < 60:
             self.freq = str(self.dt) + "S"
         else:
             self.freq = str(int(self.dt / 60)) + "Min"
-        self.dx = dx
-
-        self.leftovertopping_suffix = leftovertopping_suffix
-        self.rightovertopping_suffix = rightovertopping_suffix
-        self.onedresultpath = onedresultpath
-        self.twodresultpath = twodresultpath
-        self.depthprefix = depthprefix
-        self.durationprefix = durationprefix
-        self.returnperiod_prefix = returnperiod_prefix
-        self.compressed = compressed
-        self.oneminresultpath = None
-        self.usbcpath = None
-        # attributes related to the results
-        self.firstday = None
-        self.referenceindex_results = None
-        self.firstday = None
         # ----------------------------------------------------
         ref_ind = pd.date_range(self.start, self.end, freq="D")
         # the last day is not in the results day Ref_ind[-1]
         # write the number of days + 1 as python does not include the last
         # number in the range
         # 19723 days so write 19724
-        if days == 1:
-            days = 2
-            self.referenceindex = pd.DataFrame(index=list(range(1, days + 1)))
+        if self.days == 1:
+            self.days = 2
+            self.referenceindex = pd.DataFrame(index=list(range(1, self.days + 1)))
             self.referenceindex["date"] = ref_ind
         else:
-            self.referenceindex = pd.DataFrame(index=list(range(1, days + 1)))
+            self.referenceindex = pd.DataFrame(index=list(range(1, self.days + 1)))
             self.referenceindex["date"] = ref_ind[:-1]
 
-        if rrmstart == "":
+        if self.rrmstart is None:
             self.rrmstart = self.start
         else:
-            try:
-                self.rrmstart = dt.datetime.strptime(rrmstart, fmt)
-            except ValueError:
-                msg = (
-                    "plese check the fmt ({0}) you entered as it is different from the"
-                    " rrmstart data ({1})"
-                )
-                logger.debug(msg.format(fmt, rrmstart))
-                return
+            self.rrmstart = dt.datetime.strptime(self.rrmstart, self.fmt)
 
-        self.rrmend = self.rrmstart + dt.timedelta(days=rrmdays)
+
+        self.rrmend = self.rrmstart + dt.timedelta(days=self.rrmdays)
         ref_ind = pd.date_range(self.rrmstart, self.rrmend, freq="D")
-        self.rrmreferenceindex = pd.DataFrame(index=list(range(1, rrmdays + 1)))
+        self.rrmreferenceindex = pd.DataFrame(index=list(range(1, self.rrmdays + 1)))
         self.rrmreferenceindex["date"] = ref_ind[:-1]
         self.notimesteps = len(self.rrmreferenceindex)
 
         self.indsub = pd.date_range(self.start, self.end, freq=self.freq)
 
-        self.wd = None
-        self.XSF = None
-        self.LateralsF = None
-        self.BCF = None
-        self.RiverNetworkF = None
-        self.SlopeF = None
-        self.NoSeg = None
-        self.CalibrationF = None
-        self.Coupling1D2DF = None
-        self.RunMode = None
-        self.Subid = None
-        self.Customized_BC_F = None
-        self.ResultsDetails = None
-        self.RRMTemporalResolution = None
-        self.HMTemporalResolution = None
-        self.HMStoreTimeStep = None
-        self.TS = None
-        self.SimStartIndex = None
-        self.SimEndIndex = None
-        self.SimStart = None
-        self.SimEnd = None
-        self.OneDTempR = None
-        self.D1 = None
-        self.D2 = None
 
-        # self.USHydrographs = None
-        self.crosssections = None
-        self.xsno = None
-        self.xsname = None
-        self.QBCmin = None
-        self.HBCmin = None
-        self.h = None
-        self.q = None
-        self.from_beginning = None
-        self.firstdayresults = None
-        self.lastday = None
-        self.daylist = None
-        self.id = None
-        self.QBC = None
-        self.HBC = None
-        self.usbc = None
-        self.dsbc = None
-        self.Result1D = None
-        self.Q = None
-        self.H = None
-        self.slope = None
-        self.EventIndex = None
-        self.rivernetwork = None
-        self.SP = None  # StatisticalProperties
-        self.customized_runs_path = None
-        self.Segments = None
-        self.RP = None
-        self.SP = None
-        self.rrmpath = None
-        self.segments = None  # read cross sections
-
-    def IndexToDate(self, index: int):
+    def indexToDate(self, index: int):
         """IndexToDate.
 
         IndexToDate takes an integer number and returns the date coresponding
@@ -295,7 +202,7 @@ class River:
         # convert the index into date
         return self.referenceindex.loc[index, "date"]
 
-    def DateToIndex(self, date: Union[dt.datetime, str], fmt: str = "%Y-%m-%d"):
+    def dateToIndex(self, date: Union[dt.datetime, str], fmt: str = "%Y-%m-%d"):
         """DateToIndex.
 
         DateToIndex takes a date and returns a the order of the days in the
@@ -324,7 +231,7 @@ class River:
                 f"{self.referenceindex.loc[len(self.referenceindex), 'date']}"
             )
 
-    def IndexToDateRRM(self, index: int):
+    def indexToDateRRM(self, index: int):
         """IndexToDateRRM.
 
         IndexToDate takes an integer number and returns the date coresponding
@@ -345,7 +252,7 @@ class River:
         # convert the index into date
         return self.referenceindex.loc[index, "date"]
 
-    def DateToIndexRRM(self, date: Union[str, dt.datetime], fmt: str = "%Y-%m-%d"):
+    def dateToIndexRRM(self, date: Union[str, dt.datetime], fmt: str = "%Y-%m-%d"):
         """DateToIndexRRM.
 
         DateToIndex takes a date and returns a the order of the days in the
@@ -371,7 +278,75 @@ class River:
     def round(number, roundto):
         return round(number / roundto) * roundto
 
-    def Read1DConfigFile(self, path: str):
+
+    def readConfig(self, path):
+        """reads the hydraulic model configuration file
+
+        Parameters
+        ----------
+        path: [str]
+            path to the configuration file (yaml files)
+        """
+        if not os.path.exists(path):
+            raise FileNotFoundError(f"The Configuration file You have entered: {path} does not exist")
+        with open(path, "r") as stream:
+            config = yaml.safe_load(stream)
+        # project directory
+        self.wd = config.get("project directory")
+        self.config = config
+        # river
+        river_files = config.get("river description")
+        self.river_1d_config = river_files
+        river_rdir = Path(river_files.get("root directory"))
+        self.river_1d_paths = dict(
+            river_rdir=river_rdir,
+            xs_file=river_rdir.joinpath(river_files.get("cross sections")),
+            river_network=river_rdir.joinpath(river_files.get("river network")),
+            river_slope=river_rdir.joinpath(river_files.get("slope")),
+            coupling_2d=river_rdir.joinpath(river_files.get("1D-2D coupling")),
+            calibration_table=river_rdir.joinpath(river_files.get("results locations")),
+        )
+        # rainfall runoff model
+        rrm_files = config.get("rainfall-runoff files")
+        self.rrm_config = rrm_files
+        rrm_rdir = Path(rrm_files.get("root directory"))
+        rrm_results = rrm_files.get("river routing blocked results")
+        self.rrm_paths = dict(
+            rrm_rdir=rrm_rdir,
+            laterals_table_path=rrm_rdir.joinpath(rrm_files.get("laterals")),
+            boundary_condition_table=rrm_rdir.joinpath(rrm_files.get("boundary condition")),
+            laterals_dir=rrm_rdir,
+            boundary_condition_path=rrm_rdir,
+            rrm_location_1=Path(rrm_results.get("location-1")),  # rrmpath
+            rrm_location_2=Path(rrm_results.get("location-2")),
+        )
+        # result files
+        results_files = config.get("Results 1D")
+        self.results_config = results_files
+        results_rdir = Path(results_files.get("root directory"))
+        hourlt_results = results_files.get("hourly")
+        self.hourlt_results_config = hourlt_results
+        one_min_results = results_files.get("one min")
+        self.one_min_results_config = one_min_results
+        # 2D
+        results_files = config.get("Results 2D")
+        self.results_paths = dict(
+            results_rdir=results_rdir,
+            onedresultpath=results_rdir.joinpath(hourlt_results.get("folder")),
+            oneminresultpath=results_rdir,
+            usbcpath=results_rdir.joinpath(one_min_results.get("usbc").get("folder")),
+            twodresultpath=Path(results_files.get("root directory"))
+        )
+        # parameters
+        parameters = config.get("simulation parameters")
+        self.parameters = parameters
+        customized_runs = parameters.get("customized simulation")
+        self.customized_runs_config = customized_runs
+        customized_runs_path = Path(customized_runs.get("previous run results"))
+        self.customized_runs_path = customized_runs_path
+
+
+    def read1DConfigFile(self, path: str):
         """Read1DConfigFile.
 
         Read the configuration file
@@ -451,8 +426,8 @@ class River:
         Start, End = wholefile[35][:-1].split(" ")
         self.SimStartIndex = int(Start)
         self.SimEndIndex = int(End)
-        self.SimStart = self.IndexToDate(self.SimStartIndex)
-        self.SimEnd = self.IndexToDate(self.SimEndIndex)
+        self.SimStart = self.indexToDate(self.SimStartIndex)
+        self.SimEnd = self.indexToDate(self.SimEndIndex)
         self.OneDTempR = 60  # in seconds
 
         # 1D thresholds
@@ -544,13 +519,13 @@ class River:
 
         Parameters
         ----------
-        start : [int/str], optional
+        start: [int/str], optional
                 the day you want to read the result from, the first day is 1
                 not zero, you can also enter the date of the day.
                 The default is ''.
-        end : [int], optional
+        end: [int], optional
                 the day you want to read the result to.
-        path : [String], optional
+        path: [String], optional
             path to read the results from. The default is ''.
         fmt: [string]
             format of the date. fmt="%Y-%m-%d %H:%M:%S"
@@ -635,12 +610,12 @@ class River:
                     BC.loc[:, :].resample(self.freq).mean().interpolate("linear")
                 )
 
-    def ReadSubDailyResults(
+    def readSubDailyResults(
         self, start: str, end: str, fmt: str = "%Y-%m-%d", Lastsegment: bool = False
     ):
         """ReadSubDailyResults.
 
-        Read Sub-Daily Results
+        Read Reach-Daily Results
 
         Read1DResults1Min method is used by the sub sub-class, so most of the
         parameters (xsname,...) are assigned to values after reading results
@@ -669,7 +644,7 @@ class River:
             assert self.crosssections, "please read the cross sections first"
 
         assert isinstance(self.usbcpath, str), (
-            "please input the 'usbcpath' attribute in " "the River or the Sub instance"
+            "please input the 'usbcpath' attribute in " "the River or the Reach instance"
         )
 
         if isinstance(start, str):
@@ -694,8 +669,8 @@ class River:
         h = pd.DataFrame(index=indmin, columns=xsname)
         q = pd.DataFrame(index=indmin, columns=xsname)
 
-        ii = self.DateToIndex(start)
-        ii2 = self.DateToIndex(end) + 1
+        ii = self.dateToIndex(start)
+        ii2 = self.dateToIndex(end) + 1
         list2 = list(range(ii, ii2))
 
         if self.version < 4:
@@ -738,9 +713,9 @@ class River:
             self.HBCmin = bc_h[:]
         else:
             for i in list2:
-                path = f"{self.oneminresultpath}H-{str(self.IndexToDate(i))[:10]}.csv"
+                path = f"{self.oneminresultpath}H-{str(self.indexToDate(i))[:10]}.csv"
                 hh = np.transpose(np.loadtxt(path, delimiter=",", dtype=np.float16))
-                path = f"{self.oneminresultpath}Q-{str(self.IndexToDate(i))[:10]}.csv"
+                path = f"{self.oneminresultpath}Q-{str(self.indexToDate(i))[:10]}.csv"
                 qq = np.transpose(np.loadtxt(path, delimiter=",", dtype=np.float16))
 
                 h = h + self.crosssections["bed level"].values
@@ -757,12 +732,12 @@ class River:
             # TODO to be checked later now for testing
             self.from_beginning = 1  # self.Result1D['day'][0]
 
-            self.firstday = self.IndexToDate(self.from_beginning)
+            self.firstday = self.indexToDate(self.from_beginning)
             # if there are empty days at the beginning the filling missing days is not going to detect it
             # so ignore it here by starting from the first day in the data (data['day'][0]) dataframe
             # empty days at the beginning
-            self.firstdayresults = self.IndexToDate(self.from_beginning)
-            self.lastday = self.IndexToDate(len(self.referenceindex))
+            self.firstdayresults = self.indexToDate(self.from_beginning)
+            self.lastday = self.indexToDate(len(self.referenceindex))
 
             # last days+1 as range does not include the last element
             self.daylist = list(range(self.from_beginning, len(self.referenceindex)))
@@ -773,8 +748,8 @@ class River:
     def read1DResult(
         self,
         Subid: int,
-        fromday: Union[int, str] = None,
-        today: Union[int, str] = None,
+        fromday: Optional[int] = None,
+        today: Optional[int] = None,
         path: str = None,
         FillMissing: bool = False,
     ):
@@ -806,23 +781,29 @@ class River:
             in the attribute "Result1D"
         """
         # if the path is not given try to read from the object predefined onedresultpath
+        t1 = dt.datetime.now()
         if not path:
             path = self.onedresultpath
 
-        data = pd.read_csv(f"{path}{Subid}.txt", header=None, delimiter=r"\s+", index_col=False)
-        #--------
+        data = pd.read_csv(
+            rf"{path}\{Subid}.txt", header=None, delimiter=r"\s+", index_col=False
+        )
         # TODO: read the file in chunks
-        # --------
+
         data.columns = ["day", "hour", "xs", "q", "h", "wl"]
         days = list(set(data["day"]))
         days.sort()
 
         if fromday:
             if fromday not in days:
-                raise ValueError(f"Please use the GetDays method to select fromday:{fromday} that exist in the data")
+                raise ValueError(
+                    f"Please use the GetDays method to select fromday:{fromday} that exist in the data"
+                )
         if today:
             if today not in days:
-                raise ValueError(f"please use the GetDays method to select today: {today} that exist in the data")
+                raise ValueError(
+                    f"please use the GetDays method to select today: {today} that exist in the data"
+                )
 
         if fromday:
             data = data.loc[data["day"] >= fromday, :]
@@ -830,11 +811,11 @@ class River:
         if today:
             data = data.loc[data["day"] <= today]
 
-        # data.index = list(range(0, len(data)))
+        #  data.index = list(range(0, len(data)))
 
         # Cross section data add one more xs at the end
-        xsname = self.xsname + [self.xsname[-1] +1]
-        #data["xs"][data["day"] == data["day"][1]][data["hour"] == 1].tolist()
+        xsname = self.xsname + [self.xsname[-1] + 1]
+        # data["xs"][data["day"] == data["day"][1]][data["hour"] == 1].tolist()
 
         if FillMissing:
             # check if there is missing days (Q was < threshold so the model didn't run)
@@ -861,7 +842,9 @@ class River:
                     missing_hours = [i[1] for i in missing]
                     missing_xs = [i[2] for i in missing]
 
-                missing = pd.DataFrame(index=range(len(missing_days_list)), dtype=np.float64)
+                missing = pd.DataFrame(
+                    index=range(len(missing_days_list)), dtype=np.float64
+                )
                 missing["day"] = missing_days_list
                 missing["hour"] = missing_hours
                 missing["xs"] = missing_xs
@@ -875,6 +858,10 @@ class River:
                 data = data.sort_values(by=["day", "hour", "xs"], ascending=True)
                 data.reset_index(inplace=True)
 
+        # calculate time and print it
+        t2 = dt.datetime.now()
+        time_min = (t2 - t1).seconds / 60
+        print(time_min)
         self.Result1D = data
 
     @staticmethod
@@ -1022,7 +1009,7 @@ class River:
                 exec(var + ".to_csv(path ,index= None, sep = ' ', header = None)")
 
     @staticmethod
-    def readRRMResults(
+    def _readRRMResults(
         version: int,
         rrmreferenceindex,
         path: str,
@@ -1951,7 +1938,7 @@ class River:
                 logger.info(f"New H = {round(H, 2)}")
                 logger.info("---------------------------")
 
-    def overtopping(self, OvertoppingResultpath=""):
+    def overtopping(self, overtopping_result_path: str=None):
         """Overtopping.
 
         Overtopping method reads the overtopping files and for each cross section
@@ -1964,28 +1951,28 @@ class River:
 
         Inputs:
         -------
-            1-OvertoppingResultF:
-                [String] a path to the folder includng 2D results.
+        overtopping_result_path: [str]
+            a path to the folder includng 2D results.
 
         Returns
         -------
-            1-OverToppingSubsLeft : [dictionary attribute]
-                dictionary having sub-basin ids as a key and for each sub-basins
-                it contains dictionary for each cross section having the days of
-                overtopping.
-            1-OverToppingSubsRight : [dictionary attribute]
-                dictionary having sub-basin ids as a key and for each sub-basins
-                it contains dictionary for each cross section having the days of
-                overtopping.
+        OverToppingSubsLeft : [dictionary attribute]
+            dictionary having sub-basin ids as a key and for each sub-basins
+            it contains dictionary for each cross section having the days of
+            overtopping.
+        OverToppingSubsRight : [dictionary attribute]
+            dictionary having sub-basin ids as a key and for each sub-basins
+            it contains dictionary for each cross section having the days of
+            overtopping.
         """
         # sort files
         leftOverTop = list()
         RightOverTop = list()
         # get names of files that has _left or _right at its end
-        if OvertoppingResultpath == "":
-            OvertoppingResultpath = self.onedresultpath
+        if overtopping_result_path is None:
+            overtopping_result_path = self.onedresultpath
 
-        All1DFiles = os.listdir(OvertoppingResultpath)
+        All1DFiles = os.listdir(overtopping_result_path)
         for i in range(len(All1DFiles)):
             if All1DFiles[i].endswith(self.leftovertopping_suffix):
                 leftOverTop.append(All1DFiles[i])
@@ -2006,7 +1993,7 @@ class River:
             try:
                 # open the file (if there is no column sthe file is empty)
                 data = pd.read_csv(
-                    self.onedresultpath + leftOverTop[i], header=None, delimiter=r"\s+"
+                    rf"{overtopping_result_path}\{leftOverTop[i]}", header=None, delimiter=r"\s+"
                 )
                 # add the sub basin to the overtopping dictionary of sub-basins
                 OverToppingSubsLeft[
@@ -2027,7 +2014,7 @@ class River:
             try:
                 # open the file
                 data = pd.read_csv(
-                    self.onedresultpath + RightOverTop[i], header=None, delimiter=r"\s+"
+                    rf"{overtopping_result_path}\{RightOverTop[i]}", header=None, delimiter=r"\s+"
                 )
                 # add the sub basin to the overtopping dictionary of sub-basins
                 OverToppingSubsRight[
@@ -2231,9 +2218,7 @@ class River:
             try:
                 # try to open and read the overtopping file
                 data = pd.read_csv(
-                    self.onedresultpath
-                    + str(floodedSubs[i])
-                    + self.leftovertopping_suffix,
+                    rf"{self.onedresultpath}\{floodedSubs[i]}{self.leftovertopping_suffix}",
                     header=None,
                     delimiter=r"\s+",
                 )
@@ -2260,9 +2245,7 @@ class River:
             try:
                 # try to open and read the overtopping file
                 data = pd.read_csv(
-                    self.onedresultpath
-                    + str(floodedSubs[i])
-                    + self.rightovertopping_suffix,
+                    rf"{self.onedresultpath}\{floodedSubs[i]}{self.rightovertopping_suffix}",
                     header=None,
                     delimiter=r"\s+",
                 )
@@ -2915,9 +2898,7 @@ class River:
                                             and the earliest day after the given
                                             day).
         """
-        data = pd.read_csv(
-            self.onedresultpath + str(self.id) + ".txt", header=None, delimiter=r"\s+"
-        )
+        data = pd.read_csv(rf"{self.onedresultpath}\{self.id}.txt", header=None, delimiter=r"\s+")
         data.columns = ["day", "hour", "xs", "q", "h", "wl"]
         days = list(set(data["day"]))
         days.sort()
@@ -3148,18 +3129,14 @@ class River:
 
         return Errors
 
-    def ListAttributes(self):
+    def listAttributes(self):
         """ListAttributes.
 
         Print Attributes List
         """
         logger.debug("\n")
         logger.debug(
-            "Attributes List of: "
-            + repr(self.__dict__["name"])
-            + " - "
-            + self.__class__.__name__
-            + " Instance\n"
+            f"Attributes List of: {repr(self.__dict__['name'])} - {self.__class__.__name__} Instance\n"
         )
         self_keys = list(self.__dict__.keys())
         self_keys.sort()
@@ -3170,43 +3147,31 @@ class River:
         logger.debug("\n")
 
 
-class Sub(River):
+class Reach(River):
 
-    """Sub segment object.
+    """Reach segment object.
 
-    represent a segment of the river to create the Sub instance the
+    represent a segment of the river to create the Reach instance the
     river object has to have the cross-sections read using the
     'ReadCrossSections' method
     """
+    reach_attr = dict(
+        ExtractedValues = dict(), XSHydrographs=None, NegQmin=None, Negative=None, XSWaterLevel=None, XSWaterDepth=None,
+        RRM=None, RRM2=None, ResampledQ=None, ResampledWL=None, ResampledH=None, Qrp=None, DetailedOvertoppingLeft=None,
+        DetailedOvertoppingRight=None, AllOvertoppingVSXS=None, AllOvertoppingVSTime=None, BC=None, AreaPerHigh=None,
+        AreaPerLow=None, TotalFlow=None, RRMProgression=None, LateralsTable=None, Laterals=None, Result1D=None,
+        USHydrographs=None
+    )
 
-    def __init__(self, sub_id: int, River, RunModel: bool = False):
+
+    @class_attr_initialize(reach_attr)
+    def __init__(self, sub_id: int, River, run_model: bool = False, *args, **kwargs):
+        # super().__init__(*args, **kwargs)
+        # initializa the attributes with the river attributes
+        for key, val in River.__dict__.items():
+            setattr(self, key, val)
+
         self.id = sub_id
-        self.rim = River.name
-        self.version = River.version
-        self.freq = River.freq
-        self.dt = River.dt
-        if River.rightovertopping_suffix:
-            self.rightovertopping_suffix = River.rightovertopping_suffix
-        if River.leftovertopping_suffix:
-            self.leftovertopping_suffix = River.leftovertopping_suffix
-        if River.depthprefix:
-            self.depthprefix = River.depthprefix
-        if River.durationprefix:
-            self.durationprefix = River.durationprefix
-        if River.returnperiod_prefix:
-            self.returnperiod_prefix = River.returnperiod_prefix
-        if River.compressed:
-            self.compressed = River.compressed
-        if River.twodresultpath:
-            self.twodresultpath = River.twodresultpath
-        if River.customized_runs_path:
-            self.CustomizedRunspath = River.customized_runs_path
-        if River.usbcpath:
-            self.usbcpath = River.usbcpath
-        if River.oneminresultpath:
-            self.oneminresultpath = River.oneminresultpath
-        # if River.usbcpath:
-        #     self.usbcpath = River.usbcpath
 
         if not isinstance(River.crosssections, DataFrame):
             raise ValueError(
@@ -3214,33 +3179,8 @@ class Sub(River):
                 "method before creating the sub-segment instance"
             )
         # filter the whole cross section file and get the cross section of the segment
-
         self.crosssections = River.crosssections[River.crosssections["id"] == sub_id]
-        if RunModel:
-            self.xsid = self.crosssections.loc[:, "xsid"].values
-            self.dbf = self.crosssections.loc[:, "dbf"].values
-            self.bedlevel = self.crosssections.loc[:, "gl"].values
-            self.hl = self.crosssections.loc[:, "hl"].values
-            self.cl = self.crosssections.loc[:, "bl"].values
-            self.zl = self.crosssections.loc[:, "zl"].values
-            self.hr = self.crosssections.loc[:, "hr"].values
-            self.cr = self.crosssections.loc[:, "br"].values
-            self.zr = self.crosssections.loc[:, "zr"].values
-            self.mw = self.crosssections.loc[:, "b"].values
-            self.mn = self.crosssections.loc[:, "m"].values
-
-        self.crosssections.index = list(range(len(self.crosssections)))
-        self.lastxs = self.crosssections.loc[len(self.crosssections) - 1, "xsid"]
-        self.firstxs = self.crosssections.loc[0, "xsid"]
-        self.xsname = self.crosssections["xsid"].tolist()
-        self.xsno = len(self.xsname)
-
-        self.referenceindex = River.referenceindex
-
-        if isinstance(River.rrmreferenceindex, DataFrame):
-            self.rrmreferenceindex = River.rrmreferenceindex
-
-        self.onedresultpath = River.onedresultpath
+        self._getXS(run_model=run_model)
 
         if isinstance(River.slope, DataFrame) and self.id in River.slope["id"].tolist():
             self.slope = River.slope[River.slope["id"] == sub_id]["slope"].tolist()[0]
@@ -3259,35 +3199,47 @@ class Sub(River):
             self.SP = River.SP.loc[River.SP["id"] == self.id, :]
             self.SP.index = list(range(len(self.SP)))
 
-        if River.rrmpath:
-            self.rrmpath = River.rrmpath
+    def _getXS(self, run_model: bool):
+        """get the cross sections of the current river reach.
 
-        # Create dictionary to store any extracted values from maps
-        self.ExtractedValues = dict()
-        self.XSHydrographs = None
-        self.NegQmin = None
-        self.Negative = None
-        self.XSWaterLevel = None
-        self.XSWaterDepth = None
-        self.RRM = None
-        self.RRM2 = None
-        self.ResampledQ = None
-        self.ResampledWL = None
-        self.ResampledH = None
-        self.Qrp = None
-        self.DetailedOvertoppingLeft = None
-        self.DetailedOvertoppingRight = None
-        self.AllOvertoppingVSXS = None
-        self.AllOvertoppingVSTime = None
-        self.BC = None
-        self.AreaPerHigh = None
-        self.AreaPerLow = None
-        self.TotalFlow = None
-        self.RRMProgression = None  # DataFrame
-        self.LateralsTable = None  # list
-        self.Laterals = None  # DataFrame
-        self.Result1D = None  # DataFrame
-        self.USHydrographs = None
+        Parameters
+        ----------
+        run_model: [bool]
+            If True the values (as array) for each attribute of the cross section will be stored in the reach object
+
+        Returns
+        -------
+        crosssections: [DataFrame]
+            Replaces the crosssections attributes in the reach object from the whole river cross sections
+            to the cross section of the current reach only
+        lastxs: [int]
+            the id of the last cross section
+        firstxs: [int]
+            the id of the last cross section
+        xsname: [List]
+            list of current reach cross sections id
+        xsno: [int]
+            number of cross sections in the current river reach
+        """
+        if run_model:
+            self.xsid = self.crosssections.loc[:, "xsid"].values
+            self.dbf = self.crosssections.loc[:, "dbf"].values
+            self.bedlevel = self.crosssections.loc[:, "gl"].values
+            self.hl = self.crosssections.loc[:, "hl"].values
+            self.cl = self.crosssections.loc[:, "bl"].values
+            self.zl = self.crosssections.loc[:, "zl"].values
+            self.hr = self.crosssections.loc[:, "hr"].values
+            self.cr = self.crosssections.loc[:, "br"].values
+            self.zr = self.crosssections.loc[:, "zr"].values
+            self.mw = self.crosssections.loc[:, "b"].values
+            self.mn = self.crosssections.loc[:, "m"].values
+
+        self.crosssections.index = list(range(len(self.crosssections)))
+        self.lastxs = self.crosssections.loc[len(self.crosssections) - 1, "xsid"]
+        self.firstxs = self.crosssections.loc[0, "xsid"]
+        self.xsname = self.crosssections["xsid"].tolist()
+        self.xsno = len(self.xsname)
+
 
     def read1DResult(
         self,
@@ -3355,8 +3307,8 @@ class Sub(River):
         if not today:
             today = self.Result1D.loc[len(self.Result1D) - 1, "day"]
 
-        start = self.IndexToDate(fromday)
-        end = self.IndexToDate(today + 1)
+        start = self.indexToDate(fromday)
+        end = self.indexToDate(today + 1)
 
         if not isinstance(self.XSHydrographs, DataFrame):
             self.XSHydrographs = pd.DataFrame(
@@ -3372,7 +3324,7 @@ class Sub(River):
         # check if the xsid is in the sub-basin
         if xsid:
             if xsid not in self.xsname:
-                raise ValueError (
+                raise ValueError(
                     f"The given cross-section {xsid} does not exist inside the "
                     f"current Segment of the river, first XS is {self.firstxs}, and last "
                     f"XS is {self.lastxs}"
@@ -3395,25 +3347,43 @@ class Sub(River):
                     + self.RP["HQ2"].tolist()[0]
                 )
         else:
-            self.XSHydrographs[self.lastxs] = self.Result1D.loc[self.Result1D["xs"] == self.lastxs, "q"].values
-            self.XSHydrographs[self.firstxs] = self.Result1D.loc[self.Result1D["xs"] == self.firstxs, "q"].values
+            self.XSHydrographs[self.lastxs] = self.Result1D.loc[
+                self.Result1D["xs"] == self.lastxs, "q"
+            ].values
+            self.XSHydrographs[self.firstxs] = self.Result1D.loc[
+                self.Result1D["xs"] == self.firstxs, "q"
+            ].values
             if xsid:
-                self.XSHydrographs[xsid] = self.Result1D.loc[self.Result1D["xs"] == xsid, "q"].values
+                self.XSHydrographs[xsid] = self.Result1D.loc[
+                    self.Result1D["xs"] == xsid, "q"
+                ].values
 
-        self.XSWaterLevel[self.lastxs] = self.Result1D.loc[self.Result1D["xs"] == self.lastxs, "wl"].values
-        self.XSWaterLevel[self.firstxs] = self.Result1D.loc[self.Result1D["xs"] == self.firstxs, "wl"].values
+        self.XSWaterLevel[self.lastxs] = self.Result1D.loc[
+            self.Result1D["xs"] == self.lastxs, "wl"
+        ].values
+        self.XSWaterLevel[self.firstxs] = self.Result1D.loc[
+            self.Result1D["xs"] == self.firstxs, "wl"
+        ].values
 
-        self.XSWaterDepth[self.lastxs] = self.Result1D.loc[self.Result1D["xs"] == self.lastxs, "h"].values
-        self.XSWaterDepth[self.firstxs] = self.Result1D.loc[self.Result1D["xs"] == self.firstxs, "h"].values
+        self.XSWaterDepth[self.lastxs] = self.Result1D.loc[
+            self.Result1D["xs"] == self.lastxs, "h"
+        ].values
+        self.XSWaterDepth[self.firstxs] = self.Result1D.loc[
+            self.Result1D["xs"] == self.firstxs, "h"
+        ].values
 
         if xsid:
-            self.XSWaterLevel[xsid] = self.Result1D.loc[self.Result1D["xs"] == xsid, "wl"].values
-            self.XSWaterDepth[xsid] = self.Result1D.loc[self.Result1D["xs"] == xsid, "h"].values
+            self.XSWaterLevel[xsid] = self.Result1D.loc[
+                self.Result1D["xs"] == xsid, "wl"
+            ].values
+            self.XSWaterDepth[xsid] = self.Result1D.loc[
+                self.Result1D["xs"] == xsid, "h"
+            ].values
 
         # check the first day in the results and get the date of the first day and last day
         ## create time series
         self.from_beginning = self.Result1D["day"][0]
-        self.firstday = self.IndexToDate(self.from_beginning)
+        self.firstday = self.indexToDate(self.from_beginning)
         # if there are empty days at the beginning the filling missing days is
         # not going to detect it so ignore it here by starting from the first
         # day in the data (data['day'][0]) dataframe empty days at the
@@ -3421,9 +3391,9 @@ class Sub(River):
         # TODO
         # the from_beginning and firstdayresults are exactly the same
         # delete one of them
-        self.firstdayresults = self.IndexToDate(self.Result1D.loc[0, "day"])
+        self.firstdayresults = self.indexToDate(self.Result1D.loc[0, "day"])
         lastday = self.Result1D.loc[self.Result1D.index[-1], "day"]
-        self.lastday = self.IndexToDate(lastday)
+        self.lastday = self.indexToDate(lastday)
 
         # last days+1 as range does not include the last element
         self.daylist = list(
@@ -3589,7 +3559,7 @@ class Sub(River):
             )
 
         if location == 1:
-            self.RRM[station_id] = self.readRRMResults(
+            self.RRM[station_id] = self._readRRMResults(
                 self.version,
                 self.rrmreferenceindex,
                 path,
@@ -3599,7 +3569,7 @@ class Sub(River):
                 date_format,
             )[station_id].tolist()
         else:
-            self.RRM[station_id] = self.readRRMResults(
+            self.RRM[station_id] = self._readRRMResults(
                 self.version,
                 self.rrmreferenceindex,
                 path,
@@ -3608,17 +3578,23 @@ class Sub(River):
                 today,
                 date_format,
             )[station_id].tolist()
-            self.RRM2[station_id] = self.readRRMResults(
-                self.version,
-                self.rrmreferenceindex,
-                path2,
-                station_id,
-                fromday,
-                today,
-                date_format,
-            )[station_id].tolist()
+            try:
+                self.RRM2[station_id] = self._readRRMResults(
+                    self.version,
+                    self.rrmreferenceindex,
+                    path2,
+                    station_id,
+                    fromday,
+                    today,
+                    date_format,
+                )[station_id].tolist()
+            except FileNotFoundError:
+                raise FileNotFoundError(
+                    f"The directory you have given for the location 2 {path2}, is not correct "
+                    f"please check"
+                )
 
-        logger.debug("RRM time series for the gauge " + str(station_id) + " is read")
+        logger.info("RRM time series for the gauge " + str(station_id) + " is read")
 
         if not fromday:
             fromday = 1
@@ -3686,7 +3662,7 @@ class Sub(River):
         # end = self.referenceindex.loc[today,'date']
 
         ind = pd.date_range(
-            self.IndexToDate(fromday), self.IndexToDate(today), freq="D"
+            self.indexToDate(fromday), self.indexToDate(today), freq="D"
         )
 
         if ColumnName == "q" and not hasattr(self, "ResampledQ"):
@@ -3774,9 +3750,7 @@ class Sub(River):
         try:
             # try to open and read the overtopping file
             data = pd.read_csv(
-                self.onedresultpath + str(self.id) + self.leftovertopping_suffix,
-                header=None,
-                delimiter=r"\s+",
+                f"{self.onedresultpath}{self.id}{self.leftovertopping_suffix}", header=None, delimiter=r"\s+",
             )
 
             data.columns = ["day", "hour", "xsid", "q", "wl"]
@@ -3811,9 +3785,7 @@ class Sub(River):
         try:
             # try to open and read the overtopping file
             data = pd.read_csv(
-                self.onedresultpath + str(self.id) + self.rightovertopping_suffix,
-                header=None,
-                delimiter=r"\s+",
+                rf"{self.onedresultpath}\{self.id}{self.rightovertopping_suffix}", header=None, delimiter=r"\s+",
             )
             data.columns = ["day", "hour", "xsid", "q", "wl"]
             # get the days in the sub
@@ -3884,7 +3856,7 @@ class Sub(River):
             self.referenceindex.loc[eventdays[0] : eventdays[-1], "date"]
         ).tolist()
 
-    def saveHydrograph(self, xsid: int, path: str = "", Option: int = 1):
+    def saveHydrograph(self, xsid: int, path: str = None, Option: int = 1):
         """Save Hydrograph. SaveHydrograph method saves the hydrograph of any cross-section in the segment. Mainly the method is created to to be used to save the last cross-section hydrograph to use it as as a boundary condition for the downstream segment.
 
         Parameters
@@ -3902,22 +3874,23 @@ class Sub(River):
         -------
         None.
         """
-        if path == "":
-            if not self.CustomizedRunspath:
+        if not path:
+            if not self.customized_runs_path:
                 raise ValueError(
                     "please enter the value of the customized_runs_path or use the path "
                     "argument to specify where to save the file"
                 )
-            path = self.CustomizedRunspath
+            path = self.customized_runs_path
 
-        saveDS = self.XSHydrographs[xsid].resample("D").last().to_frame()
+        ts = self.XSHydrographs[xsid].resample("D").last().to_frame()
         val = [self.XSHydrographs[xsid][0]] + self.XSHydrographs[xsid].resample(
             "D"
         ).last().values.tolist()[:-1]
-        saveDS[xsid] = val
-        f = pd.DataFrame(index=saveDS.index)
-        f["date"] = ["'" + str(i)[:10] + "'" for i in saveDS.index]
-        f["discharge(m3/s)"] = saveDS
+        ts[xsid] = val
+
+        f = pd.DataFrame(index = ts.index)
+        f["date"] = ["'" + str(i)[:10] + "'" for i in ts.index]
+        f["discharge(m3/s)"] = ts
 
         if Option == 1:
             val = [self.XSWaterDepth[xsid][0]] + self.XSWaterDepth[xsid].resample(
@@ -3930,7 +3903,7 @@ class Sub(River):
             ).last().values.tolist()[:-1]
             f["water level(m)"] = val
 
-        f.to_csv(path + str(self.id) + ".txt", index=False, float_format="%.3f")
+        f.to_csv(f"{path}{self.id}.txt", index=False, float_format="%.3f")
 
     def plotHydrographProgression(
         self,
@@ -4034,7 +4007,7 @@ class Sub(River):
     ):
         """readUSHydrograph.
 
-            Read the hydrograph of the upstream segment.
+            Read the hydrograph of the upstream reaches.
 
         Parameters
         ----------
@@ -4058,7 +4031,7 @@ class Sub(River):
         self.USHydrographs = pd.DataFrame()
 
         if not path:
-            path = self.CustomizedRunspath
+            path = self.customized_runs_path
 
         if len(self.usnode) > 1:
             # there is more than one upstream segment
@@ -4066,7 +4039,7 @@ class Sub(River):
                 for i in range(len(self.usnode)):
                     Nodeid = self.usnode[i]
                     try:
-                        self.USHydrographs[Nodeid] = self.readRRMResults(
+                        self.USHydrographs[Nodeid] = self._readRRMResults(
                             self.version,
                             self.rrmreferenceindex,
                             path,
@@ -4088,7 +4061,7 @@ class Sub(River):
         elif self.usnode:
             Nodeid = self.usnode[0]
             try:
-                self.USHydrographs[Nodeid] = self.readRRMResults(
+                self.USHydrographs[Nodeid] = self._readRRMResults(
                     self.version,
                     self.rrmreferenceindex,
                     path,
@@ -4229,16 +4202,18 @@ class Sub(River):
         Laterals : [dataframe attribute].
             dataframe containing a column for each cross section that has a lateral.
         """
-        if not isinstance(IF.BC, DataFrame):
-            raise ValueError(
-                "the boundary condition does not exist you have to read it first using the "
-                "'ReadBoundaryConditions' method in the interface model"
-            )
-        if not isinstance(IF.Laterals, DataFrame):
-            raise ValueError(
-                "the Laterals does not exist you have to read it first "
-                "using the 'ReadLaterals' method in the interface model"
-            )
+        if hasattr(IF, "BC"):
+            if not isinstance(IF.BC, DataFrame):
+                raise ValueError(
+                    "The boundary condition does not exist you have to read it first using the "
+                    "'ReadBoundaryConditions' method in the interface model"
+                )
+        if hasattr(IF, "Laterals"):
+            if not isinstance(IF.Laterals, DataFrame):
+                raise ValueError(
+                    "The Laterals does not exist you have to read it first "
+                    "using the 'ReadLaterals' method in the interface model"
+                )
 
         if fromday == "":
             fromday = IF.BC.index[0]
@@ -4258,7 +4233,7 @@ class Sub(River):
         if len(bcids) == 0:
             self.BC = False
         elif len(bcids) > 1:
-            raise ValueError("There are more than one BC for this Sub-basin")
+            raise ValueError("There are more than one BC for this Reach-basin")
         else:
             self.BC = IF.BC.loc[fromday:today, bcids[0]].to_frame()
 
@@ -4292,7 +4267,7 @@ class Sub(River):
     def getLaterals(self, xsid: int):
         """GetLaterals.
 
-            GetLaterals method gets the sum of the laterals of all the cross sections in the segment upstream of a given xsid.
+            GetLaterals method gets the sum of the laterals of all the cross sections in the reach upstream of a given xsid.
 
         Parameters
         ----------
@@ -4302,7 +4277,7 @@ class Sub(River):
         Returns
         -------
         dataframe
-            sum of the laterals of all the cross sections in the segment
+            sum of the laterals of all the cross sections in the reach
             upstream of a given xsid.
         """
         if not isinstance(self.LateralsTable, list) and not isinstance(
@@ -4333,16 +4308,18 @@ class Sub(River):
         if not isinstance(self.Laterals, DataFrame):
             raise ValueError("Please read the lateral flows first using the 'GetFlow'")
 
-        if gaugexs not in self.crosssections["xsid"].values:
-            raise ValueError(f"The given XS {gaugexs} does not locate in the current river segment"
-                             f"First XS is {self.firstxs} and "
-                             f"Last XS is {self.lastxs}")
+        if gaugexs not in self.xsname:
+            raise ValueError(
+                f"The given XS {gaugexs} does not locate in the current river reach"
+                f"First XS is {self.firstxs} and "
+                f"Last XS is {self.lastxs}"
+            )
         Laterals = self.getLaterals(gaugexs)
         try:
             s1 = Laterals.index[0]
             e1 = Laterals.index[-1]
         except IndexError:
-            logger.info("there are no laterals for the given segment")
+            logger.info("there are no laterals for the given reach")
             return
 
         if isinstance(self.BC, DataFrame):
@@ -4371,7 +4348,7 @@ class Sub(River):
             logger.info(f"Total flow for the XS-{gaugexs} has been calculated")
         else:
             logger.info(
-                f"The US Hydrograph/BC of the given River segment-{self.id} is not read yet "
+                f"The US Hydrograph/BC of the given River reach-{self.id} is not read yet "
                 "please use the 'ReadUSHydrograph' method to read it"
             )
 
@@ -4405,48 +4382,69 @@ class Sub(River):
 
         return H
 
+    plot_discharge_args = dict(
+        Calib = {"type": Any},
+        gaugexs = {"type": int},
+        start = {"type": str},
+        end = {"type": str},
+        stationname = {"type": int},
+        gaugename = {"type": [str, int]},
+        segment_xs = {"type":  str},
+        plotlaterals = {"type": bool, "default": True},
+        latcolor = {"type": [str, tuple], "default": (0.3, 0, 0)},
+        latorder = {"type": int, "default": 4},
+        latstyle = {"type": int, "default": 9},
+        plotus = {"type": bool, "default": True},
+        ushcolor = {"type": [str, tuple], "default": "grey"},
+        ushorder = {"type": int, "default": 7},
+        ushstyle = {"type": int, "default": 7},
+        plottotal = {"type": bool, "default": True},
+        totalcolor = {"type": [str, tuple], "default": "k"},
+        totalorder = {"type": int, "default": 6},
+        totalstyle = {"type": int, "default": 4},
+        specificxs = {"type": [bool, int], "default": False},
+        xscolor = {"type": [str, tuple], "default": (164 / 255, 70 / 255, 159 / 255)},
+        xsorder = {"type": int, "default": 1},
+        xslinestyle = {"type": int, "default": 3},
+        plotrrm = {"type": bool, "default": True},
+        rrmcolor = {"type": [str, tuple], "default": "green"},
+        rrmorder = {"type": int, "default": 3},
+        rrmlinestyle = {"type": int, "default": 6},
+        rrm2color = {"type": [str, tuple], "default": (227 / 255, 99 / 255, 80 / 255)},
+        rrm2linesytle = {"type": int, "default": 8},
+        plotgauge = {"type": bool, "default": True},
+        gaugecolor = {"type": [str, tuple], "default": "#DC143C"},
+        gaugeorder = {"type": int, "default": 5},
+        gaugestyle = {"type": int, "default": 7},
+        hmcolor = {"type": [str, tuple], "default": "#004c99"},
+        hmorder = {"type": int, "default": 6},
+        linewidth = {"type": int, "default": 4},
+        figsize = {"type": tuple, "default": (6, 5)},
+        fmt = {"type": str, "default": "%Y-%m-%d"},
+        xlabels = {"type": [bool, int, list], "default": False},
+        ylabels = {"type": [bool, int, list], "default": False},
+        # plotRRMProgression
+        plothm = {"type": bool, "default": True},
+        rrmlinesytle = {"type": int, "default": 8},
+        # plotWL
+        hmstyle = {"type": int, "default": 6},
+        legendsize = {"type": Union[int, float], "default": 15},
+        nxlabels = {"type": int, "default": 4},
+
+    )
+
+    @class_method_parse(plot_discharge_args)
     def plotQ(
-        self,
-        Calib,
-        gaugexs: int,
-        start: str,
-        end: str,
-        stationname: int,
-        gaugename: Union[str, int],
-        segment_xs: str,
-        plotlaterals: bool = True,
-        latcolor: Union[str, tuple] = (0.3, 0, 0),
-        latorder: int = 4,
-        latstyle: int = 9,
-        plotus: bool = True,
-        ushcolor: Union[str, tuple] = "grey",
-        ushorder: int = 7,
-        ushstyle: int = 7,
-        plottotal: bool = True,
-        totalcolor: Union[str, tuple] = "k",
-        totalorder: int = 6,
-        totalstyle: int = 4,
-        specificxs: Union[bool, int] = False,
-        xscolor: Union[str, tuple] = (164 / 255, 70 / 255, 159 / 255),
-        xsorder: int = 1,
-        xslinestyle: int = 3,
-        plotrrm: bool = True,
-        rrmcolor: Union[str, tuple] = "green",
-        rrmorder: int = 3,
-        rrmlinestyle: int = 6,
-        rrm2color: Union[str, tuple] = (227 / 255, 99 / 255, 80 / 255),
-        rrm2linesytle: int = 8,
-        plotgauge: bool = True,
-        gaugecolor: Union[str, tuple] = "#DC143C",
-        gaugeorder: int = 5,
-        gaugestyle: int = 7,
-        hmcolor: Union[str, tuple] = "#004c99",
-        hmorder: int = 6,
-        linewidth: int = 4,
-        figsize: tuple = (6, 5),
-        fmt: str = "%Y-%m-%d",
-        xlabels: Union[bool, int, list] = False,
-        ylabels: Union[bool, int, list] = False,
+            self,
+            Calib,
+            gaugexs: int,
+            start: str,
+            end: str,
+            stationname: int,
+            gaugename: Union[str, int],
+            segment_xs: str,
+            *args,
+            **kwargs
     ):
         """PlotQ.
 
@@ -4469,72 +4467,73 @@ class Sub(River):
             DESCRIPTION.
         segment_xs : TYPE
             DESCRIPTION.
-        plotlaterals : TYPE, optional
-            DESCRIPTION. The default is True.
-        plotus : TYPE, optional
-            DESCRIPTION. The default is True.
-        specificxs : TYPE, optional
-            DESCRIPTION. The default is False.
-        plotrrm : TYPE, optional
-            DESCRIPTION. The default is True.
-        plotgauge : TYPE, optional
-            DESCRIPTION. The default is True.
-        hmcolor : TYPE, optional
-            DESCRIPTION. The default is "#004c99".
-        gaugecolor : TYPE, optional
-            DESCRIPTION. The default is "#DC143C".
-        rrmcolor : TYPE, optional
-            DESCRIPTION. The default is "green".
-        latcolor : TYPE, optional
-            DESCRIPTION. The default is (0.3,0,0).
-        xscolor : TYPE, optional
-            DESCRIPTION. The default is "grey".
-        linewidth : TYPE, optional
-            DESCRIPTION. The default is 4.
-        hmorder : TYPE, optional
-            DESCRIPTION. The default is 6.
-        gaugeorder : TYPE, optional
-            DESCRIPTION. The default is 5.
-        rrmorder : TYPE, optional
-            DESCRIPTION. The default is 4.
-        ushorder : TYPE, optional
-            DESCRIPTION. The default is 2.
-        xsorder : TYPE, optional
-            DESCRIPTION. The default is 1.
-        fmt: [string]
-            format of the date. fmt="%Y-%m-%d %H:%M:%S"
-        xlabels : [bool, int], optional
-            DESCRIPTION. The default is False.
-        ylabels : [bool, int], optional
-            DESCRIPTION. The default is False.
-        rrm2color: []
-            Description
-        gaugestyle: []
-            Description
-        rrm2linesytle: []
-            Description
-        ushstyle: []
-            Description
-        xslinestyle: []
-            Description
-        latorder: []
-            Description
-        ushcolor: []
-            Description
-        latstyle: []
-            Description
-        plottotal: [bool]
-            default is True.
-        totalcolor: [str, tuple]
-            default is "k".
-        totalorder: [int]
-            default is 6.
-        totalstyle: [int]
-            default is 4.
-        rrmlinestyle: [int]
-            default is 6.
-        figsize: [tuple]
-            default is (6, 5).
+        kwargs:
+            plotlaterals : TYPE, optional
+                DESCRIPTION. The default is True.
+            plotus : TYPE, optional
+                DESCRIPTION. The default is True.
+            specificxs : TYPE, optional
+                DESCRIPTION. The default is False.
+            plotrrm : TYPE, optional
+                DESCRIPTION. The default is True.
+            plotgauge : TYPE, optional
+                DESCRIPTION. The default is True.
+            hmcolor : TYPE, optional
+                DESCRIPTION. The default is "#004c99".
+            gaugecolor : TYPE, optional
+                DESCRIPTION. The default is "#DC143C".
+            rrmcolor : TYPE, optional
+                DESCRIPTION. The default is "green".
+            latcolor : TYPE, optional
+                DESCRIPTION. The default is (0.3,0,0).
+            xscolor : TYPE, optional
+                DESCRIPTION. The default is "grey".
+            linewidth : TYPE, optional
+                DESCRIPTION. The default is 4.
+            hmorder : TYPE, optional
+                DESCRIPTION. The default is 6.
+            gaugeorder : TYPE, optional
+                DESCRIPTION. The default is 5.
+            rrmorder : TYPE, optional
+                DESCRIPTION. The default is 4.
+            ushorder : TYPE, optional
+                DESCRIPTION. The default is 2.
+            xsorder : TYPE, optional
+                DESCRIPTION. The default is 1.
+            fmt: [string]
+                format of the date. fmt="%Y-%m-%d %H:%M:%S"
+            xlabels : [bool, int], optional
+                DESCRIPTION. The default is False.
+            ylabels : [bool, int], optional
+                DESCRIPTION. The default is False.
+            rrm2color: []
+                Description
+            gaugestyle: []
+                Description
+            rrm2linesytle: []
+                Description
+            ushstyle: []
+                Description
+            xslinestyle: []
+                Description
+            latorder: []
+                Description
+            ushcolor: []
+                Description
+            latstyle: []
+                Description
+            plottotal: [bool]
+                default is True.
+            totalcolor: [str, tuple]
+                default is "k".
+            totalorder: [int]
+                default is 6.
+            totalstyle: [int]
+                default is 4.
+            rrmlinestyle: [int]
+                default is 6.
+            figsize: [tuple]
+                default is (6, 5).
 
         Returns
         -------
@@ -4543,10 +4542,10 @@ class Sub(River):
         ax : TYPE
             DESCRIPTION.
         """
-        start = dt.datetime.strptime(start, fmt)
-        end = dt.datetime.strptime(end, fmt)
+        start = dt.datetime.strptime(start, self.fmt)
+        end = dt.datetime.strptime(end, self.fmt)
 
-        fig, ax = plt.subplots(ncols=1, nrows=1, figsize=figsize)
+        fig, ax = plt.subplots(ncols=1, nrows=1, figsize=self.figsize)
 
         if self.XSHydrographs is not None:
             # plot if you read the results using ther read1DResults
@@ -4554,18 +4553,18 @@ class Sub(River):
                 ax.plot(
                     self.XSHydrographs.loc[start:end, gaugexs],
                     label="RIM",
-                    zorder=hmorder,
-                    linewidth=linewidth,
+                    zorder=self.hmorder,
+                    linewidth=self.linewidth,
                     linestyle=V.LineStyle(6),
-                    color=hmcolor,
+                    color=self.hmcolor,
                 )
             except KeyError:
                 logger.debug(
-                    f"the xs given -{gaugexs} - does not exist in the river segment"
+                    f"the xs given -{gaugexs} - does not exist in the river reach"
                 )
 
             # laterals
-            if plotlaterals:
+            if self.plotlaterals:
                 try:
                     Laterals = self.getLaterals(gaugexs)
                 except AssertionError:
@@ -4577,47 +4576,47 @@ class Sub(River):
                     ax.plot(
                         self.BC.loc[start:end, self.BC.columns[0]],
                         label="BC",
-                        zorder=ushorder,
-                        linewidth=linewidth,
-                        linestyle=V.LineStyle(ushstyle),
-                        color=ushcolor,
+                        zorder=self.ushorder,
+                        linewidth=self.linewidth,
+                        linestyle=V.LineStyle(self.ushstyle),
+                        color=self.ushcolor,
                     )
                 # Laterals
                 if isinstance(self.LateralsTable, list) and len(self.LateralsTable) > 0:
                     ax.plot(
                         Laterals.loc[start:end, 0],
                         label="Laterals",
-                        zorder=latorder,
-                        linewidth=linewidth,
-                        linestyle=V.LineStyle(latstyle),
-                        color=latcolor,
+                        zorder=self.latorder,
+                        linewidth=self.linewidth,
+                        linestyle=V.LineStyle(self.latstyle),
+                        color=self.latcolor,
                     )
-                if plottotal:
+                if self.plottotal:
                     # total flow
                     try:
                         ax.plot(
                             self.TotalFlow.loc[start:end, "total"],
                             label="US/BC + Laterals",
-                            zorder=totalorder,
-                            linewidth=linewidth,
-                            linestyle=V.LineStyle(totalstyle),
-                            color=totalcolor,
+                            zorder=self.totalorder,
+                            linewidth=self.linewidth,
+                            linestyle=V.LineStyle(self.totalstyle),
+                            color=self.totalcolor,
                         )
                     except AttributeError:
                         logger.debug(
-                            "there are no totalFlow for this segment please use the 'GetTotalFlow' method to create it"
+                            "there are no totalFlow for this reach please use the 'GetTotalFlow' method to create it"
                         )
 
             # US hydrograph
-            if self.usnode != [] and plotus:
+            if self.usnode != [] and self.plotus:
                 try:
                     ax.plot(
                         self.USHydrographs.loc[start:end, "total"],
                         label="US Hydrograph",
-                        zorder=ushorder,
-                        linewidth=linewidth,
-                        linestyle=V.LineStyle(ushstyle),
-                        color=ushcolor,
+                        zorder=self.ushorder,
+                        linewidth=self.linewidth,
+                        linestyle=V.LineStyle(self.ushstyle),
+                        color=self.ushcolor,
                     )
                 except KeyError:
                     msg = (
@@ -4628,41 +4627,41 @@ class Sub(River):
                     logger.debug(msg)
 
             # Gauge
-            if plotgauge:
+            if self.plotgauge:
                 # plot the gauge data
                 ax.plot(
                     Calib.q_gauges.loc[start:end, stationname],
                     label="Gauge",
-                    linewidth=linewidth,
-                    zorder=gaugeorder,
-                    color=gaugecolor,
-                    linestyle=V.LineStyle(gaugestyle),
+                    linewidth=self.linewidth,
+                    zorder=self.gaugeorder,
+                    color=self.gaugecolor,
+                    linestyle=V.LineStyle(self.gaugestyle),
                 )
 
             # specific XS
-            if not isinstance(specificxs, bool):
+            if not isinstance(self.specificxs, bool):
                 # first extract the time series of the given xs
-                self.read1DResult(xsid=specificxs)
+                self.read1DResult(xsid=self.specificxs)
                 # plot the xs
                 ax.plot(
-                    self.XSHydrographs.loc[start:end, specificxs],
-                    label="XS-" + str(specificxs),
-                    zorder=xsorder,
-                    linewidth=linewidth,
-                    color=xscolor,
-                    linestyle=V.LineStyle(xslinestyle),
+                    self.XSHydrographs.loc[start:end, self.specificxs],
+                    label="XS-" + str(self.specificxs),
+                    zorder=self.xsorder,
+                    linewidth=self.linewidth,
+                    color=self.xscolor,
+                    linestyle=V.LineStyle(self.xslinestyle),
                 )
             # RRM
-            if plotrrm:
+            if self.plotrrm:
                 if isinstance(self.RRM, DataFrame):
                     try:
                         ax.plot(
                             self.RRM.loc[start:end, stationname],
                             label="mHM-RIM Loc",
-                            zorder=rrmorder,
-                            linewidth=linewidth,
-                            linestyle=V.LineStyle(rrmlinestyle),
-                            color=rrmcolor,
+                            zorder=self.rrmorder,
+                            linewidth=self.linewidth,
+                            linestyle=V.LineStyle(self.rrmlinestyle),
+                            color=self.rrmcolor,
                         )
                     except KeyError:
                         logger.debug(
@@ -4674,10 +4673,10 @@ class Sub(River):
                         ax.plot(
                             self.RRM2.loc[start:end, stationname],
                             label="mHM-mHM Loc",
-                            zorder=rrmorder,
-                            linewidth=linewidth,
-                            linestyle=V.LineStyle(rrm2linesytle),
-                            color=rrm2color,
+                            zorder=self.rrmorder,
+                            linewidth=self.linewidth,
+                            linestyle=V.LineStyle(self.rrm2linesytle),
+                            color=self.rrm2color,
                         )
                     except KeyError:
                         logger.debug(
@@ -4690,9 +4689,9 @@ class Sub(River):
                 Calib.CalibrationQ[segment_xs],
                 label="RIM",
                 zorder=3,
-                linewidth=linewidth,
+                linewidth=self.linewidth,
                 linestyle=V.LineStyle(6),
-                color=hmcolor,
+                color=self.hmcolor,
             )
             # plot the gauge data
             ax.plot(
@@ -4701,10 +4700,10 @@ class Sub(River):
                     stationname,
                 ],
                 label="Gauge-" + str(self.id),
-                linewidth=linewidth,
-                color=gaugecolor,
+                linewidth=self.linewidth,
+                color=self.gaugecolor,
             )
-            if plotrrm:
+            if self.plotrrm:
                 ax.plot(
                     self.RRM.loc[
                         Calib.CalibrationQ.index[0] : Calib.CalibrationQ.index[-1],
@@ -4713,27 +4712,27 @@ class Sub(River):
                     label="RRM",
                 )
 
-        if not isinstance(xlabels, bool):
+        if not isinstance(self.xlabels, bool):
             start, end = ax.get_xlim()
-            if isinstance(xlabels, int):
-                ax.xaxis.set_ticks(np.linspace(start, end, xlabels))
+            if isinstance(self.xlabels, int):
+                ax.xaxis.set_ticks(np.linspace(start, end, self.xlabels))
             else:
-                start = self.round(start, xlabels[0])
-                end = self.round(end, xlabels[0])
+                start = self.round(start, self.xlabels[0])
+                end = self.round(end, self.xlabels[0])
 
-                ax.yaxis.set_ticks(np.arange(start, end, xlabels[0]))
+                ax.yaxis.set_ticks(np.arange(start, end, self.xlabels[0]))
 
-        if not isinstance(ylabels, bool):
+        if not isinstance(self.ylabels, bool):
             start, end = ax.get_ylim()
-            if isinstance(ylabels, int):
+            if isinstance(self.ylabels, int):
                 if start < 0:
                     start = 0
-                ax.yaxis.set_ticks(np.linspace(start, end, ylabels))
+                ax.yaxis.set_ticks(np.linspace(start, end, self.ylabels))
             else:
-                start = self.round(start, ylabels[0])
-                end = self.round(end, ylabels[0])
+                start = self.round(start, self.ylabels[0])
+                end = self.round(end, self.ylabels[0])
 
-                ax.yaxis.set_ticks(np.arange(start, end, ylabels[0]))
+                ax.yaxis.set_ticks(np.arange(start, end, self.ylabels[0]))
 
         ax.set_title("Discharge - " + gaugename, fontsize=20)
 
@@ -4744,34 +4743,38 @@ class Sub(River):
 
         return fig, ax
 
+
+    @class_method_parse(plot_discharge_args)
     def plotRRMProgression(
-        self,
-        specificxs,
-        start,
-        end,
-        plotlaterals: bool = True,
-        latcolor: Union[str, tuple] = (0.3, 0, 0),
-        latorder: int = 4,
-        latstyle: int = 9,
-        plotus: bool = True,
-        ushcolor: Union[str, tuple] = "grey",
-        ushorder: int = 7,
-        ushstyle: int = 7,
-        plottotal: bool = True,
-        totalcolor: Union[str, tuple] = "k",
-        totalorder: int = 6,
-        totalstyle: int = 11,
-        rrmorder: int = 3,
-        rrmcolor: Union[str, tuple] = (227 / 255, 99 / 255, 80 / 255),
-        plothm: bool = True,
-        hmorder: int = 6,
-        hmcolor: Union[str, tuple] = "#004c99",
-        rrmlinesytle: int = 8,
-        linewidth=4,
-        figsize: tuple = (6, 5),
-        fmt: str = "%Y-%m-%d",
-        xlabels: Union[int, bool, list] = False,
-        ylabels: Union[int, bool, list] = False,
+            self,
+            specificxs,
+            start,
+            end,
+            *args,
+            **kwargs
+        # plotlaterals: bool = True,
+        # latcolor: Union[str, tuple] = (0.3, 0, 0),
+        # latorder: int = 4,
+        # latstyle: int = 9,
+        # plotus: bool = True,
+        # ushcolor: Union[str, tuple] = "grey",
+        # ushorder: int = 7,
+        # ushstyle: int = 7,
+        # plottotal: bool = True,
+        # totalcolor: Union[str, tuple] = "k",
+        # totalorder: int = 6,
+        # totalstyle: int = 11,
+        # rrmorder: int = 3,
+        # rrmcolor: Union[str, tuple] = (227 / 255, 99 / 255, 80 / 255),
+        # plothm: bool = True,
+        # hmorder: int = 6,
+        # hmcolor: Union[str, tuple] = "#004c99",
+        # rrmlinesytle: int = 8,
+        # linewidth=4,
+        # figsize: tuple = (6, 5),
+        # fmt: str = "%Y-%m-%d",
+        # xlabels: Union[int, bool, list] = False,
+        # ylabels: Union[int, bool, list] = False,
     ):
         """PlotRRMProgression.
 
@@ -4786,54 +4789,55 @@ class Sub(River):
             start date of the plot.
         end : [string]
             end date of the plot.
-        plotlaterals : TYPE, optional
-            DESCRIPTION. The default is True.
-        plotus : TYPE, optional
-            DESCRIPTION. The default is True.
-        specificxs : TYPE, optional
-            DESCRIPTION. The default is False.
-        hmcolor : TYPE, optional
-            DESCRIPTION. The default is "#004c99".
-        rrmcolor : TYPE, optional
-            DESCRIPTION. The default is "green".
-        latcolor : TYPE, optional
-            DESCRIPTION. The default is (0.3,0,0).
-        linewidth : TYPE, optional
-            DESCRIPTION. The default is 4.
-        hmorder : TYPE, optional
-            DESCRIPTION. The default is 6.
-        rrmorder : TYPE, optional
-            DESCRIPTION. The default is 4.
-        ushorder : TYPE, optional
-            DESCRIPTION. The default is 2.
-        fmt: [string]
-            format of the date. fmt="%Y-%m-%d %H:%M:%S"
-        ushstyle: []
-            Description
-        latorder: []
-            Description
-        ushcolor: []
-            Description
-        latstyle: []
-            Description
-        xlabels: [int, bool]
-            default is False.
-        ylabels: [int, bool]
-            default is False.
-        figsize: [tuple]
-            default is (6, 5).
-        rrmlinesytle: [int]
-            default is 8
-        plottotal: [bool]
-            default is True.
-        totalcolor: [str, tuple]
-            default is "k".
-        totalorder: [int]
-            default is 6.
-        totalstyle: [int]
-            default is 11.
-        plothm: [bool]
-            default is True.
+        kwargs:
+            plotlaterals : TYPE, optional
+                DESCRIPTION. The default is True.
+            plotus : TYPE, optional
+                DESCRIPTION. The default is True.
+            specificxs : TYPE, optional
+                DESCRIPTION. The default is False.
+            hmcolor : TYPE, optional
+                DESCRIPTION. The default is "#004c99".
+            rrmcolor : TYPE, optional
+                DESCRIPTION. The default is "green".
+            latcolor : TYPE, optional
+                DESCRIPTION. The default is (0.3,0,0).
+            linewidth : TYPE, optional
+                DESCRIPTION. The default is 4.
+            hmorder : TYPE, optional
+                DESCRIPTION. The default is 6.
+            rrmorder : TYPE, optional
+                DESCRIPTION. The default is 4.
+            ushorder : TYPE, optional
+                DESCRIPTION. The default is 2.
+            fmt: [string]
+                format of the date. fmt="%Y-%m-%d %H:%M:%S"
+            ushstyle: []
+                Description
+            latorder: []
+                Description
+            ushcolor: []
+                Description
+            latstyle: []
+                Description
+            xlabels: [int, bool]
+                default is False.
+            ylabels: [int, bool]
+                default is False.
+            figsize: [tuple]
+                default is (6, 5).
+            rrmlinesytle: [int]
+                default is 8
+            plottotal: [bool]
+                default is True.
+            totalcolor: [str, tuple]
+                default is "k".
+            totalorder: [int]
+                default is 6.
+            totalstyle: [int]
+                default is 11.
+            plothm: [bool]
+                default is True.
 
         Returns
         -------
@@ -4842,13 +4846,13 @@ class Sub(River):
         ax : TYPE
             DESCRIPTION.
         """
-        start = dt.datetime.strptime(start, fmt)
-        end = dt.datetime.strptime(end, fmt)
+        start = dt.datetime.strptime(start, self.fmt)
+        end = dt.datetime.strptime(end, self.fmt)
 
-        fig, ax = plt.subplots(ncols=1, nrows=1, figsize=figsize)
+        fig, ax = plt.subplots(ncols=1, nrows=1, figsize=self.figsize)
 
         # laterals
-        if plotlaterals:
+        if self.plotlaterals:
             Laterals = self.getLaterals(specificxs)
 
             # BC
@@ -4856,56 +4860,56 @@ class Sub(River):
                 ax.plot(
                     self.BC.loc[start:end, self.BC.columns[0]],
                     label="BC",
-                    zorder=ushorder,
-                    linewidth=linewidth,
-                    linestyle=V.LineStyle(ushstyle),
-                    color=ushcolor,
+                    zorder=self.ushorder,
+                    linewidth=self.linewidth,
+                    linestyle=V.LineStyle(self.ushstyle),
+                    color=self.ushcolor,
                 )
             # Laterals
             if len(self.LateralsTable) > 0:
                 ax.plot(
                     Laterals.loc[start:end, 0],
                     label="Laterals Sum \n up to - XS-" + str(specificxs),
-                    zorder=latorder,
-                    linewidth=linewidth,
-                    linestyle=V.LineStyle(latstyle),
-                    color=latcolor,
+                    zorder=self.latorder,
+                    linewidth=self.linewidth,
+                    linestyle=V.LineStyle(self.latstyle),
+                    color=self.latcolor,
                 )
-            if plottotal:
+            if self.plottotal:
                 # total flow
                 self.getTotalFlow(specificxs)
                 ax.plot(
                     self.TotalFlow.loc[start:end, "total"],
                     label="US/BC \n+ Laterals",
-                    zorder=totalorder,
-                    linewidth=linewidth,
-                    linestyle=V.LineStyle(totalstyle),
-                    color=totalcolor,
+                    zorder=self.totalorder,
+                    linewidth=self.linewidth,
+                    linestyle=V.LineStyle(self.totalstyle),
+                    color=self.totalcolor,
                 )
 
         # US hydrograph
-        if self.usnode != [] and plotus:
+        if self.usnode != [] and self.plotus:
             ax.plot(
                 self.USHydrographs.loc[start:end, "total"],
                 label="US Hydrograph",
-                zorder=ushorder,
-                linewidth=linewidth,
-                linestyle=V.LineStyle(ushstyle),
-                color=ushcolor,
+                zorder=self.ushorder,
+                linewidth=self.linewidth,
+                linestyle=V.LineStyle(self.ushstyle),
+                color=self.ushcolor,
             )
 
         # specific XS
-        if plothm:
+        if self.plothm:
             # first extract the time series of the given xs
             self.read1DResult(xsid=specificxs)
             # plot the xs
             ax.plot(
                 self.XSHydrographs.loc[start:end, specificxs],
                 label="RIM",
-                zorder=hmorder,
-                linewidth=linewidth,
+                zorder=self.hmorder,
+                linewidth=self.linewidth,
                 linestyle=V.LineStyle(6),
-                color=hmcolor,
+                color=self.hmcolor,
             )
         # RRM
         # if plotrrm:
@@ -4914,10 +4918,10 @@ class Sub(River):
                 ax.plot(
                     self.RRMProgression.loc[start:end, specificxs],
                     label="mHM",
-                    zorder=rrmorder,
-                    linewidth=linewidth,
-                    linestyle=V.LineStyle(rrmlinesytle),
-                    color=rrmcolor,
+                    zorder=self.rrmorder,
+                    linewidth=self.linewidth,
+                    linestyle=V.LineStyle(self.rrmlinesytle),
+                    color=self.rrmcolor,
                 )
             except KeyError:
                 logger.debug(
@@ -4930,22 +4934,22 @@ class Sub(River):
             )
             logger.debug(msg)
 
-        if type(xlabels) != bool:
+        if type(self.xlabels) != bool:
             start, end = ax.get_xlim()
-            if type(xlabels) == int:
-                ax.xaxis.set_ticks(np.linspace(start, end, xlabels))
+            if type(self.xlabels) == int:
+                ax.xaxis.set_ticks(np.linspace(start, end, self.xlabels))
 
-        if type(ylabels) != bool:
+        if type(self.ylabels) != bool:
             start, end = ax.get_ylim()
-            if type(ylabels) == int:
+            if type(self.ylabels) == int:
                 if start < 0:
                     start = 0
-                ax.yaxis.set_ticks(np.linspace(start, end, ylabels))
+                ax.yaxis.set_ticks(np.linspace(start, end, self.ylabels))
             else:
-                start = self.round(start, ylabels[0])
-                end = self.round(end, ylabels[0])
+                start = self.round(start, self.ylabels[0])
+                end = self.round(end, self.ylabels[0])
 
-                ax.yaxis.set_ticks(np.arange(start, end, ylabels[0]))
+                ax.yaxis.set_ticks(np.arange(start, end, self.ylabels[0]))
 
         ax.set_title("XS - " + str(specificxs), fontsize=20)
 
@@ -5001,11 +5005,11 @@ class Sub(River):
         QHM = pd.DataFrame()
 
         try:
-            GaugeStart = Calib.hm_gauges[Calib.hm_gauges["xsid"] == gaugexs][
-                "Qstart"
+            GaugeStart = Calib.hm_gauges.loc[
+                Calib.hm_gauges["xsid"] == gaugexs, "Qstart"
             ].values[0]
-            GaugeEnd = Calib.hm_gauges[Calib.hm_gauges["xsid"] == gaugexs][
-                "Qend"
+            GaugeEnd = Calib.hm_gauges.loc[
+                Calib.hm_gauges["xsid"] == gaugexs, "Qend"
             ].values[0]
         except IndexError:
             logger.debug("The XS you provided does not exist in the hm_gauges")
@@ -5014,8 +5018,7 @@ class Sub(River):
         if Filter:
             start = dt.datetime.strptime(start, fmt)
             end = dt.datetime.strptime(end, fmt)
-            # get the latest date of the filter date and the first date in
-            # the result
+            # get the latest date of the filter date and the first date in the result
             # get the earliest date of the end and the last date in the result
             st2 = max(GaugeStart, start, self.firstdayresults)
             end2 = min(GaugeEnd, end, self.lastday)
@@ -5073,6 +5076,8 @@ class Sub(River):
 
         return rmse, kge, wb, nsehf, nse
 
+
+    @class_method_parse(plot_discharge_args)
     def plotWL(
         self,
         Calib,
@@ -5081,18 +5086,20 @@ class Sub(River):
         gaugexs: int,
         stationname: str,
         gaugename: str,
-        gaugecolor: Union[tuple, str] = "#DC143C",
-        hmcolor: Union[tuple, str] = "#004c99",
-        linewidth: Union[int, float] = 2,
-        hmorder: int = 1,
-        gaugeorder: int = 0,
-        hmstyle: int = 6,
-        gaugestyle: int = 0,
-        plotgauge=True,
-        fmt: str = "%Y-%m-%d",
-        legendsize: Union[int, float] = 15,
-        figsize: tuple = (6, 5),
-        nxlabels: int = 4,
+            *args,
+            **kwargs,
+        # gaugecolor: Union[tuple, str] = "#DC143C",
+        # hmcolor: Union[tuple, str] = "#004c99",
+        # linewidth: Union[int, float] = 2,
+        # hmorder: int = 1,
+        # gaugeorder: int = 0,
+        # hmstyle: int = 6,
+        # gaugestyle: int = 0,
+        # plotgauge=True,
+        # fmt: str = "%Y-%m-%d",
+        # legendsize: Union[int, float] = 15,
+        # figsize: tuple = (6, 5),
+        # nxlabels: int = 4,
     ):
         """Plot water level surface.
 
@@ -5112,39 +5119,40 @@ class Sub(River):
             DESCRIPTION.
         gaugename : TYPE
             DESCRIPTION.
-        gaugecolor : TYPE, optional
-            DESCRIPTION. The default is "#DC143C".
-        hmcolor : TYPE, optional
-            DESCRIPTION. The default is "#004c99".
-        linewidth : TYPE, optional
-            DESCRIPTION. The default is 2.
-        hmorder : TYPE, optional
-            DESCRIPTION. The default is 1.
-        gaugeorder : TYPE, optional
-            DESCRIPTION. The default is 0.
-        plotgauge : TYPE, optional
-            DESCRIPTION. The default is True.
-        fmt: [string]
-            format of the date. fmt="%Y-%m-%d %H:%M:%S"
-        hmstyle: [int]
-            default is 6
-        gaugestyle: [int]
-            default is 0.
-        legendsize: [int, float]
-            default is 15.
-        figsize: tuple=(6, 5),
-        nxlabels: [int]
-            default is 4.
+        kwargs:
+            gaugecolor : TYPE, optional
+                DESCRIPTION. The default is "#DC143C".
+            hmcolor : TYPE, optional
+                DESCRIPTION. The default is "#004c99".
+            linewidth : TYPE, optional
+                DESCRIPTION. The default is 2.
+            hmorder : TYPE, optional
+                DESCRIPTION. The default is 1.
+            gaugeorder : TYPE, optional
+                DESCRIPTION. The default is 0.
+            plotgauge : TYPE, optional
+                DESCRIPTION. The default is True.
+            fmt: [string]
+                format of the date. fmt="%Y-%m-%d %H:%M:%S"
+            hmstyle: [int]
+                default is 6
+            gaugestyle: [int]
+                default is 0.
+            legendsize: [int, float]
+                default is 15.
+            figsize: tuple=(6, 5),
+            nxlabels: [int]
+                default is 4.
 
         Returns
         -------
         ax : TYPE
             DESCRIPTION.
         """
-        start = dt.datetime.strptime(start, fmt)
-        end = dt.datetime.strptime(end, fmt)
+        start = dt.datetime.strptime(start, self.fmt)
+        end = dt.datetime.strptime(end, self.fmt)
 
-        if plotgauge:
+        if self.plotgauge:
 
             GaugeStart = Calib.hm_gauges[Calib.hm_gauges["xsid"] == gaugexs]["WLstart"]
             GaugeEnd = Calib.hm_gauges[Calib.hm_gauges["xsid"] == gaugexs]["WLend"]
@@ -5169,7 +5177,7 @@ class Sub(River):
                 logger.debug("The XS you provided does not exist in the hm_gauges")
                 plotgauge = False
 
-        fig, ax = plt.subplots(ncols=1, nrows=1, figsize=figsize)
+        fig, ax = plt.subplots(ncols=1, nrows=1, figsize=self.figsize)
 
         # extract the water levels at the gauge cross section
         self.extractXS(gaugexs)
@@ -5177,27 +5185,27 @@ class Sub(River):
         ax.plot(
             self.XSWaterLevel.loc[start:end, gaugexs],
             label="RIM",
-            zorder=hmorder,
-            linewidth=linewidth,
-            color=hmcolor,
-            linestyle=V.LineStyle(hmstyle),
+            zorder=self.hmorder,
+            linewidth=self.linewidth,
+            color=self.hmcolor,
+            linestyle=V.LineStyle(self.hmstyle),
         )
 
-        if plotgauge:
+        if self.plotgauge:
             ax.plot(
                 Calib.WLGauges.loc[start:end, stationname],
                 label="Gauge",
-                zorder=gaugeorder,
-                linewidth=linewidth,
-                color=gaugecolor,
-                linestyle=V.LineStyle(gaugestyle),
+                zorder=self.gaugeorder,
+                linewidth=self.linewidth,
+                color=self.gaugecolor,
+                linestyle=V.LineStyle(self.gaugestyle),
             )
 
         start, end = ax.get_xlim()
-        ax.xaxis.set_ticks(np.linspace(start, end, nxlabels))
+        ax.xaxis.set_ticks(np.linspace(start, end, self.nxlabels))
 
         ax.set_title("Water Level - " + gaugename, fontsize=20)
-        plt.legend(fontsize=legendsize)
+        plt.legend(fontsize=self.legendsize)
         ax.set_xlabel("Time", fontsize=15)
         ax.set_ylabel("Water Level m", fontsize=15)
         plt.tight_layout()
@@ -5231,7 +5239,7 @@ class Sub(River):
             return
 
         if isinstance(GaugeStart, int):
-            logger.debug("No water level data for this river segment")
+            logger.debug("No water level data for this river reach")
             return
 
         if Filter:
@@ -5319,7 +5327,7 @@ class Sub(River):
     ):
         """Histogram.
 
-        Histogram Extracts the values that are located in the same location in the BaseMap as the Sub-basin
+        Histogram Extracts the values that are located in the same location in the BaseMap as the Reach-basin
 
         :param Day:
         :param BaseMapF:

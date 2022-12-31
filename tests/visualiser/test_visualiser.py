@@ -33,7 +33,7 @@ def test_GroundSurface(
     River.readXS(river_cross_section_path)
     River.readRiverNetwork(river_network_path)
     River.onedresultpath = Read1DResult_path
-    Sub = R.Sub(segment3, River)
+    Sub = R.Reach(segment3, River)
 
     IF = Interface("Rhine", start=dates[0])
     IF.readBoundaryConditionsTable(interface_bc_path)
@@ -77,7 +77,7 @@ def test_CrossSections(
     River.readXS(river_cross_section_path)
     River.readRiverNetwork(river_network_path)
     River.onedresultpath = Read1DResult_path
-    Sub = R.Sub(segment3, River)
+    Sub = R.Reach(segment3, River)
     Vis = V(resolution="Hourly")
 
     fig, ax = Vis.CrossSections(
@@ -117,7 +117,7 @@ def test_CrossSections(
 #     River.RiverNetwork(river_network_path)
 #     River.onedresultpath = Read1DResult_path
 #     River.usbcpath = usbc_path
-#     Sub = R.Sub(segment3, River)
+#     Reach = R.Reach(segment3, River)
 #
 #     IF = Interface('Rhine', start=dates[0])
 #     IF.ReadBoundaryConditionsTable(interface_bc_path)
@@ -127,12 +127,12 @@ def test_CrossSections(
 #     IF.ReadLateralsTable(interface_Laterals_table_path)
 #     IF.ReadLaterals(path=interface_Laterals_folder, date_format=interface_Laterals_date_format)
 #
-#     Sub.GetFlow(IF)
-#     Sub.Read1DResult()
-#     Sub.ReadBoundaryConditions(start=dates[0], end=dates[1])
+#     Reach.GetFlow(IF)
+#     Reach.Read1DResult()
+#     Reach.ReadBoundaryConditions(start=dates[0], end=dates[1])
 #
 #     Vis = V(resolution="Hourly")
-#     Anim = Vis.WaterSurfaceProfile(Sub, animate_start, animate_end, fps=2, nxlabels=5,
+#     Anim = Vis.WaterSurfaceProfile(Reach, animate_start, animate_end, fps=2, nxlabels=5,
 #                                    xaxislabelsize=10, textlocation=(-1, -2),repeat=False)
 #     # rc('animation', html='jshtml')
 #     plt.close()
@@ -165,7 +165,7 @@ def test_CrossSections(
 #     River.onedresultpath = Read1DResult_path
 #     River.oneminresultpath = subdailyresults_path
 #     River.usbcpath = usbc_path
-#     Sub = R.Sub(segment3, River)
+#     Reach = R.Reach(segment3, River)
 #
 #     IF = Interface('Rhine', start=dates[0])
 #     IF.ReadBoundaryConditionsTable(interface_bc_path)
@@ -175,13 +175,13 @@ def test_CrossSections(
 #     IF.ReadLateralsTable(interface_Laterals_table_path)
 #     IF.ReadLaterals(path=interface_Laterals_folder, date_format=interface_Laterals_date_format)
 #
-#     Sub.GetFlow(IF)
-#     Sub.Read1DResult()
-#     Sub.ReadSubDailyResults(animate_start, animate_end, Lastsegment=lastsegment)
-#     Sub.ReadBoundaryConditions(start=animate_start, end=animate_end)
+#     Reach.GetFlow(IF)
+#     Reach.Read1DResult()
+#     Reach.ReadSubDailyResults(animate_start, animate_end, Lastsegment=lastsegment)
+#     Reach.ReadBoundaryConditions(start=animate_start, end=animate_end)
 #
 #     Vis = V(resolution="Hourly")
-#     Anim = Vis.WaterSurfaceProfile1Min(Sub, animate_start, animate_end,
+#     Anim = Vis.WaterSurfaceProfile1Min(Reach, animate_start, animate_end,
 #                                        interval=0.000000000000000000000000000000000001,
 #                                        repeat=False)
 #
@@ -206,8 +206,8 @@ def test_Plot1minProfile(
     River.readRiverNetwork(river_network_path)
     River.usbcpath = usbc_path
     River.oneminresultpath = subdailyresults_path
-    Sub = R.Sub(segment3, River)
-    Sub.ReadSubDailyResults(
+    Sub = R.Reach(segment3, River)
+    Sub.readSubDailyResults(
         onemin_results_dates[0], onemin_results_dates[1], Lastsegment=lastsegment
     )
 

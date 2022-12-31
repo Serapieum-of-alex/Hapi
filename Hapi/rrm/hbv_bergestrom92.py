@@ -235,7 +235,7 @@ def Response(lz_old, uz_int_1, perc, k, k1, k2, uzl):
     Parameters
     ----------
     perc : float
-        Percolation value [mm\hr]
+        Percolation value [mm/hr]
     k : float
         direct runoff recession coefficient
     k1 : float

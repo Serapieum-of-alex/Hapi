@@ -41,7 +41,7 @@ River.Compressed = True
 River.RRMPath = RRMPath
 
 Path = wpath + "/processing/def1D.txt"
-River.Read1DConfigFile(Path)
+River.read1DConfigFile(Path)
 #%%
 IF = Interface("Rhine")
 IF.readXS(RIM2Files + "/XS.csv")
@@ -52,8 +52,8 @@ IF.readBoundaryConditionsTable(
     wpath + "/inputs/1d/topo/BonundaryConditions-segment24.txt"
 )
 IF.readBoundaryConditions(Path=wpath + "/inputs/1d/hydro/", date_format="%d_%m_%Y")
-#%% Sub-basin
-""" Write the Sub-ID you want to visualize its results """
+#%% Reach-basin
+""" Write the Reach-ID you want to visualize its results """
 
 River.RoutedQ = np.zeros(shape=(River.NoTimeSteps, River.NoSeg))
 # sum of all US routedQ
@@ -69,7 +69,7 @@ storewl = np.zeros(shape=(River.XSno, 2))
 
 for i in range(River.NoSeg):
     SubID = River.Segments[i]
-    Sub = R.Sub(SubID, River, RunModel=True)
+    Sub = R.Reach(SubID, River, RunModel=True)
     Sub.getFlow(IF, SubID)
     # HQ : is a rating curve table contains discharge at the first column and coresponding
     # water depth at the second column
@@ -80,14 +80,14 @@ for i in range(River.NoSeg):
     Sub.getXSGeometry()
     Sub.getUSHydrograph(River)
 
-    s = River.DateToIndex(str(River.SimStart)[:-9])
+    s = River.dateToIndex(str(River.SimStart)[:-9])
 
-    e = River.DateToIndex(str(River.SimEnd + dt.timedelta(days=1))[:-9])
+    e = River.dateToIndex(str(River.SimEnd + dt.timedelta(days=1))[:-9])
     for step in range(s, e):
-        step = River.IndexToDate(step)
+        step = River.indexToDate(step)
 
         print("Step-" + str(step))
-        step_ind = River.DateToIndex(step)
+        step_ind = River.dateToIndex(step)
         # get the max discharge
         Q = Sub.Laterals.loc[step : step + dt.timedelta(days=1), :]
         # index starts from 1

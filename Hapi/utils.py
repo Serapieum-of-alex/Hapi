@@ -122,3 +122,123 @@ def printWaitBar(i, total, prefix="", suffix="", decimals=1, length=100, fill="â
 
     if i == total:
         print()
+
+
+def class_method_parse(initial_args):
+    """check and assign values of parameters to the self object.
+
+        check values of a method and assign the valuse of the parameters to the self object (the method has self/cls
+        as first parameter)
+
+    Parameters
+    ----------
+    initial_args: [Dict]
+        dictionary contains all the parameters of the function, positional and key word parameters, each parameter is a
+        key(i.e 'name' in the below example), and the value is a dict that has at least a key called "type",
+        and a value that is an available data type in python, (i.e 'name' : {"type": str}),
+        - If the parameter has a default value, the dict has to have another key: value i.e "default": <any value>
+        - if there is no "default" key in the parameter dict, the default value will be taken None
+        >>> initial_args = {
+        >>>     'name' : {"type": str},
+        >>>     'version' : {"default": 3, "type": int}
+        >>> }
+
+    Returns
+    -------
+    assign the valuse of the parameters to the self object
+    """
+    def apply_func(func):
+        """apply the function that the decorator preceded.
+
+        Parameters
+        ----------
+        func: [function]
+            the function that the decorator precedes
+
+        Returns
+        -------
+        returns the same outputs of the input function
+        """
+        def wrapper(*args, **kwargs):
+
+            self = args[0]
+            # get wrong kwargs
+            wrong_kwargs = set(kwargs) - set(initial_args)
+            if len(wrong_kwargs) > 0:
+                print(initial_args)
+                raise KeyError(f"Invalid parameter {wrong_kwargs}")
+
+            for key, val in initial_args.items():
+                # if the parameter is given by user
+                if key in kwargs.keys():
+                    default = initial_args.get(key)
+                    # check the type
+                    key_type = default.get("type")
+                    # make the type as a list
+                    if not isinstance(key_type, list):
+                        key_type = [key_type]
+                    # get the given value
+                    val = kwargs.get(key)
+                    if type(val) in key_type:
+                        # set the given value
+                        setattr(self, key, val)
+                    else:
+                        raise TypeError(f"The parameter {key} should be of type {key_type}")
+                else:
+                    # positional args
+                    if "default" in val.keys():
+                        setattr(self, key, val.get("default"))
+
+            res = func(*args, **kwargs)
+            return res
+
+        return wrapper
+
+    return apply_func
+
+
+def class_attr_initialize(attributes):
+    """check and assign values of parameters to the self object.
+
+        check values of a method and assign the valuse of the parameters to the self object (the method has self/cls
+        as first parameter)
+
+    Parameters
+    ----------
+    initial_args: [Dict]
+        dictionary contains all the parameters of the function, positional and key word parameters, each parameter is a
+        key(i.e 'name' in the below example), and the value is a dict that has at least a key called "type",
+        and a value that is an available data type in python, (i.e 'name' : {"type": str}),
+        - If the parameter has a default value, the dict has to have another key: value i.e "default": <any value>
+        >>> initial_args = {
+        >>>     'name' : {"type": str},
+        >>>     'version' : {"default": 3, "type": int}
+        >>> }
+
+    Returns
+    -------
+    assign the valuse of the parameters to the self object
+    """
+    def apply_func(func):
+        """apply the function that the decorator preceded.
+
+        Parameters
+        ----------
+        func: [function]
+            the function that the decorator precedes
+
+        Returns
+        -------
+        returns the same outputs of the input function
+        """
+        def wrapper(*args, **kwargs):
+            self = args[0]
+            # initialize attributes
+            for key, val in attributes.items():
+                setattr(self, key, val)
+
+            func(*args, **kwargs)
+
+        return wrapper
+
+    return apply_func

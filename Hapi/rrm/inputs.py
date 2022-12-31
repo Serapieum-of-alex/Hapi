@@ -13,20 +13,16 @@ from loguru import logger
 from osgeo import gdal
 from pyramids.raster import Raster as raster
 from rasterio.plot import show
-
-# from datetime import datetime
-# import geopandas as gpd
 from rasterstats import zonal_stats
 
 import Hapi
 
 
 class Inputs:
+    """Rainfall-runoff Inputs class.
 
-    """Inputs.
-
-    Inputs class contains methods to prepare the inputs for the distributed
-    hydrological model
+        Inputs class contains methods to prepare the inputs for the distributed
+        hydrological model
 
     Methods
     -------
@@ -39,9 +35,8 @@ class Inputs:
         7- ReadExcelData
         8- ListAttributes
     """
-
     def __init__(self):
-        """no parameters needed for instantiating the object."""
+        """No parameters needed for instantiating the object."""
         pass
 
     def prepareInputs(src: str, input_folder: str, folder_name: str):

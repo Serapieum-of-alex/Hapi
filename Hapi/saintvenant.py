@@ -350,7 +350,7 @@ def HBC(Sub, River, Hbnd, dt, dx, inih, storewl, MinQ):
             if dto > dtrest:
                 dto = dtrest
 
-            # print[800000,'(a3,f8.2,a7,f4.2,a7,f8.2]'] 'dto= ', dto,' ratio=', dto/dt, ' max Q= ',qx[Sub.XSno]
+            # print[800000,'(a3,f8.2,a7,f4.2,a7,f8.2]'] 'dto= ', dto,' ratio=', dto/dt, ' max Q= ',qx[Reach.XSno]
 
             # update the water level at each cross section except the upstream boundary node
             for x in range(1, (Sub.XSno) - 2):
@@ -430,7 +430,7 @@ def HBC(Sub, River, Hbnd, dt, dx, inih, storewl, MinQ):
                         # print[800000,'(a,i5,a11,i2]'] 'time = ',t , ' round no= ',adaptiveTS_counter
                         # print[800000,'(a9,i5,a4,f10.3]'] 'Q at x = ', xsid[x],' Q= ' ,qx[x]
                         # print[800000,'(a9,i5,a4,f10.3]'] 'Q at x = ', xsid[x-1],' Q= ' ,qx[x-1]
-                        # g = (hx[x]+Sub.bedlevel[x])- (hx[x-1]+Sub.bedlevel[x-1])
+                        # g = (hx[x]+Reach.bedlevel[x])- (hx[x-1]+Reach.bedlevel[x-1])
                         # print[800000,'(a,i5,a3,f10.4,a2]'] 'H is higher than previous XS= ',xsid[x], "by ", g,' m'
                         # print(*,'(a,i5]'] 'H is higher than previous XS= ',xsid[x]
                         hx[x] = hx[x - 1] + Sub.bedlevel[x - 1] - Sub.bedlevel[x] - 0.01
