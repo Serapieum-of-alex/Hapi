@@ -93,7 +93,7 @@ def test_CrossSections(
     assert isinstance(fig, Figure)
 
 
-# TODO: figure put how to close the animation after it finishes
+# TODO: figure out how to close the animation after it finishes
 # def test_WaterSurfaceProfile(
 #         version: int,
 #         river_cross_section_path: str,
@@ -212,4 +212,4 @@ def test_Plot1minProfile(
     )
 
     Vis = V(resolution="Hourly")
-    Vis.Plot1minProfile(Sub, dates[0], nxlabels=20)
+    Vis.plot1minProfile(Sub, dates[0], nxlabels=20)
