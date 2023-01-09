@@ -102,13 +102,13 @@ def test_sub_GetFlow(
 
 class TestRead1DResult:
     def test_read_complete_file(
-            self,
-            version: int,
-            river_cross_section_path: str,
-            segment1: int,
-            Read1DResult_path: str,
-            Read1DResult_xsid: int,
-            test_time_series_length: int,
+        self,
+        version: int,
+        river_cross_section_path: str,
+        segment1: int,
+        Read1DResult_path: str,
+        Read1DResult_xsid: int,
+        test_time_series_length: int,
     ):
 
         River = R.River("HM", version=version)
@@ -118,7 +118,8 @@ class TestRead1DResult:
         Sub = R.Reach(segment1, River)
         Sub.read1DResult()
         assert (
-            len(Sub.Result1D) == test_time_series_length * 24 * (len(Sub.crosssections) + 1)
+            len(Sub.Result1D)
+            == test_time_series_length * 24 * (len(Sub.crosssections) + 1)
             and len(Sub.Result1D.columns) == 6
         )
         assert (
@@ -139,15 +140,14 @@ class TestRead1DResult:
         assert Read1DResult_xsid in Sub.XSWaterLevel.columns.tolist()
         assert Read1DResult_xsid in Sub.XSWaterDepth.columns.tolist()
 
-
     def test_Read_chunks(
-            self,
-            version: int,
-            river_cross_section_path: str,
-            segment1: int,
-            Read1DResult_path: str,
-            Read1DResult_xsid: int,
-            test_time_series_length: int,
+        self,
+        version: int,
+        river_cross_section_path: str,
+        segment1: int,
+        Read1DResult_path: str,
+        Read1DResult_xsid: int,
+        test_time_series_length: int,
     ):
 
         River = R.River("HM", version=version)
@@ -157,7 +157,8 @@ class TestRead1DResult:
         Sub = R.Reach(segment1, River)
         Sub.read1DResult(chunk_size=10000)
         assert (
-            len(Sub.Result1D) == test_time_series_length * 24 * (len(Sub.crosssections) + 1)
+            len(Sub.Result1D)
+            == test_time_series_length * 24 * (len(Sub.crosssections) + 1)
             and len(Sub.Result1D.columns) == 6
         )
         assert (
@@ -178,15 +179,14 @@ class TestRead1DResult:
         assert Read1DResult_xsid in Sub.XSWaterLevel.columns.tolist()
         assert Read1DResult_xsid in Sub.XSWaterDepth.columns.tolist()
 
-
     def test_Read_zip(
-            self,
-            version: int,
-            river_cross_section_path: str,
-            segment1: int,
-            Read1DResult_path: str,
-            Read1DResult_xsid: int,
-            test_time_series_length: int,
+        self,
+        version: int,
+        river_cross_section_path: str,
+        segment1: int,
+        Read1DResult_path: str,
+        Read1DResult_xsid: int,
+        test_time_series_length: int,
     ):
 
         River = R.River("HM", version=version)
@@ -194,9 +194,10 @@ class TestRead1DResult:
         # River.results_paths = {"onedresultpath": Read1DResult_path}
         River.readXS(river_cross_section_path)
         Sub = R.Reach(segment1, River)
-        Sub.read1DResult(extension = ".zip")
+        Sub.read1DResult(extension=".zip")
         assert (
-            len(Sub.Result1D) == test_time_series_length * 24 * (len(Sub.crosssections) + 1)
+            len(Sub.Result1D)
+            == test_time_series_length * 24 * (len(Sub.crosssections) + 1)
             and len(Sub.Result1D.columns) == 6
         )
         assert (
@@ -218,13 +219,13 @@ class TestRead1DResult:
         assert Read1DResult_xsid in Sub.XSWaterDepth.columns.tolist()
 
     def test_Read_zip_chunks(
-            self,
-            version: int,
-            river_cross_section_path: str,
-            segment1: int,
-            Read1DResult_path: str,
-            Read1DResult_xsid: int,
-            test_time_series_length: int,
+        self,
+        version: int,
+        river_cross_section_path: str,
+        segment1: int,
+        Read1DResult_path: str,
+        Read1DResult_xsid: int,
+        test_time_series_length: int,
     ):
 
         River = R.River("HM", version=version)
@@ -234,7 +235,8 @@ class TestRead1DResult:
         Sub = R.Reach(segment1, River)
         Sub.read1DResult(chunk_size=10000, extension=".zip")
         assert (
-            len(Sub.Result1D) == test_time_series_length * 24 * (len(Sub.crosssections) + 1)
+            len(Sub.Result1D)
+            == test_time_series_length * 24 * (len(Sub.crosssections) + 1)
             and len(Sub.Result1D.columns) == 6
         )
         assert (
@@ -254,6 +256,7 @@ class TestRead1DResult:
         assert Read1DResult_xsid in Sub.XSHydrographs.columns.tolist()
         assert Read1DResult_xsid in Sub.XSWaterLevel.columns.tolist()
         assert Read1DResult_xsid in Sub.XSWaterDepth.columns.tolist()
+
 
 def test_Sub_GetLaterals(
     segment1: int,
