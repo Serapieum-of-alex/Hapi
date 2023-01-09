@@ -1088,8 +1088,9 @@ class River:
         Q : [Dataframe]
             time series of the runoff .
         """
+        rpath = os.path.join(path, f"{nodeid}.txt")
         if version < 3:
-            Q = pd.read_csv(f"{path}/{nodeid}.txt", header=None)
+            Q = pd.read_csv(rpath, header=None)
             Q = Q.rename(columns={0: nodeid})
             Q.index = list(range(1, len(Q) + 1))
 
@@ -1101,7 +1102,7 @@ class River:
             Q = Q.loc[Q.index >= fromday, :]
             Q = Q.loc[Q.index <= today]
         else:
-            Q = pd.read_csv(f"{path}/{nodeid}.txt", header=None, skiprows=1)
+            Q = pd.read_csv(rpath, header=None, skiprows=1)
 
             # if len(Q.columns) > 2:
             #     Q = Q.rename(columns = {Q.columns[1]:str(nodeid)+"-1",
