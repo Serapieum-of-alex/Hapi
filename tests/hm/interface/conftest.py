@@ -35,7 +35,7 @@ def interface_bc_date_format() -> str:
 
 @pytest.fixture(scope="module")
 def rrm_resutls_hm_location() -> str:
-    return r"examples\Hydrodynamic-models\test_case\inputs\1d\hydro"
+    return r"examples\hydrodynamic-models\test_case\inputs\1d\hydro"
 
 
 @pytest.fixture(scope="module")
