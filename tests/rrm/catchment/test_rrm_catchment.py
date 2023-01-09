@@ -125,5 +125,5 @@ def test_save_lumped_results(
     RoutingFn = Routing.Muskingum_V
     Route = 1
     Run.runLumped(Coello, Route, RoutingFn)
-    Path = "examples/Hydrological model/data/lumped_model/test-Lumped-Model_results.txt"
+    Path = "examples/hydrological-model/data/lumped_model/test-Lumped-Model_results.txt"
     Coello.saveResults(Result=5, Path=Path)

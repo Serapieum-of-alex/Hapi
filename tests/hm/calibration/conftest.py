@@ -19,7 +19,7 @@ def gauge_long_ts_date_format() -> str:
 
 @pytest.fixture(scope="module")
 def gauges_table_path() -> str:
-    return "examples/Hydrodynamic models/test_case/inputs/gauges/gauges.geojson"
+    return "examples/hydrodynamic-models/test_case/inputs/gauges/gauges.geojson"
 
 
 @pytest.fixture(scope="module")
@@ -29,12 +29,12 @@ def gauges_numbers() -> int:
 
 @pytest.fixture(scope="module")
 def ReadObservedQ_Path() -> str:
-    return "examples/Hydrodynamic models/test_case/inputs/gauges/discharge/"
+    return "examples/hydrodynamic-models/test_case/inputs/gauges/discharge/"
 
 
 @pytest.fixture(scope="module")
 def ObservedQ_long_ts_Path() -> str:
-    return "examples/Hydrodynamic models/test_case/inputs/gauges/discharge_long_ts/"
+    return "examples/hydrodynamic-models/test_case/inputs/gauges/discharge_long_ts/"
 
 
 @pytest.fixture(scope="module")
@@ -49,7 +49,7 @@ def ObservedQ_long_ts_len() -> int:
 
 @pytest.fixture(scope="module")
 def ReadObservedWL_Path() -> str:
-    return "examples/Hydrodynamic models/test_case/inputs/gauges/water_level/"
+    return "examples/hydrodynamic-models/test_case/inputs/gauges/water_level/"
 
 
 @pytest.fixture(scope="module")
@@ -74,12 +74,12 @@ def DownWardBedLevel_height() -> float:
 
 @pytest.fixture(scope="module")
 def rrmpath() -> str:
-    return r"examples\Hydrodynamic models\test_case\inputs\rrm\rrm_location"
+    return r"examples\Hydrodynamic-models\test_case\inputs\rrm\rrm_location"
 
 
 @pytest.fixture(scope="module")
 def rrmpath_long_ts() -> str:
-    return r"examples\Hydrodynamic models\test_case\inputs\rrm\long_ts\rrm_location"
+    return r"examples\Hydrodynamic-models\test_case\inputs\rrm\long_ts\rrm_location"
 
 
 @pytest.fixture(scope="module")
@@ -94,19 +94,19 @@ def rrmgauges() -> List[int]:
 
 @pytest.fixture(scope="module")
 def hm_separated_q_results_path() -> str:
-    return r"examples\Hydrodynamic models\test_case\results\separated-results\discharge"
+    return r"examples\Hydrodynamic-models\test_case\results\separated-results\discharge"
 
 
 @pytest.fixture(scope="module")
 def hm_separated_wl_results_path() -> str:
     return (
-        r"examples\Hydrodynamic models\test_case\results\separated-results\water_level"
+        r"examples\Hydrodynamic-models\test_case\results\separated-results\water_level"
     )
 
 
 @pytest.fixture(scope="module")
 def hm_separated_results_q_long_ts_path() -> str:
-    return r"examples\Hydrodynamic models\test_case\results\separated-results\discharge\long_ts"
+    return r"examples\Hydrodynamic-models\test_case\results\separated-results\discharge\long_ts"
 
 
 @pytest.fixture(scope="module")
@@ -151,4 +151,4 @@ def InspectGauge_sub_id() -> int:
 
 @pytest.fixture(scope="module")
 def hm_saveto() -> str:
-    return r"examples\Hydrodynamic models\test_case\results"
+    return r"examples\Hydrodynamic-models\test_case\results"

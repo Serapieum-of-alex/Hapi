@@ -146,7 +146,7 @@ HAPI_Nile.egg-info/
 # conda smithy ci-skeleton start
 build_artifacts
 # conda smithy ci-skeleton end
-Hapi/hm/saintvenant.py
+#Hapi/hm/saintvenant.py
 Hapi/hm.py
 
 HAPI_Nile.egg-info/PKG-INFO
@@ -177,7 +177,7 @@ Hapi/java_functions.py
 Hapi/parameters/*.tif
 *.bin
 *.cue
-examples/Hydrological model/data/distributed_model/calibration/LB - tot.txt
+examples/hydrological-model/data/distributed_model/calibration/LB - tot.txt
 /examples/Hydrological model/data/meteo_data/meteodata_prepared/temp-rename-example/*.tif
 examples/Hydrodynamic models/test_case/results/q/right_results/*
 examples/Hydrodynamic models/test_case/results/h/right_results/*

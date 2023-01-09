@@ -41,12 +41,12 @@ def Discharge_WarmUpPeriod() -> int:
 
 @pytest.fixture(scope="module")
 def Discharge_gauge_long_ts() -> str:
-    return "examples/Hydrodynamic models/test_case/inputs/gauges/discharge_long_ts/"
+    return "examples/hydrodynamic-models/test_case/inputs/gauges/discharge_long_ts/"
 
 
 @pytest.fixture(scope="module")
 def Statistical_analisis_path() -> str:
-    return "examples/Hydrodynamic models/test_case/inputs/gauges/discharge_long_ts/Statistical analysis results"
+    return "examples/hydrodynamic-models/test_case/inputs/gauges/discharge_long_ts/Statistical analysis results"
 
 
 @pytest.fixture(scope="module")

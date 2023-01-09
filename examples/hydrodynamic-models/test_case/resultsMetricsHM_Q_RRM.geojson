@@ -1,0 +1,9 @@
+{
+"type": "FeatureCollection",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "index": 999666, "id": 1, "gid": 150, "name": "Segment-1", "oid": 999666, "river": "Spree", "xsid": 100, "datum(m)": 100.0, "discharge": 1, "waterlevel": 1, "WLstart": "1955-01-01", "WLend": "1955-03-21", "Qstart": "1955-01-01", "Qend": "1955-03-21", "rmse": "0", "KGE": "1", "WB": "100", "NSE": "1", "NSEModified": "1", "MBE": 0.0, "MAE": 0.0 }, "geometry": { "type": "Point", "coordinates": [ 1810.548977395048723, 1835.9795479009681 ] } },
+{ "type": "Feature", "properties": { "index": 888555, "id": 2, "gid": 151, "name": "Segment-2", "oid": 888555, "river": "Rhine", "xsid": 200, "datum(m)": 80.2, "discharge": 1, "waterlevel": 1, "WLstart": "1955-01-01", "WLend": "1955-03-21", "Qstart": "1955-01-01", "Qend": "1955-03-21", "rmse": "0", "KGE": "1", "WB": "100", "NSE": "1", "NSEModified": "1", "MBE": 0.0, "MAE": 0.0 }, "geometry": { "type": "Point", "coordinates": [ 3291.173304628633105, 3271.393972012916493 ] } },
+{ "type": "Feature", "properties": { "index": 444222, "id": 3, "gid": 152, "name": "Segment-3", "oid": 444222, "river": "Elbe", "xsid": 300, "datum(m)": 60.2, "discharge": 1, "waterlevel": 1, "WLstart": "1955-01-01", "WLend": "1955-03-21", "Qstart": "1955-01-01", "Qend": "1955-03-21", "rmse": "0", "KGE": "1", "WB": "100", "NSE": "1", "NSEModified": "1", "MBE": 0.0, "MAE": 0.0 }, "geometry": { "type": "Point", "coordinates": [ 4777.448869752422979, 4808.530678148546031 ] } }
+]
+}

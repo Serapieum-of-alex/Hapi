@@ -31,27 +31,27 @@ SP_columns = [
 
 @pytest.fixture(scope="module")
 def slope_path() -> str:
-    return "examples/Hydrodynamic models/test_case/inputs/1d/topo/slope.csv"
+    return "examples/hydrodynamic-models/test_case/inputs/1d/topo/slope.csv"
 
 
 @pytest.fixture(scope="module")
 def river_cross_section_path() -> str:
-    return "examples/Hydrodynamic models/test_case/inputs/1d/topo/xs_same_downward-3segment.csv"
+    return "examples/hydrodynamic-models/test_case/inputs/1d/topo/xs_same_downward-3segment.csv"
 
 
 @pytest.fixture(scope="module")
 def river_network_path() -> str:
-    return "examples/Hydrodynamic models/test_case/inputs/1d/topo/rivernetwork-3segments.txt"
+    return "examples/hydrodynamic-models/test_case/inputs/1d/topo/rivernetwork-3segments.txt"
 
 
 @pytest.fixture(scope="module")
 def distribution_properties_fpath() -> str:
-    return "examples/Hydrodynamic models/test_case/inputs/gauges/discharge_long_ts/Statistical analysis results/DistributionProperties.csv"
+    return "examples/hydrodynamic-models/test_case/inputs/gauges/discharge_long_ts/Statistical analysis results/DistributionProperties.csv"
 
 
 @pytest.fixture(scope="module")
 def distribution_properties_hm_results_fpath() -> str:
-    return "examples/Hydrodynamic models/test_case/results/customized_results/discharge_long_ts/Statistical analysis results/DistributionProperties.csv"
+    return "examples/hydrodynamic-models/test_case/results/customized_results/discharge_long_ts/Statistical analysis results/DistributionProperties.csv"
 
 
 @pytest.fixture(scope="module")
@@ -106,12 +106,12 @@ def segment3_xs() -> int:
 
 @pytest.fixture(scope="module")
 def Read1DResult_path() -> str:
-    return "examples/Hydrodynamic models/test_case/results/1d/"
+    return "examples/hydrodynamic-models/test_case/results/1d/"
 
 
 @pytest.fixture(scope="module")
 def usbc_path() -> str:
-    return "examples/Hydrodynamic models/test_case/results/USbnd/"
+    return "examples/hydrodynamic-models/test_case/results/USbnd/"
 
 
 @pytest.fixture(scope="module")
@@ -141,17 +141,17 @@ def ReadRRMHydrograph_location_2() -> int:
 
 @pytest.fixture(scope="module")
 def ReadRRMHydrograph_path() -> str:
-    return "examples/Hydrodynamic models/test_case/inputs/rrm/rrm_location"
+    return "examples/hydrodynamic-models/test_case/inputs/rrm/rrm_location"
 
 
 @pytest.fixture(scope="module")
 def ReadRRMHydrograph_path2() -> str:
-    return "examples/Hydrodynamic models/test_case/inputs/rrm/hm_location"
+    return "examples/hydrodynamic-models/test_case/inputs/rrm/hm_location"
 
 
 @pytest.fixture(scope="module")
 def CustomizedRunspath() -> str:
-    return "examples/Hydrodynamic models/test_case/results/customized_results/"
+    return "examples/hydrodynamic-models/test_case/results/customized_results/"
 
 
 @pytest.fixture(scope="module")
@@ -161,7 +161,7 @@ def lastsegment() -> bool:
 
 @pytest.fixture(scope="module")
 def subdailyresults_path() -> str:
-    return "examples/Hydrodynamic models/test_case/results/"
+    return "examples/hydrodynamic-models/test_case/results/"
 
 
 @pytest.fixture(scope="module")

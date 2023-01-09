@@ -11,17 +11,17 @@ gauges_datefmt = "%Y-%m-%d"
 
 @pytest.fixture(scope="module")
 def lumped_parameters_path() -> str:
-    return "examples/Hydrological model/data/lumped_model/Coello_Lumped2021-03-08_muskingum.txt"
+    return "examples/hydrological-model/data/lumped_model/Coello_Lumped2021-03-08_muskingum.txt"
 
 
 @pytest.fixture(scope="module")
 def lumped_meteo_data_path() -> str:
-    return "examples/Hydrological model/data/lumped_model/meteo_data-MSWEP.csv"
+    return "examples/hydrological-model/data/lumped_model/meteo_data-MSWEP.csv"
 
 
 @pytest.fixture(scope="module")
 def lumped_gauges_path() -> str:
-    return "examples/Hydrological model/data/lumped_model/Qout_c.csv"
+    return "examples/hydrological-model/data/lumped_model/Qout_c.csv"
 
 
 @pytest.fixture(scope="module")
