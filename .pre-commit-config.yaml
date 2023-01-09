@@ -79,7 +79,7 @@ repos:
   hooks:
     - id: pytest-check
       name: pytest-check
-      entry: pytest
+      entry: pytest -vvv --cov=Hapi
       language: system
       pass_filenames: false
       always_run: true
