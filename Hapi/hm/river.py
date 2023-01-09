@@ -761,7 +761,7 @@ class River:
         DataFrame
         """
         iterator = pd.read_csv(
-            path, header=None, delimiter=r"\s+", chunksize=chunksize, iterator=True
+            path, header=None, delimiter=r"\s+", chunksize=chunksize, iterator=True, compression = "infer"
         )
 
         data = pd.DataFrame()
@@ -809,6 +809,8 @@ class River:
             Fill the missing days. The default is False.
         chunk_size: [int]
             size of the chunk if you want to read the file in chunks Default is = None
+        extension: [str]
+            the extension of the file. Default is ".txt"
 
         Returns
         -------
@@ -821,9 +823,10 @@ class River:
         if not path:
             path = self.onedresultpath
 
+
         if chunk_size is None:
             data = pd.read_csv(
-                rf"{path}\{Subid}{extension}", header=None, delimiter=r"\s+", index_col=False
+                rf"{path}\{Subid}{extension}", header=None, delimiter=r"\s+", index_col=False, compression = "infer"
             )
         else:
             # read the file in chunks
@@ -3289,7 +3292,8 @@ class Reach(River):
             addHQ2: bool = False,
             path: str = None,
             xsid: int = None,
-            chunk_size: int = None
+            chunk_size: int = None,
+            extension: str = ".txt"
     ):
         """read1DResult.
 
@@ -3317,6 +3321,8 @@ class Reach(River):
             it. The default is ''.
         chunk_size: [int]
             size of the chunk if you want to read the file in chunks Default is = None
+        extension: [str]
+            the extension of the file. Default is ".txt"
 
         Returns
         -------
@@ -3342,7 +3348,8 @@ class Reach(River):
         # if the results are not read yet read it
         if not isinstance(self.Result1D, DataFrame):
             River.read1DResult(
-                self, self.id, fromday, today, path=path, fill_missing=fill_missing, chunk_size=chunk_size
+                self, self.id, fromday, today, path=path, fill_missing=fill_missing, chunk_size=chunk_size,
+                extension=extension
             )
         # get the index of the days and convert them into  dates
         if not fromday:
