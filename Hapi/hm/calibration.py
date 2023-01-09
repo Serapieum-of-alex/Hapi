@@ -16,6 +16,7 @@ from pandas._libs.tslibs.timestamps import Timestamp
 from pandas.core.frame import DataFrame
 
 from Hapi.hapi_warnings import SilenceNumpyWarning, SilenceShapelyWarning
+from Hapi.utils import class_attr_initialize #class_method_parse,
 from Hapi.hm.river import River
 
 datafn = lambda x: dt.datetime.strptime(x, "%Y-%m-%d")
@@ -29,7 +30,15 @@ class Calibration(River):
 
     Hydraulic model calibration class
     """
+    calibration_attributes = dict(
+        q_hm=None, WLHM = None, q_rrm = None, QRRM2 = None, rrm_gauges = None, hm_gauges = None, q_gauges = None,
+        WLGauges = None, CalibrationQ = None, CalibrationWL = None, annual_max_obs_q = None, annual_max_obs_wl =
+        None, annual_max_rrm = None, annual_max_hm_q = None, annual_max_hm_wl = None, AnnualMaxDates = None,
+        MetricsHMvsRRM = None, MetricsRRMvsObs = None, MetricsHMWLvsObs = None, MetricsHMQvsObs = None, WLgaugesList =
+        None, QgaugesList = None
+    )
 
+    @class_attr_initialize(calibration_attributes)
     def __init__(
         self,
         name: str,
@@ -104,30 +113,7 @@ class Calibration(River):
         self.rrmreferenceindex = pd.DataFrame(index=list(range(1, rrmdays + 1)))
         self.rrmreferenceindex["date"] = ref_ind[:-1]
 
-        self.q_hm = None  # ReadHMQ
-        self.WLHM = None  # ReadHMWL
-        self.q_rrm = None  # ReadRRM
-        self.QRRM2 = None  # ReadRRM
-        self.rrm_gauges = None  # ReadRRM
 
-        self.hm_gauges = None
-        self.q_gauges = None
-        self.WLGauges = None
-
-        self.CalibrationQ = None
-        self.CalibrationWL = None
-        self.annual_max_obs_q = None
-        self.annual_max_obs_wl = None
-        self.annual_max_rrm = None
-        self.annual_max_hm_q = None
-        self.annual_max_hm_wl = None
-        self.AnnualMaxDates = None
-        self.MetricsHMvsRRM = None
-        self.MetricsRRMvsObs = None
-        self.MetricsHMWLvsObs = None
-        self.MetricsHMQvsObs = None
-        self.WLgaugesList = None
-        self.QgaugesList = None
 
     def readGaugesTable(self, path: str):
         """ReadGaugesTable.
