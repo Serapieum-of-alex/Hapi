@@ -1,9 +1,7 @@
-"""Created on Wed Jul 18 23:55:20 2018.
-
-@author: Mostafa
-"""
 import datetime
+import os
 import pickle
+import sys
 
 
 def save_obj(obj, saved_name):
@@ -13,19 +11,19 @@ def save_obj(obj, saved_name):
 
     Parameters
     ----------
-    obj:
-
-    saved_name:
-        ['String'] name of the object
+    obj: [Any]
+        any python object
+    saved_name: [str]
+        name of the object
 
     Returns
     -------
-        the object will be saved to the given path/current working directory
-        with the given name
+    the object will be saved to the given path/current working directory
+    with the given name
 
     Examples
     --------
-    >>> path = "c:\my_computer\files"
+    >>> path = "path/to/your/disk"
     >>> data={"key1":[1,2,3,5],"key2":[6,2,9,7]}
     >>> save_obj(data, f'{path}/flow_acc_table')
     """
@@ -49,7 +47,7 @@ def load_obj(saved_name):
 
     Examples
     --------
-    >>> path = "c:\my_computer\files"
+    >>> path = r"c:\my_computer\files"
     >>> load_obj(f'{path}/flow_acc_table')
     """
     with open(saved_name + ".pkl", "rb") as f:
@@ -93,22 +91,25 @@ def dateformated(x):
     return x1
 
 
-def printWaitBar(i, total, prefix="", suffix="", decimals=1, length=100, fill="█"):
+def printWaitBar(i, total, prefix="", suffix="", decimals=1, length=100, fill=" "):
     """This function will print a waitbar in the console.
 
-    Variables:
-
-    i -- Iteration number
-    total -- Total iterations
-    fronttext -- Name in front of bar
-    prefix -- Name after bar
-    suffix -- Decimals of percentage
-    length -- width of the waitbar
-    fill -- bar fill
+    Parameters:
+    i:
+        Iteration number
+    total:
+        Total iterations
+    fronttext:
+        Name in front of bar
+    prefix:
+        Name after bar
+    suffix:
+        Decimals of percentage
+    length:
+        width of the waitbar
+    fill:
+        bar fill
     """
-    import os
-    import sys
-
     # Adjust when it is a linux computer
     if os.name == "posix" and total == 0:
         total = 0.0001
@@ -147,6 +148,7 @@ def class_method_parse(initial_args):
     -------
     assign the valuse of the parameters to the self object
     """
+
     def apply_func(func):
         """apply the function that the decorator preceded.
 
@@ -159,6 +161,7 @@ def class_method_parse(initial_args):
         -------
         returns the same outputs of the input function
         """
+
         def wrapper(*args, **kwargs):
 
             self = args[0]
@@ -183,7 +186,9 @@ def class_method_parse(initial_args):
                         # set the given value
                         setattr(self, key, val)
                     else:
-                        raise TypeError(f"The parameter {key} should be of type {key_type}")
+                        raise TypeError(
+                            f"The parameter {key} should be of type {key_type}"
+                        )
                 else:
                     # positional args
                     if "default" in val.keys():
@@ -200,16 +205,19 @@ def class_method_parse(initial_args):
 def class_attr_initialize(attributes):
     """check and assign values of parameters to the self object.
 
-        check values of a method and assign the valuse of the parameters to the self object (the method has self/cls
+        check values of a method and assign the valuse of the parameters to the self object
+        (the method has self/cls
         as first parameter)
 
     Parameters
     ----------
     initial_args: [Dict]
-        dictionary contains all the parameters of the function, positional and key word parameters, each parameter is a
-        key(i.e 'name' in the below example), and the value is a dict that has at least a key called "type",
-        and a value that is an available data type in python, (i.e 'name' : {"type": str}),
-        - If the parameter has a default value, the dict has to have another key: value i.e "default": <any value>
+        dictionary contains all the parameters of the function, positional and key word
+        parameters, each parameter is a key(i.e 'name' in the below example), and the
+        value is a dict that has at least a key called "type", and a value that is an
+        available data type in python, (i.e 'name' : {"type": str}),
+        - If the parameter has a default value, the dict has to have another
+        key: value i.e "default": <any value>
         >>> initial_args = {
         >>>     'name' : {"type": str},
         >>>     'version' : {"default": 3, "type": int}
@@ -219,6 +227,7 @@ def class_attr_initialize(attributes):
     -------
     assign the valuse of the parameters to the self object
     """
+
     def apply_func(func):
         """apply the function that the decorator preceded.
 
@@ -231,6 +240,7 @@ def class_attr_initialize(attributes):
         -------
         returns the same outputs of the input function
         """
+
         def wrapper(*args, **kwargs):
             self = args[0]
             # initialize attributes
