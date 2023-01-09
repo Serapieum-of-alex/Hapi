@@ -128,7 +128,7 @@ venv.bak/
 
 HAPI_Nile.egg-info/
 *.pyc
-*.zip
+#*.zip
 *.drawio
 *.dbf
 *.prj

@@ -382,6 +382,8 @@ def StepRun(p, v, St, snow=0):
     St : array_like [5]
         Previous model states setup as:
         [sp, sm, uz, lz, wc]
+    snow:
+        1 to run the snow subroutine and 0 for not. Default is 0.
 
     Returns
     -------

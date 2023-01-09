@@ -16,8 +16,8 @@ from pandas._libs.tslibs.timestamps import Timestamp
 from pandas.core.frame import DataFrame
 
 from Hapi.hapi_warnings import SilenceNumpyWarning, SilenceShapelyWarning
-from Hapi.utils import class_attr_initialize
 from Hapi.hm.river import River
+from Hapi.utils import class_attr_initialize
 
 datafn = lambda x: dt.datetime.strptime(x, "%Y-%m-%d")
 
@@ -30,15 +30,33 @@ class Calibration(River):
 
     Hydraulic model calibration class
     """
+
     hm_gauges: DataFrame
     rrm_gauges: DataFrame
 
     calibration_attributes = dict(
-        q_hm=None, WLHM = None, q_rrm = None, QRRM2 = None, rrm_gauges = None, hm_gauges = None, q_gauges = None,
-        WLGauges = None, CalibrationQ = None, CalibrationWL = None, annual_max_obs_q = None, annual_max_obs_wl =
-        None, annual_max_rrm = None, annual_max_hm_q = None, annual_max_hm_wl = None, AnnualMaxDates = None,
-        MetricsHMvsRRM = None, MetricsRRMvsObs = None, MetricsHMWLvsObs = None, MetricsHMQvsObs = None, WLgaugesList =
-        None, QgaugesList = None
+        q_hm=None,
+        WLHM=None,
+        q_rrm=None,
+        QRRM2=None,
+        rrm_gauges=None,
+        hm_gauges=None,
+        q_gauges=None,
+        WLGauges=None,
+        CalibrationQ=None,
+        CalibrationWL=None,
+        annual_max_obs_q=None,
+        annual_max_obs_wl=None,
+        annual_max_rrm=None,
+        annual_max_hm_q=None,
+        annual_max_hm_wl=None,
+        AnnualMaxDates=None,
+        MetricsHMvsRRM=None,
+        MetricsRRMvsObs=None,
+        MetricsHMWLvsObs=None,
+        MetricsHMQvsObs=None,
+        WLgaugesList=None,
+        QgaugesList=None,
     )
 
     @class_attr_initialize(calibration_attributes)
@@ -115,8 +133,6 @@ class Calibration(River):
         ref_ind = pd.date_range(self.rrmstart, self.rrmend, freq="D")
         self.rrmreferenceindex = pd.DataFrame(index=list(range(1, rrmdays + 1)))
         self.rrmreferenceindex["date"] = ref_ind[:-1]
-
-
 
     def readGaugesTable(self, path: str):
         """ReadGaugesTable.

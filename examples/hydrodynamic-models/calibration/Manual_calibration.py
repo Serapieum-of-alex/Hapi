@@ -5,7 +5,9 @@ model
 """
 import datetime as dt
 import os
+
 import matplotlib
+
 matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 import numpy as np
@@ -15,6 +17,7 @@ import Hapi.hm.calibration as RC
 import Hapi.hm.river as R
 from Hapi.hm.interface import Interface
 from Hapi.plot.visualizer import Visualize as V
+
 # %% Paths
 """change directory to the processing folder inside the project folder"""
 rpath = os.path.join(os.getcwd() + "/examples/Hydrodynamic models/test_case")

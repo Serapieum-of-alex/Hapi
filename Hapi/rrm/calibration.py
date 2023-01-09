@@ -248,24 +248,24 @@ class Calibration(Catchment):
 
         Outputs:
         ----------
-            1- st:
-                [4D array] state variables
-            2- q_out:
-                [1D array] calculated Discharge at the outlet of the catchment
-            3- q_uz:
-                [3D array] Distributed discharge for each cell
+        st: [4D array]
+            state variables
+        q_out: [1D array]
+            calculated Discharge at the outlet of the catchment
+        q_uz: [3D array]
+            Distributed discharge for each cell
 
         Example:
         ----------
-            PrecPath = prec_path="meteodata/4000/calib/prec"
-            Evap_Path = evap_path="meteodata/4000/calib/evap"
-            TempPath = temp_path="meteodata/4000/calib/temp"
-            FlowAccPath = "GIS/4000/acc4000.tif"
-            FlowDPath = "GIS/4000/fd4000.tif"
-            ParPath = "meteodata/4000/"+"parameters.txt"
-            p2=[1, 227.31]
-            st, q_out, q_uz_routed = RunModel(PrecPath,Evap_Path,TempPath,DemPath,
-                                              FlowAccPath,FlowDPath,ParPath,p2)
+        >>> prec_path = "meteodata/4000/calib/prec"
+        >>> evap_path = "meteodata/4000/calib/evap"
+        >>> temp_path = "meteodata/4000/calib/temp"
+        >>> FlowAccPath = "GIS/4000/acc4000.tif"
+        >>> FlowDPath = "GIS/4000/fd4000.tif"
+        >>> ParPath = "meteodata/4000/parameters.txt"
+        >>> p2 = [1, 227.31]
+        >>> st, q_out, q_uz_routed = RunModel(PrecPath,Evap_Path,TempPath,DemPath,
+        >>>                                   FlowAccPath,FlowDPath,ParPath,p2)
         """
         # input dimensions
         # [rows,cols] = self.FlowAcc.ReadAsArray().shape

@@ -8,7 +8,7 @@ import datetime as dt
 import math
 import os
 from collections import OrderedDict
-from typing import List, Union, Optional
+from typing import List, Optional, Union
 
 import matplotlib as mpl
 import matplotlib.colors as colors
@@ -1510,7 +1510,9 @@ class Visualize:
             zr = Sub.crosssections.loc[Sub.crosssections.index == ind2, "zr"].values[0]
 
             if "dbf" in Sub.crosssections.columns:
-                dbf = Sub.crosssections.loc[Sub.crosssections.index == ind2, "dbf"].values[0]
+                dbf = Sub.crosssections.loc[
+                    Sub.crosssections.index == ind2, "dbf"
+                ].values[0]
 
             hl = Sub.crosssections.loc[Sub.crosssections.index == ind2, "hl"].values[0]
             hr = Sub.crosssections.loc[Sub.crosssections.index == ind2, "hr"].values[0]
@@ -1560,16 +1562,24 @@ class Visualize:
             for j in range(xsrows):
                 for k in range(xscolumns):
                     if ind2 <= endxs_ind:
-                        XsId = Sub.crosssections.loc[Sub.crosssections.index[ind2], "xsid"]
+                        XsId = Sub.crosssections.loc[
+                            Sub.crosssections.index[ind2], "xsid"
+                        ]
                         xcoord = (
                             XSS[names[0:8]].loc[XSS.index == ind].values.tolist()[0]
                         )
                         ycoord = (
                             XSS[names[8:16]].loc[XSS.index == ind].values.tolist()[0]
                         )
-                        b = Sub.crosssections.loc[Sub.crosssections["xsid"] == ind, "b"].values[0]
-                        bl = Sub.crosssections.loc[Sub.crosssections["xsid"] == ind, "bl"].values[0]
-                        gl = Sub.crosssections.loc[Sub.crosssections["xsid"] == ind, "gl"].values[0]
+                        b = Sub.crosssections.loc[
+                            Sub.crosssections["xsid"] == ind, "b"
+                        ].values[0]
+                        bl = Sub.crosssections.loc[
+                            Sub.crosssections["xsid"] == ind, "bl"
+                        ].values[0]
+                        gl = Sub.crosssections.loc[
+                            Sub.crosssections["xsid"] == ind, "gl"
+                        ].values[0]
 
                         # ax_XS = fig.add_subplot(gs[j, k])
                         if plottingoption == 1:
@@ -1600,8 +1610,12 @@ class Visualize:
 
                         if plotannotation:
                             if Sub.version > 1:
-                                dbf = Sub.crosssections.loc[Sub.crosssections["xsid"] == ind, "dbf"].values[0]
-                                b = Sub.crosssections.loc[Sub.crosssections["xsid"] == ind, "b"].values[0]
+                                dbf = Sub.crosssections.loc[
+                                    Sub.crosssections["xsid"] == ind, "dbf"
+                                ].values[0]
+                                b = Sub.crosssections.loc[
+                                    Sub.crosssections["xsid"] == ind, "b"
+                                ].values[0]
 
                                 if bedlevel:
                                     ax_XS[j, k].annotate(
