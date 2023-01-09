@@ -81,7 +81,7 @@ def test_CalculateProfile(
 ):
     Calib = RC.Calibration("HM", version=version)
     Calib.readXS(river_cross_section_path)
-    Calib.CalculateProfile(
+    Calib.calculateProfile(
         segment3,
         calibrateProfile_DS_bedlevel,
         calibrateProfile_mn,
@@ -101,7 +101,7 @@ def test_SmoothMaxSlope(
 ):
     Calib = RC.Calibration("HM", version=version)
     Calib.readXS(river_cross_section_path)
-    Calib.SmoothMaxSlope(segment3)
+    Calib.smoothMaxSlope(segment3)
 
 
 def test_SmoothBedLevel(
@@ -111,7 +111,7 @@ def test_SmoothBedLevel(
 ):
     Calib = RC.Calibration("HM", version=version)
     Calib.readXS(river_cross_section_path)
-    Calib.SmoothBedLevel(segment3)
+    Calib.smoothBedLevel(segment3)
 
 
 def test_DownWardBedLevel(
@@ -122,7 +122,7 @@ def test_DownWardBedLevel(
 ):
     Calib = RC.Calibration("HM", version=version)
     Calib.readXS(river_cross_section_path)
-    Calib.DownWardBedLevel(segment3, DownWardBedLevel_height)
+    Calib.downWardBedLevel(segment3, DownWardBedLevel_height)
 
 
 def test_SmoothBankLevel(
@@ -132,7 +132,7 @@ def test_SmoothBankLevel(
 ):
     Calib = RC.Calibration("HM", version=version)
     Calib.readXS(river_cross_section_path)
-    Calib.SmoothBankLevel(segment3)
+    Calib.smoothBankLevel(segment3)
 
 
 def test_SmoothFloodplainHeight(
@@ -142,7 +142,7 @@ def test_SmoothFloodplainHeight(
 ):
     Calib = RC.Calibration("HM", version=version)
     Calib.readXS(river_cross_section_path)
-    Calib.SmoothFloodplainHeight(segment3)
+    Calib.smoothFloodplainHeight(segment3)
 
 
 def test_SmoothBedWidth(
@@ -152,7 +152,7 @@ def test_SmoothBedWidth(
 ):
     Calib = RC.Calibration("HM", version=version)
     Calib.readXS(river_cross_section_path)
-    Calib.SmoothBedWidth(segment3)
+    Calib.smoothBedWidth(segment3)
 
 
 def test_CheckFloodplain(
@@ -162,7 +162,7 @@ def test_CheckFloodplain(
 ):
     Calib = RC.Calibration("HM", version=version)
     Calib.readXS(river_cross_section_path)
-    Calib.CheckFloodplain()
+    Calib.checkFloodplain()
 
 
 def test_ReadRRM(
@@ -203,7 +203,7 @@ def test_ReadHMWL(
 ):
     Calib = RC.Calibration("HM", version=3)
     Calib.readGaugesTable(gauges_table_path)
-    Calib.ReadHMWL(hm_separated_wl_results_path, fmt="'%Y-%m-%d'")
+    Calib.readHMWL(hm_separated_wl_results_path, fmt="'%Y-%m-%d'")
     assert len(Calib.WLHM) == test_time_series_length and len(
         Calib.WLHM.columns
     ) == len(rrmgauges)
@@ -374,7 +374,7 @@ def test_HMWLvsObserved(
         nodatavalu,
         gauge_date_format=gauge_date_format,
     )
-    Calib.ReadHMWL(hm_separated_wl_results_path, fmt="'%Y-%m-%d'")
+    Calib.readHMWL(hm_separated_wl_results_path, fmt="'%Y-%m-%d'")
     Calib.HMWLvsObserved()
     assert isinstance(Calib.MetricsHMWLvsObs, DataFrame) and isinstance(
         Calib.MetricsHMWLvsObs, GeoDataFrame
@@ -409,7 +409,7 @@ def test_InspectGauge(
         nodatavalu,
         gauge_date_format=gauge_date_format,
     )
-    Calib.ReadHMWL(hm_separated_wl_results_path, fmt="'%Y-%m-%d'")
+    Calib.readHMWL(hm_separated_wl_results_path, fmt="'%Y-%m-%d'")
     Calib.HMWLvsObserved()
     Calib.readObservedQ(
         ReadObservedQ_Path,
@@ -453,7 +453,7 @@ def test_SaveMetices(
         nodatavalu,
         gauge_date_format=gauge_date_format,
     )
-    Calib.ReadHMWL(hm_separated_wl_results_path, fmt="'%Y-%m-%d'")
+    Calib.readHMWL(hm_separated_wl_results_path, fmt="'%Y-%m-%d'")
     Calib.HMWLvsObserved()
     Calib.readObservedQ(
         ReadObservedQ_Path,

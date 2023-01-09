@@ -72,7 +72,6 @@ Calib.hm_gauges.sort_values(by="id", inplace=True, ignore_index=True)
 start = "1955-1-1"
 rrmstart = "1955-1-1"
 River = R.River("HM", version=3, start=start, rrmstart=rrmstart)
-
 #%%
 path = r"C:\gdrive\01Algorithms\Hydrology\Hapi\examples\Hydrodynamic models\test_case\processing\def1D-1segment.yaml"
 River.readConfig(path)
@@ -288,17 +287,17 @@ Calib.slope = River.slope
 BedlevelDS = 88
 Manning = 0.06
 BC_slope = -0.03
-Calib.CalculateProfile(SubID, BedlevelDS, Manning, BC_slope)
+Calib.calculateProfile(SubID, BedlevelDS, Manning, BC_slope)
 # River.crosssections.to_csv(tolopogy_file + "/xs_rhine2.csv", index=False, float_format="%.3f")
 # River.slope.to_csv(tolopogy_file + "/slope2.csv",header=None,index=False)
 #%% Smooth cross section
 Calib.crosssections = River.crosssections[:]
-Calib.SmoothMaxSlope(SubID)
-Calib.SmoothBedLevel(SubID)
-Calib.DownWardBedLevel(SubID, 0.05)
+Calib.smoothMaxSlope(SubID)
+Calib.smoothBedLevel(SubID)
+Calib.downWardBedLevel(SubID, 0.05)
 # Calib.SmoothBankLevel(SubID)
 # Calib.SmoothFloodplainHeight(SubID)
-Calib.SmoothBedWidth(SubID)
+Calib.smoothBedWidth(SubID)
 # Calib.CheckFloodplain()
 # Calib.crosssections.to_csv(tolopogy_file + "/XS2.csv", index=None, float_format="%.3f")
 #%% customized Run result saveing

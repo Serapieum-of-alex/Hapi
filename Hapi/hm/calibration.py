@@ -16,7 +16,7 @@ from pandas._libs.tslibs.timestamps import Timestamp
 from pandas.core.frame import DataFrame
 
 from Hapi.hapi_warnings import SilenceNumpyWarning, SilenceShapelyWarning
-from Hapi.utils import class_attr_initialize #class_method_parse,
+from Hapi.utils import class_attr_initialize
 from Hapi.hm.river import River
 
 datafn = lambda x: dt.datetime.strptime(x, "%Y-%m-%d")
@@ -30,6 +30,9 @@ class Calibration(River):
 
     Hydraulic model calibration class
     """
+    hm_gauges: DataFrame
+    rrm_gauges: DataFrame
+
     calibration_attributes = dict(
         q_hm=None, WLHM = None, q_rrm = None, QRRM2 = None, rrm_gauges = None, hm_gauges = None, q_gauges = None,
         WLGauges = None, CalibrationQ = None, CalibrationWL = None, annual_max_obs_q = None, annual_max_obs_wl =
@@ -46,7 +49,7 @@ class Calibration(River):
         start: Union[str, dt.datetime] = "1950-1-1",
         days: int = 36890,
         fmt: str = "%Y-%m-%d",
-        rrmstart: str = "",
+        rrmstart: str = None,
         rrmdays: int = 36890,
         novalue: int = -9,
         gauge_id_col: Any = "oid",
@@ -82,6 +85,7 @@ class Calibration(River):
         -------
         None.
         """
+        # super().__init__()
         self.name = name
         self.version = version
         if isinstance(start, str):
@@ -95,17 +99,16 @@ class Calibration(River):
         self.ReferenceIndex = pd.DataFrame(index=list(range(1, days + 1)))
         self.ReferenceIndex["date"] = Ref_ind[:-1]
 
-        if rrmstart == "":
+        if rrmstart is None:
             self.rrmstart = self.start
         else:
             try:
                 self.rrmstart = dt.datetime.strptime(rrmstart, fmt)
             except ValueError:
-                msg = (
-                    "plese check the fmt ({0}) you entered as it is different from the"
-                    " rrmstart data ({1})"
+                logger.debug(
+                    f"plese check the fmt ({fmt}) you entered as it is different from the"
+                    f" rrmstart data ({rrmstart})"
                 )
-                logger.debug(msg.format(fmt, rrmstart))
                 return
 
         self.rrmend = self.rrmstart + dt.timedelta(days=rrmdays)
@@ -161,8 +164,8 @@ class Calibration(River):
         # sort the gauges table based on the segment
         self.hm_gauges.sort_values(by="id", inplace=True, ignore_index=True)
 
-    def GetGauges(self, subid: int, gaugei: int = 0) -> DataFrame:
-        """GetGauges. Get_Gauge_ID get the id of the station for a given river segment.
+    def getGauges(self, subid: int, gaugei: int = 0) -> DataFrame:
+        """Get_Gauge_ID get the id of the station for a given river segment.
 
         parameters:
         ----------
@@ -677,7 +680,7 @@ class Calibration(River):
 
         self.q_hm.index = pd.date_range(start, end, freq="D")
 
-    def ReadHMWL(
+    def readHMWL(
         self,
         path: str,
         fromday: Union[str, int] = "",
@@ -1075,7 +1078,7 @@ class Calibration(River):
         else:
             self.annual_max_hm_wl = AnnualMax
 
-    def CalculateProfile(
+    def calculateProfile(
         self, Segmenti: int, BedlevelDS: float, Manning: float, BC_slope: float
     ):
         """CalculateProfile.
@@ -1140,7 +1143,7 @@ class Calibration(River):
         except AttributeError:
             logger.debug(f"The Given river segment- {Segmenti} does not have a slope")
 
-    def SmoothBedLevel(self, segmenti):
+    def smoothBedLevel(self, segmenti):
         """SmoothXS.
 
         SmoothBedLevel method smoothes the bed level of a given segment ID by
@@ -1186,7 +1189,7 @@ class Calibration(River):
         # copy back the segment to the whole XS df
         self.crosssections.loc[self.crosssections["id"] == segmenti, :] = segment
 
-    def SmoothBankLevel(self, segmenti):
+    def smoothBankLevel(self, segmenti):
         """SmoothBankLevel.
 
         SmoothBankLevel method smoothes the bankfull depth for a given segment
@@ -1233,7 +1236,7 @@ class Calibration(River):
         # copy back the segment to the whole XS df
         self.crosssections.loc[self.crosssections["id"] == segmenti, :] = segment
 
-    def SmoothFloodplainHeight(self, segmenti):
+    def smoothFloodplainHeight(self, segmenti):
         """SmoothFloodplainHeight.
 
         SmoothFloodplainHeight method smoothes the Floodplain Height the
@@ -1301,7 +1304,7 @@ class Calibration(River):
             self.crosssections["fpl"],
         )
 
-    def SmoothBedWidth(self, segmenti):
+    def smoothBedWidth(self, segmenti):
         """SmoothBedWidth.
 
         SmoothBedWidth method smoothes the Bed Width the in the cross section
@@ -1334,7 +1337,7 @@ class Calibration(River):
         # copy back the segment to the whole XS df
         self.crosssections.loc[self.crosssections["id"] == segmenti, :] = segment
 
-    def DownWardBedLevel(self, segmenti: int, height: Union[int, float]):
+    def downWardBedLevel(self, segmenti: int, height: Union[int, float]):
         """SmoothBedWidth.
 
         SmoothBedWidth method smoothes the Bed Width the in the cross section
@@ -1364,7 +1367,7 @@ class Calibration(River):
         # copy back the segment to the whole XS df
         self.crosssections.loc[self.crosssections["id"] == segmenti, :] = segment
 
-    def SmoothMaxSlope(self, segmenti, SlopePercentThreshold=1.5):
+    def smoothMaxSlope(self, segmenti, SlopePercentThreshold=1.5):
         """SmoothMaxSlope.
 
         SmoothMaxSlope method smoothes the bed level the in the cross section
@@ -1445,7 +1448,7 @@ class Calibration(River):
         # copy back the segment to the whole XS df
         self.crosssections.loc[self.crosssections["id"] == segmenti, :] = segment
 
-    def CheckFloodplain(self):
+    def checkFloodplain(self):
         """CheckFloodplain.
 
         CheckFloodplain method check if the dike levels is higher than the
@@ -1865,7 +1868,7 @@ class Calibration(River):
                 "please calculate first the MetricsHMvsRRM by the method HMvsRRM"
             )
 
-        gauge = self.GetGauges(subid, gaugei)
+        gauge = self.getGauges(subid, gaugei)
         gauge_id = gauge.loc[0, self.gauge_id_col]
         gaugename = str(gauge.loc[0, "name"])
 
@@ -1956,7 +1959,7 @@ class Calibration(River):
             return summary, fig, ax1
 
     @staticmethod
-    def PrepareToSave(df: DataFrame) -> DataFrame:
+    def prepareToSave(df: DataFrame) -> DataFrame:
         """PrepareToSave.
 
             PrepareToSave convert all the dates in the dataframe into string
@@ -2013,7 +2016,7 @@ class Calibration(River):
         if isinstance(self.MetricsHMvsRRM, GeoDataFrame) or isinstance(
             self.MetricsHMvsRRM, DataFrame
         ):
-            df = self.PrepareToSave(self.MetricsHMvsRRM.copy())
+            df = self.prepareToSave(self.MetricsHMvsRRM.copy())
             if isinstance(self.MetricsHMvsRRM, GeoDataFrame):
                 df.to_file(path + "MetricsHM_Q_RRM.geojson", driver="GeoJSON")
             if isinstance(self.MetricsHMvsRRM, DataFrame):
@@ -2022,7 +2025,7 @@ class Calibration(River):
         if isinstance(self.MetricsHMQvsObs, GeoDataFrame) or isinstance(
             self.MetricsHMQvsObs, DataFrame
         ):
-            df = self.PrepareToSave(self.MetricsHMQvsObs.copy())
+            df = self.prepareToSave(self.MetricsHMQvsObs.copy())
             if isinstance(self.MetricsHMQvsObs, GeoDataFrame):
                 df.to_file(path + "MetricsHM_Q_Obs.geojson", driver="GeoJSON")
             if isinstance(self.MetricsHMQvsObs, DataFrame):
@@ -2031,7 +2034,7 @@ class Calibration(River):
         if isinstance(self.MetricsRRMvsObs, GeoDataFrame) or isinstance(
             self.MetricsRRMvsObs, DataFrame
         ):
-            df = self.PrepareToSave(self.MetricsRRMvsObs.copy())
+            df = self.prepareToSave(self.MetricsRRMvsObs.copy())
             if isinstance(self.MetricsRRMvsObs, GeoDataFrame):
                 df.to_file(path + "MetricsRRM_Q_Obs.geojson", driver="GeoJSON")
             if isinstance(self.MetricsRRMvsObs, DataFrame):
@@ -2040,7 +2043,7 @@ class Calibration(River):
         if isinstance(self.MetricsHMWLvsObs, GeoDataFrame) or isinstance(
             self.MetricsHMWLvsObs, DataFrame
         ):
-            df = self.PrepareToSave(self.MetricsHMWLvsObs.copy())
+            df = self.prepareToSave(self.MetricsHMWLvsObs.copy())
             if isinstance(self.MetricsHMWLvsObs, GeoDataFrame):
                 df.to_file(path + "MetricsHM_WL_Obs.geojson", driver="GeoJSON")
             if isinstance(self.MetricsHMWLvsObs, DataFrame):

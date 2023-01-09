@@ -44,7 +44,7 @@ Calib.readObservedWL(wl_obs_path, start, end, novalue, gauge_date_format="'%Y-%m
 Calib.hm_gauges.sort_values(by="id", inplace=True, ignore_index=True)
 #%% Read RIM results
 Calib.readHMQ(hm_q_path, fmt="'%Y-%m-%d'")
-Calib.ReadHMWL(hmwl_path, fmt="'%Y-%m-%d'")
+Calib.readHMWL(hmwl_path, fmt="'%Y-%m-%d'")
 
 Calib.readRRM(
     f"{rrm_path}/hm_location",

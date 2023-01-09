@@ -252,17 +252,17 @@ Calib.slope = River.slope
 BedlevelDS = 88
 Manning = 0.06
 BC_slope = -0.03
-Calib.CalculateProfile(SubID, BedlevelDS, Manning, BC_slope)
+Calib.calculateProfile(SubID, BedlevelDS, Manning, BC_slope)
 # River.crosssections.to_csv(RIM2Files + "/xs_rhine2.csv", index=False, float_format="%.3f")
 # River.slope.to_csv(RIM2Files + "/slope2.csv",header=None,index=False)
 #%% Smooth cross section
 Calib.crosssections = River.crosssections[:]
-Calib.SmoothMaxSlope(SubID)
-Calib.SmoothBedLevel(SubID)
-Calib.DownWardBedLevel(SubID, 0.05)
+Calib.smoothMaxSlope(SubID)
+Calib.smoothBedLevel(SubID)
+Calib.downWardBedLevel(SubID, 0.05)
 # Calib.SmoothBankLevel(SubID)
 # Calib.SmoothFloodplainHeight(SubID)
-Calib.SmoothBedWidth(SubID)
+Calib.smoothBedWidth(SubID)
 # Calib.CheckFloodplain()
 # Calib.crosssections.to_csv(RIM2Files + "/XS2.csv", index=None, float_format="%.3f")
 #%% customized Run result saveing
