@@ -745,13 +745,46 @@ class River:
                 self.firstdayresults, self.lastday, freq="D"
             )
 
+    @staticmethod
+    def _read_chuncks(path, chunksize=10e5):
+        """read csv file in chuncks
+
+        Parameters
+        ----------
+        path: [str]
+            file path
+        chunksize: [int]
+            chunck size to particion reading the file
+
+        Returns
+        -------
+        DataFrame
+        """
+        iterator = pd.read_csv(
+            path, header=None, delimiter=r"\s+", chunksize=chunksize, iterator=True
+        )
+
+        data = pd.DataFrame()
+        cond = True
+
+        while cond:
+            try:
+                chunk = iterator.get_chunk(chunksize)
+                data = pd.concat([data, chunk], ignore_index=True, sort=False)
+            except StopIteration:
+                cond = False
+
+        return data
+
+
     def read1DResult(
-        self,
-        Subid: int,
-        fromday: Optional[int] = None,
-        today: Optional[int] = None,
-        path: str = None,
-        FillMissing: bool = False,
+            self,
+            Subid: int,
+            fromday: Optional[int] = None,
+            today: Optional[int] = None,
+            path: str = None,
+            fill_missing: bool = False,
+            chunk_size: int = None
     ):
         """Read1DResult.
 
@@ -771,8 +804,10 @@ class River:
             means read everything
         path : [String], optional
             path to read the results from. The default is ''.
-        FillMissing : [Bool], optional
+        fill_missing : [Bool], optional
             Fill the missing days. The default is False.
+        chunk_size: [int]
+            size of the chunk if you want to read the file in chunks Default is = None
 
         Returns
         -------
@@ -785,10 +820,14 @@ class River:
         if not path:
             path = self.onedresultpath
 
-        data = pd.read_csv(
-            rf"{path}\{Subid}.txt", header=None, delimiter=r"\s+", index_col=False
-        )
-        # TODO: read the file in chunks
+        if chunk_size is None:
+            data = pd.read_csv(
+                rf"{path}\{Subid}.txt", header=None, delimiter=r"\s+", index_col=False
+            )
+        else:
+            # read the file in chunks
+            data = self._read_chuncks(rf"{path}\{Subid}.txt", chunksize=chunk_size)
+
 
         data.columns = ["day", "hour", "xs", "q", "h", "wl"]
         days = list(set(data["day"]))
@@ -817,7 +856,7 @@ class River:
         xsname = self.xsname + [self.xsname[-1] + 1]
         # data["xs"][data["day"] == data["day"][1]][data["hour"] == 1].tolist()
 
-        if FillMissing:
+        if fill_missing:
             # check if there is missing days (Q was < threshold so the model didn't run)
             # fill these values with 0
             # days = list(set(data["day"]))
@@ -3242,13 +3281,14 @@ class Reach(River):
 
 
     def read1DResult(
-        self,
-        fromday: Union[int, str] = None,
-        today: Union[int, str] = None,
-        FillMissing: bool = True,
-        addHQ2: bool = False,
-        path: str = None,
-        xsid: int = None,
+            self,
+            fromday: Union[int, str] = None,
+            today: Union[int, str] = None,
+            fill_missing: bool = True,
+            addHQ2: bool = False,
+            path: str = None,
+            xsid: int = None,
+            chunk_size: int = None
     ):
         """read1DResult.
 
@@ -3265,7 +3305,7 @@ class Reach(River):
         today : [integer], optional
             the index of the day you want the data to end to. The default
             is empty. means read everything
-        FillMissing : [Bool], optional
+        fill_missing : [Bool], optional
             Fill the missing days. The default is False.
         addHQ2 : [Bool], optional
             to add the value of HQ2. The default is False.
@@ -3274,6 +3314,8 @@ class Reach(River):
         xsid : [Integer], optional
             id of a specific cross section you want to get the results on
             it. The default is ''.
+        chunk_size: [int]
+            size of the chunk if you want to read the file in chunks Default is = None
 
         Returns
         -------
@@ -3299,7 +3341,7 @@ class Reach(River):
         # if the results are not read yet read it
         if not isinstance(self.Result1D, DataFrame):
             River.read1DResult(
-                self, self.id, fromday, today, path=path, FillMissing=FillMissing
+                self, self.id, fromday, today, path=path, fill_missing=fill_missing, chunk_size=chunk_size
             )
         # get the index of the days and convert them into  dates
         if not fromday:
