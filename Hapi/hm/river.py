@@ -1104,12 +1104,6 @@ class River:
         else:
             Q = pd.read_csv(rpath, header=None, skiprows=1)
 
-            # if len(Q.columns) > 2:
-            #     Q = Q.rename(columns = {Q.columns[1]:str(nodeid)+"-1",
-            #                             Q.columns[2]:str(nodeid)+"-2"})
-            # else:
-            #     Q = Q.rename(columns = {Q.columns[1]:str(nodeid)+"-1"})
-
             Q.index = [dt.datetime.strptime(date, date_format) for date in Q[0]]
             del Q[0]
 
