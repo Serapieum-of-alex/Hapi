@@ -784,7 +784,8 @@ class River:
             today: Optional[int] = None,
             path: str = None,
             fill_missing: bool = False,
-            chunk_size: int = None
+            chunk_size: int = None,
+            extension: str = ".txt"
     ):
         """Read1DResult.
 
@@ -822,11 +823,11 @@ class River:
 
         if chunk_size is None:
             data = pd.read_csv(
-                rf"{path}\{Subid}.txt", header=None, delimiter=r"\s+", index_col=False
+                rf"{path}\{Subid}{extension}", header=None, delimiter=r"\s+", index_col=False
             )
         else:
             # read the file in chunks
-            data = self._read_chuncks(rf"{path}\{Subid}.txt", chunksize=chunk_size)
+            data = self._read_chuncks(rf"{path}\{Subid}{extension}", chunksize=chunk_size)
 
 
         data.columns = ["day", "hour", "xs", "q", "h", "wl"]
