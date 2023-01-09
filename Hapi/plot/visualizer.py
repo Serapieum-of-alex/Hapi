@@ -1638,7 +1638,7 @@ class Visualize:
 
         return fig, ax_XS
 
-    def Plot1minProfile(
+    def plot1minProfile(
         self,
         Sub,
         date: str,
@@ -1684,7 +1684,7 @@ class Visualize:
         ax1.grid()
 
     @staticmethod
-    def SaveProfileAnimation(Anim, Path="", fps=3, ffmpegPath=""):
+    def saveProfileAnimation(Anim, Path="", fps=3, ffmpegPath=""):
         """SaveProfileAnimation.
 
         save video animation
