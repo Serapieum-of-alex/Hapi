@@ -100,42 +100,162 @@ def test_sub_GetFlow(
     assert all(elem in Sub.LateralsTable for elem in sub_GetFlow_lateralTable)
 
 
-def test_Read1DResult(
-    version: int,
-    river_cross_section_path: str,
-    segment1: int,
-    Read1DResult_path: str,
-    Read1DResult_xsid: int,
-    test_time_series_length: int,
-):
+class TestRead1DResult:
+    def test_read_complete_file(
+        self,
+        version: int,
+        river_cross_section_path: str,
+        segment1: int,
+        Read1DResult_path: str,
+        Read1DResult_xsid: int,
+        test_time_series_length: int,
+    ):
 
-    River = R.River("HM", version=version)
-    River.onedresultpath = Read1DResult_path
-    # River.results_paths = {"onedresultpath": Read1DResult_path}
-    River.readXS(river_cross_section_path)
-    Sub = R.Reach(segment1, River)
-    Sub.read1DResult()
-    assert (
-        len(Sub.Result1D) == test_time_series_length * 24 * (len(Sub.crosssections) + 1)
-        and len(Sub.Result1D.columns) == 6
-    )
-    assert (
-        len(Sub.XSHydrographs) == test_time_series_length * 24
-        and len(Sub.XSHydrographs.columns) == 2
-    )
-    assert (
-        len(Sub.XSWaterLevel) == test_time_series_length * 24
-        and len(Sub.XSWaterLevel.columns) == 2
-    )
-    assert (
-        len(Sub.XSWaterDepth) == test_time_series_length * 24
-        and len(Sub.XSWaterDepth.columns) == 2
-    )
-    Sub.read1DResult(xsid=Read1DResult_xsid)
+        River = R.River("HM", version=version)
+        River.onedresultpath = Read1DResult_path
+        # River.results_paths = {"onedresultpath": Read1DResult_path}
+        River.readXS(river_cross_section_path)
+        Sub = R.Reach(segment1, River)
+        Sub.read1DResult()
+        assert (
+            len(Sub.Result1D)
+            == test_time_series_length * 24 * (len(Sub.crosssections) + 1)
+            and len(Sub.Result1D.columns) == 6
+        )
+        assert (
+            len(Sub.XSHydrographs) == test_time_series_length * 24
+            and len(Sub.XSHydrographs.columns) == 2
+        )
+        assert (
+            len(Sub.XSWaterLevel) == test_time_series_length * 24
+            and len(Sub.XSWaterLevel.columns) == 2
+        )
+        assert (
+            len(Sub.XSWaterDepth) == test_time_series_length * 24
+            and len(Sub.XSWaterDepth.columns) == 2
+        )
+        Sub.read1DResult(xsid=Read1DResult_xsid)
 
-    assert Read1DResult_xsid in Sub.XSHydrographs.columns.tolist()
-    assert Read1DResult_xsid in Sub.XSWaterLevel.columns.tolist()
-    assert Read1DResult_xsid in Sub.XSWaterDepth.columns.tolist()
+        assert Read1DResult_xsid in Sub.XSHydrographs.columns.tolist()
+        assert Read1DResult_xsid in Sub.XSWaterLevel.columns.tolist()
+        assert Read1DResult_xsid in Sub.XSWaterDepth.columns.tolist()
+
+    def test_Read_chunks(
+        self,
+        version: int,
+        river_cross_section_path: str,
+        segment1: int,
+        Read1DResult_path: str,
+        Read1DResult_xsid: int,
+        test_time_series_length: int,
+    ):
+
+        River = R.River("HM", version=version)
+        River.onedresultpath = Read1DResult_path
+        # River.results_paths = {"onedresultpath": Read1DResult_path}
+        River.readXS(river_cross_section_path)
+        Sub = R.Reach(segment1, River)
+        Sub.read1DResult(chunk_size=10000)
+        assert (
+            len(Sub.Result1D)
+            == test_time_series_length * 24 * (len(Sub.crosssections) + 1)
+            and len(Sub.Result1D.columns) == 6
+        )
+        assert (
+            len(Sub.XSHydrographs) == test_time_series_length * 24
+            and len(Sub.XSHydrographs.columns) == 2
+        )
+        assert (
+            len(Sub.XSWaterLevel) == test_time_series_length * 24
+            and len(Sub.XSWaterLevel.columns) == 2
+        )
+        assert (
+            len(Sub.XSWaterDepth) == test_time_series_length * 24
+            and len(Sub.XSWaterDepth.columns) == 2
+        )
+        Sub.read1DResult(xsid=Read1DResult_xsid)
+
+        assert Read1DResult_xsid in Sub.XSHydrographs.columns.tolist()
+        assert Read1DResult_xsid in Sub.XSWaterLevel.columns.tolist()
+        assert Read1DResult_xsid in Sub.XSWaterDepth.columns.tolist()
+
+    def test_Read_zip(
+        self,
+        version: int,
+        river_cross_section_path: str,
+        segment1: int,
+        Read1DResult_path: str,
+        Read1DResult_xsid: int,
+        test_time_series_length: int,
+    ):
+
+        River = R.River("HM", version=version)
+        River.onedresultpath = Read1DResult_path
+        # River.results_paths = {"onedresultpath": Read1DResult_path}
+        River.readXS(river_cross_section_path)
+        Sub = R.Reach(segment1, River)
+        Sub.read1DResult(extension=".zip")
+        assert (
+            len(Sub.Result1D)
+            == test_time_series_length * 24 * (len(Sub.crosssections) + 1)
+            and len(Sub.Result1D.columns) == 6
+        )
+        assert (
+            len(Sub.XSHydrographs) == test_time_series_length * 24
+            and len(Sub.XSHydrographs.columns) == 2
+        )
+        assert (
+            len(Sub.XSWaterLevel) == test_time_series_length * 24
+            and len(Sub.XSWaterLevel.columns) == 2
+        )
+        assert (
+            len(Sub.XSWaterDepth) == test_time_series_length * 24
+            and len(Sub.XSWaterDepth.columns) == 2
+        )
+        Sub.read1DResult(xsid=Read1DResult_xsid)
+
+        assert Read1DResult_xsid in Sub.XSHydrographs.columns.tolist()
+        assert Read1DResult_xsid in Sub.XSWaterLevel.columns.tolist()
+        assert Read1DResult_xsid in Sub.XSWaterDepth.columns.tolist()
+
+    def test_Read_zip_chunks(
+        self,
+        version: int,
+        river_cross_section_path: str,
+        segment1: int,
+        Read1DResult_path: str,
+        Read1DResult_xsid: int,
+        test_time_series_length: int,
+    ):
+
+        River = R.River("HM", version=version)
+        River.onedresultpath = Read1DResult_path
+        # River.results_paths = {"onedresultpath": Read1DResult_path}
+        River.readXS(river_cross_section_path)
+        Sub = R.Reach(segment1, River)
+        Sub.read1DResult(chunk_size=10000, extension=".zip")
+        assert (
+            len(Sub.Result1D)
+            == test_time_series_length * 24 * (len(Sub.crosssections) + 1)
+            and len(Sub.Result1D.columns) == 6
+        )
+        assert (
+            len(Sub.XSHydrographs) == test_time_series_length * 24
+            and len(Sub.XSHydrographs.columns) == 2
+        )
+        assert (
+            len(Sub.XSWaterLevel) == test_time_series_length * 24
+            and len(Sub.XSWaterLevel.columns) == 2
+        )
+        assert (
+            len(Sub.XSWaterDepth) == test_time_series_length * 24
+            and len(Sub.XSWaterDepth.columns) == 2
+        )
+        Sub.read1DResult(xsid=Read1DResult_xsid)
+
+        assert Read1DResult_xsid in Sub.XSHydrographs.columns.tolist()
+        assert Read1DResult_xsid in Sub.XSWaterLevel.columns.tolist()
+        assert Read1DResult_xsid in Sub.XSWaterDepth.columns.tolist()
 
 
 def test_Sub_GetLaterals(

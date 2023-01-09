@@ -35,3 +35,9 @@ History
 * add hydrodynamic model 1d config file read function
 * simplify functions with too many parameters using decorator
 * add automatic pypi build and publish github actions
+
+1.5.0 (2023-01-10)
+------------------
+* hydraulic model can read chunked big zip file
+* fix CI
+* fix missing module (saint venant script and module)

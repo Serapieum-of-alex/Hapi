@@ -35,6 +35,7 @@ class Inputs:
         7- ReadExcelData
         8- ListAttributes
     """
+
     def __init__(self):
         """No parameters needed for instantiating the object."""
         pass

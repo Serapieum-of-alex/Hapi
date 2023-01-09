@@ -7,12 +7,13 @@ import datetime as dt
 import os
 import zipfile
 from bisect import bisect
-from typing import Tuple, Union, Optional, Any
 from pathlib import Path
-import yaml
+from typing import Any, Optional, Tuple, Union
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import yaml
 from loguru import logger
 from matplotlib.figure import Figure
 from pandas.core.frame import DataFrame
@@ -23,7 +24,8 @@ from statista.distributions import GEV, Gumbel  # , PlottingPosition
 
 from Hapi.hm.saintvenant import SaintVenant
 from Hapi.plot.visualizer import Visualize as V
-from Hapi.utils import class_method_parse, class_attr_initialize
+from Hapi.utils import class_attr_initialize, class_method_parse
+
 hours = list(range(1, 25))
 
 
@@ -33,8 +35,9 @@ class River:
     River class reads all the data of the river, (cross sections,
     simulation results) and analyse the results and do visualisation
     """
+
     initial_args = dict(
-        name= {"type": str},
+        name={"type": str},
         version={"default": 3, "type": int},
         dto={"default": 60, "type": int},
         dx={"default": 500, "type": int},
@@ -54,29 +57,85 @@ class River:
     )
 
     river_attributes = dict(
-        oneminresultpath=None, usbcpath=None, firstday=None, referenceindex_results=None,
-        wd=None, XSF=None, LateralsF=None, BCF=None, RiverNetworkF=None,
-        SlopeF=None, NoSeg=None, CalibrationF=None, Coupling1D2DF=None, RunMode=None, Subid=None,
-        Customized_BC_F=None, ResultsDetails=None, RRMTemporalResolution=None, HMTemporalResolution=None,
-        HMStoreTimeStep=None, TS=None, SimStartIndex=None, SimEndIndex=None, SimStart=None,
-        SimEnd=None, OneDTempR=None, D1=None, D2=None, crosssections=None, xsno=None,
-        xsname=None, QBCmin=None, HBCmin=None, h=None, q=None, from_beginning=None, firstdayresults=None,
-        lastday=None, daylist=None, id=None, QBC=None, HBC=None, usbc=None, dsbc=None, Result1D=None,
-        Q=None, H=None, slope=None, EventIndex=None, rivernetwork=None, SP=None, customized_runs_path=None,
-        Segments=None, RP=None, rrmpath=None, segments=None, customized_runs_config=None, parameters=None,
-        results_config=None, rrm_paths=None, rrm_config=None, river_1d_paths=None, river_1d_config=None,
-        config=None, results_paths=None, one_min_results_config=None, hourlt_results_config=None
+        oneminresultpath=None,
+        usbcpath=None,
+        firstday=None,
+        referenceindex_results=None,
+        wd=None,
+        XSF=None,
+        LateralsF=None,
+        BCF=None,
+        RiverNetworkF=None,
+        SlopeF=None,
+        NoSeg=None,
+        CalibrationF=None,
+        Coupling1D2DF=None,
+        RunMode=None,
+        Subid=None,
+        Customized_BC_F=None,
+        ResultsDetails=None,
+        RRMTemporalResolution=None,
+        HMTemporalResolution=None,
+        HMStoreTimeStep=None,
+        TS=None,
+        SimStartIndex=None,
+        SimEndIndex=None,
+        SimStart=None,
+        SimEnd=None,
+        OneDTempR=None,
+        D1=None,
+        D2=None,
+        crosssections=None,
+        xsno=None,
+        xsname=None,
+        QBCmin=None,
+        HBCmin=None,
+        h=None,
+        q=None,
+        from_beginning=None,
+        firstdayresults=None,
+        lastday=None,
+        daylist=None,
+        id=None,
+        QBC=None,
+        HBC=None,
+        usbc=None,
+        dsbc=None,
+        Result1D=None,
+        Q=None,
+        H=None,
+        slope=None,
+        EventIndex=None,
+        rivernetwork=None,
+        SP=None,
+        customized_runs_path=None,
+        Segments=None,
+        RP=None,
+        rrmpath=None,
+        segments=None,
+        customized_runs_config=None,
+        parameters=None,
+        results_config=None,
+        rrm_paths=None,
+        rrm_config=None,
+        river_1d_paths=None,
+        river_1d_config=None,
+        config=None,
+        results_paths=None,
+        one_min_results_config=None,
+        hourlt_results_config=None,
     )
 
     @class_method_parse(initial_args)
     @class_attr_initialize(river_attributes)
     def __init__(
-            self,
-            name: str,
-            version: int = 3,
-            start: str = "1950-1-1",
-            end: Union[int, str] = None,
-            *args, **kwargs
+        self,
+        name: str,
+        version: int = 3,
+        start: str = "1950-1-1",
+        end: Union[int, str] = None,
+        *args,
+        **kwargs,
     ):
         """River.
 
@@ -171,7 +230,6 @@ class River:
         else:
             self.rrmstart = dt.datetime.strptime(self.rrmstart, self.fmt)
 
-
         self.rrmend = self.rrmstart + dt.timedelta(days=self.rrmdays)
         ref_ind = pd.date_range(self.rrmstart, self.rrmend, freq="D")
         self.rrmreferenceindex = pd.DataFrame(index=list(range(1, self.rrmdays + 1)))
@@ -179,7 +237,6 @@ class River:
         self.notimesteps = len(self.rrmreferenceindex)
 
         self.indsub = pd.date_range(self.start, self.end, freq=self.freq)
-
 
     def indexToDate(self, index: int):
         """IndexToDate.
@@ -278,9 +335,8 @@ class River:
     def round(number, roundto):
         return round(number / roundto) * roundto
 
-
     def readConfig(self, path):
-        """reads the hydraulic model configuration file
+        """reads the hydraulic model configuration file.
 
         Parameters
         ----------
@@ -288,7 +344,9 @@ class River:
             path to the configuration file (yaml files)
         """
         if not os.path.exists(path):
-            raise FileNotFoundError(f"The Configuration file You have entered: {path} does not exist")
+            raise FileNotFoundError(
+                f"The Configuration file You have entered: {path} does not exist"
+            )
         with open(path, "r") as stream:
             config = yaml.safe_load(stream)
         # project directory
@@ -314,7 +372,9 @@ class River:
         self.rrm_paths = dict(
             rrm_rdir=rrm_rdir,
             laterals_table_path=rrm_rdir.joinpath(rrm_files.get("laterals")),
-            boundary_condition_table=rrm_rdir.joinpath(rrm_files.get("boundary condition")),
+            boundary_condition_table=rrm_rdir.joinpath(
+                rrm_files.get("boundary condition")
+            ),
             laterals_dir=rrm_rdir,
             boundary_condition_path=rrm_rdir,
             rrm_location_1=Path(rrm_results.get("location-1")),  # rrmpath
@@ -335,7 +395,7 @@ class River:
             onedresultpath=results_rdir.joinpath(hourlt_results.get("folder")),
             oneminresultpath=results_rdir,
             usbcpath=results_rdir.joinpath(one_min_results.get("usbc").get("folder")),
-            twodresultpath=Path(results_files.get("root directory"))
+            twodresultpath=Path(results_files.get("root directory")),
         )
         # parameters
         parameters = config.get("simulation parameters")
@@ -344,7 +404,6 @@ class River:
         self.customized_runs_config = customized_runs
         customized_runs_path = Path(customized_runs.get("previous run results"))
         self.customized_runs_path = customized_runs_path
-
 
     def read1DConfigFile(self, path: str):
         """Read1DConfigFile.
@@ -644,7 +703,8 @@ class River:
             assert self.crosssections, "please read the cross sections first"
 
         assert isinstance(self.usbcpath, str), (
-            "please input the 'usbcpath' attribute in " "the River or the Reach instance"
+            "please input the 'usbcpath' attribute in "
+            "the River or the Reach instance"
         )
 
         if isinstance(start, str):
@@ -745,13 +805,51 @@ class River:
                 self.firstdayresults, self.lastday, freq="D"
             )
 
+    @staticmethod
+    def _read_chuncks(path, chunksize=10e5):
+        """read csv file in chuncks.
+
+        Parameters
+        ----------
+        path: [str]
+            file path
+        chunksize: [int]
+            chunck size to particion reading the file
+
+        Returns
+        -------
+        DataFrame
+        """
+        iterator = pd.read_csv(
+            path,
+            header=None,
+            delimiter=r"\s+",
+            chunksize=chunksize,
+            iterator=True,
+            compression="infer",
+        )
+
+        data = pd.DataFrame()
+        cond = True
+
+        while cond:
+            try:
+                chunk = iterator.get_chunk(chunksize)
+                data = pd.concat([data, chunk], ignore_index=True, sort=False)
+            except StopIteration:
+                cond = False
+
+        return data
+
     def read1DResult(
         self,
         Subid: int,
         fromday: Optional[int] = None,
         today: Optional[int] = None,
         path: str = None,
-        FillMissing: bool = False,
+        fill_missing: bool = False,
+        chunk_size: int = None,
+        extension: str = ".txt",
     ):
         """Read1DResult.
 
@@ -771,8 +869,12 @@ class River:
             means read everything
         path : [String], optional
             path to read the results from. The default is ''.
-        FillMissing : [Bool], optional
+        fill_missing : [Bool], optional
             Fill the missing days. The default is False.
+        chunk_size: [int]
+            size of the chunk if you want to read the file in chunks Default is = None
+        extension: [str]
+            the extension of the file. Default is ".txt"
 
         Returns
         -------
@@ -785,10 +887,19 @@ class River:
         if not path:
             path = self.onedresultpath
 
-        data = pd.read_csv(
-            rf"{path}\{Subid}.txt", header=None, delimiter=r"\s+", index_col=False
-        )
-        # TODO: read the file in chunks
+        path = os.path.join(path, f"{Subid}{extension}")
+
+        if chunk_size is None:
+            data = pd.read_csv(
+                path,
+                header=None,
+                delimiter=r"\s+",
+                index_col=False,
+                compression="infer",
+            )
+        else:
+            # read the file in chunks
+            data = self._read_chuncks(path, chunksize=chunk_size)
 
         data.columns = ["day", "hour", "xs", "q", "h", "wl"]
         days = list(set(data["day"]))
@@ -817,7 +928,7 @@ class River:
         xsname = self.xsname + [self.xsname[-1] + 1]
         # data["xs"][data["day"] == data["day"][1]][data["hour"] == 1].tolist()
 
-        if FillMissing:
+        if fill_missing:
             # check if there is missing days (Q was < threshold so the model didn't run)
             # fill these values with 0
             # days = list(set(data["day"]))
@@ -1044,8 +1155,9 @@ class River:
         Q : [Dataframe]
             time series of the runoff .
         """
+        rpath = os.path.join(path, f"{nodeid}.txt")
         if version < 3:
-            Q = pd.read_csv(f"{path}/{nodeid}.txt", header=None)
+            Q = pd.read_csv(rpath, header=None)
             Q = Q.rename(columns={0: nodeid})
             Q.index = list(range(1, len(Q) + 1))
 
@@ -1057,13 +1169,7 @@ class River:
             Q = Q.loc[Q.index >= fromday, :]
             Q = Q.loc[Q.index <= today]
         else:
-            Q = pd.read_csv(f"{path}/{nodeid}.txt", header=None, skiprows=1)
-
-            # if len(Q.columns) > 2:
-            #     Q = Q.rename(columns = {Q.columns[1]:str(nodeid)+"-1",
-            #                             Q.columns[2]:str(nodeid)+"-2"})
-            # else:
-            #     Q = Q.rename(columns = {Q.columns[1]:str(nodeid)+"-1"})
+            Q = pd.read_csv(rpath, header=None, skiprows=1)
 
             Q.index = [dt.datetime.strptime(date, date_format) for date in Q[0]]
             del Q[0]
@@ -1938,7 +2044,7 @@ class River:
                 logger.info(f"New H = {round(H, 2)}")
                 logger.info("---------------------------")
 
-    def overtopping(self, overtopping_result_path: str=None):
+    def overtopping(self, overtopping_result_path: str = None):
         """Overtopping.
 
         Overtopping method reads the overtopping files and for each cross section
@@ -1993,7 +2099,9 @@ class River:
             try:
                 # open the file (if there is no column sthe file is empty)
                 data = pd.read_csv(
-                    rf"{overtopping_result_path}\{leftOverTop[i]}", header=None, delimiter=r"\s+"
+                    rf"{overtopping_result_path}\{leftOverTop[i]}",
+                    header=None,
+                    delimiter=r"\s+",
                 )
                 # add the sub basin to the overtopping dictionary of sub-basins
                 OverToppingSubsLeft[
@@ -2014,7 +2122,9 @@ class River:
             try:
                 # open the file
                 data = pd.read_csv(
-                    rf"{overtopping_result_path}\{RightOverTop[i]}", header=None, delimiter=r"\s+"
+                    rf"{overtopping_result_path}\{RightOverTop[i]}",
+                    header=None,
+                    delimiter=r"\s+",
                 )
                 # add the sub basin to the overtopping dictionary of sub-basins
                 OverToppingSubsRight[
@@ -2898,7 +3008,9 @@ class River:
                                             and the earliest day after the given
                                             day).
         """
-        data = pd.read_csv(rf"{self.onedresultpath}\{self.id}.txt", header=None, delimiter=r"\s+")
+        data = pd.read_csv(
+            rf"{self.onedresultpath}\{self.id}.txt", header=None, delimiter=r"\s+"
+        )
         data.columns = ["day", "hour", "xs", "q", "h", "wl"]
         days = list(set(data["day"]))
         days.sort()
@@ -3155,14 +3267,34 @@ class Reach(River):
     river object has to have the cross-sections read using the
     'ReadCrossSections' method
     """
-    reach_attr = dict(
-        ExtractedValues = dict(), XSHydrographs=None, NegQmin=None, Negative=None, XSWaterLevel=None, XSWaterDepth=None,
-        RRM=None, RRM2=None, ResampledQ=None, ResampledWL=None, ResampledH=None, Qrp=None, DetailedOvertoppingLeft=None,
-        DetailedOvertoppingRight=None, AllOvertoppingVSXS=None, AllOvertoppingVSTime=None, BC=None, AreaPerHigh=None,
-        AreaPerLow=None, TotalFlow=None, RRMProgression=None, LateralsTable=None, Laterals=None, Result1D=None,
-        USHydrographs=None
-    )
 
+    reach_attr = dict(
+        ExtractedValues=dict(),
+        XSHydrographs=None,
+        NegQmin=None,
+        Negative=None,
+        XSWaterLevel=None,
+        XSWaterDepth=None,
+        RRM=None,
+        RRM2=None,
+        ResampledQ=None,
+        ResampledWL=None,
+        ResampledH=None,
+        Qrp=None,
+        DetailedOvertoppingLeft=None,
+        DetailedOvertoppingRight=None,
+        AllOvertoppingVSXS=None,
+        AllOvertoppingVSTime=None,
+        BC=None,
+        AreaPerHigh=None,
+        AreaPerLow=None,
+        TotalFlow=None,
+        RRMProgression=None,
+        LateralsTable=None,
+        Laterals=None,
+        Result1D=None,
+        USHydrographs=None,
+    )
 
     @class_attr_initialize(reach_attr)
     def __init__(self, sub_id: int, River, run_model: bool = False, *args, **kwargs):
@@ -3240,15 +3372,16 @@ class Reach(River):
         self.xsname = self.crosssections["xsid"].tolist()
         self.xsno = len(self.xsname)
 
-
     def read1DResult(
         self,
         fromday: Union[int, str] = None,
         today: Union[int, str] = None,
-        FillMissing: bool = True,
+        fill_missing: bool = True,
         addHQ2: bool = False,
         path: str = None,
         xsid: int = None,
+        chunk_size: int = None,
+        extension: str = ".txt",
     ):
         """read1DResult.
 
@@ -3265,7 +3398,7 @@ class Reach(River):
         today : [integer], optional
             the index of the day you want the data to end to. The default
             is empty. means read everything
-        FillMissing : [Bool], optional
+        fill_missing : [Bool], optional
             Fill the missing days. The default is False.
         addHQ2 : [Bool], optional
             to add the value of HQ2. The default is False.
@@ -3274,6 +3407,10 @@ class Reach(River):
         xsid : [Integer], optional
             id of a specific cross section you want to get the results on
             it. The default is ''.
+        chunk_size: [int]
+            size of the chunk if you want to read the file in chunks Default is = None
+        extension: [str]
+            the extension of the file. Default is ".txt"
 
         Returns
         -------
@@ -3299,7 +3436,14 @@ class Reach(River):
         # if the results are not read yet read it
         if not isinstance(self.Result1D, DataFrame):
             River.read1DResult(
-                self, self.id, fromday, today, path=path, FillMissing=FillMissing
+                self,
+                self.id,
+                fromday,
+                today,
+                path=path,
+                fill_missing=fill_missing,
+                chunk_size=chunk_size,
+                extension=extension,
             )
         # get the index of the days and convert them into  dates
         if not fromday:
@@ -3750,7 +3894,9 @@ class Reach(River):
         try:
             # try to open and read the overtopping file
             data = pd.read_csv(
-                f"{self.onedresultpath}{self.id}{self.leftovertopping_suffix}", header=None, delimiter=r"\s+",
+                f"{self.onedresultpath}{self.id}{self.leftovertopping_suffix}",
+                header=None,
+                delimiter=r"\s+",
             )
 
             data.columns = ["day", "hour", "xsid", "q", "wl"]
@@ -3785,7 +3931,9 @@ class Reach(River):
         try:
             # try to open and read the overtopping file
             data = pd.read_csv(
-                rf"{self.onedresultpath}\{self.id}{self.rightovertopping_suffix}", header=None, delimiter=r"\s+",
+                rf"{self.onedresultpath}\{self.id}{self.rightovertopping_suffix}",
+                header=None,
+                delimiter=r"\s+",
             )
             data.columns = ["day", "hour", "xsid", "q", "wl"]
             # get the days in the sub
@@ -3888,7 +4036,7 @@ class Reach(River):
         ).last().values.tolist()[:-1]
         ts[xsid] = val
 
-        f = pd.DataFrame(index = ts.index)
+        f = pd.DataFrame(index=ts.index)
         f["date"] = ["'" + str(i)[:10] + "'" for i in ts.index]
         f["discharge(m3/s)"] = ts
 
@@ -4383,68 +4531,67 @@ class Reach(River):
         return H
 
     plot_discharge_args = dict(
-        Calib = {"type": Any},
-        gaugexs = {"type": int},
-        start = {"type": str},
-        end = {"type": str},
-        stationname = {"type": int},
-        gaugename = {"type": [str, int]},
-        segment_xs = {"type":  str},
-        plotlaterals = {"type": bool, "default": True},
-        latcolor = {"type": [str, tuple], "default": (0.3, 0, 0)},
-        latorder = {"type": int, "default": 4},
-        latstyle = {"type": int, "default": 9},
-        plotus = {"type": bool, "default": True},
-        ushcolor = {"type": [str, tuple], "default": "grey"},
-        ushorder = {"type": int, "default": 7},
-        ushstyle = {"type": int, "default": 7},
-        plottotal = {"type": bool, "default": True},
-        totalcolor = {"type": [str, tuple], "default": "k"},
-        totalorder = {"type": int, "default": 6},
-        totalstyle = {"type": int, "default": 4},
-        specificxs = {"type": [bool, int], "default": False},
-        xscolor = {"type": [str, tuple], "default": (164 / 255, 70 / 255, 159 / 255)},
-        xsorder = {"type": int, "default": 1},
-        xslinestyle = {"type": int, "default": 3},
-        plotrrm = {"type": bool, "default": True},
-        rrmcolor = {"type": [str, tuple], "default": "green"},
-        rrmorder = {"type": int, "default": 3},
-        rrmlinestyle = {"type": int, "default": 6},
-        rrm2color = {"type": [str, tuple], "default": (227 / 255, 99 / 255, 80 / 255)},
-        rrm2linesytle = {"type": int, "default": 8},
-        plotgauge = {"type": bool, "default": True},
-        gaugecolor = {"type": [str, tuple], "default": "#DC143C"},
-        gaugeorder = {"type": int, "default": 5},
-        gaugestyle = {"type": int, "default": 7},
-        hmcolor = {"type": [str, tuple], "default": "#004c99"},
-        hmorder = {"type": int, "default": 6},
-        linewidth = {"type": int, "default": 4},
-        figsize = {"type": tuple, "default": (6, 5)},
-        fmt = {"type": str, "default": "%Y-%m-%d"},
-        xlabels = {"type": [bool, int, list], "default": False},
-        ylabels = {"type": [bool, int, list], "default": False},
+        Calib={"type": Any},
+        gaugexs={"type": int},
+        start={"type": str},
+        end={"type": str},
+        stationname={"type": int},
+        gaugename={"type": [str, int]},
+        segment_xs={"type": str},
+        plotlaterals={"type": bool, "default": True},
+        latcolor={"type": [str, tuple], "default": (0.3, 0, 0)},
+        latorder={"type": int, "default": 4},
+        latstyle={"type": int, "default": 9},
+        plotus={"type": bool, "default": True},
+        ushcolor={"type": [str, tuple], "default": "grey"},
+        ushorder={"type": int, "default": 7},
+        ushstyle={"type": int, "default": 7},
+        plottotal={"type": bool, "default": True},
+        totalcolor={"type": [str, tuple], "default": "k"},
+        totalorder={"type": int, "default": 6},
+        totalstyle={"type": int, "default": 4},
+        specificxs={"type": [bool, int], "default": False},
+        xscolor={"type": [str, tuple], "default": (164 / 255, 70 / 255, 159 / 255)},
+        xsorder={"type": int, "default": 1},
+        xslinestyle={"type": int, "default": 3},
+        plotrrm={"type": bool, "default": True},
+        rrmcolor={"type": [str, tuple], "default": "green"},
+        rrmorder={"type": int, "default": 3},
+        rrmlinestyle={"type": int, "default": 6},
+        rrm2color={"type": [str, tuple], "default": (227 / 255, 99 / 255, 80 / 255)},
+        rrm2linesytle={"type": int, "default": 8},
+        plotgauge={"type": bool, "default": True},
+        gaugecolor={"type": [str, tuple], "default": "#DC143C"},
+        gaugeorder={"type": int, "default": 5},
+        gaugestyle={"type": int, "default": 7},
+        hmcolor={"type": [str, tuple], "default": "#004c99"},
+        hmorder={"type": int, "default": 6},
+        linewidth={"type": int, "default": 4},
+        figsize={"type": tuple, "default": (6, 5)},
+        fmt={"type": str, "default": "%Y-%m-%d"},
+        xlabels={"type": [bool, int, list], "default": False},
+        ylabels={"type": [bool, int, list], "default": False},
         # plotRRMProgression
-        plothm = {"type": bool, "default": True},
-        rrmlinesytle = {"type": int, "default": 8},
+        plothm={"type": bool, "default": True},
+        rrmlinesytle={"type": int, "default": 8},
         # plotWL
-        hmstyle = {"type": int, "default": 6},
-        legendsize = {"type": Union[int, float], "default": 15},
-        nxlabels = {"type": int, "default": 4},
-
+        hmstyle={"type": int, "default": 6},
+        legendsize={"type": Union[int, float], "default": 15},
+        nxlabels={"type": int, "default": 4},
     )
 
     @class_method_parse(plot_discharge_args)
     def plotQ(
-            self,
-            Calib,
-            gaugexs: int,
-            start: str,
-            end: str,
-            stationname: int,
-            gaugename: Union[str, int],
-            segment_xs: str,
-            *args,
-            **kwargs
+        self,
+        Calib,
+        gaugexs: int,
+        start: str,
+        end: str,
+        stationname: int,
+        gaugename: Union[str, int],
+        segment_xs: str,
+        *args,
+        **kwargs,
     ):
         """PlotQ.
 
@@ -4743,39 +4890,8 @@ class Reach(River):
 
         return fig, ax
 
-
     @class_method_parse(plot_discharge_args)
-    def plotRRMProgression(
-            self,
-            specificxs,
-            start,
-            end,
-            *args,
-            **kwargs
-        # plotlaterals: bool = True,
-        # latcolor: Union[str, tuple] = (0.3, 0, 0),
-        # latorder: int = 4,
-        # latstyle: int = 9,
-        # plotus: bool = True,
-        # ushcolor: Union[str, tuple] = "grey",
-        # ushorder: int = 7,
-        # ushstyle: int = 7,
-        # plottotal: bool = True,
-        # totalcolor: Union[str, tuple] = "k",
-        # totalorder: int = 6,
-        # totalstyle: int = 11,
-        # rrmorder: int = 3,
-        # rrmcolor: Union[str, tuple] = (227 / 255, 99 / 255, 80 / 255),
-        # plothm: bool = True,
-        # hmorder: int = 6,
-        # hmcolor: Union[str, tuple] = "#004c99",
-        # rrmlinesytle: int = 8,
-        # linewidth=4,
-        # figsize: tuple = (6, 5),
-        # fmt: str = "%Y-%m-%d",
-        # xlabels: Union[int, bool, list] = False,
-        # ylabels: Union[int, bool, list] = False,
-    ):
+    def plotRRMProgression(self, specificxs, start, end, *args, **kwargs):
         """PlotRRMProgression.
 
             plot the hydrograph at the  gauge location for the hm, rrm  (at two location is availabe),
@@ -4991,16 +5107,16 @@ class Reach(River):
 
         Returns
         -------
-        rmse : TYPE
-            DESCRIPTION.
-        kge : TYPE
-            DESCRIPTION.
-        wb : TYPE
-            DESCRIPTION.
-        nsehf : TYPE
-            DESCRIPTION.
-        nse : TYPE
-            DESCRIPTION.
+        rmse: [float]
+            root mean square error.
+        kge: [float]
+            Kling-gupta metric.
+        wb: [float]
+            water balance metrix.
+        nsehf: [float]
+            Nash-sutcliffe for high values metric.
+        nse: [float]
+            Nash-sutcliffe metric.
         """
         QHM = pd.DataFrame()
 
@@ -5076,7 +5192,6 @@ class Reach(River):
 
         return rmse, kge, wb, nsehf, nse
 
-
     @class_method_parse(plot_discharge_args)
     def plotWL(
         self,
@@ -5086,8 +5201,8 @@ class Reach(River):
         gaugexs: int,
         stationname: str,
         gaugename: str,
-            *args,
-            **kwargs,
+        *args,
+        **kwargs,
         # gaugecolor: Union[tuple, str] = "#DC143C",
         # hmcolor: Union[tuple, str] = "#004c99",
         # linewidth: Union[int, float] = 2,

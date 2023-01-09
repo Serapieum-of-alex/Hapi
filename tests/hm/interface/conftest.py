@@ -3,12 +3,12 @@ import pytest
 
 @pytest.fixture(scope="module")
 def interface_Laterals_table_path() -> str:
-    return "examples/Hydrodynamic models/test_case/inputs/1d/topo/laterals.txt"
+    return "examples/hydrodynamic-models/test_case/inputs/1d/topo/laterals.txt"
 
 
 @pytest.fixture(scope="module")
 def interface_Laterals_folder() -> str:
-    return "examples/Hydrodynamic models/test_case/inputs/1d/hydro/"
+    return "examples/hydrodynamic-models/test_case/inputs/1d/hydro/"
 
 
 @pytest.fixture(scope="module")
@@ -19,13 +19,13 @@ def interface_Laterals_date_format() -> str:
 @pytest.fixture(scope="module")
 def interface_bc_path() -> str:
     return (
-        "examples/Hydrodynamic models/test_case/inputs/1d/topo/boundaryconditions.txt"
+        "examples/hydrodynamic-models/test_case/inputs/1d/topo/boundaryconditions.txt"
     )
 
 
 @pytest.fixture(scope="module")
 def interface_bc_folder() -> str:
-    return "examples/Hydrodynamic models/test_case/inputs/1d/hydro/"
+    return "examples/hydrodynamic-models/test_case/inputs/1d/hydro/"
 
 
 @pytest.fixture(scope="module")
@@ -35,7 +35,7 @@ def interface_bc_date_format() -> str:
 
 @pytest.fixture(scope="module")
 def rrm_resutls_hm_location() -> str:
-    return r"examples\Hydrodynamic models\test_case\inputs\1d\hydro"
+    return r"examples/hydrodynamic-models/test_case/inputs/1d/hydro"
 
 
 @pytest.fixture(scope="module")

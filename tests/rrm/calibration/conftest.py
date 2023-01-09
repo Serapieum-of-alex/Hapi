@@ -10,13 +10,13 @@ import pytest
 
 @pytest.fixture(scope="module")
 def lower_bound() -> list:
-    path = r"examples/Hydrological model/data/lumped_model/LB-3.txt"
+    path = r"examples/hydrological-model/data/lumped_model/LB-3.txt"
     return pd.read_csv(path, index_col=0, header=None)
 
 
 @pytest.fixture(scope="module")
 def upper_bound() -> list:
-    path = r"examples/Hydrological model/data/lumped_model/UB-3.txt"
+    path = r"examples/hydrological-model/data/lumped_model/UB-3.txt"
     return pd.read_csv(path, index_col=0, header=None)
 
 
