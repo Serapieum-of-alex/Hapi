@@ -56,20 +56,8 @@ jobs:
         run: |
           python -m pytest -vvv --cov=Hapi --cov-report=xml
 
-      - name: Coveralls
-        uses: AndreMiras/coveralls-python-action@develop
-        with:
-          parallel: true
-          flag-name: Unit Test
-
-  coveralls_finish:
-    needs: Run
-    runs-on: ubuntu-latest
-    steps:
-    - name: Coveralls Finished
-      uses: AndreMiras/coveralls-python-action@develop
-      with:
-        parallel-finished: true
+      - name: Upload coverage reports to Codecov with GitHub Action
+        uses: codecov/codecov-action@v3
 
 #      - name: Upload coverage to Codecov
 #        uses: codecov/codecov-action@v1
