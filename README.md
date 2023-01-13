@@ -24,7 +24,7 @@ Current build status
 </table>
 
 [![Build status](https://ci.appveyor.com/api/projects/status/rys2u0l1nbmfjuww?svg=true)](https://ci.appveyor.com/project/MAfarrag/hapi)
-[![Coverage Status](https://coveralls.io/repos/github/MAfarrag/Hapi/badge.svg?branch=hydraulic-model)](https://coveralls.io/github/MAfarrag/Hapi?branch=hydraulic-model)
+[![codecov](https://codecov.io/gh/Serapieum-of-alex/Hapi/branch/master/graph/badge.svg?token=EMQSR7K2YV)](https://codecov.io/gh/Serapieum-of-alex/Hapi)
 ![GitHub last commit](https://img.shields.io/github/last-commit/MAfarrag/Hapi)
 ![GitHub forks](https://img.shields.io/github/forks/MAfarrag/hapi?style=social)
 ![GitHub Repo stars](https://img.shields.io/github/stars/MAfarrag/Hapi?style=social)
