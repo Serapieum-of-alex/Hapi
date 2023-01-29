@@ -17,7 +17,7 @@ from pandas.core.frame import DataFrame
 
 from Hapi.hapi_warnings import SilenceNumpyWarning, SilenceShapelyWarning
 from Hapi.hm.river import River
-from Hapi.utils import class_attr_initialize
+from serapeum_utils.utils import class_attr_initialize
 
 datafn = lambda x: dt.datetime.strptime(x, "%Y-%m-%d")
 
