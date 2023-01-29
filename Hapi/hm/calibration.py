@@ -1159,7 +1159,7 @@ class Calibration(River):
         except AttributeError:
             logger.debug(f"The Given river segment- {Segmenti} does not have a slope")
 
-    def smoothBedLevel(self, segmenti):
+    def smoothBedLevel(self, reach_id):
         """SmoothXS.
 
         SmoothBedLevel method smoothes the bed level of a given segment ID by
@@ -1167,19 +1167,19 @@ class Calibration(River):
 
         Parameters
         ----------
-        1-segmenti : [Integer]
+        reach_id : [Integer]
             segment ID.
 
         Returns
         -------
-        1-crosssections: [dataframe attribute]
+        crosssections: [dataframe attribute]
             the "gl" column in the crosssections attribute will be smoothed
         """
         msg = "please read the cross section first"
         assert hasattr(self, "crosssections"), "{0}".format(msg)
-        g = self.crosssections.loc[self.crosssections["id"] == segmenti, :].index[0]
+        g = self.crosssections.loc[self.crosssections["id"] == reach_id, :].index[0]
 
-        segment = self.crosssections.loc[self.crosssections["id"] == segmenti, :].copy()
+        segment = self.crosssections.loc[self.crosssections["id"] == reach_id, :].copy()
 
         segment.index = range(len(segment))
         segment.loc[:, "glnew"] = 0
@@ -1203,30 +1203,30 @@ class Calibration(River):
 
         segment.index = range(g, g + len(segment))
         # copy back the segment to the whole XS df
-        self.crosssections.loc[self.crosssections["id"] == segmenti, :] = segment
+        self.crosssections.loc[self.crosssections["id"] == reach_id, :] = segment
 
-    def smoothBankLevel(self, segmenti):
+    def smoothBankLevel(self, reach_id: int):
         """SmoothBankLevel.
 
         SmoothBankLevel method smoothes the bankfull depth for a given segment
 
         Parameters
         ----------
-        1-segmenti : [Integer]
-            segment ID.
+        reach_id : [Integer]
+            Reach ID.
 
         Returns
         -------
-        1-crosssections: [dataframe attribute]
+        crosssections: [dataframe attribute]
             the "dbf" column in the crosssections attribute will be smoothed
         """
         self.crosssections.loc[:, "banklevel"] = (
             self.crosssections.loc[:, "dbf"] + self.crosssections.loc[:, "gl"]
         )
 
-        g = self.crosssections.loc[self.crosssections["id"] == segmenti, :].index[0]
+        g = self.crosssections.loc[self.crosssections["id"] == reach_id, :].index[0]
 
-        segment = self.crosssections.loc[self.crosssections["id"] == segmenti, :].copy()
+        segment = self.crosssections.loc[self.crosssections["id"] == reach_id, :].copy()
         segment.index = range(len(segment))
         segment.loc[:, "banklevelnew"] = 0
         segment.loc[0, "banklevelnew"] = segment.loc[0, "banklevel"]
@@ -1250,9 +1250,9 @@ class Calibration(River):
         segment.index = range(g, g + len(segment))
 
         # copy back the segment to the whole XS df
-        self.crosssections.loc[self.crosssections["id"] == segmenti, :] = segment
+        self.crosssections.loc[self.crosssections["id"] == reach_id, :] = segment
 
-    def smoothFloodplainHeight(self, segmenti):
+    def smoothFloodplainHeight(self, reach_id):
         """SmoothFloodplainHeight.
 
         SmoothFloodplainHeight method smoothes the Floodplain Height the
@@ -1260,12 +1260,12 @@ class Calibration(River):
 
         Parameters
         ----------
-        1-segmenti : [Integer]
+        reach_id : [Integer]
             segment ID.
 
         Returns
         -------
-        1-crosssections: [dataframe attribute]
+        crosssections: [dataframe attribute]
             the "hl" and "hr" column in the crosssections attribute will be
             smoothed.
         """
@@ -1279,9 +1279,9 @@ class Calibration(River):
             self.crosssections.loc[:, "hr"] + self.crosssections.loc[:, "banklevel"]
         )
 
-        g = self.crosssections.loc[self.crosssections["id"] == segmenti, :].index[0]
+        g = self.crosssections.loc[self.crosssections["id"] == reach_id, :].index[0]
 
-        segment = self.crosssections.loc[self.crosssections["id"] == segmenti, :].copy()
+        segment = self.crosssections.loc[self.crosssections["id"] == reach_id, :].copy()
         segment.index = range(len(segment))
 
         segment.loc[:, "fplnew"] = 0
@@ -1312,7 +1312,7 @@ class Calibration(River):
 
         segment.index = range(g, g + len(segment))
         # copy back the segment to the whole XS df
-        self.crosssections.loc[self.crosssections["id"] == segmenti, :] = segment
+        self.crosssections.loc[self.crosssections["id"] == reach_id, :] = segment
 
         del (
             self.crosssections["banklevel"],
@@ -1320,7 +1320,7 @@ class Calibration(River):
             self.crosssections["fpl"],
         )
 
-    def smoothBedWidth(self, segmenti):
+    def smoothBedWidth(self, reach_id):
         """SmoothBedWidth.
 
         SmoothBedWidth method smoothes the Bed Width the in the cross section
@@ -1328,16 +1328,16 @@ class Calibration(River):
 
         Parameters
         ----------
-        1-segmenti : [Integer]
+        reach_id : [Integer]
             segment ID.
 
         Returns
         -------
-        1-crosssections: [dataframe attribute]
+        crosssections: [dataframe attribute]
             the "b" column in the crosssections attribute will be smoothed
         """
-        g = self.crosssections.loc[self.crosssections["id"] == segmenti, :].index[0]
-        segment = self.crosssections.loc[self.crosssections["id"] == segmenti, :].copy()
+        g = self.crosssections.loc[self.crosssections["id"] == reach_id, :].index[0]
+        segment = self.crosssections.loc[self.crosssections["id"] == reach_id, :].copy()
         segment.index = range(len(segment))
         segment.loc[:, "bnew"] = 0
         segment.loc[0, "bnew"] = segment.loc[0, "b"]
@@ -1351,9 +1351,9 @@ class Calibration(River):
         segment.loc[:, "b"] = segment.loc[:, "bnew"]
         segment.index = range(g, g + len(segment))
         # copy back the segment to the whole XS df
-        self.crosssections.loc[self.crosssections["id"] == segmenti, :] = segment
+        self.crosssections.loc[self.crosssections["id"] == reach_id, :] = segment
 
-    def downWardBedLevel(self, segmenti: int, height: Union[int, float]):
+    def downWardBedLevel(self, reach_id: int, height: Union[int, float]):
         """SmoothBedWidth.
 
         SmoothBedWidth method smoothes the Bed Width the in the cross section
@@ -1361,7 +1361,7 @@ class Calibration(River):
 
         Parameters
         ----------
-        segmenti : [Integer]
+        reach_id : [Integer]
             segment ID.
         height : []
 
@@ -1370,9 +1370,9 @@ class Calibration(River):
         crosssections: [dataframe attribute]
             the "b" column in the crosssections attribute will be smoothed
         """
-        g = self.crosssections.loc[self.crosssections["id"] == segmenti, :].index[0]
+        g = self.crosssections.loc[self.crosssections["id"] == reach_id, :].index[0]
 
-        segment = self.crosssections.loc[self.crosssections["id"] == segmenti, :].copy()
+        segment = self.crosssections.loc[self.crosssections["id"] == reach_id, :].copy()
         segment.index = range(len(segment))
 
         for j in range(1, len(segment)):
@@ -1381,9 +1381,9 @@ class Calibration(River):
 
         segment.index = range(g, g + len(segment))
         # copy back the segment to the whole XS df
-        self.crosssections.loc[self.crosssections["id"] == segmenti, :] = segment
+        self.crosssections.loc[self.crosssections["id"] == reach_id, :] = segment
 
-    def smoothMaxSlope(self, segmenti, SlopePercentThreshold=1.5):
+    def smoothMaxSlope(self, reach_id, SlopePercentThreshold=1.5):
         """SmoothMaxSlope.
 
         SmoothMaxSlope method smoothes the bed level the in the cross section
@@ -1412,20 +1412,20 @@ class Calibration(River):
 
         Parameters
         ----------
-        1-segmenti : [Integer]
+        reach_id : [Integer]
             segment ID.
-        2-SlopePercentThreshold  : [Float]
+        SlopePercentThreshold  : [Float]
              the percent of change in slope between three successive  cross
              sections. The default is 1.5.
 
         Returns
         -------
-        1-crosssections: [dataframe attribute]
+        crosssections: [dataframe attribute]
             the "gl" column in the crosssections attribute will be smoothed
         """
-        g = self.crosssections.loc[self.crosssections["id"] == segmenti, :].index[0]
+        g = self.crosssections.loc[self.crosssections["id"] == reach_id, :].index[0]
 
-        segment = self.crosssections.loc[self.crosssections["id"] == segmenti, :].copy()
+        segment = self.crosssections.loc[self.crosssections["id"] == reach_id, :].copy()
         segment.index = range(len(segment))
         # slope must be positive due to the smoothing
         slopes = [
@@ -1462,7 +1462,7 @@ class Calibration(River):
 
         segment.index = range(g, g + len(segment))
         # copy back the segment to the whole XS df
-        self.crosssections.loc[self.crosssections["id"] == segmenti, :] = segment
+        self.crosssections.loc[self.crosssections["id"] == reach_id, :] = segment
 
     def checkFloodplain(self):
         """CheckFloodplain.
