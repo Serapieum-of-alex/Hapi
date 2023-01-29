@@ -24,7 +24,7 @@ from statista.distributions import GEV, Gumbel  # , PlottingPosition
 
 from Hapi.hm.saintvenant import SaintVenant
 from Hapi.plot.visualizer import Visualize as V
-from Hapi.utils import class_attr_initialize, class_method_parse
+from serapeum_utils.utils import class_attr_initialize, class_method_parse
 
 hours = list(range(1, 25))
 
@@ -3298,7 +3298,7 @@ class Reach(River):
 
     @class_attr_initialize(reach_attr)
     def __init__(self, sub_id: int, River, run_model: bool = False, *args, **kwargs):
-        # super().__init__(*args, **kwargs)
+        # super(Reach, self).__init__(*args, **kwargs)
         # initializa the attributes with the river attributes
         for key, val in River.__dict__.items():
             setattr(self, key, val)
