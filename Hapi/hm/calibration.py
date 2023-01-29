@@ -1179,9 +1179,8 @@ class Calibration(River):
         assert hasattr(self, "crosssections"), "{0}".format(msg)
         g = self.crosssections.loc[self.crosssections["id"] == reach_id, :].index[0]
 
-        segment = self.crosssections.loc[self.crosssections["id"] == reach_id, :].copy()
+        segment = self.crosssections.loc[self.crosssections["id"] == reach_id, :].copy().reset_index()
 
-        segment.index = range(len(segment))
         segment.loc[:, "glnew"] = 0
         # the bed level at the beginning and end of the egment
         segment.loc[0, "glnew"] = segment.loc[0, "gl"]
@@ -1226,42 +1225,42 @@ class Calibration(River):
 
         g = self.crosssections.loc[self.crosssections["id"] == reach_id, :].index[0]
 
-        segment = self.crosssections.loc[self.crosssections["id"] == reach_id, :].copy()
-        segment.index = range(len(segment))
-        segment.loc[:, "banklevelnew"] = 0
-        segment.loc[0, "banklevelnew"] = segment.loc[0, "banklevel"]
-        segment.loc[len(segment) - 1, "banklevelnew"] = segment.loc[
-            len(segment) - 1, "banklevel"
+        reach = self.crosssections.loc[self.crosssections["id"] == reach_id, :].copy().reset_index()
+        reach.loc[:, "banklevelnew"] = 0
+        reach.loc[0, "banklevelnew"] = reach.loc[0, "banklevel"]
+        reach.loc[len(reach) - 1, "banklevelnew"] = reach.loc[
+            len(reach) - 1, "banklevel"
         ]
-
-        for j in range(1, len(segment) - 1):
-            segment.loc[j, "banklevelnew"] = (
-                segment.loc[j - 1, "banklevel"]
-                + segment.loc[j, "banklevel"]
-                + segment.loc[j + 1, "banklevel"]
+        # average of three cross sections. one before and the same xs and one after
+        for j in range(1, len(reach) - 1):
+            reach.loc[j, "banklevelnew"] = (
+                reach.loc[j - 1, "banklevel"]
+                + reach.loc[j, "banklevel"]
+                + reach.loc[j + 1, "banklevel"]
             ) / 3
 
-        segment.loc[:, "diff"] = (
-            segment.loc[:, "banklevelnew"] - segment.loc[:, "banklevel"]
+        reach.loc[:, "diff"] = (
+            reach.loc[:, "banklevelnew"] - reach.loc[:, "banklevel"]
         )
-        segment.loc[:, "dbf"] = segment.loc[:, "dbf"] + segment.loc[:, "diff"]
+        # add the difference to the bankful depth
+        reach.loc[:, "dbf"] = reach.loc[:, "dbf"] + reach.loc[:, "diff"]
 
         del self.crosssections["banklevel"]
-        segment.index = range(g, g + len(segment))
+        reach.index = range(g, g + len(reach))
 
-        # copy back the segment to the whole XS df
-        self.crosssections.loc[self.crosssections["id"] == reach_id, :] = segment
+        # copy back the reach to the whole XS df
+        self.crosssections.loc[self.crosssections["id"] == reach_id, :] = reach
 
     def smoothFloodplainHeight(self, reach_id):
         """SmoothFloodplainHeight.
 
         SmoothFloodplainHeight method smoothes the Floodplain Height the
-        point 5 and 6 in the cross section for a given segment
+        point 5 and 6 in the cross section for a given reach
 
         Parameters
         ----------
         reach_id : [Integer]
-            segment ID.
+            reach ID.
 
         Returns
         -------
@@ -1281,38 +1280,37 @@ class Calibration(River):
 
         g = self.crosssections.loc[self.crosssections["id"] == reach_id, :].index[0]
 
-        segment = self.crosssections.loc[self.crosssections["id"] == reach_id, :].copy()
-        segment.index = range(len(segment))
+        reach = self.crosssections.loc[self.crosssections["id"] == reach_id, :].copy().reset_index()
 
-        segment.loc[:, "fplnew"] = 0
-        segment.loc[:, "fprnew"] = 0
-        segment.loc[0, "fplnew"] = segment.loc[0, "fpl"]
-        segment.loc[len(segment) - 1, "fplnew"] = segment.loc[len(segment) - 1, "fpl"]
+        reach.loc[:, "fplnew"] = 0
+        reach.loc[:, "fprnew"] = 0
+        reach.loc[0, "fplnew"] = reach.loc[0, "fpl"]
+        reach.loc[len(reach) - 1, "fplnew"] = reach.loc[len(reach) - 1, "fpl"]
 
-        segment.loc[0, "fprnew"] = segment.loc[0, "fpr"]
-        segment.loc[len(segment) - 1, "fprnew"] = segment.loc[len(segment) - 1, "fpr"]
+        reach.loc[0, "fprnew"] = reach.loc[0, "fpr"]
+        reach.loc[len(reach) - 1, "fprnew"] = reach.loc[len(reach) - 1, "fpr"]
 
-        for j in range(1, len(segment) - 1):
-            segment.loc[j, "fplnew"] = (
-                segment.loc[j - 1, "fpl"]
-                + segment.loc[j, "fpl"]
-                + segment.loc[j + 1, "fpl"]
+        for j in range(1, len(reach) - 1):
+            reach.loc[j, "fplnew"] = (
+                reach.loc[j - 1, "fpl"]
+                + reach.loc[j, "fpl"]
+                + reach.loc[j + 1, "fpl"]
             ) / 3
-            segment.loc[j, "fprnew"] = (
-                segment.loc[j - 1, "fpr"]
-                + segment.loc[j, "fpr"]
-                + segment.loc[j + 1, "fpr"]
+            reach.loc[j, "fprnew"] = (
+                reach.loc[j - 1, "fpr"]
+                + reach.loc[j, "fpr"]
+                + reach.loc[j + 1, "fpr"]
             ) / 3
 
-        segment.loc[:, "diff0"] = segment.loc[:, "fplnew"] - segment.loc[:, "fpl"]
-        segment.loc[:, "diff1"] = segment.loc[:, "fprnew"] - segment.loc[:, "fpr"]
+        reach.loc[:, "diff0"] = reach.loc[:, "fplnew"] - reach.loc[:, "fpl"]
+        reach.loc[:, "diff1"] = reach.loc[:, "fprnew"] - reach.loc[:, "fpr"]
 
-        segment.loc[:, "hl"] = segment.loc[:, "hl"] + segment.loc[:, "diff0"]
-        segment.loc[:, "hr"] = segment.loc[:, "hr"] + segment.loc[:, "diff1"]
+        reach.loc[:, "hl"] = reach.loc[:, "hl"] + reach.loc[:, "diff0"]
+        reach.loc[:, "hr"] = reach.loc[:, "hr"] + reach.loc[:, "diff1"]
 
-        segment.index = range(g, g + len(segment))
-        # copy back the segment to the whole XS df
-        self.crosssections.loc[self.crosssections["id"] == reach_id, :] = segment
+        reach.index = range(g, g + len(reach))
+        # copy back the reach to the whole XS df
+        self.crosssections.loc[self.crosssections["id"] == reach_id, :] = reach
 
         del (
             self.crosssections["banklevel"],
@@ -1324,12 +1322,12 @@ class Calibration(River):
         """SmoothBedWidth.
 
         SmoothBedWidth method smoothes the Bed Width the in the cross section
-        for a given segment
+        for a given reach
 
         Parameters
         ----------
         reach_id : [Integer]
-            segment ID.
+            reach ID.
 
         Returns
         -------
@@ -1337,32 +1335,31 @@ class Calibration(River):
             the "b" column in the crosssections attribute will be smoothed
         """
         g = self.crosssections.loc[self.crosssections["id"] == reach_id, :].index[0]
-        segment = self.crosssections.loc[self.crosssections["id"] == reach_id, :].copy()
-        segment.index = range(len(segment))
-        segment.loc[:, "bnew"] = 0
-        segment.loc[0, "bnew"] = segment.loc[0, "b"]
-        segment.loc[len(segment) - 1, "bnew"] = segment.loc[len(segment) - 1, "b"]
+        reach = self.crosssections.loc[self.crosssections["id"] == reach_id, :].copy().reset_index()
+        reach.loc[:, "bnew"] = 0
+        reach.loc[0, "bnew"] = reach.loc[0, "b"]
+        reach.loc[len(reach) - 1, "bnew"] = reach.loc[len(reach) - 1, "b"]
 
-        for j in range(1, len(segment) - 1):
-            segment.loc[j, "bnew"] = (
-                segment.loc[j - 1, "b"] + segment.loc[j, "b"] + segment.loc[j + 1, "b"]
+        for j in range(1, len(reach) - 1):
+            reach.loc[j, "bnew"] = (
+                reach.loc[j - 1, "b"] + reach.loc[j, "b"] + reach.loc[j + 1, "b"]
             ) / 3
 
-        segment.loc[:, "b"] = segment.loc[:, "bnew"]
-        segment.index = range(g, g + len(segment))
-        # copy back the segment to the whole XS df
-        self.crosssections.loc[self.crosssections["id"] == reach_id, :] = segment
+        reach.loc[:, "b"] = reach.loc[:, "bnew"]
+        reach.index = range(g, g + len(reach))
+        # copy back the reach to the whole XS df
+        self.crosssections.loc[self.crosssections["id"] == reach_id, :] = reach
 
     def downWardBedLevel(self, reach_id: int, height: Union[int, float]):
         """SmoothBedWidth.
 
         SmoothBedWidth method smoothes the Bed Width the in the cross section
-        for a given segment
+        for a given reach
 
         Parameters
         ----------
         reach_id : [Integer]
-            segment ID.
+            reach ID.
         height : []
 
         Returns
@@ -1372,22 +1369,21 @@ class Calibration(River):
         """
         g = self.crosssections.loc[self.crosssections["id"] == reach_id, :].index[0]
 
-        segment = self.crosssections.loc[self.crosssections["id"] == reach_id, :].copy()
-        segment.index = range(len(segment))
+        reach = self.crosssections.loc[self.crosssections["id"] == reach_id, :].copy().reset_index()
 
-        for j in range(1, len(segment)):
-            if segment.loc[j - 1, "gl"] - segment.loc[j, "gl"] < height:
-                segment.loc[j, "gl"] = segment.loc[j - 1, "gl"] - height
+        for j in range(1, len(reach)):
+            if reach.loc[j - 1, "gl"] - reach.loc[j, "gl"] < height:
+                reach.loc[j, "gl"] = reach.loc[j - 1, "gl"] - height
 
-        segment.index = range(g, g + len(segment))
-        # copy back the segment to the whole XS df
-        self.crosssections.loc[self.crosssections["id"] == reach_id, :] = segment
+        reach.index = range(g, g + len(reach))
+        # copy back the reach to the whole XS df
+        self.crosssections.loc[self.crosssections["id"] == reach_id, :] = reach
 
     def smoothMaxSlope(self, reach_id, SlopePercentThreshold=1.5):
         """SmoothMaxSlope.
 
         SmoothMaxSlope method smoothes the bed level the in the cross section
-        for a given segment
+        for a given reach
 
         As now the slope is not very smoothed as it was when using the average
         slope everywhere, when the the difference between two consecutive
@@ -1413,7 +1409,7 @@ class Calibration(River):
         Parameters
         ----------
         reach_id : [Integer]
-            segment ID.
+            reach ID.
         SlopePercentThreshold  : [Float]
              the percent of change in slope between three successive  cross
              sections. The default is 1.5.
@@ -1425,12 +1421,11 @@ class Calibration(River):
         """
         g = self.crosssections.loc[self.crosssections["id"] == reach_id, :].index[0]
 
-        segment = self.crosssections.loc[self.crosssections["id"] == reach_id, :].copy()
-        segment.index = range(len(segment))
+        reach = self.crosssections.loc[self.crosssections["id"] == reach_id, :].copy().reset_index()
         # slope must be positive due to the smoothing
         slopes = [
-            (segment.loc[k, "gl"] - segment.loc[k + 1, "gl"]) / 500
-            for k in range(len(segment) - 1)
+            (reach.loc[k, "gl"] - reach.loc[k + 1, "gl"]) / 500
+            for k in range(len(reach) - 1)
         ]
         # if percent is -ve means second slope is steeper
         precent = [
@@ -1440,29 +1435,29 @@ class Calibration(River):
         # at row 1 in precent list is difference between row 1 and row 2
         # in slopes list and slope in row 2 is the steep slope,
         # slope at row 2 is the difference
-        # between gl in row 2 and row 3 in the segment dataframe, and gl row
+        # between gl in row 2 and row 3 in the reach dataframe, and gl row
         # 3 is very and we want to elevate it to reduce the slope
         for j in range(len(precent)):
             if precent[j] < 0 and abs(precent[j]) >= SlopePercentThreshold:
                 logger.debug(j)
                 # get the calculated slope based on the slope percent threshold
                 slopes[j + 1] = slopes[j] - (-SlopePercentThreshold * slopes[j])
-                segment.loc[j + 2, "gl"] = (
-                    segment.loc[j + 1, "gl"] - slopes[j + 1] * 500
+                reach.loc[j + 2, "gl"] = (
+                    reach.loc[j + 1, "gl"] - slopes[j + 1] * 500
                 )
                 # recalculate all the slopes again
                 slopes = [
-                    (segment.loc[k, "gl"] - segment.loc[k + 1, "gl"]) / 500
-                    for k in range(len(segment) - 1)
+                    (reach.loc[k, "gl"] - reach.loc[k + 1, "gl"]) / 500
+                    for k in range(len(reach) - 1)
                 ]
                 precent = [
                     (slopes[k] - slopes[k + 1]) / slopes[k]
                     for k in range(len(slopes) - 1)
                 ]
 
-        segment.index = range(g, g + len(segment))
-        # copy back the segment to the whole XS df
-        self.crosssections.loc[self.crosssections["id"] == reach_id, :] = segment
+        reach.index = range(g, g + len(reach))
+        # copy back the reach to the whole XS df
+        self.crosssections.loc[self.crosssections["id"] == reach_id, :] = reach
 
     def checkFloodplain(self):
         """CheckFloodplain.
@@ -1863,9 +1858,9 @@ class Calibration(River):
         parameters
         ----------
         subid: [int]
-            river segment id
+            river reach id
         gaugei: [int]
-            if the river segment has more than one gauge, gaugei is the gauge order
+            if the river reach has more than one gauge, gaugei is the gauge order
         start: [str]
             start date, if not given it will be taken from the already calculated Metrics table
         end: [str]
@@ -1892,7 +1887,7 @@ class Calibration(River):
             index=["HM-RRM", "RRM-Observed", "HM-Q-Observed", "HM-WL-Observed"],
             columns=self.MetricsHMvsRRM.columns,
         )
-        # for each gauge in the segment
+        # for each gauge in the reach
         if isinstance(self.MetricsHMQvsObs, DataFrame) or isinstance(
             self.MetricsHMQvsObs, GeoDataFrame
         ):
