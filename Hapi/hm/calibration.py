@@ -1198,7 +1198,7 @@ class Calibration(River):
         self.crosssections.loc[self.crosssections["id"] == reach_id, :] = reach
 
 
-    def smoothBedLevel(self, reach_id):
+    def smoothBedLevel(self, reach_id: int):
         """smoothBedLevel.
 
             SmoothBedLevel method smoothes the bed level of a given reach ID by
@@ -1238,6 +1238,45 @@ class Calibration(River):
         reach.loc[:, "gl"] = reach.loc[:, "glnew"]
         # del reach["glnew"], reach["diff"]
         reach.drop(labels=["glnew", "diff"], axis=1, inplace=True)
+
+        self.updateReach(reach)
+
+    def smoothDikeLevel(self, reach_id: int):
+        """smoothBedLevel.
+
+            SmoothBedLevel method smoothes the bed level of a given reach ID by
+            calculating the moving average of three cross sections
+
+        Parameters
+        ----------
+        reach_id : [Integer]
+            reach ID.
+
+        Returns
+        -------
+        crosssections: [dataframe attribute]
+            the "gl" column in the crosssections attribute will be smoothed
+        """
+        if not hasattr(self, "crosssections"):
+            raise ValueError("Please read the cross section first")
+
+        reach = self.getReach(reach_id)
+
+        reach.loc[:, "zlnew"] = 0
+        # the bed level at the beginning and end of the egment
+        reach.loc[0, "zlnew"] = reach.loc[0, "zl"]
+        reach.loc[len(reach) - 1, "zlnew"] = reach.loc[len(reach) - 1, "zl"]
+
+        # calculate the average of three XS bed level
+        for j in range(1, len(reach) - 1):
+            reach.loc[j, "zlnew"] = (
+                reach.loc[j - 1, "zl"]
+                + reach.loc[j, "zl"]
+                + reach.loc[j + 1, "zl"]
+            ) / 3
+
+        reach.loc[:, "zl"] = reach.loc[:, "zlnew"]
+        reach.drop(labels=["zlnew"], axis=1, inplace=True)
 
         self.updateReach(reach)
 
@@ -1285,7 +1324,7 @@ class Calibration(River):
         del self.crosssections["banklevel"]
         self.updateReach(reach)
 
-    def smoothFloodplainHeight(self, reach_id):
+    def smoothFloodplainHeight(self, reach_id: int):
         """SmoothFloodplainHeight.
 
         SmoothFloodplainHeight method smoothes the Floodplain Height the
@@ -1348,7 +1387,7 @@ class Calibration(River):
         #     self.crosssections["fpl"],
         # )
 
-    def smoothBedWidth(self, reach_id):
+    def smoothBedWidth(self, reach_id: int):
         """SmoothBedWidth.
 
         SmoothBedWidth method smoothes the Bed Width the in the cross section
@@ -1403,7 +1442,7 @@ class Calibration(River):
         self.updateReach(reach)
 
 
-    def smoothMaxSlope(self, reach_id, SlopePercentThreshold=1.5):
+    def smoothMaxSlope(self, reach_id: int, SlopePercentThreshold=1.5):
         """SmoothMaxSlope.
 
         SmoothMaxSlope method smoothes the bed level the in the cross section

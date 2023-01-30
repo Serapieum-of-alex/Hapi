@@ -114,6 +114,16 @@ def test_SmoothBedLevel(
     Calib.smoothBedLevel(segment3)
 
 
+def test_SmoothDikeLevel(
+    version: int,
+    river_cross_section_path: str,
+    segment3: int,
+):
+    Calib = RC.Calibration("HM", version=version)
+    Calib.readXS(river_cross_section_path)
+    Calib.smoothDikeLevel(segment3)
+
+
 def test_DownWardBedLevel(
     version: int,
     river_cross_section_path: str,
