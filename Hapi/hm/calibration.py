@@ -14,6 +14,7 @@ from matplotlib.figure import Figure
 # from pandas import DataFrame
 from pandas._libs.tslibs.timestamps import Timestamp
 from pandas.core.frame import DataFrame
+from pandas.core.series import Series
 
 from Hapi.hapi_warnings import SilenceNumpyWarning, SilenceShapelyWarning
 from Hapi.hm.river import River
@@ -1241,6 +1242,31 @@ class Calibration(River):
 
         self.updateReach(reach)
 
+    @staticmethod
+    def _smooth(series: Series, window: int=3):
+        """smooth data in a specific column in the given DataFrame
+
+        Parameters
+        ----------
+        series: [series]
+            Pandas Series.
+        window: [int]
+            window length
+
+        Returns
+        -------
+        Pandas Series
+        """
+        # calculate the average of three XS bed level
+        # TODO: use the rolling method in all other smoothing methods
+        # https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.rolling.html
+        smoothed = series.rolling(window=window, center=True).mean()
+        # the bed level at the beginning and end of the egment
+        smoothed[0] = series[0]
+        smoothed[smoothed.index[-1]] = series[series.index[-1]]
+
+        return smoothed
+
     def smoothDikeLevel(self, reach_id: int):
         """smoothBedLevel.
 
@@ -1261,23 +1287,8 @@ class Calibration(River):
             raise ValueError("Please read the cross section first")
 
         reach = self.getReach(reach_id)
-
-        reach.loc[:, "zlnew"] = 0
-        # the bed level at the beginning and end of the egment
-        reach.loc[0, "zlnew"] = reach.loc[0, "zl"]
-        reach.loc[len(reach) - 1, "zlnew"] = reach.loc[len(reach) - 1, "zl"]
-
-        # calculate the average of three XS bed level
-        for j in range(1, len(reach) - 1):
-            reach.loc[j, "zlnew"] = (
-                reach.loc[j - 1, "zl"]
-                + reach.loc[j, "zl"]
-                + reach.loc[j + 1, "zl"]
-            ) / 3
-
-        reach.loc[:, "zl"] = reach.loc[:, "zlnew"]
-        reach.drop(labels=["zlnew"], axis=1, inplace=True)
-
+        # TODO: use the rolling method in all other smoothing methods
+        reach["zl"] = self._smooth(reach["zl"], window=3)
         self.updateReach(reach)
 
     def smoothBankLevel(self, reach_id: int):
