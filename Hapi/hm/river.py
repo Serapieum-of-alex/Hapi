@@ -112,7 +112,7 @@ class River:
         Segments=None,
         RP=None,
         rrmpath=None,
-        segments=None,
+        reach_ids=None,
         customized_runs_config=None,
         parameters=None,
         results_config=None,
@@ -541,13 +541,13 @@ class River:
         if self.version == 3:
             self.crosssections = pd.read_csv(path, delimiter=",")
             self.xsno = len(self.crosssections)
-            self.segments = list(set(self.crosssections["id"].tolist()))
+            self.reach_ids = list(set(self.crosssections["id"].tolist()))
         else:
             self.crosssections = pd.read_csv(path, delimiter=",")
             self.xsno = len(self.crosssections)
             # TODO to be checked later now for testing of version 4
             self.xsname = self.crosssections["xsid"].tolist()
-            self.segments = list(set(self.crosssections["id"].tolist()))
+            self.reach_ids = list(set(self.crosssections["id"].tolist()))
 
     def readBoundaryConditions(
         self,
@@ -1467,7 +1467,7 @@ class River:
         Returns
         -------
         slope: [DataFrame]
-            dataframe of the boundary condition segments that has slope
+            dataframe of the boundary condition reaches that has slope
         """
         self.slope = pd.read_csv(path, delimiter=",", header=None, skiprows=1)
         self.slope.columns = ["id", "slope"]
@@ -1603,7 +1603,7 @@ class River:
         Returns
         -------
         US : [list attribute], optional
-            the id of all the upstream segments are going to be stored in a list
+            the id of all the upstream reaches are going to be stored in a list
             attribute.
         """
         self.US = []
@@ -4172,7 +4172,7 @@ class Reach(River):
         Returns
         -------
         USHydrographs : [dataframe attribute].
-            dataframe contains the hydrograph of each of the upstream segments
+            dataframe contains the hydrograph of each of the upstream reachs
             with segment id as a column name and a column 'total' contains the
             sum of all the hydrographs.
         """
@@ -4767,7 +4767,7 @@ class Reach(River):
                     )
                 except KeyError:
                     msg = (
-                        "Please read the routed hydrograph of the upstream segments using the "
+                        "Please read the routed hydrograph of the upstream reachs using the "
                         "'ReadUSHydrograph' method"
                     )
 
