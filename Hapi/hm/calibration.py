@@ -1199,51 +1199,8 @@ class Calibration(River):
         self.crosssections.loc[self.crosssections["id"] == reach_id, :] = reach
 
 
-    def smoothBedLevel(self, reach_id: int):
-        """smoothBedLevel.
-
-            SmoothBedLevel method smoothes the bed level of a given reach ID by
-            calculating the moving average of three cross sections
-
-        Parameters
-        ----------
-        reach_id : [Integer]
-            reach ID.
-
-        Returns
-        -------
-        crosssections: [dataframe attribute]
-            the "gl" column in the crosssections attribute will be smoothed
-        """
-        if not hasattr(self, "crosssections"):
-            raise ValueError("Please read the cross section first")
-
-        reach = self.getReach(reach_id)
-
-        reach.loc[:, "glnew"] = 0
-        # the bed level at the beginning and end of the egment
-        reach.loc[0, "glnew"] = reach.loc[0, "gl"]
-        reach.loc[len(reach) - 1, "glnew"] = reach.loc[len(reach) - 1, "gl"]
-
-        # calculate the average of three XS bed level
-        for j in range(1, len(reach) - 1):
-            reach.loc[j, "glnew"] = (
-                reach.loc[j - 1, "gl"]
-                + reach.loc[j, "gl"]
-                + reach.loc[j + 1, "gl"]
-            ) / 3
-        # calculate the difference in the bed level and take it from
-        # the bankful depth
-        reach.loc[:, "diff"] = reach.loc[:, "glnew"] - reach.loc[:, "gl"]
-        reach.loc[:, "dbf"] = reach.loc[:, "dbf"] - reach.loc[:, "diff"]
-        reach.loc[:, "gl"] = reach.loc[:, "glnew"]
-        # del reach["glnew"], reach["diff"]
-        reach.drop(labels=["glnew", "diff"], axis=1, inplace=True)
-
-        self.updateReach(reach)
-
     @staticmethod
-    def _smooth(series: Series, window: int=3):
+    def _smooth(series: Series, window: int = 3):
         """smooth data in a specific column in the given DataFrame
 
         Parameters
@@ -1251,7 +1208,7 @@ class Calibration(River):
         series: [series]
             Pandas Series.
         window: [int]
-            window length
+            window length (length of averaged values)
 
         Returns
         -------
@@ -1267,7 +1224,7 @@ class Calibration(River):
 
         return smoothed
 
-    def smoothDikeLevel(self, reach_id: int):
+    def smoothBedLevel(self, reach_id: int, window: int=3):
         """smoothBedLevel.
 
             SmoothBedLevel method smoothes the bed level of a given reach ID by
@@ -1277,6 +1234,40 @@ class Calibration(River):
         ----------
         reach_id : [Integer]
             reach ID.
+        window: [int]
+            window length (length of averaged values)
+
+        Returns
+        -------
+        crosssections: [dataframe attribute]
+            the "gl" column in the crosssections attribute will be smoothed
+        """
+        if not hasattr(self, "crosssections"):
+            raise ValueError("Please read the cross section first")
+
+        reach = self.getReach(reach_id)
+        reach["glnew"] = self._smooth(reach["gl"], window=window)
+        # calculate the difference in the bed level and take it from
+        # the bankful depth
+        reach.loc[:, "diff"] = reach.loc[:, "glnew"] - reach.loc[:, "gl"]
+        reach.loc[:, "dbf"] = reach.loc[:, "dbf"] - reach.loc[:, "diff"]
+        reach.loc[:, "gl"] = reach.loc[:, "glnew"]
+        reach.drop(labels=["glnew", "diff"], axis=1, inplace=True)
+
+        self.updateReach(reach)
+
+    def smoothDikeLevel(self, reach_id: int, window: int=3):
+        """smoothBedLevel.
+
+            SmoothBedLevel method smoothes the bed level of a given reach ID by
+            calculating the moving average of three cross sections
+
+        Parameters
+        ----------
+        reach_id : [Integer]
+            reach ID.
+        window: [int]
+            window length (length of averaged values)
 
         Returns
         -------
@@ -1288,10 +1279,11 @@ class Calibration(River):
 
         reach = self.getReach(reach_id)
         # TODO: use the rolling method in all other smoothing methods
-        reach["zl"] = self._smooth(reach["zl"], window=3)
+        reach["zl"] = self._smooth(reach["zl"], window=window)
+        reach["zr"] = self._smooth(reach["zr"], window=window)
         self.updateReach(reach)
 
-    def smoothBankLevel(self, reach_id: int):
+    def smoothBankLevel(self, reach_id: int, window: int=3):
         """SmoothBankLevel.
 
         SmoothBankLevel method smoothes the bankfull depth for a given reach
@@ -1300,6 +1292,8 @@ class Calibration(River):
         ----------
         reach_id : [Integer]
             Reach ID.
+        window: [int]
+            window length (length of averaged values)
 
         Returns
         -------
@@ -1310,21 +1304,9 @@ class Calibration(River):
             self.crosssections.loc[:, "dbf"] + self.crosssections.loc[:, "gl"]
         )
 
-        g = self.crosssections.loc[self.crosssections["id"] == reach_id, :].index[0]
 
         reach = self.getReach(reach_id)
-        reach.loc[:, "banklevelnew"] = 0
-        reach.loc[0, "banklevelnew"] = reach.loc[0, "banklevel"]
-        reach.loc[len(reach) - 1, "banklevelnew"] = reach.loc[
-            len(reach) - 1, "banklevel"
-        ]
-        # average of three cross sections. one before and the same xs and one after
-        for j in range(1, len(reach) - 1):
-            reach.loc[j, "banklevelnew"] = (
-                reach.loc[j - 1, "banklevel"]
-                + reach.loc[j, "banklevel"]
-                + reach.loc[j + 1, "banklevel"]
-            ) / 3
+        reach["banklevelnew"] = self._smooth(reach["banklevel"], window=window)
 
         reach.loc[:, "diff"] = (
             reach.loc[:, "banklevelnew"] - reach.loc[:, "banklevel"]
@@ -1332,10 +1314,10 @@ class Calibration(River):
         # add the difference to the bankful depth
         reach.loc[:, "dbf"] = reach.loc[:, "dbf"] + reach.loc[:, "diff"]
 
-        del self.crosssections["banklevel"]
+        reach.drop(labels=["banklevel"], axis=1, inplace=True)
         self.updateReach(reach)
 
-    def smoothFloodplainHeight(self, reach_id: int):
+    def smoothFloodplainHeight(self, reach_id: int, window: int=3):
         """SmoothFloodplainHeight.
 
         SmoothFloodplainHeight method smoothes the Floodplain Height the
@@ -1345,6 +1327,8 @@ class Calibration(River):
         ----------
         reach_id : [Integer]
             reach ID.
+        window: [int]
+            window length (length of averaged values)
 
         Returns
         -------
@@ -1364,25 +1348,8 @@ class Calibration(River):
 
         reach = self.getReach(reach_id)
 
-        reach.loc[:, "fplnew"] = 0
-        reach.loc[:, "fprnew"] = 0
-        reach.loc[0, "fplnew"] = reach.loc[0, "fpl"]
-        reach.loc[len(reach) - 1, "fplnew"] = reach.loc[len(reach) - 1, "fpl"]
-
-        reach.loc[0, "fprnew"] = reach.loc[0, "fpr"]
-        reach.loc[len(reach) - 1, "fprnew"] = reach.loc[len(reach) - 1, "fpr"]
-
-        for j in range(1, len(reach) - 1):
-            reach.loc[j, "fplnew"] = (
-                reach.loc[j - 1, "fpl"]
-                + reach.loc[j, "fpl"]
-                + reach.loc[j + 1, "fpl"]
-            ) / 3
-            reach.loc[j, "fprnew"] = (
-                reach.loc[j - 1, "fpr"]
-                + reach.loc[j, "fpr"]
-                + reach.loc[j + 1, "fpr"]
-            ) / 3
+        reach["fplnew"] = self._smooth(reach["fpl"], window=window)
+        reach["fprnew"] = self._smooth(reach["fpr"], window=window)
 
         reach.loc[:, "diff0"] = reach.loc[:, "fplnew"] - reach.loc[:, "fpl"]
         reach.loc[:, "diff1"] = reach.loc[:, "fprnew"] - reach.loc[:, "fpr"]
@@ -1392,13 +1359,8 @@ class Calibration(River):
 
         self.updateReach(reach)
         self.crosssections.drop(labels=["banklevel", "fpr", "fpl"], axis=1, inplace=True)
-        # del (
-        #     self.crosssections["banklevel"],
-        #     self.crosssections["fpr"],
-        #     self.crosssections["fpl"],
-        # )
 
-    def smoothBedWidth(self, reach_id: int):
+    def smoothBedWidth(self, reach_id: int, window: int=3):
         """SmoothBedWidth.
 
         SmoothBedWidth method smoothes the Bed Width the in the cross section
@@ -1408,6 +1370,8 @@ class Calibration(River):
         ----------
         reach_id : [Integer]
             reach ID.
+        window: [int]
+            window length (length of averaged values)
 
         Returns
         -------
@@ -1415,16 +1379,7 @@ class Calibration(River):
             the "b" column in the crosssections attribute will be smoothed
         """
         reach = self.getReach(reach_id)
-        reach.loc[:, "bnew"] = 0
-        reach.loc[0, "bnew"] = reach.loc[0, "b"]
-        reach.loc[len(reach) - 1, "bnew"] = reach.loc[len(reach) - 1, "b"]
-
-        for j in range(1, len(reach) - 1):
-            reach.loc[j, "bnew"] = (
-                reach.loc[j - 1, "b"] + reach.loc[j, "b"] + reach.loc[j + 1, "b"]
-            ) / 3
-
-        reach.loc[:, "b"] = reach.loc[:, "bnew"]
+        reach["n"] = self._smooth(reach["b"], window=window)
         self.updateReach(reach)
 
     def downWardBedLevel(self, reach_id: int, height: Union[int, float]):
