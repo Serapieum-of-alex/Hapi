@@ -350,7 +350,7 @@ toxs = ""  # 16067
 
 Vis = V(resolution="Hourly")
 
-Vis.GroundSurface(
+Vis.plotGroundSurface(
     Sub,
     floodplain=True,
     plotlateral=True,
@@ -360,7 +360,7 @@ Vis.GroundSurface(
     option=2,
 )
 #%% cross-sections
-fig, ax = Vis.CrossSections(
+fig, ax = Vis.plotCrossSections(
     Sub,
     bedlevel=True,
     fromxs=fromxs,

@@ -51,9 +51,9 @@ def test_GroundSurface(
     Sub.read1DResult()
 
     Vis = V(resolution="Hourly")
-    Vis.GroundSurface(Sub, floodplain=True, plotlateral=True, nxlabels=20, option=2)
+    Vis.plotGroundSurface(Sub, floodplain=True, plotlateral=True, nxlabels=20, option=2)
     plt.close()
-    Vis.GroundSurface(Sub, floodplain=True, plotlateral=True, nxlabels=20, option=1)
+    Vis.plotGroundSurface(Sub, floodplain=True, plotlateral=True, nxlabels=20, option=1)
     plt.close()
 
 
@@ -80,7 +80,7 @@ def test_CrossSections(
     Sub = R.Reach(segment3, River)
     Vis = V(resolution="Hourly")
 
-    fig, ax = Vis.CrossSections(
+    fig, ax = Vis.plotCrossSections(
         Sub,
         bedlevel=True,
         fromxs=plot_xs_seg3_fromxs,

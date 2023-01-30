@@ -137,7 +137,7 @@ class Visualize:
             Style = Style % len(Visualize.MarkerStyleList)
         return Visualize.MarkerStyleList[Style]
 
-    def GroundSurface(
+    def plotGroundSurface(
         self,
         Sub,
         fromxs: Optional[int] = None,
@@ -1407,7 +1407,7 @@ class Visualize:
 
         return anim
 
-    def CrossSections(
+    def plotCrossSections(
         self,
         Sub,
         fromxs: Optional[int] = None,
