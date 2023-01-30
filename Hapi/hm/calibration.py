@@ -144,15 +144,15 @@ class Calibration(River):
         path : [String]
             the path to the text file of the gauges table. the file can be geojson or a csv file.
         >>> "gauges.geojson"
-        {
-        "type": "FeatureCollection", "crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:EPSG::3035" } },
-        "features": [
-        { "type": "Feature", "properties": { "gid": 149, "name": "station 1", "oid": 23800100, "river": "Nile",
-        "id": 1, "xsid": 16100, "datum(m)": 252.36, "discharge": 1, "waterlevel": 1 }, "geometry": { "type": "Point", "coordinates": [ 4278240.4259, 2843958.863 ] } },
-        { "type": "Feature", "properties": { "gid": 106, "name": "station 2", "oid": 23800500, "river": "Nile",
-        "id": 2, "xsid": 16269, "datum(m)": 159.37, "discharge": 1, "waterlevel": 1 }, "geometry": { "type": "Point", "coordinates": [ 4259614.333, 2884750.556 ] } },
-        { "type": "Feature", "properties": { "gid": 158, "name": "station 3", "oid": 23800690, "river": "Nile",
-        "id": 4, "xsid": 16581, "datum(m)": 119.71, "discharge": 1, "waterlevel": 1}, "geometry": { "type": "Point", "coordinates": [ 4248756.490, 2924872.503 ] } },
+        >>> {
+        >>> "type": "FeatureCollection", "crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:EPSG::3035" } },
+        >>> "features": [
+        >>> { "type": "Feature", "properties": { "gid": 149, "name": "station 1", "oid": 23800100, "river": "Nile",
+        >>> "id": 1, "xsid": 16100, "datum(m)": 252.36, "discharge": 1, "waterlevel": 1 }, "geometry": { "type": "Point", "coordinates": [ 4278240.4259, 2843958.863 ] } },
+        >>> { "type": "Feature", "properties": { "gid": 106, "name": "station 2", "oid": 23800500, "river": "Nile",
+        >>> "id": 2, "xsid": 16269, "datum(m)": 159.37, "discharge": 1, "waterlevel": 1 }, "geometry": { "type": "Point", "coordinates": [ 4259614.333, 2884750.556 ] } },
+        >>> { "type": "Feature", "properties": { "gid": 158, "name": "station 3", "oid": 23800690, "river": "Nile",
+        >>> "id": 4, "xsid": 16581, "datum(m)": 119.71, "discharge": 1, "waterlevel": 1}, "geometry": { "type": "Point", "coordinates": [ 4248756.490, 2924872.503 ] } },
 
         Returns
         -------
@@ -165,9 +165,9 @@ class Calibration(River):
         >>> Calib = RC.Calibration("Hydraulic model", gauge_id_col="id")
         >>> Calib.readGaugesTable("path/to/gauges.geojson")
         >>> Calib.hm_gauges
-                gid  ...                         geometry
-            0   149  ...  POINT (4278240.426 2843958.864)
-            1   106  ...  POINT (4259614.334 2884750.556)
+        >>>     gid  ...                         geometry
+        >>> 0   149  ...  POINT (4278240.426 2843958.864)
+        >>> 1   106  ...  POINT (4259614.334 2884750.556)
         """
         try:
             self.hm_gauges = gpd.read_file(path, driver="GeoJSON")
@@ -177,21 +177,21 @@ class Calibration(River):
             )
             self.hm_gauges = pd.read_csv(path)
 
-        # sort the gauges table based on the segment
+        # sort the gauges table based on the reach
         self.hm_gauges.sort_values(by="id", inplace=True, ignore_index=True)
 
     def getGauges(self, subid: int, gaugei: int = 0) -> DataFrame:
-        """Get_Gauge_ID get the id of the station for a given river segment.
+        """Get_Gauge_ID get the id of the station for a given river reach.
 
         parameters:
         ----------
         subid: [int]
-            the river segment id
+            the river reach id
 
         return:
         -------
         id: [list/int]
-            if the river segment contains more than one gauges the function
+            if the river reach contains more than one gauges the function
             returns a list of ids, otherwise it returns the id.
         gauge name: [str]
             name of the gauge
@@ -201,7 +201,7 @@ class Calibration(River):
         gauges = self.hm_gauges.loc[self.hm_gauges["id"] == subid, :].reset_index()
         if len(gauges) == 0:
             raise KeyError(
-                "The given river segment does not have gauges in the gauge table"
+                "The given river reach does not have gauges in the gauge table"
             )
         elif len(gauges) > 1:
             f = gauges.loc[gaugei, :].to_frame()
@@ -213,7 +213,7 @@ class Calibration(River):
         # stationname = gauges.loc[:, column].values.tolist()
         # gaugename = str(gauges.loc[gaugei, 'name'])
         # gaugexs = gauges.loc[gaugei, 'xsid']
-        # segment_xs = str(subid) + "_" + str(gaugexs)
+        # reach_xs = str(subid) + "_" + str(gaugexs)
 
         # stationname, gaugename, gaugexs
 
@@ -623,7 +623,7 @@ class Calibration(River):
         -------
         q_hm : [dataframe attribute]
             dataframe containing the simulated hydrograph for each river
-            segment in the catchment.
+            reach in the catchment.
         """
         if addHQ2 and self.version == 1:
             msg = "please read the traceall file using the RiverNetwork method"
@@ -736,7 +736,7 @@ class Calibration(River):
         -------
             WLHM : [dataframe attribute]
                 dataframe containing the simulated water level hydrograph for
-                each river segment in the catchment.
+                each river reach in the catchment.
         """
         gauges = self.hm_gauges.loc[
             self.hm_gauges["waterlevel"] == 1, self.gauge_id_col
@@ -1095,119 +1095,156 @@ class Calibration(River):
             self.annual_max_hm_wl = AnnualMax
 
     def calculateProfile(
-        self, Segmenti: int, BedlevelDS: float, Manning: float, BC_slope: float
+        self, reachi: int, BedlevelDS: float, Manning: float, BC_slope: float
     ):
         """CalculateProfile.
 
-        CalculateProfile method takes the river segment ID and the calibration
+        CalculateProfile method takes the river reach ID and the calibration
         parameters (last downstream cross-section bed level and the manning
         coefficient) and calculates the new profiles.
 
         Parameters
         ----------
-        1-Segmenti : [Integer]
-            cross-sections segment ID .
-        2-BedlevelDS : [Float]
-            the bed level of the last cross section in the segment.
-        3-Manning : [float]
+        reachi : [Integer]
+            cross-sections reach ID .
+        BedlevelDS : [Float]
+            the bed level of the last cross section in the reach.
+        Manning : [float]
             manning coefficient.
-        4-BC_slope : [float]
+        BC_slope : [float]
             slope of the BC.
 
         Returns
         -------
-        1-crosssection:[dataframe attribute]
+        crosssection:[dataframe attribute]
             crosssection attribute will be updated with the newly calculated
-            profile for the given segment
-        2-slope:[dataframe attribute]
+            profile for the given reach
+        slope:[dataframe attribute]
             slope attribute will be updated with the newly calculated average
-            slope for the given segment
+            slope for the given reach
         """
         levels = pd.DataFrame(columns=["id", "bedlevelUS", "bedlevelDS"])
 
         # change cross-section
         bedlevel = self.crosssections.loc[
-            self.crosssections["id"] == Segmenti, "gl"
+            self.crosssections["id"] == reachi, "gl"
         ].values
-        # get the bedlevel of the last cross section in the segment
+        # get the bedlevel of the last cross section in the reach
         # as a calibration parameter
-        levels.loc[Segmenti, "bedlevelDS"] = BedlevelDS
-        levels.loc[Segmenti, "bedlevelUS"] = bedlevel[0]
+        levels.loc[reachi, "bedlevelDS"] = BedlevelDS
+        levels.loc[reachi, "bedlevelUS"] = bedlevel[0]
 
         NoDistances = len(bedlevel) - 1
-        # AvgSlope = ((levels.loc[Segmenti,'bedlevelUS'] -
-        #      levels.loc[Segmenti,'bedlevelDS'] )/ (500 * NoDistances)) *-500
+        # AvgSlope = ((levels.loc[reachi,'bedlevelUS'] -
+        #      levels.loc[reachi,'bedlevelDS'] )/ (500 * NoDistances)) *-500
         # change in the bed level of the last XS
-        AverageDelta = (levels.loc[Segmenti, "bedlevelDS"] - bedlevel[-1]) / NoDistances
+        AverageDelta = (levels.loc[reachi, "bedlevelDS"] - bedlevel[-1]) / NoDistances
 
         # calculate the new bed levels
         bedlevelNew = np.zeros(len(bedlevel))
-        bedlevelNew[len(bedlevel) - 1] = levels.loc[Segmenti, "bedlevelDS"]
-        bedlevelNew[0] = levels.loc[Segmenti, "bedlevelUS"]
+        bedlevelNew[len(bedlevel) - 1] = levels.loc[reachi, "bedlevelDS"]
+        bedlevelNew[0] = levels.loc[reachi, "bedlevelUS"]
 
         for i in range(len(bedlevel) - 1):
-            # bedlevelNew[i] = levels.loc[Segmenti,'bedlevelDS'] + (len(bedlevel) - i -1) * abs(AvgSlope)
+            # bedlevelNew[i] = levels.loc[reachi,'bedlevelDS'] + (len(bedlevel) - i -1) * abs(AvgSlope)
             bedlevelNew[i] = bedlevel[i] + i * AverageDelta
 
-        self.crosssections.loc[self.crosssections["id"] == Segmenti, "gl"] = bedlevelNew
+        self.crosssections.loc[self.crosssections["id"] == reachi, "gl"] = bedlevelNew
         # change manning
-        self.crosssections.loc[self.crosssections["id"] == Segmenti, "m"] = Manning
+        self.crosssections.loc[self.crosssections["id"] == reachi, "m"] = Manning
         ## change slope
         try:
-            # self.slope.loc[self.slope['id']==Segmenti, 'slope'] = AvgSlope
-            self.slope.loc[self.slope["id"] == Segmenti, "slope"] = BC_slope
+            # self.slope.loc[self.slope['id']==reachi, 'slope'] = AvgSlope
+            self.slope.loc[self.slope["id"] == reachi, "slope"] = BC_slope
         except AttributeError:
-            logger.debug(f"The Given river segment- {Segmenti} does not have a slope")
+            logger.debug(f"The Given river reach- {reachi} does not have a slope")
+
+    def getReach(self, reach_id: int) -> DataFrame:
+        """Get Reach cross section data
+
+        Parameters
+        ----------
+        reach_id: [int]
+            reach id
+
+        Returns
+        -------
+        DataFrame
+        """
+        return self.crosssections.loc[self.crosssections["id"] == reach_id, :].copy().reset_index()
+
+    def updateReach(self, reach: DataFrame):
+        """Update the cross section of a given reach in the crosssections attributes
+
+        Parameters
+        ----------
+        reach: [DataFrame]
+            DataFrame of the reach cross sections
+
+        Returns
+        -------
+        Updates the crosssections DataFrame attribute.
+        """
+        # get the reach id
+        reach_id: np.ndarray = reach.loc[:, "id"].unique()
+        if len(reach_id) > 1:
+            raise ValueError(f"The given DataFrame conains more than one river reach: {len(reach_id)}, the function "
+                             "can update 1 reach at a time.")
+        reach_id = reach_id[0]
+        g = self.crosssections.loc[self.crosssections["id"] == reach_id, :].index[0]
+        # reset the index to the original index order
+        reach.index = range(g, g + len(reach))
+        # copy back the reach to the whole XS df
+        self.crosssections.loc[self.crosssections["id"] == reach_id, :] = reach
+
 
     def smoothBedLevel(self, reach_id):
-        """SmoothXS.
+        """smoothBedLevel.
 
-        SmoothBedLevel method smoothes the bed level of a given segment ID by
-        calculating the moving average of three cross sections
+            SmoothBedLevel method smoothes the bed level of a given reach ID by
+            calculating the moving average of three cross sections
 
         Parameters
         ----------
         reach_id : [Integer]
-            segment ID.
+            reach ID.
 
         Returns
         -------
         crosssections: [dataframe attribute]
             the "gl" column in the crosssections attribute will be smoothed
         """
-        msg = "please read the cross section first"
-        assert hasattr(self, "crosssections"), "{0}".format(msg)
-        g = self.crosssections.loc[self.crosssections["id"] == reach_id, :].index[0]
+        if not hasattr(self, "crosssections"):
+            raise ValueError("Please read the cross section first")
 
-        segment = self.crosssections.loc[self.crosssections["id"] == reach_id, :].copy().reset_index()
+        reach = self.getReach(reach_id)
 
-        segment.loc[:, "glnew"] = 0
+        reach.loc[:, "glnew"] = 0
         # the bed level at the beginning and end of the egment
-        segment.loc[0, "glnew"] = segment.loc[0, "gl"]
-        segment.loc[len(segment) - 1, "glnew"] = segment.loc[len(segment) - 1, "gl"]
+        reach.loc[0, "glnew"] = reach.loc[0, "gl"]
+        reach.loc[len(reach) - 1, "glnew"] = reach.loc[len(reach) - 1, "gl"]
 
         # calculate the average of three XS bed level
-        for j in range(1, len(segment) - 1):
-            segment.loc[j, "glnew"] = (
-                segment.loc[j - 1, "gl"]
-                + segment.loc[j, "gl"]
-                + segment.loc[j + 1, "gl"]
+        for j in range(1, len(reach) - 1):
+            reach.loc[j, "glnew"] = (
+                reach.loc[j - 1, "gl"]
+                + reach.loc[j, "gl"]
+                + reach.loc[j + 1, "gl"]
             ) / 3
         # calculate the difference in the bed level and take it from
         # the bankful depth
-        segment.loc[:, "diff"] = segment.loc[:, "glnew"] - segment.loc[:, "gl"]
-        segment.loc[:, "dbf"] = segment.loc[:, "dbf"] - segment.loc[:, "diff"]
-        segment.loc[:, "gl"] = segment.loc[:, "glnew"]
-        del segment["glnew"], segment["diff"]
+        reach.loc[:, "diff"] = reach.loc[:, "glnew"] - reach.loc[:, "gl"]
+        reach.loc[:, "dbf"] = reach.loc[:, "dbf"] - reach.loc[:, "diff"]
+        reach.loc[:, "gl"] = reach.loc[:, "glnew"]
+        # del reach["glnew"], reach["diff"]
+        reach.drop(labels=["glnew", "diff"], axis=1, inplace=True)
 
-        segment.index = range(g, g + len(segment))
-        # copy back the segment to the whole XS df
-        self.crosssections.loc[self.crosssections["id"] == reach_id, :] = segment
+        self.updateReach(reach)
 
     def smoothBankLevel(self, reach_id: int):
         """SmoothBankLevel.
 
-        SmoothBankLevel method smoothes the bankfull depth for a given segment
+        SmoothBankLevel method smoothes the bankfull depth for a given reach
 
         Parameters
         ----------
@@ -1225,7 +1262,7 @@ class Calibration(River):
 
         g = self.crosssections.loc[self.crosssections["id"] == reach_id, :].index[0]
 
-        reach = self.crosssections.loc[self.crosssections["id"] == reach_id, :].copy().reset_index()
+        reach = self.getReach(reach_id)
         reach.loc[:, "banklevelnew"] = 0
         reach.loc[0, "banklevelnew"] = reach.loc[0, "banklevel"]
         reach.loc[len(reach) - 1, "banklevelnew"] = reach.loc[
@@ -1246,10 +1283,7 @@ class Calibration(River):
         reach.loc[:, "dbf"] = reach.loc[:, "dbf"] + reach.loc[:, "diff"]
 
         del self.crosssections["banklevel"]
-        reach.index = range(g, g + len(reach))
-
-        # copy back the reach to the whole XS df
-        self.crosssections.loc[self.crosssections["id"] == reach_id, :] = reach
+        self.updateReach(reach)
 
     def smoothFloodplainHeight(self, reach_id):
         """SmoothFloodplainHeight.
@@ -1278,9 +1312,7 @@ class Calibration(River):
             self.crosssections.loc[:, "hr"] + self.crosssections.loc[:, "banklevel"]
         )
 
-        g = self.crosssections.loc[self.crosssections["id"] == reach_id, :].index[0]
-
-        reach = self.crosssections.loc[self.crosssections["id"] == reach_id, :].copy().reset_index()
+        reach = self.getReach(reach_id)
 
         reach.loc[:, "fplnew"] = 0
         reach.loc[:, "fprnew"] = 0
@@ -1308,15 +1340,13 @@ class Calibration(River):
         reach.loc[:, "hl"] = reach.loc[:, "hl"] + reach.loc[:, "diff0"]
         reach.loc[:, "hr"] = reach.loc[:, "hr"] + reach.loc[:, "diff1"]
 
-        reach.index = range(g, g + len(reach))
-        # copy back the reach to the whole XS df
-        self.crosssections.loc[self.crosssections["id"] == reach_id, :] = reach
-
-        del (
-            self.crosssections["banklevel"],
-            self.crosssections["fpr"],
-            self.crosssections["fpl"],
-        )
+        self.updateReach(reach)
+        self.crosssections.drop(labels=["banklevel", "fpr", "fpl"], axis=1, inplace=True)
+        # del (
+        #     self.crosssections["banklevel"],
+        #     self.crosssections["fpr"],
+        #     self.crosssections["fpl"],
+        # )
 
     def smoothBedWidth(self, reach_id):
         """SmoothBedWidth.
@@ -1334,8 +1364,7 @@ class Calibration(River):
         crosssections: [dataframe attribute]
             the "b" column in the crosssections attribute will be smoothed
         """
-        g = self.crosssections.loc[self.crosssections["id"] == reach_id, :].index[0]
-        reach = self.crosssections.loc[self.crosssections["id"] == reach_id, :].copy().reset_index()
+        reach = self.getReach(reach_id)
         reach.loc[:, "bnew"] = 0
         reach.loc[0, "bnew"] = reach.loc[0, "b"]
         reach.loc[len(reach) - 1, "bnew"] = reach.loc[len(reach) - 1, "b"]
@@ -1346,38 +1375,33 @@ class Calibration(River):
             ) / 3
 
         reach.loc[:, "b"] = reach.loc[:, "bnew"]
-        reach.index = range(g, g + len(reach))
-        # copy back the reach to the whole XS df
-        self.crosssections.loc[self.crosssections["id"] == reach_id, :] = reach
+        self.updateReach(reach)
 
     def downWardBedLevel(self, reach_id: int, height: Union[int, float]):
-        """SmoothBedWidth.
+        """downWardBedLevel.
 
-        SmoothBedWidth method smoothes the Bed Width the in the cross section
-        for a given reach
+        lowering the bed level by a certain height (5 cm)
 
         Parameters
         ----------
         reach_id : [Integer]
             reach ID.
         height : []
+            down
 
         Returns
         -------
         crosssections: [dataframe attribute]
             the "b" column in the crosssections attribute will be smoothed
         """
-        g = self.crosssections.loc[self.crosssections["id"] == reach_id, :].index[0]
-
-        reach = self.crosssections.loc[self.crosssections["id"] == reach_id, :].copy().reset_index()
+        reach = self.getReach(reach_id)
 
         for j in range(1, len(reach)):
             if reach.loc[j - 1, "gl"] - reach.loc[j, "gl"] < height:
                 reach.loc[j, "gl"] = reach.loc[j - 1, "gl"] - height
 
-        reach.index = range(g, g + len(reach))
-        # copy back the reach to the whole XS df
-        self.crosssections.loc[self.crosssections["id"] == reach_id, :] = reach
+        self.updateReach(reach)
+
 
     def smoothMaxSlope(self, reach_id, SlopePercentThreshold=1.5):
         """SmoothMaxSlope.
@@ -1419,9 +1443,7 @@ class Calibration(River):
         crosssections: [dataframe attribute]
             the "gl" column in the crosssections attribute will be smoothed
         """
-        g = self.crosssections.loc[self.crosssections["id"] == reach_id, :].index[0]
-
-        reach = self.crosssections.loc[self.crosssections["id"] == reach_id, :].copy().reset_index()
+        reach = self.getReach(reach_id)
         # slope must be positive due to the smoothing
         slopes = [
             (reach.loc[k, "gl"] - reach.loc[k + 1, "gl"]) / 500
@@ -1455,9 +1477,7 @@ class Calibration(River):
                     for k in range(len(slopes) - 1)
                 ]
 
-        reach.index = range(g, g + len(reach))
-        # copy back the reach to the whole XS df
-        self.crosssections.loc[self.crosssections["id"] == reach_id, :] = reach
+        self.updateReach(reach)
 
     def checkFloodplain(self):
         """CheckFloodplain.
