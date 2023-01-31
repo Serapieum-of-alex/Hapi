@@ -121,7 +121,7 @@ plt.yticks(fontsize=10)
 plt.legend(fontsize=15, framealpha=0.1)
 plt.title("Station: " + str(subid), fontsize=30)
 plt.tight_layout()
-# plt.savefig(str(subid)+".tif", transparent=True)
+# plt.savefig(str(reach_id)+".tif", transparent=True)
 #%% save Metrics dataframe to display in arc map
 Calib.SaveMetices(SaveTo)
 # sumarry.to_csv(DataPath + "summary.txt")

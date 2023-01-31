@@ -146,11 +146,16 @@ class Calibration(River):
         >>> "type": "FeatureCollection", "crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:EPSG::3035" } },
         >>> "features": [
         >>> { "type": "Feature", "properties": { "gid": 149, "name": "station 1", "oid": 23800100, "river": "Nile",
-        >>> "id": 1, "xsid": 16100, "datum(m)": 252.36, "discharge": 1, "waterlevel": 1 }, "geometry": { "type": "Point", "coordinates": [ 4278240.4259, 2843958.863 ] } },
+        >>>     "id": 1, "xsid": 16100, "datum(m)": 252.36, "discharge": 1, "waterlevel": 1 },
+        >>>     "geometry": { "type": "Point", "coordinates": [ 4278240.4259, 2843958.863 ] } },
         >>> { "type": "Feature", "properties": { "gid": 106, "name": "station 2", "oid": 23800500, "river": "Nile",
-        >>> "id": 2, "xsid": 16269, "datum(m)": 159.37, "discharge": 1, "waterlevel": 1 }, "geometry": { "type": "Point", "coordinates": [ 4259614.333, 2884750.556 ] } },
+        >>>     "id": 2, "xsid": 16269, "datum(m)": 159.37, "discharge": 1, "waterlevel": 1 },
+        >>>     "geometry": { "type": "Point", "coordinates": [ 4259614.333, 2884750.556 ] } },
         >>> { "type": "Feature", "properties": { "gid": 158, "name": "station 3", "oid": 23800690, "river": "Nile",
-        >>> "id": 4, "xsid": 16581, "datum(m)": 119.71, "discharge": 1, "waterlevel": 1}, "geometry": { "type": "Point", "coordinates": [ 4248756.490, 2924872.503 ] } },
+        >>>     "id": 4, "xsid": 16581, "datum(m)": 119.71, "discharge": 1, "waterlevel": 1},
+        >>>     "geometry": { "type": "Point", "coordinates": [ 4248756.490, 2924872.503 ] } },
+        >>> ]
+        >>> }
 
         Returns
         -------
@@ -183,7 +188,7 @@ class Calibration(River):
 
         parameters:
         ----------
-        subid: [int]
+        reach_id: [int]
             the river reach id
 
         return:
@@ -211,7 +216,7 @@ class Calibration(River):
         # stationname = gauges.loc[:, column].values.tolist()
         # gaugename = str(gauges.loc[gaugei, 'name'])
         # gaugexs = gauges.loc[gaugei, 'xsid']
-        # reach_xs = str(subid) + "_" + str(gaugexs)
+        # reach_xs = str(reach_id) + "_" + str(gaugexs)
 
         # stationname, gaugename, gaugexs
 
@@ -782,7 +787,7 @@ class Calibration(River):
 
         self.WLHM.index = pd.date_range(start, end, freq="D")
 
-    def readCalirationResult(self, subid: int, path: str = ""):
+    def readCalirationResult(self, reach_id: int, path: str = ""):
         """ReadCalirationResult.
 
         ReadCalirationResult method reads the 1D results and fill the missing
@@ -790,7 +795,7 @@ class Calibration(River):
 
         Parameters
         ----------
-        subid : [integer]
+        reach_id : [integer]
             ID of the sub-basin you want to read its data.
         path : [String], optional
             Path to read the results from. The default is ''.
@@ -813,14 +818,14 @@ class Calibration(River):
             self.CalibrationWL = pd.DataFrame(index=indD)
 
         ind = pd.date_range(self.start, self.end, freq="H")[:-1]
-        q = pd.read_csv(path + str(subid) + "_q.txt", header=None, delimiter=r"\s+")
-        wl = pd.read_csv(path + str(subid) + "_wl.txt", header=None, delimiter=r"\s+")
+        q = pd.read_csv(path + str(reach_id) + "_q.txt", header=None, delimiter=r"\s+")
+        wl = pd.read_csv(path + str(reach_id) + "_wl.txt", header=None, delimiter=r"\s+")
 
         q.index = ind
         wl.index = ind
 
-        self.CalibrationQ[subid] = q[1].resample("D").mean()
-        self.CalibrationWL[subid] = wl[1].resample("D").mean()
+        self.CalibrationQ[reach_id] = q[1].resample("D").mean()
+        self.CalibrationWL[reach_id] = wl[1].resample("D").mean()
 
     def getAnnualMax(
         self, option=1, CorespondingTo=dict(MaxObserved=" ", TimeWindow=0)
