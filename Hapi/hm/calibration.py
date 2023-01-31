@@ -10,19 +10,16 @@ import statista.metrics as pf
 from geopandas import GeoDataFrame
 from loguru import logger
 from matplotlib.figure import Figure
-
-# from pandas import DataFrame
 from pandas._libs.tslibs.timestamps import Timestamp
 from pandas.core.frame import DataFrame
 from pandas.core.series import Series
 
-from Hapi.hapi_warnings import SilenceNumpyWarning, SilenceShapelyWarning
+from Hapi.hapi_warnings import SilenceShapelyWarning
 from Hapi.hm.river import River
 from serapeum_utils.utils import class_attr_initialize
 
 datafn = lambda x: dt.datetime.strptime(x, "%Y-%m-%d")
 
-SilenceNumpyWarning()
 SilenceShapelyWarning()
 
 
