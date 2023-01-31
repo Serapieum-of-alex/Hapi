@@ -1,18 +1,9 @@
-from collections import OrderedDict
-
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 
 import Hapi.hm.river as R
 from Hapi.hm.interface import Interface
 from Hapi.plot.visualizer import Visualize as V
-
-
-def test_create_visualize_instance():
-    Vis = V(resolution="Hourly")
-    assert isinstance(Vis.MarkerStyleList, list)
-    assert isinstance(Vis.FigureDefaultOptions, dict)
-    assert isinstance(Vis.linestyles, OrderedDict)
 
 
 def test_GroundSurface(
