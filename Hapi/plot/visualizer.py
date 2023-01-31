@@ -18,7 +18,7 @@ import pandas as pd
 from matplotlib import animation, gridspec
 from matplotlib.animation import FuncAnimation
 from scipy.stats import gumbel_r
-
+from cleopatra.array import Array
 hours = list(range(1, 25))
 
 
@@ -51,52 +51,20 @@ class Visualize:
         Axisfontsize=15,
     )
 
-    linestyles = OrderedDict(
-        [
-            ("solid", (0, ())),  # 0
-            ("loosely dotted", (0, (1, 10))),  # 1
-            ("dotted", (0, (1, 5))),  # 2
-            ("densely dotted", (0, (1, 1))),  # 3
-            ("loosely dashed", (0, (5, 10))),  # 4
-            ("dashed", (0, (5, 5))),  # 5
-            ("densely dashed", (0, (5, 1))),  # 6
-            ("loosely dashdotted", (0, (3, 10, 1, 10))),  # 7
-            ("dashdotted", (0, (3, 5, 1, 5))),  # 8
-            ("densely dashdotted", (0, (3, 1, 1, 1))),  # 9
-            ("loosely dashdotdotted", (0, (3, 10, 1, 10, 1, 10))),  # 10
-            ("dashdotdotted", (0, (3, 5, 1, 5, 1, 5))),  # 11
-            ("densely dashdotdotted", (0, (3, 1, 1, 1, 1, 1))),  # 12
-            ("densely dashdotdottededited", (0, (6, 1, 1, 1, 1, 1))),  # 13
-        ]
-    )
-
-    MarkerStyleList = [
-        "--o",
-        ":D",
-        "-.H",
-        "--x",
-        ":v",
-        "--|",
-        "-+",
-        "-^",
-        "--s",
-        "-.*",
-        "-.h",
-    ]
 
     def __init__(self, resolution: str = "Hourly"):
         self.resolution = resolution
         self.Anim = None
 
     @staticmethod
-    def LineStyle(Style: Union[str, int] = "loosely dotted"):
+    def getLineStyle(style: Union[str, int] = "loosely dotted"):
         """LineStyle.
 
         Line styles for plotting
 
         Parameters
         ----------
-        Style : TYPE, optional
+        style : TYPE, optional
             DESCRIPTION. The default is 'loosely dotted'.
 
         Returns
@@ -104,28 +72,17 @@ class Visualize:
         TYPE
             DESCRIPTION.
         """
-        if isinstance(Style, str):
-            try:
-                return Visualize.linestyles[Style]
-            except KeyError:
-                msg = (
-                    " The Style name you entered-{0}-does not exist please"
-                    "choose from the available styles"
-                ).format(Style)
-                print(msg)
-                print(list(Visualize.linestyles))
-        else:
-            return list(Visualize.linestyles.items())[Style][1]
+        return Array.getLineStyle(style)
 
     @staticmethod
-    def MarkerStyle(Style: int):
+    def getMarkerStyle(style: int):
         """MarkerStyle.
 
         Marker styles for plotting
 
         Parameters
         ----------
-        Style : TYPE
+        style : TYPE
             DESCRIPTION.
 
         Returns
@@ -133,9 +90,7 @@ class Visualize:
         TYPE
             DESCRIPTION.
         """
-        if Style > len(Visualize.MarkerStyleList) - 1:
-            Style = Style % len(Visualize.MarkerStyleList)
-        return Visualize.MarkerStyleList[Style]
+        return Array.getMarkerStyle(style)
 
     def plotGroundSurface(
         self,
