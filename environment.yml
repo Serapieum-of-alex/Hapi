@@ -20,6 +20,7 @@ dependencies:
   - pyramids >=0.2.11
   - earth2observe >=0.1.7
   - Oasis >=1.0.2
+  - cleopatra >=0.2.6
   - digitalearth >=0.1.10
   - serapeum_utils >=0.1.1
   - joblib >=1.2.0
