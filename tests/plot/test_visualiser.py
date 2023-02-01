@@ -107,7 +107,7 @@ def test_CrossSections(
 #     River.ReadCrossSections(river_cross_section_path)
 #     River.RiverNetwork(river_network_path)
 #     River.onedresultpath = Read1DResult_path
-#     River.usbcpath = usbc_path
+#     River.us_bc_path = usbc_path
 #     Reach = R.Reach(segment3, River)
 #
 #     IF = Interface('Rhine', start=dates[0])
@@ -154,8 +154,8 @@ def test_CrossSections(
 #     River.ReadCrossSections(river_cross_section_path)
 #     River.RiverNetwork(river_network_path)
 #     River.onedresultpath = Read1DResult_path
-#     River.oneminresultpath = subdailyresults_path
-#     River.usbcpath = usbc_path
+#     River.one_min_result_path = subdailyresults_path
+#     River.us_bc_path = usbc_path
 #     Reach = R.Reach(segment3, River)
 #
 #     IF = Interface('Rhine', start=dates[0])
