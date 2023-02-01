@@ -14,7 +14,7 @@ def test_readLateralsTable(
     IF.readXS(river_cross_section_path)
     IF.readLateralsTable(interface_Laterals_table_path)
 
-    assert len(IF.LateralsTable) == 9 and len(IF.LateralsTable.columns) == 2
+    assert len(IF.laterals_table) == 9 and len(IF.laterals_table.columns) == 2
 
 
 class TestreadLaterals:
@@ -68,7 +68,7 @@ def test_readBoundaryConditionsTable(
     IF = Interface("Rhine", start=dates[0])
     IF.readBoundaryConditionsTable(interface_bc_path)
 
-    assert len(IF.BCTable) == 2 and len(IF.BCTable.columns) == 2
+    assert len(IF.bc_table) == 2 and len(IF.bc_table.columns) == 2
 
 
 def test_ReadBoundaryConditions(
@@ -104,6 +104,6 @@ def test_ReadRRMProgression(
         date_format=interface_Laterals_date_format,
         laterals=False,
     )
-    assert len(IF.routedRRM) == laterals_number_ts
+    assert len(IF.routed_rrm) == laterals_number_ts
     # number of laterals + the total column
-    assert len(IF.routedRRM.columns) == no_laterals + 1
+    assert len(IF.routed_rrm.columns) == no_laterals + 1

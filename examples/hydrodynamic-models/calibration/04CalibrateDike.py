@@ -50,13 +50,13 @@ River.getCapacity("Qbkf")
 River.getCapacity("Qc2", Option=2)
 
 River.calibrateDike("RP", "QcRP")
-River.crosssections["ZlDiff"] = (
-    River.crosssections["zlnew"].values - River.crosssections["zl"].values
+River.cross_sections["ZlDiff"] = (
+        River.cross_sections["zlnew"].values - River.cross_sections["zl"].values
 )
-River.crosssections["ZrDiff"] = (
-    River.crosssections["zrnew"].values - River.crosssections["zr"].values
+River.cross_sections["ZrDiff"] = (
+        River.cross_sections["zrnew"].values - River.cross_sections["zr"].values
 )
-# River.crosssections.to_csv(RIM2Files+"XS100.csv", index = None)
+# River.cross_sections.to_csv(RIM2Files+"XS100.csv", index = None)
 
 #%%
 # read the overtopping files
@@ -67,16 +67,16 @@ Event.overtopping(wpath + "/processing/" + "overtopping.txt")
 # get the end days of each event
 Event.GetAllEvents()
 
-River.EventIndex = Event.EventIndex
+River.EventIndex = Event.event_index
 # read the left and right overtopping 1D results
 River.overtopping()
 
 XSleft = list()
 XSright = list()
-print("No of Events = " + str(len(Event.EndDays)))
-for i in range(len(Event.EndDays)):
+print("No of Events = " + str(len(Event.end_days)))
+for i in range(len(Event.end_days)):
     # get the cross sectin that was overtopped for a specific day
-    XSlefti, XSrighti = River.getOvertoppedXS(Event.EndDays[i], True)
+    XSlefti, XSrighti = River.getOvertoppedXS(Event.end_days[i], True)
     XSleft = XSleft + XSlefti
     XSright = XSright + XSrighti
 
@@ -87,16 +87,16 @@ XSright.sort()
 # raise the left dike of the overtopped cross section by 0.5 meter
 for i in XSleft:
     # print(i)
-    # print(River.crosssections.loc[i-1,'xsid'])
-    River.crosssections.loc[i - 1, "zl"] = River.crosssections.loc[i - 1, "zl"] + 0.5
+    # print(River.cross_sections.loc[i-1,'xsid'])
+    River.cross_sections.loc[i - 1, "zl"] = River.cross_sections.loc[i - 1, "zl"] + 0.5
 
 for i in XSright:
     # print(i)
-    # print(River.crosssections.loc[i-1,'xsid'])
-    River.crosssections.loc[i - 1, "zr"] = River.crosssections.loc[i - 1, "zr"] + 0.5
+    # print(River.cross_sections.loc[i-1,'xsid'])
+    River.cross_sections.loc[i - 1, "zr"] = River.cross_sections.loc[i - 1, "zr"] + 0.5
 
 # get the subs that was inundated
 # floodedSubs = River1.GetFloodedSubs(OvertoppedXS = XSleft + XSright)
 
 #%% Save the new cross section file
-River.crosssections.to_csv(newxsPath, index=None)
+River.cross_sections.to_csv(newxsPath, index=None)

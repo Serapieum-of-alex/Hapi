@@ -41,14 +41,14 @@ class Visualize:
         xlabel="",
         legend="",
         legend_size=10,
-        figsize=(10, 8),
-        labelsize=10,
-        fontsize=10,
+        fig_size=(10, 8),
+        label_size=10,
+        font_size=10,
         name="hist.tif",
         color1="#3D59AB",
         color2="#DC143C",
-        linewidth=3,
-        Axisfontsize=15,
+        line_width=3,
+        axis_font_size=15,
     )
 
 
@@ -95,14 +95,14 @@ class Visualize:
     def plotGroundSurface(
         self,
         Sub,
-        fromxs: Optional[int] = None,
-        toxs: Optional[int] = None,
+        from_xs: Optional[int] = None,
+        to_xs: Optional[int] = None,
         floodplain: bool = False,
-        plotlateral: bool = False,
-        nxlabels: int = 10,
-        figsize: tuple = (20, 10),
-        LateralsColor: Union[str, tuple] = "red",
-        LaterlasLineWidth: int = 1,
+        plot_lateral: bool = False,
+        xlabels_number: int = 10,
+        fig_size: tuple = (20, 10),
+        laterals_color: Union[str, tuple] = "red",
+        laterals_line_width: int = 1,
         option: int = 1,
         size: int = 50,
     ):
@@ -112,21 +112,21 @@ class Visualize:
         ----------
         Sub : TYPE
             DESCRIPTION.
-        fromxs : TYPE, optional
+        from_xs : TYPE, optional
             DESCRIPTION. The default is ''.
-        toxs : TYPE, optional
+        to_xs : TYPE, optional
             DESCRIPTION. The default is ''.
         floodplain : TYPE, optional
             DESCRIPTION. The default is False.
-        plotlateral : TYPE, optional
+        plot_lateral : TYPE, optional
             DESCRIPTION. The default is False.
-        nxlabels: [int]
+        xlabels_number: [int]
             Default is 10
-        figsize: [tuple]
+        fig_size: [tuple]
             Default is (20, 10)
-        LateralsColor: [str, tuple]
+        laterals_color: [str, tuple]
             Defaut is "red",
-        LaterlasLineWidth: [int]
+        laterals_line_width: [int]
             Default is 1.
         option: [int]
             Default is 1
@@ -137,73 +137,73 @@ class Visualize:
         -------
         None.
         """
-        GroundSurfacefig = plt.figure(70, figsize=figsize)
+        GroundSurfacefig = plt.figure(70, figsize=fig_size)
         gs = gridspec.GridSpec(nrows=2, ncols=6, figure=GroundSurfacefig)
         axGS = GroundSurfacefig.add_subplot(gs[0:2, 0:6])
 
-        if not fromxs:
-            fromxs = Sub.xs_names[0]
+        if not from_xs:
+            from_xs = Sub.xs_names[0]
 
-        if not toxs:
-            toxs = Sub.xs_names[-1]
+        if not to_xs:
+            to_xs = Sub.xs_names[-1]
 
         # not the whole sub-basin
-        axGS.set_xticks(list(range(fromxs, toxs)))
-        axGS.set_xticklabels(list(range(fromxs, toxs)))
+        axGS.set_xticks(list(range(from_xs, to_xs)))
+        axGS.set_xticklabels(list(range(from_xs, to_xs)))
 
-        axGS.set_xlim(fromxs - 1, toxs + 1)
+        axGS.set_xlim(from_xs - 1, to_xs + 1)
 
         axGS.tick_params(labelsize=8)
         # plot dikes
         axGS.plot(
             Sub.xs_names,
-            Sub.crosssections["zl"],
+            Sub.cross_sections["zl"],
             "k--",
             dashes=(5, 1),
             linewidth=2,
             label="Left Dike",
         )
         axGS.plot(
-            Sub.xs_names, Sub.crosssections["zr"], "k.-", linewidth=2, label="Right Dike"
+            Sub.xs_names, Sub.cross_sections["zr"], "k.-", linewidth=2, label="Right Dike"
         )
 
         if floodplain:
             fpl = (
-                Sub.crosssections["gl"]
-                + Sub.crosssections["dbf"]
-                + Sub.crosssections["hl"]
+                Sub.cross_sections["gl"]
+                + Sub.cross_sections["dbf"]
+                + Sub.cross_sections["hl"]
             )
             fpr = (
-                Sub.crosssections["gl"]
-                + Sub.crosssections["dbf"]
-                + Sub.crosssections["hr"]
+                Sub.cross_sections["gl"]
+                + Sub.cross_sections["dbf"]
+                + Sub.cross_sections["hr"]
             )
             axGS.plot(Sub.xs_names, fpl, "b-.", linewidth=2, label="Floodplain left")
             axGS.plot(Sub.xs_names, fpr, "r-.", linewidth=2, label="Floodplain right")
 
-        if plotlateral:
-            if isinstance(Sub.LateralsTable, list) and len(Sub.LateralsTable) > 0:
+        if plot_lateral:
+            if isinstance(Sub.laterals_table, list) and len(Sub.laterals_table) > 0:
                 if option == 1:
                     # plot location of laterals
-                    for i in range(len(Sub.LateralsTable)):
+                    for i in range(len(Sub.laterals_table)):
                         axGS.vlines(
-                            Sub.LateralsTable[i],
+                            Sub.laterals_table[i],
                             0,
                             int(Sub.results_1d["q"].max()),
-                            colors=LateralsColor,
+                            colors=laterals_color,
                             linestyles="dashed",
-                            linewidth=LaterlasLineWidth,
+                            linewidth=laterals_line_width,
                         )
                 else:
                     lat = pd.DataFrame()
-                    lat["xsid"] = Sub.LateralsTable
-                    lat = lat.merge(Sub.crosssections, on="xsid", how="left")
+                    lat["xsid"] = Sub.laterals_table
+                    lat = lat.merge(Sub.cross_sections, on="xsid", how="left")
 
                     axGS.scatter(
-                        Sub.LateralsTable,
+                        Sub.laterals_table,
                         lat["gl"].tolist(),
-                        c=LateralsColor,
-                        linewidth=LaterlasLineWidth,
+                        c=laterals_color,
+                        linewidth=laterals_line_width,
                         zorder=10,
                         s=size,
                     )
@@ -211,24 +211,24 @@ class Visualize:
                 print(" Please Read the Laterals data")
 
         maxelevel1 = max(
-            Sub.crosssections.loc[Sub.crosssections["xsid"] >= fromxs, "zr"][
-                Sub.crosssections["xsid"] <= toxs
-            ]
+            Sub.cross_sections.loc[Sub.cross_sections["xsid"] >= from_xs, "zr"][
+                Sub.cross_sections["xsid"] <= to_xs
+                ]
         )
         maxelevel2 = max(
-            Sub.crosssections.loc[Sub.crosssections["xsid"] >= fromxs, "zl"][
-                Sub.crosssections["xsid"] <= toxs
-            ]
+            Sub.cross_sections.loc[Sub.cross_sections["xsid"] >= from_xs, "zl"][
+                Sub.cross_sections["xsid"] <= to_xs
+                ]
         )
         maxlelv = max(maxelevel1, maxelevel2)
-        minlev = Sub.crosssections.loc[Sub.crosssections["xsid"] == toxs, "gl"].values
+        minlev = Sub.cross_sections.loc[Sub.cross_sections["xsid"] == to_xs, "gl"].values
         axGS.set_ylim(minlev - 5, maxlelv + 5)
 
         # plot the bedlevel/baklevel
         if Sub.version == 1:
             axGS.plot(
                 Sub.xs_names,
-                Sub.crosssections["gl"],
+                Sub.cross_sections["gl"],
                 "k-",
                 linewidth=5,
                 label="Bankful level",
@@ -236,22 +236,22 @@ class Visualize:
         else:
             axGS.plot(
                 Sub.xs_names,
-                Sub.crosssections["gl"],
+                Sub.cross_sections["gl"],
                 "k-",
                 linewidth=5,
                 label="Ground level",
             )
             axGS.plot(
                 Sub.xs_names,
-                Sub.crosssections["gl"] + Sub.crosssections["dbf"],
+                Sub.cross_sections["gl"] + Sub.cross_sections["dbf"],
                 "k",
                 linewidth=2,
                 label="Bankful depth",
             )
 
-        if nxlabels != "":
+        if xlabels_number != "":
             start, end = axGS.get_xlim()
-            label_list = [int(i) for i in np.linspace(start, end, nxlabels)]
+            label_list = [int(i) for i in np.linspace(start, end, xlabels_number)]
             axGS.xaxis.set_ticks(label_list)
 
         title = "Water surface Profile Simulation Subid = {0}".format(Sub.id)
@@ -268,18 +268,18 @@ class Visualize:
         start: Union[str, dt.datetime],
         end: Union[str, dt.datetime],
         fps: int = 100,
-        fromxs: Optional[int] = None,
-        toxs: Optional[int] = None,
+        from_xs: Optional[int] = None,
+        to_xs: Optional[int] = None,
         fmt: str = "%Y-%m-%d",
-        figsize: tuple = (20, 10),
-        textlocation: tuple = (1, 1),
-        LateralsColor: Union[int, str] = "#3D59AB",
-        LaterlasLineWidth: int = 1,
-        xaxislabelsize: int = 10,
-        yaxislabelsize: int = 10,
-        nxlabels: int = 10,
-        xticklabelsize: int = 8,
-        Lastsegment: bool = True,
+        fig_size: tuple = (20, 10),
+        text_location: tuple = (1, 1),
+        laterals_color: Union[int, str] = "#3D59AB",
+        laterals_line_width: int = 1,
+        x_axis_label_size: int = 10,
+        y_axis_label_size: int = 10,
+        xlabels_number: int = 10,
+        x_tick_label_size: int = 8,
+        last_river_reach: bool = True,
         floodplain: bool = True,
         repeat: bool = True,
     ) -> FuncAnimation:
@@ -298,31 +298,31 @@ class Visualize:
         fps : [integer], optional
              It is an optional integer value that represents the delay between
              each frame in milliseconds. Its default is 100.
-        fromxs : [integer], optional
+        from_xs : [integer], optional
             number of cross sections to be displayed before the chosen cross
             section . The default is 10.
-        toxs : [integer], optional
+        to_xs : [integer], optional
             number of cross sections to be displayed after the chosen cross
             section . The default is 10.
-        xticklabelsize: []
+        x_tick_label_size: []
 
-        nxlabels:[]
+        xlabels_number:[]
 
-        yaxislabelsize: []
+        y_axis_label_size: []
 
-        LaterlasLineWidth: []
+        laterals_line_width: []
 
-        xaxislabelsize:[]
+        x_axis_label_size:[]
 
-        LateralsColor: []
+        laterals_color: []
 
-        textlocation: []
+        text_location: []
 
         fmt: []
 
-        figsize: []
+        fig_size: []
 
-        Lastsegment: [bool]
+        last_river_reach: [bool]
             Default is True.
         floodplain: [bool]
             Default is True.
@@ -338,13 +338,13 @@ class Visualize:
             between {0} and  {1}""".format(
             Sub.first_day, Sub.last_day
         )
-        assert start in Sub.referenceindex_results, msg
+        assert start in Sub.reference_index_results, msg
 
         msg = """ The end date does not exist in the results, Results are
             between {0} and  {1}""".format(
             Sub.first_day, Sub.last_day
         )
-        assert end in Sub.referenceindex_results, msg
+        assert end in Sub.reference_index_results, msg
 
         msg = """please read the boundary condition files using the
             'ReadBoundaryConditions' method """
@@ -355,11 +355,11 @@ class Visualize:
         assert start < end, msg
 
         if Sub.from_beginning == 1:
-            Period = Sub.daylist[
-                np.where(Sub.referenceindex == start)[0][0] : np.where(
-                    Sub.referenceindex == end
+            Period = Sub.days_list[
+                     np.where(Sub.reference_index == start)[0][0]: np.where(
+                         Sub.reference_index == end
                 )[0][0]
-                + 1
+                                                                   + 1
             ]
         else:
             ii = Sub.dateToIndex(start)
@@ -368,61 +368,61 @@ class Visualize:
 
         counter = [(i, j) for i in Period for j in hours]
 
-        fig = plt.figure(60, figsize=figsize)
+        fig = plt.figure(60, figsize=fig_size)
         gs = gridspec.GridSpec(nrows=2, ncols=6, figure=fig)
         ax1 = fig.add_subplot(gs[0, 2:6])
         ax1.set_ylim(0, int(Sub.results_1d["q"].max()))
 
-        if not fromxs:
+        if not from_xs:
             # xs = 0
             # plot the whole sub-basin
-            fromxs = Sub.xs_names[0]
+            from_xs = Sub.xs_names[0]
         else:
             # xs = 1
             # not the whole sub-basin
-            if fromxs < Sub.xs_names[0]:
-                fromxs = Sub.xs_names[0]
+            if from_xs < Sub.xs_names[0]:
+                from_xs = Sub.xs_names[0]
 
-        if not toxs:
-            toxs = Sub.xs_names[-1]
+        if not to_xs:
+            to_xs = Sub.xs_names[-1]
         else:
-            if toxs > Sub.xs_names[-1]:
-                toxs = Sub.xs_names[-1]
+            if to_xs > Sub.xs_names[-1]:
+                to_xs = Sub.xs_names[-1]
 
-        ax1.set_xlim(fromxs - 1, toxs + 1)
-        ax1.set_xticks(list(range(fromxs, toxs + 1)))
-        ax1.set_xticklabels(list(range(fromxs, toxs + 1)))
+        ax1.set_xlim(from_xs - 1, to_xs + 1)
+        ax1.set_xticks(list(range(from_xs, to_xs + 1)))
+        ax1.set_xticklabels(list(range(from_xs, to_xs + 1)))
 
-        ax1.tick_params(labelsize=xticklabelsize)
-        ax1.locator_params(axis="x", nbins=nxlabels)
+        ax1.tick_params(labelsize=x_tick_label_size)
+        ax1.locator_params(axis="x", nbins=xlabels_number)
 
-        ax1.set_xlabel("Cross section No", fontsize=xaxislabelsize)
-        ax1.set_ylabel("Discharge (m3/s)", fontsize=yaxislabelsize, labelpad=0.3)
+        ax1.set_xlabel("Cross section No", fontsize=x_axis_label_size)
+        ax1.set_ylabel("Discharge (m3/s)", fontsize=y_axis_label_size, labelpad=0.3)
         ax1.set_title("Reach-Basin" + " " + str(Sub.id), fontsize=15)
         ax1.legend(["Discharge"], fontsize=15)
 
         # plot location of laterals
-        for i in range(len(Sub.LateralsTable)):
+        for i in range(len(Sub.laterals_table)):
             ax1.vlines(
-                Sub.LateralsTable[i],
+                Sub.laterals_table[i],
                 0,
                 int(Sub.results_1d["q"].max()),
-                colors=LateralsColor,
+                colors=laterals_color,
                 linestyles="dashed",
-                linewidth=LaterlasLineWidth,
+                linewidth=laterals_line_width,
             )
 
         lat = pd.DataFrame()
-        lat["xsid"] = Sub.LateralsTable
-        lat = lat.merge(Sub.crosssections, on="xsid", how="left")
+        lat["xsid"] = Sub.laterals_table
+        lat = lat.merge(Sub.cross_sections, on="xsid", how="left")
 
         lim = ax1.get_ylim()
-        y = np.ones(len(Sub.LateralsTable), dtype=int) * (lim[1] - 50)
+        y = np.ones(len(Sub.laterals_table), dtype=int) * (lim[1] - 50)
         lat = ax1.scatter(
-            Sub.LateralsTable,
+            Sub.laterals_table,
             y,
-            c=LateralsColor,
-            linewidth=LaterlasLineWidth,
+            c=laterals_color,
+            linewidth=laterals_line_width,
             zorder=10,
             s=50,
         )
@@ -436,8 +436,8 @@ class Visualize:
         ax2.set_xlim(1, 25)
         ax2.set_ylim(0, int(Sub.QBC.max().max()) + 1)
 
-        ax2.set_xlabel("Time", fontsize=yaxislabelsize)
-        ax2.set_ylabel("Q (m3/s)", fontsize=yaxislabelsize, labelpad=0.1)
+        ax2.set_xlabel("Time", fontsize=y_axis_label_size)
+        ax2.set_ylabel("Q (m3/s)", fontsize=y_axis_label_size, labelpad=0.1)
         ax2.set_title("BC - Q", fontsize=20)
         ax2.legend(["Q"], fontsize=15)
 
@@ -450,8 +450,8 @@ class Visualize:
         ax3.set_xlim(1, 25)
         ax3.set_ylim(float(Sub.HBC.min().min()), float(Sub.HBC.max().max()))
 
-        ax3.set_xlabel("Time", fontsize=yaxislabelsize)
-        ax3.set_ylabel("water level", fontsize=yaxislabelsize, labelpad=0.5)
+        ax3.set_xlabel("Time", fontsize=y_axis_label_size)
+        ax3.set_ylabel("water level", fontsize=y_axis_label_size, labelpad=0.5)
         ax3.set_title("BC - H", fontsize=20)
         ax3.legend(["WL"], fontsize=10)
 
@@ -463,41 +463,41 @@ class Visualize:
         ax4 = fig.add_subplot(gs[1, 0:6])
 
         ymax1 = max(
-            Sub.crosssections.loc[Sub.crosssections["xsid"] >= fromxs, "zr"][
-                Sub.crosssections["xsid"] <= toxs
-            ]
+            Sub.cross_sections.loc[Sub.cross_sections["xsid"] >= from_xs, "zr"][
+                Sub.cross_sections["xsid"] <= to_xs
+                ]
         )
         ymax2 = max(
-            Sub.crosssections.loc[Sub.crosssections["xsid"] >= fromxs, "zl"][
-                Sub.crosssections["xsid"] <= toxs
-            ]
+            Sub.cross_sections.loc[Sub.cross_sections["xsid"] >= from_xs, "zl"][
+                Sub.cross_sections["xsid"] <= to_xs
+                ]
         )
         ymax = max(ymax1, ymax2)
-        minlev = Sub.crosssections.loc[Sub.crosssections["xsid"] == toxs, "gl"].values
+        minlev = Sub.cross_sections.loc[Sub.cross_sections["xsid"] == to_xs, "gl"].values
         ax4.set_ylim(minlev - 5, ymax + 5)
-        ax4.set_xlim(fromxs - 1, toxs + 1)
-        ax4.set_xticks(list(range(fromxs, toxs + 1)))
-        ax4.set_xticklabels(list(range(fromxs, toxs + 1)))
+        ax4.set_xlim(from_xs - 1, to_xs + 1)
+        ax4.set_xticks(list(range(from_xs, to_xs + 1)))
+        ax4.set_xticklabels(list(range(from_xs, to_xs + 1)))
 
-        ax4.tick_params(labelsize=xticklabelsize)
-        ax4.locator_params(axis="x", nbins=nxlabels)
+        ax4.tick_params(labelsize=x_tick_label_size)
+        ax4.locator_params(axis="x", nbins=xlabels_number)
 
         ax4.plot(
             Sub.xs_names,
-            Sub.crosssections["zl"],
+            Sub.cross_sections["zl"],
             "k--",
             dashes=(5, 1),
             linewidth=2,
             label="Left Dike",
         )
         ax4.plot(
-            Sub.xs_names, Sub.crosssections["zr"], "k.-", linewidth=2, label="Right Dike"
+            Sub.xs_names, Sub.cross_sections["zr"], "k.-", linewidth=2, label="Right Dike"
         )
 
         if Sub.version == 1:
             ax4.plot(
                 Sub.xs_names,
-                Sub.crosssections["gl"],
+                Sub.cross_sections["gl"],
                 "k-",
                 linewidth=5,
                 label="Bankful level",
@@ -505,14 +505,14 @@ class Visualize:
         else:
             ax4.plot(
                 Sub.xs_names,
-                Sub.crosssections["gl"],
+                Sub.cross_sections["gl"],
                 "k-",
                 linewidth=5,
                 label="Ground level",
             )
             ax4.plot(
                 Sub.xs_names,
-                Sub.crosssections["gl"] + Sub.crosssections["dbf"],
+                Sub.cross_sections["gl"] + Sub.cross_sections["dbf"],
                 "k",
                 linewidth=2,
                 label="Bankful depth",
@@ -520,44 +520,44 @@ class Visualize:
 
         if floodplain:
             fpl = (
-                Sub.crosssections["gl"]
-                + Sub.crosssections["dbf"]
-                + Sub.crosssections["hl"]
+                Sub.cross_sections["gl"]
+                + Sub.cross_sections["dbf"]
+                + Sub.cross_sections["hl"]
             )
             fpr = (
-                Sub.crosssections["gl"]
-                + Sub.crosssections["dbf"]
-                + Sub.crosssections["hr"]
+                Sub.cross_sections["gl"]
+                + Sub.cross_sections["dbf"]
+                + Sub.cross_sections["hr"]
             )
             ax4.plot(Sub.xs_names, fpl, "b-.", linewidth=2, label="Floodplain left")
             ax4.plot(Sub.xs_names, fpr, "r-.", linewidth=2, label="Floodplain right")
 
         ax4.set_title("Water surface Profile Simulation", fontsize=15)
         ax4.legend(fontsize=15)
-        ax4.set_xlabel("Profile", fontsize=yaxislabelsize)
-        ax4.set_ylabel("Elevation m", fontsize=yaxislabelsize)
+        ax4.set_xlabel("Profile", fontsize=y_axis_label_size)
+        ax4.set_ylabel("Elevation m", fontsize=y_axis_label_size)
         ax4.grid()
 
         # plot location of laterals
-        for i in range(len(Sub.LateralsTable)):
-            ymin = Sub.crosssections.loc[
-                Sub.crosssections["xsid"] == Sub.LateralsTable[i], "gl"
+        for i in range(len(Sub.laterals_table)):
+            ymin = Sub.cross_sections.loc[
+                Sub.cross_sections["xsid"] == Sub.laterals_table[i], "gl"
             ].values[0]
             ax4.vlines(
-                Sub.LateralsTable[i],
+                Sub.laterals_table[i],
                 ymin,
                 ymax,
-                colors=LateralsColor,
+                colors=laterals_color,
                 linestyles="dashed",
-                linewidth=LaterlasLineWidth,
+                linewidth=laterals_line_width,
             )
 
         day_text = ax4.annotate(
             "",
             xy=(
-                fromxs + textlocation[0],
-                Sub.crosssections.loc[Sub.crosssections["xsid"] == toxs, "gl"].values
-                + textlocation[1],
+                from_xs + text_location[0],
+                Sub.cross_sections.loc[Sub.cross_sections["xsid"] == to_xs, "gl"].values
+                + text_location[1],
             ),
             fontsize=20,
         )
@@ -602,16 +602,16 @@ class Visualize:
             # the Saintvenant subroutine writes the
             # results of the last xs in the next segment with the current
             # segment
-            if not Lastsegment:
+            if not last_river_reach:
                 y = y.values[:-1]
 
             q_line.set_data(x, y)
 
-            day = Sub.referenceindex.loc[counter[i][0], "date"]
+            day = Sub.reference_index.loc[counter[i][0], "date"]
 
-            if len(Sub.LateralsTable) > 0:
+            if len(Sub.laterals_table) > 0:
                 lat.set_sizes(
-                    sizes=Sub.Laterals.loc[day, Sub.LateralsTable].values * 100
+                    sizes=Sub.Laterals.loc[day, Sub.laterals_table].values * 100
                 )
 
             day_text.set_text("day = " + str(day + dt.timedelta(hours=counter[i][1])))
@@ -621,7 +621,7 @@ class Visualize:
                 ]
             # the Saintvenant subroutine writes the results
             # of the last xs in the next segment with the current segment
-            if not Lastsegment:
+            if not last_river_reach:
                 y = y.values[:-1]
 
             wl_line.set_data(x, y)
@@ -634,27 +634,27 @@ class Visualize:
             )
             # temporary as now the Saintvenant subroutine writes the results
             # of the last xs in the next segment with the current segment
-            if not Lastsegment:
+            if not last_river_reach:
                 y = y.values[:-1]
 
             y = (
                 y
-                + Sub.crosssections.loc[
-                    Sub.crosssections.index[len(Sub.xs_names) - 1], "gl"
+                + Sub.cross_sections.loc[
+                    Sub.cross_sections.index[len(Sub.xs_names) - 1], "gl"
                 ]
             )
             hLline.set_data(x, y)
 
             x = Sub.QBC.columns.values
 
-            y = Sub.QBC.loc[Sub.referenceindex.loc[counter[i][0], "date"]].values
+            y = Sub.QBC.loc[Sub.reference_index.loc[counter[i][0], "date"]].values
             bc_q_line.set_data(x, y)
 
-            y = Sub.HBC.loc[Sub.referenceindex.loc[counter[i][0], "date"]].values
+            y = Sub.HBC.loc[Sub.reference_index.loc[counter[i][0], "date"]].values
             bc_h_line.set_data(x, y)
 
             x = counter[i][1]
-            y = Sub.referenceindex.loc[counter[i][0], "date"]
+            y = Sub.reference_index.loc[counter[i][0], "date"]
             scatter1 = ax2.scatter(x, Sub.QBC[x][y], s=300)
             scatter2 = ax3.scatter(x, Sub.HBC[x][y], s=300)
 
@@ -689,17 +689,17 @@ class Visualize:
         start: Union[str, dt.datetime],
         end: Union[str, dt.datetime],
         interval: float = 0.00002,
-        fromxs: Union[str, int] = "",
-        toxs: Union[str, int] = "",
+        from_xs: Union[str, int] = "",
+        to_xs: Union[str, int] = "",
         fmt: str = "%Y-%m-%d",
         figsize: tuple = (20, 10),
-        textlocation: tuple = (1, 1),
-        LateralsColor: Union[str, tuple] = "#3D59AB",
-        LaterlasLineWidth: int = 1,
-        xaxislabelsize: int = 10,
-        yaxislabelsize: int = 10,
-        nxlabels: int = 20,
-        xticklabelsize: int = 8,
+        text_location: tuple = (1, 1),
+        laterals_color: Union[str, tuple] = "#3D59AB",
+        laterals_line_width: int = 1,
+        x_axis_label_size: int = 10,
+        y_axis_label_size: int = 10,
+        xlabels_number: int = 20,
+        x_tick_label_size: int = 8,
         floodplain: bool = True,
         repeat: bool = True,
     ) -> FuncAnimation:
@@ -717,9 +717,9 @@ class Visualize:
             DESCRIPTION.
         interval : TYPE, optional
             DESCRIPTION. The default is 0.00002.
-        fromxs : TYPE, optional
+        from_xs : TYPE, optional
             DESCRIPTION. The default is 10.
-        toxs : TYPE, optional
+        to_xs : TYPE, optional
             DESCRIPTION. The default is 10.
         floodplain: [bool]
             Default is True.
@@ -727,19 +727,19 @@ class Visualize:
             Default is "%Y-%m-%d".
         figsize: [tuple]
             Default is (20, 10).
-        textlocation: [tuple]
+        text_location: [tuple]
             Default is (1, 1).
-        LateralsColor: [str]
+        laterals_color: [str]
             Default is "#3D59AB".
-        LaterlasLineWidth: [int]
+        laterals_line_width: [int]
             Default is 1.
-        xaxislabelsize: [int]
+        x_axis_label_size: [int]
             Default is 10.
-        yaxislabelsize: [int]
+        y_axis_label_size: [int]
             Default is 10.
-        nxlabels: [int]
+        xlabels_number: [int]
             Default is 20.
-        xticklabelsize: [int]
+        x_tick_label_size: [int]
             Default is 8.
         floodplain: bool
             Default is True.
@@ -779,32 +779,32 @@ class Visualize:
 
         ax1 = fig2.add_subplot(gs[0, 2:6])
 
-        if fromxs == "":
-            fromxs = Sub.xs_names[0]
-            # toxs = Reach.xs_names[-1]
+        if from_xs == "":
+            from_xs = Sub.xs_names[0]
+            # to_xs = Reach.xs_names[-1]
         else:
-            if fromxs < Sub.xs_names[0]:
-                fromxs = Sub.xs_names[0]
+            if from_xs < Sub.xs_names[0]:
+                from_xs = Sub.xs_names[0]
 
-            # if toxs > Reach.xs_names[-1]:
-            # toxs = Reach.xs_names[-1]
+            # if to_xs > Reach.xs_names[-1]:
+            # to_xs = Reach.xs_names[-1]
 
-        if toxs == "":
-            toxs = Sub.xs_names[-1]
+        if to_xs == "":
+            to_xs = Sub.xs_names[-1]
         else:
-            if toxs > Sub.xs_names[-1]:
-                toxs = Sub.xs_names[-1]
+            if to_xs > Sub.xs_names[-1]:
+                to_xs = Sub.xs_names[-1]
 
-        ax1.set_xlim(fromxs - 1, toxs + 1)
+        ax1.set_xlim(from_xs - 1, to_xs + 1)
 
-        ax1.set_xticks(list(range(fromxs, toxs + 1)))
-        ax1.set_xticklabels(list(range(fromxs, toxs + 1)))
+        ax1.set_xticks(list(range(from_xs, to_xs + 1)))
+        ax1.set_xticklabels(list(range(from_xs, to_xs + 1)))
 
-        ax1.tick_params(labelsize=xticklabelsize)
-        ax1.locator_params(axis="x", nbins=nxlabels)
+        ax1.tick_params(labelsize=x_tick_label_size)
+        ax1.locator_params(axis="x", nbins=xlabels_number)
 
-        ax1.set_xlabel("Cross section No", fontsize=xaxislabelsize)
-        ax1.set_ylabel("Discharge (m3/s)", fontsize=yaxislabelsize, labelpad=0.5)
+        ax1.set_xlabel("Cross section No", fontsize=x_axis_label_size)
+        ax1.set_ylabel("Discharge (m3/s)", fontsize=y_axis_label_size, labelpad=0.5)
         ax1.set_title("Reach-Basin" + " " + str(Sub.id), fontsize=15)
         ax1.legend(["Discharge"], fontsize=15)
         ax1.set_ylim(0, int(Sub.q.max().max()))
@@ -813,27 +813,27 @@ class Visualize:
             # ax1.set_ylim(0, int(Reach.results_1d['q'].max()))
 
             # plot location of laterals
-            for i in range(len(Sub.LateralsTable)):
+            for i in range(len(Sub.laterals_table)):
                 ax1.vlines(
-                    Sub.LateralsTable[i],
+                    Sub.laterals_table[i],
                     0,
                     int(int(Sub.q.max().max())),
-                    colors=LateralsColor,
+                    colors=laterals_color,
                     linestyles="dashed",
-                    linewidth=LaterlasLineWidth,
+                    linewidth=laterals_line_width,
                 )
 
             lat = pd.DataFrame()
-            lat["xsid"] = Sub.LateralsTable
-            lat = lat.merge(Sub.crosssections, on="xsid", how="left")
+            lat["xsid"] = Sub.laterals_table
+            lat = lat.merge(Sub.cross_sections, on="xsid", how="left")
 
             lim = ax1.get_ylim()
-            y = np.ones(len(Sub.LateralsTable), dtype=int) * (lim[1] - 50)
+            y = np.ones(len(Sub.laterals_table), dtype=int) * (lim[1] - 50)
             lat = ax1.scatter(
-                Sub.LateralsTable,
+                Sub.laterals_table,
                 y,
-                c=LateralsColor,
-                linewidth=LaterlasLineWidth,
+                c=laterals_color,
+                linewidth=laterals_line_width,
                 zorder=10,
                 s=50,
             )
@@ -848,12 +848,12 @@ class Visualize:
         ax2 = fig2.add_subplot(gs[0, 1:2])
         ax2.set_xlim(1, nstep)
         if Sub.version < 4:
-            ax2.set_ylim(0, int(Sub.QBCmin.max().max()))
+            ax2.set_ylim(0, int(Sub.q_bc_1min.max().max()))
         else:
             ax2.set_ylim(0, int(Sub.USBC.max()))
 
-        ax2.set_xlabel("Time", fontsize=yaxislabelsize)
-        ax2.set_ylabel("Q (m3/s)", fontsize=yaxislabelsize, labelpad=0.1)
+        ax2.set_xlabel("Time", fontsize=y_axis_label_size)
+        ax2.set_ylabel("Q (m3/s)", fontsize=y_axis_label_size, labelpad=0.1)
         ax2.set_title("BC - Q", fontsize=20)
         ax2.legend(["Q"], fontsize=15)
 
@@ -865,10 +865,10 @@ class Visualize:
         ax3 = fig2.add_subplot(gs[0, 0:1])
         ax3.set_xlim(1, nstep)
         if Sub.version < 4:
-            ax3.set_ylim(float(Sub.HBCmin.min().min()), float(Sub.HBCmin.max().max()))
+            ax3.set_ylim(float(Sub.h_bc_1min.min().min()), float(Sub.h_bc_1min.max().max()))
 
-        ax3.set_xlabel("Time", fontsize=yaxislabelsize)
-        ax3.set_ylabel("water level", fontsize=yaxislabelsize, labelpad=0.5)
+        ax3.set_xlabel("Time", fontsize=y_axis_label_size)
+        ax3.set_ylabel("water level", fontsize=y_axis_label_size, labelpad=0.5)
         ax3.set_title("BC - H", fontsize=20)
         ax3.legend(["WL"], fontsize=10)
 
@@ -881,40 +881,40 @@ class Visualize:
         ax4 = fig2.add_subplot(gs[1, 0:6])
 
         ymax1 = max(
-            Sub.crosssections.loc[Sub.crosssections["xsid"] >= fromxs, "zr"][
-                Sub.crosssections["xsid"] <= toxs
-            ]
+            Sub.cross_sections.loc[Sub.cross_sections["xsid"] >= from_xs, "zr"][
+                Sub.cross_sections["xsid"] <= to_xs
+                ]
         )
         ymax2 = max(
-            Sub.crosssections.loc[Sub.crosssections["xsid"] >= fromxs, "zl"][
-                Sub.crosssections["xsid"] <= toxs
-            ]
+            Sub.cross_sections.loc[Sub.cross_sections["xsid"] >= from_xs, "zl"][
+                Sub.cross_sections["xsid"] <= to_xs
+                ]
         )
         ymax = max(ymax1, ymax2)
-        minlev = Sub.crosssections.loc[Sub.crosssections["xsid"] == toxs, "gl"].values
+        minlev = Sub.cross_sections.loc[Sub.cross_sections["xsid"] == to_xs, "gl"].values
         ax4.set_ylim(minlev - 5, ymax + 5)
-        ax4.set_xlim(fromxs - 1, toxs + 1)
-        ax4.set_xticks(list(range(fromxs, toxs + 1)))
+        ax4.set_xlim(from_xs - 1, to_xs + 1)
+        ax4.set_xticks(list(range(from_xs, to_xs + 1)))
 
-        ax4.tick_params(labelsize=xaxislabelsize)
-        ax4.locator_params(axis="x", nbins=nxlabels)
+        ax4.tick_params(labelsize=x_axis_label_size)
+        ax4.locator_params(axis="x", nbins=xlabels_number)
 
         ax4.plot(
             Sub.xs_names,
-            Sub.crosssections["zl"],
+            Sub.cross_sections["zl"],
             "k--",
             dashes=(5, 1),
             linewidth=2,
             label="Left Dike",
         )
         ax4.plot(
-            Sub.xs_names, Sub.crosssections["zr"], "k.-", linewidth=2, label="Right Dike"
+            Sub.xs_names, Sub.cross_sections["zr"], "k.-", linewidth=2, label="Right Dike"
         )
 
         if Sub.version == 1:
             ax4.plot(
                 Sub.xs_names,
-                Sub.crosssections["gl"],
+                Sub.cross_sections["gl"],
                 "k-",
                 linewidth=5,
                 label="Bankful level",
@@ -922,14 +922,14 @@ class Visualize:
         else:
             ax4.plot(
                 Sub.xs_names,
-                Sub.crosssections["gl"],
+                Sub.cross_sections["gl"],
                 "k-",
                 linewidth=5,
                 label="Ground level",
             )
             ax4.plot(
                 Sub.xs_names,
-                Sub.crosssections["gl"] + Sub.crosssections["dbf"],
+                Sub.cross_sections["gl"] + Sub.cross_sections["dbf"],
                 "k",
                 linewidth=2,
                 label="Bankful depth",
@@ -937,14 +937,14 @@ class Visualize:
 
         if floodplain:
             fpl = (
-                Sub.crosssections["gl"]
-                + Sub.crosssections["dbf"]
-                + Sub.crosssections["hl"]
+                Sub.cross_sections["gl"]
+                + Sub.cross_sections["dbf"]
+                + Sub.cross_sections["hl"]
             )
             fpr = (
-                Sub.crosssections["gl"]
-                + Sub.crosssections["dbf"]
-                + Sub.crosssections["hr"]
+                Sub.cross_sections["gl"]
+                + Sub.cross_sections["dbf"]
+                + Sub.cross_sections["hr"]
             )
             ax4.plot(Sub.xs_names, fpl, "b-.", linewidth=2, label="Floodplain left")
             ax4.plot(Sub.xs_names, fpr, "r-.", linewidth=2, label="Floodplain right")
@@ -956,25 +956,25 @@ class Visualize:
         ax4.grid()
 
         # plot location of laterals
-        for i in range(len(Sub.LateralsTable)):
-            ymin = Sub.crosssections.loc[
-                Sub.crosssections["xsid"] == Sub.LateralsTable[i], "gl"
+        for i in range(len(Sub.laterals_table)):
+            ymin = Sub.cross_sections.loc[
+                Sub.cross_sections["xsid"] == Sub.laterals_table[i], "gl"
             ].values[0]
             ax4.vlines(
-                Sub.LateralsTable[i],
+                Sub.laterals_table[i],
                 ymin,
                 ymax,
-                colors=LateralsColor,
+                colors=laterals_color,
                 linestyles="dashed",
-                linewidth=LaterlasLineWidth,
+                linewidth=laterals_line_width,
             )
 
         day_text = ax4.annotate(
             "",
             xy=(
-                fromxs + textlocation[0],
-                Sub.crosssections.loc[Sub.crosssections["xsid"] == toxs, "gl"].values
-                + textlocation[1],
+                from_xs + text_location[0],
+                Sub.cross_sections.loc[Sub.cross_sections["xsid"] == to_xs, "gl"].values
+                + text_location[1],
             ),
             fontsize=20,
         )
@@ -1023,24 +1023,24 @@ class Visualize:
 
             day = counter[i].floor(freq="D")
 
-            lat.set_sizes(sizes=Sub.Laterals.loc[day, Sub.LateralsTable].values * 100)
+            lat.set_sizes(sizes=Sub.Laterals.loc[day, Sub.laterals_table].values * 100)
 
             # BC Q (ax2)
 
-            x = Sub.QBCmin.columns.values
+            x = Sub.q_bc_1min.columns.values
 
-            y = Sub.QBCmin.loc[day].values
+            y = Sub.q_bc_1min.loc[day].values
             bc_q_line.set_data(x, y)
 
             # BC H (ax3)
-            y = Sub.HBCmin.loc[day].values
+            y = Sub.h_bc_1min.loc[day].values
             bc_h_line.set_data(x, y)
 
             # BC Q point (ax2)
             x = ((counter[i] - day).seconds / 60) + 1
-            scatter1 = ax2.scatter(x, Sub.QBCmin[x][day], s=150)
+            scatter1 = ax2.scatter(x, Sub.q_bc_1min[x][day], s=150)
             # BC h point (ax3)
-            scatter2 = ax3.scatter(x, Sub.HBCmin[x][day], s=150)
+            scatter2 = ax3.scatter(x, Sub.h_bc_1min[x][day], s=150)
 
             return (
                 q_line,
@@ -1072,14 +1072,14 @@ class Visualize:
         end,
         interval=0.00002,
         xs=0,
-        xsbefore=10,
-        xsafter=10,
+        xs_before=10,
+        xs_after=10,
         fmt="%Y-%m-%d",
-        textlocation=2,
-        xaxislabelsize=15,
-        yaxislabelsize=15,
-        nxlabels=50,
-        plotbanhfuldepth=False,
+        text_location=2,
+        x_axis_label_size=15,
+        y_axis_label_size=15,
+        xlabels_number=50,
+        plot_bankfull_depth=False,
     ):
         """river1d.
 
@@ -1097,9 +1097,9 @@ class Visualize:
             DESCRIPTION. The default is 0.00002.
         xs : TYPE, optional
             DESCRIPTION. The default is 0.
-        xsbefore : TYPE, optional
+        xs_before : TYPE, optional
             DESCRIPTION. The default is 10.
-        xsafter : TYPE, optional
+        xs_after : TYPE, optional
             DESCRIPTION. The default is 10.
 
         Returns
@@ -1118,19 +1118,19 @@ class Visualize:
             " from {0} - and ends on {1} "
         )
 
-        assert start in Sub.referenceindex_results, msg.format(
-            Sub.referenceindex_results[0], Sub.referenceindex_results[-1]
+        assert start in Sub.reference_index_results, msg.format(
+            Sub.reference_index_results[0], Sub.reference_index_results[-1]
         )
 
-        assert end in Sub.referenceindex_results, msg.format(
-            Sub.referenceindex_results[0], Sub.referenceindex_results[-1]
+        assert end in Sub.reference_index_results, msg.format(
+            Sub.reference_index_results[0], Sub.reference_index_results[-1]
         )
 
-        counter = Sub.referenceindex_results[
-            np.where(Sub.referenceindex_results == start)[0][0] : np.where(
-                Sub.referenceindex_results == end
+        counter = Sub.reference_index_results[
+                  np.where(Sub.reference_index_results == start)[0][0]: np.where(
+                      Sub.reference_index_results == end
             )[0][0]
-            + 1
+                                                                        + 1
         ]
 
         margin = 10
@@ -1143,12 +1143,12 @@ class Visualize:
         ax1.set_ylim(0, int(Sub.usbc.max() + margin))
         ax1.set_xlabel("Time", fontsize=15)
         if Sub.usbc.columns[0] == "q":
-            # ax1.set_ylabel('USBC - Q (m3/s)', fontsize=15)
+            # ax1.set_ylabel('USBC - Q (m3/s)', font_size=15)
             ax1.set_title("USBC - Q (m3/s)", fontsize=20)
         else:
-            # ax1.set_ylabel('USBC - H (m)', fontsize=15)
+            # ax1.set_ylabel('USBC - H (m)', font_size=15)
             ax1.set_title("USBC - H (m)", fontsize=20)
-        # ax1.legend(["Q"], fontsize=10)
+        # ax1.legend(["Q"], font_size=10)
         ax1.set_xlim(1, 25)
         (usbc_line,) = ax1.plot([], [], linewidth=5)
         # usbc_point = ax1.scatter([], [], s=150)
@@ -1165,11 +1165,11 @@ class Visualize:
             FigureLastXS = Sub.xs_names[-1]
         else:
             # not the whole sub-basin
-            FigureFirstXS = Sub.xs_names[xs] - xsbefore
+            FigureFirstXS = Sub.xs_names[xs] - xs_before
             if FigureFirstXS < Sub.xs_names[0]:
                 FigureFirstXS = Sub.xs_names[0]
 
-            FigureLastXS = Sub.xs_names[xs] + xsafter
+            FigureLastXS = Sub.xs_names[xs] + xs_after
             if FigureLastXS > Sub.xs_names[-1]:
                 FigureLastXS = Sub.xs_names[-1]
 
@@ -1178,11 +1178,11 @@ class Visualize:
             ax2.set_xticklabels(list(range(FigureFirstXS, FigureLastXS)))
 
         ax2.set_ylim(np.nanmin(Sub.q) - 10, int(np.nanmax(Sub.q)) + 10)
-        ax2.tick_params(labelsize=xaxislabelsize)
-        ax2.locator_params(axis="x", nbins=nxlabels)
-        ax2.set_xlabel("Cross section No", fontsize=xaxislabelsize)
+        ax2.tick_params(labelsize=x_axis_label_size)
+        ax2.locator_params(axis="x", nbins=xlabels_number)
+        ax2.set_xlabel("Cross section No", fontsize=x_axis_label_size)
         ax2.set_title("Discharge (m3/s)", fontsize=20)
-        # ax2.set_ylabel('Discharge (m3/s)', fontsize=yaxislabelsize, labelpad=0.5)
+        # ax2.set_ylabel('Discharge (m3/s)', font_size=y_axis_label_size, labelpad=0.5)
         ax2.legend(["Discharge"], fontsize=15)
 
         (q_line,) = ax2.plot([], [], linewidth=5)
@@ -1197,13 +1197,13 @@ class Visualize:
 
         ax3.set_xlabel("Time", fontsize=15)
         if Sub.dsbc.columns[0] == "q":
-            # ax3.set_ylabel('DSBC', fontsize=15, labelpad=0.5)
+            # ax3.set_ylabel('DSBC', font_size=15, labelpad=0.5)
             ax3.set_title("DSBC - Q (m3/s)", fontsize=20)
         else:
-            # ax3.set_ylabel('USBC', fontsize=15, labelpad=0.5)
+            # ax3.set_ylabel('USBC', font_size=15, labelpad=0.5)
             ax3.set_title("DSBC - H(m)", fontsize=20)
 
-        # ax3.legend(["WL"], fontsize=10)
+        # ax3.legend(["WL"], font_size=10)
 
         (dsbc_line,) = ax3.plot([], [], linewidth=5)
         # dsbc_point = ax3.scatter([], [], s=300)
@@ -1215,40 +1215,40 @@ class Visualize:
         if xs == 0:
             ax4.set_xlim(Sub.xs_names[0] - 1, Sub.xs_names[-1] + 1)
             ax4.set_xticks(Sub.xs_names)
-            ymin = Sub.crosssections.loc[
-                Sub.crosssections["xsid"] == FigureFirstXS, "bed level"
+            ymin = Sub.cross_sections.loc[
+                Sub.cross_sections["xsid"] == FigureFirstXS, "bed level"
             ].values.min()
-            ymax = Sub.crosssections.loc[
-                Sub.crosssections["xsid"] == FigureFirstXS, "bed level"
+            ymax = Sub.cross_sections.loc[
+                Sub.cross_sections["xsid"] == FigureFirstXS, "bed level"
             ].values.max()
             ax4.set_ylim(ymin, ymax + np.nanmax(Sub.h) + 5)
         else:
             ax4.set_xlim(FigureFirstXS, FigureLastXS)
             ax4.set_xticks(list(range(FigureFirstXS, FigureLastXS)))
             ax4.set_ylim(
-                Sub.crosssections.loc[
-                    Sub.crosssections["xsid"] == FigureFirstXS, "bed level"
+                Sub.cross_sections.loc[
+                    Sub.cross_sections["xsid"] == FigureFirstXS, "bed level"
                 ].values,
-                Sub.crosssections.loc[
-                    Sub.crosssections["xsid"] == FigureLastXS, "zr"
+                Sub.cross_sections.loc[
+                    Sub.cross_sections["xsid"] == FigureLastXS, "zr"
                 ].values
                 + 5,
             )
 
-        ax4.tick_params(labelsize=xaxislabelsize)
-        ax4.locator_params(axis="x", nbins=nxlabels)
+        ax4.tick_params(labelsize=x_axis_label_size)
+        ax4.locator_params(axis="x", nbins=xlabels_number)
 
         ax4.plot(
             Sub.xs_names,
-            Sub.crosssections["bed level"],
+            Sub.cross_sections["bed level"],
             "k-",
             linewidth=5,
             label="Ground level",
         )
-        if plotbanhfuldepth:
+        if plot_bankfull_depth:
             ax4.plot(
                 Sub.xs_names,
-                Sub.crosssections["bed level"] + Sub.crosssections["depth"],
+                Sub.cross_sections["bed level"] + Sub.cross_sections["depth"],
                 "k",
                 linewidth=2,
                 label="Bankful depth",
@@ -1261,19 +1261,19 @@ class Visualize:
         ax4.grid()
 
         if xs == 0:
-            textlocation = textlocation + Sub.xs_names[0]
+            text_location = text_location + Sub.xs_names[0]
             day_text = ax4.annotate(
                 " ",
-                xy=(textlocation, Sub.crosssections["bed level"].min() + 1),
+                xy=(text_location, Sub.cross_sections["bed level"].min() + 1),
                 fontsize=20,
             )
         else:
             day_text = ax4.annotate(
                 " ",
                 xy=(
-                    FigureFirstXS + textlocation,
-                    Sub.crosssections.loc[
-                        Sub.crosssections["xsid"] == FigureLastXS, "gl"
+                    FigureFirstXS + text_location,
+                    Sub.cross_sections.loc[
+                        Sub.cross_sections["xsid"] == FigureLastXS, "gl"
                     ].values
                     + 1,
                 ),
@@ -1303,11 +1303,11 @@ class Visualize:
             # discharge (ax1)
             x = Sub.xs_names
 
-            y = Sub.q[np.where(Sub.referenceindex_results == counter[i])[0][0], :]
+            y = Sub.q[np.where(Sub.reference_index_results == counter[i])[0][0], :]
             q_line.set_data(x, y)
 
             # water level (ax4)
-            y = Sub.wl[np.where(Sub.referenceindex_results == counter[i])[0][0], :]
+            y = Sub.wl[np.where(Sub.reference_index_results == counter[i])[0][0], :]
             wl_line.set_data(x, y)
 
             # USBC
@@ -1333,7 +1333,7 @@ class Visualize:
             dsbc_line.set_data(x, y)
 
             # x = counter[i][1]
-            # y = Reach.referenceindex.loc[counter[i][0], 'date']
+            # y = Reach.reference_index.loc[counter[i][0], 'date']
             # ax2.scatter(x, Reach.QBC[x][y])
 
             # # BC Q point (ax2)
@@ -1365,19 +1365,19 @@ class Visualize:
     def plotCrossSections(
         self,
         Sub,
-        fromxs: Optional[int] = None,
-        toxs: Optional[int] = None,
-        xsrows: int = 3,
-        xscolumns: int = 3,
+        from_xs: Optional[int] = None,
+        to_xs: Optional[int] = None,
+        xs_rows: int = 3,
+        xs_columns: int = 3,
         bedlevel: bool = False,
-        titlesize: int = 15,
-        textsize: int = 15,
-        figsize: tuple = (18, 10),
-        linewidth: int = 6,
-        samescale: bool = False,
-        textspacing: List[tuple] = [(1, 1), (1, 2)],
-        plottingoption: int = 1,
-        plotannotation: bool = True,
+        title_size: int = 15,
+        text_size: int = 15,
+        fig_size: tuple = (18, 10),
+        line_width: int = 6,
+        same_scale: bool = False,
+        text_spacing: List[tuple] = [(1, 1), (1, 2)],
+        plotting_option: int = 1,
+        plot_annotation: bool = True,
     ):
         """CrossSections.
 
@@ -1387,65 +1387,65 @@ class Visualize:
         ----------
         Sub : [Object]
             Reach-object created as a sub class from River object..
-        fromxs : TYPE, optional
+        from_xs : TYPE, optional
             DESCRIPTION. The default is ''.
-        toxs : TYPE, optional
+        to_xs : TYPE, optional
             DESCRIPTION. The default is ''.
-        xsrows : TYPE, optional
+        xs_rows : TYPE, optional
             DESCRIPTION. The default is 3.
-        xscolumns : TYPE, optional
+        xs_columns : TYPE, optional
             DESCRIPTION. The default is 3.
         bedlevel : TYPE, optional
             DESCRIPTION. The default is False.
-        titlesize : TYPE, optional
+        title_size : TYPE, optional
             DESCRIPTION. The default is 15.
-        textsize : TYPE, optional
+        text_size : TYPE, optional
             DESCRIPTION. The default is 15.
-        figsize : TYPE, optional
+        fig_size : TYPE, optional
             DESCRIPTION. The default is (18, 10).
-        linewidth : TYPE, optional
+        line_width : TYPE, optional
             DESCRIPTION. The default is 6.
-        plottingoption : [integer]
+        plotting_option : [integer]
             1 if you want to plot the whole cross-section, 2 to execlude the
             dikes(river bankfull area and floodplain will be plotted),
             3 to plot only the bankfull area.
-        samescale: [bool]
+        same_scale: [bool]
             Default is False.
-        textspacing: [tuple]
+        text_spacing: [tuple]
             Default is [(1, 1), (1, 2)].
-        plotannotation: [bool]
+        plot_annotation: [bool]
             Default is True.
 
         Returns
         -------
         None.
         """
-        if not fromxs:
+        if not from_xs:
             startxs_ind = 0
         else:
-            startxs_ind = Sub.xs_names.index(fromxs)
+            startxs_ind = Sub.xs_names.index(from_xs)
 
-        if not toxs:
+        if not to_xs:
             endxs_ind = Sub.xsno - 1
         else:
-            endxs_ind = Sub.xs_names.index(toxs)
+            endxs_ind = Sub.xs_names.index(to_xs)
 
         names = list(range(1, 17))
         XSS = pd.DataFrame(
-            columns=names, index=Sub.crosssections.loc[startxs_ind:endxs_ind, "xsid"]
+            columns=names, index=Sub.cross_sections.loc[startxs_ind:endxs_ind, "xsid"]
         )
 
         # calculate the vertices of the cross sections
         for i in range(startxs_ind, endxs_ind + 1):
             ind = XSS.index[i - startxs_ind]
-            ind2 = Sub.crosssections.index[i]
+            ind2 = Sub.cross_sections.index[i]
 
             XSS[1].loc[XSS.index == ind] = 0
             XSS[2].loc[XSS.index == ind] = 0
 
-            bl = Sub.crosssections.loc[Sub.crosssections.index == ind2, "bl"].values[0]
-            b = Sub.crosssections.loc[Sub.crosssections.index == ind2, "b"].values[0]
-            br = Sub.crosssections.loc[Sub.crosssections.index == ind2, "br"].values[0]
+            bl = Sub.cross_sections.loc[Sub.cross_sections.index == ind2, "bl"].values[0]
+            b = Sub.cross_sections.loc[Sub.cross_sections.index == ind2, "b"].values[0]
+            br = Sub.cross_sections.loc[Sub.cross_sections.index == ind2, "br"].values[0]
 
             XSS[3].loc[XSS.index == ind] = bl
             XSS[4].loc[XSS.index == ind] = bl
@@ -1454,27 +1454,27 @@ class Visualize:
             XSS[7].loc[XSS.index == ind] = bl + b + br
             XSS[8].loc[XSS.index == ind] = bl + b + br
 
-            gl = Sub.crosssections.loc[Sub.crosssections.index == ind2, "gl"].values[0]
+            gl = Sub.cross_sections.loc[Sub.cross_sections.index == ind2, "gl"].values[0]
 
             if bedlevel:
                 subtract = 0
             else:
                 subtract = gl
 
-            zl = Sub.crosssections.loc[Sub.crosssections.index == ind2, "zl"].values[0]
-            zr = Sub.crosssections.loc[Sub.crosssections.index == ind2, "zr"].values[0]
+            zl = Sub.cross_sections.loc[Sub.cross_sections.index == ind2, "zl"].values[0]
+            zr = Sub.cross_sections.loc[Sub.cross_sections.index == ind2, "zr"].values[0]
 
-            if "dbf" in Sub.crosssections.columns:
-                dbf = Sub.crosssections.loc[
-                    Sub.crosssections.index == ind2, "dbf"
+            if "dbf" in Sub.cross_sections.columns:
+                dbf = Sub.cross_sections.loc[
+                    Sub.cross_sections.index == ind2, "dbf"
                 ].values[0]
 
-            hl = Sub.crosssections.loc[Sub.crosssections.index == ind2, "hl"].values[0]
-            hr = Sub.crosssections.loc[Sub.crosssections.index == ind2, "hr"].values[0]
+            hl = Sub.cross_sections.loc[Sub.cross_sections.index == ind2, "hl"].values[0]
+            hr = Sub.cross_sections.loc[Sub.cross_sections.index == ind2, "hr"].values[0]
 
             XSS[9].loc[XSS.index == ind] = zl - subtract
 
-            if "dbf" not in Sub.crosssections.columns:
+            if "dbf" not in Sub.cross_sections.columns:
                 XSS[10].loc[XSS.index == ind] = gl + hl - subtract
                 XSS[11].loc[XSS.index == ind] = gl - subtract
                 XSS[14].loc[XSS.index == ind] = gl - subtract
@@ -1492,13 +1492,13 @@ class Visualize:
 
         # plot the cross sections
         xsplot = len(range(startxs_ind, endxs_ind + 1))
-        figno = int(math.ceil(xsplot / (xscolumns * xsrows)))
+        figno = int(math.ceil(xsplot / (xs_columns * xs_rows)))
 
         ind2 = startxs_ind
         ind = XSS.index[ind2 - startxs_ind]
         for i in range(figno):
 
-            if samescale:
+            if same_scale:
                 sharex = True
                 sharey = True
             else:
@@ -1506,19 +1506,19 @@ class Visualize:
                 sharey = False
 
             fig, ax_XS = plt.subplots(
-                ncols=xscolumns,
-                nrows=xsrows,
-                figsize=figsize,
+                ncols=xs_columns,
+                nrows=xs_rows,
+                figsize=fig_size,
                 sharex=sharex,
                 sharey=sharey,
             )
-            # gs = gridspec.GridSpec(xsrows, xscolumns)
+            # gs = gridspec.GridSpec(xs_rows, xs_columns)
 
-            for j in range(xsrows):
-                for k in range(xscolumns):
+            for j in range(xs_rows):
+                for k in range(xs_columns):
                     if ind2 <= endxs_ind:
-                        XsId = Sub.crosssections.loc[
-                            Sub.crosssections.index[ind2], "xsid"
+                        XsId = Sub.cross_sections.loc[
+                            Sub.cross_sections.index[ind2], "xsid"
                         ]
                         xcoord = (
                             XSS[names[0:8]].loc[XSS.index == ind].values.tolist()[0]
@@ -1526,76 +1526,76 @@ class Visualize:
                         ycoord = (
                             XSS[names[8:16]].loc[XSS.index == ind].values.tolist()[0]
                         )
-                        b = Sub.crosssections.loc[
-                            Sub.crosssections["xsid"] == ind, "b"
+                        b = Sub.cross_sections.loc[
+                            Sub.cross_sections["xsid"] == ind, "b"
                         ].values[0]
-                        bl = Sub.crosssections.loc[
-                            Sub.crosssections["xsid"] == ind, "bl"
+                        bl = Sub.cross_sections.loc[
+                            Sub.cross_sections["xsid"] == ind, "bl"
                         ].values[0]
-                        gl = Sub.crosssections.loc[
-                            Sub.crosssections["xsid"] == ind, "gl"
+                        gl = Sub.cross_sections.loc[
+                            Sub.cross_sections["xsid"] == ind, "gl"
                         ].values[0]
 
                         # ax_XS = fig.add_subplot(gs[j, k])
-                        if plottingoption == 1:
-                            ax_XS[j, k].plot(xcoord, ycoord, linewidth=linewidth)
-                            x = textspacing[0][0]
-                            x1 = textspacing[1][0]
-                        elif plottingoption == 2:
+                        if plotting_option == 1:
+                            ax_XS[j, k].plot(xcoord, ycoord, linewidth=line_width)
+                            x = text_spacing[0][0]
+                            x1 = text_spacing[1][0]
+                        elif plotting_option == 2:
                             ax_XS[j, k].plot(
-                                xcoord[1:-1], ycoord[1:-1], linewidth=linewidth
+                                xcoord[1:-1], ycoord[1:-1], linewidth=line_width
                             )
-                            x = textspacing[0][0] + bl
-                            x1 = textspacing[1][0] + bl
+                            x = text_spacing[0][0] + bl
+                            x1 = text_spacing[1][0] + bl
                         else:
                             ax_XS[j, k].plot(
-                                xcoord[2:-2], ycoord[2:-2], linewidth=linewidth
+                                xcoord[2:-2], ycoord[2:-2], linewidth=line_width
                             )
-                            x = textspacing[0][0] + bl
-                            x1 = textspacing[1][0] + bl
+                            x = text_spacing[0][0] + bl
+                            x1 = text_spacing[1][0] + bl
 
                         ax_XS[j, k].title.set_text("xs ID = " + str(XsId))
-                        ax_XS[j, k].title.set_fontsize(titlesize)
+                        ax_XS[j, k].title.set_fontsize(title_size)
 
-                        if samescale:
+                        if same_scale:
                             # when sharex and sharey are true the labels
                             # disappear so set thier visability to true
                             ax_XS[j, k].xaxis.set_tick_params(labelbottom=True)
                             ax_XS[j, k].yaxis.set_tick_params(labelbottom=True)
 
-                        if plotannotation:
+                        if plot_annotation:
                             if Sub.version > 1:
-                                dbf = Sub.crosssections.loc[
-                                    Sub.crosssections["xsid"] == ind, "dbf"
+                                dbf = Sub.cross_sections.loc[
+                                    Sub.cross_sections["xsid"] == ind, "dbf"
                                 ].values[0]
-                                b = Sub.crosssections.loc[
-                                    Sub.crosssections["xsid"] == ind, "b"
+                                b = Sub.cross_sections.loc[
+                                    Sub.cross_sections["xsid"] == ind, "b"
                                 ].values[0]
 
                                 if bedlevel:
                                     ax_XS[j, k].annotate(
                                         "dbf=" + str(round(dbf, 2)),
-                                        xy=(x, gl + textspacing[0][1]),
-                                        fontsize=textsize,
+                                        xy=(x, gl + text_spacing[0][1]),
+                                        fontsize=text_size,
                                     )
 
                                     ax_XS[j, k].annotate(
                                         "b=" + str(round(b, 2)),
-                                        xy=(x1, gl + textspacing[1][1]),
-                                        fontsize=textsize,
+                                        xy=(x1, gl + text_spacing[1][1]),
+                                        fontsize=text_size,
                                     )
                                 else:
 
                                     ax_XS[j, k].annotate(
                                         "dbf=" + str(round(dbf, 2)),
-                                        xy=(x, textspacing[0][1]),
-                                        fontsize=textsize,
+                                        xy=(x, text_spacing[0][1]),
+                                        fontsize=text_size,
                                     )
 
                                     ax_XS[j, k].annotate(
                                         "b=" + str(round(b, 2)),
-                                        xy=(x1, textspacing[1][1]),
-                                        fontsize=textsize,
+                                        xy=(x1, text_spacing[1][1]),
+                                        fontsize=text_size,
                                     )
 
                         ind2 = ind2 + 1
@@ -1611,8 +1611,8 @@ class Visualize:
         self,
         Sub,
         date: str,
-        xaxislabelsize: int = 10,
-        nxlabels: int = 50,
+        x_axis_label_size: int = 10,
+        xlabels_number: int = 50,
         fmt: str = "%Y-%m-%d",
     ):
         """Plot1minProfile.
@@ -1625,9 +1625,9 @@ class Visualize:
             DESCRIPTION.
         date : TYPE
             DESCRIPTION.
-        xaxislabelsize : TYPE, optional
+        x_axis_label_size : TYPE, optional
             DESCRIPTION. The default is 10.
-        nxlabels : TYPE, optional
+        xlabels_number : TYPE, optional
             DESCRIPTION. The default is 50.
         fmt : TYPE, optional
             DESCRIPTION. The default is "%Y-%m-%d".
@@ -1647,13 +1647,13 @@ class Visualize:
         ax2.set_ylabel("Water level", fontsize=20)
         ax1.set_xlabel("Cross sections", fontsize=20)
         ax1.set_xticks(Sub.xs_names)
-        ax1.tick_params(labelsize=xaxislabelsize)
-        ax1.locator_params(axis="x", nbins=nxlabels)
+        ax1.tick_params(labelsize=x_axis_label_size)
+        ax1.locator_params(axis="x", nbins=xlabels_number)
 
         ax1.grid()
 
     @staticmethod
-    def saveProfileAnimation(Anim, Path="", fps=3, ffmpegPath=""):
+    def saveProfileAnimation(Anim, Path="", fps=3, ffmpeg_path=""):
         """SaveProfileAnimation.
 
         save video animation
@@ -1667,7 +1667,7 @@ class Visualize:
             DESCRIPTION. The default is ''.
         fps : TYPE, optional
             DESCRIPTION. The default is 3.
-        ffmpegPath : TYPE, optional
+        ffmpeg_path : TYPE, optional
             DESCRIPTION. The default is ''.
 
         in order to save a video using matplotlib you have to download ffmpeg
@@ -1686,11 +1686,11 @@ class Visualize:
             compitable with your operating system, and copy the content of the
             folder and paste it in the "c:/user/.matplotlib/ffmpeg-static/"
             """
-        if ffmpegPath == "":
-            ffmpegPath = os.getenv("HOME") + "/.matplotlib/ffmpeg-static/bin/ffmpeg.exe"
-            assert os.path.exists(ffmpegPath), "{0}".format(message)
+        if ffmpeg_path == "":
+            ffmpeg_path = os.getenv("HOME") + "/.matplotlib/ffmpeg-static/bin/ffmpeg.exe"
+            assert os.path.exists(ffmpeg_path), "{0}".format(message)
 
-        mpl.rcParams["animation.ffmpeg_path"] = ffmpegPath
+        mpl.rcParams["animation.ffmpeg_path"] = ffmpeg_path
 
         Ext = Path.split(".")[1]
         if Ext == "gif":
@@ -1787,11 +1787,11 @@ class Visualize:
 
         Example
         -------
-        Vis.Histogram(Val1, val2,2,figsize=(5.5,4.5), color1='#27408B',
+        Vis.Histogram(Val1, val2,2,fig_size=(5.5,4.5), color1='#27408B',
                         xlabel = 'Inundation Depth (m)', ylabel = 'Frequency', legend_size = 15,
-                         fontsize=15, labelsize = 15, Axisfontsize = 11,
+                         font_size=15, label_size = 15, axis_font_size = 11,
                          legend = ['RIM1.0', 'RIM2.0'], pdf = False, Save = False,
-                         name = str(Event1.EventIndex.loc[EndInd,'id']))
+                         name = str(Event1.event_index.loc[EndInd,'id']))
         """
         # update the default options
         Fkeys = list(kwargs.keys())
@@ -1819,7 +1819,7 @@ class Visualize:
             #     if key == 'legend':
             #         plt.legend(kwargs['legend'])
             #     if key == 'legend size':
-            #         plt.legend(kwargs['legend'],fontsize = int(kwargs['legend_size']))
+            #         plt.legend(kwargs['legend'],font_size = int(kwargs['legend_size']))
             #     if key == 'xlabel':
             #         plt.xlabel(kwargs['xlabel'])
             #     if key == 'ylabel':
@@ -1830,7 +1830,7 @@ class Visualize:
             # #         # xlabel = kwargs['xlabel']
 
         elif NoAxis == 2:
-            fig, ax1 = plt.subplots(figsize=Visualize.FigureDefaultOptions["figsize"])
+            fig, ax1 = plt.subplots(figsize=Visualize.FigureDefaultOptions["fig_size"])
             # n1= ax1.hist([v1,v2], bins=15, alpha = 0.7, color=[color1,color2])
             n1 = ax1.hist(
                 [v1, v2],
@@ -1861,7 +1861,7 @@ class Visualize:
                     pdf_fitted1,
                     "-.",
                     color=Visualize.FigureDefaultOptions["color1"],
-                    linewidth=Visualize.FigureDefaultOptions["linewidth"],
+                    linewidth=Visualize.FigureDefaultOptions["line_width"],
                     label="RIM1.0 pdf",
                 )
                 ax2.plot(
@@ -1869,7 +1869,7 @@ class Visualize:
                     pdf_fitted2,
                     "-.",
                     color=Visualize.FigureDefaultOptions["color2"],
-                    linewidth=Visualize.FigureDefaultOptions["linewidth"],
+                    linewidth=Visualize.FigureDefaultOptions["line_width"],
                     label="RIM2.0 pdf",
                 )
                 ax2.set_ylabel(
@@ -1889,11 +1889,11 @@ class Visualize:
             #         # xlabel = kwargs['xlabel']
 
             # n2 = ax2.hist(v2,  bins=n1[1], alpha = 0.4, color=color2)#width=0.2,
-            # ax2.set_ylabel("Frequency", fontsize = 15)
+            # ax2.set_ylabel("Frequency", font_size = 15)
             # ax2.yaxis.label.set_color(color2)
 
             # ax2.tick_params(axis='y', color = color2)
-            # plt.title("Reach-Basin = " + str(Subid), fontsize = 15)
+            # plt.title("Reach-Basin = " + str(Subid), font_size = 15)
 
             # minall = min(min(n1[1]), min(n2[1]))
             # if minall < 0:
@@ -1917,7 +1917,7 @@ class Visualize:
             # ax1.set_xlabel(self.FigureOptions['xlabel'])
             # if key == 'ylabel':
             # ax1.set_ylabel(self.FigureOptions['ylabel'])
-            # if key == 'labelsize':
+            # if key == 'label_size':
             ax1.set_xlabel(
                 Visualize.FigureDefaultOptions["xlabel"],
                 fontsize=Visualize.FigureDefaultOptions["AxisLabelSize"],
@@ -1926,12 +1926,12 @@ class Visualize:
                 Visualize.FigureDefaultOptions["ylabel"],
                 fontsize=Visualize.FigureDefaultOptions["AxisLabelSize"],
             )
-            # if key == 'fontsize':
+            # if key == 'font_size':
             plt.rcParams.update(
-                {"font.size": int(Visualize.FigureDefaultOptions["Axisfontsize"])}
+                {"font.size": int(Visualize.FigureDefaultOptions["axis_font_size"])}
             )
 
-            # fig.legend(loc="upper right", bbox_to_anchor=(1,1), bbox_transform=ax1.transAxes,fontsize = 15)
+            # fig.legend(loc="upper right", bbox_to_anchor=(1,1), bbox_transform=ax1.transAxes,font_size = 15)
 
             plt.tight_layout()
 
@@ -1947,18 +1947,12 @@ class Visualize:
         Print Attributes List
         """
         print("\n")
-        print(
-            "Attributes List of: "
-            + repr(self.__dict__["name"])
-            + " - "
-            + self.__class__.__name__
-            + " Instance\n"
-        )
+        print(f"Attributes List of: {repr(self.__dict__['name'])} - {self.__class__.__name__} Instance\n")
         self_keys = list(self.__dict__.keys())
         self_keys.sort()
         for key in self_keys:
             if key != "name":
-                print(str(key) + " : " + repr(self.__dict__[key]))
+                print(f"{key} : {repr(self.__dict__[key])}")
 
         print("\n")
 

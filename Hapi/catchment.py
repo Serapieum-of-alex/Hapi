@@ -1143,7 +1143,7 @@ class Catchment:
                 size of the numbers plotted intop of each cells. The default is 8.
             Title : [str], optional
                 title of the plot. The default is 'Total Discharge'.
-            titlesize : [integer], optional
+            title_size : [integer], optional
                 title size. The default is 15.
             Backgroundcolorthreshold : [float/integer], optional
                 threshold value if the value of the cell is greater, the plotted

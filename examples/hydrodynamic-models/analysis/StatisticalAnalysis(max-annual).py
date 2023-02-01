@@ -137,7 +137,7 @@ for i in range(len(Qgauges)):
         bbox_transform=ax1.transAxes,
         fontsize=12,
     )
-    # plt.title("Inundated Area ( 1000 cell)", fontsize = 15)
+    # plt.title("Inundated Area ( 1000 cell)", font_size = 15)
     plt.rcParams.update({"font.size": 12})
     plt.tight_layout()
     """
@@ -189,7 +189,7 @@ for i in range(len(Qgauges)):
 
     # ax1.plot(River1.Qrp.columns.tolist(),River1.Qrp.loc[SubID,:].values.tolist(),
     #           zorder=1, color = color1 , linestyle = V.LineStyle(6),
-    #           linewidth = 5, label = "RIM1.0")
+    #           line_width = 5, label = "RIM1.0")
 
     ax1.plot(
         Rhine.Qrp.columns.tolist(),
@@ -203,8 +203,8 @@ for i in range(len(Qgauges)):
 
     ax1.set_ylabel("Discharge (m3/s)", fontsize=15)
     ax1.set_xlabel("Return Period", fontsize=15)
-    # fig.legend(loc="upper right", bbox_to_anchor=(0.3,1), bbox_transform=ax1.transAxes,fontsize = 12)
-    # plt.title("Inundated Area ( 1000 cell)", fontsize = 15)
+    # fig.legend(loc="upper right", bbox_to_anchor=(0.3,1), bbox_transform=ax1.transAxes,font_size = 12)
+    # plt.title("Inundated Area ( 1000 cell)", font_size = 15)
     plt.rcParams.update({"font.size": 12})
     plt.tight_layout()
     """
@@ -244,7 +244,7 @@ ax[0, 0].plot(
 
 # ax[0,0].plot(River1.Qrp.columns.tolist(),River1.Qrp.loc[SubID,:].values.tolist(),
 #               zorder=1, color = color1 , linestyle = V.LineStyle(6),
-#               linewidth = linewidth, label = "RIM1.0")
+#               line_width = line_width, label = "RIM1.0")
 
 
 ax[0, 0].plot(
@@ -287,7 +287,7 @@ ax[0, 0].set_title("Rees", fontsize=titlesize)
 ax[0, 0].set_yticks([5000, 10000, 15000, 20000])
 # ax[0,0].set_xticks([2,200,400,600,800,1000])
 ax[0, 0].set_ylabel("Discharge (m3/s)", fontsize=labelsize)
-# ax[0,0].set_xlabel("Return Period (year)", fontsize = labelsize)
+# ax[0,0].set_xlabel("Return Period (year)", font_size = label_size)
 
 SubID = 42
 ax[0, 1].plot(
@@ -302,7 +302,7 @@ ax[0, 1].plot(
 
 # ax[0,1].plot(River1.Qrp.columns.tolist(),River1.Qrp.loc[SubID,:].values.tolist(),
 #               zorder=1, color = color1 , linestyle = V.LineStyle(6),
-#               linewidth = linewidth, label = "RIM1.0")
+#               line_width = line_width, label = "RIM1.0")
 
 
 ax[0, 1].plot(
@@ -317,8 +317,8 @@ ax[0, 1].plot(
 
 ax[0, 1].set_yticks([6000, 10000, 15000, 20000])
 # ax[0,1].set_xticks([2,200,400,600,800,1000])
-# ax[0,1].set_ylabel("Discharge (m3/s)", fontsize = labelsize)
-# ax[0,1].set_xlabel("Return Period (year)", fontsize = labelsize)
+# ax[0,1].set_ylabel("Discharge (m3/s)", font_size = label_size)
+# ax[0,1].set_xlabel("Return Period (year)", font_size = label_size)
 
 # start, end = ax[0,1].get_ylim()
 # ax[0,1].yaxis.set_ticks(np.linspace(start,end,4))
@@ -365,7 +365,7 @@ ax[0, 2].plot(
 
 # ax[0,2].plot(River1.Qrp.columns.tolist(),River1.Qrp.loc[SubID,:].values.tolist(),
 #               zorder=1, color = color1 , linestyle = V.LineStyle(6),
-#               linewidth = linewidth, label = "RIM1.0")
+#               line_width = line_width, label = "RIM1.0")
 
 
 ax[0, 2].plot(
@@ -380,8 +380,8 @@ ax[0, 2].plot(
 
 ax[0, 2].set_yticks([6000, 10000, 15000, 20000])
 # ax[0,2].set_xticks([2,200,400,600,800,1000])
-# ax[0,2].set_ylabel("Discharge (m3/s)", fontsize = labelsize)
-# ax[0,2].set_xlabel("Return Period (year)", fontsize = labelsize)
+# ax[0,2].set_ylabel("Discharge (m3/s)", font_size = label_size)
+# ax[0,2].set_xlabel("Return Period (year)", font_size = label_size)
 # points
 if PlotPoint:
     fromd = Qgauges.loc[Qgauges["SubID"] == SubID, "start"].tolist()[0]
@@ -425,7 +425,7 @@ ax[1, 0].plot(
 
 # ax[1,0].plot(River1.Qrp.columns.tolist(),River1.Qrp.loc[SubID,:].values.tolist(),
 #               zorder=1, color = color1 , linestyle = V.LineStyle(6),
-#               linewidth = linewidth, label = "RIM1.0")
+#               line_width = line_width, label = "RIM1.0")
 
 
 ax[1, 0].plot(
@@ -439,7 +439,7 @@ ax[1, 0].plot(
 )
 
 ax[1, 0].set_ylabel("Discharge (m3/s)", fontsize=labelsize)
-# ax[1,0].set_xlabel("Return Period (year)", fontsize = labelsize)
+# ax[1,0].set_xlabel("Return Period (year)", font_size = label_size)
 
 ax[1, 0].set_yticks([4000, 8000, 12000, 16000])
 # ax[1,0].set_xticks([2,200,400,600,800,1000])
@@ -485,7 +485,7 @@ ax[1, 1].plot(
 
 # ax[1,1].plot(River1.Qrp.columns.tolist(),River1.Qrp.loc[SubID,:].values.tolist(),
 #               zorder=1, color = color1 , linestyle = V.LineStyle(6),
-#               linewidth = linewidth, label = "RIM1.0")
+#               line_width = line_width, label = "RIM1.0")
 
 
 ax[1, 1].plot(
@@ -498,8 +498,8 @@ ax[1, 1].plot(
     label="HM",
 )
 
-# ax[1,1].set_ylabel("Discharge (m3/s)", fontsize = labelsize)
-# ax[1,1].set_xlabel("Return Period (year)", fontsize = labelsize)
+# ax[1,1].set_ylabel("Discharge (m3/s)", font_size = label_size)
+# ax[1,1].set_xlabel("Return Period (year)", font_size = label_size)
 
 ax[1, 1].set_yticks([3000, 5500, 7500, 10000])
 # ax[1,1].set_xticks([2,200,400,600,800,1000])
@@ -545,7 +545,7 @@ ax[1, 2].plot(
 
 # ax[1,2].plot(River1.Qrp.columns.tolist(),River1.Qrp.loc[SubID,:].values.tolist(),
 #               zorder=1, color = color1 , linestyle = V.LineStyle(6),
-#               linewidth = linewidth, label = "RIM1.0")
+#               line_width = line_width, label = "RIM1.0")
 
 
 ax[1, 2].plot(
@@ -558,8 +558,8 @@ ax[1, 2].plot(
     label="HM",
 )
 
-# ax[1,2].set_ylabel("Discharge (m3/s)", fontsize = labelsize)
-# ax[1,2].set_xlabel("Return Period (year)", fontsize = labelsize)
+# ax[1,2].set_ylabel("Discharge (m3/s)", font_size = label_size)
+# ax[1,2].set_xlabel("Return Period (year)", font_size = label_size)
 
 ax[1, 2].set_yticks([1500, 3500, 5500, 8000])
 # ax[1,2].set_xticks([2,200,400,600,800,1000])
@@ -605,7 +605,7 @@ ax[2, 0].plot(
 
 # ax[2,0].plot(River1.Qrp.columns.tolist(),River1.Qrp.loc[SubID,:].values.tolist(),
 #               zorder=1, color = color1 , linestyle = V.LineStyle(6),
-#               linewidth = linewidth, label = "RIM1.0")
+#               line_width = line_width, label = "RIM1.0")
 
 
 ax[2, 0].plot(
@@ -665,7 +665,7 @@ ax[2, 1].plot(
 
 # ax[2,1].plot(River1.Qrp.columns.tolist(),River1.Qrp.loc[SubID,:].values.tolist(),
 #               zorder=1, color = color1 , linestyle = V.LineStyle(6),
-#               linewidth = linewidth, label = "RIM1.0")
+#               line_width = line_width, label = "RIM1.0")
 
 
 ax[2, 1].plot(
@@ -679,7 +679,7 @@ ax[2, 1].plot(
 )
 ax[2, 1].set_yticks([750, 1500, 2250, 3000])
 # ax[2,1].set_xticks([2,200,400,600,800,1000])
-# ax[2,1].set_ylabel("Discharge (m3/s)", fontsize = labelsize)
+# ax[2,1].set_ylabel("Discharge (m3/s)", font_size = label_size)
 ax[2, 1].set_xlabel("Return Period (year)", fontsize=labelsize)
 
 # points
@@ -724,7 +724,7 @@ ax[2, 2].plot(
 
 # ax[2,2].plot(River1.Qrp.columns.tolist(),River1.Qrp.loc[SubID,:].values.tolist(),
 #               zorder=1, color = color1 , linestyle = V.LineStyle(6),
-#               linewidth = linewidth, label = "RIM1.0")
+#               line_width = line_width, label = "RIM1.0")
 
 
 ax[2, 2].plot(
@@ -739,7 +739,7 @@ ax[2, 2].plot(
 
 ax[2, 2].set_yticks([200, 450, 700, 950])
 # ax[2,2].set_xticks([2,200,400,600,800,1000])
-# ax[2,2].set_ylabel("Discharge (m3/s)", fontsize = labelsize)
+# ax[2,2].set_ylabel("Discharge (m3/s)", font_size = label_size)
 ax[2, 2].set_xlabel("Return Period (year)", fontsize=labelsize)
 # points
 if PlotPoint:

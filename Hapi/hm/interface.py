@@ -51,12 +51,12 @@ class Interface(River):
         self.start = dt.datetime.strptime(start, fmt)
         self.end = self.start + dt.timedelta(days=days)
         Ref_ind = pd.date_range(self.start, self.end, freq="D")
-        self.ReferenceIndex = pd.DataFrame(index=list(range(1, days + 1)))
-        self.ReferenceIndex["date"] = Ref_ind[:-1]
+        self.reference_Index = pd.DataFrame(index=list(range(1, days + 1)))
+        self.reference_Index["date"] = Ref_ind[:-1]
 
-        self.LateralsTable = None
-        self.routedRRM = None
-        self.BCTable = None
+        self.laterals_table = None
+        self.routed_rrm = None
+        self.bc_table = None
         self.BC = None
         pass
 
@@ -87,28 +87,28 @@ class Interface(River):
             dataframe with two columns ["filename", "sxid"]
         """
         try:
-            self.LateralsTable = pd.read_csv(path, skiprows=[0], header=None)
+            self.laterals_table = pd.read_csv(path, skiprows=[0], header=None)
         except pd.errors.EmptyDataError:
-            self.LateralsTable = pd.DataFrame()
+            self.laterals_table = pd.DataFrame()
             logger.warning("The Lateral table file is empty")
             return
 
-        self.LateralsTable.columns = ["filename"]
+        self.laterals_table.columns = ["filename"]
         l1 = len(prefix)
         l2 = len(suffix)
-        self.LateralsTable["xsid"] = [
+        self.laterals_table["xsid"] = [
             int(i[l1 : len(i) - l2])
-            for i in self.LateralsTable[self.LateralsTable.columns[0]]
+            for i in self.laterals_table[self.laterals_table.columns[0]]
         ]
 
-        if hasattr(self, "crosssections"):
-            self.crosssections["lateral"] = 0
-            for i in range(len(self.crosssections)):
+        if hasattr(self, "cross_sections"):
+            self.cross_sections["lateral"] = 0
+            for i in range(len(self.cross_sections)):
                 if (
-                    self.crosssections.loc[i, "xsid"]
-                    in self.LateralsTable["xsid"].tolist()
+                    self.cross_sections.loc[i, "xsid"]
+                    in self.laterals_table["xsid"].tolist()
                 ):
-                    self.crosssections.loc[i, "lateral"] = 1
+                    self.cross_sections.loc[i, "lateral"] = 1
         else:
             raise ValueError(
                 "Please read the cross section file first using the method 'ReadCrossSections'"
@@ -117,8 +117,8 @@ class Interface(River):
     def _readRRMwrapper(
         self,
         table: DataFrame,
-        fromday: int = None,
-        today: int = None,
+        from_day: int = None,
+        to_day: int = None,
         path: str = "",
         date_format: str = "'%Y-%m-%d'",
         prefix: str = "lf_xsid",
@@ -131,10 +131,10 @@ class Interface(River):
         Parameters
         ----------
         table: [DataFrame]
-            LateralsTable, or BCTable
-        fromday : [integer], optional
+            laterals_table, or bc_table
+        from_day : [integer], optional
                 the day you want to read the result from, the first day is 1 not zero.The default is ''.
-        today : [integer], optional
+        to_day : [integer], optional
                 the day you want to read the result to.
         path : [String], optional
             path to read the results from. The default is ''.
@@ -164,11 +164,11 @@ class Interface(River):
             results = Parallel(n_jobs=cores)(
                 delayed(func)(
                     self.version,
-                    self.ReferenceIndex,
+                    self.reference_Index,
                     path,
                     fname,
-                    fromday,
-                    today,
+                    from_day,
+                    to_day,
                     date_format,
                 )
                 for fname in fnames
@@ -185,31 +185,31 @@ class Interface(River):
 
                 rrm_ts[node_id] = self._readRRMResults(
                     self.version,
-                    self.ReferenceIndex,
+                    self.reference_Index,
                     path,
                     fname,
-                    fromday,
-                    today,
+                    from_day,
+                    to_day,
                     date_format,
                 )[fname].tolist()
                 logger.info(f"Lateral file {fname} is read")
 
         rrm_ts["total"] = rrm_ts.sum(axis=1)
-        if not fromday:
-            fromday = 1
-        if not today:
-            today = len(rrm_ts[rrm_ts.columns[0]])
+        if not from_day:
+            from_day = 1
+        if not to_day:
+            to_day = len(rrm_ts[rrm_ts.columns[0]])
 
-        start = self.ReferenceIndex.loc[fromday, "date"]
-        end = self.ReferenceIndex.loc[today, "date"]
+        start = self.reference_Index.loc[from_day, "date"]
+        end = self.reference_Index.loc[to_day, "date"]
         rrm_ts.index = pd.date_range(start, end, freq="D")
 
         return rrm_ts
 
     def readLaterals(
         self,
-        fromday: int = None,
-        today: int = None,
+        from_day: int = None,
+        to_day: int = None,
         path: str = "",
         date_format: str = "'%Y-%m-%d'",
         cores: Optional[Union[int, bool]] = None,
@@ -224,9 +224,9 @@ class Interface(River):
 
         Parameters
         ----------
-        fromday : [integer], optional
+        from_day : [integer], optional
                 the day you want to read the result from, the first day is 1 not zero.The default is ''.
-        today : [integer], optional
+        to_day : [integer], optional
                 the day you want to read the result to.
         path : [String], optional
             path to read the results from. The default is ''.
@@ -239,7 +239,7 @@ class Interface(River):
         prefix: [str]
             prefix used to distinguish the boundary condition files, Default is "lf_xsid".
         laterals: Optional[bool]
-            True if you want to read the laterals, false if you want to read the routedRRM
+            True if you want to read the laterals, false if you want to read the routed_rrm
             Default is True.
 
         Returns
@@ -249,7 +249,7 @@ class Interface(River):
             with xsid as a column name and a column 'total' contains the
             sum of all the hydrographs. this attribut will be careated only if the laterals
             argument is True [default]
-        routedRRM: [dataframe attribute]
+        routed_rrm: [dataframe attribute]
             read the routed hydrograph by the rainfall-runoff model at the location of the lateral
             cross-sections
             dataframe contains the hydrograph of each of the laterals at the location if the xs
@@ -257,16 +257,16 @@ class Interface(River):
             sum of all the hydrographs. this attribut will be careated only if the laterals
             argument is False
         """
-        if not isinstance(self.LateralsTable, DataFrame):
+        if not isinstance(self.laterals_table, DataFrame):
             raise ValueError(
                 "Please read the laterals table first using the 'ReadLateralsTable' method"
             )
 
-        if len(self.LateralsTable) > 0:
+        if len(self.laterals_table) > 0:
             rrm_df = self._readRRMwrapper(
-                self.LateralsTable,
-                fromday=fromday,
-                today=today,
+                self.laterals_table,
+                from_day=from_day,
+                to_day=to_day,
                 path=path,
                 date_format=date_format,
                 prefix=prefix,
@@ -276,7 +276,7 @@ class Interface(River):
             if laterals:
                 self.Laterals = rrm_df
             else:
-                self.routedRRM = rrm_df
+                self.routed_rrm = rrm_df
         else:
             logger.info("There are no Laterals table please check")
 
@@ -303,18 +303,18 @@ class Interface(River):
         -------
         None.
         """
-        self.BCTable = pd.read_csv(path, skiprows=[0], header=None)
-        self.BCTable.columns = ["filename"]
+        self.bc_table = pd.read_csv(path, skiprows=[0], header=None)
+        self.bc_table.columns = ["filename"]
         l1 = len(prefix)
         l2 = len(suffix)
-        self.BCTable["xsid"] = [
-            int(i[l1 : len(i) - l2]) for i in self.BCTable[self.BCTable.columns[0]]
+        self.bc_table["xsid"] = [
+            int(i[l1 : len(i) - l2]) for i in self.bc_table[self.bc_table.columns[0]]
         ]
 
     def readBoundaryConditions(
         self,
-        fromday: Union[str, int] = "",
-        today: Union[str, int] = "",
+        from_day: Union[str, int] = "",
+        to_day: Union[str, int] = "",
         path: str = "",
         date_format: str = "'%Y-%m-%d'",
         prefix: str = "bc_xsid",
@@ -326,9 +326,9 @@ class Interface(River):
 
         Parameters
         ----------
-        fromday : [integer], optional
+        from_day : [integer], optional
                 the day you want to read the result from, the first day is 1 not zero.The default is ''.
-        today : [integer], optional
+        to_day : [integer], optional
                 the day you want to read the result to.
         path : [String], optional
             path to read the results from. The default is ''.
@@ -343,21 +343,21 @@ class Interface(River):
 
         Returns
         -------
-        USHydrographs : [dataframe attribute].
+        us_hydrographs : [dataframe attribute].
             dataframe contains the hydrograph of each of the upstream segments
             with segment id as a column name and a column 'total' contains the
             sum of all the hydrographs.
         """
-        if not isinstance(self.BCTable, DataFrame):
+        if not isinstance(self.bc_table, DataFrame):
             raise ValueError(
                 "Please read the lateras table first using the 'ReadLateralsTable' method"
             )
 
         self.BC = pd.DataFrame()
         self.BC = self._readRRMwrapper(
-            self.BCTable,
-            fromday=fromday,
-            today=today,
+            self.bc_table,
+            from_day=from_day,
+            to_day=to_day,
             path=path,
             date_format=date_format,
             prefix=prefix,

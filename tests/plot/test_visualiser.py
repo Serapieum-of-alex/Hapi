@@ -23,7 +23,7 @@ def test_GroundSurface(
     River = R.River("HM", version=version, start=dates[0])
     River.readXS(river_cross_section_path)
     River.readRiverNetwork(river_network_path)
-    River.onedresultpath = Read1DResult_path
+    River.one_d_result_path = Read1DResult_path
     Sub = R.Reach(segment3, River)
 
     IF = Interface("Rhine", start=dates[0])
@@ -42,9 +42,9 @@ def test_GroundSurface(
     Sub.read1DResult()
 
     Vis = V(resolution="Hourly")
-    Vis.plotGroundSurface(Sub, floodplain=True, plotlateral=True, nxlabels=20, option=2)
+    Vis.plotGroundSurface(Sub, floodplain=True, plot_lateral=True, xlabels_number=20, option=2)
     plt.close()
-    Vis.plotGroundSurface(Sub, floodplain=True, plotlateral=True, nxlabels=20, option=1)
+    Vis.plotGroundSurface(Sub, floodplain=True, plot_lateral=True, xlabels_number=20, option=1)
     plt.close()
 
 
@@ -67,18 +67,18 @@ def test_CrossSections(
     River = R.River("HM", version=version, start=dates[0])
     River.readXS(river_cross_section_path)
     River.readRiverNetwork(river_network_path)
-    River.onedresultpath = Read1DResult_path
+    River.one_d_result_path = Read1DResult_path
     Sub = R.Reach(segment3, River)
     Vis = V(resolution="Hourly")
 
     fig, ax = Vis.plotCrossSections(
         Sub,
         bedlevel=True,
-        fromxs=plot_xs_seg3_fromxs,
-        toxs=plot_xs_seg3_toxs,
-        samescale=True,
-        textspacing=[(1, 1), (1, 4)],
-        plottingoption=3,
+        from_xs=plot_xs_seg3_fromxs,
+        to_xs=plot_xs_seg3_toxs,
+        same_scale=True,
+        text_spacing=[(1, 1), (1, 4)],
+        plotting_option=3,
     )
     plt.close()
     assert isinstance(fig, Figure)
@@ -106,7 +106,7 @@ def test_CrossSections(
 #     River = R.River('HM', version=version, start=dates[0])
 #     River.ReadCrossSections(river_cross_section_path)
 #     River.RiverNetwork(river_network_path)
-#     River.onedresultpath = Read1DResult_path
+#     River.one_d_result_path = Read1DResult_path
 #     River.us_bc_path = usbc_path
 #     Reach = R.Reach(segment3, River)
 #
@@ -123,8 +123,8 @@ def test_CrossSections(
 #     Reach.ReadBoundaryConditions(start=dates[0], end=dates[1])
 #
 #     Vis = V(resolution="Hourly")
-#     Anim = Vis.WaterSurfaceProfile(Reach, animate_start, animate_end, fps=2, nxlabels=5,
-#                                    xaxislabelsize=10, textlocation=(-1, -2),repeat=False)
+#     Anim = Vis.WaterSurfaceProfile(Reach, animate_start, animate_end, fps=2, xlabels_number=5,
+#                                    x_axis_label_size=10, text_location=(-1, -2),repeat=False)
 #     # rc('animation', html='jshtml')
 #     plt.close()
 #     assert isinstance(Anim, FuncAnimation)
@@ -153,7 +153,7 @@ def test_CrossSections(
 #     River = R.River('HM', version=version, start=dates[0])
 #     River.ReadCrossSections(river_cross_section_path)
 #     River.RiverNetwork(river_network_path)
-#     River.onedresultpath = Read1DResult_path
+#     River.one_d_result_path = Read1DResult_path
 #     River.one_min_result_path = subdailyresults_path
 #     River.us_bc_path = usbc_path
 #     Reach = R.Reach(segment3, River)
@@ -168,7 +168,7 @@ def test_CrossSections(
 #
 #     Reach.GetFlow(IF)
 #     Reach.Read1DResult()
-#     Reach.ReadSubDailyResults(animate_start, animate_end, Lastsegment=lastsegment)
+#     Reach.ReadSubDailyResults(animate_start, animate_end, last_river_reach=lastsegment)
 #     Reach.ReadBoundaryConditions(start=animate_start, end=animate_end)
 #
 #     Vis = V(resolution="Hourly")
@@ -195,12 +195,12 @@ def test_Plot1minProfile(
     River = R.River("HM", version=version, start=dates[0])
     River.readXS(river_cross_section_path)
     River.readRiverNetwork(river_network_path)
-    River.usbcpath = usbc_path
-    River.oneminresultpath = subdailyresults_path
+    River.us_bc_path = usbc_path
+    River.one_min_result_path = subdailyresults_path
     Sub = R.Reach(segment3, River)
     Sub.readSubDailyResults(
-        onemin_results_dates[0], onemin_results_dates[1], Lastsegment=lastsegment
+        onemin_results_dates[0], onemin_results_dates[1], last_river_reach=lastsegment
     )
 
     Vis = V(resolution="Hourly")
-    Vis.plot1minProfile(Sub, dates[0], nxlabels=20)
+    Vis.plot1minProfile(Sub, dates[0], xlabels_number=20)

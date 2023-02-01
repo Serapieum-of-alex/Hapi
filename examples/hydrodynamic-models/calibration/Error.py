@@ -105,15 +105,15 @@ plt.plot(
 # pos = max(SimMax, ObsMax)
 
 # plt.annotate("SubID = " + str(int(Calib.q_hm.columns[i])), xy=(dt.datetime(1971,1,1),pos-10),
-#             fontsize = 20)
+#             font_size = 20)
 # plt.annotate("RMSE = " + str(round(Calib.MetricsHM_RRM.loc[Calib.rrm_gauges[i],'rmse'],2)), xy=(dt.datetime(1971,1,1),pos-40),
-#             fontsize = 15)
+#             font_size = 15)
 # plt.annotate("KGE = " + str(round(Calib.MetricsHM_RRM.loc[Calib.rrm_gauges[i],'KGE'],2)), xy=(dt.datetime(1971,1,1),pos-70),
-#             fontsize = 15)
+#             font_size = 15)
 # plt.annotate("NSE = " + str(round(Calib.MetricsHM_RRM.loc[Calib.rrm_gauges[i],'NSE'],2)), xy=(dt.datetime(1971,1,1),pos-100),
-#             fontsize = 15)
+#             font_size = 15)
 # plt.annotate("WB = " + str(round(Calib.MetricsHM_RRM.loc[Calib.rrm_gauges[i],'WB'],2)), xy=(dt.datetime(1971,1,1),pos-130),
-#             fontsize = 15)
+#             font_size = 15)
 plt.xlabel("Time", fontsize=15)
 plt.ylabel("Discharge m3/s", fontsize=15)
 plt.xticks(fontsize=10)
@@ -123,5 +123,5 @@ plt.title("Station: " + str(subid), fontsize=30)
 plt.tight_layout()
 # plt.savefig(str(reach_id)+".tif", transparent=True)
 #%% save Metrics dataframe to display in arc map
-Calib.SaveMetices(SaveTo)
+Calib.saveMetices(SaveTo)
 # sumarry.to_csv(DataPath + "summary.txt")

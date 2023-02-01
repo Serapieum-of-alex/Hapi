@@ -15,15 +15,15 @@ os.chdir(Comp + "/base_data/calibration_results")
 import Hapi.hm.calibration as RC
 import Hapi.hm.river as R
 #%% Hydraulic model files
-hm_results_path = r"C:\gdrive\Case-studies\ClimXtreme\rim_base_data\setup\freq_analysis_rhine\1\results\1d"
-hm_data = Comp + "/base_data/calibrated_cross_sections/rhine/"
+hm_results_path = rf"{rpath}\ClimXtreme\rim_base_data\setup\freq_analysis_rhine\1\results\1d"
+hm_data = f"{Comp}/base_data/calibrated_cross_sections/rhine/"
 
-base_dir = r"C:\gdrive\Case-studies\ClimXtreme\rim_base_data\setup\freq_analysis_rhine\1\results\gauges_results"
+base_dir = rf"{rpath}\ClimXtreme\rim_base_data\setup\freq_analysis_rhine\1\results\gauges_results"
 save_q = f"{base_dir}/q/"
 save_wl = f"{base_dir}/wl/"
 #%% Gauges data
 gauges_dir = f"{rpath}/ClimXtreme/data"
-GaugesF = gauges_dir + "/gauges/rhine_gauges.geojson"
+GaugesF = f"{gauges_dir}/gauges/rhine_gauges.geojson"
 
 novalue = -9
 start = "1951-01-01"
