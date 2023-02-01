@@ -25,6 +25,9 @@ from statista.distributions import GEV, Gumbel  # , PlottingPosition
 from Hapi.hm.saintvenant import SaintVenant
 from Hapi.plot.visualizer import Visualize as V
 from serapeum_utils.utils import class_attr_initialize, class_method_parse
+from Hapi.hapi_warnings import SilencePandasWarning
+
+SilencePandasWarning()
 
 hours = list(range(1, 25))
 
