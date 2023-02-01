@@ -65,7 +65,7 @@ River.cross_sections["ZrDiff"] = (
 Event = E.Event("RIM2.0")
 Event.overtopping(wpath + "/processing/" + "overtopping.txt")
 # get the end days of each event
-Event.GetAllEvents()
+Event.getAllEvents()
 
 River.EventIndex = Event.event_index
 # read the left and right overtopping 1D results
