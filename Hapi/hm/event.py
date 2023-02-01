@@ -39,12 +39,12 @@ class Event:
         name,
         start="1950-1-1",
         days=36890,
-        leftOvertopping_Suffix="_left.txt",
-        RightOvertopping_Suffix="_right.txt",
-        DepthPrefix="DepthMax",
-        DurationPrefix="Duration",
-        ReturnPeriodPrefix="ReturnPeriod",
-        Compressed=True,
+        left_overtopping_suffix="_left.txt",
+        right_overtopping_suffix="_right.txt",
+        depth_prefix="DepthMax",
+        duration_prefix="Duration",
+        return_period_prefix="ReturnPeriod",
+        compressed=True,
     ):
         """Event. To instantiate the Event class you need to provide the following arguments.
 
@@ -56,22 +56,22 @@ class Event:
             start date. The default is "1950-1-1".
         days : integer, optional
             length of the simulation . The default is 36890.
-        leftOvertopping_Suffix : [str], optional
+        left_overtopping_suffix : [str], optional
             the prefix you used to name the overtopping form the left bank files.
             The default is "_left.txt".
-        RightOvertopping_Suffix : TYPE, optional
+        right_overtopping_suffix : TYPE, optional
             the prefix you used to name the overtopping form the right bank files.
             The default is "_right.txt".
-        DepthPrefix : [str], optional
+        depth_prefix : [str], optional
             the prefix you used to name the Max depth raster result maps.
             The default is "DepthMax".
-        DurationPrefix : [str], optional
+        duration_prefix : [str], optional
             the prefix you used to name the inundation duration raster result maps.
             The default is "Duration".
-        ReturnPeriodPrefix : [str], optional
+        return_period_prefix : [str], optional
             the prefix you used to name the Return Period raster result maps.
             The default is "ReturnPeriod".
-        Compressed : [bool], optional
+        compressed : [bool], optional
             True if the result raster/ascii files are compressed. The default is True.
 
         Returns
@@ -83,13 +83,13 @@ class Event:
         self.start = dt.datetime.strptime(start, "%Y-%m-%d")
         self.end = self.start + dt.timedelta(days=days)
 
-        self.left_overtopping_suffix = leftOvertopping_Suffix
-        self.right_overtopping_suffix = RightOvertopping_Suffix
-        self.depth_prefix = DepthPrefix
-        self.duration_prefix = DurationPrefix
-        self.return_period_prefix = ReturnPeriodPrefix
+        self.left_overtopping_suffix = left_overtopping_suffix
+        self.right_overtopping_suffix = right_overtopping_suffix
+        self.depth_prefix = depth_prefix
+        self.duration_prefix = duration_prefix
+        self.return_period_prefix = return_period_prefix
         self.two_d_result_path = ""
-        self.compressed = Compressed
+        self.compressed = compressed
         Ref_ind = pd.date_range(self.start, self.end, freq="D")
 
         # the last day is not in the results day Ref_ind[-1]
@@ -104,7 +104,7 @@ class Event:
         self.end_days = None
 
     # method
-    def IndexToDate(self):
+    def indexToDate(self):
         """IndexToDate. get the date coresponding to a given index.
 
         Returns
@@ -117,12 +117,12 @@ class Event:
         date = self.event_index.loc[:, "id"].to_frame().applymap(dateFn)
         self.event_index["date"] = date
 
-    def CreateEventIndex(self, IndexPath: str):
+    def createEventIndex(self, path: str):
         """CreateEventIndex. CreateEventIndex takes the path to the index file result from the 2D model and creates a data frame to start adding the components of the event_index table.
 
         Parameters
         ---------
-        IndexPath: [String]
+        path: [String]
             path including the file name and extention of the index file result from the 2D model
 
         Returns
@@ -139,11 +139,11 @@ class Event:
 
         # read the index file (containing the id of the days where flood happens (2D
         # algorithm works))
-        EventDays = pd.read_csv(IndexPath, header=None)
+        EventDays = pd.read_csv(path, header=None)
         EventIndex = EventDays.rename(columns={0: "id"})
         # convert the index into date
         self.event_index = EventIndex.loc[:, :]
-        self.IndexToDate()
+        self.indexToDate()
 
         self.event_index.loc[:, "continue"] = 0
         # index difference maybe different than the duration as there might be
@@ -169,7 +169,7 @@ class Event:
             else:  # if not then the day is the start of another event
                 self.event_beginning = self.event_index.loc[i, "date"]
 
-    def GetAllEvents(self):
+    def getAllEvents(self):
         """GetAllEvents. GetAllEvents methods returns the end day of all events.
 
         Returns
@@ -184,11 +184,11 @@ class Event:
 
         self.end_days = IDs
 
-    def Overtopping(self, OvertoppingPath: str):
+    def Overtopping(self, overtopping_path: str):
         """Overtopping. Overtopping method reads the overtopping file and check if the event_index dataframe has already need created by the CreateEventIndex method, it will add the overtopping to it, if not it will create the event_index dataframe.
 
         Inputs:
-            1- OvertoppingPath:
+            1- overtopping_path:
                 [String] path including the file name and extention of the Overtopping
                 file result from the 1D model
         Outputs:
@@ -197,7 +197,7 @@ class Event:
                 dataframe with columns ['id','continue', 'IndDiff', 'Duration',
                 'Overtopping', 'OvertoppingCum', 'Volume']
         """
-        OverTopTotal = pd.read_csv(OvertoppingPath, delimiter=r"\s+")  # , header = None
+        OverTopTotal = pd.read_csv(overtopping_path, delimiter=r"\s+")  # , header = None
         # FIXME
         # if the flood event does not have overtopping for 1 day then continues to
         # overtop after the method considers it as two separate events however
@@ -208,7 +208,7 @@ class Event:
             # create the event_index dataframe
             self.event_index = pd.DataFrame()
             self.event_index["id"] = OverTopTotal["Step"]
-            self.IndexToDate()
+            self.indexToDate()
 
             self.event_index.loc[:, "continue"] = 0
             # index difference maybe different than the duration as there might be
@@ -254,12 +254,12 @@ class Event:
                 self.event_index.loc[:, "OvertoppingCum"] * 60 * 60
         )
 
-    def VolumeError(self, Path):
+    def calculateVolumeError(self, path):
         """VolumeError. VolumeError method reads the VoleError file, assign values to the the coresponding time step.
 
         Parameters
         ----------
-        Path : [String]
+        path : [String]
             a path to the folder includng the maps.
 
         Returns
@@ -268,7 +268,7 @@ class Event:
             add columns ['DEMError','StepError','TooMuchWater'] to the event_index dataframe
         """
         # read the VolError file
-        VolError = pd.read_csv(Path, delimiter=r"\s+")
+        VolError = pd.read_csv(path, delimiter=r"\s+")
         self.event_index["DEMError"] = 0
         self.event_index["StepError"] = 0
         self.event_index["TooMuchWater"] = 0
@@ -290,12 +290,12 @@ class Event:
         )
         self.event_index["VolError2"] = self.event_index["VolError"] / 20
 
-    def OverlayMaps(self, Path, BaseMapF, ExcludedValue, OccupiedCellsOnly, SavePath):
-        """OverlayMaps. OverlayMaps method reads all the maps in the folder given by Path input and overlay them with the basemap and for each value in the basemap it create a dictionary with the intersected values from all maps.
+    def overlayMaps(self, path, BaseMapF, ExcludedValue, OccupiedCellsOnly, SavePath):
+        """OverlayMaps. OverlayMaps method reads all the maps in the folder given by path input and overlay them with the basemap and for each value in the basemap it create a dictionary with the intersected values from all maps.
 
         Parameters
         ----------
-        Path: [String]
+        path: [String]
             a path to the folder includng the maps.
         BaseMapF: [String]
             a path includng the name of the ASCII and extention like
@@ -318,7 +318,7 @@ class Event:
             dataframe with the first column as the "file" name and the second column is the number of cells in each map
         """
         self.DepthValues, NonZeroCells = Raster.overlayMaps(
-            Path,
+            path,
             BaseMapF,
             self.depth_prefix,
             ExcludedValue,
@@ -356,24 +356,24 @@ class Event:
                 fmt="%4.2f",
             )
 
-    def ReadEventIndex(self, Path):
+    def readEventIndex(self, path):
         """ReadEventIndex ReadEventIndex method reads the event_index table created using the "CreateEventIndex" or "Overtopping" methods.
 
         Parameters
         ----------
-        Path : [str]
-            Path to the event_index file.
+        path : [str]
+            path to the event_index file.
 
         Returns
         -------
         event_index : [dataframe].
             dataframe of the event_index table
         """
-        EventIndex = pd.read_csv(Path)
+        EventIndex = pd.read_csv(path)
         self.event_index = EventIndex
-        self.IndexToDate()
+        self.indexToDate()
 
-    def Histogram(
+    def histogram(
         self, Day, ExcludeValue, OccupiedCellsOnly, Map=1, filter1=0.2, filter2=15
     ):
         """Histogram Histogram method extract values fro the event MaxDepth map and plot the histogram th emethod check first if you already extracted the values before then plot the histogram.
@@ -404,14 +404,14 @@ class Event:
             if Day not in list(self.extracted_values.keys()):
                 # depth map
                 if Map == 1:
-                    Path = self.two_d_result_path + self.depth_prefix + str(Day) + ".zip"
+                    path = self.two_d_result_path + self.depth_prefix + str(Day) + ".zip"
                 elif Map == 2:
-                    Path = self.two_d_result_path + self.duration_prefix + str(Day) + ".zip"
+                    path = self.two_d_result_path + self.duration_prefix + str(Day) + ".zip"
                 else:
-                    Path = f"{self.two_d_result_path}{self.return_period_prefix}{Day}.zip"
+                    path = f"{self.two_d_result_path}{self.return_period_prefix}{Day}.zip"
 
                 ExtractedValues, NonZeroCells = Raster.extractValues(
-                    Path, ExcludeValue, self.compressed, OccupiedCellsOnly
+                    path, ExcludeValue, self.compressed, OccupiedCellsOnly
                 )
                 self.extracted_values[Day] = ExtractedValues
 
@@ -438,7 +438,7 @@ class Event:
         plt.show()
         return n, bins, patches
 
-    def Drop(self, DropList):
+    def drop(self, DropList):
         """Drop Drop method deletes columns from the event_index dataframe.
 
         Parameters
@@ -459,21 +459,21 @@ class Event:
         dataframe = dataframe.loc[:, columns]
         self.event_index = dataframe
 
-    def Save(self, Path):
+    def save(self, path):
         """Save Save method saves the event_index table.
 
         Parameters
         ----------
-        Path : [str]
-            Path to where you want to save the table.
+        path : [str]
+            path to where you want to save the table.
 
         Returns
         -------
         None.
         """
-        self.event_index.to_csv(Path, header=True, index=None)  # index_label = "Index"
+        self.event_index.to_csv(path, header=True, index=None)  # index_label = "Index"
 
-    def GetEventBeginning(self, loc):
+    def getEventBeginning(self, loc):
         """GetEventBeginning. event_beginning method returns the index of the beginning of the event in the event_index dataframe.
 
         Parameters
@@ -513,7 +513,7 @@ class Event:
 
         # return FilteredEvent.index[len(FilteredEvent)-1-i]
 
-    def GetEventEnd(self, loc):
+    def getEventEnd(self, loc):
         """GetEventEnd. method returns the index of the beginning of the event in the event_index dataframe.
 
         Parameters
@@ -550,7 +550,7 @@ class Event:
 
         return ind, day
 
-    def PrepareForPlotting(self, ColumnName):
+    def prepareForPlotting(self, ColumnName):
         """PrepareForPlotting. PrepareForPlotting takes a time series in the event_index dataframe and fill the days that does not exist in date column and fill it with zero to properly plot it without letting the graph mislead the viewer of connecting the data over the gap period.
 
         Parameters

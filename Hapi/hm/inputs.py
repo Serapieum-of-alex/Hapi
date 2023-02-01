@@ -50,28 +50,28 @@ class Inputs(River):
         self.StatisticalPr = None
         self.DistributionPr = None
 
-    def ExtractHydrologicalInputs(
-        self, WeatherGenerator, FilePrefix, realization, path, SWIMNodes, SavePath
+    def extractHydrologicalInputs(
+        self, weather_generator, file_prefix, realization, path, locations, save_path
     ):
         """ExtractHydrologicalInputs.
 
         Parameters
         ----------
-        WeatherGenerator : TYPE
+        weather_generator : TYPE
             DESCRIPTION.
-        FilePrefix : TYPE
+        file_prefix : TYPE
             DESCRIPTION.
         realization : [Integer]
             type the number of the realization (the order of the 100 year
             run by swim).
         path : [String]
-             SWIMResultFile is the naming format you used in naming the result
+             rrm_result_file is the naming format you used in naming the result
              files of the discharge values stored with the name of the file as
              out+realization number + .dat (ex out15.dat).
-        SWIMNodes : [String]
+        locations : [String]
             text file containing the list of sub-basins IDs or computational nodes ID you
-            have used to run SWIM and store the results.
-        SavePath : [String]
+            have used to run the rrm and store the results.
+        save_path : [String]
             path to the folder where you want to save the separate file for
             each sub-basin.
 
@@ -79,23 +79,23 @@ class Inputs(River):
         -------
         None.
         """
-        if WeatherGenerator:
-            """WeatherGenerator."""
-            SWIMResultFile = FilePrefix + str(realization) + ".dat"
+        if weather_generator:
+            """weather_generator."""
+            rrm_result_file = file_prefix + str(realization) + ".dat"
             # 4-5
             # check whether the the name of the realization the same as the name of 3
             # the saving file or not to prevent any confusion in saving the files
             if int(realization) <= 9:
-                assert int(SWIMResultFile[-5:-4]) == int(
-                    SavePath[-1]
+                assert int(rrm_result_file[-5:-4]) == int(
+                    save_path[-1]
                 ), " Wrong files sync "
             else:
-                assert int(SWIMResultFile[-6:-4]) == int(
-                    SavePath[-2:]
+                assert int(rrm_result_file[-6:-4]) == int(
+                    save_path[-2:]
                 ), " Wrong files sync "
         else:
             """Observed data."""
-            SWIMResultFile = FilePrefix + str(realization) + ".dat"
+            rrm_result_file = file_prefix + str(realization) + ".dat"
 
         """
         SWIM writes the year as the first colmun then day as a second column and the
@@ -106,13 +106,13 @@ class Inputs(River):
 
         # read SWIM result file
         SWIMData = pd.read_csv(
-            path + "/" + SWIMResultFile, delimiter=r"\s+", header=None
+            f"{path}/{rrm_result_file}", delimiter=r"\s+", header=None
         )
-        Nodes = pd.read_csv(path + "/" + SWIMNodes, header=None)
+        Nodes = pd.read_csv(f"{path}/{locations}", header=None)
 
         for i in range(len(Nodes)):
             SWIMData.loc[:, i + ignoreColumns].to_csv(
-                SavePath + "/" + str(Nodes.loc[i, 0]) + ".txt", header=None, index=None
+                f"{save_path}/{Nodes.loc[i, 0]}.txt", header=None, index=None
             )
 
     def statisticalProperties(
@@ -772,7 +772,7 @@ class Inputs(River):
         #    ToSave = Subs.loc[:,['SubID','US']]
         #    ToSave['Extra column 1'] = -1
         #    ToSave['Extra column 2'] = -1
-        #    ToSave.to_csv(SavePath + TraceFile,header = None, index = None)
+        #    ToSave.to_csv(save_path + TraceFile,header = None, index = None)
 
     def ListAttributes(self):
         """ListAttributes.
