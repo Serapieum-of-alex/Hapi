@@ -887,7 +887,7 @@ class River:
         """
         # if the path is not given try to read from the object predefined one_d_result_path
         t1 = dt.datetime.now()
-        if not path:
+        if path is None:
             path = self.one_d_result_path
 
         path = os.path.join(path, f"{Subid}{extension}")
@@ -976,7 +976,7 @@ class River:
         # calculate time and print it
         t2 = dt.datetime.now()
         time_min = (t2 - t1).seconds / 60
-        print(time_min)
+        print(f"Time taken to read the file: {time_min:0.3f} min")
         self.results_1d = data
 
     @staticmethod
@@ -999,32 +999,32 @@ class River:
 
         Parameters
         ----------
-            1-path : [String]
-                path to the folder containing the separated folder.
-            2-FolderNames : [List]
-                list containing folder names.
-            3-Left : [Bool]
-                True if you want to combine left overtopping files.
-            4-Right : [Bool]
-                True if you want to combine right overtopping files.
-            5-Savepath : [String]
-                path to the folder where data will be saved.
-            6-OneD : [Bool]
-                True if you want to combine 1D result files.
-            7-fromf : [Integer], optional
-                if the files are very big and the cache memory has a problem
-                reading all the files you can specify here the order of the file
-                the code will start from to combine. The default is ''.
-            8-tof : [Integer], optional
-                if the files are very big and the cache memory has a problem
-                reading all the files you can specify here the order of the file
-                the code will end to combine. The default is ''.
-            9-FilterbyName : [Bool], optional
-                if the results include a wanm up period at the beginning
-                or has results for some days at the end you want to filter out
-                you want to include the period you want to be combined only
-                in the name of the folder between () and separated with -
-                ex 1d(5000-80000). The default is False.
+        path : [String]
+            path to the folder containing the separated folder.
+        FolderNames : [List]
+            list containing folder names.
+        Left : [Bool]
+            True if you want to combine left overtopping files.
+        Right : [Bool]
+            True if you want to combine right overtopping files.
+        Savepath : [String]
+            path to the folder where data will be saved.
+        OneD : [Bool]
+            True if you want to combine 1D result files.
+        fromf : [Integer], optional
+            if the files are very big and the cache memory has a problem
+            reading all the files you can specify here the order of the file
+            the code will start from to combine. The default is ''.
+        tof : [Integer], optional
+            if the files are very big and the cache memory has a problem
+            reading all the files you can specify here the order of the file
+            the code will end to combine. The default is ''.
+        FilterbyName : [Bool], optional
+            if the results include a wanm up period at the beginning
+            or has results for some days at the end you want to filter out
+            you want to include the period you want to be combined only
+            in the name of the folder between () and separated with -
+            ex 1d(5000-80000). The default is False.
 
         Returns
         -------
@@ -1081,7 +1081,7 @@ class River:
                     # read the file
                     try:
                         temp_df = pd.read_csv(
-                            path + "/" + FolderNames[i] + "/" + FileList[j],
+                            f"{path}/{FolderNames[i]}/{FileList[j]}",
                             header=None,
                             delimiter=r"\s+",
                         )
@@ -1109,18 +1109,18 @@ class River:
             if var.endswith("_left"):
                 # put the dataframe in order first
                 exec(var + ".sort_values(by=[0,1,2],ascending = True, inplace = True)")
-                path = Savepath + "/" + var[1:] + ".txt"
+                path = f"{Savepath}/{var[1:]}.txt"
                 exec(var + ".to_csv(path ,index= None, sep = ' ', header = None)")
             elif var.endswith("_right"):
                 # put the dataframe in order first
                 exec(var + ".sort_values(by=[0,1,2],ascending = True, inplace = True)")
-                path = Savepath + "/" + var[1:] + ".txt"
+                path = f"{Savepath}/{var[1:]}.txt"
                 exec(var + ".to_csv(path ,index= None, sep = ' ', header = None)")
             elif var.startswith("one"):
                 # put the dataframe in order first
                 exec(var + ".sort_values(by=[0,1,2],ascending = True, inplace = True)")
-                logger.debug("Saving " + var[3:] + ".txt")
-                path = Savepath + "/" + var[3:] + ".txt"
+                logger.debug(f"Saving {var[3:]}.txt")
+                path = f"{Savepath}/{var[3:]}.txt"
                 exec(var + ".to_csv(path ,index= None, sep = ' ', header = None)")
 
     @staticmethod
@@ -2990,7 +2990,7 @@ class River:
         self.HQ = HQ[:, :]
 
     def getDays(self, from_day: int, to_day: int):
-        """GetDays.
+        """getDays.
 
         GetDays method check if input days exist in the 1D result data
         or not since RIM1.0 simulate only days where discharge is above
@@ -3013,7 +3013,7 @@ class River:
                                             day).
         """
         data = pd.read_csv(
-            rf"{self.onedresultpath}\{self.id}.txt", header=None, delimiter=r"\s+"
+            rf"{self.one_d_result_path}\{self.id}.txt", header=None, delimiter=r"\s+"
         )
         data.columns = ["day", "hour", "xs", "q", "h", "wl"]
         days = list(set(data["day"]))
@@ -3025,7 +3025,6 @@ class River:
             stop = 0
             # search for the from_day in the days column
             while stop == 0:
-                # for i in range(0,10):
                 try:
                     np.where(data["day"] == Alt1)[0][0]  # loc =
                     stop = 1
@@ -3430,7 +3429,7 @@ class Reach(River):
         last_day:[attribute]
             the last day in the 1D result
         """
-        if path and self.one_d_result_path == "":
+        if path is None and self.one_d_result_path == "":
             raise ValueError(
                 "User have to either enter the value of the 'path' parameter or"
                 " define the 'one_d_result_path' parameter for the River object"
