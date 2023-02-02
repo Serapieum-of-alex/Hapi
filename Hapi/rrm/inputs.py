@@ -17,6 +17,26 @@ from rasterstats import zonal_stats
 
 import Hapi
 
+ParamList = [
+    "01_tt",
+    "02_rfcf",
+    "03_sfcf",
+    "04_cfmax",
+    "05_cwh",
+    "06_cfr",
+    "07_fc",
+    "08_beta",
+    "09_etf",
+    "10_lp",
+    "11_k0",
+    "12_k1",
+    "13_k2",
+    "14_uzl",
+    "15_perc",
+    "16_maxbas",
+    "17_K_muskingum",
+    "18_x_muskingum",
+]
 
 class Inputs:
     """Rainfall-runoff Inputs class.
@@ -225,26 +245,6 @@ class Inputs:
         """
         ParametersPath = os.path.dirname(Hapi.__file__)
         ParametersPath = ParametersPath + "/parameters/" + scenario
-        ParamList = [
-            "01_tt",
-            "02_rfcf",
-            "03_sfcf",
-            "04_cfmax",
-            "05_cwh",
-            "06_cfr",
-            "07_fc",
-            "08_beta",
-            "09_etf",
-            "10_lp",
-            "11_k0",
-            "12_k1",
-            "13_k2",
-            "14_uzl",
-            "15_perc",
-            "16_maxbas",
-            "17_K_muskingum",
-            "18_x_muskingum",
-        ]
 
         if not as_raster:
             raster_obj = rasterio.open(f"{ParametersPath}/{ParamList[0]}.tif")
@@ -374,69 +374,8 @@ class Inputs:
                 f"{path}/{df.loc[i, 'files']}", f"{path}/{df.loc[i, 'new_names']}"
             )
 
-    @staticmethod
-    def changetext2time(string):
-        """changetext2time.
 
-        this functions changes the date from a string to a date time
-        format
-        """
-        time = dt.datetime(
-            int(string[:4]),
-            int(string[5:7]),
-            int(string[8:10]),
-            int(string[11:13]),
-            int(string[14:16]),
-            int(string[17:]),
-        )
-        return time
-
-    @staticmethod
-    def ReadExcelData(path, years, months):
-        """ReadExcelData.
-
-            this function reads data listed in excel sheet with years and months are
-            listed as columns and days are listed in the first row
-            year month 1 2 3 4 5 6 7 8 9 .....................31
-            2012  1    5 6 2 6 8 6 9 7 4 3 ...................31
-            2012  2    9 8 7 6 3 2 1 5 5 9 ...................31
-
-        Parameters
-        ----------
-        path:
-            [string] path of the excel file
-        years:
-            [list] list of the years you want to read
-        months:
-            [list] list of the months you you want to read
-
-        Returns
-        -------
-         List of the values in the excel file
-
-        Examples
-        --------
-        >>> years = [2009,2010,2011]#,2012,2013]
-        >>> months = [1,2,3,4,5,6,7,8,9,10,11,12]
-        >>> Q = Inputs.ReadExcelData("{path}/Discharge/Qout.xlsx", years, months)
-        """
-
-        Qout = pd.read_excel(path)
-        Q = []
-        #    years=[2009,2010,2011]#,2012,2013]
-        #    months=[1,2,3,4,5,6,7,8,9,10,11,12]
-        for year in years:
-            for month in months:
-                row = Qout[Qout["year"] == year][Qout["month"] == month]
-                row = row.drop(["year", "month"], axis=1)
-                row = row.values.tolist()[0]
-                Q = Q + row
-
-        Q = [Q[i] for i in range(len(Q)) if not np.isnan(Q[i])]
-
-        return Q
-
-    def ListAttributes(self):
+    def listAttributes(self):
         """Print Attributes List."""
         logger.info("\n")
         logger.info(
