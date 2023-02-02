@@ -2,7 +2,7 @@
 
 - To run this code you have to prepare the calibration data first in a specific format
 and folder structure and to do that you have to run
-the code 01CalibrationDataPreparation.py""
+the code 01calibration_data_preparation.py""
 """
 import datetime as dt
 
