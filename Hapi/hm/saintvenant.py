@@ -24,6 +24,7 @@ class SaintVenant:
         pass
 
     def kinematicraster(self, Model):
+        """Kinematic wave method Raster."""
 
         beta = 3 / 5
         dx = Model.CellSize
@@ -146,8 +147,8 @@ class SaintVenant:
         """
 
         nt = len(usbc)  # int(24*60*60/Model.dt)
-        Model.q = np.zeros(shape=(nt, len(Model.crosssections)))
-        Model.h = np.zeros(shape=(nt, len(Model.crosssections)))
+        Model.q = np.zeros(shape=(nt, len(Model.cross_sections)))
+        Model.h = np.zeros(shape=(nt, len(Model.cross_sections)))
 
         beta = 3 / 5
         dtx = Model.dt / Model.dx
@@ -156,14 +157,14 @@ class SaintVenant:
         Model.q[: len(Model.usbc), 0] = usbc.loc[:, "q"]
 
         for t in range(1, len(Model.q)):
-            for x in range(1, len(Model.crosssections)):
-                # p = Model.crosssections.loc[x,'b'] + 2 * Model.crosssections.loc[x,'depth']
-                p = Model.crosssections.loc[x, "b"]
-                n = Model.crosssections.loc[x, "n"]
+            for x in range(1, len(Model.cross_sections)):
+                # p = Model.cross_sections.loc[x,'b'] + 2 * Model.cross_sections.loc[x,'depth']
+                p = Model.cross_sections.loc[x, "b"]
+                n = Model.cross_sections.loc[x, "n"]
                 alpha1 = n * pow(p, 2 / 3)
                 s = (
-                    Model.crosssections.loc[x - 1, "bed level"]
-                    - Model.crosssections.loc[x, "bed level"]
+                    Model.cross_sections.loc[x - 1, "bed level"]
+                    - Model.cross_sections.loc[x, "bed level"]
                 ) / Model.dx
                 alpha = pow(alpha1 / pow(s, 0.5), 0.6)
 
@@ -187,14 +188,15 @@ class SaintVenant:
         # take the calculated water depth for the first time step the same as the second time step
         Model.h[0, :] = Model.h[1, :]
         Model.h[:, 0] = Model.h[:, 1]
-        Model.wl = Model.h + Model.crosssections["bed level"].values
+        Model.wl = Model.h + Model.cross_sections["bed level"].values
 
     @staticmethod
     def storagecell(Model, usbc):
+        """Storage Cell Model."""
 
         nt = len(usbc)
-        Model.q = np.zeros(shape=(nt, len(Model.crosssections)))
-        Model.h = np.zeros(shape=(nt, len(Model.crosssections)))
+        Model.q = np.zeros(shape=(nt, len(Model.cross_sections)))
+        Model.h = np.zeros(shape=(nt, len(Model.cross_sections)))
         # calculate area and perimeter of all xssbased on the
         xs = np.zeros(shape=(Model.xsno, 2))
         Model.h[0, :] = 0.1
@@ -207,41 +209,41 @@ class SaintVenant:
 
         for t in range(1, len(Model.q)):
 
-            for x in range(len(Model.crosssections)):
+            for x in range(len(Model.cross_sections)):
                 # area
-                xs[x, 1] = Model.h[t, x] * Model.crosssections.loc[x, "b"]
+                xs[x, 1] = Model.h[t, x] * Model.cross_sections.loc[x, "b"]
                 # perimeter
-                xs[x, 2] = Model.crosssections.loc[x, "b"]
+                xs[x, 2] = Model.cross_sections.loc[x, "b"]
 
             for x in range(1, len(Model.xsno)):
                 if x < Model.xsno - 1:
                     # friction slope = (so - dhx/dx] - diffusive wave
                     sf = (
                         Model.h[t, x]
-                        + Model.crosssections.loc[x, "bed level"]
+                        + Model.cross_sections.loc[x, "bed level"]
                         - Model.h[t, x + 1]
-                        - Model.crosssections.loc[x + 1, "bed level"]
+                        - Model.cross_sections.loc[x + 1, "bed level"]
                     ) / Model.dx
                 else:
                     # for LOWER BOUNDARY node
                     sf = (
                         Model.h[t, x - 1]
-                        + Model.crosssections.loc[x - 1, "bed level"]
+                        + Model.cross_sections.loc[x - 1, "bed level"]
                         - Model.h[t, x]
-                        - Model.crosssections.loc[x, "bed level"]
+                        - Model.cross_sections.loc[x, "bed level"]
                     ) / Model.dx
 
                 if x < Model.xsno - 1:
                     Area = (xs[x, 1] + xs[x + 1, 2]) / 2
                     R = (xs[x, 1] / xs[x, 2] + xs[x + 1, 1] / xs[x + 1, 2]) / 2
 
-                # p = Model.crosssections.loc[x,'b'] + 2 * Model.crosssections.loc[x,'depth']
-                p = Model.crosssections.loc[x, "b"]
-                n = Model.crosssections.loc[x, "n"]
+                # p = Model.cross_sections.loc[x,'b'] + 2 * Model.cross_sections.loc[x,'depth']
+                p = Model.cross_sections.loc[x, "b"]
+                n = Model.cross_sections.loc[x, "n"]
                 alpha1 = n * pow(p, 2 / 3)
                 s = (
-                    Model.crosssections.loc[x - 1, "bed level"]
-                    - Model.crosssections.loc[x, "bed level"]
+                    Model.cross_sections.loc[x - 1, "bed level"]
+                    - Model.cross_sections.loc[x, "bed level"]
                 ) / Model.dx
                 alpha = pow(alpha1 / pow(s, 0.5), 0.6)
 
@@ -265,9 +267,24 @@ class SaintVenant:
         # take the calculated water depth for the first time step the same as the second time step
         Model.h[0, :] = Model.h[1, :]
         Model.h[:, 0] = Model.h[:, 1]
-        Model.wl = Model.h + Model.crosssections["bed level"].values
+        Model.wl = Model.h + Model.cross_sections["bed level"].values
 
     def GVF00(self, Sub, River, Hbnd, dt, dx, inih, storewl, MinQ):
+        """GVF00.
+
+            Gradually Varied flow
+
+        Parameters
+        ----------
+        Sub
+        River
+        Hbnd
+        dt
+        dx
+        inih
+        storewl
+        MinQ
+        """
 
         xs = np.zeros(shape=(Sub.xsno, 8))
         Diff_coeff = np.zeros(shape=(Sub.xsno, 3))
@@ -619,8 +636,8 @@ class SaintVenant:
                 for x in range(1, (Sub.xsno) - 2):
                     # check if the XS has laterals
                     # FindInArrayF(real[xsid[x]],sub_XSLaterals,loc)
-                    if Sub.xsid[x] in Sub.LateralsTable:
-                        loc = Sub.LateralsTable.index(Sub.xsid[x])
+                    if Sub.xsid[x] in Sub.laterals_table:
+                        loc = Sub.laterals_table.index(Sub.xsid[x])
                         # have only the laterals
                         qlat = Lateral_q[t, loc]
                         # print(*,*] "Lat= ", qlat
@@ -644,7 +661,7 @@ class SaintVenant:
                         bankful_area = Sub.Dbf[x] * Sub.mw[x]
 
                         # if the new area is less than the area of the min[hl,hr]
-                        if XSarea[x] <= Sub.AreaPerLow[x, 0]:
+                        if XSarea[x] <= Sub.area_per_Low[x, 0]:
                             # if the area is less than the bankful area
                             if XSarea[x] <= bankful_area:
                                 hx[x] = XSarea[x] / Sub.mw[x]
@@ -659,7 +676,7 @@ class SaintVenant:
                                 hx[x] = dummyh + Sub.Dbf[x]
 
                         # if the new area is less than the area of the max[hl,hr]
-                        elif XSarea[x] <= Sub.AreaPerHigh[x, 1]:
+                        elif XSarea[x] <= Sub.area_per_high[x, 1]:
                             dummyarea = XSarea[x] - bankful_area
                             # check which dike is higher
                             if Sub.hl[x] < Sub.hr[x]:
@@ -734,10 +751,12 @@ class SaintVenant:
 
     @staticmethod
     def QuadraticEqn(a, b, c):
+        """QuadraticEqn."""
         delta = (b**2) - 4 * a * c
         return (-b + np.sqrt(delta)) / (2 * a)
 
     def preissmann(self, Model):
+        """Preissmann scheme."""
         # calculating no of discritization points
         theta = self.theta
         epsi = self.epsi
@@ -745,7 +764,7 @@ class SaintVenant:
         dx = Model.dx
         dt = Model.dt
 
-        X = len(Model.crosssections)  # round(Model.L / dx) + 1
+        X = len(Model.cross_sections)  # round(Model.L / dx) + 1
         T = round(Model.Time / dt) + 1
 
         q = np.zeros(shape=(T, X), dtype=np.float32)
@@ -778,9 +797,9 @@ class SaintVenant:
 
         # Unknowns = np.zeros(2 * X, dtype=np.float32)
         cols = 0
-        b = Model.crosssections.loc[:, "b"]
-        n = Model.crosssections.loc[:, "n"]
-        s = Model.crosssections.loc[:, "bed level"]
+        b = Model.cross_sections.loc[:, "b"]
+        n = Model.cross_sections.loc[:, "n"]
+        s = Model.cross_sections.loc[:, "bed level"]
         s = s[:-1].values - s[1:].values
         s = s / dx
         s = np.append(s, s[-1])
@@ -945,7 +964,7 @@ class SaintVenant:
         # end  # end of computation for all time steps
         Model.q = q[:, :]
         Model.h = h[:, :]
-        Model.wl = Model.h + Model.crosssections["bed level"].values
+        Model.wl = Model.h + Model.cross_sections["bed level"].values
 
         area = h * b.values
         v = q / area

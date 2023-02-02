@@ -10,7 +10,6 @@ from Hapi.rrm.routing import Routing as routing
 
 
 class Wrapper:
-
     """Wrapper.
 
     The class connect different commponent together (lumped run of the distributed with the spatial routing) for Hapi
@@ -26,7 +25,7 @@ class Wrapper:
     """
 
     def __init__(self):
-        """wrapper object does not need any information to be created."""
+        """Run the whole setup."""
         pass
 
     @staticmethod
@@ -37,58 +36,59 @@ class Wrapper:
             1- The distributed rainfall runoff: model runs separately for each cell
             2- The Spatial routing scheme (routing is following river network)
 
-        Inputs:
+        Parameters
         ----------
-            1-DEM:
-                [gdal.dataset] DEM raster file of the catchment (clipped to the catchment only)
-            2-flow_acc:
-                [gdal.dataset] flow accumulation raster file of the catchment (clipped to the catchment only)
-            3-flow_direct:
-                [gdal.dataset] flow Direction raster file of the catchment (clipped to the catchment only)
-            4-sp_prec:
-                [numpy array] 3d array of the precipitation data, sp_prec should
+        Model
+            DEM: [gdal.dataset]
+                DEM raster file of the catchment (clipped to the catchment only)
+            flow_acc: [gdal.dataset]
+                flow accumulation raster file of the catchment (clipped to the catchment only)
+            flow_direct: [gdal.dataset]
+                flow Direction raster file of the catchment (clipped to the catchment only)
+            sp_prec: [numpy array]
+                3d array of the precipitation data, sp_prec should
                 have the same 2d dimension of raster input
-            5-sp_et:
-                [numpy array] 3d array of the evapotranspiration data, sp_et should
+            sp_et: [numpy array]
+                3d array of the evapotranspiration data, sp_et should
                 have the same 2d dimension of raster input
-            6-sp_temp:
-                [numpy array] 3d array of the temperature data, sp_temp should
+            sp_temp: [numpy array]
+                3d array of the temperature data, sp_temp should
                 have the same 2d dimension of raster input
-            7-sp_par:
-                [numpy array] number of 2d arrays of the catchment properties spatially
+            sp_par: [numpy array]
+                number of 2d arrays of the catchment properties spatially
                 distributed in 2d and the third dimension is the number of parameters,
                 sp_pars should have the same 2d dimension of raster input
-            8-p2:
-                [List] list of unoptimized parameters
+            p2: [List]
+                list of unoptimized parameters
                 p2[0] = tfac, 1 for hourly, 0.25 for 15 min time step and 24 for daily time step
                 p2[1] = catchment area in km2
-            9-kub:
-                [float] upper bound of K value (traveling time in muskingum routing method)
-            10-klb:
-                [float] Lower bound of K value (traveling time in muskingum routing method)
-            11-init_st:
-                [list] initial state variables values [sp, sm, uz, lz, wc]. default=None
-            12-ll_temp:
-                [numpy array] 3d array of the long term average temperature data
-            13-q_0:
-                [float] initial discharge m3/s
+            kub: [float]
+                upper bound of K value (traveling time in muskingum routing method)
+            klb: [float]
+                Lower bound of K value (traveling time in muskingum routing method)
+            init_st: [list]
+                initial state variables values [sp, sm, uz, lz, wc]. default=None
+            ll_temp: [numpy array]
+                3d array of the long term average temperature data
+            q_0: [float]
+                initial discharge m3/s
 
-        Outputs:
-        ----------
-            1-statevariables:
-                [numpy ndarray] 4D array (rows,cols,time,states) states are [sp,wc,sm,uz,lv]
-            2-qlz:
-                [numpy ndarray] 3D array of the lower zone discharge
-            3-quz:
-                [numpy ndarray] 3D array of the upper zone discharge
-            4-qout:
-                [numpy array] 1D timeseries of discharge at the outlet of the catchment
-                of unit m3/sec
-            5-quz_routed:
-                [numpy ndarray] 3D array of the upper zone discharge  accumulated and
-                routed at each time step
-            6-qlz_translated:
-                [numpy ndarray] 3D array of the lower zone discharge translated at each time step
+        Returns
+        -------
+        statevariables:
+            [numpy ndarray] 4D array (rows,cols,time,states) states are [sp,wc,sm,uz,lv]
+        qlz:
+            [numpy ndarray] 3D array of the lower zone discharge
+        quz:
+            [numpy ndarray] 3D array of the upper zone discharge
+        qout:
+            [numpy array] 1D timeseries of discharge at the outlet of the catchment
+            of unit m3/sec
+        quz_routed:
+            [numpy ndarray] 3D array of the upper zone discharge  accumulated and
+            routed at each time step
+        qlz_translated:
+            [numpy ndarray] 3D array of the lower zone discharge translated at each time step
         """
         # run the rainfall runoff model separately
         distrrm.RunLumpedRRM(Model)
@@ -319,12 +319,12 @@ class Wrapper:
         q_lz: [numpy array]
             1d array of the calculated discharge.
 
-        examples
+        Examples
         --------
-            p2=[24, 1530]
-            #[sp,sm,uz,lz,wc]
-            init_st=[0,5,5,5,0]
-            snow=0
+        >>> p2=[24, 1530]
+        >>> #[sp,sm,uz,lz,wc]
+        >>> init_st=[0,5,5,5,0]
+        >>> snow=0
         """
         ### input data validation
         assert callable(

@@ -4,16 +4,18 @@ currunt_work_directory = Hapi/example
 
 install and use earth2observe package https://github.com/MAfarrag/earth2observe
 """
-from earth2observe.chirps import CHIRPS
-from earth2observe.ecmwf import ECMWF, Variables
+from earth2observe.chirps import CHIRPS, Catalog
+from earth2observe.earth2observe import Earth2Observe
+from earth2observe.ecmwf import Catalog
 
 root_path = "C:/MyComputer/01Algorithms/Hydrology/Hapi/"
 # %% Basin data
-StartDate = "2009-01-01"
-EndDate = "2009-02-01"
-time = "daily"
+start = "2009-01-01"
+end = "2009-02-01"
+temporal_resolution = "daily"
 latlim = [4.190755, 4.643963]
 lonlim = [-75.649243, -74.727286]
+
 # make sure to provide a full path not relative path
 # please replace the following root_path to the repo main directory in your machine
 path = root_path + "examples/data/satellite_data/"
@@ -21,41 +23,42 @@ path = root_path + "examples/data/satellite_data/"
 """
 check the ECMWF variable names that you have to provide to the RemoteSensing object
 """
-Vars = Variables("daily")
-Vars.__str__()
-# %% ECMWF
+var = "T"
+catalog = Catalog()
+print(catalog.catalog)
+catalog.get_variable(var)
+# %% pripitation data from ecmwf
 """
 provide the time period, temporal resolution, extent and variables of your interest
 """
-start = "2009-01-01"
-end = "2009-01-10"
-ts = "daily"
-latlim = [4.190755, 4.643963]
-lonlim = [-75.649243, -74.727286]
 # Temperature, Evapotranspiration
 variables = ["T", "E"]
-
-Coello = ECMWF(
-    time=time,
+source = "ecmwf"
+e2o = Earth2Observe(
+    data_source=source,
     start=start,
     end=end,
+    variables=variables,
     lat_lim=latlim,
     lon_lim=lonlim,
+    temporal_resolution=temporal_resolution,
     path=path,
-    variables=variables,
 )
 
-Coello.download()
+e2o.download()
 # %% CHRIPS
-Coello = CHIRPS(
-    StartDate=StartDate,
-    EndDate=EndDate,
-    Time=time,
-    latlim=latlim,
-    lonlim=lonlim,
-    Path=path,
+variables = ["precipitation"]
+e2o = Earth2Observe(
+    data_source=source,
+    start=start,
+    end=end,
+    variables=variables,
+    lat_lim=latlim,
+    lon_lim=lonlim,
+    temporal_resolution=temporal_resolution,
+    path=path,
 )
-Coello.Download()
+e2o.download()
 # %%
 """
 if you want to use parallel downloads using multi cores, enter the number of
@@ -63,14 +66,4 @@ cores you want to use
 
 PS. the multi-coredownload does not have an indication bar
 """
-cores = 4
-
-Coello = CHIRPS(
-    StartDate=StartDate,
-    EndDate=EndDate,
-    Time=time,
-    latlim=latlim,
-    lonlim=lonlim,
-    Path=path,
-)
-Coello.Download(cores=cores)
+e2o.download(cores=4)

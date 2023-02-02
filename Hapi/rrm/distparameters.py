@@ -15,7 +15,10 @@ from pyramids.raster import Raster
 
 
 class DistParameters:
-    """Distripute parameter class is used to distribute the values of the parameter vector in the calibration process into the 3D array, considering if some of the parameters are lumped parameters, if you want to distribute the parameters in HRUs.
+    """Distripute.
+
+        parameter class is used to distribute the values of the parameter vector in the calibration
+        process into the 3D array, considering if some of the parameters are lumped parameters, if you want to distribute the parameters in HRUs.
 
     the method included are
     1- par3d
@@ -312,7 +315,10 @@ class DistParameters:
         #         self.Par3d[self.celli[i],self.cellj[i],-2]= DistParameters.calculateK(self.Par3d[self.celli[i],self.cellj[i],-1],self.Par3d[self.celli[i],self.cellj[i],-2],kub,klb)
 
     def par3dLumped(self, par_g):  # , kub=1, klb=0.5, Maskingum = True
-        """par3dLumped method takes a list of parameters [saved as one column or generated as 1D list from optimization algorithm] and distribute them horizontally on number of cells given by a raster.
+        r"""par3dLumped method.
+
+            takes a list of parameters [saved as one column or generated as 1D list from
+            optimization algorithm] and distribute them horizontally on number of cells given by a raster.
 
         Parameters
         ----------
@@ -328,21 +334,21 @@ class DistParameters:
             if the routing function is muskingum. The default is False.
 
         Returns
-        ----------
+        -------
         par_3d: [3d array]
             3D array of the parameters distributed horizontally on the cells
 
-        Example:
-        ----------
+        Example
+        -------
         EX1:Lumped parameters
             raster=gdal.Open("dem.tif")
             [fc, beta, etf, lp, c_flux, k, k1, alpha, perc, pcorr, Kmuskingum, Xmuskingum]
 
-            raster=gdal.Open(path+"soil_classes.tif")
-            no_parameters=12
-            par_g=np.random.random(no_parameters) #no_elem*(no_parameters-no_lumped_par)
+        >>> raster = gdal.Open(f"{path}\soil_classes.tif")
+        >>> no_parameters = 12
+        >>> par_g = np.random.random(no_parameters) #no_elem*(no_parameters-no_lumped_par)
 
-            tot_dist_par=DP.par3dLumped(par_g,raster,no_parameters,lumped_par_pos,kub=1,klb=0.5)
+        >>> tot_dist_par = DP.par3dLumped(par_g, raster, no_parameters, lumped_par_pos, kub=1, klb=0.5)
         """
         # input data validation
         # data type
@@ -478,7 +484,11 @@ class DistParameters:
         # return self.Par3d, lake_par
 
     def HRU(self, par_g):  # ,kub=1,klb=0.5
-        """HRU method takes a list of parameters [saved as one column or generated as 1D list from optimization algorithm] and distribute them horizontally on number of cells given by a raster the input raster should be classified raster (by numbers) into class to be used to define the HRUs.
+        """HRU.
+
+            method takes a list of parameters [saved as one column or generated as 1D list from optimization algorithm]
+            and distribute them horizontally on number of cells given by a raster the input raster should be classified
+            raster (by numbers) into class to be used to define the HRUs.
 
         Parameters
         ----------
@@ -507,7 +517,7 @@ class DistParameters:
             default is 0.5 hour (30 min)
 
         Returns
-        ----------
+        -------
         par_3d:
             3D array of the parameters distributed horizontally on the cells
 
@@ -515,12 +525,11 @@ class DistParameters:
         --------
         EX1:HRU without lumped parameters
             [fc, beta, etf, lp, c_flux, k, k1, alpha, perc, pcorr, Kmuskingum, Xmuskingum]
-            raster = gdal.Open("soil_types.tif")
-            no_lumped_par=0
-            lumped_par_pos=[]
-            par_g=np.random.random(no_elem*(no_parameters-no_lumped_par))
-
-            par_hru=HRU(par_g,raster,no_parameters,no_lumped_par,lumped_par_pos,kub=1,klb=0.5)
+        >>> raster = gdal.Open("soil_types.tif")
+        >>> no_lumped_par = 0
+        >>> lumped_par_pos = []
+        >>> par_g = np.random.random(no_elem*(no_parameters-no_lumped_par))
+        >>> par_hru = HRU(par_g, raster, no_parameters, no_lumped_par, lumped_par_pos, kub=1,klb=0.5)
 
 
         EX2: HRU with one lumped parameters
@@ -529,14 +538,14 @@ class DistParameters:
             K1 is lumped so its value is inserted at the end and its order should
             be after K
 
-            raster = gdal.Open("soil_types.tif")
-            no_lumped_par=1
-            lumped_par_pos=[6]
-            par_g=np.random.random(no_elem* (no_parameters-no_lumped_par))
-            # insert the value of k1 at the end
-            par_g=np.append(par_g,0.005)
+        >>> raster = gdal.Open("soil_types.tif")
+        >>> no_lumped_par = 1
+        >>> lumped_par_pos = [6]
+        >>> par_g = np.random.random(no_elem* (no_parameters-no_lumped_par))
+        >>> # insert the value of k1 at the end
+        >>> par_g = np.append(par_g,0.005)
 
-            par_hru=HRU(par_g,raster,no_parameters,no_lumped_par,lumped_par_pos,kub=1,klb=0.5)
+        >>> par_hru = HRU(par_g, raster, no_parameters, no_lumped_par, lumped_par_pos, kub=1, klb=0.5)
         """
         # input data validation
         # data type
@@ -747,7 +756,10 @@ class DistParameters:
                 self.ParametersNO = self.no_elem * self.no_parameters
 
     def saveParameters(self, Path):
-        """saveParameters. saveParameters method takes generated parameters by the calibration algorithm, distributed them with a given function and save them as a rasters.
+        """SaveParameters.
+
+            saveParameters method takes generated parameters by the calibration algorithm, distributed them with a given
+            function and save them as a rasters.
 
         Parameters
         ----------
@@ -779,7 +791,7 @@ class DistParameters:
         Rasters for parameters of the distributed model
 
         Examples
-        ----------
+        --------
         >>> from Hapi.rrm.distparameters import DistParameters as DP
         >>> DemPath = "GIS/4000/dem4000.tif"
         >>> raster = gdal.Open(DemPath)

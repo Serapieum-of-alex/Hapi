@@ -17,6 +17,7 @@ class Routing:
     """Routing class contains routing method.
 
     Methods
+    -------
     1- Muskingum
     2- Muskingum_V
     3- TriangularRouting1
@@ -35,30 +36,29 @@ class Routing:
     def Muskingum(inflow, Qinitial, k, x, dt):
         """Muskingum.
 
-        inputs:
+        Parameters
         ----------
-            1-inflow:
-                [numpy array] time series of inflow hydrograph
-            2-Qinitial:
-                [numeric] initial value for outflow
-            3-k:
-                [numeric] travelling time (hours)
-            4-x:
-                [numeric] surface nonlinearity coefficient (0,0.5)
-            5-dt:
-                [numeric] delta t
+        inflow: [numpy array]
+            time series of inflow hydrograph
+        Qinitial: [numeric]
+            initial value for outflow
+        k: [numeric]
+            travelling time (hours)
+        x: [numeric]
+            surface nonlinearity coefficient (0,0.5)
+        dt: [numeric]
+            delta t
 
-        Outputs:
-        ----------
-            1-outflow:
-                [numpy array] time series of routed hydrograph
+        Returns
+        -------
+        outflow: [numpy array]
+            time series of routed hydrograph
 
-        examples:
-        ----------
-        pars[10]=k
-        pars[11]=x
-        p2[0]=1  # hourly time step
-        q_routed = Routing.muskingum(q_uz,q_uz[0],pars[10],pars[11],p2[0])
+        Examples
+        --------
+        >>> q = [] # discharge time series
+        >>> time_resolution = 1  # hourly time step
+        >>> q_routed = Routing.Muskingum(q, q[0], k, x, time_resolution)
         """
         c1 = (dt - 2 * k * x) / (2 * k * (1 - x) + dt)
         c2 = (dt + 2 * k * x) / (2 * k * (1 - x) + dt)
@@ -89,30 +89,29 @@ class Routing:
 
             Vectorized version of Muskingum
 
-        inputs:
+        Parameters
         ----------
-            1-inflow: [numpy array]
-                time series of inflow hydrograph
-            2-Qinitial: [numeric]
-                initial value for outflow
-            3-k: [numeric]
-                travelling time (hours)
-            4-x: [numeric]
-                surface nonlinearity coefficient (0,0.5)
-            5-dt: [numeric]
-                delta t
+        inflow: [numpy array]
+            time series of inflow hydrograph
+        Qinitial: [numeric]
+            initial value for outflow
+        k: [numeric]
+            travelling time (hours)
+        x: [numeric]
+            surface nonlinearity coefficient (0,0.5)
+        dt: [numeric]
+            delta t
 
-        Outputs:
-        ----------
-            1-outflow:
-                [numpy array] time series of routed hydrograph
+        Returns
+        -------
+        outflow:
+            [numpy array] time series of routed hydrograph
 
-        examples:
-        ----------
-        pars[10]=k
-        pars[11]=x
-        p2[0]=1  # hourly time step
-        q_routed = Routing.muskingum(q_uz,q_uz[0],pars[10],pars[11],p2[0])
+        Examples
+        --------
+        >>> q = [] # discharge time series
+        >>> time_resolution = 1  # hourly time step
+        >>> q_routed = Routing.Muskingum_V(q, q[0], k, x, time_resolution)
         """
         c1 = (dt - 2 * k * x) / (2 * k * (1 - x) + dt)
         c2 = (dt + 2 * k * x) / (2 * k * (1 - x) + dt)
@@ -138,21 +137,21 @@ class Routing:
 
             Transfer function weight generator in a shape of a triangle.
 
-        Inputs:
+        Parameters
         ----------
-            1-maxbas:
-                [integer] number of time steps that the triangular routing function
-                is going to divide the discharge into, based on the weights
-                generated from this function, min value is 1 and default value is 1
+        maxbas: [integer]
+            number of time steps that the triangular routing function
+            is going to divide the discharge into, based on the weights
+            generated from this function, min value is 1 and default value is 1
 
-        Outputs:
-        ----------
-            1-wi:
-                [numpy array] array of normalised weights
+        Returns
+        -------
+        wi: [numpy array]
+            array of normalised weights
 
-        Example:
-        ----------
-            ws=Tf(5)
+        Examples
+        --------
+        >>> ws = Routing.Tf(5)
         """
 
         wi = []
@@ -172,25 +171,28 @@ class Routing:
 
     @staticmethod
     def TriangularRouting2(q, maxbas=1):
-        """TriangularRouting implements the transfer function using a triangular function (considers only integer values of Maxbas parameter)
+        """Triangular Routing.
 
-        Inputs:
-        ----------
-            1-q:
-                [numpy array] time series of discharge hydrographs
-            2-maxbas:
-                [integer] number of time steps that the triangular routing function
-                is going to divide the discharge into, based on the weights
-                generated from this function, min value is 1 and default value is 1
+            The function implements the transfer function using a triangular function (considers only integer values of
+            Maxbas parameter)
 
-        Outputs:
+        Parameters
         ----------
-            1-q_r:
-                [numpy array] time series of routed hydrograph
+        q: [numpy array]
+            time series of discharge hydrographs
+        maxbas: [integer]
+            number of time steps that the triangular routing function
+            is going to divide the discharge into, based on the weights
+            generated from this function, min value is 1 and default value is 1
 
-        examples:
-        ----------
-            q_sim=TriangularRouting(np.array(q_sim), parameters[-1])
+        Returns
+        -------
+        q_r: [numpy array]
+            time series of routed hydrograph
+
+        Examples
+        --------
+        >>> q_sim = Routing.TriangularRouting2(np.array(q_sim), parameters[-1])
         """
         # input data validation
         assert maxbas >= 1, "Maxbas value has to be larger than 1"
@@ -212,22 +214,22 @@ class Routing:
 
     @staticmethod
     def CalculateWeights(MAXBAS):
-        """CalculateMaxBas calculate the MAXBAS Weights based on a MAXBAX number The MAXBAS is a HBV parameter that controls the routing.
+        """Calculate Weights.
 
-        Inputs:
-        ----------
-            1-MAXBAS:
-                []
-
-        Example:
-        ----------
-            maxbasW = CalculateMaxBas(5)
-            maxbasW =
-
-                0.0800    0.2400    0.3600    0.2400    0.0800
-
-            It is important to mention that this function allows to obtain weights
+            - calculate the MAXBAS Weights based on a MAXBAX number The MAXBAS is a HBV parameter that
+            controls the routing.
+            - It is important to mention that this function allows to obtain weights
             not only for interger values but from decimals values as well.
+
+        Parameters
+        ----------
+        MAXBAS: [Numeric]
+
+        Examples
+        --------
+        >>> maxbasW = Routing.CalculateWeights(5)
+        >>> print(maxbasW)
+        >>> 0.0800    0.2400    0.3600    0.2400    0.0800
         """
         yant = 0
         Total = 0  # Just to verify how far from the unit is the result
@@ -295,10 +297,13 @@ class Routing:
 
     @staticmethod
     def TriangularRouting1(Q, MAXBAS):
-        """TriangularRouting1 calculate the routing from a input hydrograph using the MAXBAS parameter from the HBV model (considers float values of Maxbas parameter).
+        """TriangularRouting1.
 
-        EXAMPLE:
-        ----------
+        calculate the routing from a input hydrograph using the MAXBAS parameter from the HBV
+        model (considers float values of Maxbas parameter).
+
+        Examples
+        --------
             [Qout,maxbasW]=RoutingMAXBAS(Q,5);
             where:
             Qout = output hydrograph
@@ -306,7 +311,6 @@ class Routing:
             Q = input hydrograph
             5 = MAXBAS parameter value.
         """
-
         # CALCULATE MAXBAS WEIGHTS
         maxbasW = Routing.CalculateWeights(MAXBAS)
 

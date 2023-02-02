@@ -17,6 +17,27 @@ from rasterstats import zonal_stats
 
 import Hapi
 
+ParamList = [
+    "01_tt",
+    "02_rfcf",
+    "03_sfcf",
+    "04_cfmax",
+    "05_cwh",
+    "06_cfr",
+    "07_fc",
+    "08_beta",
+    "09_etf",
+    "10_lp",
+    "11_k0",
+    "12_k1",
+    "13_k2",
+    "14_uzl",
+    "15_perc",
+    "16_maxbas",
+    "17_K_muskingum",
+    "18_x_muskingum",
+]
+
 
 class Inputs:
     """Rainfall-runoff Inputs class.
@@ -31,16 +52,44 @@ class Inputs:
         3- extractParameters
         4- createLumpedInputs
         5- renameFiles
-        6- changetext2time
-        7- ReadExcelData
         8- ListAttributes
     """
 
-    def __init__(self):
-        """No parameters needed for instantiating the object."""
+    def __init__(self, src):
+        """Rainfall Inputs.
+
+        Parameters
+        ----------
+        src: [str]
+            path to the spatial information source raster to get the spatial information
+            (coordinate system, no of rows & columns) A_path should include the name of the raster
+            and the extension like "data/dem.tif".
+        """
+        self.source_dem = src
         pass
 
-    def prepareInputs(src: str, input_folder: str, folder_name: str):
+    @staticmethod
+    def createTempFolder(file_name: str = "AllignedRasters"):
+        """Create a temporary folder for calculation.
+
+            creates a folder in the temporary directory for making some operations on rasters
+
+        Parameters
+        ----------
+        file_name: [str]
+            folder name
+        """
+        try:
+            os.makedirs(os.path.join(os.environ["TEMP"], file_name))
+        except WindowsError:
+            # if not able to create the folder delete the folder with the same name and create one empty
+            shutil.rmtree(os.path.join(os.environ["TEMP"] + f"/{file_name}"))
+            os.makedirs(os.path.join(os.environ["TEMP"], file_name))
+
+        temp = os.environ["TEMP"] + f"/{file_name}/"
+        return temp
+
+    def prepareInputs(self, input_folder: str, folder_name: str):
         """prepareInputs.
 
         this function prepare downloaded raster data to have the same align and
@@ -49,10 +98,6 @@ class Inputs:
 
         Parameters
         ----------
-        src: [str]
-            path to the spatial information source raster to get the spatial information
-            (coordinate system, no of rows & columns) A_path should include the name of the raster
-            and the extension like "data/dem.tif".
         input_folder: [str]
             path of the folder of the rasters you want to adjust their
             no of rows, columns and resolution (alignment) like raster A
@@ -63,14 +108,16 @@ class Inputs:
         Example
         -------
         Ex1:
-            >>> dem_path="01GIS/inputs/4000/acc4000.tif"
-            >>> prec_in_path="02Precipitation/CHIRPS/Daily/"
-            >>> Inputs.prepareInputs(dem_path,prec_in_path,"prec")
+            >>> dem_path = "01GIS/inputs/4000/acc4000.tif"
+            >>> prec_in_path = "02Precipitation/CHIRPS/Daily/"
+            >>> In = Inputs(dem_path)
+            >>> In.prepareInputs(prec_in_path, "prec")
         Ex2:
             >>> dem_path="01GIS/inputs/4000/acc4000.tif"
             >>> outputpath="00inputs/meteodata/4000/"
             >>> evap_in_path="03Weather_Data/evap/"
-            >>> Inputs.prepareInputs(dem_path,evap_in_path,outputpath+"evap")
+            >>> In = Inputs(dem_path)
+            >>> Inputs.prepareInputs(evap_in_path, f"{outputpath}/evap")
         """
         if not isinstance(folder_name, str):
             print("folder_name input should be string type")
@@ -90,7 +137,7 @@ class Inputs:
             "- First alligned files will be created in a folder 'AllignedRasters' in the Temp folder in you "
             "environment variable"
         )
-        raster.matchDataAlignment(src, input_folder, temp)
+        raster.matchDataAlignment(self.source_dem, input_folder, temp)
         # create new folder in the current directory for alligned and nodatavalue matched cells
         try:
             os.makedirs(os.path.join(os.getcwd(), folder_name))
@@ -104,7 +151,7 @@ class Inputs:
         print(
             "- Second matching NoDataValue from the DEM raster too all raster will be created in the outputpath"
         )
-        raster.cropAlignedFolder(temp, src, f"{folder_name}/")
+        raster.cropAlignedFolder(temp, self.source_dem, f"{folder_name}/")
         # delete the processing folder from temp
         shutil.rmtree(temp)
 
@@ -225,26 +272,6 @@ class Inputs:
         """
         ParametersPath = os.path.dirname(Hapi.__file__)
         ParametersPath = ParametersPath + "/parameters/" + scenario
-        ParamList = [
-            "01_tt",
-            "02_rfcf",
-            "03_sfcf",
-            "04_cfmax",
-            "05_cwh",
-            "06_cfr",
-            "07_fc",
-            "08_beta",
-            "09_etf",
-            "10_lp",
-            "11_k0",
-            "12_k1",
-            "13_k2",
-            "14_uzl",
-            "15_perc",
-            "16_maxbas",
-            "17_K_muskingum",
-            "18_x_muskingum",
-        ]
 
         if not as_raster:
             raster_obj = rasterio.open(f"{ParametersPath}/{ParamList[0]}.tif")
@@ -374,69 +401,7 @@ class Inputs:
                 f"{path}/{df.loc[i, 'files']}", f"{path}/{df.loc[i, 'new_names']}"
             )
 
-    @staticmethod
-    def changetext2time(string):
-        """changetext2time.
-
-        this functions changes the date from a string to a date time
-        format
-        """
-        time = dt.datetime(
-            int(string[:4]),
-            int(string[5:7]),
-            int(string[8:10]),
-            int(string[11:13]),
-            int(string[14:16]),
-            int(string[17:]),
-        )
-        return time
-
-    @staticmethod
-    def ReadExcelData(path, years, months):
-        """ReadExcelData.
-
-            this function reads data listed in excel sheet with years and months are
-            listed as columns and days are listed in the first row
-            year month 1 2 3 4 5 6 7 8 9 .....................31
-            2012  1    5 6 2 6 8 6 9 7 4 3 ...................31
-            2012  2    9 8 7 6 3 2 1 5 5 9 ...................31
-
-        Parameters
-        ----------
-        path:
-            [string] path of the excel file
-        years:
-            [list] list of the years you want to read
-        months:
-            [list] list of the months you you want to read
-
-        Returns
-        -------
-         List of the values in the excel file
-
-        Examples
-        --------
-        >>> years = [2009,2010,2011]#,2012,2013]
-        >>> months = [1,2,3,4,5,6,7,8,9,10,11,12]
-        >>> Q = Inputs.ReadExcelData("{path}/Discharge/Qout.xlsx", years, months)
-        """
-
-        Qout = pd.read_excel(path)
-        Q = []
-        #    years=[2009,2010,2011]#,2012,2013]
-        #    months=[1,2,3,4,5,6,7,8,9,10,11,12]
-        for year in years:
-            for month in months:
-                row = Qout[Qout["year"] == year][Qout["month"] == month]
-                row = row.drop(["year", "month"], axis=1)
-                row = row.values.tolist()[0]
-                Q = Q + row
-
-        Q = [Q[i] for i in range(len(Q)) if not np.isnan(Q[i])]
-
-        return Q
-
-    def ListAttributes(self):
+    def listAttributes(self):
         """Print Attributes List."""
         logger.info("\n")
         logger.info(

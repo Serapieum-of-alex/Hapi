@@ -1,6 +1,5 @@
+"""Custom warning and silencing warnings."""
 import warnings
-
-import numpy as np
 
 
 class InstabilityWarning(UserWarning):
@@ -13,9 +12,11 @@ warnings.simplefilter("always", InstabilityWarning)
 warnings.simplefilter("always", UserWarning)
 
 
-def SilenceNumpyWarning():
-    np.warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
+def SilencePandasWarning():
+    """Silence pandas future warning."""
+    warnings.simplefilter(action="ignore", category=FutureWarning)
 
 
 def SilenceShapelyWarning():
+    """Silence Shapely deprecation warning."""
     warnings.filterwarnings("ignore", category=DeprecationWarning)

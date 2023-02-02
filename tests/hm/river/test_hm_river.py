@@ -9,7 +9,7 @@ from Hapi.hm.interface import Interface
 
 
 def test_create_river_instance(dates: list, rrm_start: str, version: int):
-    assert R.River("HM", version=version, start=dates[0], rrmstart=rrm_start)
+    assert R.River("HM", version=version, start=dates[0], rrm_start=rrm_start)
 
 
 def test_read_slope_method(version: int, slope_path: str):
@@ -24,8 +24,8 @@ def test_read_crosssections_method(
     River = R.River("HM", version=version)
     River.readXS(river_cross_section_path)
     assert (
-        len(River.crosssections) == xs_total_no
-        and len(River.crosssections.columns) == xs_col_no
+        len(River.cross_sections) == xs_total_no
+        and len(River.cross_sections.columns) == xs_col_no
     )
 
 
@@ -50,8 +50,8 @@ def test_create_sub_instance(
     River.readSlope(slope_path)
     Sub = R.Reach(segment1, River)
     assert (
-        Sub.firstxs == create_sub_instance_firstxs
-        and Sub.lastxs == create_sub_instance_lastxs
+        Sub.first_xs == create_sub_instance_firstxs
+        and Sub.last_xs == create_sub_instance_lastxs
     )
     assert Sub.slope
 
@@ -97,7 +97,7 @@ def test_sub_GetFlow(
         and len(Sub.BC.columns) == 1
         and len(Sub.Laterals.columns) == 4
     )
-    assert all(elem in Sub.LateralsTable for elem in sub_GetFlow_lateralTable)
+    assert all(elem in Sub.laterals_table for elem in sub_GetFlow_lateralTable)
 
 
 class TestRead1DResult:
@@ -112,33 +112,33 @@ class TestRead1DResult:
     ):
 
         River = R.River("HM", version=version)
-        River.onedresultpath = Read1DResult_path
-        # River.results_paths = {"onedresultpath": Read1DResult_path}
+        River.one_d_result_path = Read1DResult_path
+        # River.results_paths = {"one_d_result_path": Read1DResult_path}
         River.readXS(river_cross_section_path)
         Sub = R.Reach(segment1, River)
         Sub.read1DResult()
         assert (
-            len(Sub.Result1D)
-            == test_time_series_length * 24 * (len(Sub.crosssections) + 1)
-            and len(Sub.Result1D.columns) == 6
+            len(Sub.results_1d)
+            == test_time_series_length * 24 * (len(Sub.cross_sections) + 1)
+            and len(Sub.results_1d.columns) == 6
         )
         assert (
-            len(Sub.XSHydrographs) == test_time_series_length * 24
-            and len(Sub.XSHydrographs.columns) == 2
+            len(Sub.xs_hydrograph) == test_time_series_length * 24
+            and len(Sub.xs_hydrograph.columns) == 2
         )
         assert (
-            len(Sub.XSWaterLevel) == test_time_series_length * 24
-            and len(Sub.XSWaterLevel.columns) == 2
+            len(Sub.xs_water_level) == test_time_series_length * 24
+            and len(Sub.xs_water_level.columns) == 2
         )
         assert (
-            len(Sub.XSWaterDepth) == test_time_series_length * 24
-            and len(Sub.XSWaterDepth.columns) == 2
+            len(Sub.xs_water_depth) == test_time_series_length * 24
+            and len(Sub.xs_water_depth.columns) == 2
         )
         Sub.read1DResult(xsid=Read1DResult_xsid)
 
-        assert Read1DResult_xsid in Sub.XSHydrographs.columns.tolist()
-        assert Read1DResult_xsid in Sub.XSWaterLevel.columns.tolist()
-        assert Read1DResult_xsid in Sub.XSWaterDepth.columns.tolist()
+        assert Read1DResult_xsid in Sub.xs_hydrograph.columns.tolist()
+        assert Read1DResult_xsid in Sub.xs_water_level.columns.tolist()
+        assert Read1DResult_xsid in Sub.xs_water_depth.columns.tolist()
 
     def test_Read_chunks(
         self,
@@ -151,33 +151,33 @@ class TestRead1DResult:
     ):
 
         River = R.River("HM", version=version)
-        River.onedresultpath = Read1DResult_path
-        # River.results_paths = {"onedresultpath": Read1DResult_path}
+        River.one_d_result_path = Read1DResult_path
+        # River.results_paths = {"one_d_result_path": Read1DResult_path}
         River.readXS(river_cross_section_path)
         Sub = R.Reach(segment1, River)
         Sub.read1DResult(chunk_size=10000)
         assert (
-            len(Sub.Result1D)
-            == test_time_series_length * 24 * (len(Sub.crosssections) + 1)
-            and len(Sub.Result1D.columns) == 6
+            len(Sub.results_1d)
+            == test_time_series_length * 24 * (len(Sub.cross_sections) + 1)
+            and len(Sub.results_1d.columns) == 6
         )
         assert (
-            len(Sub.XSHydrographs) == test_time_series_length * 24
-            and len(Sub.XSHydrographs.columns) == 2
+            len(Sub.xs_hydrograph) == test_time_series_length * 24
+            and len(Sub.xs_hydrograph.columns) == 2
         )
         assert (
-            len(Sub.XSWaterLevel) == test_time_series_length * 24
-            and len(Sub.XSWaterLevel.columns) == 2
+            len(Sub.xs_water_level) == test_time_series_length * 24
+            and len(Sub.xs_water_level.columns) == 2
         )
         assert (
-            len(Sub.XSWaterDepth) == test_time_series_length * 24
-            and len(Sub.XSWaterDepth.columns) == 2
+            len(Sub.xs_water_depth) == test_time_series_length * 24
+            and len(Sub.xs_water_depth.columns) == 2
         )
         Sub.read1DResult(xsid=Read1DResult_xsid)
 
-        assert Read1DResult_xsid in Sub.XSHydrographs.columns.tolist()
-        assert Read1DResult_xsid in Sub.XSWaterLevel.columns.tolist()
-        assert Read1DResult_xsid in Sub.XSWaterDepth.columns.tolist()
+        assert Read1DResult_xsid in Sub.xs_hydrograph.columns.tolist()
+        assert Read1DResult_xsid in Sub.xs_water_level.columns.tolist()
+        assert Read1DResult_xsid in Sub.xs_water_depth.columns.tolist()
 
     def test_Read_zip(
         self,
@@ -190,33 +190,33 @@ class TestRead1DResult:
     ):
 
         River = R.River("HM", version=version)
-        River.onedresultpath = Read1DResult_path
-        # River.results_paths = {"onedresultpath": Read1DResult_path}
+        River.one_d_result_path = Read1DResult_path
+        # River.results_paths = {"one_d_result_path": Read1DResult_path}
         River.readXS(river_cross_section_path)
         Sub = R.Reach(segment1, River)
         Sub.read1DResult(extension=".zip")
         assert (
-            len(Sub.Result1D)
-            == test_time_series_length * 24 * (len(Sub.crosssections) + 1)
-            and len(Sub.Result1D.columns) == 6
+            len(Sub.results_1d)
+            == test_time_series_length * 24 * (len(Sub.cross_sections) + 1)
+            and len(Sub.results_1d.columns) == 6
         )
         assert (
-            len(Sub.XSHydrographs) == test_time_series_length * 24
-            and len(Sub.XSHydrographs.columns) == 2
+            len(Sub.xs_hydrograph) == test_time_series_length * 24
+            and len(Sub.xs_hydrograph.columns) == 2
         )
         assert (
-            len(Sub.XSWaterLevel) == test_time_series_length * 24
-            and len(Sub.XSWaterLevel.columns) == 2
+            len(Sub.xs_water_level) == test_time_series_length * 24
+            and len(Sub.xs_water_level.columns) == 2
         )
         assert (
-            len(Sub.XSWaterDepth) == test_time_series_length * 24
-            and len(Sub.XSWaterDepth.columns) == 2
+            len(Sub.xs_water_depth) == test_time_series_length * 24
+            and len(Sub.xs_water_depth.columns) == 2
         )
         Sub.read1DResult(xsid=Read1DResult_xsid)
 
-        assert Read1DResult_xsid in Sub.XSHydrographs.columns.tolist()
-        assert Read1DResult_xsid in Sub.XSWaterLevel.columns.tolist()
-        assert Read1DResult_xsid in Sub.XSWaterDepth.columns.tolist()
+        assert Read1DResult_xsid in Sub.xs_hydrograph.columns.tolist()
+        assert Read1DResult_xsid in Sub.xs_water_level.columns.tolist()
+        assert Read1DResult_xsid in Sub.xs_water_depth.columns.tolist()
 
     def test_Read_zip_chunks(
         self,
@@ -229,33 +229,33 @@ class TestRead1DResult:
     ):
 
         River = R.River("HM", version=version)
-        River.onedresultpath = Read1DResult_path
-        # River.results_paths = {"onedresultpath": Read1DResult_path}
+        River.one_d_result_path = Read1DResult_path
+        # River.results_paths = {"one_d_result_path": Read1DResult_path}
         River.readXS(river_cross_section_path)
         Sub = R.Reach(segment1, River)
         Sub.read1DResult(chunk_size=10000, extension=".zip")
         assert (
-            len(Sub.Result1D)
-            == test_time_series_length * 24 * (len(Sub.crosssections) + 1)
-            and len(Sub.Result1D.columns) == 6
+            len(Sub.results_1d)
+            == test_time_series_length * 24 * (len(Sub.cross_sections) + 1)
+            and len(Sub.results_1d.columns) == 6
         )
         assert (
-            len(Sub.XSHydrographs) == test_time_series_length * 24
-            and len(Sub.XSHydrographs.columns) == 2
+            len(Sub.xs_hydrograph) == test_time_series_length * 24
+            and len(Sub.xs_hydrograph.columns) == 2
         )
         assert (
-            len(Sub.XSWaterLevel) == test_time_series_length * 24
-            and len(Sub.XSWaterLevel.columns) == 2
+            len(Sub.xs_water_level) == test_time_series_length * 24
+            and len(Sub.xs_water_level.columns) == 2
         )
         assert (
-            len(Sub.XSWaterDepth) == test_time_series_length * 24
-            and len(Sub.XSWaterDepth.columns) == 2
+            len(Sub.xs_water_depth) == test_time_series_length * 24
+            and len(Sub.xs_water_depth.columns) == 2
         )
         Sub.read1DResult(xsid=Read1DResult_xsid)
 
-        assert Read1DResult_xsid in Sub.XSHydrographs.columns.tolist()
-        assert Read1DResult_xsid in Sub.XSWaterLevel.columns.tolist()
-        assert Read1DResult_xsid in Sub.XSWaterDepth.columns.tolist()
+        assert Read1DResult_xsid in Sub.xs_hydrograph.columns.tolist()
+        assert Read1DResult_xsid in Sub.xs_water_level.columns.tolist()
+        assert Read1DResult_xsid in Sub.xs_water_depth.columns.tolist()
 
 
 def test_Sub_GetLaterals(
@@ -301,7 +301,7 @@ def test_Sub_GetLaterals(
         and len(Sub.BC.columns) == 1
         and len(Sub.Laterals.columns) == len(sub_GetFlow_lateralTable) + 1
     )
-    assert all(elem in Sub.LateralsTable for elem in sub_GetFlow_lateralTable)
+    assert all(elem in Sub.laterals_table for elem in sub_GetFlow_lateralTable)
 
 
 def test_ReadRRMHydrograph_one_location(
@@ -314,7 +314,7 @@ def test_ReadRRMHydrograph_one_location(
     test_time_series_length: int,
 ):
     River = R.River("HM", version=version)
-    River.rrmpath = ReadRRMHydrograph_path
+    River.rrm_path = ReadRRMHydrograph_path
     River.readXS(river_cross_section_path)
     Sub = R.Reach(segment1, River)
     Sub.readRRMHydrograph(
@@ -338,7 +338,7 @@ def test_ReadRRMHydrograph_two_location(
     test_time_series_length: int,
 ):
     River = R.River("HM", version=version)
-    River.rrmpath = ReadRRMHydrograph_path
+    River.rrm_path = ReadRRMHydrograph_path
     River.readXS(river_cross_section_path)
     Sub = R.Reach(segment1, River)
     Sub.readRRMHydrograph(
@@ -370,10 +370,10 @@ def test_ReadUSHydrograph(
     Sub = R.Reach(segment3, River)
     Sub.readUSHydrograph()
     assert (
-        len(Sub.USHydrographs) == test_time_series_length
-        and len(Sub.USHydrographs.columns) == len(segment3_us_subs) + 1
+        len(Sub.us_hydrographs) == test_time_series_length
+        and len(Sub.us_hydrographs.columns) == len(segment3_us_subs) + 1
     )
-    assert all(elem in Sub.USHydrographs.columns.tolist() for elem in segment3_us_subs)
+    assert all(elem in Sub.us_hydrographs.columns.tolist() for elem in segment3_us_subs)
 
 
 class TestGetTotalFlow:
@@ -513,7 +513,7 @@ def test_PlotQ(
     River.readXS(river_cross_section_path)
     River.readRiverNetwork(river_network_path)
     River.customized_runs_path = CustomizedRunspath
-    River.onedresultpath = Read1DResult_path
+    River.one_d_result_path = Read1DResult_path
 
     IF = Interface("Rhine", start=dates[0])
     IF.readBoundaryConditionsTable(interface_bc_path)
@@ -575,7 +575,7 @@ def test_CalculateQMetrics(
     stationname = gauges.loc[gaugei, "oid"]
 
     River = R.River("HM", version=version, start=dates[0])
-    River.onedresultpath = Read1DResult_path
+    River.one_d_result_path = Read1DResult_path
     River.readXS(river_cross_section_path)
     River.readRiverNetwork(river_network_path)
 
@@ -583,10 +583,10 @@ def test_CalculateQMetrics(
     Sub.read1DResult()
 
     # without filter
-    Sub.calculateQMetrics(Calib, stationname, Sub.lastxs)
+    Sub.calculateQMetrics(Calib, stationname, Sub.last_xs)
 
     Sub.calculateQMetrics(
-        Calib, stationname, Sub.lastxs, Filter=True, start=dates[0], end=dates[1]
+        Calib, stationname, Sub.last_xs, Filter=True, start=dates[0], end=dates[1]
     )
 
 
@@ -599,7 +599,7 @@ def test_PlotHydrographProgression(
     segment3: int,
 ):
     River = R.River("HM", version=version, start=dates[0])
-    River.onedresultpath = Read1DResult_path
+    River.one_d_result_path = Read1DResult_path
     River.readXS(river_cross_section_path)
     River.readRiverNetwork(river_network_path)
 
@@ -609,17 +609,15 @@ def test_PlotHydrographProgression(
     xss = []
     start = dates[0]
     end = dates[1]
-    fromxs = ""
-    toxs = ""
     fig, ax = Sub.plotHydrographProgression(
         xss,
         start,
         end,
-        fromxs=fromxs,
-        toxs=toxs,
-        linewidth=2,
+        from_xs=None,
+        to_xs=None,
+        line_width=2,
         spacing=20,
-        figsize=(6, 4),
+        fig_size=(6, 4),
         xlabels=5,
     )
     plt.close()
@@ -658,7 +656,7 @@ def test_PlotWL(
     River = R.River("HM", version=version)
     River.readXS(river_cross_section_path)
     River.readRiverNetwork(river_network_path)
-    River.onedresultpath = Read1DResult_path
+    River.one_d_result_path = Read1DResult_path
 
     Sub = R.Reach(segment3, River)
     Sub.read1DResult()
@@ -697,7 +695,7 @@ def test_CalculateWLMetrics(
     stationname = gauges.loc[gaugei, "oid"]
 
     River = R.River("HM", version=version, start=dates[0])
-    River.onedresultpath = Read1DResult_path
+    River.one_d_result_path = Read1DResult_path
     River.readXS(river_cross_section_path)
     River.readRiverNetwork(river_network_path)
 
@@ -705,10 +703,10 @@ def test_CalculateWLMetrics(
     Sub.read1DResult()
 
     # without filter
-    Sub.calculateWLMetrics(Calib, stationname, Sub.lastxs)
+    Sub.calculateWLMetrics(Calib, stationname, Sub.last_xs)
 
     Sub.calculateWLMetrics(
-        Calib, stationname, Sub.lastxs, Filter=True, start=dates[0], end=dates[1]
+        Calib, stationname, Sub.last_xs, Filter=True, start=dates[0], end=dates[1]
     )
 
 
@@ -724,12 +722,12 @@ def test_SaveHydrograph(
     River.readXS(river_cross_section_path)
     River.readRiverNetwork(river_network_path)
     River.customized_runs_path = CustomizedRunspath
-    River.onedresultpath = Read1DResult_path
+    River.one_d_result_path = Read1DResult_path
     Sub = R.Reach(segment3, River)
     Sub.read1DResult()
-    Sub.saveHydrograph(Sub.lastxs)
+    Sub.saveHydrograph(Sub.last_xs)
     # option 2
-    Sub.saveHydrograph(Sub.lastxs, Option=2)
+    Sub.saveHydrograph(Sub.last_xs, Option=2)
 
 
 def test_ReadBoundaryConditions(
@@ -747,8 +745,8 @@ def test_ReadBoundaryConditions(
     River = R.River("HM", version=version, start=dates[0])
     River.readXS(river_cross_section_path)
     River.readRiverNetwork(river_network_path)
-    River.onedresultpath = Read1DResult_path
-    River.usbcpath = usbc_path
+    River.one_d_result_path = Read1DResult_path
+    River.us_bc_path = usbc_path
     Sub = R.Reach(segment3, River)
     Sub.read1DResult()
     # read only 10 days
@@ -783,23 +781,23 @@ def test_ReadSubDailyResults(
     River = R.River("HM", version=version, start=dates[0])
     River.readXS(river_cross_section_path)
     River.readRiverNetwork(river_network_path)
-    River.usbcpath = usbc_path
-    River.oneminresultpath = subdailyresults_path
+    River.us_bc_path = usbc_path
+    River.one_min_result_path = subdailyresults_path
     Sub = R.Reach(segment3, River)
     Sub.readSubDailyResults(
-        onemin_results_dates[0], onemin_results_dates[1], Lastsegment=lastsegment
+        onemin_results_dates[0], onemin_results_dates[1], last_river_reach=lastsegment
     )
     assert len(Sub.h) == onemin_results_len * subdaily_no_timesteps
     assert all(elem in Sub.h.columns.tolist() for elem in segment3_xs_ids_list)
     assert len(Sub.q) == onemin_results_len * subdaily_no_timesteps
     assert all(elem in Sub.q.columns.tolist() for elem in segment3_xs_ids_list)
     assert (
-        len(Sub.QBCmin.columns) == subdaily_no_timesteps
-        and len(Sub.QBCmin) == onemin_results_len
+        len(Sub.q_bc_1min.columns) == subdaily_no_timesteps
+        and len(Sub.q_bc_1min) == onemin_results_len
     )
     assert (
-        len(Sub.HBCmin.columns) == subdaily_no_timesteps
-        and len(Sub.HBCmin) == onemin_results_len
+        len(Sub.h_bc_1min.columns) == subdaily_no_timesteps
+        and len(Sub.h_bc_1min) == onemin_results_len
     )
 
 
@@ -817,11 +815,11 @@ def test_PlotBC(
     River = R.River("HM", version=version, start=dates[0])
     River.readXS(river_cross_section_path)
     River.readRiverNetwork(river_network_path)
-    River.usbcpath = usbc_path
-    River.oneminresultpath = subdailyresults_path
+    River.us_bc_path = usbc_path
+    River.one_min_result_path = subdailyresults_path
     Sub = R.Reach(segment3, River)
     Sub.readSubDailyResults(
-        onemin_results_dates[0], onemin_results_dates[1], Lastsegment=lastsegment
+        onemin_results_dates[0], onemin_results_dates[1], last_river_reach=lastsegment
     )
     Sub.plotBC(dates[0])
 
@@ -861,7 +859,7 @@ def test_GetCapacity(
     River.statisticalProperties(distribution_properties_hm_results_fpath)
     River.getCapacity("Qbkf")
     River.getCapacity("Qc2", Option=2)
-    cols = River.crosssections.columns.tolist()
+    cols = River.cross_sections.columns.tolist()
     assert "Slope" in cols
     assert "Qbkf" in cols
     assert "QbkfRP" in cols

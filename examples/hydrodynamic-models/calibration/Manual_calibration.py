@@ -37,7 +37,7 @@ boundary_condition_path = rpath + "/inputs/1d/hydro/"
 ## result files
 onedresultpath = rpath + "/results/1d/"
 usbcpath = rpath + "/results/USbnd/"
-# oneminresultpath = rpath + "/results/"
+# one_min_result_path = rpath + "/results/"
 customized_runs_path = rpath + "/results/customized_results/"
 rrmpath = rpath + "/inputs/rrm/hm_location"
 twodresultpath = rpath + "/results/2d/zip/"
@@ -82,9 +82,9 @@ River.readConfig(path)
 # read the data of the river
 """the hourly results"""
 River.onedresultpath = onedresultpath
-River.usbcpath = usbcpath
+River.us_bc_path = usbcpath
 """the 1min results if exist"""
-# River.oneminresultpath = oneminresultpath
+# River.one_min_result_path = one_min_result_path
 """river slope, cross-sections, and river network"""
 River.readSlope(river_slope)
 River.readXS(xs_file)
@@ -94,8 +94,8 @@ River.customized_runs_path = customized_runs_path
 """ the results of the rain-runoff model"""
 River.rrmpath = rrmpath
 """2D model results"""
-# River.twodresultpath = twodresultpath
-# River.Compressed = True
+# River.two_d_result_path = two_d_result_path
+# River.compressed = True
 # %% Interface
 # The interface between the rainfall-runoff model and the hydraulic model
 IF = Interface("Rhine", start=start)
@@ -138,7 +138,7 @@ try:
     print(print(gauges))
 except KeyError:
     print("No gauge - choose another gauge to compare")
-    gaugexs = Sub.lastxs
+    gaugexs = Sub.last_xs
     segment_xs = str(SubID) + "_" + str(gaugexs)
     # get the gauge of the upstream segment
     """ write the segment id you want to get its data"""
@@ -194,8 +194,8 @@ xsorder = 9
 # Specific XS
 specificxs = False
 
-start = str(Sub.firstday)[:-9]
-end = str(Sub.lastday)[:-9]
+start = str(Sub.first_day)[:-9]
+end = str(Sub.last_day)[:-9]
 
 fig, ax = Sub.plotQ(
     Calib,
@@ -241,7 +241,7 @@ Sub.calculateQMetrics(
 # str(dt.datetime.now())[0:11] + ".png")
 # %% Hydrograph progression in a segment
 xss = []
-start = str(Sub.firstday)[:-9]
+start = str(Sub.first_day)[:-9]
 end = "1955-03-01"
 fromxs = ""
 toxs = ""
@@ -261,8 +261,8 @@ fig, ax = Sub.plotHydrographProgression(
 #             str(gauges.loc[gaugei, 'name']) +
 #             str(dt.datetime.now())[0:11] + ".png")
 # %% Water Level
-start = str(Sub.firstday.date())
-end = str(Sub.lastday.date())
+start = str(Sub.first_day.date())
+end = str(Sub.last_day.date())
 
 Sub.plotWL(Calib, start, end, gaugexs, stationname, gaugename, plotgauge=True)
 
@@ -284,17 +284,17 @@ Sub.calculateWLMetrics(
 # %% calibration (the bed level change the levels)
 # NoSegments = 1
 # read theoriginal slope and XS files
-Calib.crosssections = River.crosssections
+Calib.cross_sections = River.cross_sections
 Calib.slope = River.slope
 
 BedlevelDS = 88
 Manning = 0.06
 BC_slope = -0.03
 Calib.calculateProfile(SubID, BedlevelDS, Manning, BC_slope)
-# River.crosssections.to_csv(tolopogy_file + "/xs_rhine2.csv", index=False, float_format="%.3f")
+# River.cross_sections.to_csv(tolopogy_file + "/xs_rhine2.csv", index=False, float_format="%.3f")
 # River.slope.to_csv(tolopogy_file + "/slope2.csv",header=None,index=False)
 #%% Smooth cross section
-Calib.crosssections = River.crosssections[:]
+Calib.cross_sections = River.cross_sections[:]
 Calib.smoothMaxSlope(SubID)
 Calib.smoothBedLevel(SubID)
 Calib.downWardBedLevel(SubID, 0.05)
@@ -302,7 +302,7 @@ Calib.downWardBedLevel(SubID, 0.05)
 # Calib.SmoothFloodplainHeight(SubID)
 Calib.smoothBedWidth(SubID)
 # Calib.CheckFloodplain()
-# Calib.crosssections.to_csv(tolopogy_file + "/XS2.csv", index=None, float_format="%.3f")
+# Calib.cross_sections.to_csv(tolopogy_file + "/XS2.csv", index=None, float_format="%.3f")
 #%% customized Run result saveing
 # the last cross section results to use it in calibration
 """
@@ -313,32 +313,32 @@ without the need to run all the upstream sub-basins
 you have to un comment the following two lines
 """
 # Path = wpath + "/results/customized_results/"
-Sub.saveHydrograph(Sub.lastxs)  # Path
+Sub.saveHydrograph(Sub.last_xs)  # Path
 # %% Filters
 """
 check the max sf
 """
 ## calculate the water surface difference
-# wl = Reach.Result1D.loc[Reach.Result1D.index[i],'wl']
+# wl = Reach.results_1d.loc[Reach.results_1d.index[i],'wl']
 sf = [
     (
-        Sub.Result1D.loc[Sub.Result1D.index[i], "wl"]
-        - Sub.Result1D.loc[Sub.Result1D.index[i + 1], "wl"]
+        Sub.results_1d.loc[Sub.results_1d.index[i], "wl"]
+        - Sub.results_1d.loc[Sub.results_1d.index[i + 1], "wl"]
     )
     / 500
-    for i in range(len(Sub.Result1D.index) - 1)
+    for i in range(len(Sub.results_1d.index) - 1)
 ]
 sf = sf + [np.mean(sf)]
-Sub.Result1D["sf"] = sf
+Sub.results_1d["sf"] = sf
 
-print(Sub.Result1D[Sub.Result1D["sf"] == Sub.Result1D["sf"].max()])
-print(Sub.Result1D[Sub.Result1D["sf"] == Sub.Result1D["sf"].min()])
+print(Sub.results_1d[Sub.results_1d["sf"] == Sub.results_1d["sf"].max()])
+print(Sub.results_1d[Sub.results_1d["sf"] == Sub.results_1d["sf"].min()])
 
 """some filter to get where the min depth (dryness limit)"""
 
-# dataX = Reach.Result1D[Reach.Result1D['xs'] == 700]
-dataX = Sub.Result1D[Sub.Result1D["h"] == 0.01]
-# dataX = Reach.Result1D[Reach.Result1D['xs'] == 121]
+# dataX = Reach.results_1d[Reach.results_1d['xs'] == 700]
+dataX = Sub.results_1d[Sub.results_1d["h"] == 0.01]
+# dataX = Reach.results_1d[Reach.results_1d['xs'] == 121]
 #%% get the boundary conditions
 start = "1955-01-01"
 end = "1955-03-21"
@@ -350,24 +350,24 @@ toxs = ""  # 16067
 
 Vis = V(resolution="Hourly")
 
-Vis.GroundSurface(
+Vis.plotGroundSurface(
     Sub,
     floodplain=True,
-    plotlateral=True,
-    nxlabels=20,
-    fromxs=fromxs,
-    toxs=toxs,
+    plot_lateral=True,
+    xlabels_number=20,
+    from_xs=fromxs,
+    to_xs=toxs,
     option=2,
 )
 #%% cross-sections
-fig, ax = Vis.CrossSections(
+fig, ax = Vis.plotCrossSections(
     Sub,
     bedlevel=True,
-    fromxs=fromxs,
-    toxs=toxs,
-    samescale=True,
-    textspacing=[(1, 1), (1, 4)],
-    plottingoption=3,
+    from_xs=fromxs,
+    to_xs=toxs,
+    same_scale=True,
+    text_spacing=[(1, 1), (1, 4)],
+    plotting_option=3,
 )
 #%% Animation
 """ periods of water level exceeds the bankful depth"""
@@ -381,11 +381,11 @@ Anim = Vis.WaterSurfaceProfile(
     start,
     end,
     fps=2,
-    nxlabels=5,
-    fromxs=fromxs,
-    toxs=toxs,
-    xaxislabelsize=10,
-    textlocation=(-1, -2),
+    xlabels_number=5,
+    from_xs=fromxs,
+    to_xs=toxs,
+    x_axis_label_size=10,
+    text_location=(-1, -2),
     repeat=True,
 )
 plt.close()
@@ -401,7 +401,7 @@ Vis.SaveProfileAnimation(Anim, Path=SavePath, fps=30, ffmpegPath=ffmpegPath)
 start = "1955-01-01"
 end = "1955-01-10"
 
-Sub.readSubDailyResults(start, end, Lastsegment=True)
+Sub.readSubDailyResults(start, end, last_river_reach=True)
 #%%
 # negative values
 # TODO : check CheckNegativeQ makes problem
@@ -419,8 +419,8 @@ Anim = Vis.WaterSurfaceProfile1Min(
     start,
     end,
     interval=0.000000000000000000000000000000000001,
-    fromxs=fromxs,
-    toxs=toxs,
+    from_xs=fromxs,
+    to_xs=toxs,
 )
 #%% Q for all XS
 """
@@ -469,35 +469,37 @@ table_new.columns = [
 # table_new['logQ'] = np.log10(table_new ['Q'])
 # table_new['logH'] = np.log10(table_new ['depth'])
 
-dbf = Sub.crosssections["dbf"][Sub.crosssections["xsid"] == Sub.xsname[0]].values[0]
-b = Sub.crosssections["b"][Sub.crosssections["xsid"] == Sub.xsname[0]].values[0]
+dbf = Sub.cross_sections["dbf"][Sub.cross_sections["xsid"] == Sub.xs_names[0]].values[0]
+b = Sub.cross_sections["b"][Sub.cross_sections["xsid"] == Sub.xs_names[0]].values[0]
 Abf = dbf * b
 Pbf = b + 2 * dbf
 # Qdbf = (1.0/0.03)*(Abf *((Abf/Pbf)**(2.0/3.0)))*((0.1/500)**0.5)
 
 
 plt.figure(50, figsize=(15, 8))
-# plt.plot(table_new['area_T'],table_new['depth'], label = 'Area_T', linewidth = 5)
-# plt.plot(table_new['area_U'],table_new['depth'], label = 'Area_U', linewidth = 5)
-# plt.plot(table_new['area_L'],table_new['depth'], label = 'Area_L', linewidth = 5)
+# plt.plot(table_new['area_T'],table_new['depth'], label = 'Area_T', line_width = 5)
+# plt.plot(table_new['area_U'],table_new['depth'], label = 'Area_U', line_width = 5)
+# plt.plot(table_new['area_L'],table_new['depth'], label = 'Area_L', line_width = 5)
 
 plt.plot(table_new["perimeter_T"], table_new["depth"], label="Perimeter_T", linewidth=5)
 plt.plot(table_new["perimeter_U"], table_new["depth"], label="Perimeter_U", linewidth=5)
 plt.plot(table_new["perimeter_L"], table_new["depth"], label="Perimeter_L", linewidth=5)
 
 
-# plt.plot(table_new['Q_U'],table_new['depth'], label = 'Q_U', linewidth = 5)
-# plt.plot(table_new['Q_L'],table_new['depth'], label = 'Q_L', linewidth = 5)
-# plt.plot(table_new['Q_T'],table_new['depth'], label = 'Q_T', linewidth = 5)
+# plt.plot(table_new['Q_U'],table_new['depth'], label = 'Q_U', line_width = 5)
+# plt.plot(table_new['Q_L'],table_new['depth'], label = 'Q_L', line_width = 5)
+# plt.plot(table_new['Q_T'],table_new['depth'], label = 'Q_T', line_width = 5)
 
 
-# plt.plot(table['logQ'],table['logH'], label = 'Area', linewidth = 5)
+# plt.plot(table['logQ'],table['logH'], label = 'Area', line_width = 5)
 
 plt.ylabel("Depth (m)", fontsize=20)
 plt.ylim([0, 8])
 plt.xlim([0, table_new["Q_T"].loc[table_new["depth"] == 8].values[0] + 5])
 plt.hlines(
-    Sub.crosssections["dbf"].loc[Sub.crosssections["xsid"] == Sub.xsname[0]].values[0],
+    Sub.cross_sections["dbf"]
+    .loc[Sub.cross_sections["xsid"] == Sub.xs_names[0]]
+    .values[0],
     0,
     table_new["area_T"].loc[table_new["depth"] == 5].values[0],
     linewidth=5,
@@ -505,14 +507,14 @@ plt.hlines(
 plt.annotate(
     "Dbf = "
     + str(
-        Sub.crosssections["dbf"]
-        .loc[Sub.crosssections["xsid"] == Sub.xsname[0]]
+        Sub.cross_sections["dbf"]
+        .loc[Sub.cross_sections["xsid"] == Sub.xs_names[0]]
         .values[0]
     ),
     xy=(
         table_new["perimeter_T"].loc[table_new["depth"] == 5].values[0] - 80,
-        Sub.crosssections["dbf"]
-        .loc[Sub.crosssections["xsid"] == Sub.xsname[0]]
+        Sub.cross_sections["dbf"]
+        .loc[Sub.cross_sections["xsid"] == Sub.xs_names[0]]
         .values[0]
         + 0.2,
     ),
@@ -536,8 +538,8 @@ table["v"] = table["Q"] / table["area"]
 table["logQ"] = np.log10(table["Q"])
 table["logH"] = np.log10(table["depth"])
 
-dbf = Sub.crosssections["dbf"][Sub.crosssections["xsid"] == Sub.xsname[0]].values[0]
-b = Sub.crosssections["b"][Sub.crosssections["xsid"] == Sub.xsname[0]].values[0]
+dbf = Sub.cross_sections["dbf"][Sub.cross_sections["xsid"] == Sub.xs_names[0]].values[0]
+b = Sub.cross_sections["b"][Sub.cross_sections["xsid"] == Sub.xs_names[0]].values[0]
 Abf = dbf * b
 Pbf = b + 2 * dbf
 Qdbf = (1.0 / 0.03) * (Abf * ((Abf / Pbf) ** (2.0 / 3.0))) * ((0.1 / 500) ** 0.5)
@@ -549,9 +551,9 @@ table["order"] = list(range(1, len(table) + 1))
 dbfloc = list(
     np.where(
         table["depth"]
-        <= Sub.crosssections["dbf"][Sub.crosssections["xsid"] == Sub.xsname[0]].values[
-            0
-        ]
+        <= Sub.cross_sections["dbf"][
+            Sub.cross_sections["xsid"] == Sub.xs_names[0]
+        ].values[0]
     )
 )[-1][-1]
 
@@ -564,13 +566,15 @@ plt.plot(table["A*R^(2/3)"], table["depth"], label="A*(R^2/3)", linewidth=5)
 plt.plot(table["Q"], table["depth"], label="Q", linewidth=5)
 plt.plot(table["v"], table["depth"], label="velocity", linewidth=5)
 
-# plt.plot(table['logQ'],table['logH'], label = 'Area', linewidth = 5)
+# plt.plot(table['logQ'],table['logH'], label = 'Area', line_width = 5)
 
 plt.ylabel("Depth (m)", fontsize=20)
 plt.ylim([0, 5])
 plt.xlim([0, table["perimeter"].loc[table["depth"] == 5].values[0] + 5])
 plt.hlines(
-    Sub.crosssections["dbf"].loc[Sub.crosssections["xsid"] == Sub.xsname[0]].values[0],
+    Sub.cross_sections["dbf"]
+    .loc[Sub.cross_sections["xsid"] == Sub.xs_names[0]]
+    .values[0],
     0,
     table["area"].loc[table["depth"] == 5].values[0],
     linewidth=5,
@@ -578,14 +582,14 @@ plt.hlines(
 plt.annotate(
     "Dbf = "
     + str(
-        Sub.crosssections["dbf"]
-        .loc[Sub.crosssections["xsid"] == Sub.xsname[0]]
+        Sub.cross_sections["dbf"]
+        .loc[Sub.cross_sections["xsid"] == Sub.xs_names[0]]
         .values[0]
     ),
     xy=(
         table["perimeter"].loc[table["depth"] == 5].values[0] - 80,
-        Sub.crosssections["dbf"]
-        .loc[Sub.crosssections["xsid"] == Sub.xsname[0]]
+        Sub.cross_sections["dbf"]
+        .loc[Sub.cross_sections["xsid"] == Sub.xs_names[0]]
         .values[0]
         + 0.2,
     ),

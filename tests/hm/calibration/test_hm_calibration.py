@@ -64,8 +64,8 @@ def test_ReadObservedWL(
         gauge_date_format=gauge_date_format,
     )
     assert (
-        len(Calib.WLGauges) == test_time_series_length
-        and len(Calib.WLGauges.columns) == 3
+        len(Calib.wl_gauges) == test_time_series_length
+        and len(Calib.wl_gauges.columns) == 3
         and len(Calib.hm_gauges.columns) == 12
     )
 
@@ -89,7 +89,7 @@ def test_CalculateProfile(
     )
 
     assert (
-        Calib.crosssections.loc[Calib.crosssections["id"] == 3, "gl"].tolist()[-1]
+        Calib.cross_sections.loc[Calib.cross_sections["id"] == 3, "gl"].tolist()[-1]
         == calibrateProfile_DS_bedlevel
     )
 
@@ -112,6 +112,16 @@ def test_SmoothBedLevel(
     Calib = RC.Calibration("HM", version=version)
     Calib.readXS(river_cross_section_path)
     Calib.smoothBedLevel(segment3)
+
+
+def test_SmoothDikeLevel(
+    version: int,
+    river_cross_section_path: str,
+    segment3: int,
+):
+    Calib = RC.Calibration("HM", version=version)
+    Calib.readXS(river_cross_section_path)
+    Calib.smoothDikeLevel(segment3)
 
 
 def test_DownWardBedLevel(
@@ -204,10 +214,10 @@ def test_ReadHMWL(
     Calib = RC.Calibration("HM", version=3)
     Calib.readGaugesTable(gauges_table_path)
     Calib.readHMWL(hm_separated_wl_results_path, fmt="'%Y-%m-%d'")
-    assert len(Calib.WLHM) == test_time_series_length and len(
-        Calib.WLHM.columns
+    assert len(Calib.wl_hm) == test_time_series_length and len(
+        Calib.wl_hm.columns
     ) == len(rrmgauges)
-    assert all(elem in Calib.WLHM.columns.to_list() for elem in rrmgauges)
+    assert all(elem in Calib.wl_hm.columns.to_list() for elem in rrmgauges)
 
 
 class Test_GetAnnualMax:
@@ -283,15 +293,15 @@ def test_HMvsRRM(
     Calib.readHMQ(hm_separated_q_results_path, fmt="'%Y-%m-%d'")
     Calib.readRRM(rrmpath, fmt="'%Y-%m-%d'")
     Calib.HMvsRRM()
-    assert isinstance(Calib.MetricsHMvsRRM, DataFrame) and isinstance(
-        Calib.MetricsHMvsRRM, GeoDataFrame
+    assert isinstance(Calib.metrics_hm_vs_rrm, DataFrame) and isinstance(
+        Calib.metrics_hm_vs_rrm, GeoDataFrame
     )
-    assert len(Calib.MetricsHMvsRRM) == 3
+    assert len(Calib.metrics_hm_vs_rrm) == 3
     assert all(
-        Calib.MetricsHMvsRRM.index
+        Calib.metrics_hm_vs_rrm.index
         == Calib.hm_gauges.loc[:, Calib.gauge_id_col].to_list()
     )
-    assert all(Calib.MetricsHMvsRRM.columns == Metrics_table_columns)
+    assert all(Calib.metrics_hm_vs_rrm.columns == Metrics_table_columns)
 
 
 def test_RRMvsObserved(
@@ -314,15 +324,17 @@ def test_RRMvsObserved(
     )
     Calib.readRRM(rrmpath, fmt="'%Y-%m-%d'")
     Calib.RRMvsObserved()
-    assert isinstance(Calib.MetricsRRMvsObs, DataFrame) and isinstance(
-        Calib.MetricsRRMvsObs, GeoDataFrame
+    assert isinstance(Calib.metrics_rrm_vs_obs, DataFrame) and isinstance(
+        Calib.metrics_rrm_vs_obs, GeoDataFrame
     )
-    assert len(Calib.MetricsRRMvsObs) == 3
+    assert len(Calib.metrics_rrm_vs_obs) == 3
     assert all(
-        Calib.MetricsRRMvsObs.index
+        Calib.metrics_rrm_vs_obs.index
         == Calib.hm_gauges.loc[:, Calib.gauge_id_col].to_list()
     )
-    assert all(elem in Calib.MetricsRRMvsObs.columns for elem in Metrics_table_columns)
+    assert all(
+        elem in Calib.metrics_rrm_vs_obs.columns for elem in Metrics_table_columns
+    )
 
 
 def test_HMQvsObserved(
@@ -345,15 +357,17 @@ def test_HMQvsObserved(
     )
     Calib.readHMQ(hm_separated_q_results_path, fmt="'%Y-%m-%d'")
     Calib.HMQvsObserved()
-    assert isinstance(Calib.MetricsHMQvsObs, DataFrame) and isinstance(
-        Calib.MetricsHMQvsObs, GeoDataFrame
+    assert isinstance(Calib.metrics_hm_q_vs_obs, DataFrame) and isinstance(
+        Calib.metrics_hm_q_vs_obs, GeoDataFrame
     )
-    assert len(Calib.MetricsHMQvsObs) == 3
+    assert len(Calib.metrics_hm_q_vs_obs) == 3
     assert all(
-        Calib.MetricsHMQvsObs.index
+        Calib.metrics_hm_q_vs_obs.index
         == Calib.hm_gauges.loc[:, Calib.gauge_id_col].to_list()
     )
-    assert all(elem in Calib.MetricsHMQvsObs.columns for elem in Metrics_table_columns)
+    assert all(
+        elem in Calib.metrics_hm_q_vs_obs.columns for elem in Metrics_table_columns
+    )
 
 
 def test_HMWLvsObserved(
@@ -376,15 +390,17 @@ def test_HMWLvsObserved(
     )
     Calib.readHMWL(hm_separated_wl_results_path, fmt="'%Y-%m-%d'")
     Calib.HMWLvsObserved()
-    assert isinstance(Calib.MetricsHMWLvsObs, DataFrame) and isinstance(
-        Calib.MetricsHMWLvsObs, GeoDataFrame
+    assert isinstance(Calib.metrics_hm_wl_vs_obs, DataFrame) and isinstance(
+        Calib.metrics_hm_wl_vs_obs, GeoDataFrame
     )
-    assert len(Calib.MetricsHMWLvsObs) == 3
+    assert len(Calib.metrics_hm_wl_vs_obs) == 3
     assert all(
-        Calib.MetricsHMWLvsObs.index
+        Calib.metrics_hm_wl_vs_obs.index
         == Calib.hm_gauges.loc[:, Calib.gauge_id_col].to_list()
     )
-    assert all(elem in Calib.MetricsHMWLvsObs.columns for elem in Metrics_table_columns)
+    assert all(
+        elem in Calib.metrics_hm_wl_vs_obs.columns for elem in Metrics_table_columns
+    )
 
 
 def test_InspectGauge(
@@ -468,4 +484,4 @@ def test_SaveMetices(
     Calib.readRRM(rrmpath, fmt="'%Y-%m-%d'")
     Calib.HMvsRRM()
     Calib.RRMvsObserved()
-    Calib.SaveMetices(hm_saveto)
+    Calib.saveMetices(hm_saveto)

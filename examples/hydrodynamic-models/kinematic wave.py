@@ -40,7 +40,7 @@ Test.kinematicwave(start, end, fmt="%Y-%m-%d %H:%M:%S")
 #%% Visualization
 plotstart = "2010-01-01 00:00:00"
 plotend = "2010-1-1 05:00:00"
-# ffmpegPath = "F:/Users/mofarrag/.matplotlib/ffmpeg-4.4-full_build/bin/ffmpeg.exe"
+# ffmpeg_path = "F:/Users/mofarrag/.matplotlib/ffmpeg-4.4-full_build/bin/ffmpeg.exe"
 anim = Test.animatefloodwave(start=plotstart, end=plotend, interval=0.0000002)
 #%% save results
 # Test.SaveResult(path + "/data/hydrodynamic model/" )

@@ -27,9 +27,14 @@ from Hapi.plot.visualizer import Visualize as Vis
 
 
 class Catchment:
-    """Catchment. The class include methods to read the meteorological and Spatial inputs of the distributed hydrological model. Catchment class also reads the data of the gauges, it is a super class that has the run subclass, so you need to build the catchment object and hand it as an inpit to the Run class to run the model.
+    """Catchment.
 
-    methods:
+        The class include methods to read the meteorological and Spatial inputs of the distributed hydrological model.
+        Catchment class also reads the data of the gauges, it is a super class that has the run subclass,
+        so you need to build the catchment object and hand it as an inpit to the Run class to run the model.
+
+    Methods
+    -------
         1-readRainfall
         2-readTemperature
         3-readET
@@ -375,7 +380,9 @@ class Catchment:
         logger.debug("Flow Accmulation input is read successfully")
 
     def readFlowDir(self, Path: str):
-        """readFlowDir method reads the flow direction raster.
+        """Read Flow Direction.
+
+            reads the flow direction raster.
 
         Parameters
         ----------
@@ -428,7 +435,9 @@ class Catchment:
         logger.debug("Flow Direction input is read successfully")
 
     def ReadFlowPathLength(self, Path: str):
-        """ReadFlowPathLength method reads the flow path length.
+        """Read Flow Path Length method.
+
+            reads the flow path length.
 
         Parameters
         ----------
@@ -981,7 +990,9 @@ class Catchment:
         label: str = "",
         fmt: str = "%Y-%m-%d",
     ):
-        """plotHydrograph. plot the simulated and gauge hydrograph.
+        r"""Plot Hydrograph.
+
+            plot the simulated and gauge hydrograph.
 
         Parameters
         ----------
@@ -1143,7 +1154,7 @@ class Catchment:
                 size of the numbers plotted intop of each cells. The default is 8.
             Title : [str], optional
                 title of the plot. The default is 'Total Discharge'.
-            titlesize : [integer], optional
+            title_size : [integer], optional
                 title size. The default is 15.
             Backgroundcolorthreshold : [float/integer], optional
                 threshold value if the value of the cell is greater, the plotted
@@ -1427,9 +1438,15 @@ class Catchment:
 
 
 class Lake:
-    """Lake. Lake class reads the meteorological inputs, and the module to simulate a lake as a lumped model, using a rating curve, the lake and the upstream sub-catchments are going to be considered as one lumped model than result in a discharge input to the lake, the discharge input is going to change the volume of the water in the lake, and from the volume-outflow curve the outflow can be obtained.
+    """Lake.
 
-    methods:
+        Lake class reads the meteorological inputs, and the module to simulate a lake as a lumped model, using a
+        rating curve, the lake and the upstream sub-catchments are going to be considered as one lumped model than
+        result in a discharge input to the lake, the discharge input is going to change the volume of the water in
+        the lake, and from the volume-outflow curve the outflow can be obtained.
+
+    Methods
+    -------
         1- readMeteoData
         2- readParameters
         3- readLumpedModel

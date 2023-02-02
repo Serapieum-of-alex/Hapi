@@ -41,3 +41,11 @@ History
 * hydraulic model can read chunked big zip file
 * fix CI
 * fix missing module (saint venant script and module)
+
+1.6.0 (2023-02-03)
+------------------
+* all attributes follows snake case naming convention
+* refactor all modules with pre-commit
+* add smoothDikeLevel, getReach and updateReach
+* bump up denpendencies versions
+* move un-necessary functions to serapeum-utils

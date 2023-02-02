@@ -4,7 +4,7 @@ path = "F:/01Algorithms/Hydrology/HAPI/examples/"
 #%% create the River object
 start = "2010-1-1 00:00:00"
 end = "2010-1-1 05:00:00"
-# rrmstart="1950-1-1 00:00:00"
+# rrm_start="1950-1-1 00:00:00"
 # dx in meter
 dx = 20
 # dt in sec
@@ -36,5 +36,5 @@ print("Stability Factor = " + str(Test.stabilityfactor.min()))
 #%% Visualization
 start = "2010-01-01 00:00:00"
 end = "2010-1-1 05:00:00"
-# ffmpegPath = "F:/Users/mofarrag/.matplotlib/ffmpeg-4.4-full_build/bin/ffmpeg.exe"
+# ffmpeg_path = "F:/Users/mofarrag/.matplotlib/ffmpeg-4.4-full_build/bin/ffmpeg.exe"
 anim = Test.animatefloodwave(start=start, end=end, interval=2, textlocation=-1)

@@ -157,7 +157,7 @@ Jiboa.plotHydrograph(plotstart, plotend, gaugei)
 =============================================================================
 plotDistributedResults(StartDate, EndDate, fmt="%Y-%m-%d", Option = 1, Gauges=False,
                     TicksSpacing = 2, Figsize=(8,8), PlotNumbers=True,
-                    NumSize= 8, Title = 'Total Discharge',titlesize = 15, Backgroundcolorthreshold=None,
+                    NumSize= 8, Title = 'Total Discharge',title_size = 15, Backgroundcolorthreshold=None,
                     cbarlabel = 'Discharge m3/s', cbarlabelsize = 12, textcolors=("white","black"),
                     Cbarlength = 0.75, Interval = 200,cmap='coolwarm_r', Textloc=[0.1,0.2],
                     Gaugecolor='red',Gaugesize=100, ColorScale = 1,gamma=1./2.,linthresh=0.0001,
@@ -193,7 +193,7 @@ NumSize : integer, optional
     size of the numbers plotted intop of each cells. The default is 8.
 Title : [str], optional
     title of the plot. The default is 'Total Discharge'.
-titlesize : [integer], optional
+title_size : [integer], optional
     title size. The default is 15.
 Backgroundcolorthreshold : [float/integer], optional
     threshold value if the value of the cell is greater, the plotted

@@ -36,7 +36,7 @@ Figsize : [tuple], optional
         figure size. The default is (8,8).
 Title : [str], optional
         title of the plot. The default is 'Total Discharge'.
-titlesize : [integer], optional
+title_size : [integer], optional
         title size. The default is 15.
 """
 Figsize = (8, 8)

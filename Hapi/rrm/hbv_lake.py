@@ -229,8 +229,9 @@ def _soil(fc, beta, etf, temp, tm, e_corr, lp, tfac, c_flux, inf, ep, sm_old, uz
 
 
 def _response(tfac, perc, alpha, k, k1, area, lz_old, uz_int_1, qdr):
-    """Response. The response routine of the HBV-96 model.
+    r"""Response.
 
+        The response routine of the HBV-96 model.
         The response routine is in charge of transforming the current values of
         upper and lower zone into discharge. This routine also controls the
         recharge of the lower zone tank (baseflow). The transformation of units

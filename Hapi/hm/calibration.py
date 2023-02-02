@@ -10,18 +10,16 @@ import statista.metrics as pf
 from geopandas import GeoDataFrame
 from loguru import logger
 from matplotlib.figure import Figure
-
-# from pandas import DataFrame
 from pandas._libs.tslibs.timestamps import Timestamp
 from pandas.core.frame import DataFrame
+from pandas.core.series import Series
+from serapeum_utils.utils import class_attr_initialize
 
-from Hapi.hapi_warnings import SilenceNumpyWarning, SilenceShapelyWarning
+from Hapi.hapi_warnings import SilenceShapelyWarning
 from Hapi.hm.river import River
-from Hapi.utils import class_attr_initialize
 
 datafn = lambda x: dt.datetime.strptime(x, "%Y-%m-%d")
 
-SilenceNumpyWarning()
 SilenceShapelyWarning()
 
 
@@ -36,27 +34,27 @@ class Calibration(River):
 
     calibration_attributes = dict(
         q_hm=None,
-        WLHM=None,
+        wl_hm=None,
         q_rrm=None,
-        QRRM2=None,
+        q_rrm2=None,
         rrm_gauges=None,
         hm_gauges=None,
         q_gauges=None,
-        WLGauges=None,
-        CalibrationQ=None,
-        CalibrationWL=None,
+        wl_gauges=None,
+        calibration_q=None,
+        calibration_wl=None,
         annual_max_obs_q=None,
         annual_max_obs_wl=None,
         annual_max_rrm=None,
         annual_max_hm_q=None,
         annual_max_hm_wl=None,
-        AnnualMaxDates=None,
-        MetricsHMvsRRM=None,
-        MetricsRRMvsObs=None,
-        MetricsHMWLvsObs=None,
-        MetricsHMQvsObs=None,
-        WLgaugesList=None,
-        QgaugesList=None,
+        annual_max_dates=None,
+        metrics_hm_vs_rrm=None,
+        metrics_rrm_vs_obs=None,
+        metrics_hm_wl_vs_obs=None,
+        metrics_hm_q_vs_obs=None,
+        wl_gauges_list=None,
+        q_gauges_list=None,
     )
 
     @class_attr_initialize(calibration_attributes)
@@ -67,8 +65,8 @@ class Calibration(River):
         start: Union[str, dt.datetime] = "1950-1-1",
         days: int = 36890,
         fmt: str = "%Y-%m-%d",
-        rrmstart: str = None,
-        rrmdays: int = 36890,
+        rrm_start: str = None,
+        rrm_days: int = 36890,
         novalue: int = -9,
         gauge_id_col: Any = "oid",
     ):
@@ -90,10 +88,10 @@ class Calibration(River):
             (default number of days are equivalent to 100 years)
         fmt : [str]
             format of the given dates. The default is "%Y-%m-%d"
-        rrmstart : [str], optional
+        rrm_start : [str], optional
             the start date of the rainfall-runoff data. The default is
             "1950-1-1".
-        rrmdays : [integer], optional
+        rrm_days : [integer], optional
             the length of the data of the rainfall-runoff data in days.
             The default is 36890.
         gauge_id_col: [Any]
@@ -114,25 +112,25 @@ class Calibration(River):
         self.gauge_id_col = gauge_id_col
 
         Ref_ind = pd.date_range(self.start, self.end, freq="D")
-        self.ReferenceIndex = pd.DataFrame(index=list(range(1, days + 1)))
-        self.ReferenceIndex["date"] = Ref_ind[:-1]
+        self.reference_index = pd.DataFrame(index=list(range(1, days + 1)))
+        self.reference_index["date"] = Ref_ind[:-1]
 
-        if rrmstart is None:
-            self.rrmstart = self.start
+        if rrm_start is None:
+            self.rrm_start = self.start
         else:
             try:
-                self.rrmstart = dt.datetime.strptime(rrmstart, fmt)
+                self.rrm_start = dt.datetime.strptime(rrm_start, fmt)
             except ValueError:
                 logger.debug(
                     f"plese check the fmt ({fmt}) you entered as it is different from the"
-                    f" rrmstart data ({rrmstart})"
+                    f" rrm_start data ({rrm_start})"
                 )
                 return
 
-        self.rrmend = self.rrmstart + dt.timedelta(days=rrmdays)
-        ref_ind = pd.date_range(self.rrmstart, self.rrmend, freq="D")
-        self.rrmreferenceindex = pd.DataFrame(index=list(range(1, rrmdays + 1)))
-        self.rrmreferenceindex["date"] = ref_ind[:-1]
+        self.rrm_end = self.rrm_start + dt.timedelta(days=rrm_days)
+        ref_ind = pd.date_range(self.rrm_start, self.rrm_end, freq="D")
+        self.rrm_reference_index = pd.DataFrame(index=list(range(1, rrm_days + 1)))
+        self.rrm_reference_index["date"] = ref_ind[:-1]
 
     def readGaugesTable(self, path: str):
         """ReadGaugesTable.
@@ -144,15 +142,21 @@ class Calibration(River):
         path : [String]
             the path to the text file of the gauges table. the file can be geojson or a csv file.
         >>> "gauges.geojson"
-        {
-        "type": "FeatureCollection", "crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:EPSG::3035" } },
-        "features": [
-        { "type": "Feature", "properties": { "gid": 149, "name": "station 1", "oid": 23800100, "river": "Nile",
-        "id": 1, "xsid": 16100, "datum(m)": 252.36, "discharge": 1, "waterlevel": 1 }, "geometry": { "type": "Point", "coordinates": [ 4278240.4259, 2843958.863 ] } },
-        { "type": "Feature", "properties": { "gid": 106, "name": "station 2", "oid": 23800500, "river": "Nile",
-        "id": 2, "xsid": 16269, "datum(m)": 159.37, "discharge": 1, "waterlevel": 1 }, "geometry": { "type": "Point", "coordinates": [ 4259614.333, 2884750.556 ] } },
-        { "type": "Feature", "properties": { "gid": 158, "name": "station 3", "oid": 23800690, "river": "Nile",
-        "id": 4, "xsid": 16581, "datum(m)": 119.71, "discharge": 1, "waterlevel": 1}, "geometry": { "type": "Point", "coordinates": [ 4248756.490, 2924872.503 ] } },
+        >>> {
+        >>> "type": "FeatureCollection", "crs":
+        >>>                                 { "type": "name", "properties": { "name": "urn:ogc:def:crs:EPSG::3035" } },
+        >>> "features": [
+        >>> { "type": "Feature", "properties": { "gid": 149, "name": "station 1", "oid": 23800100, "river": "Nile",
+        >>>     "id": 1, "xsid": 16100, "datum(m)": 252.36, "discharge": 1, "waterlevel": 1 },
+        >>>     "geometry": { "type": "Point", "coordinates": [ 4278240.4259, 2843958.863 ] } },
+        >>> { "type": "Feature", "properties": { "gid": 106, "name": "station 2", "oid": 23800500, "river": "Nile",
+        >>>     "id": 2, "xsid": 16269, "datum(m)": 159.37, "discharge": 1, "waterlevel": 1 },
+        >>>     "geometry": { "type": "Point", "coordinates": [ 4259614.333, 2884750.556 ] } },
+        >>> { "type": "Feature", "properties": { "gid": 158, "name": "station 3", "oid": 23800690, "river": "Nile",
+        >>>     "id": 4, "xsid": 16581, "datum(m)": 119.71, "discharge": 1, "waterlevel": 1},
+        >>>     "geometry": { "type": "Point", "coordinates": [ 4248756.490, 2924872.503 ] } },
+        >>> ]
+        >>> }
 
         Returns
         -------
@@ -165,9 +169,9 @@ class Calibration(River):
         >>> Calib = RC.Calibration("Hydraulic model", gauge_id_col="id")
         >>> Calib.readGaugesTable("path/to/gauges.geojson")
         >>> Calib.hm_gauges
-                gid  ...                         geometry
-            0   149  ...  POINT (4278240.426 2843958.864)
-            1   106  ...  POINT (4259614.334 2884750.556)
+        >>>     gid  ...                         geometry
+        >>> 0   149  ...  POINT (4278240.426 2843958.864)
+        >>> 1   106  ...  POINT (4259614.334 2884750.556)
         """
         try:
             self.hm_gauges = gpd.read_file(path, driver="GeoJSON")
@@ -177,31 +181,33 @@ class Calibration(River):
             )
             self.hm_gauges = pd.read_csv(path)
 
-        # sort the gauges table based on the segment
+        # sort the gauges table based on the reach
         self.hm_gauges.sort_values(by="id", inplace=True, ignore_index=True)
 
-    def getGauges(self, subid: int, gaugei: int = 0) -> DataFrame:
-        """Get_Gauge_ID get the id of the station for a given river segment.
+    def getGauges(self, reach_id: int, gaugei: int = 0) -> DataFrame:
+        """Get gauges.
 
-        parameters:
+            get the id of the station for a given river reach.
+
+        Parameters
         ----------
-        subid: [int]
-            the river segment id
+        reach_id: [int]
+            the river reach id
 
-        return:
+        Returns
         -------
         id: [list/int]
-            if the river segment contains more than one gauges the function
+            if the river reach contains more than one gauges the function
             returns a list of ids, otherwise it returns the id.
         gauge name: [str]
             name of the gauge
         gauge xs: [int]
             the nearest cross section to the gauge
         """
-        gauges = self.hm_gauges.loc[self.hm_gauges["id"] == subid, :].reset_index()
+        gauges = self.hm_gauges.loc[self.hm_gauges["id"] == reach_id, :].reset_index()
         if len(gauges) == 0:
             raise KeyError(
-                "The given river segment does not have gauges in the gauge table"
+                "The given river reach does not have gauges in the gauge table"
             )
         elif len(gauges) > 1:
             f = gauges.loc[gaugei, :].to_frame()
@@ -213,7 +219,7 @@ class Calibration(River):
         # stationname = gauges.loc[:, column].values.tolist()
         # gaugename = str(gauges.loc[gaugei, 'name'])
         # gaugexs = gauges.loc[gaugei, 'xsid']
-        # segment_xs = str(subid) + "_" + str(gaugexs)
+        # reach_xs = str(reach_id) + "_" + str(gaugexs)
 
         # stationname, gaugename, gaugexs
 
@@ -251,7 +257,7 @@ class Calibration(River):
 
         Returns
         -------
-        WLGauges: [dataframe attiribute].
+        wl_gauges: [dataframe attiribute].
             dataframe containing the data of the water level gauges and
             the index as the time series from the StartDate till the end
             and the gaps filled with the NoValue
@@ -307,17 +313,17 @@ class Calibration(River):
         Gauges.replace(to_replace=np.nan, value=novalue, inplace=True)
         Gauges.index = ind
         del Gauges[0]
-        self.WLGauges = Gauges
+        self.wl_gauges = Gauges
 
         self.hm_gauges["WLstart"] = 0
         self.hm_gauges["WLend"] = 0
         for i in range(len(columns)):
             if self.hm_gauges.loc[i, "waterlevel"] == 1:
-                st1 = self.WLGauges[columns[i]][
-                    self.WLGauges[columns[i]] != novalue
+                st1 = self.wl_gauges[columns[i]][
+                    self.wl_gauges[columns[i]] != novalue
                 ].index[0]
-                end1 = self.WLGauges[columns[i]][
-                    self.WLGauges[columns[i]] != novalue
+                end1 = self.wl_gauges[columns[i]][
+                    self.wl_gauges[columns[i]] != novalue
                 ].index[-1]
                 self.hm_gauges.loc[i, "WLstart"] = st1
                 self.hm_gauges.loc[i, "WLend"] = end1
@@ -524,7 +530,7 @@ class Calibration(River):
                 try:
                     self.q_rrm[station_id] = self._readRRMResults(
                         self.version,
-                        self.rrmreferenceindex,
+                        self.rrm_reference_index,
                         path,
                         station_id,
                         fromday,
@@ -543,7 +549,7 @@ class Calibration(River):
                 try:
                     self.q_rrm[station_id] = self._readRRMResults(
                         self.version,
-                        self.rrmreferenceindex,
+                        self.rrm_reference_index,
                         path,
                         station_id,
                         fromday,
@@ -552,7 +558,7 @@ class Calibration(River):
                     )[station_id].tolist()
                     self.QRRM2[station_id] = self._readRRMResults(
                         self.version,
-                        self.rrmreferenceindex,
+                        self.rrm_reference_index,
                         path2,
                         station_id,
                         fromday,
@@ -572,8 +578,8 @@ class Calibration(River):
         if today == "":
             today = len(self.q_rrm[self.q_rrm.columns[0]])
 
-        start = self.ReferenceIndex.loc[fromday, "date"]
-        end = self.ReferenceIndex.loc[today, "date"]
+        start = self.reference_index.loc[fromday, "date"]
+        end = self.reference_index.loc[today, "date"]
 
         if location == 1:
             self.q_rrm.index = pd.date_range(start, end, freq="D")
@@ -584,8 +590,8 @@ class Calibration(River):
     def readHMQ(
         self,
         path: str,
-        fromday: Union[str, int] = "",
-        today: Union[str, int] = "",
+        from_day: Union[str, int] = "",
+        to_day: Union[str, int] = "",
         novalue: Union[int, float] = -9,
         addHQ2: bool = False,
         shift: bool = False,
@@ -600,9 +606,9 @@ class Calibration(River):
         ----------
         path : [String]
             path to the folder where files for the gauges exist.
-        fromday : [datetime object/str]
+        from_day : [datetime object/str]
             starting date of the time series.
-        today : [integer]
+        to_day : [integer]
             length of the simulation (how many days after the start date) .
         novalue : [numeric value]
             the value used to fill the gaps in the time series or to fill the
@@ -623,7 +629,7 @@ class Calibration(River):
         -------
         q_hm : [dataframe attribute]
             dataframe containing the simulated hydrograph for each river
-            segment in the catchment.
+            reach in the catchment.
         """
         if addHQ2 and self.version == 1:
             msg = "please read the traceall file using the RiverNetwork method"
@@ -649,11 +655,11 @@ class Calibration(River):
             nodeid = gauges[i]
             self.q_hm[nodeid] = self._readRRMResults(
                 self.version,
-                self.ReferenceIndex,
+                self.reference_index,
                 path,
                 nodeid,
-                fromday="",
-                today="",
+                from_day=None,
+                to_day=None,
                 date_format=fmt,
             )[nodeid].tolist()
             logger.debug(f"{i} - {path}{nodeid}.txt is read")
@@ -686,21 +692,21 @@ class Calibration(River):
             #     f2[shiftsteps:-1] = f2[0 : -(shiftsteps + 1)]
 
             # q_hm.loc[ind[f1[0] - 1] : ind[f1[-1] - 1], q_hm.columns[i]] = f2
-        if fromday == "":
-            fromday = 1
-        if today == "":
-            today = len(self.q_hm[self.q_hm.columns[0]])
+        if from_day == "":
+            from_day = 1
+        if to_day == "":
+            to_day = len(self.q_hm[self.q_hm.columns[0]])
 
-        start = self.ReferenceIndex.loc[fromday, "date"]
-        end = self.ReferenceIndex.loc[today, "date"]
+        start = self.reference_index.loc[from_day, "date"]
+        end = self.reference_index.loc[to_day, "date"]
 
         self.q_hm.index = pd.date_range(start, end, freq="D")
 
     def readHMWL(
         self,
         path: str,
-        fromday: Union[str, int] = "",
-        today: Union[str, int] = "",
+        from_day: Union[str, int] = "",
+        to_day: Union[str, int] = "",
         novalue: Union[int, float] = -9,
         shift=False,
         shiftsteps=0,
@@ -734,30 +740,30 @@ class Calibration(River):
 
         Returns
         -------
-            WLHM : [dataframe attribute]
+            wl_hm : [dataframe attribute]
                 dataframe containing the simulated water level hydrograph for
-                each river segment in the catchment.
+                each river reach in the catchment.
         """
         gauges = self.hm_gauges.loc[
             self.hm_gauges["waterlevel"] == 1, self.gauge_id_col
         ].tolist()
-        self.WLgaugesList = gauges
+        self.wl_gauges_list = gauges
 
-        self.WLHM = pd.DataFrame()
+        self.wl_hm = pd.DataFrame()
         for i in range(len(gauges)):
             nodeid = gauges[i]
-            self.WLHM[nodeid] = self._readRRMResults(
+            self.wl_hm[nodeid] = self._readRRMResults(
                 self.version,
-                self.ReferenceIndex,
+                self.reference_index,
                 path,
                 nodeid,
-                fromday="",
-                today="",
+                from_day="",
+                to_day="",
                 date_format=fmt,
             )[nodeid].tolist()
             logger.debug(f"{i} - {path}{nodeid}.txt is read")
-        # for i in range(len(WLHM.columns)):
-        #     f = np.loadtxt(path + str(int(WLHM.columns[i])) + ".txt", delimiter=",")
+        # for i in range(len(wl_hm.columns)):
+        #     f = np.loadtxt(path + str(int(wl_hm.columns[i])) + ".txt", delimiter=",")
         #
         #     f1 = list(range(int(f[0, 0]), int(f[-1, 0]) + 1))
         #     f2 = list()
@@ -773,18 +779,18 @@ class Calibration(River):
         #     if shift:
         #         f2[shiftsteps:-1] = f2[0 : -(shiftsteps + 1)]
 
-        # WLHM.loc[ind[f1[0] - 1] : ind[f1[-1] - 1], WLHM.columns[i]] = f2
-        if fromday == "":
-            fromday = 1
-        if today == "":
-            today = len(self.WLHM[self.WLHM.columns[0]])
+        # wl_hm.loc[ind[f1[0] - 1] : ind[f1[-1] - 1], wl_hm.columns[i]] = f2
+        if from_day == "":
+            from_day = 1
+        if to_day == "":
+            to_day = len(self.wl_hm[self.wl_hm.columns[0]])
 
-        start = self.ReferenceIndex.loc[fromday, "date"]
-        end = self.ReferenceIndex.loc[today, "date"]
+        start = self.reference_index.loc[from_day, "date"]
+        end = self.reference_index.loc[to_day, "date"]
 
-        self.WLHM.index = pd.date_range(start, end, freq="D")
+        self.wl_hm.index = pd.date_range(start, end, freq="D")
 
-    def readCalirationResult(self, subid: int, path: str = ""):
+    def readCalirationResult(self, reach_id: int, path: str = ""):
         """ReadCalirationResult.
 
         ReadCalirationResult method reads the 1D results and fill the missing
@@ -792,37 +798,39 @@ class Calibration(River):
 
         Parameters
         ----------
-        subid : [integer]
+        reach_id : [integer]
             ID of the sub-basin you want to read its data.
         path : [String], optional
             Path to read the results from. The default is ''.
 
         Returns
         -------
-        CalibrationQ : [dataframe]
+        calibration_q : [dataframe]
             the discharge time series of the  calibrated gauges
-        CalibrationWL : [dataframe]
+        calibration_wl : [dataframe]
             the water level time series of the  calibrated gauges
         """
         hasattr(self, "q_gauges"), "Please read the discharge gauges first"
         hasattr(self, "WlGauges"), "Please read the water level gauges first"
 
-        if not hasattr(self, "CalibrationQ"):
+        if not hasattr(self, "calibration_q"):
             indD = pd.date_range(self.start, self.end, freq="D")[:-1]
             self.CalibrationQ = pd.DataFrame(index=indD)
-        if not hasattr(self, "CalibrationWL"):
+        if not hasattr(self, "calibration_wl"):
             indD = pd.date_range(self.start, self.end, freq="D")[:-1]
             self.CalibrationWL = pd.DataFrame(index=indD)
 
         ind = pd.date_range(self.start, self.end, freq="H")[:-1]
-        q = pd.read_csv(path + str(subid) + "_q.txt", header=None, delimiter=r"\s+")
-        wl = pd.read_csv(path + str(subid) + "_wl.txt", header=None, delimiter=r"\s+")
+        q = pd.read_csv(path + str(reach_id) + "_q.txt", header=None, delimiter=r"\s+")
+        wl = pd.read_csv(
+            path + str(reach_id) + "_wl.txt", header=None, delimiter=r"\s+"
+        )
 
         q.index = ind
         wl.index = ind
 
-        self.CalibrationQ[subid] = q[1].resample("D").mean()
-        self.CalibrationWL[subid] = wl[1].resample("D").mean()
+        self.CalibrationQ[reach_id] = q[1].resample("D").mean()
+        self.CalibrationWL[reach_id] = wl[1].resample("D").mean()
 
     def getAnnualMax(
         self, option=1, CorespondingTo=dict(MaxObserved=" ", TimeWindow=0)
@@ -870,7 +878,7 @@ class Calibration(River):
             when using option = 4
         annual_max_hm_wl: [dataframe attribute]
             when using option = 5
-        AnnualMaxDates : [dataframe attribute]
+        annual_max_dates : [dataframe attribute]
         """
         if option == 1:
             if not isinstance(self.q_gauges, DataFrame):
@@ -880,12 +888,12 @@ class Calibration(River):
                 )
             columns = self.q_gauges.columns.tolist()
         elif option == 2:
-            if not isinstance(self.WLGauges, DataFrame):
+            if not isinstance(self.wl_gauges, DataFrame):
                 raise ValueError(
                     "please read the observed Water level data first with the "
                     "ReadObservedWL method"
                 )
-            columns = self.WLGauges.columns.tolist()
+            columns = self.wl_gauges.columns.tolist()
         elif option == 3:
             if not isinstance(self.q_rrm, DataFrame):
                 raise ValueError(
@@ -900,38 +908,38 @@ class Calibration(River):
                 )
             columns = self.q_hm.columns.tolist()
         else:
-            if not isinstance(self.WLHM, DataFrame):
+            if not isinstance(self.wl_hm, DataFrame):
                 raise ValueError(
                     "please read the RIM results first with the ReadRIMWL method"
                 )
-            columns = self.WLHM.columns.tolist()
+            columns = self.wl_hm.columns.tolist()
 
         if CorespondingTo["MaxObserved"] == "WL":
-            if not isinstance(self.WLGauges, DataFrame):
+            if not isinstance(self.wl_gauges, DataFrame):
                 raise ValueError(
                     "please read the observed Water level data first with the "
                     "ReadObservedWL method"
                 )
 
-            startdate = self.WLGauges.index[0]
+            startdate = self.wl_gauges.index[0]
             AnnualMax = (
-                self.WLGauges.loc[:, self.WLGauges.columns[0]].resample("A-OCT").max()
+                self.wl_gauges.loc[:, self.wl_gauges.columns[0]].resample("A-OCT").max()
             )
             self.AnnualMaxDates = pd.DataFrame(
-                index=AnnualMax.index, columns=self.WLGauges.columns
+                index=AnnualMax.index, columns=self.wl_gauges.columns
             )
 
             # get the dates when the max value happen every year
-            for i in range(len(self.WLGauges.columns)):
-                sub = self.WLGauges.columns[i]
+            for i in range(len(self.wl_gauges.columns)):
+                sub = self.wl_gauges.columns[i]
                 for j in range(len(AnnualMax)):
                     if j == 0:
-                        f = self.WLGauges.loc[startdate : AnnualMax.index[j], sub]
+                        f = self.wl_gauges.loc[startdate : AnnualMax.index[j], sub]
                         self.AnnualMaxDates.loc[AnnualMax.index[j], sub] = f.index[
                             f.argmax()
                         ]
                     else:
-                        f = self.WLGauges.loc[
+                        f = self.wl_gauges.loc[
                             AnnualMax.index[j - 1] : AnnualMax.index[j], sub
                         ]
                         self.AnnualMaxDates.loc[AnnualMax.index[j], sub] = f.index[
@@ -959,7 +967,7 @@ class Calibration(River):
                         date = self.AnnualMaxDates.loc[ind, Sub]
                         start = date - dt.timedelta(days=1)
                         end = date + dt.timedelta(days=1)
-                        QTS.append(self.WLGauges.loc[start:end, Sub].max())
+                        QTS.append(self.wl_gauges.loc[start:end, Sub].max())
                 elif option == 3:
                     for j in range(len(self.AnnualMaxDates.loc[:, Sub])):
                         ind = self.AnnualMaxDates.index[j]
@@ -980,7 +988,7 @@ class Calibration(River):
                         date = self.AnnualMaxDates.loc[ind, Sub]
                         start = date - dt.timedelta(days=CorespondingTo["TimeWindow"])
                         end = date + dt.timedelta(days=CorespondingTo["TimeWindow"])
-                        QTS.append(self.WLHM.loc[start:end, Sub].max())
+                        QTS.append(self.wl_hm.loc[start:end, Sub].max())
 
                 AnnualMax.loc[:, Sub] = QTS
 
@@ -1036,7 +1044,7 @@ class Calibration(River):
                         date = self.AnnualMaxDates.loc[ind, Sub]
                         start = date - dt.timedelta(days=CorespondingTo["TimeWindow"])
                         end = date + dt.timedelta(days=CorespondingTo["TimeWindow"])
-                        QTS.append(self.WLGauges.loc[start:end, Sub].max())
+                        QTS.append(self.wl_gauges.loc[start:end, Sub].max())
 
                 elif option == 3:
                     for j in range(len(self.AnnualMaxDates.loc[:, Sub])):
@@ -1059,7 +1067,7 @@ class Calibration(River):
                         date = self.AnnualMaxDates.loc[ind, Sub]
                         start = date - dt.timedelta(days=CorespondingTo["TimeWindow"])
                         end = date + dt.timedelta(days=CorespondingTo["TimeWindow"])
-                        QTS.append(self.WLHM.loc[start:end, Sub].max())
+                        QTS.append(self.wl_hm.loc[start:end, Sub].max())
 
                 # resample to annual time step
                 AnnualMax.loc[:, Sub] = QTS
@@ -1071,13 +1079,13 @@ class Calibration(River):
                 if option == 1:
                     QTS = self.q_gauges.loc[:, Sub]
                 elif option == 2:
-                    QTS = self.WLGauges.loc[:, Sub]
+                    QTS = self.wl_gauges.loc[:, Sub]
                 elif option == 3:
                     QTS = self.q_rrm.loc[:, Sub]
                 elif option == 4:
                     QTS = self.q_hm.loc[:, Sub]
                 else:
-                    QTS = self.WLHM.loc[:, Sub]
+                    QTS = self.wl_hm.loc[:, Sub]
                 # resample to annual time step
                 AnnualMax.loc[:, Sub] = QTS.resample("A-OCT").max().values
 
@@ -1095,299 +1103,326 @@ class Calibration(River):
             self.annual_max_hm_wl = AnnualMax
 
     def calculateProfile(
-        self, Segmenti: int, BedlevelDS: float, Manning: float, BC_slope: float
+        self, reachi: int, BedlevelDS: float, Manning: float, BC_slope: float
     ):
         """CalculateProfile.
 
-        CalculateProfile method takes the river segment ID and the calibration
+        CalculateProfile method takes the river reach ID and the calibration
         parameters (last downstream cross-section bed level and the manning
         coefficient) and calculates the new profiles.
 
         Parameters
         ----------
-        1-Segmenti : [Integer]
-            cross-sections segment ID .
-        2-BedlevelDS : [Float]
-            the bed level of the last cross section in the segment.
-        3-Manning : [float]
+        reachi : [Integer]
+            cross-sections reach ID .
+        BedlevelDS : [Float]
+            the bed level of the last cross section in the reach.
+        Manning : [float]
             manning coefficient.
-        4-BC_slope : [float]
+        BC_slope : [float]
             slope of the BC.
 
         Returns
         -------
-        1-crosssection:[dataframe attribute]
+        crosssection:[dataframe attribute]
             crosssection attribute will be updated with the newly calculated
-            profile for the given segment
-        2-slope:[dataframe attribute]
+            profile for the given reach
+        slope:[dataframe attribute]
             slope attribute will be updated with the newly calculated average
-            slope for the given segment
+            slope for the given reach
         """
         levels = pd.DataFrame(columns=["id", "bedlevelUS", "bedlevelDS"])
 
         # change cross-section
-        bedlevel = self.crosssections.loc[
-            self.crosssections["id"] == Segmenti, "gl"
+        bedlevel = self.cross_sections.loc[
+            self.cross_sections["id"] == reachi, "gl"
         ].values
-        # get the bedlevel of the last cross section in the segment
+        # get the bedlevel of the last cross section in the reach
         # as a calibration parameter
-        levels.loc[Segmenti, "bedlevelDS"] = BedlevelDS
-        levels.loc[Segmenti, "bedlevelUS"] = bedlevel[0]
+        levels.loc[reachi, "bedlevelDS"] = BedlevelDS
+        levels.loc[reachi, "bedlevelUS"] = bedlevel[0]
 
         NoDistances = len(bedlevel) - 1
-        # AvgSlope = ((levels.loc[Segmenti,'bedlevelUS'] -
-        #      levels.loc[Segmenti,'bedlevelDS'] )/ (500 * NoDistances)) *-500
+        # AvgSlope = ((levels.loc[reachi,'bedlevelUS'] -
+        #      levels.loc[reachi,'bedlevelDS'] )/ (500 * NoDistances)) *-500
         # change in the bed level of the last XS
-        AverageDelta = (levels.loc[Segmenti, "bedlevelDS"] - bedlevel[-1]) / NoDistances
+        AverageDelta = (levels.loc[reachi, "bedlevelDS"] - bedlevel[-1]) / NoDistances
 
         # calculate the new bed levels
         bedlevelNew = np.zeros(len(bedlevel))
-        bedlevelNew[len(bedlevel) - 1] = levels.loc[Segmenti, "bedlevelDS"]
-        bedlevelNew[0] = levels.loc[Segmenti, "bedlevelUS"]
+        bedlevelNew[len(bedlevel) - 1] = levels.loc[reachi, "bedlevelDS"]
+        bedlevelNew[0] = levels.loc[reachi, "bedlevelUS"]
 
         for i in range(len(bedlevel) - 1):
-            # bedlevelNew[i] = levels.loc[Segmenti,'bedlevelDS'] + (len(bedlevel) - i -1) * abs(AvgSlope)
+            # bedlevelNew[i] = levels.loc[reachi,'bedlevelDS'] + (len(bedlevel) - i -1) * abs(AvgSlope)
             bedlevelNew[i] = bedlevel[i] + i * AverageDelta
 
-        self.crosssections.loc[self.crosssections["id"] == Segmenti, "gl"] = bedlevelNew
+        self.cross_sections.loc[self.cross_sections["id"] == reachi, "gl"] = bedlevelNew
         # change manning
-        self.crosssections.loc[self.crosssections["id"] == Segmenti, "m"] = Manning
+        self.cross_sections.loc[self.cross_sections["id"] == reachi, "m"] = Manning
         ## change slope
         try:
-            # self.slope.loc[self.slope['id']==Segmenti, 'slope'] = AvgSlope
-            self.slope.loc[self.slope["id"] == Segmenti, "slope"] = BC_slope
+            # self.slope.loc[self.slope['id']==reachi, 'slope'] = AvgSlope
+            self.slope.loc[self.slope["id"] == reachi, "slope"] = BC_slope
         except AttributeError:
-            logger.debug(f"The Given river segment- {Segmenti} does not have a slope")
+            logger.debug(f"The Given river reach- {reachi} does not have a slope")
 
-    def smoothBedLevel(self, segmenti):
-        """SmoothXS.
-
-        SmoothBedLevel method smoothes the bed level of a given segment ID by
-        calculating the moving average of three cross sections
+    def getReach(self, reach_id: int) -> DataFrame:
+        """Get Reach cross section data.
 
         Parameters
         ----------
-        1-segmenti : [Integer]
-            segment ID.
+        reach_id: [int]
+            reach id
 
         Returns
         -------
-        1-crosssections: [dataframe attribute]
-            the "gl" column in the crosssections attribute will be smoothed
+        DataFrame
         """
-        msg = "please read the cross section first"
-        assert hasattr(self, "crosssections"), "{0}".format(msg)
-        g = self.crosssections.loc[self.crosssections["id"] == segmenti, :].index[0]
+        return (
+            self.cross_sections.loc[self.cross_sections["id"] == reach_id, :]
+            .copy()
+            .reset_index()
+        )
 
-        segment = self.crosssections.loc[self.crosssections["id"] == segmenti, :].copy()
+    def updateReach(self, reach: DataFrame):
+        """Update the cross section of a given reach in the cross_sections attributes.
 
-        segment.index = range(len(segment))
-        segment.loc[:, "glnew"] = 0
-        # the bed level at the beginning and end of the egment
-        segment.loc[0, "glnew"] = segment.loc[0, "gl"]
-        segment.loc[len(segment) - 1, "glnew"] = segment.loc[len(segment) - 1, "gl"]
+        Parameters
+        ----------
+        reach: [DataFrame]
+            DataFrame of the reach cross sections
 
+        Returns
+        -------
+        Updates the cross_sections DataFrame attribute.
+        """
+        # get the reach id
+        reach_id: np.ndarray = reach.loc[:, "id"].unique()
+        if len(reach_id) > 1:
+            raise ValueError(
+                f"The given DataFrame conains more than one river reach: {len(reach_id)}, the function "
+                "can update 1 reach at a time."
+            )
+        reach_id = reach_id[0]
+        g = self.cross_sections.loc[self.cross_sections["id"] == reach_id, :].index[0]
+        # reset the index to the original index order
+        reach.index = range(g, g + len(reach))
+        # copy back the reach to the whole XS df
+        self.cross_sections.loc[self.cross_sections["id"] == reach_id, :] = reach
+
+    @staticmethod
+    def _smooth(series: Series, window: int = 3):
+        """Smooth data in a specific column in the given DataFrame.
+
+        Parameters
+        ----------
+        series: [series]
+            Pandas Series.
+        window: [int]
+            window length (length of averaged values)
+
+        Returns
+        -------
+        Pandas Series
+        """
         # calculate the average of three XS bed level
-        for j in range(1, len(segment) - 1):
-            segment.loc[j, "glnew"] = (
-                segment.loc[j - 1, "gl"]
-                + segment.loc[j, "gl"]
-                + segment.loc[j + 1, "gl"]
-            ) / 3
+        # TODO: use the rolling method in all other smoothing methods
+        # https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.rolling.html
+        smoothed = series.rolling(window=window, center=True).mean()
+        # the bed level at the beginning and end of the egment
+        smoothed[0] = series[0]
+        smoothed[smoothed.index[-1]] = series[series.index[-1]]
+
+        return smoothed
+
+    def smoothBedLevel(self, reach_id: int, window: int = 3):
+        """smoothBedLevel.
+
+            SmoothBedLevel method smoothes the bed level of a given reach ID by
+            calculating the moving average of three cross sections
+
+        Parameters
+        ----------
+        reach_id : [Integer]
+            reach ID.
+        window: [int]
+            window length (length of averaged values)
+
+        Returns
+        -------
+        cross_sections: [dataframe attribute]
+            the "gl" column in the cross_sections attribute will be smoothed
+        """
+        if not hasattr(self, "cross_sections"):
+            raise ValueError("Please read the cross section first")
+
+        reach = self.getReach(reach_id)
+        reach["glnew"] = self._smooth(reach["gl"], window=window)
         # calculate the difference in the bed level and take it from
         # the bankful depth
-        segment.loc[:, "diff"] = segment.loc[:, "glnew"] - segment.loc[:, "gl"]
-        segment.loc[:, "dbf"] = segment.loc[:, "dbf"] - segment.loc[:, "diff"]
-        segment.loc[:, "gl"] = segment.loc[:, "glnew"]
-        del segment["glnew"], segment["diff"]
+        reach.loc[:, "diff"] = reach.loc[:, "glnew"] - reach.loc[:, "gl"]
+        reach.loc[:, "dbf"] = reach.loc[:, "dbf"] - reach.loc[:, "diff"]
+        reach.loc[:, "gl"] = reach.loc[:, "glnew"]
+        reach.drop(labels=["glnew", "diff"], axis=1, inplace=True)
 
-        segment.index = range(g, g + len(segment))
-        # copy back the segment to the whole XS df
-        self.crosssections.loc[self.crosssections["id"] == segmenti, :] = segment
+        self.updateReach(reach)
 
-    def smoothBankLevel(self, segmenti):
-        """SmoothBankLevel.
+    def smoothDikeLevel(self, reach_id: int, window: int = 3):
+        """smoothBedLevel.
 
-        SmoothBankLevel method smoothes the bankfull depth for a given segment
+            SmoothBedLevel method smoothes the bed level of a given reach ID by
+            calculating the moving average of three cross sections
 
         Parameters
         ----------
-        1-segmenti : [Integer]
-            segment ID.
+        reach_id : [Integer]
+            reach ID.
+        window: [int]
+            window length (length of averaged values)
 
         Returns
         -------
-        1-crosssections: [dataframe attribute]
-            the "dbf" column in the crosssections attribute will be smoothed
+        cross_sections: [dataframe attribute]
+            the "gl" column in the cross_sections attribute will be smoothed
         """
-        self.crosssections.loc[:, "banklevel"] = (
-            self.crosssections.loc[:, "dbf"] + self.crosssections.loc[:, "gl"]
+        if not hasattr(self, "cross_sections"):
+            raise ValueError("Please read the cross section first")
+
+        reach = self.getReach(reach_id)
+        # TODO: use the rolling method in all other smoothing methods
+        reach["zl"] = self._smooth(reach["zl"], window=window)
+        reach["zr"] = self._smooth(reach["zr"], window=window)
+        self.updateReach(reach)
+
+    def smoothBankLevel(self, reach_id: int, window: int = 3):
+        """SmoothBankLevel.
+
+        SmoothBankLevel method smoothes the bankfull depth for a given reach
+
+        Parameters
+        ----------
+        reach_id : [Integer]
+            Reach ID.
+        window: [int]
+            window length (length of averaged values)
+
+        Returns
+        -------
+        cross_sections: [dataframe attribute]
+            the "dbf" column in the cross_sections attribute will be smoothed
+        """
+        self.cross_sections.loc[:, "banklevel"] = (
+            self.cross_sections.loc[:, "dbf"] + self.cross_sections.loc[:, "gl"]
         )
 
-        g = self.crosssections.loc[self.crosssections["id"] == segmenti, :].index[0]
+        reach = self.getReach(reach_id)
+        reach["banklevelnew"] = self._smooth(reach["banklevel"], window=window)
 
-        segment = self.crosssections.loc[self.crosssections["id"] == segmenti, :].copy()
-        segment.index = range(len(segment))
-        segment.loc[:, "banklevelnew"] = 0
-        segment.loc[0, "banklevelnew"] = segment.loc[0, "banklevel"]
-        segment.loc[len(segment) - 1, "banklevelnew"] = segment.loc[
-            len(segment) - 1, "banklevel"
-        ]
+        reach.loc[:, "diff"] = reach.loc[:, "banklevelnew"] - reach.loc[:, "banklevel"]
+        # add the difference to the bankful depth
+        reach.loc[:, "dbf"] = reach.loc[:, "dbf"] + reach.loc[:, "diff"]
 
-        for j in range(1, len(segment) - 1):
-            segment.loc[j, "banklevelnew"] = (
-                segment.loc[j - 1, "banklevel"]
-                + segment.loc[j, "banklevel"]
-                + segment.loc[j + 1, "banklevel"]
-            ) / 3
+        reach.drop(labels=["banklevel"], axis=1, inplace=True)
+        self.updateReach(reach)
 
-        segment.loc[:, "diff"] = (
-            segment.loc[:, "banklevelnew"] - segment.loc[:, "banklevel"]
-        )
-        segment.loc[:, "dbf"] = segment.loc[:, "dbf"] + segment.loc[:, "diff"]
-
-        del self.crosssections["banklevel"]
-        segment.index = range(g, g + len(segment))
-
-        # copy back the segment to the whole XS df
-        self.crosssections.loc[self.crosssections["id"] == segmenti, :] = segment
-
-    def smoothFloodplainHeight(self, segmenti):
+    def smoothFloodplainHeight(self, reach_id: int, window: int = 3):
         """SmoothFloodplainHeight.
 
         SmoothFloodplainHeight method smoothes the Floodplain Height the
-        point 5 and 6 in the cross section for a given segment
+        point 5 and 6 in the cross section for a given reach
 
         Parameters
         ----------
-        1-segmenti : [Integer]
-            segment ID.
+        reach_id : [Integer]
+            reach ID.
+        window: [int]
+            window length (length of averaged values)
 
         Returns
         -------
-        1-crosssections: [dataframe attribute]
-            the "hl" and "hr" column in the crosssections attribute will be
+        cross_sections: [dataframe attribute]
+            the "hl" and "hr" column in the cross_sections attribute will be
             smoothed.
         """
-        self.crosssections.loc[:, "banklevel"] = (
-            self.crosssections.loc[:, "dbf"] + self.crosssections.loc[:, "gl"]
+        self.cross_sections.loc[:, "banklevel"] = (
+            self.cross_sections.loc[:, "dbf"] + self.cross_sections.loc[:, "gl"]
         )
-        self.crosssections.loc[:, "fpl"] = (
-            self.crosssections.loc[:, "hl"] + self.crosssections.loc[:, "banklevel"]
+        self.cross_sections.loc[:, "fpl"] = (
+            self.cross_sections.loc[:, "hl"] + self.cross_sections.loc[:, "banklevel"]
         )
-        self.crosssections.loc[:, "fpr"] = (
-            self.crosssections.loc[:, "hr"] + self.crosssections.loc[:, "banklevel"]
-        )
-
-        g = self.crosssections.loc[self.crosssections["id"] == segmenti, :].index[0]
-
-        segment = self.crosssections.loc[self.crosssections["id"] == segmenti, :].copy()
-        segment.index = range(len(segment))
-
-        segment.loc[:, "fplnew"] = 0
-        segment.loc[:, "fprnew"] = 0
-        segment.loc[0, "fplnew"] = segment.loc[0, "fpl"]
-        segment.loc[len(segment) - 1, "fplnew"] = segment.loc[len(segment) - 1, "fpl"]
-
-        segment.loc[0, "fprnew"] = segment.loc[0, "fpr"]
-        segment.loc[len(segment) - 1, "fprnew"] = segment.loc[len(segment) - 1, "fpr"]
-
-        for j in range(1, len(segment) - 1):
-            segment.loc[j, "fplnew"] = (
-                segment.loc[j - 1, "fpl"]
-                + segment.loc[j, "fpl"]
-                + segment.loc[j + 1, "fpl"]
-            ) / 3
-            segment.loc[j, "fprnew"] = (
-                segment.loc[j - 1, "fpr"]
-                + segment.loc[j, "fpr"]
-                + segment.loc[j + 1, "fpr"]
-            ) / 3
-
-        segment.loc[:, "diff0"] = segment.loc[:, "fplnew"] - segment.loc[:, "fpl"]
-        segment.loc[:, "diff1"] = segment.loc[:, "fprnew"] - segment.loc[:, "fpr"]
-
-        segment.loc[:, "hl"] = segment.loc[:, "hl"] + segment.loc[:, "diff0"]
-        segment.loc[:, "hr"] = segment.loc[:, "hr"] + segment.loc[:, "diff1"]
-
-        segment.index = range(g, g + len(segment))
-        # copy back the segment to the whole XS df
-        self.crosssections.loc[self.crosssections["id"] == segmenti, :] = segment
-
-        del (
-            self.crosssections["banklevel"],
-            self.crosssections["fpr"],
-            self.crosssections["fpl"],
+        self.cross_sections.loc[:, "fpr"] = (
+            self.cross_sections.loc[:, "hr"] + self.cross_sections.loc[:, "banklevel"]
         )
 
-    def smoothBedWidth(self, segmenti):
+        reach = self.getReach(reach_id)
+
+        reach["fplnew"] = self._smooth(reach["fpl"], window=window)
+        reach["fprnew"] = self._smooth(reach["fpr"], window=window)
+
+        reach.loc[:, "diff0"] = reach.loc[:, "fplnew"] - reach.loc[:, "fpl"]
+        reach.loc[:, "diff1"] = reach.loc[:, "fprnew"] - reach.loc[:, "fpr"]
+
+        reach.loc[:, "hl"] = reach.loc[:, "hl"] + reach.loc[:, "diff0"]
+        reach.loc[:, "hr"] = reach.loc[:, "hr"] + reach.loc[:, "diff1"]
+
+        self.updateReach(reach)
+        self.cross_sections.drop(
+            labels=["banklevel", "fpr", "fpl"], axis=1, inplace=True
+        )
+
+    def smoothBedWidth(self, reach_id: int, window: int = 3):
         """SmoothBedWidth.
 
         SmoothBedWidth method smoothes the Bed Width the in the cross section
-        for a given segment
+        for a given reach
 
         Parameters
         ----------
-        1-segmenti : [Integer]
-            segment ID.
+        reach_id : [Integer]
+            reach ID.
+        window: [int]
+            window length (length of averaged values)
 
         Returns
         -------
-        1-crosssections: [dataframe attribute]
-            the "b" column in the crosssections attribute will be smoothed
+        cross_sections: [dataframe attribute]
+            the "b" column in the cross_sections attribute will be smoothed
         """
-        g = self.crosssections.loc[self.crosssections["id"] == segmenti, :].index[0]
-        segment = self.crosssections.loc[self.crosssections["id"] == segmenti, :].copy()
-        segment.index = range(len(segment))
-        segment.loc[:, "bnew"] = 0
-        segment.loc[0, "bnew"] = segment.loc[0, "b"]
-        segment.loc[len(segment) - 1, "bnew"] = segment.loc[len(segment) - 1, "b"]
+        reach = self.getReach(reach_id)
+        reach["n"] = self._smooth(reach["b"], window=window)
+        self.updateReach(reach)
 
-        for j in range(1, len(segment) - 1):
-            segment.loc[j, "bnew"] = (
-                segment.loc[j - 1, "b"] + segment.loc[j, "b"] + segment.loc[j + 1, "b"]
-            ) / 3
+    def downWardBedLevel(self, reach_id: int, height: Union[int, float]):
+        """downWardBedLevel.
 
-        segment.loc[:, "b"] = segment.loc[:, "bnew"]
-        segment.index = range(g, g + len(segment))
-        # copy back the segment to the whole XS df
-        self.crosssections.loc[self.crosssections["id"] == segmenti, :] = segment
-
-    def downWardBedLevel(self, segmenti: int, height: Union[int, float]):
-        """SmoothBedWidth.
-
-        SmoothBedWidth method smoothes the Bed Width the in the cross section
-        for a given segment
+        lowering the bed level by a certain height (5 cm)
 
         Parameters
         ----------
-        segmenti : [Integer]
-            segment ID.
+        reach_id : [Integer]
+            reach ID.
         height : []
+            down
 
         Returns
         -------
-        crosssections: [dataframe attribute]
-            the "b" column in the crosssections attribute will be smoothed
+        cross_sections: [dataframe attribute]
+            the "b" column in the cross_sections attribute will be smoothed
         """
-        g = self.crosssections.loc[self.crosssections["id"] == segmenti, :].index[0]
+        reach = self.getReach(reach_id)
 
-        segment = self.crosssections.loc[self.crosssections["id"] == segmenti, :].copy()
-        segment.index = range(len(segment))
+        for j in range(1, len(reach)):
+            if reach.loc[j - 1, "gl"] - reach.loc[j, "gl"] < height:
+                reach.loc[j, "gl"] = reach.loc[j - 1, "gl"] - height
 
-        for j in range(1, len(segment)):
-            if segment.loc[j - 1, "gl"] - segment.loc[j, "gl"] < height:
-                segment.loc[j, "gl"] = segment.loc[j - 1, "gl"] - height
+        self.updateReach(reach)
 
-        segment.index = range(g, g + len(segment))
-        # copy back the segment to the whole XS df
-        self.crosssections.loc[self.crosssections["id"] == segmenti, :] = segment
-
-    def smoothMaxSlope(self, segmenti, SlopePercentThreshold=1.5):
+    def smoothMaxSlope(self, reach_id: int, SlopePercentThreshold=1.5):
         """SmoothMaxSlope.
 
         SmoothMaxSlope method smoothes the bed level the in the cross section
-        for a given segment
+        for a given reach
 
         As now the slope is not very smoothed as it was when using the average
         slope everywhere, when the the difference between two consecutive
@@ -1412,25 +1447,22 @@ class Calibration(River):
 
         Parameters
         ----------
-        1-segmenti : [Integer]
-            segment ID.
-        2-SlopePercentThreshold  : [Float]
+        reach_id : [Integer]
+            reach ID.
+        SlopePercentThreshold  : [Float]
              the percent of change in slope between three successive  cross
              sections. The default is 1.5.
 
         Returns
         -------
-        1-crosssections: [dataframe attribute]
-            the "gl" column in the crosssections attribute will be smoothed
+        cross_sections: [dataframe attribute]
+            the "gl" column in the cross_sections attribute will be smoothed
         """
-        g = self.crosssections.loc[self.crosssections["id"] == segmenti, :].index[0]
-
-        segment = self.crosssections.loc[self.crosssections["id"] == segmenti, :].copy()
-        segment.index = range(len(segment))
+        reach = self.getReach(reach_id)
         # slope must be positive due to the smoothing
         slopes = [
-            (segment.loc[k, "gl"] - segment.loc[k + 1, "gl"]) / 500
-            for k in range(len(segment) - 1)
+            (reach.loc[k, "gl"] - reach.loc[k + 1, "gl"]) / 500
+            for k in range(len(reach) - 1)
         ]
         # if percent is -ve means second slope is steeper
         precent = [
@@ -1440,29 +1472,25 @@ class Calibration(River):
         # at row 1 in precent list is difference between row 1 and row 2
         # in slopes list and slope in row 2 is the steep slope,
         # slope at row 2 is the difference
-        # between gl in row 2 and row 3 in the segment dataframe, and gl row
+        # between gl in row 2 and row 3 in the reach dataframe, and gl row
         # 3 is very and we want to elevate it to reduce the slope
         for j in range(len(precent)):
             if precent[j] < 0 and abs(precent[j]) >= SlopePercentThreshold:
                 logger.debug(j)
                 # get the calculated slope based on the slope percent threshold
                 slopes[j + 1] = slopes[j] - (-SlopePercentThreshold * slopes[j])
-                segment.loc[j + 2, "gl"] = (
-                    segment.loc[j + 1, "gl"] - slopes[j + 1] * 500
-                )
+                reach.loc[j + 2, "gl"] = reach.loc[j + 1, "gl"] - slopes[j + 1] * 500
                 # recalculate all the slopes again
                 slopes = [
-                    (segment.loc[k, "gl"] - segment.loc[k + 1, "gl"]) / 500
-                    for k in range(len(segment) - 1)
+                    (reach.loc[k, "gl"] - reach.loc[k + 1, "gl"]) / 500
+                    for k in range(len(reach) - 1)
                 ]
                 precent = [
                     (slopes[k] - slopes[k + 1]) / slopes[k]
                     for k in range(len(slopes) - 1)
                 ]
 
-        segment.index = range(g, g + len(segment))
-        # copy back the segment to the whole XS df
-        self.crosssections.loc[self.crosssections["id"] == segmenti, :] = segment
+        self.updateReach(reach)
 
     def checkFloodplain(self):
         """CheckFloodplain.
@@ -1474,30 +1502,31 @@ class Calibration(River):
         Returns
         -------
         crosssection : [dataframe attribute]
-            the "zl" and "zr" column in the "crosssections" attribute will be
+            the "zl" and "zr" column in the "cross_sections" attribute will be
             updated
         """
         msg = """please read the cross section first or copy it to the
         Calibration object"""
-        assert hasattr(self, "crosssections"), "{0}".format(msg)
-        for i in range(len(self.crosssections)):
+        assert hasattr(self, "cross_sections"), "{0}".format(msg)
+        for i in range(len(self.cross_sections)):
             BankLevel = (
-                self.crosssections.loc[i, "gl"] + self.crosssections.loc[i, "dbf"]
+                self.cross_sections.loc[i, "gl"] + self.cross_sections.loc[i, "dbf"]
             )
 
             if (
-                BankLevel + self.crosssections.loc[i, "hl"]
-                > self.crosssections.loc[i, "zl"]
+                BankLevel + self.cross_sections.loc[i, "hl"]
+                > self.cross_sections.loc[i, "zl"]
             ):
-                self.crosssections.loc[i, "zl"] = (
-                    BankLevel + self.crosssections.loc[i, "hl"] + 0.5
+                self.cross_sections.loc[i, "zl"] = (
+                    BankLevel + self.cross_sections.loc[i, "hl"] + 0.5
                 )
+
             if (
-                BankLevel + self.crosssections.loc[i, "hr"]
-                > self.crosssections.loc[i, "zr"]
+                BankLevel + self.cross_sections.loc[i, "hr"]
+                > self.cross_sections.loc[i, "zr"]
             ):
-                self.crosssections.loc[i, "zr"] = (
-                    BankLevel + self.crosssections.loc[i, "hr"] + 0.5
+                self.cross_sections.loc[i, "zr"] = (
+                    BankLevel + self.cross_sections.loc[i, "hr"] + 0.5
                 )
 
     @staticmethod
@@ -1511,7 +1540,7 @@ class Calibration(River):
         shift: int = 0,
         fmt: str = "%Y-%m-%d",
     ) -> DataFrame:
-        """
+        """Calculate performance metrics.
 
         Parameters
         ----------
@@ -1627,21 +1656,21 @@ class Calibration(River):
         if not isinstance(self.q_hm, DataFrame):
             raise ValueError("please read the HM results with the 'ReadHMQ' method")
         ### HM vs RRM
-        self.MetricsHMvsRRM = self.Metrics(
+        self.metrics_hm_vs_rrm = self.Metrics(
             self.q_rrm, self.q_hm, self.rrm_gauges, self.novalue, start, end, shift, fmt
         )
         # get the point geometry from the hm_gauges
-        self.MetricsHMvsRRM = self.hm_gauges.merge(
-            self.MetricsHMvsRRM,
+        self.metrics_hm_vs_rrm = self.hm_gauges.merge(
+            self.metrics_hm_vs_rrm,
             left_on=self.gauge_id_col,
             right_index=True,
             how="left",
             sort=False,
         )
-        self.MetricsHMvsRRM.index = self.MetricsHMvsRRM[self.gauge_id_col]
-        self.MetricsHMvsRRM.index.name = "index"
+        self.metrics_hm_vs_rrm.index = self.metrics_hm_vs_rrm[self.gauge_id_col]
+        self.metrics_hm_vs_rrm.index.name = "index"
         if isinstance(self.hm_gauges, GeoDataFrame):
-            self.MetricsHMvsRRM.crs = self.hm_gauges.crs
+            self.metrics_hm_vs_rrm.crs = self.hm_gauges.crs
 
     def RRMvsObserved(
         self, start: str = "", end: str = "", fmt: str = "%Y-%m-%d", shift: int = 0
@@ -1685,7 +1714,7 @@ class Calibration(River):
             )
 
         ### RRM vs observed
-        self.MetricsRRMvsObs = self.Metrics(
+        self.metrics_rrm_vs_obs = self.Metrics(
             self.q_gauges,
             self.q_rrm,
             self.rrm_gauges,
@@ -1696,18 +1725,18 @@ class Calibration(River):
             fmt,
         )
 
-        self.MetricsRRMvsObs = self.hm_gauges.merge(
-            self.MetricsRRMvsObs,
+        self.metrics_rrm_vs_obs = self.hm_gauges.merge(
+            self.metrics_rrm_vs_obs,
             left_on=self.gauge_id_col,
             right_index=True,
             how="left",
             sort=False,
         )
 
-        self.MetricsRRMvsObs.index = self.MetricsRRMvsObs[self.gauge_id_col]
-        self.MetricsRRMvsObs.index.name = "index"
+        self.metrics_rrm_vs_obs.index = self.metrics_rrm_vs_obs[self.gauge_id_col]
+        self.metrics_rrm_vs_obs.index.name = "index"
         if isinstance(self.hm_gauges, GeoDataFrame):
-            self.MetricsRRMvsObs.crs = self.hm_gauges.crs
+            self.metrics_rrm_vs_obs.crs = self.hm_gauges.crs
 
     def HMQvsObserved(
         self,
@@ -1736,7 +1765,7 @@ class Calibration(River):
 
         Returns
         -------
-        MetricsHMQvsObs: [dataframe]
+        metrics_hm_q_vs_obs: [dataframe]
             dataframe with the gauges id as rows and ['start', 'end', 'rmse', 'KGE', 'WB', 'NSE',
             'NSEModefied'], as columns.
         """
@@ -1753,7 +1782,7 @@ class Calibration(River):
             )
 
         ### HM Q vs observed
-        self.MetricsHMQvsObs = self.Metrics(
+        self.metrics_hm_q_vs_obs = self.Metrics(
             self.q_gauges,
             self.q_hm,
             self.QgaugesList,
@@ -1764,18 +1793,18 @@ class Calibration(River):
             fmt,
         )
 
-        self.MetricsHMQvsObs = self.hm_gauges.merge(
-            self.MetricsHMQvsObs,
+        self.metrics_hm_q_vs_obs = self.hm_gauges.merge(
+            self.metrics_hm_q_vs_obs,
             left_on=self.gauge_id_col,
             right_index=True,
             how="left",
             sort=False,
         )
 
-        self.MetricsHMQvsObs.index = self.MetricsHMQvsObs[self.gauge_id_col]
-        self.MetricsHMQvsObs.index.name = "index"
+        self.metrics_hm_q_vs_obs.index = self.metrics_hm_q_vs_obs[self.gauge_id_col]
+        self.metrics_hm_q_vs_obs.index.name = "index"
         if isinstance(self.hm_gauges, GeoDataFrame):
-            self.MetricsHMQvsObs.crs = self.hm_gauges.crs
+            self.metrics_hm_q_vs_obs.crs = self.hm_gauges.crs
 
     def HMWLvsObserved(
         self,
@@ -1804,27 +1833,27 @@ class Calibration(River):
 
         Returns
         -------
-        MetricsHMWLvsObs: [dataframe]
+        metrics_hm_wl_vs_obs: [dataframe]
             dataframe with the gauges id as rows and ['start', 'end', 'rmse', 'KGE', 'WB', 'NSE',
             'NSEModefied'], as columns.
         """
-        if not isinstance(self.WLGauges, DataFrame):
+        if not isinstance(self.wl_gauges, DataFrame):
             raise ValueError(
-                "WLGauges variable does not exist please read the water level gauges "
-                "with 'ReadObservedWL' method"
+                "wl_gauges variable does not exist please read the water level gauges "
+                "with 'readObservedWL' method"
             )
 
-        if not isinstance(self.WLHM, DataFrame):
+        if not isinstance(self.wl_hm, DataFrame):
             raise ValueError(
-                "WLHM variable does not exist please read the water level simulated by the HM "
-                "with 'ReadHMWL' method"
+                "wl_hm variable does not exist please read the water level simulated by the HM "
+                "with 'readHMWL' method"
             )
 
         ### HM WL vs observed
-        self.MetricsHMWLvsObs = self.Metrics(
-            self.WLGauges,
-            self.WLHM,
-            self.WLgaugesList,
+        self.metrics_hm_wl_vs_obs = self.Metrics(
+            self.wl_gauges,
+            self.wl_hm,
+            self.wl_gauges_list,
             self.novalue,
             start,
             end,
@@ -1832,22 +1861,22 @@ class Calibration(River):
             fmt,
         )
 
-        self.MetricsHMWLvsObs = self.hm_gauges.merge(
-            self.MetricsHMWLvsObs,
+        self.metrics_hm_wl_vs_obs = self.hm_gauges.merge(
+            self.metrics_hm_wl_vs_obs,
             left_on=self.gauge_id_col,
             right_index=True,
             how="left",
             sort=False,
         )
 
-        self.MetricsHMWLvsObs.index = self.MetricsHMWLvsObs[self.gauge_id_col]
-        self.MetricsHMWLvsObs.index.name = "index"
+        self.metrics_hm_wl_vs_obs.index = self.metrics_hm_wl_vs_obs[self.gauge_id_col]
+        self.metrics_hm_wl_vs_obs.index.name = "index"
         if isinstance(self.hm_gauges, GeoDataFrame):
-            self.MetricsHMWLvsObs.crs = self.hm_gauges.crs
+            self.metrics_hm_wl_vs_obs.crs = self.hm_gauges.crs
 
     def InspectGauge(
         self,
-        subid: int,
+        reach_id: int,
         gaugei: int = 0,
         start: str = "",
         end: str = "",
@@ -1860,43 +1889,44 @@ class Calibration(River):
             InspectGauge returns the metrices of the gauge simulated discharge and water level
             and plot it
 
-        parameters
+        Parameters
         ----------
-        subid: [int]
-            river segment id
+        reach_id: [int]
+            river reach id
         gaugei: [int]
-            if the river segment has more than one gauge, gaugei is the gauge order
+            if the river reach has more than one gauge, gaugei is the gauge order
         start: [str]
             start date, if not given it will be taken from the already calculated Metrics table
         end: [str]
             end date, if not given it will be taken from the already calculated Metrics table
         fmt : [str]
             format of the given dates. The default is "%Y-%m-%d"
+
         Returns
         -------
         summary: [DataFrame]
             performance metrix
         """
-        if not isinstance(self.MetricsHMvsRRM, DataFrame) and not isinstance(
-            self.MetricsHMvsRRM, GeoDataFrame
+        if not isinstance(self.metrics_hm_vs_rrm, DataFrame) and not isinstance(
+            self.metrics_hm_vs_rrm, GeoDataFrame
         ):
             raise ValueError(
-                "please calculate first the MetricsHMvsRRM by the method HMvsRRM"
+                "please calculate first the metrics_hm_vs_rrm by the method HMvsRRM"
             )
 
-        gauge = self.getGauges(subid, gaugei)
+        gauge = self.getGauges(reach_id, gaugei)
         gauge_id = gauge.loc[0, self.gauge_id_col]
         gaugename = str(gauge.loc[0, "name"])
 
         summary = pd.DataFrame(
             index=["HM-RRM", "RRM-Observed", "HM-Q-Observed", "HM-WL-Observed"],
-            columns=self.MetricsHMvsRRM.columns,
+            columns=self.metrics_hm_vs_rrm.columns,
         )
-        # for each gauge in the segment
-        if isinstance(self.MetricsHMQvsObs, DataFrame) or isinstance(
-            self.MetricsHMQvsObs, GeoDataFrame
+        # for each gauge in the reach
+        if isinstance(self.metrics_hm_q_vs_obs, DataFrame) or isinstance(
+            self.metrics_hm_q_vs_obs, GeoDataFrame
         ):
-            summary.loc["HM-Q-Observed", :] = self.MetricsHMQvsObs.loc[gauge_id, :]
+            summary.loc["HM-Q-Observed", :] = self.metrics_hm_q_vs_obs.loc[gauge_id, :]
 
         if gauge.loc[0, "waterlevel"] == 1 and gauge.loc[0, "discharge"] == 1:
             fig, (ax1, ax2) = plt.subplots(
@@ -1907,24 +1937,26 @@ class Calibration(River):
 
         if gauge_id in self.rrm_gauges:
             # there are RRM simulated data
-            summary.loc["HM-RRM", :] = self.MetricsHMvsRRM.loc[gauge_id, :]
-            if isinstance(self.MetricsRRMvsObs, DataFrame) or isinstance(
-                self.MetricsRRMvsObs, GeoDataFrame
+            summary.loc["HM-RRM", :] = self.metrics_hm_vs_rrm.loc[gauge_id, :]
+            if isinstance(self.metrics_rrm_vs_obs, DataFrame) or isinstance(
+                self.metrics_rrm_vs_obs, GeoDataFrame
             ):
-                summary.loc["RRM-Observed", :] = self.MetricsRRMvsObs.loc[gauge_id, :]
+                summary.loc["RRM-Observed", :] = self.metrics_rrm_vs_obs.loc[
+                    gauge_id, :
+                ]
 
             if start == "":
-                start_1 = self.MetricsHMvsRRM.loc[gauge_id, "start"]
+                start_1 = self.metrics_hm_vs_rrm.loc[gauge_id, "start"]
             else:
                 s1 = dt.datetime.strptime(start, fmt)
-                s2 = self.MetricsHMvsRRM.loc[gauge_id, "start"]
+                s2 = self.metrics_hm_vs_rrm.loc[gauge_id, "start"]
                 start_1 = max(s1, s2)
 
             if end == "":
-                end_1 = self.MetricsHMvsRRM.loc[gauge_id, "end"]
+                end_1 = self.metrics_hm_vs_rrm.loc[gauge_id, "end"]
             else:
                 e1 = dt.datetime.strptime(end, fmt)
-                e2 = self.MetricsHMvsRRM.loc[gauge_id, "end"]
+                e2 = self.metrics_hm_vs_rrm.loc[gauge_id, "end"]
                 end_1 = min(e1, e2)
 
             ax1.plot(self.q_hm[gauge_id].loc[start_1:end_1], label="HM", zorder=5)
@@ -1937,35 +1969,37 @@ class Calibration(River):
             # pos = max(SimMax, ObsMax)
         if gauge.loc[0, "waterlevel"] == 1:
             # there are water level observed data
-            summary.loc["HM-WL-Observed", :] = self.MetricsHMWLvsObs.loc[gauge_id, :]
+            summary.loc["HM-WL-Observed", :] = self.metrics_hm_wl_vs_obs.loc[
+                gauge_id, :
+            ]
 
             if start == "":
-                start_2 = self.MetricsHMWLvsObs.loc[gauge_id, "start"]
+                start_2 = self.metrics_hm_wl_vs_obs.loc[gauge_id, "start"]
             else:
                 s1 = dt.datetime.strptime(start, fmt)
-                s2 = self.MetricsHMWLvsObs.loc[gauge_id, "start"]
+                s2 = self.metrics_hm_wl_vs_obs.loc[gauge_id, "start"]
                 start_2 = max(s1, s2)
 
             if end == "":
-                end_2 = self.MetricsHMWLvsObs.loc[gauge_id, "end"]
+                end_2 = self.metrics_hm_wl_vs_obs.loc[gauge_id, "end"]
             else:
                 e1 = dt.datetime.strptime(end, fmt)
-                e2 = self.MetricsHMWLvsObs.loc[gauge_id, "end"]
+                e2 = self.metrics_hm_wl_vs_obs.loc[gauge_id, "end"]
                 end_2 = min(e1, e2)
 
-            ax2.plot(self.WLHM[gauge_id].loc[start_2:end_2], label="HM", linewidth=2)
+            ax2.plot(self.wl_hm[gauge_id].loc[start_2:end_2], label="HM", linewidth=2)
             ax2.plot(
-                self.WLGauges[gauge_id].loc[start_2:end_2],
+                self.wl_gauges[gauge_id].loc[start_2:end_2],
                 label="Observed",
                 linewidth=2,
             )
             ax2.set_ylabel("Water Level m", fontsize=12)
             ax2.legend(fontsize=15)
 
-            # SimMax = max(self.WLHM[gauge_id].loc[start_2:end_2])
-            # ObsMax = max(self.WLGauges[gauge_id].loc[start_2: end_2])
+            # SimMax = max(self.wl_hm[gauge_id].loc[start_2:end_2])
+            # ObsMax = max(self.wl_gauges[gauge_id].loc[start_2: end_2])
             # pos = max(SimMax, ObsMax)
-        # plt.legend(fontsize=15)
+        # plt.legend(font_size=15)
         ax1.set_title(gaugename, fontsize=30)
         ax1.set_title(gaugename, fontsize=30)
 
@@ -2016,7 +2050,7 @@ class Calibration(River):
                     )
         return df
 
-    def SaveMetices(self, path):
+    def saveMetices(self, path):
         """SaveMetices.
 
             SaveMetices saves the calculated metrics
@@ -2029,40 +2063,40 @@ class Calibration(River):
         -------
         None
         """
-        if isinstance(self.MetricsHMvsRRM, GeoDataFrame) or isinstance(
-            self.MetricsHMvsRRM, DataFrame
+        if isinstance(self.metrics_hm_vs_rrm, GeoDataFrame) or isinstance(
+            self.metrics_hm_vs_rrm, DataFrame
         ):
-            df = self.prepareToSave(self.MetricsHMvsRRM.copy())
-            if isinstance(self.MetricsHMvsRRM, GeoDataFrame):
+            df = self.prepareToSave(self.metrics_hm_vs_rrm.copy())
+            if isinstance(self.metrics_hm_vs_rrm, GeoDataFrame):
                 df.to_file(path + "MetricsHM_Q_RRM.geojson", driver="GeoJSON")
-            if isinstance(self.MetricsHMvsRRM, DataFrame):
+            if isinstance(self.metrics_hm_vs_rrm, DataFrame):
                 df.to_csv(path + "MetricsHM_Q_RRM.geojson.csv")
 
-        if isinstance(self.MetricsHMQvsObs, GeoDataFrame) or isinstance(
-            self.MetricsHMQvsObs, DataFrame
+        if isinstance(self.metrics_hm_q_vs_obs, GeoDataFrame) or isinstance(
+            self.metrics_hm_q_vs_obs, DataFrame
         ):
-            df = self.prepareToSave(self.MetricsHMQvsObs.copy())
-            if isinstance(self.MetricsHMQvsObs, GeoDataFrame):
+            df = self.prepareToSave(self.metrics_hm_q_vs_obs.copy())
+            if isinstance(self.metrics_hm_q_vs_obs, GeoDataFrame):
                 df.to_file(path + "MetricsHM_Q_Obs.geojson", driver="GeoJSON")
-            if isinstance(self.MetricsHMQvsObs, DataFrame):
+            if isinstance(self.metrics_hm_q_vs_obs, DataFrame):
                 df.to_csv(path + "MetricsHM_Q_Obs.geojson.csv")
 
-        if isinstance(self.MetricsRRMvsObs, GeoDataFrame) or isinstance(
-            self.MetricsRRMvsObs, DataFrame
+        if isinstance(self.metrics_rrm_vs_obs, GeoDataFrame) or isinstance(
+            self.metrics_rrm_vs_obs, DataFrame
         ):
-            df = self.prepareToSave(self.MetricsRRMvsObs.copy())
-            if isinstance(self.MetricsRRMvsObs, GeoDataFrame):
+            df = self.prepareToSave(self.metrics_rrm_vs_obs.copy())
+            if isinstance(self.metrics_rrm_vs_obs, GeoDataFrame):
                 df.to_file(path + "MetricsRRM_Q_Obs.geojson", driver="GeoJSON")
-            if isinstance(self.MetricsRRMvsObs, DataFrame):
+            if isinstance(self.metrics_rrm_vs_obs, DataFrame):
                 df.to_csv(path + "MetricsRRM_Q_Obs.geojson.csv")
 
-        if isinstance(self.MetricsHMWLvsObs, GeoDataFrame) or isinstance(
-            self.MetricsHMWLvsObs, DataFrame
+        if isinstance(self.metrics_hm_wl_vs_obs, GeoDataFrame) or isinstance(
+            self.metrics_hm_wl_vs_obs, DataFrame
         ):
-            df = self.prepareToSave(self.MetricsHMWLvsObs.copy())
-            if isinstance(self.MetricsHMWLvsObs, GeoDataFrame):
+            df = self.prepareToSave(self.metrics_hm_wl_vs_obs.copy())
+            if isinstance(self.metrics_hm_wl_vs_obs, GeoDataFrame):
                 df.to_file(path + "MetricsHM_WL_Obs.geojson", driver="GeoJSON")
-            if isinstance(self.MetricsHMWLvsObs, DataFrame):
+            if isinstance(self.metrics_hm_wl_vs_obs, DataFrame):
                 df.to_csv(path + "MetricsHM_WL_Obs.geojson.csv")
 
     def ListAttributes(self):
