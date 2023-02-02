@@ -206,17 +206,25 @@ class Calibration(Catchment):
         # return error
 
     def runCalibration(self, SpatialVarFun, OptimizationArgs, printError=None):
-        """runCalibration.
+        """Run Calibration.
 
-        this function runs the calibration algorithm for the conceptual distributed
-        hydrological model
+            - This function runs the calibration algorithm for the conceptual distributed
+            hydrological model
 
-        Inputs:
+        Parameters
         ----------
-            1-ConceptualModel:
+        SpatialVarFun: [function]
+
+        OptimizationArgs: [Dict]
+
+        printError: [bool]
+            Default is None.
+
+        Parameters that should be defined before running the function.
+            ConceptualModel:
                 [function] conceptual model and it should contain a function called simulate
 
-            2-Basic_inputs:
+            Basic_inputs:
                 1-p2:
                     [List] list of unoptimized parameters
                     p2[0] = tfac, 1 for hourly, 0.25 for 15 min time step and 24 for daily time step
@@ -227,27 +235,27 @@ class Calibration(Catchment):
                     [Numeric] upper bound of the values of the parameters
                 4-LB:
                     [Numeric] Lower bound of the values of the parameters
-            3-Q_obs:
+            Q_obs:
                 [Numeric] Observed values of discharge
 
-            6-lumpedParNo:
+            lumpedParNo:
                 [int] nomber of lumped parameters, you have to enter the value of
                 the lumped parameter at the end of the list, default is 0 (no lumped parameters)
-            7-lumpedParPos:
+            lumpedParPos:
                 [List] list of order or position of the lumped parameter among all
                 the parameters of the lumped model (order starts from 0 to the length
                 of the model parameters), default is [] (empty), the following order
                 of parameters is used for the lumped HBV model used
                 [ltt, utt, rfcf, sfcf, ttm, cfmax, cwh, cfr, fc, beta, e_corr, etf, lp,
                 c_flux, k, k1, alpha, perc, pcorr, Kmuskingum, Xmuskingum]
-            8-objective_function:
+            objective_function:
                 [function] objective function to calculate the performance of the model
                 and to be used in the calibration
-            9-*args:
+            *args:
                 other arguments needed on the objective function
 
-        Outputs:
-        ----------
+        Returns
+        -------
         st: [4D array]
             state variables
         q_out: [1D array]
@@ -264,7 +272,7 @@ class Calibration(Catchment):
         >>> FlowDPath = "GIS/4000/fd4000.tif"
         >>> ParPath = "meteodata/4000/parameters.txt"
         >>> p2 = [1, 227.31]
-        >>> st, q_out, q_uz_routed = RunModel(PrecPath,Evap_Path,TempPath,DemPath,
+        >>> st, q_out, q_uz_routed = RunModel(PrecPath, Evap_Path, TempPath, DemPath,
         >>>                                   FlowAccPath,FlowDPath,ParPath,p2)
         """
         # input dimensions

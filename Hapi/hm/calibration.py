@@ -13,10 +13,10 @@ from matplotlib.figure import Figure
 from pandas._libs.tslibs.timestamps import Timestamp
 from pandas.core.frame import DataFrame
 from pandas.core.series import Series
+from serapeum_utils.utils import class_attr_initialize
 
 from Hapi.hapi_warnings import SilenceShapelyWarning
 from Hapi.hm.river import River
-from serapeum_utils.utils import class_attr_initialize
 
 datafn = lambda x: dt.datetime.strptime(x, "%Y-%m-%d")
 
@@ -185,14 +185,16 @@ class Calibration(River):
         self.hm_gauges.sort_values(by="id", inplace=True, ignore_index=True)
 
     def getGauges(self, reach_id: int, gaugei: int = 0) -> DataFrame:
-        """Get_Gauge_ID get the id of the station for a given river reach.
+        """Get gauges.
 
-        parameters:
+            get the id of the station for a given river reach.
+
+        Parameters
         ----------
         reach_id: [int]
             the river reach id
 
-        return:
+        Returns
         -------
         id: [list/int]
             if the river reach contains more than one gauges the function
@@ -319,10 +321,10 @@ class Calibration(River):
             if self.hm_gauges.loc[i, "waterlevel"] == 1:
                 st1 = self.wl_gauges[columns[i]][
                     self.wl_gauges[columns[i]] != novalue
-                    ].index[0]
+                ].index[0]
                 end1 = self.wl_gauges[columns[i]][
                     self.wl_gauges[columns[i]] != novalue
-                    ].index[-1]
+                ].index[-1]
                 self.hm_gauges.loc[i, "WLstart"] = st1
                 self.hm_gauges.loc[i, "WLend"] = end1
 
@@ -820,7 +822,9 @@ class Calibration(River):
 
         ind = pd.date_range(self.start, self.end, freq="H")[:-1]
         q = pd.read_csv(path + str(reach_id) + "_q.txt", header=None, delimiter=r"\s+")
-        wl = pd.read_csv(path + str(reach_id) + "_wl.txt", header=None, delimiter=r"\s+")
+        wl = pd.read_csv(
+            path + str(reach_id) + "_wl.txt", header=None, delimiter=r"\s+"
+        )
 
         q.index = ind
         wl.index = ind
@@ -930,7 +934,7 @@ class Calibration(River):
                 sub = self.wl_gauges.columns[i]
                 for j in range(len(AnnualMax)):
                     if j == 0:
-                        f = self.wl_gauges.loc[startdate: AnnualMax.index[j], sub]
+                        f = self.wl_gauges.loc[startdate : AnnualMax.index[j], sub]
                         self.AnnualMaxDates.loc[AnnualMax.index[j], sub] = f.index[
                             f.argmax()
                         ]
@@ -1164,7 +1168,7 @@ class Calibration(River):
             logger.debug(f"The Given river reach- {reachi} does not have a slope")
 
     def getReach(self, reach_id: int) -> DataFrame:
-        """Get Reach cross section data
+        """Get Reach cross section data.
 
         Parameters
         ----------
@@ -1175,10 +1179,14 @@ class Calibration(River):
         -------
         DataFrame
         """
-        return self.cross_sections.loc[self.cross_sections["id"] == reach_id, :].copy().reset_index()
+        return (
+            self.cross_sections.loc[self.cross_sections["id"] == reach_id, :]
+            .copy()
+            .reset_index()
+        )
 
     def updateReach(self, reach: DataFrame):
-        """Update the cross section of a given reach in the cross_sections attributes
+        """Update the cross section of a given reach in the cross_sections attributes.
 
         Parameters
         ----------
@@ -1192,8 +1200,10 @@ class Calibration(River):
         # get the reach id
         reach_id: np.ndarray = reach.loc[:, "id"].unique()
         if len(reach_id) > 1:
-            raise ValueError(f"The given DataFrame conains more than one river reach: {len(reach_id)}, the function "
-                             "can update 1 reach at a time.")
+            raise ValueError(
+                f"The given DataFrame conains more than one river reach: {len(reach_id)}, the function "
+                "can update 1 reach at a time."
+            )
         reach_id = reach_id[0]
         g = self.cross_sections.loc[self.cross_sections["id"] == reach_id, :].index[0]
         # reset the index to the original index order
@@ -1201,10 +1211,9 @@ class Calibration(River):
         # copy back the reach to the whole XS df
         self.cross_sections.loc[self.cross_sections["id"] == reach_id, :] = reach
 
-
     @staticmethod
     def _smooth(series: Series, window: int = 3):
-        """smooth data in a specific column in the given DataFrame
+        """Smooth data in a specific column in the given DataFrame.
 
         Parameters
         ----------
@@ -1227,7 +1236,7 @@ class Calibration(River):
 
         return smoothed
 
-    def smoothBedLevel(self, reach_id: int, window: int=3):
+    def smoothBedLevel(self, reach_id: int, window: int = 3):
         """smoothBedLevel.
 
             SmoothBedLevel method smoothes the bed level of a given reach ID by
@@ -1259,7 +1268,7 @@ class Calibration(River):
 
         self.updateReach(reach)
 
-    def smoothDikeLevel(self, reach_id: int, window: int=3):
+    def smoothDikeLevel(self, reach_id: int, window: int = 3):
         """smoothBedLevel.
 
             SmoothBedLevel method smoothes the bed level of a given reach ID by
@@ -1286,7 +1295,7 @@ class Calibration(River):
         reach["zr"] = self._smooth(reach["zr"], window=window)
         self.updateReach(reach)
 
-    def smoothBankLevel(self, reach_id: int, window: int=3):
+    def smoothBankLevel(self, reach_id: int, window: int = 3):
         """SmoothBankLevel.
 
         SmoothBankLevel method smoothes the bankfull depth for a given reach
@@ -1304,23 +1313,20 @@ class Calibration(River):
             the "dbf" column in the cross_sections attribute will be smoothed
         """
         self.cross_sections.loc[:, "banklevel"] = (
-                self.cross_sections.loc[:, "dbf"] + self.cross_sections.loc[:, "gl"]
+            self.cross_sections.loc[:, "dbf"] + self.cross_sections.loc[:, "gl"]
         )
-
 
         reach = self.getReach(reach_id)
         reach["banklevelnew"] = self._smooth(reach["banklevel"], window=window)
 
-        reach.loc[:, "diff"] = (
-            reach.loc[:, "banklevelnew"] - reach.loc[:, "banklevel"]
-        )
+        reach.loc[:, "diff"] = reach.loc[:, "banklevelnew"] - reach.loc[:, "banklevel"]
         # add the difference to the bankful depth
         reach.loc[:, "dbf"] = reach.loc[:, "dbf"] + reach.loc[:, "diff"]
 
         reach.drop(labels=["banklevel"], axis=1, inplace=True)
         self.updateReach(reach)
 
-    def smoothFloodplainHeight(self, reach_id: int, window: int=3):
+    def smoothFloodplainHeight(self, reach_id: int, window: int = 3):
         """SmoothFloodplainHeight.
 
         SmoothFloodplainHeight method smoothes the Floodplain Height the
@@ -1340,13 +1346,13 @@ class Calibration(River):
             smoothed.
         """
         self.cross_sections.loc[:, "banklevel"] = (
-                self.cross_sections.loc[:, "dbf"] + self.cross_sections.loc[:, "gl"]
+            self.cross_sections.loc[:, "dbf"] + self.cross_sections.loc[:, "gl"]
         )
         self.cross_sections.loc[:, "fpl"] = (
-                self.cross_sections.loc[:, "hl"] + self.cross_sections.loc[:, "banklevel"]
+            self.cross_sections.loc[:, "hl"] + self.cross_sections.loc[:, "banklevel"]
         )
         self.cross_sections.loc[:, "fpr"] = (
-                self.cross_sections.loc[:, "hr"] + self.cross_sections.loc[:, "banklevel"]
+            self.cross_sections.loc[:, "hr"] + self.cross_sections.loc[:, "banklevel"]
         )
 
         reach = self.getReach(reach_id)
@@ -1361,9 +1367,11 @@ class Calibration(River):
         reach.loc[:, "hr"] = reach.loc[:, "hr"] + reach.loc[:, "diff1"]
 
         self.updateReach(reach)
-        self.cross_sections.drop(labels=["banklevel", "fpr", "fpl"], axis=1, inplace=True)
+        self.cross_sections.drop(
+            labels=["banklevel", "fpr", "fpl"], axis=1, inplace=True
+        )
 
-    def smoothBedWidth(self, reach_id: int, window: int=3):
+    def smoothBedWidth(self, reach_id: int, window: int = 3):
         """SmoothBedWidth.
 
         SmoothBedWidth method smoothes the Bed Width the in the cross section
@@ -1409,7 +1417,6 @@ class Calibration(River):
                 reach.loc[j, "gl"] = reach.loc[j - 1, "gl"] - height
 
         self.updateReach(reach)
-
 
     def smoothMaxSlope(self, reach_id: int, SlopePercentThreshold=1.5):
         """SmoothMaxSlope.
@@ -1472,9 +1479,7 @@ class Calibration(River):
                 logger.debug(j)
                 # get the calculated slope based on the slope percent threshold
                 slopes[j + 1] = slopes[j] - (-SlopePercentThreshold * slopes[j])
-                reach.loc[j + 2, "gl"] = (
-                    reach.loc[j + 1, "gl"] - slopes[j + 1] * 500
-                )
+                reach.loc[j + 2, "gl"] = reach.loc[j + 1, "gl"] - slopes[j + 1] * 500
                 # recalculate all the slopes again
                 slopes = [
                     (reach.loc[k, "gl"] - reach.loc[k + 1, "gl"]) / 500
@@ -1505,7 +1510,7 @@ class Calibration(River):
         assert hasattr(self, "cross_sections"), "{0}".format(msg)
         for i in range(len(self.cross_sections)):
             BankLevel = (
-                    self.cross_sections.loc[i, "gl"] + self.cross_sections.loc[i, "dbf"]
+                self.cross_sections.loc[i, "gl"] + self.cross_sections.loc[i, "dbf"]
             )
 
             if (
@@ -1513,14 +1518,15 @@ class Calibration(River):
                 > self.cross_sections.loc[i, "zl"]
             ):
                 self.cross_sections.loc[i, "zl"] = (
-                        BankLevel + self.cross_sections.loc[i, "hl"] + 0.5
+                    BankLevel + self.cross_sections.loc[i, "hl"] + 0.5
                 )
+
             if (
                 BankLevel + self.cross_sections.loc[i, "hr"]
                 > self.cross_sections.loc[i, "zr"]
             ):
                 self.cross_sections.loc[i, "zr"] = (
-                        BankLevel + self.cross_sections.loc[i, "hr"] + 0.5
+                    BankLevel + self.cross_sections.loc[i, "hr"] + 0.5
                 )
 
     @staticmethod
@@ -1534,7 +1540,7 @@ class Calibration(River):
         shift: int = 0,
         fmt: str = "%Y-%m-%d",
     ) -> DataFrame:
-        """
+        """Calculate performance metrics.
 
         Parameters
         ----------
@@ -1883,7 +1889,7 @@ class Calibration(River):
             InspectGauge returns the metrices of the gauge simulated discharge and water level
             and plot it
 
-        parameters
+        Parameters
         ----------
         reach_id: [int]
             river reach id
@@ -1895,6 +1901,7 @@ class Calibration(River):
             end date, if not given it will be taken from the already calculated Metrics table
         fmt : [str]
             format of the given dates. The default is "%Y-%m-%d"
+
         Returns
         -------
         summary: [DataFrame]
@@ -1934,7 +1941,9 @@ class Calibration(River):
             if isinstance(self.metrics_rrm_vs_obs, DataFrame) or isinstance(
                 self.metrics_rrm_vs_obs, GeoDataFrame
             ):
-                summary.loc["RRM-Observed", :] = self.metrics_rrm_vs_obs.loc[gauge_id, :]
+                summary.loc["RRM-Observed", :] = self.metrics_rrm_vs_obs.loc[
+                    gauge_id, :
+                ]
 
             if start == "":
                 start_1 = self.metrics_hm_vs_rrm.loc[gauge_id, "start"]
@@ -1960,7 +1969,9 @@ class Calibration(River):
             # pos = max(SimMax, ObsMax)
         if gauge.loc[0, "waterlevel"] == 1:
             # there are water level observed data
-            summary.loc["HM-WL-Observed", :] = self.metrics_hm_wl_vs_obs.loc[gauge_id, :]
+            summary.loc["HM-WL-Observed", :] = self.metrics_hm_wl_vs_obs.loc[
+                gauge_id, :
+            ]
 
             if start == "":
                 start_2 = self.metrics_hm_wl_vs_obs.loc[gauge_id, "start"]

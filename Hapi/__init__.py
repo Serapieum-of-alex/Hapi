@@ -3,9 +3,11 @@
 @author: Mostafa
 """
 try:
-    from importlib.metadata import PackageNotFoundError, version  # type: ignore
+    from importlib.metadata import PackageNotFoundError  # type: ignore
+    from importlib.metadata import version
 except ImportError:  # pragma: no cover
-    from importlib_metadata import PackageNotFoundError, version  # type: ignore
+    from importlib_metadata import PackageNotFoundError  # type: ignore
+    from importlib_metadata import version
 
 
 try:
@@ -37,6 +39,7 @@ if missing_dependencies:
 
 
 def configuration(parent_package="", top_path=None):
+    """configure."""
     from numpy.distutils.misc_util import Configuration
 
     config = Configuration(None, parent_package, top_path)
