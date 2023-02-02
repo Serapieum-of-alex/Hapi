@@ -14,10 +14,13 @@ from pyramids.raster import Raster
 
 
 class Event:
-    # class attributes
-    """Event. The Event class reads all the results of the Hydraulic model to preform all kind of analysis on flood event basis and the overtopping.
+    """Event.
 
-    Methods:
+        The Event class reads all the results of the Hydraulic model to preform all kind of analysis on flood event
+        basis and the overtopping.
+
+    Methods
+    -------
         1- IndexToDate
         2- CreateEventIndex
         3- GetAllEvents
@@ -118,10 +121,13 @@ class Event:
         self.event_index["date"] = date
 
     def createEventIndex(self, path: str):
-        """CreateEventIndex. CreateEventIndex takes the path to the index file result from the 2D model and creates a data frame to start adding the components of the event_index table.
+        """CreateEventIndex.
+
+            CreateEventIndex takes the path to the index file result from the 2D model and creates a data frame to
+            start adding the components of the event_index table.
 
         Parameters
-        ---------
+        ----------
         path: [String]
             path including the file name and extention of the index file result from the 2D model
 
@@ -160,11 +166,11 @@ class Event:
                 self.event_index.loc[i, "continue"] = 1
                 # increase the duration
                 self.event_index.loc[i, "IndDiff"] = (
-                        self.event_index.loc[i - 1, "IndDiff"] + 1
+                    self.event_index.loc[i - 1, "IndDiff"] + 1
                 )
 
                 self.event_index.loc[i, "Duration"] = (
-                                                              self.event_index.loc[i, "date"] - self.event_beginning
+                    self.event_index.loc[i, "date"] - self.event_beginning
                 ).days + 1
             else:  # if not then the day is the start of another event
                 self.event_beginning = self.event_index.loc[i, "date"]
@@ -197,7 +203,9 @@ class Event:
                 dataframe with columns ['id','continue', 'IndDiff', 'Duration',
                 'Overtopping', 'OvertoppingCum', 'Volume']
         """
-        OverTopTotal = pd.read_csv(overtopping_path, delimiter=r"\s+")  # , header = None
+        OverTopTotal = pd.read_csv(
+            overtopping_path, delimiter=r"\s+"
+        )  # , header = None
         # FIXME
         # if the flood event does not have overtopping for 1 day then continues to
         # overtop after the method considers it as two separate events however
@@ -220,16 +228,19 @@ class Event:
             self.event_beginning = self.event_index.loc[0, "date"]
             for i in range(1, len(self.event_index)):
                 # if the day is previous day+1
-                if self.event_index.loc[i, "id"] == self.event_index.loc[i - 1, "id"] + 1:
+                if (
+                    self.event_index.loc[i, "id"]
+                    == self.event_index.loc[i - 1, "id"] + 1
+                ):
                     # then the event continues
                     self.event_index.loc[i, "continue"] = 1
                     # increase the duration
                     self.event_index.loc[i, "IndDiff"] = (
-                            self.event_index.loc[i - 1, "IndDiff"] + 1
+                        self.event_index.loc[i - 1, "IndDiff"] + 1
                     )
 
                     self.event_index.loc[i, "Duration"] = (
-                                                                  self.event_index.loc[i, "date"] - self.event_beginning
+                        self.event_index.loc[i, "date"] - self.event_beginning
                     ).days + 1
                 else:  # if not then the day is the start of another event
                     self.event_beginning = self.event_index.loc[i, "date"]
@@ -237,7 +248,9 @@ class Event:
         # store the overtoppiung data in the event_index dataframe
         self.event_index["Overtopping"] = OverTopTotal["overtopping(m3/s)"]
 
-        self.event_index.loc[0, "OvertoppingCum"] = self.event_index.loc[0, "Overtopping"]
+        self.event_index.loc[0, "OvertoppingCum"] = self.event_index.loc[
+            0, "Overtopping"
+        ]
         for i in range(1, len(self.event_index)):
             if self.event_index.loc[i, "continue"] == 0:
                 self.event_index.loc[i, "OvertoppingCum"] = self.event_index.loc[
@@ -251,7 +264,7 @@ class Event:
         # the volume of water is m3/s for hourly stored and acumulated values
         # volume = overtopping * 60 *60 = m3
         self.event_index.loc[:, "Volume"] = (
-                self.event_index.loc[:, "OvertoppingCum"] * 60 * 60
+            self.event_index.loc[:, "OvertoppingCum"] * 60 * 60
         )
 
     def calculateVolumeError(self, path):
@@ -330,7 +343,7 @@ class Event:
         # is the number of cells in each map
 
         NonZeroCells["days"] = [
-            int(i[len(self.depth_prefix): -4]) for i in NonZeroCells["files"].tolist()
+            int(i[len(self.depth_prefix) : -4]) for i in NonZeroCells["files"].tolist()
         ]
         # get the numbe of inundated cells in the Event index data frame
         self.event_index["cells"] = 0
@@ -357,7 +370,10 @@ class Event:
             )
 
     def readEventIndex(self, path):
-        """ReadEventIndex ReadEventIndex method reads the event_index table created using the "CreateEventIndex" or "Overtopping" methods.
+        """ReadEventIndex.
+
+            ReadEventIndex method reads the event_index table created using the "CreateEventIndex" or
+            "Overtopping" methods.
 
         Parameters
         ----------
@@ -404,11 +420,20 @@ class Event:
             if Day not in list(self.extracted_values.keys()):
                 # depth map
                 if Map == 1:
-                    path = self.two_d_result_path + self.depth_prefix + str(Day) + ".zip"
+                    path = (
+                        self.two_d_result_path + self.depth_prefix + str(Day) + ".zip"
+                    )
                 elif Map == 2:
-                    path = self.two_d_result_path + self.duration_prefix + str(Day) + ".zip"
+                    path = (
+                        self.two_d_result_path
+                        + self.duration_prefix
+                        + str(Day)
+                        + ".zip"
+                    )
                 else:
-                    path = f"{self.two_d_result_path}{self.return_period_prefix}{Day}.zip"
+                    path = (
+                        f"{self.two_d_result_path}{self.return_period_prefix}{Day}.zip"
+                    )
 
                 ExtractedValues, NonZeroCells = Raster.extractValues(
                     path, ExcludeValue, self.compressed, OccupiedCellsOnly
@@ -567,7 +592,9 @@ class Event:
         NewDataFrame["date"] = self.reference_index["date"].tolist()
         NewDataFrame[ColumnName] = 0
         for i in range(len(self.event_index)):
-            loc = np.where(NewDataFrame["date"] == self.event_index.loc[i, "date"])[0][0]
+            loc = np.where(NewDataFrame["date"] == self.event_index.loc[i, "date"])[0][
+                0
+            ]
             NewDataFrame.loc[loc, ColumnName] = self.event_index.loc[i, ColumnName]
 
         return NewDataFrame

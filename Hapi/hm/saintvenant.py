@@ -24,6 +24,7 @@ class SaintVenant:
         pass
 
     def kinematicraster(self, Model):
+        """Kinematic wave method Raster."""
 
         beta = 3 / 5
         dx = Model.CellSize
@@ -191,6 +192,7 @@ class SaintVenant:
 
     @staticmethod
     def storagecell(Model, usbc):
+        """Storage Cell Model."""
 
         nt = len(usbc)
         Model.q = np.zeros(shape=(nt, len(Model.cross_sections)))
@@ -268,6 +270,21 @@ class SaintVenant:
         Model.wl = Model.h + Model.cross_sections["bed level"].values
 
     def GVF00(self, Sub, River, Hbnd, dt, dx, inih, storewl, MinQ):
+        """GVF00.
+
+            Gradually Varied flow
+
+        Parameters
+        ----------
+        Sub
+        River
+        Hbnd
+        dt
+        dx
+        inih
+        storewl
+        MinQ
+        """
 
         xs = np.zeros(shape=(Sub.xsno, 8))
         Diff_coeff = np.zeros(shape=(Sub.xsno, 3))
@@ -734,10 +751,12 @@ class SaintVenant:
 
     @staticmethod
     def QuadraticEqn(a, b, c):
+        """QuadraticEqn."""
         delta = (b**2) - 4 * a * c
         return (-b + np.sqrt(delta)) / (2 * a)
 
     def preissmann(self, Model):
+        """Preissmann scheme."""
         # calculating no of discritization points
         theta = self.theta
         epsi = self.epsi

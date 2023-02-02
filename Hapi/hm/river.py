@@ -19,13 +19,13 @@ from matplotlib.figure import Figure
 from pandas.core.frame import DataFrame
 from pyramids.raster import Raster as raster
 from scipy.stats import genextreme, gumbel_r
+from serapeum_utils.utils import class_attr_initialize, class_method_parse
 from statista import metrics as Pf
 from statista.distributions import GEV, Gumbel  # , PlottingPosition
 
+from Hapi.hapi_warnings import SilencePandasWarning
 from Hapi.hm.saintvenant import SaintVenant
 from Hapi.plot.visualizer import Visualize as V
-from serapeum_utils.utils import class_attr_initialize, class_method_parse
-from Hapi.hapi_warnings import SilencePandasWarning
 
 SilencePandasWarning()
 
@@ -336,10 +336,11 @@ class River:
 
     @staticmethod
     def round(number, roundto):
+        """Round fload number."""
         return round(number / roundto) * roundto
 
     def readConfig(self, path):
-        """reads the hydraulic model configuration file.
+        """Read the hydraulic model configuration file.
 
         Parameters
         ----------
@@ -623,10 +624,10 @@ class River:
                 end = np.where(self.reference_index_results == end)[0][0] + 1
 
             QBC = pd.DataFrame(
-                index=self.reference_index_results[start - 1: end], columns=hours
+                index=self.reference_index_results[start - 1 : end], columns=hours
             )
             HBC = pd.DataFrame(
-                index=self.reference_index_results[start - 1: end], columns=hours
+                index=self.reference_index_results[start - 1 : end], columns=hours
             )
 
             for i in self.days_list[start - 1 : end]:
@@ -636,10 +637,10 @@ class River:
                 )
                 QBC.loc[self.reference_index.loc[i, "date"], :] = bc_q[:, 0].tolist()[
                     0 : bc_q.shape[0] : 60
-                                                                  ]
+                ]
                 HBC.loc[self.reference_index.loc[i, "date"], :] = bc_q[:, 1].tolist()[
                     0 : bc_q.shape[0] : 60
-                                                                  ]
+                ]
 
             self.QBC = QBC
             self.HBC = HBC
@@ -673,7 +674,11 @@ class River:
                 )
 
     def readSubDailyResults(
-        self, start: str, end: str, fmt: str = "%Y-%m-%d", last_river_reach: bool = False
+        self,
+        start: str,
+        end: str,
+        fmt: str = "%Y-%m-%d",
+        last_river_reach: bool = False,
     ):
         """ReadSubDailyResults.
 
@@ -776,9 +781,13 @@ class River:
             self.h_bc_1min = bc_h[:]
         else:
             for i in list2:
-                path = f"{self.one_min_result_path}H-{str(self.indexToDate(i))[:10]}.csv"
+                path = (
+                    f"{self.one_min_result_path}H-{str(self.indexToDate(i))[:10]}.csv"
+                )
                 hh = np.transpose(np.loadtxt(path, delimiter=",", dtype=np.float16))
-                path = f"{self.one_min_result_path}Q-{str(self.indexToDate(i))[:10]}.csv"
+                path = (
+                    f"{self.one_min_result_path}Q-{str(self.indexToDate(i))[:10]}.csv"
+                )
                 qq = np.transpose(np.loadtxt(path, delimiter=",", dtype=np.float16))
 
                 h = h + self.cross_sections["bed level"].values
@@ -810,7 +819,7 @@ class River:
 
     @staticmethod
     def _read_chuncks(path, chunksize=10e5):
-        """read csv file in chuncks.
+        """Read csv file in chuncks.
 
         Parameters
         ----------
@@ -1878,9 +1887,9 @@ class River:
             if Option == 1:
                 # bankfull area
                 self.cross_sections.loc[i, ColumnName] = (
-                        (1 / self.cross_sections.loc[i, "m"])
-                        * self.cross_sections.loc[i, "b"]
-                        * (self.cross_sections.loc[i, "dbf"]) ** (5 / 3)
+                    (1 / self.cross_sections.loc[i, "m"])
+                    * self.cross_sections.loc[i, "b"]
+                    * (self.cross_sections.loc[i, "dbf"]) ** (5 / 3)
                 )
                 self.cross_sections.loc[i, ColumnName] = self.cross_sections.loc[
                     i, ColumnName
@@ -2017,11 +2026,11 @@ class River:
                         < self.cross_sections.loc[i, "zrnew"]
                     ):
                         self.cross_sections.loc[i, "zlnew"] = (
-                                self.cross_sections.loc[i, "zlnew"] + 0.1
+                            self.cross_sections.loc[i, "zlnew"] + 0.1
                         )
                     else:
                         self.cross_sections.loc[i, "zrnew"] = (
-                                self.cross_sections.loc[i, "zrnew"] + 0.1
+                            self.cross_sections.loc[i, "zrnew"] + 0.1
                         )
 
                     H = self.cross_sections.loc[i, ["zlnew", "zrnew"]].min()
@@ -2033,9 +2042,9 @@ class River:
                         * Area
                         * ((Area / Perimeter) ** (2 / 3))
                     )
-                    self.cross_sections.loc[i, "New Capacity"] = self.cross_sections.loc[
+                    self.cross_sections.loc[
                         i, "New Capacity"
-                    ] * slope ** (1 / 2)
+                    ] = self.cross_sections.loc[i, "New Capacity"] * slope ** (1 / 2)
 
                     RP = self.getReturnPeriod(
                         self.cross_sections.loc[i, "gauge"],
@@ -2246,34 +2255,34 @@ class River:
     def getFloodedSubs(self, OvertoppedXS=[], day=[1], allEventdays=True):
         """GetFloodedSubs.
 
-        GetFloodedSubs gets the inundeated sub-basins
+            GetFloodedSubs gets the inundeated sub-basins
 
         Parameters
         ----------
-            1-OvertoppedXS : [list], optional
-                list of cross sections overtopped (if you already used the GetOvertoppedXS
-                method to get the overtopped XSs for a specific day).The default is [].
-                If entered the algorithm is not going to look at the over arguments
-                of the method.
-            2-day : [list], optional
-                if you want to get the flooded subs for a specific list of days. The default is 1.
-            3-allEventdays : [Bool], optional in case user entered OvertoppedXS
-                if the user entered day the allEventdays is a must. The default is True.
+        OvertoppedXS : [list], optional
+            list of cross sections overtopped (if you already used the GetOvertoppedXS
+            method to get the overtopped XSs for a specific day).The default is [].
+            If entered the algorithm is not going to look at the over arguments
+            of the method.
+        day : [list], optional
+            if you want to get the flooded subs for a specific list of days. The default is 1.
+        allEventdays : [Bool], optional in case user entered OvertoppedXS
+            if the user entered day the allEventdays is a must. The default is True.
 
         Returns
         -------
-            1-Subs : TYPE
-                DESCRIPTION.
+        Subs : TYPE
+            DESCRIPTION.
 
-        examples
+        Examples
         --------
-            1- get the flooded subs for a specific days
-                floodedSubs = RIM1River.GetFloodedSubs(day = [1122,1123], allEventdays=False)
+        - get the flooded subs for a specific days
+            >>> floodedSubs = River.GetFloodedSubs(day = [1122,1123], allEventdays=False)
 
-            2- get the flooded subs from already obtained overtopped XSs
-                day = 1122
-                XSleft, XSright = RIM1River.GetOvertoppedXS(day,False)
-                floodedSubs = RIM1River.GetFloodedSubs(OvertoppedXS = XSleft + XSright, allEventdays=False)
+        - get the flooded subs from already obtained overtopped XSs
+            >>> day = 1122
+            >>> XSleft, XSright = River.GetOvertoppedXS(day,False)
+            >>> floodedSubs = River.GetFloodedSubs(OvertoppedXS = XSleft + XSright, allEventdays=False)
         """
         Subs = list()
         # if you already used the GetOvertoppedXS and have a list of xs overtopped
@@ -3263,7 +3272,6 @@ class River:
 
 
 class Reach(River):
-
     """Reach segment object.
 
     represent a segment of the river to create the Reach instance the
@@ -3334,7 +3342,7 @@ class Reach(River):
             self.SP.index = list(range(len(self.SP)))
 
     def _getXS(self, run_model: bool):
-        """get the cross sections of the current river reach.
+        """Get the cross sections of the current river reach.
 
         Parameters
         ----------
@@ -3580,12 +3588,12 @@ class Reach(River):
         else:
             self.xs_hydrograph[xsid] = self.results_1d["q"][
                 self.results_1d["xs"] == xsid
-                ].values
+            ].values
 
         if WaterLevel:
             self.xs_water_level[xsid] = self.results_1d["wl"][
                 self.results_1d["xs"] == xsid
-                ].values
+            ].values
 
     def CheckNegativeQ(self, plot: bool = False, TS: str = "hourly"):
         """CheckNegativeQ. CheckNegativeQ check whether there are any negative discharge values in the 'q' column in the 1D results or not, you need to read the result first.
@@ -3611,9 +3619,9 @@ class Reach(River):
 
                 self.Negative["QN"] = pd.DataFrame()
                 for i in range(len(self.Negative["NegXS"])):
-                    self.Negative["QN"][self.Negative["NegXS"][i]] = self.results_1d["q"][
-                        self.results_1d["xs"] == self.Negative["NegXS"][i]
-                        ]
+                    self.Negative["QN"][self.Negative["NegXS"][i]] = self.results_1d[
+                        "q"
+                    ][self.results_1d["xs"] == self.Negative["NegXS"][i]]
 
                 self.Negative["QN"].index = self.xs_hydrograph.index
 
@@ -3828,10 +3836,12 @@ class Reach(River):
             if Delete:
                 del self.resampled_h
 
-        Q = self.results_1d[self.results_1d["xs"] == xsid][self.results_1d["hour"] == 24]
+        Q = self.results_1d[self.results_1d["xs"] == xsid][
+            self.results_1d["hour"] == 24
+        ]
         Q = Q[ColumnName][self.results_1d["day"] >= from_day][
             self.results_1d["day"] <= to_day
-            ]
+        ]
 
         # self.Q = Q
         if ColumnName == "q":
@@ -3910,9 +3920,9 @@ class Reach(River):
                 # check whether this sub basin has flooded in this particular day
                 if eventdays[j] in days:
                     # filter the dataframe to the discharge column (3) and the days
-                    self.detailed_overtopping_left.loc[eventdays[j], self.id] = data.loc[
-                        data["day"] == eventdays[j], "q"
-                    ].sum()
+                    self.detailed_overtopping_left.loc[
+                        eventdays[j], self.id
+                    ] = data.loc[data["day"] == eventdays[j], "q"].sum()
                     # get the xss that was overtopped in that particular day
                     XSday = list(
                         set(data.loc[data["day"] == eventdays[j], "xsid"].tolist())
@@ -3946,9 +3956,9 @@ class Reach(River):
                 # check whether this sub basin has flooded in this particular day
                 if eventdays[j] in days:
                     # filter the dataframe to the discharge column (3) and the days
-                    self.detailed_overtopping_right.loc[eventdays[j], self.id] = data.loc[
-                        data["day"] == eventdays[j], "q"
-                    ].sum()
+                    self.detailed_overtopping_right.loc[
+                        eventdays[j], self.id
+                    ] = data.loc[data["day"] == eventdays[j], "q"].sum()
                     # get the xss that was overtopped in that particular day
                     XSday = list(
                         set(data.loc[data["day"] == eventdays[j], "xsid"].tolist())
@@ -4004,7 +4014,7 @@ class Reach(River):
             + self.detailed_overtopping_right.loc[eventdays, "sum"]
         ).tolist()
         self.all_overtopping_vs_time.loc[:, "date"] = (
-            self.reference_index.loc[eventdays[0]: eventdays[-1], "date"]
+            self.reference_index.loc[eventdays[0] : eventdays[-1], "date"]
         ).tolist()
 
     def saveHydrograph(self, xsid: int, path: str = None, Option: int = 1):
@@ -4124,7 +4134,7 @@ class Reach(River):
 
         from_xs = self.xs_names.index(from_xs)
         to_xs = self.xs_names.index(to_xs)
-        xs_list = self.xs_names[from_xs: to_xs + 1: spacing]
+        xs_list = self.xs_names[from_xs : to_xs + 1 : spacing]
 
         xs_list = xs_list + xss
 
@@ -4285,7 +4295,7 @@ class Reach(River):
             Nodeid = self.usnode[0]
             River.Segments.index(Nodeid)
             self.us_hydrographs = (
-                    self.us_hydrographs + River.routed_q[:, River.Segments.index(Nodeid)]
+                self.us_hydrographs + River.routed_q[:, River.Segments.index(Nodeid)]
             )
 
         if type(self.BC) != bool:
@@ -4418,7 +4428,9 @@ class Reach(River):
                     columns=self.laterals_table,
                 )
                 for i in self.laterals_table:
-                    self.rrm_progression.loc[:, i] = IF.routed_rrm.loc[from_day:to_day, i]
+                    self.rrm_progression.loc[:, i] = IF.routed_rrm.loc[
+                        from_day:to_day, i
+                    ]
         else:
             self.laterals_table = []
             self.Laterals = pd.DataFrame()
@@ -4493,7 +4505,9 @@ class Reach(River):
                 + self.BC.loc[s:e, self.BC.columns[0]].values
             )
             logger.info(f"Total flow for the XS-{gaugexs} has been calculated")
-        elif isinstance(self.us_hydrographs, DataFrame) and len(self.us_hydrographs) > 0:
+        elif (
+            isinstance(self.us_hydrographs, DataFrame) and len(self.us_hydrographs) > 0
+        ):
             s2 = self.us_hydrographs.index[0]
             s = max(s1, s2)
             e2 = self.us_hydrographs.index[-1]
@@ -4740,7 +4754,10 @@ class Reach(River):
                         color=self.ushcolor,
                     )
                 # Laterals
-                if isinstance(self.laterals_table, list) and len(self.laterals_table) > 0:
+                if (
+                    isinstance(self.laterals_table, list)
+                    and len(self.laterals_table) > 0
+                ):
                     ax.plot(
                         Laterals.loc[start:end, 0],
                         label="Laterals",
@@ -4854,7 +4871,7 @@ class Reach(River):
             # plot the gauge data
             ax.plot(
                 Calib.q_gauges.loc[
-                Calib.calibration_q.index[0]: Calib.calibration_q.index[-1],
+                    Calib.calibration_q.index[0] : Calib.calibration_q.index[-1],
                     stationname,
                 ],
                 label="Gauge-" + str(self.id),
@@ -4864,7 +4881,7 @@ class Reach(River):
             if self.plotrrm:
                 ax.plot(
                     self.RRM.loc[
-                    Calib.calibration_q.index[0]: Calib.calibration_q.index[-1],
+                        Calib.calibration_q.index[0] : Calib.calibration_q.index[-1],
                         stationname,
                     ],
                     label="RRM",

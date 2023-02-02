@@ -34,7 +34,7 @@ class Inputs(River):
     """
 
     def __init__(self, Name, version=3):
-        """Inputs.
+        """Input.
 
             Inputs is an object to create the inputs for the river model
 
@@ -471,6 +471,7 @@ class Inputs(River):
         SaveTo,
         wpath,
     ):
+        """Return period."""
         AllResults = os.listdir(MapsPath)
         # list of the Max Depth files only
         MaxDepthList = list()

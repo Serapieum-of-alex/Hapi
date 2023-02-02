@@ -216,7 +216,8 @@ class Interface(River):
         prefix: str = "lf_xsid",
         laterals: Optional[bool] = True,
     ):
-        """readLaterals.
+        """Read Lateral files.
+
             TODO: rename this function as it is better to name if readRRMoutputs
             - read the laterals at the location of cross-sections (if laterals=True)
             - read the routed hydrograph by the rainfall-runoff model at the location
