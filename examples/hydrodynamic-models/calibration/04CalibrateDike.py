@@ -51,10 +51,10 @@ River.getCapacity("Qc2", Option=2)
 
 River.calibrateDike("RP", "QcRP")
 River.cross_sections["ZlDiff"] = (
-        River.cross_sections["zlnew"].values - River.cross_sections["zl"].values
+    River.cross_sections["zlnew"].values - River.cross_sections["zl"].values
 )
 River.cross_sections["ZrDiff"] = (
-        River.cross_sections["zrnew"].values - River.cross_sections["zr"].values
+    River.cross_sections["zrnew"].values - River.cross_sections["zr"].values
 )
 # River.cross_sections.to_csv(RIM2Files+"XS100.csv", index = None)
 

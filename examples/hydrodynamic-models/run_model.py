@@ -91,7 +91,7 @@ for i in range(River.NoSeg):
         # get the max discharge
         Q = Sub.Laterals.loc[step : step + dt.timedelta(days=1), :]
         # index starts from 1
-        Q.loc[:, "US"] = Sub.us_hydrographs[step_ind - 1: step_ind + 1]
+        Q.loc[:, "US"] = Sub.us_hydrographs[step_ind - 1 : step_ind + 1]
 
         if Q.sum(axis=1).values.max() > River.D1["MinQ"]:
             # interpolate to 1 min resolution

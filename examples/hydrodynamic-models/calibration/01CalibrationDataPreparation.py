@@ -7,15 +7,20 @@ The code also extract the simulated hydrograph using swim at the down stream nod
 to the sub-basins
 """
 import os
+
 import matplotlib
+
 matplotlib.use("TkAgg")
 rpath = r"C:\gdrive\\Case-studies"
 Comp = rf"{rpath}\ClimXtreme\rim_base_data\setup"
 os.chdir(Comp + "/base_data/calibration_results")
 import Hapi.hm.calibration as RC
 import Hapi.hm.river as R
+
 #%% Hydraulic model files
-hm_results_path = rf"{rpath}\ClimXtreme\rim_base_data\setup\freq_analysis_rhine\1\results\1d"
+hm_results_path = (
+    rf"{rpath}\ClimXtreme\rim_base_data\setup\freq_analysis_rhine\1\results\1d"
+)
 hm_data = f"{Comp}/base_data/calibrated_cross_sections/rhine/"
 
 base_dir = rf"{rpath}\ClimXtreme\rim_base_data\setup\freq_analysis_rhine\1\results\gauges_results"
@@ -40,7 +45,7 @@ River.readSlope(hm_data + "/slope_rhine.csv")
 River.readXS(hm_data + "/xs_rhine.csv")
 #%%
 column = "oid"
-segments = list(set(Calib.hm_gauges['id']))
+segments = list(set(Calib.hm_gauges["id"]))
 
 for i in range(20, len(segments)):
     SubID = segments[i]
@@ -50,10 +55,10 @@ for i in range(20, len(segments)):
     Sub = R.Reach(SubID, River)
     Sub.read1DResult(path=hm_results_path, extension=".zip")
     # get the gauges that are in the segment
-    Gauges = Calib.hm_gauges.loc[Calib.hm_gauges['id'] == SubID, :]
+    Gauges = Calib.hm_gauges.loc[Calib.hm_gauges["id"] == SubID, :]
     Gauges.index = range(len(Gauges))
     for j in range(len(Gauges)):
-        GagueXS = Gauges.loc[j, 'xsid']
+        GagueXS = Gauges.loc[j, "xsid"]
         if column == "oid" or column == "qid":
             fname = Gauges.loc[j, column]
         else:
@@ -62,12 +67,18 @@ for i in range(20, len(segments)):
         # Extract Results at the gauges
         Sub.read1DResult(xsid=GagueXS)
         print("Extract the XS results - " + str(fname))
-        Q = Sub.xs_hydrograph[GagueXS].resample('D').mean().to_frame()
+        Q = Sub.xs_hydrograph[GagueXS].resample("D").mean().to_frame()
         Q["date"] = ["'" + str(i)[:10] + "'" for i in Q.index]
-        Q = Q.loc[:, ['date', GagueXS]]
-        WL = Sub.xs_water_level[GagueXS].resample('D').mean().to_frame()
+        Q = Q.loc[:, ["date", GagueXS]]
+        WL = Sub.xs_water_level[GagueXS].resample("D").mean().to_frame()
         WL["date"] = Q["date"]
-        WL = WL.loc[:, ['date', GagueXS]]
-        Q.to_csv(f"{save_q}{fname}.txt", index=False, index_label='Date', float_format="%.3f")
-        WL.to_csv(f"{save_wl}{fname}.txt", index=False, index_label='Date', float_format="%.3f")
-
+        WL = WL.loc[:, ["date", GagueXS]]
+        Q.to_csv(
+            f"{save_q}{fname}.txt", index=False, index_label="Date", float_format="%.3f"
+        )
+        WL.to_csv(
+            f"{save_wl}{fname}.txt",
+            index=False,
+            index_label="Date",
+            float_format="%.3f",
+        )

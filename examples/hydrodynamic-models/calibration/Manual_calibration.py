@@ -497,7 +497,9 @@ plt.ylabel("Depth (m)", fontsize=20)
 plt.ylim([0, 8])
 plt.xlim([0, table_new["Q_T"].loc[table_new["depth"] == 8].values[0] + 5])
 plt.hlines(
-    Sub.cross_sections["dbf"].loc[Sub.cross_sections["xsid"] == Sub.xs_names[0]].values[0],
+    Sub.cross_sections["dbf"]
+    .loc[Sub.cross_sections["xsid"] == Sub.xs_names[0]]
+    .values[0],
     0,
     table_new["area_T"].loc[table_new["depth"] == 5].values[0],
     linewidth=5,
@@ -549,9 +551,9 @@ table["order"] = list(range(1, len(table) + 1))
 dbfloc = list(
     np.where(
         table["depth"]
-        <= Sub.cross_sections["dbf"][Sub.cross_sections["xsid"] == Sub.xs_names[0]].values[
-            0
-        ]
+        <= Sub.cross_sections["dbf"][
+            Sub.cross_sections["xsid"] == Sub.xs_names[0]
+        ].values[0]
     )
 )[-1][-1]
 
@@ -570,7 +572,9 @@ plt.ylabel("Depth (m)", fontsize=20)
 plt.ylim([0, 5])
 plt.xlim([0, table["perimeter"].loc[table["depth"] == 5].values[0] + 5])
 plt.hlines(
-    Sub.cross_sections["dbf"].loc[Sub.cross_sections["xsid"] == Sub.xs_names[0]].values[0],
+    Sub.cross_sections["dbf"]
+    .loc[Sub.cross_sections["xsid"] == Sub.xs_names[0]]
+    .values[0],
     0,
     table["area"].loc[table["depth"] == 5].values[0],
     linewidth=5,
