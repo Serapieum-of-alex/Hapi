@@ -64,9 +64,9 @@ def test_ReadObservedWL(
         gauge_date_format=gauge_date_format,
     )
     assert (
-            len(Calib.wl_gauges) == test_time_series_length
-            and len(Calib.wl_gauges.columns) == 3
-            and len(Calib.hm_gauges.columns) == 12
+        len(Calib.wl_gauges) == test_time_series_length
+        and len(Calib.wl_gauges.columns) == 3
+        and len(Calib.hm_gauges.columns) == 12
     )
 
 
@@ -332,7 +332,9 @@ def test_RRMvsObserved(
         Calib.metrics_rrm_vs_obs.index
         == Calib.hm_gauges.loc[:, Calib.gauge_id_col].to_list()
     )
-    assert all(elem in Calib.metrics_rrm_vs_obs.columns for elem in Metrics_table_columns)
+    assert all(
+        elem in Calib.metrics_rrm_vs_obs.columns for elem in Metrics_table_columns
+    )
 
 
 def test_HMQvsObserved(
@@ -363,7 +365,9 @@ def test_HMQvsObserved(
         Calib.metrics_hm_q_vs_obs.index
         == Calib.hm_gauges.loc[:, Calib.gauge_id_col].to_list()
     )
-    assert all(elem in Calib.metrics_hm_q_vs_obs.columns for elem in Metrics_table_columns)
+    assert all(
+        elem in Calib.metrics_hm_q_vs_obs.columns for elem in Metrics_table_columns
+    )
 
 
 def test_HMWLvsObserved(
@@ -394,7 +398,9 @@ def test_HMWLvsObserved(
         Calib.metrics_hm_wl_vs_obs.index
         == Calib.hm_gauges.loc[:, Calib.gauge_id_col].to_list()
     )
-    assert all(elem in Calib.metrics_hm_wl_vs_obs.columns for elem in Metrics_table_columns)
+    assert all(
+        elem in Calib.metrics_hm_wl_vs_obs.columns for elem in Metrics_table_columns
+    )
 
 
 def test_InspectGauge(

@@ -42,9 +42,13 @@ def test_GroundSurface(
     Sub.read1DResult()
 
     Vis = V(resolution="Hourly")
-    Vis.plotGroundSurface(Sub, floodplain=True, plot_lateral=True, xlabels_number=20, option=2)
+    Vis.plotGroundSurface(
+        Sub, floodplain=True, plot_lateral=True, xlabels_number=20, option=2
+    )
     plt.close()
-    Vis.plotGroundSurface(Sub, floodplain=True, plot_lateral=True, xlabels_number=20, option=1)
+    Vis.plotGroundSurface(
+        Sub, floodplain=True, plot_lateral=True, xlabels_number=20, option=1
+    )
     plt.close()
 
 

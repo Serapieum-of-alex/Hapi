@@ -24,8 +24,8 @@ def test_read_crosssections_method(
     River = R.River("HM", version=version)
     River.readXS(river_cross_section_path)
     assert (
-            len(River.cross_sections) == xs_total_no
-            and len(River.cross_sections.columns) == xs_col_no
+        len(River.cross_sections) == xs_total_no
+        and len(River.cross_sections.columns) == xs_col_no
     )
 
 
@@ -50,8 +50,8 @@ def test_create_sub_instance(
     River.readSlope(slope_path)
     Sub = R.Reach(segment1, River)
     assert (
-            Sub.first_xs == create_sub_instance_firstxs
-            and Sub.last_xs == create_sub_instance_lastxs
+        Sub.first_xs == create_sub_instance_firstxs
+        and Sub.last_xs == create_sub_instance_lastxs
     )
     assert Sub.slope
 
@@ -118,21 +118,21 @@ class TestRead1DResult:
         Sub = R.Reach(segment1, River)
         Sub.read1DResult()
         assert (
-                len(Sub.results_1d)
-                == test_time_series_length * 24 * (len(Sub.cross_sections) + 1)
-                and len(Sub.results_1d.columns) == 6
+            len(Sub.results_1d)
+            == test_time_series_length * 24 * (len(Sub.cross_sections) + 1)
+            and len(Sub.results_1d.columns) == 6
         )
         assert (
-                len(Sub.xs_hydrograph) == test_time_series_length * 24
-                and len(Sub.xs_hydrograph.columns) == 2
+            len(Sub.xs_hydrograph) == test_time_series_length * 24
+            and len(Sub.xs_hydrograph.columns) == 2
         )
         assert (
-                len(Sub.xs_water_level) == test_time_series_length * 24
-                and len(Sub.xs_water_level.columns) == 2
+            len(Sub.xs_water_level) == test_time_series_length * 24
+            and len(Sub.xs_water_level.columns) == 2
         )
         assert (
-                len(Sub.xs_water_depth) == test_time_series_length * 24
-                and len(Sub.xs_water_depth.columns) == 2
+            len(Sub.xs_water_depth) == test_time_series_length * 24
+            and len(Sub.xs_water_depth.columns) == 2
         )
         Sub.read1DResult(xsid=Read1DResult_xsid)
 
@@ -157,21 +157,21 @@ class TestRead1DResult:
         Sub = R.Reach(segment1, River)
         Sub.read1DResult(chunk_size=10000)
         assert (
-                len(Sub.results_1d)
-                == test_time_series_length * 24 * (len(Sub.cross_sections) + 1)
-                and len(Sub.results_1d.columns) == 6
+            len(Sub.results_1d)
+            == test_time_series_length * 24 * (len(Sub.cross_sections) + 1)
+            and len(Sub.results_1d.columns) == 6
         )
         assert (
-                len(Sub.xs_hydrograph) == test_time_series_length * 24
-                and len(Sub.xs_hydrograph.columns) == 2
+            len(Sub.xs_hydrograph) == test_time_series_length * 24
+            and len(Sub.xs_hydrograph.columns) == 2
         )
         assert (
-                len(Sub.xs_water_level) == test_time_series_length * 24
-                and len(Sub.xs_water_level.columns) == 2
+            len(Sub.xs_water_level) == test_time_series_length * 24
+            and len(Sub.xs_water_level.columns) == 2
         )
         assert (
-                len(Sub.xs_water_depth) == test_time_series_length * 24
-                and len(Sub.xs_water_depth.columns) == 2
+            len(Sub.xs_water_depth) == test_time_series_length * 24
+            and len(Sub.xs_water_depth.columns) == 2
         )
         Sub.read1DResult(xsid=Read1DResult_xsid)
 
@@ -196,21 +196,21 @@ class TestRead1DResult:
         Sub = R.Reach(segment1, River)
         Sub.read1DResult(extension=".zip")
         assert (
-                len(Sub.results_1d)
-                == test_time_series_length * 24 * (len(Sub.cross_sections) + 1)
-                and len(Sub.results_1d.columns) == 6
+            len(Sub.results_1d)
+            == test_time_series_length * 24 * (len(Sub.cross_sections) + 1)
+            and len(Sub.results_1d.columns) == 6
         )
         assert (
-                len(Sub.xs_hydrograph) == test_time_series_length * 24
-                and len(Sub.xs_hydrograph.columns) == 2
+            len(Sub.xs_hydrograph) == test_time_series_length * 24
+            and len(Sub.xs_hydrograph.columns) == 2
         )
         assert (
-                len(Sub.xs_water_level) == test_time_series_length * 24
-                and len(Sub.xs_water_level.columns) == 2
+            len(Sub.xs_water_level) == test_time_series_length * 24
+            and len(Sub.xs_water_level.columns) == 2
         )
         assert (
-                len(Sub.xs_water_depth) == test_time_series_length * 24
-                and len(Sub.xs_water_depth.columns) == 2
+            len(Sub.xs_water_depth) == test_time_series_length * 24
+            and len(Sub.xs_water_depth.columns) == 2
         )
         Sub.read1DResult(xsid=Read1DResult_xsid)
 
@@ -235,21 +235,21 @@ class TestRead1DResult:
         Sub = R.Reach(segment1, River)
         Sub.read1DResult(chunk_size=10000, extension=".zip")
         assert (
-                len(Sub.results_1d)
-                == test_time_series_length * 24 * (len(Sub.cross_sections) + 1)
-                and len(Sub.results_1d.columns) == 6
+            len(Sub.results_1d)
+            == test_time_series_length * 24 * (len(Sub.cross_sections) + 1)
+            and len(Sub.results_1d.columns) == 6
         )
         assert (
-                len(Sub.xs_hydrograph) == test_time_series_length * 24
-                and len(Sub.xs_hydrograph.columns) == 2
+            len(Sub.xs_hydrograph) == test_time_series_length * 24
+            and len(Sub.xs_hydrograph.columns) == 2
         )
         assert (
-                len(Sub.xs_water_level) == test_time_series_length * 24
-                and len(Sub.xs_water_level.columns) == 2
+            len(Sub.xs_water_level) == test_time_series_length * 24
+            and len(Sub.xs_water_level.columns) == 2
         )
         assert (
-                len(Sub.xs_water_depth) == test_time_series_length * 24
-                and len(Sub.xs_water_depth.columns) == 2
+            len(Sub.xs_water_depth) == test_time_series_length * 24
+            and len(Sub.xs_water_depth.columns) == 2
         )
         Sub.read1DResult(xsid=Read1DResult_xsid)
 
@@ -370,8 +370,8 @@ def test_ReadUSHydrograph(
     Sub = R.Reach(segment3, River)
     Sub.readUSHydrograph()
     assert (
-            len(Sub.us_hydrographs) == test_time_series_length
-            and len(Sub.us_hydrographs.columns) == len(segment3_us_subs) + 1
+        len(Sub.us_hydrographs) == test_time_series_length
+        and len(Sub.us_hydrographs.columns) == len(segment3_us_subs) + 1
     )
     assert all(elem in Sub.us_hydrographs.columns.tolist() for elem in segment3_us_subs)
 
@@ -792,12 +792,12 @@ def test_ReadSubDailyResults(
     assert len(Sub.q) == onemin_results_len * subdaily_no_timesteps
     assert all(elem in Sub.q.columns.tolist() for elem in segment3_xs_ids_list)
     assert (
-            len(Sub.q_bc_1min.columns) == subdaily_no_timesteps
-            and len(Sub.q_bc_1min) == onemin_results_len
+        len(Sub.q_bc_1min.columns) == subdaily_no_timesteps
+        and len(Sub.q_bc_1min) == onemin_results_len
     )
     assert (
-            len(Sub.h_bc_1min.columns) == subdaily_no_timesteps
-            and len(Sub.h_bc_1min) == onemin_results_len
+        len(Sub.h_bc_1min.columns) == subdaily_no_timesteps
+        and len(Sub.h_bc_1min) == onemin_results_len
     )
 
 
