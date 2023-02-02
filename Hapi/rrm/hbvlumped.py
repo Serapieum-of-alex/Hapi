@@ -17,33 +17,34 @@ of catchment response based on dynamic weighting of hydrological models" on apri
 - Model equations are solved using explicit scheme
 
 
-    Inputs
-    ----------
-    precipitation : array_like [n]
-        Average precipitation [mm/h]
-    evapotranspitration : array_like [n]
-        Potential Evapotranspiration [mm/h]
-    temperature : array_like [n]
-        Average temperature [C]
-    init_st : array_like [5], optional
-        Initial model states, [sp, sm, uz, lz, wc]. If unspecified,
-        [0.0, 30.0, 30.0, 30.0, 0.0] mm
-    q_init : float, optional
-        Initial discharge value. If unspecified set to 10.0
-    ll_temp : array_like [n], optional
-        Long term average temptearature. If unspecified, calculated from temp.
-    p2 : array_like [2]
-        Problem parameter vector setup as:
-        [tfac, area]
-    par : array_like [10]
-        Parameter vector, set up as:
-        [fc, beta, e_corr, etf, lp, c_flux, k, k1, alpha, perc]
-    Returns
-    -------
-    q_sim : array_like [n]
-        Discharge for the n time steps of the precipitation vector [m3/s]
-    st : array_like [n, 5]
-        Model states for the complete time series [mm]
+Parameters
+----------
+precipitation : array_like [n]
+    Average precipitation [mm/h]
+evapotranspitration : array_like [n]
+    Potential Evapotranspiration [mm/h]
+temperature : array_like [n]
+    Average temperature [C]
+init_st : array_like [5], optional
+    Initial model states, [sp, sm, uz, lz, wc]. If unspecified,
+    [0.0, 30.0, 30.0, 30.0, 0.0] mm
+q_init : float, optional
+    Initial discharge value. If unspecified set to 10.0
+ll_temp : array_like [n], optional
+    Long term average temptearature. If unspecified, calculated from temp.
+p2 : array_like [2]
+    Problem parameter vector setup as:
+    [tfac, area]
+par : array_like [10]
+    Parameter vector, set up as:
+    [fc, beta, e_corr, etf, lp, c_flux, k, k1, alpha, perc]
+
+Returns
+-------
+q_sim : array_like [n]
+    Discharge for the n time steps of the precipitation vector [m3/s]
+st : array_like [n, 5]
+    Model states for the complete time series [mm]
 
 - model structure uses 18 parameters if the catchment has snow
     [ltt, utt, rfcf, sfcf, ttm, cfmax, cwh, cfr, fc, beta, e_corr, etf, lp,
@@ -53,47 +54,47 @@ of catchment response based on dynamic weighting of hydrological models" on apri
     [rfcf, fc, beta, etf, lp, c_flux, k, k1, alpha, perc]
 
 
-    Parameters
-    ----------
-    ltt : float
-        Lower temperature treshold [C]
-    utt : float
-        Upper temperature treshold [C]
-    rfcf : float
-        Rainfall corrector factor
-    sfcf : float
-        Snowfall corrector factor
-    ttm : float
-        Temperature treshold for Melting [C]
-    cfmax : float
-        Day degree factor
-    cwh : float
-        Capacity for water holding in snow pack
-    cfr : float
-        Refreezing factor
-    fc : float
-        Filed capacity
-    beta : float
-        Shape coefficient for effective precipitation separation
-    e_corr : float
-        Evapotranspiration corrector factor
-    etf : float
-        Total potential evapotranspiration
-    lp : float _soil
-        wilting point
-    c_flux : float
-        Capilar flux in the root zone
-    k : float
-        Upper zone recession coefficient
-        Upper zone response coefficient
-    k1 : float
-        Lower zone recession coefficient
-        Lowe zone response coefficient
-    alpha : float
-        Response box parameter
-        upper zone runoff coefficient
-    perc: float
-        percolation
+Parameters
+----------
+ltt : float
+    Lower temperature treshold [C]
+utt : float
+    Upper temperature treshold [C]
+rfcf : float
+    Rainfall corrector factor
+sfcf : float
+    Snowfall corrector factor
+ttm : float
+    Temperature treshold for Melting [C]
+cfmax : float
+    Day degree factor
+cwh : float
+    Capacity for water holding in snow pack
+cfr : float
+    Refreezing factor
+fc : float
+    Filed capacity
+beta : float
+    Shape coefficient for effective precipitation separation
+e_corr : float
+    Evapotranspiration corrector factor
+etf : float
+    Total potential evapotranspiration
+lp : float _soil
+    wilting point
+c_flux : float
+    Capilar flux in the root zone
+k : float
+    Upper zone recession coefficient
+    Upper zone response coefficient
+k1 : float
+    Lower zone recession coefficient
+    Lowe zone response coefficient
+alpha : float
+    Response box parameter
+    upper zone runoff coefficient
+perc: float
+    percolation
 """
 
 import numpy as np
@@ -353,7 +354,7 @@ def Soil(fc, beta, etf, temp, tm, e_corr, lp, tfac, c_flux, inf, ep, sm_old, uz_
 
 
 def Response(tfac, perc, alpha, k, k1, area, lz_old, uz_int_1):
-    """Response The response routine of the HBV-96 model.
+    r"""Response The response routine of the HBV-96 model.
 
     The response routine is in charge of transforming the current values of
     upper and lower zone into discharge. This routine also controls the
@@ -413,12 +414,13 @@ def Response(tfac, perc, alpha, k, k1, area, lz_old, uz_int_1):
 
 
 def Lake(temp, curve, tfac, rf, sf, q_new, lv_old, ltt, c_le, ep, lakeA):
-    # lower zone
-    # explicit representation of the lake where lake will be represented by a rating curve
-    """
+    """Lake subroutine.
+
+        lower zone
+        explicit representation of the lake where lake will be represented by a rating curve
+
     l_ea :lake evaporation
     c_le : lake _evaporation correction factor
-
     """
     # lake evaporation
     if temp >= ltt:
@@ -475,6 +477,7 @@ def Step_run(p, p2, v, St, curve, lake_sim, snow=0):
     St : array_like [5]
         Previous model states setup as:
         [sp, sm, uz, lz, wc]
+
     Returns
     -------
     q_new : float

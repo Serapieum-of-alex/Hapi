@@ -10,9 +10,13 @@ from Hapi.rrm.routing import Routing as routing
 
 
 class DistributedRRM:
-    """DistributedRRM class runs simulation in lumped form for each cell separetly and rout the discharge between the cells following the rivernetwork.
+    """DistributedRRM class.
 
-    Methods:
+        runs simulation in lumped form for each cell separetly and rout the discharge between the cells following
+        the rivernetwork.
+
+    Methods
+    -------
         1-RunLumpedRRM
         2-SpatialRouting
         3-DistMaxBas1
@@ -25,48 +29,53 @@ class DistributedRRM:
 
     @staticmethod
     def RunLumpedRRM(Model):
-        """RunLumpedRRM method runs the rainfall runoff lumped model (HBV, GR4,...) separately for each cell and return a time series of arrays.
+        """Run Lumped RRM.
 
-        Inputs:
+            - runs the rainfall runoff lumped model (HBV, GR4,...) separately for each cell and  return a time series
+            of arrays.
+
+        Parameters
         ----------
-            1-ConceptualModel:
-                [function] conceptual model function
-            2-Raster:
-                [gdal.dataset] raster to get the spatial information (nodata cells)
+        Model:
+            ConceptualModel: [function]
+                conceptual model function
+            Raster: [gdal.dataset]
+                raster to get the spatial information (nodata cells)
                 raster input could be dem, flow accumulation or flow direction raster of the catchment
                 but the nodata value stored in the raster should be far from the
                 range of values that could result from the calculation
-            3-sp_prec:
-                [numpy array] 3d array of the precipitation data, sp_prec should
+            sp_prec: [numpy array]
+                3d array of the precipitation data, sp_prec should
                 have the same 2d dimension of raster input
-            4-sp_et:
-                [numpy array] 3d array of the evapotranspiration data, sp_et should
+            sp_et: [numpy array]
+                3d array of the evapotranspiration data, sp_et should
                 have the same 2d dimension of raster input
-            5-sp_temp:
-                [numpy array] 3d array of the temperature data, sp_temp should
+            sp_temp: [numpy array]
+                3d array of the temperature data, sp_temp should
                 have the same 2d dimension of raster input
-            6-sp_pars:
-                [numpy array] number of 2d arrays of the catchment properties spatially
+            sp_pars: [numpy array]
+                number of 2d arrays of the catchment properties spatially
                 distributed in 2d and the third dimension is the number of parameters,
                 sp_pars should have the same 2d dimension of raster input
-            7-p2:
-                [List] list of unoptimized parameters
+            p2: [List]
+                list of unoptimized parameters
                 p2[0] = tfac, 1 for hourly, 0.25 for 15 min time step and 24 for daily time step
                 p2[1] = catchment area in km2
-            8-init_st:
-                [list] initial state variables values [sp, sm, uz, lz, wc]. default=None
-            9-ll_temp:
-                [numpy array] 3d array of the long term average temperature data
-            10-q_init:
-                [float] initial discharge m3/s
-        Outputs:
-        ----------
-            1-statevariables : [numpy ndarray]
-                 4D array (rows,cols,time,states) states are [sp,wc,sm,uz,lv]
-            2-qlz : [numpy ndarray]
-                3D array of the lower zone discharge (lumped calculation for each cell separately)
-            3-quz : [numpy ndarray]
-                3D array of the upper zone discharge
+            init_st: [list]
+                initial state variables values [sp, sm, uz, lz, wc]. default=None
+            ll_temp: [numpy array]
+                3d array of the long term average temperature data
+            q_init: [float]
+                initial discharge m3/s
+
+        Returns
+        -------
+        statevariables : [numpy ndarray]
+             4D array (rows,cols,time,states) states are [sp,wc,sm,uz,lv]
+        qlz : [numpy ndarray]
+            3D array of the lower zone discharge (lumped calculation for each cell separately)
+        quz : [numpy ndarray]
+            3D array of the upper zone discharge
         """
         Model.statevariables = np.zeros(
             [Model.rows, Model.cols, Model.TS, 5], dtype=np.float32
@@ -107,35 +116,38 @@ class DistributedRRM:
 
     @staticmethod
     def SpatialRouting(Model):
-        """SpatialRouting method routes the discharge from cell to another following the flow direction input raster.
+        """Spatial Routing method.
 
-        Inputs:
+            routes the discharge from cell to another following the flow direction input raster.
+
+        Parameters
         ----------
-            1-qlz:
-                [numpy ndarray] 3D array of the lower zone discharge
-            2-quz:
-                [numpy ndarray] 3D array of the upper zone discharge
-            3-flow_acc:
-                [gdal.dataset] flow accumulation raster file of the catchment (clipped to the catchment only)
-            4-flow_direct:
-                [gdal.dataset] flow Direction raster file of the catchment (clipped to the catchment only)
-            5-sp_pars:
-                [numpy ndarray] 3D array of the parameters
-            6-p2:
-                [List] list of unoptimized parameters
+        Model:
+            qlz: [numpy ndarray]
+                3D array of the lower zone discharge
+            quz: [numpy ndarray]
+                3D array of the upper zone discharge
+            flow_acc: [gdal.dataset]
+                flow accumulation raster file of the catchment (clipped to the catchment only)
+            flow_direct: [gdal.dataset]
+                flow Direction raster file of the catchment (clipped to the catchment only)
+            sp_pars: [numpy ndarray]
+                3D array of the parameters
+            p2: [List]
+                list of unoptimized parameters
                 p2[0] = tfac, 1 for hourly, 0.25 for 15 min time step and 24 for daily time step
                 p2[1] = catchment area in km2
 
-        Outputs:
-        ----------
-            1-qout:
-                [numpy array] 1D timeseries of discharge at the outlet of the catchment
-                of unit m3/sec
-            2-quz_routed:
-                [numpy ndarray] 3D array of the upper zone discharge  accumulated and
-                routed at each time step
-            3-qlz_translated:
-                [numpy ndarray] 3D array of the lower zone discharge translated at each time step
+        Returns
+        -------
+        qout: [numpy array]
+            1D timeseries of discharge at the outlet of the catchment
+            of unit m3/sec
+        quz_routed: [numpy ndarray]
+            3D array of the upper zone discharge  accumulated and
+            routed at each time step
+        qlz_translated: [numpy ndarray]
+            3D array of the lower zone discharge translated at each time step
         """
         #    # routing lake discharge with DS cell k & x and adding to cell Q
         #    q_lake=Routing.Muskingum_V(q_lake,q_lake[0],sp_pars[lakecell[0],lakecell[1],10],sp_pars[lakecell[0],lakecell[1],11],p2[0])
@@ -146,11 +158,11 @@ class DistributedRRM:
 
         ### cells at the divider
         Model.quz_routed = np.zeros_like(Model.quz)
-        """
-        lower zone discharge is going to be just translated without any attenuation
-        in order to be able to calculate total discharge (uz+lz) at internal points
-        in the catchment
-        """
+
+        # lower zone discharge is going to be just translated without any attenuation
+        # in order to be able to calculate total discharge (uz+lz) at internal points
+        # in the catchment
+
         Model.qlz_translated = np.zeros_like(Model.quz)
         # Model.Qtot = np.zeros_like(Model.quz)
         # for all cell with 0 flow acc put the quz
@@ -279,7 +291,7 @@ class DistributedRRM:
         ll_temp=None,
         q_0=None,
     ):
-        """original function."""
+        """Original Routing function."""
 
         n_steps = sp_prec.shape[2] + 1  # no of time steps =length of time series +1
         # intiialise vector of nans to fill states

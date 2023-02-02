@@ -280,7 +280,7 @@ def Soil(fc, beta, etf, temp, tm, e_corr, lp, c_flux, inf, ep, sm_old, uz_old): 
 
 
 def Response(perc, alpha, k, k1, lz_old, uz_int_1):  # tfac,area,
-    """Response The response routine of the HBV-96 model.
+    r"""Response The response routine of the HBV-96 model.
 
     The response routine is in charge of transforming the current values of
     upper and lower zone into discharge. This routine also controls the
@@ -368,7 +368,9 @@ def Routing(q, maxbas=1):
 
 
 def StepRun(p, v, St, snow=0):
-    """StepRun Makes the calculation of next step of discharge and states.
+    """Step run.
+
+        The function makes the calculation of next step of discharge and states.
 
     Parameters
     ----------

@@ -38,6 +38,7 @@ ParamList = [
     "18_x_muskingum",
 ]
 
+
 class Inputs:
     """Rainfall-runoff Inputs class.
 
@@ -51,16 +52,44 @@ class Inputs:
         3- extractParameters
         4- createLumpedInputs
         5- renameFiles
-        6- changetext2time
-        7- ReadExcelData
         8- ListAttributes
     """
 
-    def __init__(self):
-        """No parameters needed for instantiating the object."""
+    def __init__(self, src):
+        """Rainfall Inputs.
+
+        Parameters
+        ----------
+        src: [str]
+            path to the spatial information source raster to get the spatial information
+            (coordinate system, no of rows & columns) A_path should include the name of the raster
+            and the extension like "data/dem.tif".
+        """
+        self.source_dem = src
         pass
 
-    def prepareInputs(src: str, input_folder: str, folder_name: str):
+    @staticmethod
+    def createTempFolder(file_name: str = "AllignedRasters"):
+        """Create a temporary folder for calculation.
+
+            creates a folder in the temporary directory for making some operations on rasters
+
+        Parameters
+        ----------
+        file_name: [str]
+            folder name
+        """
+        try:
+            os.makedirs(os.path.join(os.environ["TEMP"], file_name))
+        except WindowsError:
+            # if not able to create the folder delete the folder with the same name and create one empty
+            shutil.rmtree(os.path.join(os.environ["TEMP"] + f"/{file_name}"))
+            os.makedirs(os.path.join(os.environ["TEMP"], file_name))
+
+        temp = os.environ["TEMP"] + f"/{file_name}/"
+        return temp
+
+    def prepareInputs(self, input_folder: str, folder_name: str):
         """prepareInputs.
 
         this function prepare downloaded raster data to have the same align and
@@ -69,10 +98,6 @@ class Inputs:
 
         Parameters
         ----------
-        src: [str]
-            path to the spatial information source raster to get the spatial information
-            (coordinate system, no of rows & columns) A_path should include the name of the raster
-            and the extension like "data/dem.tif".
         input_folder: [str]
             path of the folder of the rasters you want to adjust their
             no of rows, columns and resolution (alignment) like raster A
@@ -83,14 +108,16 @@ class Inputs:
         Example
         -------
         Ex1:
-            >>> dem_path="01GIS/inputs/4000/acc4000.tif"
-            >>> prec_in_path="02Precipitation/CHIRPS/Daily/"
-            >>> Inputs.prepareInputs(dem_path,prec_in_path,"prec")
+            >>> dem_path = "01GIS/inputs/4000/acc4000.tif"
+            >>> prec_in_path = "02Precipitation/CHIRPS/Daily/"
+            >>> In = Inputs(dem_path)
+            >>> In.prepareInputs(prec_in_path, "prec")
         Ex2:
             >>> dem_path="01GIS/inputs/4000/acc4000.tif"
             >>> outputpath="00inputs/meteodata/4000/"
             >>> evap_in_path="03Weather_Data/evap/"
-            >>> Inputs.prepareInputs(dem_path,evap_in_path,outputpath+"evap")
+            >>> In = Inputs(dem_path)
+            >>> Inputs.prepareInputs(evap_in_path, f"{outputpath}/evap")
         """
         if not isinstance(folder_name, str):
             print("folder_name input should be string type")
@@ -110,7 +137,7 @@ class Inputs:
             "- First alligned files will be created in a folder 'AllignedRasters' in the Temp folder in you "
             "environment variable"
         )
-        raster.matchDataAlignment(src, input_folder, temp)
+        raster.matchDataAlignment(self.source_dem, input_folder, temp)
         # create new folder in the current directory for alligned and nodatavalue matched cells
         try:
             os.makedirs(os.path.join(os.getcwd(), folder_name))
@@ -124,7 +151,7 @@ class Inputs:
         print(
             "- Second matching NoDataValue from the DEM raster too all raster will be created in the outputpath"
         )
-        raster.cropAlignedFolder(temp, src, f"{folder_name}/")
+        raster.cropAlignedFolder(temp, self.source_dem, f"{folder_name}/")
         # delete the processing folder from temp
         shutil.rmtree(temp)
 
@@ -373,7 +400,6 @@ class Inputs:
             os.rename(
                 f"{path}/{df.loc[i, 'files']}", f"{path}/{df.loc[i, 'new_names']}"
             )
-
 
     def listAttributes(self):
         """Print Attributes List."""

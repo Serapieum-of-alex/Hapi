@@ -7,7 +7,8 @@ Created on Sat Mar 14 16:36:01 2020
 import datetime as dt
 import math
 import os
-from collections import OrderedDict
+
+# from collections import OrderedDict
 from typing import List, Optional, Union
 
 import matplotlib as mpl
@@ -15,10 +16,11 @@ import matplotlib.colors as colors
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from cleopatra.array import Array
 from matplotlib import animation, gridspec
 from matplotlib.animation import FuncAnimation
 from scipy.stats import gumbel_r
-from cleopatra.array import Array
+
 hours = list(range(1, 25))
 
 
@@ -50,7 +52,6 @@ class Visualize:
         line_width=3,
         axis_font_size=15,
     )
-
 
     def __init__(self, resolution: str = "Hourly"):
         self.resolution = resolution
@@ -164,7 +165,11 @@ class Visualize:
             label="Left Dike",
         )
         axGS.plot(
-            Sub.xs_names, Sub.cross_sections["zr"], "k.-", linewidth=2, label="Right Dike"
+            Sub.xs_names,
+            Sub.cross_sections["zr"],
+            "k.-",
+            linewidth=2,
+            label="Right Dike",
         )
 
         if floodplain:
@@ -213,15 +218,17 @@ class Visualize:
         maxelevel1 = max(
             Sub.cross_sections.loc[Sub.cross_sections["xsid"] >= from_xs, "zr"][
                 Sub.cross_sections["xsid"] <= to_xs
-                ]
+            ]
         )
         maxelevel2 = max(
             Sub.cross_sections.loc[Sub.cross_sections["xsid"] >= from_xs, "zl"][
                 Sub.cross_sections["xsid"] <= to_xs
-                ]
+            ]
         )
         maxlelv = max(maxelevel1, maxelevel2)
-        minlev = Sub.cross_sections.loc[Sub.cross_sections["xsid"] == to_xs, "gl"].values
+        minlev = Sub.cross_sections.loc[
+            Sub.cross_sections["xsid"] == to_xs, "gl"
+        ].values
         axGS.set_ylim(minlev - 5, maxlelv + 5)
 
         # plot the bedlevel/baklevel
@@ -356,10 +363,10 @@ class Visualize:
 
         if Sub.from_beginning == 1:
             Period = Sub.days_list[
-                     np.where(Sub.reference_index == start)[0][0]: np.where(
-                         Sub.reference_index == end
+                np.where(Sub.reference_index == start)[0][0] : np.where(
+                    Sub.reference_index == end
                 )[0][0]
-                                                                   + 1
+                + 1
             ]
         else:
             ii = Sub.dateToIndex(start)
@@ -465,15 +472,17 @@ class Visualize:
         ymax1 = max(
             Sub.cross_sections.loc[Sub.cross_sections["xsid"] >= from_xs, "zr"][
                 Sub.cross_sections["xsid"] <= to_xs
-                ]
+            ]
         )
         ymax2 = max(
             Sub.cross_sections.loc[Sub.cross_sections["xsid"] >= from_xs, "zl"][
                 Sub.cross_sections["xsid"] <= to_xs
-                ]
+            ]
         )
         ymax = max(ymax1, ymax2)
-        minlev = Sub.cross_sections.loc[Sub.cross_sections["xsid"] == to_xs, "gl"].values
+        minlev = Sub.cross_sections.loc[
+            Sub.cross_sections["xsid"] == to_xs, "gl"
+        ].values
         ax4.set_ylim(minlev - 5, ymax + 5)
         ax4.set_xlim(from_xs - 1, to_xs + 1)
         ax4.set_xticks(list(range(from_xs, to_xs + 1)))
@@ -491,7 +500,11 @@ class Visualize:
             label="Left Dike",
         )
         ax4.plot(
-            Sub.xs_names, Sub.cross_sections["zr"], "k.-", linewidth=2, label="Right Dike"
+            Sub.xs_names,
+            Sub.cross_sections["zr"],
+            "k.-",
+            linewidth=2,
+            label="Right Dike",
         )
 
         if Sub.version == 1:
@@ -598,7 +611,7 @@ class Visualize:
             x = Sub.xs_names
             y = Sub.results_1d.loc[Sub.results_1d["day"] == counter[i][0], "q"][
                 Sub.results_1d["hour"] == counter[i][1]
-                ]
+            ]
             # the Saintvenant subroutine writes the
             # results of the last xs in the next segment with the current
             # segment
@@ -618,7 +631,7 @@ class Visualize:
 
             y = Sub.results_1d.loc[Sub.results_1d["day"] == counter[i][0], "wl"][
                 Sub.results_1d["hour"] == counter[i][1]
-                ]
+            ]
             # the Saintvenant subroutine writes the results
             # of the last xs in the next segment with the current segment
             if not last_river_reach:
@@ -629,7 +642,7 @@ class Visualize:
             y = (
                 Sub.results_1d.loc[Sub.results_1d["day"] == counter[i][0], "h"][
                     Sub.results_1d["hour"] == counter[i][1]
-                    ]
+                ]
                 * 2
             )
             # temporary as now the Saintvenant subroutine writes the results
@@ -865,7 +878,9 @@ class Visualize:
         ax3 = fig2.add_subplot(gs[0, 0:1])
         ax3.set_xlim(1, nstep)
         if Sub.version < 4:
-            ax3.set_ylim(float(Sub.h_bc_1min.min().min()), float(Sub.h_bc_1min.max().max()))
+            ax3.set_ylim(
+                float(Sub.h_bc_1min.min().min()), float(Sub.h_bc_1min.max().max())
+            )
 
         ax3.set_xlabel("Time", fontsize=y_axis_label_size)
         ax3.set_ylabel("water level", fontsize=y_axis_label_size, labelpad=0.5)
@@ -883,15 +898,17 @@ class Visualize:
         ymax1 = max(
             Sub.cross_sections.loc[Sub.cross_sections["xsid"] >= from_xs, "zr"][
                 Sub.cross_sections["xsid"] <= to_xs
-                ]
+            ]
         )
         ymax2 = max(
             Sub.cross_sections.loc[Sub.cross_sections["xsid"] >= from_xs, "zl"][
                 Sub.cross_sections["xsid"] <= to_xs
-                ]
+            ]
         )
         ymax = max(ymax1, ymax2)
-        minlev = Sub.cross_sections.loc[Sub.cross_sections["xsid"] == to_xs, "gl"].values
+        minlev = Sub.cross_sections.loc[
+            Sub.cross_sections["xsid"] == to_xs, "gl"
+        ].values
         ax4.set_ylim(minlev - 5, ymax + 5)
         ax4.set_xlim(from_xs - 1, to_xs + 1)
         ax4.set_xticks(list(range(from_xs, to_xs + 1)))
@@ -908,7 +925,11 @@ class Visualize:
             label="Left Dike",
         )
         ax4.plot(
-            Sub.xs_names, Sub.cross_sections["zr"], "k.-", linewidth=2, label="Right Dike"
+            Sub.xs_names,
+            Sub.cross_sections["zr"],
+            "k.-",
+            linewidth=2,
+            label="Right Dike",
         )
 
         if Sub.version == 1:
@@ -1127,10 +1148,10 @@ class Visualize:
         )
 
         counter = Sub.reference_index_results[
-                  np.where(Sub.reference_index_results == start)[0][0]: np.where(
-                      Sub.reference_index_results == end
+            np.where(Sub.reference_index_results == start)[0][0] : np.where(
+                Sub.reference_index_results == end
             )[0][0]
-                                                                        + 1
+            + 1
         ]
 
         margin = 10
@@ -1443,9 +1464,13 @@ class Visualize:
             XSS[1].loc[XSS.index == ind] = 0
             XSS[2].loc[XSS.index == ind] = 0
 
-            bl = Sub.cross_sections.loc[Sub.cross_sections.index == ind2, "bl"].values[0]
+            bl = Sub.cross_sections.loc[Sub.cross_sections.index == ind2, "bl"].values[
+                0
+            ]
             b = Sub.cross_sections.loc[Sub.cross_sections.index == ind2, "b"].values[0]
-            br = Sub.cross_sections.loc[Sub.cross_sections.index == ind2, "br"].values[0]
+            br = Sub.cross_sections.loc[Sub.cross_sections.index == ind2, "br"].values[
+                0
+            ]
 
             XSS[3].loc[XSS.index == ind] = bl
             XSS[4].loc[XSS.index == ind] = bl
@@ -1454,23 +1479,33 @@ class Visualize:
             XSS[7].loc[XSS.index == ind] = bl + b + br
             XSS[8].loc[XSS.index == ind] = bl + b + br
 
-            gl = Sub.cross_sections.loc[Sub.cross_sections.index == ind2, "gl"].values[0]
+            gl = Sub.cross_sections.loc[Sub.cross_sections.index == ind2, "gl"].values[
+                0
+            ]
 
             if bedlevel:
                 subtract = 0
             else:
                 subtract = gl
 
-            zl = Sub.cross_sections.loc[Sub.cross_sections.index == ind2, "zl"].values[0]
-            zr = Sub.cross_sections.loc[Sub.cross_sections.index == ind2, "zr"].values[0]
+            zl = Sub.cross_sections.loc[Sub.cross_sections.index == ind2, "zl"].values[
+                0
+            ]
+            zr = Sub.cross_sections.loc[Sub.cross_sections.index == ind2, "zr"].values[
+                0
+            ]
 
             if "dbf" in Sub.cross_sections.columns:
                 dbf = Sub.cross_sections.loc[
                     Sub.cross_sections.index == ind2, "dbf"
                 ].values[0]
 
-            hl = Sub.cross_sections.loc[Sub.cross_sections.index == ind2, "hl"].values[0]
-            hr = Sub.cross_sections.loc[Sub.cross_sections.index == ind2, "hr"].values[0]
+            hl = Sub.cross_sections.loc[Sub.cross_sections.index == ind2, "hl"].values[
+                0
+            ]
+            hr = Sub.cross_sections.loc[Sub.cross_sections.index == ind2, "hr"].values[
+                0
+            ]
 
             XSS[9].loc[XSS.index == ind] = zl - subtract
 
@@ -1687,7 +1722,9 @@ class Visualize:
             folder and paste it in the "c:/user/.matplotlib/ffmpeg-static/"
             """
         if ffmpeg_path == "":
-            ffmpeg_path = os.getenv("HOME") + "/.matplotlib/ffmpeg-static/bin/ffmpeg.exe"
+            ffmpeg_path = (
+                os.getenv("HOME") + "/.matplotlib/ffmpeg-static/bin/ffmpeg.exe"
+            )
             assert os.path.exists(ffmpeg_path), "{0}".format(message)
 
         mpl.rcParams["animation.ffmpeg_path"] = ffmpeg_path
@@ -1947,7 +1984,9 @@ class Visualize:
         Print Attributes List
         """
         print("\n")
-        print(f"Attributes List of: {repr(self.__dict__['name'])} - {self.__class__.__name__} Instance\n")
+        print(
+            f"Attributes List of: {repr(self.__dict__['name'])} - {self.__class__.__name__} Instance\n"
+        )
         self_keys = list(self.__dict__.keys())
         self_keys.sort()
         for key in self_keys:

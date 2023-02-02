@@ -57,8 +57,10 @@ def get_random_pars():
 
         get_random_pars generates random parameter values
 
-    Returns:
-        array of random values between the upper and lower bounds.
+    Returns
+    -------
+    array: [np.ndarray]
+        of random values between the upper and lower bounds.
     """
     return np.random.uniform(P_LB, P_UB)
 
@@ -197,17 +199,14 @@ def _snow(cfmax, tfac, temp, ttm, cfr, cwh, _rf, _sf, wc_old, sp_old):
 
 
 def _soil(fc, beta, etf, temp, tm, e_corr, lp, tfac, c_flux, inf, ep, sm_old, uz_old):
-    """
-    ====
-    Soil
-    ====
+    """Soil.
 
-    Soil routine of the HBV-96 model.
+        Soil routine of the HBV-96 model.
 
-    The model checks for the amount of water that can infiltrate the soil,
-    coming from the liquid precipitation and the snow pack melting. A part of
-    the water will be stored as soil moisture, while other will become runoff,
-    and routed to the upper zone tank.
+        The model checks for the amount of water that can infiltrate the soil,
+        coming from the liquid precipitation and the snow pack melting. A part of
+        the water will be stored as soil moisture, while other will become runoff,
+        and routed to the upper zone tank.
 
     Parameters
     ----------
@@ -278,14 +277,14 @@ def _soil(fc, beta, etf, temp, tm, e_corr, lp, tfac, c_flux, inf, ep, sm_old, uz
 
 
 def _response(tfac, perc, alpha, k, k1, area, lz_old, uz_int_1):
-    """Response.
+    r"""Response.
 
         The response routine of the HBV-96 model.
 
-    The response routine is in charge of transforming the current values of
-    upper and lower zone into discharge. This routine also controls the
-    recharge of the lower zone tank (baseflow). The transformation of units
-    also occurs in this point.
+        The response routine is in charge of transforming the current values of
+        upper and lower zone into discharge. This routine also controls the
+        recharge of the lower zone tank (baseflow). The transformation of units
+        also occurs in this point.
 
     Parameters
     ----------
@@ -352,7 +351,7 @@ def _tf(maxbas):
 
 
 def _routing(q, maxbas=1):
-    """This function implements the transfer function using a triangular function."""
+    """Routing function using a triangular function."""
     assert maxbas >= 1, "Maxbas value has to be larger than 1"
     # Get integer part of maxbas
     #    maxbas = int(maxbas)

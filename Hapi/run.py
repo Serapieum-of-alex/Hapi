@@ -19,12 +19,11 @@ from Hapi.rrm.wrapper import Wrapper
 
 
 class Run(Catchment):
+    """Run the catchment model.
 
-    """Run.
-
-    Run sub-class validate the spatial data and hand it to the wrapper class, It is
-    a sub-class from the catchment class, so you need to create the Catchment
-    object first to run the model
+        Run sub-class validate the spatial data and hand it to the wrapper class, It is
+        a sub-class from the catchment class, so you need to create the Catchment
+        object first to run the model
 
     Methods
     -------
@@ -40,61 +39,25 @@ class Run(Catchment):
         pass
 
     def RunHapi(self):
-        """RunModel.
+        """Run Model.
 
-        this function runs the conceptual distributed hydrological model
-
-        Inputs:
-        ----------
-        1-Paths:
-
-        4-FlowAccPath:
-
-        5-FlowDPath:
-            [String] path to the Flow Direction raster of the catchment (it should
-            include the raster name and extension)
-        7-ParPath:
-            [String] path to the Folder contains parameters rasters of the catchment
-        8-p2:
-            [List] list of unoptimized parameters
-            p2[0] = tfac, 1 for hourly, 0.25 for 15 min time step and 24 for daily time step
-            p2[1] = catchment area in km2
-
-        Outputs:
-        ----------
-            1-statevariables: [numpy attribute]
-                4D array (rows,cols,time,states) states are [sp,wc,sm,uz,lv]
-            2-qlz: [numpy attribute]
-                3D array of the lower zone discharge
-            3-quz: [numpy attribute]
-                3D array of the upper zone discharge
-            4-qout: [numpy attribute]
-                1D timeseries of discharge at the outlet of the catchment
-                of unit m3/sec
-            5-quz_routed: [numpy attribute]
-                3D array of the upper zone discharge  accumulated and
-                routed at each time step
-            6-qlz_translated: [numpy attribute]
-                3D array of the lower zone discharge translated at each time step
-
-        Example:
-        ----------
-            PrecPath = prec_path="meteodata/4000/calib/prec"
-            Evap_Path = evap_path="meteodata/4000/calib/evap"
-            TempPath = temp_path="meteodata/4000/calib/temp"
-            DemPath = "GIS/4000/dem4000.tif"
-            FlowAccPath = "GIS/4000/acc4000.tif"
-            FlowDPath = "GIS/4000/fd4000.tif"
-            ParPath = "meteodata/4000/parameters"
-            p2=[1, 227.31]
-            st, q_out, q_uz_routed = RunModel(PrecPath,Evap_Path,TempPath,DemPath,
-                                              FlowAccPath,FlowDPath,ParPath,p2)
+        Returns
+        -------
+        statevariables: [numpy attribute]
+            4D array (rows,cols,time,states) states are [sp,wc,sm,uz,lv]
+        qlz: [numpy attribute]
+            3D array of the lower zone discharge
+        quz: [numpy attribute]
+            3D array of the upper zone discharge
+        qout: [numpy attribute]
+            1D timeseries of discharge at the outlet of the catchment
+            of unit m3/sec
+        quz_routed: [numpy attribute]
+            3D array of the upper zone discharge  accumulated and
+            routed at each time step
+        qlz_translated: [numpy attribute]
+            3D array of the lower zone discharge translated at each time step
         """
-        ### input data validation
-        # data type
-        # assert type(self.FlowAcc)==gdal.Dataset, "flow_acc should be read using gdal (gdal dataset please read it using gdal library) "
-        # assert type(self.FlowDir)==gdal.Dataset, "flow_direct should be read using gdal (gdal dataset please read it using gdal library) "
-
         # input dimensions
         [fd_rows, fd_cols] = self.FlowDirArr.shape
         assert (
@@ -124,61 +87,10 @@ class Run(Catchment):
         print("Model Run has finished")
 
     def RunFloodModel(self):
-        """RunFloodModel.
+        """Run flood model.
 
-        this function runs the conceptual distributed hydrological model
-
-        Inputs:
-        ----------
-        1-Paths:
-
-        4-FlowAccPath:
-
-        5-FlowDPath:
-            [String] path to the Flow Direction raster of the catchment (it should
-            include the raster name and extension)
-        7-ParPath:
-            [String] path to the Folder contains parameters rasters of the catchment
-        8-p2:
-            [List] list of unoptimized parameters
-            p2[0] = tfac, 1 for hourly, 0.25 for 15 min time step and 24 for daily time step
-            p2[1] = catchment area in km2
-
-        Outputs:
-        ----------
-            1-statevariables: [numpy attribute]
-                4D array (rows,cols,time,states) states are [sp,wc,sm,uz,lv]
-            2-qlz: [numpy attribute]
-                3D array of the lower zone discharge
-            3-quz: [numpy attribute]
-                3D array of the upper zone discharge
-            4-qout: [numpy attribute]
-                1D timeseries of discharge at the outlet of the catchment
-                of unit m3/sec
-            5-quz_routed: [numpy attribute]
-                3D array of the upper zone discharge  accumulated and
-                routed at each time step
-            6-qlz_translated: [numpy attribute]
-                3D array of the lower zone discharge translated at each time step
-
-        Example:
-        ----------
-            PrecPath = prec_path="meteodata/4000/calib/prec"
-            Evap_Path = evap_path="meteodata/4000/calib/evap"
-            TempPath = temp_path="meteodata/4000/calib/temp"
-            DemPath = "GIS/4000/dem4000.tif"
-            FlowAccPath = "GIS/4000/acc4000.tif"
-            FlowDPath = "GIS/4000/fd4000.tif"
-            ParPath = "meteodata/4000/parameters"
-            p2=[1, 227.31]
-            st, q_out, q_uz_routed = RunModel(PrecPath,Evap_Path,TempPath,DemPath,
-                                              FlowAccPath,FlowDPath,ParPath,p2)
+        - This function runs the conceptual distributed hydrological model
         """
-        ### input data validation
-        # data type
-        # assert type(self.FlowAcc)==gdal.Dataset, "flow_acc should be read using gdal (gdal dataset please read it using gdal library) "
-        # assert type(self.FlowDir)==gdal.Dataset, "flow_direct should be read using gdal (gdal dataset please read it using gdal library) "
-
         # input dimensions
         [fd_rows, fd_cols] = self.FlowDirArr.shape
         assert (
@@ -223,53 +135,18 @@ class Run(Catchment):
         print("1D model Run has finished")
 
     def runHAPIwithLake(self, Lake):
-        """RunDistwithLake.
+        """Run model with lake.
 
-        this function runs the conceptual distributed hydrological model
+            - This function runs the conceptual distributed hydrological model
 
-        Inputs:
-        ----------
-        1-Paths:
-            1-PrecPath:
-                [String] path to the Folder contains precipitation rasters
-            2-Evap_Path:
-                [String] path to the Folder contains Evapotranspiration rasters
-            3-TempPath:
-                [String] path to the Folder contains Temperature rasters
-            4-FlowAccPath:
-                [String] path to the Flow Accumulation raster of the catchment (it should
-                include the raster name and extension)
-            5-FlowDPath:
-                [String] path to the Flow Direction raster of the catchment (it should
-                include the raster name and extension)
-        7-ParPath:
-            [String] path to the Folder contains parameters rasters of the catchment
-        8-p2:
-            [List] list of unoptimized parameters
-            p2[0] = tfac, 1 for hourly, 0.25 for 15 min time step and 24 for daily time step
-            p2[1] = catchment area in km2
-
-        Outputs:
-        ----------
-        1- st:
-            [4D array] state variables
-        2- q_out:
-            [1D array] calculated Discharge at the outlet of the catchment
-        3- q_uz:
-            [3D array] Distributed discharge for each cell
-
-        Example:
-        ----------
-            PrecPath = prec_path="meteodata/4000/calib/prec"
-            Evap_Path = evap_path="meteodata/4000/calib/evap"
-            TempPath = temp_path="meteodata/4000/calib/temp"
-            DemPath = "GIS/4000/dem4000.tif"
-            FlowAccPath = "GIS/4000/acc4000.tif"
-            FlowDPath = "GIS/4000/fd4000.tif"
-            ParPath = "meteodata/4000/parameters"
-            p2=[1, 227.31]
-            st, q_out, q_uz_routed = RunModel(PrecPath,Evap_Path,TempPath,DemPath,
-                                              FlowAccPath,FlowDPath,ParPath,p2)
+        Returns
+        -------
+        st: [4D array]
+            state variables.
+        q_out: [1D array]
+            calculated Discharge at the outlet of the catchment.
+        q_uz: [3D array]
+            Distributed discharge for each cell.
         """
         # input dimensions
         [fd_rows, fd_cols] = self.FlowDirArr.shape
@@ -307,56 +184,19 @@ class Run(Catchment):
         print("Model Run has finished")
 
     def runFW1(self):
-        """RunDistwithLake.
+        """Run DistwithLake.
 
-        this function runs the conceptual distributed hydrological model
+            This function runs the conceptual distributed hydrological model
 
-        Inputs:
-        ----------
-        1-Paths:
-            1-PrecPath:
-                [String] path to the Folder contains precipitation rasters
-            2-Evap_Path:
-                [String] path to the Folder contains Evapotranspiration rasters
-            3-TempPath:
-                [String] path to the Folder contains Temperature rasters
-            4-FlowAccPath:
-                [String] path to the Flow Accumulation raster of the catchment (it should
-                include the raster name and extension)
-            5-FlowDPath:
-                [String] path to the Flow Direction raster of the catchment (it should
-                include the raster name and extension)
-        7-ParPath:
-            [String] path to the Folder contains parameters rasters of the catchment
-        8-p2:
-            [List] list of unoptimized parameters
-            p2[0] = tfac, 1 for hourly, 0.25 for 15 min time step and 24 for daily time step
-            p2[1] = catchment area in km2
-
-        Outputs:
-        ----------
-        1- st:
-            [4D array] state variables
-        2- q_out:
-            [1D array] calculated Discharge at the outlet of the catchment
-        3- q_uz:
-            [3D array] Distributed discharge for each cell
-
-        Example:
-        ----------
-            PrecPath = prec_path="meteodata/4000/calib/prec"
-            Evap_Path = evap_path="meteodata/4000/calib/evap"
-            TempPath = temp_path="meteodata/4000/calib/temp"
-            DemPath = "GIS/4000/dem4000.tif"
-            FlowAccPath = "GIS/4000/acc4000.tif"
-            FlowDPath = "GIS/4000/fd4000.tif"
-            ParPath = "meteodata/4000/parameters"
-            p2=[1, 227.31]
-            st, q_out, q_uz_routed = RunModel(PrecPath,Evap_Path,TempPath,DemPath,
-                                              FlowAccPath,FlowDPath,ParPath,p2)
+        Returns
+        -------
+        st: [4D array]
+            state variables
+        q_out: [1D array]
+            calculated Discharge at the outlet of the catchment
+        q_uz: [3D array]
+            Distributed discharge for each cell
         """
-        # input data validation
-
         # input dimensions
         assert (
             np.shape(self.Prec)[0] == self.rows
@@ -462,44 +302,46 @@ class Run(Catchment):
         Route: int = 0,
         RoutingFn=None,
     ):
-        """runLumped.
+        """Run lumped model.
 
-        this function runs lumped conceptual model
+            - This function runs lumped conceptual model
 
         Parameters
         ----------
-        ConceptualModel: [function]
-            conceptual model and it should contain a function called simulate
-        data: [numpy array]
-            meteorological data as array with the first column as precipitation
-            second as evapotranspiration, third as temperature and forth column as
-            long term average temperature
-        parameters: [numpy array]
-            conceptual model parameters as array
-        p2: [List]
-            list of unoptimized parameters
-            p2[0] = tfac, 1 for hourly, 0.25 for 15 min time step and 24 for daily time step
-            p2[1] = catchment area in km2
-        init_st: [list]
-            initial state variables values [sp, sm, uz, lz, wc].
-        Routing: [0 or 1]
+        Route: [0 or 1]
             to decide wether t route the generated discharge hydrograph or not
         RoutingFn: [function]
             function to route the dischrge hydrograph.
 
-        Returns
-        ----------
-        1- st:
-            [numpy array] 3d array of the 5 state variable data for each cell
-        2- q_lz:
-            [numpy array] 1d array of the calculated discharge.
+        Parameters that should be defined before calling the function
+            ConceptualModel: [function]
+                conceptual model and it should contain a function called simulate
+            data: [numpy array]
+                meteorological data as array with the first column as precipitation
+                second as evapotranspiration, third as temperature and forth column as
+                long term average temperature
+            parameters: [numpy array]
+                conceptual model parameters as array
+            p2: [List]
+                list of unoptimized parameters
+                p2[0] = tfac, 1 for hourly, 0.25 for 15 min time step and 24 for daily time step
+                p2[1] = catchment area in km2
+            init_st: [list]
+                initial state variables values [sp, sm, uz, lz, wc].
 
-        examples:
-        ----------
-            p2=[24, 1530]
-            #[sp,sm,uz,lz,wc]
-            init_st=[0,5,5,5,0]
-            snow=0
+        Returns
+        -------
+        st: [numpy array]
+            3d array of the 5 state variable data for each cell
+        q_lz: [numpy array]
+            1d array of the calculated discharge.
+
+        Examples
+        --------
+        >>> p2 = [24, 1530]
+        >>> #[sp,sm,uz,lz,wc]
+        >>> init_st = [0,5,5,5,0]
+        >>> snow = 0
         """
         if RoutingFn is None:
             RoutingFn = []
