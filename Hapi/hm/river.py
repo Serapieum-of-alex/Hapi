@@ -8,7 +8,7 @@ import os
 import zipfile
 from bisect import bisect
 from pathlib import Path
-from typing import Any, Optional, Tuple, Union
+from typing import Any, Optional, Tuple, Union, List
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -985,102 +985,139 @@ class River:
         # calculate time and print it
         t2 = dt.datetime.now()
         time_min = (t2 - t1).seconds / 60
-        print(f"Time taken to read the file: {time_min:0.3f} min")
+        print(f"Time taken to read the file: {time_min:0.2f} min")
         self.results_1d = data
 
     @staticmethod
     def collect1DResults(
-        path,
-        FolderNames,
-        Left,
-        Right,
-        Savepath,
-        OneD,
-        fromf="",
-        tof="",
-        FilterbyName=False,
+        rdir: str,
+        separate_dir_list: List[str],
+        left_overtopping: bool = False,
+        right_overtopping: bool = False,
+        save_to: str = "",
+        OneD: bool = True,
+        from_file: int = None,
+        to_file: int = None,
+        filter_by_name: bool = False,
+        delimiter: str = r"\s+",
     ):
         """Collect1DResults.
 
         Collect1DResults method reads the 1D separated result files and filter
-        then between two number to remove any warmup period if exist then stack
+        them between two number to remove any warmup period if exist then stack
         the result in one table then write it.
 
         Parameters
         ----------
-        path : [String]
-            path to the folder containing the separated folder.
-        FolderNames : [List]
+        rdir : [String]
+            rdir to the folder containing the separated folder.
+        separate_dir_list : [List]
             list containing folder names.
-        Left : [Bool]
+        left_overtopping : [Bool]
             True if you want to combine left overtopping files.
-        Right : [Bool]
+        right_overtopping : [Bool]
             True if you want to combine right overtopping files.
-        Savepath : [String]
+        save_to : [String]
             path to the folder where data will be saved.
         OneD : [Bool]
             True if you want to combine 1D result files.
-        fromf : [Integer], optional
-            if the files are very big and the cache memory has a problem
+        from_file : [Integer], optional
+            If the files are very big and the cache memory has a problem
             reading all the files you can specify here the order of the file
             the code will start from to combine. The default is ''.
-        tof : [Integer], optional
-            if the files are very big and the cache memory has a problem
+        to_file : [Integer], optional
+            If the files are very big and the cache memory has a problem
             reading all the files you can specify here the order of the file
             the code will end to combine. The default is ''.
-        FilterbyName : [Bool], optional
+        filter_by_name : [Bool], optional
             if the results include a wanm up period at the beginning
             or has results for some days at the end you want to filter out
             you want to include the period you want to be combined only
             in the name of the folder between () and separated with -
             ex 1d(5000-80000). The default is False.
+        delimiter: [str]
+            delimeter d in the files to separate columns.
 
         Returns
         -------
-            combined files will be written to the Savepath .
+            combined files will be written to the save_to .
+
+        Hint
+        ----
+        Make sure that files in all given directories are the same
+
+        Examples
+        --------
+        project_folder/
+            1d(1-7485)/
+                1.txt
+                1_left.txt
+                1_right.txt
+            1d(7485-22000)/
+                1.txt
+                1_left.txt
+                1_right.txt
+            combined/
+        >>> rdir = "project_folder/"
+        >>> separate_dir_list = ["1d(1-7485)", "1d(7485-22000)"]
+        >>> left_overtopping = True
+        >>> right_overtopping = True
+        >>> save_to = "project_folder/combined/"
+        >>> from_file = 1
+        >>> to_file = 5
+        >>> filter_by_name = True
+        >>> one_d = False
+        >>> River.collect1DResults(
+        >>>                       rdir, separate_dir_list, left_overtopping, right_overtopping, save_to, one_d,
+        >>>                       filter_by_name=filter_by_name
+        >>> )
         """
         second = "=pd.DataFrame()"
-        if fromf == "":
-            fromf = 0
+        if from_file is None:
+            from_file = 0
 
-        for i in range(len(FolderNames)):
-            logger.debug(f"{i} - {FolderNames[i]}")
+        dir_i = separate_dir_list[0]
 
-            if tof == "":
-                tof = len(os.listdir(path + "/" + FolderNames[i]))
+        if to_file is None:
+            to_file = len(os.listdir(f"{rdir}/{dir_i}"))
 
-            FileList = os.listdir(path + "/" + FolderNames[i])[fromf:tof]
-            # tof is only renewed if it is equal to ''
-            tof = ""
-            if FilterbyName:
-                filter1 = int(FolderNames[i].split("(")[1].split("-")[0])
-                filter2 = int(FolderNames[i].split("(")[1].split("-")[1].split(")")[0])
+        file_list = os.listdir(f"{rdir}/{dir_i}")[from_file:to_file]
 
-            for j in range(len(FileList)):
+        for j, file_i in enumerate(file_list):
+            for i, dir_i in enumerate(separate_dir_list):
+                logger.debug(f"Directory:{i} - {dir_i}")
+                if filter_by_name:
+                    try:
+                        filter1 = int(dir_i.split("(")[1].split("-")[0])
+                        filter2 = int(dir_i.split("(")[1].split("-")[1].split(")")[0])
+                    except IndexError:
+                        raise NameError(
+                            f"Folder names are not the format of **(start_ind-end_ind), where start_ind and "
+                            f"end_ind are integers, given folder name is {dir_i}"
+                        )
 
                 go = False
-
-                if Left and FileList[j].split(".")[0].endswith("_left"):
-                    logger.debug(f"{i} - {j} -  {FileList[j]}")
+                if left_overtopping and file_i.split(".")[0].endswith("_left"):
+                    logger.debug(f"Directory:{dir_i} - File:{file_i}")
                     # create data frame for the sub-basin
-                    first = "L" + FileList[j].split(".")[0]
+                    first = "L" + file_i.split(".")[0]
                     go = True
 
-                elif Right and FileList[j].split(".")[0].endswith("_right"):
-                    logger.debug(str(i) + "-" + str(j) + "-" + FileList[j])
-                    first = "R" + FileList[j].split(".")[0]
+                elif right_overtopping and file_i.split(".")[0].endswith("_right"):
+                    logger.debug(f"Directory:{dir_i} - File:{file_i}")
+                    first = "R" + file_i.split(".")[0]
                     go = True
 
                 ## try to get the integer of the file name to make sure that it is
                 ## one of the 1D results file
                 elif (
                     OneD
-                    and not FileList[j].split(".")[0].endswith("_right")
-                    and not FileList[j].split(".")[0].endswith("_left")
+                    and not file_i.split(".")[0].endswith("_right")
+                    and not file_i.split(".")[0].endswith("_left")
                 ):
-                    logger.debug(str(i) + "-" + str(j) + "-" + FileList[j])
+                    logger.debug(f"Directory:{dir_i} - File:{file_i}")
                     # create data frame for the sub-basin
-                    first = "one" + FileList[j].split(".")[0]
+                    first = "one" + file_i.split(".")[0]
                     go = True
 
                 if go:
@@ -1089,48 +1126,62 @@ class River:
 
                     # read the file
                     try:
-                        temp_df = pd.read_csv(
-                            f"{path}/{FolderNames[i]}/{FileList[j]}",
-                            header=None,
-                            delimiter=r"\s+",
+                        try:
+                            temp_df = pd.read_csv(
+                                f"{rdir}/{dir_i}/{file_i}",
+                                header=None,
+                                delimiter=delimiter,
+                            )
+                            # filter the data between the two dates in the folder name
+                            if filter_by_name:
+                                temp_df = temp_df[temp_df[0] >= filter1]
+                                temp_df = temp_df[temp_df[0] <= filter2]
+                            # check whether the variable exist or not
+                            # if this is the first time this file exist
+                            if first not in variables.keys():
+                                # create a datafame with the name of the sub-basin
+                                total = first + second
+                                exec(total)
+
+                            # concatenate the
+                            exec(first + "= pd.concat([" + first + ", temp_df])")
+                        except pd.errors.EmptyDataError:
+                            logger.info(f"The file: {rdir}/{dir_i}/{file_i} is empty")
+                    except FileNotFoundError:
+                        logger.warning(
+                            f"The file: {rdir}/{dir_i}/{file_i} does not exist"
                         )
-
-                        if FilterbyName:
-                            temp_df = temp_df[temp_df[0] >= filter1]
-                            temp_df = temp_df[temp_df[0] <= filter2]
-                        # check whether the variable exist or not
-                        # if this is the first time this file exist
-                        if first not in variables.keys():
-                            # create a datafame with the name of the sub-basin
-                            total = first + second
-                            exec(total)
-
-                        # concatenate the
-                        exec(first + "= pd.concat([" + first + ", temp_df])")
-                    except:
                         continue
 
-        # Save files
-        variables = list(locals().keys())
-        # get sub-basins variables (starts with "One")
-        for i in range(len(variables)):
-            var = variables[i]
-            if var.endswith("_left"):
-                # put the dataframe in order first
-                exec(var + ".sort_values(by=[0,1,2],ascending = True, inplace = True)")
-                path = f"{Savepath}/{var[1:]}.txt"
-                exec(var + ".to_csv(path ,index= None, sep = ' ', header = None)")
-            elif var.endswith("_right"):
-                # put the dataframe in order first
-                exec(var + ".sort_values(by=[0,1,2],ascending = True, inplace = True)")
-                path = f"{Savepath}/{var[1:]}.txt"
-                exec(var + ".to_csv(path ,index= None, sep = ' ', header = None)")
-            elif var.startswith("one"):
-                # put the dataframe in order first
-                exec(var + ".sort_values(by=[0,1,2],ascending = True, inplace = True)")
-                logger.debug(f"Saving {var[3:]}.txt")
-                path = f"{Savepath}/{var[3:]}.txt"
-                exec(var + ".to_csv(path ,index= None, sep = ' ', header = None)")
+            # Save files
+            variables = list(locals().keys())
+            # get sub-basins variables (starts with "One")
+            var_names = ["_left", "_right", "one"]
+            save_variables = [
+                i
+                for i in variables
+                if any(i.startswith(j) or i.endswith(j) for j in var_names)
+            ]
+            for i, var in enumerate(save_variables):
+                # var = variables[i]
+                if var.endswith("_left"):
+                    # put the dataframe in order first
+                    exec(var + ".sort_values(by=[0,1,2], ascending=True, inplace=True)")
+                    save_dir = f"{save_to}/{var[1:]}.txt"
+                    exec(var + ".to_csv(save_dir, index=None, sep=' ', header=None)")
+                elif var.endswith("_right"):
+                    # put the dataframe in order first
+                    exec(var + ".sort_values(by=[0,1,2], ascending=True, inplace=True)")
+                    save_dir = f"{save_to}/{var[1:]}.txt"
+                    exec(var + ".to_csv(save_dir, index=None, sep=' ', header=None)")
+                elif var.startswith("one"):
+                    # put the dataframe in order first
+                    exec(var + ".sort_values(by=[0,1,2], ascending=True, inplace=True)")
+                    logger.debug(f"Saving {var[3:]}.txt")
+                    save_dir = f"{save_to}/{var[3:]}.txt"
+                    exec(var + ".to_csv(save_dir, index=None, sep=' ', header=None)")
+                # delete the dataframe to free memory
+                exec(f"del {var}")
 
     @staticmethod
     def _readRRMResults(
