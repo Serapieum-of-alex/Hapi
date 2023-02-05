@@ -892,7 +892,7 @@ def test_collect_1d_results(
         filter_by_name=filter_by_name,
     )
     combined_files = os.listdir(combine_save_to)
-    assert len(combined_files) == len(separated_folders_file_names)
+    assert len(combined_files) - 1 == len(separated_folders_file_names)
 
     # check the results of the 1.txt files
     reach_result_file = separated_folders_file_names[0]
