@@ -1,6 +1,8 @@
+import os
 from typing import List
 
 import matplotlib.pyplot as plt
+import pandas as pd
 from matplotlib.figure import Figure
 
 import Hapi.hm.calibration as RC
@@ -865,3 +867,64 @@ def test_GetCapacity(
     assert "QbkfRP" in cols
     assert "Qc2" in cols
     assert "Qc2RP" in cols
+
+
+def test_collect_1d_results(
+    combine_rdir: str,
+    combine_save_to: str,
+    separated_folders: List[str],
+    separated_folders_file_names: List[str],
+):
+    days_in_combined_file = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    days_should_be_in_left_file = [1, 7]
+    days_should_be_in_right_file = [8]
+    left = True
+    right = True
+    one_d = True
+    filter_by_name = True
+    R.River.collect1DResults(
+        combine_rdir,
+        separated_folders,
+        left,
+        right,
+        combine_save_to,
+        one_d,
+        filter_by_name=filter_by_name,
+    )
+    combined_files = os.listdir(combine_save_to)
+    assert len(combined_files) == len(separated_folders_file_names)
+
+    # check the results of the 1.txt files
+    reach_result_file = separated_folders_file_names[0]
+    df = pd.read_csv(
+        f"{combine_save_to}/{reach_result_file}", delimiter=r"\s", header=None
+    )
+    assert len(df) > 0, f"the {reach_result_file} should have results not empty"
+    days_not_in_combined = set(days_in_combined_file) - set(df[0].unique())
+    assert len(days_not_in_combined) == 0, (
+        f"the {reach_result_file} file should have results for 10 days but there "
+        f"are missing days: {days_not_in_combined}"
+    )
+    os.remove(f"{combine_save_to}/{reach_result_file}")
+    # check the results of the 1_left.txt files
+    reach_result_file = separated_folders_file_names[1]
+    df = pd.read_csv(
+        f"{combine_save_to}/{reach_result_file}", delimiter=r"\s", header=None
+    )
+    days_not_in_combined = set(days_should_be_in_left_file) - set(df[0].unique())
+    assert len(days_not_in_combined) == 0, (
+        f"the {reach_result_file} file should have results for 10 days but there "
+        f"are missing days: {days_not_in_combined}"
+    )
+    os.remove(f"{combine_save_to}/{reach_result_file}")
+    # check the results of the 1_right.txt files
+    reach_result_file = separated_folders_file_names[2]
+    df = pd.read_csv(
+        f"{combine_save_to}/{reach_result_file}", delimiter=r"\s", header=None
+    )
+    days_not_in_combined = set(days_should_be_in_right_file) - set(df[0].unique())
+    assert len(days_not_in_combined) == 0, (
+        f"the {reach_result_file} file should have results for 10 days but there "
+        f"are missing days: {days_not_in_combined}"
+    )
+    os.remove(f"{combine_save_to}/{reach_result_file}")

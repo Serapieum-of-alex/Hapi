@@ -1010,7 +1010,7 @@ class River:
         Parameters
         ----------
         rdir : [String]
-            rdir to the folder containing the separated folder.
+            root directory to the folder containing the separated folder.
         separate_dir_list : [List]
             list containing folder names.
         left_overtopping : [Bool]
@@ -1034,7 +1034,9 @@ class River:
             or has results for some days at the end you want to filter out
             you want to include the period you want to be combined only
             in the name of the folder between () and separated with -
-            ex 1d(5000-80000). The default is False.
+            ex 1d(50-80). The default is False.
+            - The 50 and 80 will be used to filter the files inside the folder using df >=50, and df <=80
+
         delimiter: [str]
             delimeter d in the files to separate columns.
 
@@ -1044,7 +1046,9 @@ class River:
 
         Hint
         ----
-        Make sure that files in all given directories are the same
+        - Make sure that files in all given directories are the same
+        - The hydraulic model creates files for everything (river reach, left overtopping, right overtopping)
+            even if the overtopping files are empty.
 
         Examples
         --------

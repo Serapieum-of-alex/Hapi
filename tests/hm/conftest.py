@@ -49,3 +49,23 @@ def test_time_series_length() -> int:
 @pytest.fixture(scope="module")
 def test_hours() -> list:
     return hours
+
+
+@pytest.fixture(scope="module")
+def combine_rdir() -> str:
+    return "tests/hm/data/results/combin_results"
+
+
+@pytest.fixture(scope="module")
+def combine_save_to() -> str:
+    return "tests/hm/data/results/combin_results/combined"
+
+
+@pytest.fixture(scope="module")
+def separated_folders() -> List[str]:
+    return ["1d(1-5)", "1d(6-10)"]
+
+
+@pytest.fixture(scope="module")
+def separated_folders_file_names() -> List[str]:
+    return ["1.txt", "1_left.txt", "1_right.txt"]
