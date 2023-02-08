@@ -47,8 +47,8 @@ class Inputs(River):
         """
         self.Name = Name
         self.version = version
-        self.StatisticalPr = None
-        self.DistributionPr = None
+        self.statistical_properties = None
+        self.distribution_properties = None
 
     def extractHydrologicalInputs(
         self, weather_generator, file_prefix, realization, path, locations, save_path
@@ -117,18 +117,18 @@ class Inputs(River):
 
     def statisticalProperties(
         self,
-        ComputationalNodes: Union[str, list],
-        TSdirectory: str,
+        gauges: list,
+        rdir: str,
         start: str,
-        WarmUpPeriod: int,
-        SavePlots: bool,
-        SavePath: str,
-        Filter: Union[bool, float, int] = False,
-        Distibution: str = "GEV",
+        warm_up_period: int,
+        save_plots: bool,
+        save_to: str,
+        filter_out: Union[bool, float, int] = False,
+        distribution: str = "GEV",
         method: str = "lmoments",
-        EstimateParameters: bool = False,
-        Quartile: float = 0,
-        SignificanceLevel: float = 0.1,
+        estimate_parameters: bool = False,
+        quartile: float = 0,
+        significance_level: float = 0.1,
         file_extension: str = ".txt",
         date_format: str = "%Y-%m-%d",
     ):
@@ -144,35 +144,34 @@ class Inputs(River):
 
         Parameters
         ----------
-        ComputationalNodes : [list]
-            The file/list which contains the ID of the computational
-            nodes you want to do the statistical analysis for, the ObservedFile
+        gauges : [list]
+            The list which contains the ID of the gauges you want to do the statistical analysis for, the ObservedFile
             should contain the discharge time series of these nodes in order.
-        TSdirectory : [str]
+        rdir : [str]
             The directory where the time series files exist.
         start : [string]
             the begining date of the time series.
-        WarmUpPeriod : [integer]
-            the number of days you want to neglect at the begining of the
+        warm_up_period : [int]
+            The number of days you want to neglect at the begining of the
             Simulation (warm up period).
-        SavePlots : [Bool]
+        save_plots : [Bool]
             True if you want to save the plots.
-        SavePath : [String]
-            the path where you want to  save the statistical properties.
-        Filter: [Bool]
-            for observed or RIMresult data it has gaps of times where the
+        save_to : [str]
+            the rdir where you want to  save the statistical properties.
+        filter_out: [Bool]
+            For observed or hydraulic model data it has gaps of times where the
             model did not run or gaps in the observed data if these gap days
             are filled with a specific value and you want to ignore it here
-            give Filter = Value you want
-        Distibution: [str]
+            give filter_out = Value you want
+        distribution: [str]
             Default is "GEV".
         method: [str]
             available methods are 'mle', 'mm', 'lmoments', optimization. Default is "lmoments"
-        EstimateParameters: [bool]
+        estimate_parameters: [bool]
             Default is False.
-        Quartile: [float]
+        quartile: [float]
             Default is 0.
-        SignificanceLevel:
+        significance_level:
             Default is [0.1].
         file_extension: [str]
             Default is '.txt'.
@@ -186,16 +185,11 @@ class Inputs(River):
             median, 75%, 95%, max, t_beg, t_end, nyr, q1.5, q2, q5, q10, q25, q50,
             q100, q200, q500.
         """
-        if isinstance(ComputationalNodes, str):
-            ComputationalNodes = np.loadtxt(ComputationalNodes, dtype=np.uint16)
-        elif isinstance(ComputationalNodes, list):
-            ComputationalNodes = ComputationalNodes
-        else:
-            raise TypeError("ComputationalNodes should be either a path or a list")
+        if not isinstance(gauges, list):
+            raise TypeError("gauges should be either a rdir or a list")
 
         # hydrographs
-
-        TS = pd.DataFrame()
+        time_series = pd.DataFrame()
         # for the hydraulic model results
         logger.info(
             "The function ignores the date column in the time series files and starts from the "
@@ -204,26 +198,26 @@ class Inputs(River):
         )
 
         skip = []
-        for i in range(len(ComputationalNodes)):
+        for i in range(len(gauges)):
             try:
-                TS.loc[:, int(ComputationalNodes[i])] = pd.read_csv(
-                    f"{TSdirectory}/{int(ComputationalNodes[i])}{file_extension}",
+                time_series.loc[:, int(gauges[i])] = pd.read_csv(
+                    f"{rdir}/{int(gauges[i])}{file_extension}",
                     skiprows=1,
                     header=None,
                 )[1].tolist()
             except FileNotFoundError:
-                logger.warning(
-                    f" File {int(ComputationalNodes[i])}{file_extension} does not exist"
-                )
-                skip.append(int(ComputationalNodes[i]))
+                logger.warning(f"File {int(gauges[i])}{file_extension} does not exist")
+                skip.append(int(gauges[i]))
 
-        StartDate = dt.datetime.strptime(start, date_format)
-        EndDate = StartDate + dt.timedelta(days=TS.shape[0] - 1)
-        ind = pd.date_range(StartDate, EndDate)
-        TS.index = ind
+        start_date = dt.datetime.strptime(start, date_format)
+        end_date = start_date + dt.timedelta(days=time_series.shape[0] - 1)
+        ind = pd.date_range(start_date, end_date)
+        time_series.index = ind
 
         # neglect the first year (warmup year) in the time series
-        TS = TS.loc[StartDate + dt.timedelta(days=WarmUpPeriod) : EndDate, :]
+        time_series = time_series.loc[
+            start_date + dt.timedelta(days=warm_up_period) : end_date, :
+        ]
 
         # List of the table output, including some general data and the return periods.
         col_csv = [
@@ -256,24 +250,24 @@ class Inputs(River):
 
         # In a table where duplicates are removed (np.unique), find the number of
         # gauges contained in the .csv file.
-        # no_gauge = len(ComputationalNodes)
+        # no_gauge = len(gauges)
         # Declare a dataframe for the output file, with as index the gaugne numbers
         # and as columns all the output names.
-        StatisticalPr = pd.DataFrame(np.nan, index=ComputationalNodes, columns=col_csv)
-        StatisticalPr.index.name = "id"
-        if Distibution == "GEV":
-            DistributionPr = pd.DataFrame(
+        statistical_properties = pd.DataFrame(np.nan, index=gauges, columns=col_csv)
+        statistical_properties.index.name = "id"
+        if distribution == "GEV":
+            distribution_properties = pd.DataFrame(
                 np.nan,
-                index=ComputationalNodes,
+                index=gauges,
                 columns=["c", "loc", "scale", "D-static", "P-Value"],
             )
         else:
-            DistributionPr = pd.DataFrame(
+            distribution_properties = pd.DataFrame(
                 np.nan,
-                index=ComputationalNodes,
+                index=gauges,
                 columns=["loc", "scale", "D-static", "P-Value"],
             )
-        DistributionPr.index.name = "id"
+        distribution_properties.index.name = "id"
         # required return periods
         T = [1.5, 2, 5, 10, 25, 50, 50, 100, 200, 500, 1000]
         T = np.array(T)
@@ -283,41 +277,41 @@ class Inputs(River):
         # F = [1/3, 0.5, 0.8, 0.9, 0.96, 0.98, 0.99, 0.995, 0.998]
         F = 1 - (1 / T)
         # Iteration over all the gauge numbers.
-        if SavePlots:
-            rpath = os.path.join(SavePath, "Figures")
+        if save_plots:
+            rpath = os.path.join(save_to, "figures")
             if not os.path.exists(rpath):
                 os.mkdir(rpath)
 
-        for i in ComputationalNodes:
+        for i in gauges:
             # if the node file does not exit and was not read in the top of the function
             if i in skip:
                 continue
 
-            QTS = TS.loc[:, i]
+            QTS = time_series.loc[:, i]
             # The time series is resampled to the annual maxima, and turned into a
             # numpy array.
             # The hydrological year is 1-Nov/31-Oct (from Petrow and Merz, 2009, JoH).
-            amax = QTS.resample("A-OCT").max().values
+            ams = QTS.resample("A-OCT").max().values
 
-            if type(Filter) != bool:
-                amax = amax[amax != Filter]
+            if type(filter_out) != bool:
+                ams = ams[ams != filter_out]
 
-            if EstimateParameters:
+            if estimate_parameters:
                 # TODO: still to be tested and prepared for GEV
                 # estimate the parameters through an optimization
-                # alpha = (np.sqrt(6) / np.pi) * amax.std()
-                # beta = amax.mean() - 0.5772 * alpha
+                # alpha = (np.sqrt(6) / np.pi) * ams.std()
+                # beta = ams.mean() - 0.5772 * alpha
                 # param_dist = [beta, alpha]
-                threshold = np.quantile(amax, Quartile)
-                if Distibution == "GEV":
-                    dist = GEV(amax)
+                threshold = np.quantile(ams, quartile)
+                if distribution == "GEV":
+                    dist = GEV(ams)
                     param_dist = dist.estimateParameter(
                         method="optimization",
                         ObjFunc=Gumbel.ObjectiveFn,
                         threshold=threshold,
                     )
                 else:
-                    dist = Gumbel(amax)
+                    dist = Gumbel(ams)
                     param_dist = dist.estimateParameter(
                         method="optimization",
                         ObjFunc=Gumbel.ObjectiveFn,
@@ -325,31 +319,31 @@ class Inputs(River):
                     )
             else:
                 # estimate the parameters through an maximum liklehood method
-                if Distibution == "GEV":
-                    dist = GEV(amax)
+                if distribution == "GEV":
+                    dist = GEV(ams)
                     # defult parameter estimation method is maximum liklihood method
                     param_dist = dist.estimateParameter(method=method)
                 else:
                     # A gumbel distribution is fitted to the annual maxima
-                    dist = Gumbel(amax)
+                    dist = Gumbel(ams)
                     # defult parameter estimation method is maximum liklihood method
                     param_dist = dist.estimateParameter(method=method)
 
             (
-                DistributionPr.loc[i, "D-static"],
-                DistributionPr.loc[i, "P-Value"],
+                distribution_properties.loc[i, "D-static"],
+                distribution_properties.loc[i, "P-Value"],
             ) = dist.ks()
-            if Distibution == "GEV":
-                DistributionPr.loc[i, "c"] = param_dist[0]
-                DistributionPr.loc[i, "loc"] = param_dist[1]
-                DistributionPr.loc[i, "scale"] = param_dist[2]
+            if distribution == "GEV":
+                distribution_properties.loc[i, "c"] = param_dist[0]
+                distribution_properties.loc[i, "loc"] = param_dist[1]
+                distribution_properties.loc[i, "scale"] = param_dist[2]
             else:
-                DistributionPr.loc[i, "loc"] = param_dist[0]
-                DistributionPr.loc[i, "scale"] = param_dist[1]
+                distribution_properties.loc[i, "loc"] = param_dist[0]
+                distribution_properties.loc[i, "scale"] = param_dist[1]
 
             # Return periods from the fitted distribution are stored.
             # get the Discharge coresponding to the return periods
-            if Distibution == "GEV":
+            if distribution == "GEV":
                 Qrp = dist.theporeticalEstimate(
                     param_dist[0], param_dist[1], param_dist[2], F
                 )
@@ -357,75 +351,75 @@ class Inputs(River):
                 Qrp = dist.theporeticalEstimate(param_dist[0], param_dist[1], F)
 
             # to get the Non Exceedance probability for a specific Value
-            # sort the amax
-            amax.sort()
+            # sort the ams
+            ams.sort()
             # calculate the F (Exceedence probability based on weibul)
-            cdf_Weibul = PlottingPosition.weibul(amax)
+            cdf_Weibul = PlottingPosition.weibul(ams)
             # Gumbel.probapilityPlot method calculates the theoretical values
             # based on the Gumbel distribution
             # parameters, theoretical cdf (or weibul), and calculate the confidence interval
-            if SavePlots:
-
-                if Distibution == "GEV":
+            if save_plots:
+                if distribution == "GEV":
                     fig, ax = dist.probapilityPlot(
                         param_dist[0],
                         param_dist[1],
                         param_dist[2],
                         cdf_Weibul,
-                        alpha=SignificanceLevel,
+                        alpha=significance_level,
                     )
                 else:
                     fig, ax = dist.probapilityPlot(
                         param_dist[0],
                         param_dist[1],
                         cdf_Weibul,
-                        alpha=SignificanceLevel,
+                        alpha=significance_level,
                     )
 
-                fig[0].savefig(f"{SavePath}/Figures/{i}.png", format="png")
+                fig[0].savefig(f"{save_to}/figures/{i}.png", format="png")
                 plt.close()
 
-                fig[1].savefig(f"{SavePath}/Figures/F-{i}.png", format="png")
+                fig[1].savefig(f"{save_to}/Figures/F-{i}.png", format="png")
                 plt.close()
 
-            StatisticalPr.loc[i, "mean"] = QTS.mean()
-            StatisticalPr.loc[i, "std"] = QTS.std()
-            StatisticalPr.loc[i, "min"] = QTS.min()
-            StatisticalPr.loc[i, "5%"] = QTS.quantile(0.05)
-            StatisticalPr.loc[i, "25%"] = QTS.quantile(0.25)
-            StatisticalPr.loc[i, "median"] = QTS.quantile(0.50)
-            StatisticalPr.loc[i, "75%"] = QTS.quantile(0.75)
-            StatisticalPr.loc[i, "95%"] = QTS.quantile(0.95)
-            StatisticalPr.loc[i, "max"] = QTS.max()
-            StatisticalPr.loc[i, "t_beg"] = QTS.index.min()
-            StatisticalPr.loc[i, "t_end"] = QTS.index.max()
-            StatisticalPr.loc[i, "nyr"] = (
-                StatisticalPr.loc[i, "t_end"] - StatisticalPr.loc[i, "t_beg"]
+            statistical_properties.loc[i, "mean"] = QTS.mean()
+            statistical_properties.loc[i, "std"] = QTS.std()
+            statistical_properties.loc[i, "min"] = QTS.min()
+            statistical_properties.loc[i, "5%"] = QTS.quantile(0.05)
+            statistical_properties.loc[i, "25%"] = QTS.quantile(0.25)
+            statistical_properties.loc[i, "median"] = QTS.quantile(0.50)
+            statistical_properties.loc[i, "75%"] = QTS.quantile(0.75)
+            statistical_properties.loc[i, "95%"] = QTS.quantile(0.95)
+            statistical_properties.loc[i, "max"] = QTS.max()
+            statistical_properties.loc[i, "t_beg"] = QTS.index.min()
+            statistical_properties.loc[i, "t_end"] = QTS.index.max()
+            statistical_properties.loc[i, "nyr"] = (
+                statistical_properties.loc[i, "t_end"]
+                - statistical_properties.loc[i, "t_beg"]
             ).days / 365.25
             for irp, irp_name in zip(Qrp, rp_name):
-                StatisticalPr.loc[i, irp_name] = irp
+                statistical_properties.loc[i, irp_name] = irp
 
             # Print for prompt and check progress.
             logger.info(f"Gauge {i} done.")
 
         # Output file
-        StatisticalPr.to_csv(
-            f"{SavePath}/Statistical Properties.csv", float_format="%.4f"
+        statistical_properties.to_csv(
+            f"{save_to}/Statistical Properties.csv", float_format="%.4f"
         )
-        self.StatisticalPr = StatisticalPr
-        DistributionPr.to_csv(
-            f"{SavePath}/DistributionProperties.csv", float_format="%.4f"
+        self.statistical_properties = statistical_properties
+        distribution_properties.to_csv(
+            f"{save_to}/DistributionProperties.csv", float_format="%.4f"
         )
-        self.DistributionPr = DistributionPr
+        self.distribution_properties = distribution_properties
 
-    def WriteHQFile(self, NoNodes: int, StatisticalPropertiesFile: str, SaveTo: str):
+    def WriteHQFile(self, NoNodes: int, StatisticalPropertiesFile: str, save_to: str):
         """WriteHQFile.
 
         Parameters
         ----------
         NoNodes:
         StatisticalPropertiesFile:
-        SaveTo:
+        save_to:
         Returns
         -------
         None
@@ -436,19 +430,21 @@ class Inputs(River):
         )
         HQ.loc[:, ["2yrs", "10yrs", "100yrs"]] = -1
         HQ.loc[:, "id"] = range(1, NoNodes + 1)
-        StatisticalPr = pd.read_csv(StatisticalPropertiesFile)
-        for i in range(len(StatisticalPr)):
+        statistical_properties = pd.read_csv(StatisticalPropertiesFile)
+        for i in range(len(statistical_properties)):
             # i=0
-            HQ.loc[StatisticalPr.loc[i, "id"] - 1, "2yrs"] = StatisticalPr.loc[i, "q2"]
-            HQ.loc[StatisticalPr.loc[i, "id"] - 1, "10yrs"] = StatisticalPr.loc[
-                i, "q10"
-            ]
-            HQ.loc[StatisticalPr.loc[i, "id"] - 1, "100yrs"] = StatisticalPr.loc[
-                i, "q100"
-            ]
+            HQ.loc[
+                statistical_properties.loc[i, "id"] - 1, "2yrs"
+            ] = statistical_properties.loc[i, "q2"]
+            HQ.loc[
+                statistical_properties.loc[i, "id"] - 1, "10yrs"
+            ] = statistical_properties.loc[i, "q10"]
+            HQ.loc[
+                statistical_properties.loc[i, "id"] - 1, "100yrs"
+            ] = statistical_properties.loc[i, "q100"]
 
         # save the HQ file
-        HQ.to_csv(SaveTo, float_format="%%.2f".format, index=False, header=None)
+        HQ.to_csv(save_to, float_format="%%.2f".format, index=False, header=None)
 
     @staticmethod
     def StringSpace(Inp):
@@ -468,7 +464,7 @@ class Inputs(River):
         ExtraSubsF,
         Fromfile,
         Tofile,
-        SaveTo,
+        save_to,
         wpath,
     ):
         """Return period."""
@@ -480,7 +476,7 @@ class Inputs(River):
                 MaxDepthList.append(AllResults[i])
         # Read Inputs
         # read the Distribution parameters for each upstream computatiopnal node
-        DistributionPr = pd.read_csv(DistributionPrF)
+        distribution_properties = pd.read_csv(DistributionPrF)
         USnode = pd.read_csv(TraceF, header=None)
         USnode.columns = ["SubID", "US", "DS"]
         # get the sub basin Id from the guide file it is the same shape in RIM1.0 and RIM2.0
@@ -489,9 +485,9 @@ class Inputs(River):
         ReplacementSub = pd.read_csv(replacementF)
 
         # read the hydrograph for all the US nodes
-        # StartDate = "1950-1-1"
-        # StartDate = dt.datetime.strptime(StartDate,"%Y-%m-%d")
-        # ind = pd.date_range(StartDate, StartDate + dt.timedelta(days = NoYears*365), freq = "D")
+        # start_date = "1950-1-1"
+        # start_date = dt.datetime.strptime(start_date,"%Y-%m-%d")
+        # ind = pd.date_range(start_date, StartDate + dt.timedelta(days = NoYears*365), freq = "D")
 
         ind = range(
             1,
@@ -628,7 +624,7 @@ class Inputs(River):
                     # np.where(USnode['SubID'] == SubsID.loc[i,0])
                     try:
                         DSnode = USnode.loc[SubsID.loc[i, 0] - 1, "US"]
-                        loc = np.where(DistributionPr["id"] == DSnode)[0][0]
+                        loc = np.where(distribution_properties["id"] == DSnode)[0][0]
                     except IndexError:
                         OtherSubLoc = np.where(
                             ReplacementSub["missing"] == SubsID.loc[i, 0]
@@ -636,13 +632,13 @@ class Inputs(River):
                         DSnode = USnode.loc[
                             ReplacementSub.loc[OtherSubLoc, "replacement"] - 1, "US"
                         ]
-                        loc = np.where(DistributionPr["id"] == DSnode)[0][0]
+                        loc = np.where(distribution_properties["id"] == DSnode)[0][0]
 
                     # to get the Non Exceedance probability for a specific Value
                     F = gumbel_r.cdf(
                         MaxValues[i],
-                        loc=DistributionPr.loc[loc, "loc"],
-                        scale=DistributionPr.loc[loc, "scale"],
+                        loc=distribution_properties.loc[loc, "loc"],
+                        scale=distribution_properties.loc[loc, "scale"],
                     )
                     # then calculate the the T (return period) T = 1/(1-F)
                     T.append(round(1 / (1 - F), 2))
@@ -685,7 +681,7 @@ class Inputs(River):
             # save the return period ASCII file
             fname = "ReturnPeriod" + str(timestep) + ".asc"
 
-            with open(SaveTo + "/" + fname, "w") as File:
+            with open(save_to + "/" + fname, "w") as File:
                 # write the first lines
                 for i in range(len(SpatialRef)):
                     File.write(str(SpatialRef[i].decode()[:-2]) + "\n")
@@ -696,11 +692,11 @@ class Inputs(River):
 
             # zip the file
             with zipfile.ZipFile(
-                SaveTo + "/" + fname[:-4] + ".zip", "w", zipfile.ZIP_DEFLATED
+                save_to + "/" + fname[:-4] + ".zip", "w", zipfile.ZIP_DEFLATED
             ) as newzip:
-                newzip.write(SaveTo + "/" + fname, arcname=fname)
+                newzip.write(save_to + "/" + fname, arcname=fname)
             # delete the file
-            os.remove(SaveTo + "/" + fname)
+            os.remove(save_to + "/" + fname)
 
         check = list(zip(check, Klist))
         if len(check) > 0:

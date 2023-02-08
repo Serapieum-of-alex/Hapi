@@ -33,26 +33,26 @@ def test_StatisticalProperties(
         Discharge_WarmUpPeriod,
         SavePlots,
         Statistical_analisis_path,
-        Filter=NoValue,
-        Distibution="GUM",
+        filter_out=NoValue,
+        distribution="GUM",
         method="lmoments",
     )
     assert os.path.exists(os.path.join(Statistical_analisis_path, "Figures"))
     assert all(
-        elem in Inputs35.StatisticalPr.columns.tolist()
+        elem in Inputs35.statistical_properties.columns.tolist()
         for elem in statisticalpr_columns
     )
     assert all(
         elem in Calib.hm_gauges["oid"].to_list()
-        for elem in Inputs35.StatisticalPr.index.tolist()
+        for elem in Inputs35.statistical_properties.index.tolist()
     )
     assert all(
-        elem in Inputs35.DistributionPr.columns.tolist()
+        elem in Inputs35.distribution_properties.columns.tolist()
         for elem in distributionpr_gum_columns
     )
     assert all(
         elem in Calib.hm_gauges["oid"].to_list()
-        for elem in Inputs35.DistributionPr.index.tolist()
+        for elem in Inputs35.distribution_properties.index.tolist()
     )
 
     Inputs35.statisticalProperties(
@@ -62,24 +62,24 @@ def test_StatisticalProperties(
         Discharge_WarmUpPeriod,
         SavePlots,
         Statistical_analisis_path,
-        Filter=NoValue,
+        filter_out=NoValue,
         method="lmoments",
     )
 
     assert os.path.exists(os.path.join(Statistical_analisis_path, "Figures"))
     assert all(
-        elem in Inputs35.StatisticalPr.columns.tolist()
+        elem in Inputs35.statistical_properties.columns.tolist()
         for elem in statisticalpr_columns
     )
     assert all(
         elem in Calib.hm_gauges["oid"].to_list()
-        for elem in Inputs35.StatisticalPr.index.tolist()
+        for elem in Inputs35.statistical_properties.index.tolist()
     )
     assert all(
-        elem in Inputs35.DistributionPr.columns.tolist()
+        elem in Inputs35.distribution_properties.columns.tolist()
         for elem in distributionpr_gev_columns
     )
     assert all(
         elem in Calib.hm_gauges["oid"].to_list()
-        for elem in Inputs35.DistributionPr.index.tolist()
+        for elem in Inputs35.distribution_properties.index.tolist()
     )
