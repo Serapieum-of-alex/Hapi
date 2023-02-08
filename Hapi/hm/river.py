@@ -13,6 +13,7 @@ from typing import Any, Optional, Tuple, Union, List
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import pandas.errors
 import yaml
 from loguru import logger
 from matplotlib.figure import Figure
@@ -934,12 +935,11 @@ class River:
 
         if to_day:
             data = data.loc[data["day"] <= to_day]
-
-        #  data.index = list(range(0, len(data)))
+        data.reset_index(inplace=True, drop=True)
 
         # Cross section data add one more xs at the end
-        xsname = self.xs_names + [self.xs_names[-1] + 1]
-        # data["xs"][data["day"] == data["day"][1]][data["hour"] == 1].tolist()
+        xsname = self.xs_names  # + [self.xs_names[-1] + 1]
+        # xsname = data["xs"][data["day"] == data["day"][1]][data["hour"] == 1].tolist()
 
         if fill_missing:
             # check if there is missing days (Q was < threshold so the model didn't run)
@@ -3334,6 +3334,8 @@ class Reach(River):
     'ReadCrossSections' method
     """
 
+    xs_hydrograph: DataFrame
+
     reach_attr = dict(
         extracted_values=dict(),
         xs_hydrograph=None,
@@ -3360,6 +3362,7 @@ class Reach(River):
         Laterals=None,
         results_1d=None,
         us_hydrographs=None,
+        last_reach=False,
     )
 
     @class_attr_initialize(reach_attr)
@@ -3369,6 +3372,9 @@ class Reach(River):
             setattr(self, key, val)
 
         self.id = sub_id
+        # if the river reach is the last reach in the river
+        if sub_id == River.reach_ids[-1]:
+            self.last_reach = True
 
         if not isinstance(River.cross_sections, DataFrame):
             raise ValueError(
@@ -3492,7 +3498,7 @@ class Reach(River):
         last_day:[attribute]
             the last day in the 1D result
         """
-        if path is None and self.one_d_result_path == "":
+        if path is None and self.one_d_result_path is None:
             raise ValueError(
                 "User have to either enter the value of the 'path' parameter or"
                 " define the 'one_d_result_path' parameter for the River object"
@@ -3555,38 +3561,83 @@ class Reach(River):
                     + self.RP["HQ2"].tolist()[0]
                 )
         else:
-            self.xs_hydrograph[self.last_xs] = self.results_1d.loc[
-                self.results_1d["xs"] == self.last_xs, "q"
-            ].values
-            self.xs_hydrograph[self.first_xs] = self.results_1d.loc[
-                self.results_1d["xs"] == self.first_xs, "q"
-            ].values
-            if xsid:
-                self.xs_hydrograph[xsid] = self.results_1d.loc[
-                    self.results_1d["xs"] == xsid, "q"
+            try:
+                self.xs_hydrograph[self.last_xs] = self.results_1d.loc[
+                    self.results_1d["xs"] == self.last_xs, "q"
                 ].values
+                self.xs_hydrograph[self.first_xs] = self.results_1d.loc[
+                    self.results_1d["xs"] == self.first_xs, "q"
+                ].values
+                if xsid:
+                    self.xs_hydrograph[xsid] = self.results_1d.loc[
+                        self.results_1d["xs"] == xsid, "q"
+                    ].values
+            except ValueError:
+                # TODO: still not obvious what is the problem in the 1D result file, but for the time being assign
+                #  the time series to the length that it fits in the dataframe.
+                vals = self.results_1d.loc[
+                    self.results_1d["xs"] == self.last_xs, "q"
+                ].values
+                end_ind = self.xs_hydrograph.index[len(vals) - 1]
+                self.xs_hydrograph.loc[:end_ind, self.last_xs] = vals
+                vals = self.results_1d.loc[
+                    self.results_1d["xs"] == self.first_xs, "q"
+                ].values
+                self.xs_hydrograph.loc[:end_ind, self.first_xs] = vals
 
-        self.xs_water_level[self.last_xs] = self.results_1d.loc[
-            self.results_1d["xs"] == self.last_xs, "wl"
-        ].values
-        self.xs_water_level[self.first_xs] = self.results_1d.loc[
-            self.results_1d["xs"] == self.first_xs, "wl"
-        ].values
-
-        self.xs_water_depth[self.last_xs] = self.results_1d.loc[
-            self.results_1d["xs"] == self.last_xs, "h"
-        ].values
-        self.xs_water_depth[self.first_xs] = self.results_1d.loc[
-            self.results_1d["xs"] == self.first_xs, "h"
-        ].values
-
-        if xsid:
-            self.xs_water_level[xsid] = self.results_1d.loc[
-                self.results_1d["xs"] == xsid, "wl"
+                if xsid:
+                    vals = self.results_1d.loc[
+                        self.results_1d["xs"] == xsid, "q"
+                    ].values
+                    self.xs_hydrograph.loc[:end_ind, xsid] = vals
+        try:
+            self.xs_water_level[self.last_xs] = self.results_1d.loc[
+                self.results_1d["xs"] == self.last_xs, "wl"
             ].values
-            self.xs_water_depth[xsid] = self.results_1d.loc[
-                self.results_1d["xs"] == xsid, "h"
+            self.xs_water_level[self.first_xs] = self.results_1d.loc[
+                self.results_1d["xs"] == self.first_xs, "wl"
             ].values
+
+            self.xs_water_depth[self.last_xs] = self.results_1d.loc[
+                self.results_1d["xs"] == self.last_xs, "h"
+            ].values
+            self.xs_water_depth[self.first_xs] = self.results_1d.loc[
+                self.results_1d["xs"] == self.first_xs, "h"
+            ].values
+
+            if xsid:
+                self.xs_water_level[xsid] = self.results_1d.loc[
+                    self.results_1d["xs"] == xsid, "wl"
+                ].values
+                self.xs_water_depth[xsid] = self.results_1d.loc[
+                    self.results_1d["xs"] == xsid, "h"
+                ].values
+        except ValueError:
+            # WARNING: Temporary solution for the rhine river reach no 36, to be deleted later.
+            vals = self.results_1d.loc[
+                self.results_1d["xs"] == self.last_xs, "wl"
+            ].values
+            end_ind = self.xs_water_level.index[len(vals) - 1]
+
+            self.xs_water_level.loc[:end_ind, self.last_xs] = vals
+            self.xs_water_level.loc[:end_ind, self.first_xs] = self.results_1d.loc[
+                self.results_1d["xs"] == self.first_xs, "wl"
+            ].values
+
+            self.xs_water_depth.loc[:end_ind, self.last_xs] = self.results_1d.loc[
+                self.results_1d["xs"] == self.last_xs, "h"
+            ].values
+            self.xs_water_depth.loc[:end_ind, self.first_xs] = self.results_1d.loc[
+                self.results_1d["xs"] == self.first_xs, "h"
+            ].values
+
+            if xsid:
+                self.xs_water_level.loc[:end_ind, xsid] = self.results_1d.loc[
+                    self.results_1d["xs"] == xsid, "wl"
+                ].values
+                self.xs_water_depth.loc[:end_ind, xsid] = self.results_1d.loc[
+                    self.results_1d["xs"] == xsid, "h"
+                ].values
 
         # check the first day in the results and get the date of the first day and last day
         ## create time series
