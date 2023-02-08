@@ -6,14 +6,12 @@ import datetime as dt
 import os
 import zipfile
 from typing import Union
-
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from loguru import logger
 from osgeo import gdal
-from scipy.stats import gumbel_r  # genextreme,
-from statista.distributions import GEV, Gumbel, PlottingPosition
+from scipy.stats import gumbel_r
+from statista.eva import ams_analysis
 
 from Hapi.hm.river import River
 
@@ -219,197 +217,29 @@ class Inputs(River):
             start_date + dt.timedelta(days=warm_up_period) : end_date, :
         ]
 
-        # List of the table output, including some general data and the return periods.
-        col_csv = [
-            "mean",
-            "std",
-            "min",
-            "5%",
-            "25%",
-            "median",
-            "75%",
-            "95%",
-            "max",
-            "t_beg",
-            "t_end",
-            "nyr",
-        ]
-        rp_name = [
-            "q1.5",
-            "q2",
-            "q5",
-            "q10",
-            "q25",
-            "q50",
-            "q100",
-            "q200",
-            "q500",
-            "q1000",
-        ]
-        col_csv = col_csv + rp_name
-
-        # In a table where duplicates are removed (np.unique), find the number of
-        # gauges contained in the .csv file.
-        # no_gauge = len(gauges)
-        # Declare a dataframe for the output file, with as index the gaugne numbers
-        # and as columns all the output names.
-        statistical_properties = pd.DataFrame(np.nan, index=gauges, columns=col_csv)
-        statistical_properties.index.name = "id"
-        if distribution == "GEV":
-            distribution_properties = pd.DataFrame(
-                np.nan,
-                index=gauges,
-                columns=["c", "loc", "scale", "D-static", "P-Value"],
-            )
-        else:
-            distribution_properties = pd.DataFrame(
-                np.nan,
-                index=gauges,
-                columns=["loc", "scale", "D-static", "P-Value"],
-            )
-        distribution_properties.index.name = "id"
-        # required return periods
-        T = [1.5, 2, 5, 10, 25, 50, 50, 100, 200, 500, 1000]
-        T = np.array(T)
-        # these values are the Non Exceedance probability (F) of the chosen
-        # return periods F = 1 - (1/T)
-        # Non Exceedance propabilities
-        # F = [1/3, 0.5, 0.8, 0.9, 0.96, 0.98, 0.99, 0.995, 0.998]
-        F = 1 - (1 / T)
-        # Iteration over all the gauge numbers.
-        if save_plots:
-            rpath = os.path.join(save_to, "figures")
-            if not os.path.exists(rpath):
-                os.mkdir(rpath)
-
-        for i in gauges:
-            # if the node file does not exit and was not read in the top of the function
-            if i in skip:
-                continue
-
-            QTS = time_series.loc[:, i]
-            # The time series is resampled to the annual maxima, and turned into a
-            # numpy array.
-            # The hydrological year is 1-Nov/31-Oct (from Petrow and Merz, 2009, JoH).
-            ams = QTS.resample("A-OCT").max().values
-
-            if type(filter_out) != bool:
-                ams = ams[ams != filter_out]
-
-            if estimate_parameters:
-                # TODO: still to be tested and prepared for GEV
-                # estimate the parameters through an optimization
-                # alpha = (np.sqrt(6) / np.pi) * ams.std()
-                # beta = ams.mean() - 0.5772 * alpha
-                # param_dist = [beta, alpha]
-                threshold = np.quantile(ams, quartile)
-                if distribution == "GEV":
-                    dist = GEV(ams)
-                    param_dist = dist.estimateParameter(
-                        method="optimization",
-                        ObjFunc=Gumbel.ObjectiveFn,
-                        threshold=threshold,
-                    )
-                else:
-                    dist = Gumbel(ams)
-                    param_dist = dist.estimateParameter(
-                        method="optimization",
-                        ObjFunc=Gumbel.ObjectiveFn,
-                        threshold=threshold,
-                    )
-            else:
-                # estimate the parameters through an maximum liklehood method
-                if distribution == "GEV":
-                    dist = GEV(ams)
-                    # defult parameter estimation method is maximum liklihood method
-                    param_dist = dist.estimateParameter(method=method)
-                else:
-                    # A gumbel distribution is fitted to the annual maxima
-                    dist = Gumbel(ams)
-                    # defult parameter estimation method is maximum liklihood method
-                    param_dist = dist.estimateParameter(method=method)
-
-            (
-                distribution_properties.loc[i, "D-static"],
-                distribution_properties.loc[i, "P-Value"],
-            ) = dist.ks()
-            if distribution == "GEV":
-                distribution_properties.loc[i, "c"] = param_dist[0]
-                distribution_properties.loc[i, "loc"] = param_dist[1]
-                distribution_properties.loc[i, "scale"] = param_dist[2]
-            else:
-                distribution_properties.loc[i, "loc"] = param_dist[0]
-                distribution_properties.loc[i, "scale"] = param_dist[1]
-
-            # Return periods from the fitted distribution are stored.
-            # get the Discharge coresponding to the return periods
-            if distribution == "GEV":
-                Qrp = dist.theporeticalEstimate(
-                    param_dist[0], param_dist[1], param_dist[2], F
-                )
-            else:
-                Qrp = dist.theporeticalEstimate(param_dist[0], param_dist[1], F)
-
-            # to get the Non Exceedance probability for a specific Value
-            # sort the ams
-            ams.sort()
-            # calculate the F (Exceedence probability based on weibul)
-            cdf_Weibul = PlottingPosition.weibul(ams)
-            # Gumbel.probapilityPlot method calculates the theoretical values
-            # based on the Gumbel distribution
-            # parameters, theoretical cdf (or weibul), and calculate the confidence interval
-            if save_plots:
-                if distribution == "GEV":
-                    fig, ax = dist.probapilityPlot(
-                        param_dist[0],
-                        param_dist[1],
-                        param_dist[2],
-                        cdf_Weibul,
-                        alpha=significance_level,
-                    )
-                else:
-                    fig, ax = dist.probapilityPlot(
-                        param_dist[0],
-                        param_dist[1],
-                        cdf_Weibul,
-                        alpha=significance_level,
-                    )
-
-                fig[0].savefig(f"{save_to}/figures/{i}.png", format="png")
-                plt.close()
-
-                fig[1].savefig(f"{save_to}/Figures/F-{i}.png", format="png")
-                plt.close()
-
-            statistical_properties.loc[i, "mean"] = QTS.mean()
-            statistical_properties.loc[i, "std"] = QTS.std()
-            statistical_properties.loc[i, "min"] = QTS.min()
-            statistical_properties.loc[i, "5%"] = QTS.quantile(0.05)
-            statistical_properties.loc[i, "25%"] = QTS.quantile(0.25)
-            statistical_properties.loc[i, "median"] = QTS.quantile(0.50)
-            statistical_properties.loc[i, "75%"] = QTS.quantile(0.75)
-            statistical_properties.loc[i, "95%"] = QTS.quantile(0.95)
-            statistical_properties.loc[i, "max"] = QTS.max()
-            statistical_properties.loc[i, "t_beg"] = QTS.index.min()
-            statistical_properties.loc[i, "t_end"] = QTS.index.max()
-            statistical_properties.loc[i, "nyr"] = (
-                statistical_properties.loc[i, "t_end"]
-                - statistical_properties.loc[i, "t_beg"]
-            ).days / 365.25
-            for irp, irp_name in zip(Qrp, rp_name):
-                statistical_properties.loc[i, irp_name] = irp
-
-            # Print for prompt and check progress.
-            logger.info(f"Gauge {i} done.")
+        statistical_properties, distribution_properties = ams_analysis(
+            time_series,
+            ams_start="A-OCT",
+            save_plots=save_plots,
+            save_to=save_to,
+            filter_out=filter_out,
+            distribution=distribution,
+            method=method,
+            estimate_parameters=estimate_parameters,
+            quartile=quartile,
+            significance_level=significance_level,
+        )
 
         # Output file
         statistical_properties.to_csv(
             f"{save_to}/Statistical Properties.csv", float_format="%.4f"
         )
-        self.statistical_properties = statistical_properties
+
         distribution_properties.to_csv(
             f"{save_to}/DistributionProperties.csv", float_format="%.4f"
         )
+
+        self.statistical_properties = statistical_properties
         self.distribution_properties = distribution_properties
 
     def WriteHQFile(self, NoNodes: int, StatisticalPropertiesFile: str, save_to: str):
