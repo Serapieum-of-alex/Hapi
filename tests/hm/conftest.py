@@ -74,3 +74,17 @@ def separated_folders_file_names() -> List[str]:
 @pytest.fixture(scope="module")
 def overtopping_file() -> str:
     return "tests/hm/data/overtopping.txt"
+
+
+@pytest.fixture(scope="module")
+def event_instance_attrs() -> List[str]:
+    return [
+        "left_overtopping_suffix",
+        "right_overtopping_suffix",
+        "duration_prefix",
+        "return_period_prefix",
+        "two_d_result_path",
+        "compressed",
+        "extracted_values",
+        "event_index",
+    ]
