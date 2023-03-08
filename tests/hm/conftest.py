@@ -77,6 +77,11 @@ def overtopping_file() -> str:
 
 
 @pytest.fixture(scope="module")
+def volume_error_file() -> str:
+    return "tests/hm/data/VolError.txt"
+
+
+@pytest.fixture(scope="module")
 def event_instance_attrs() -> List[str]:
     return [
         "left_overtopping_suffix",
@@ -88,3 +93,8 @@ def event_instance_attrs() -> List[str]:
         "extracted_values",
         "event_index",
     ]
+
+
+@pytest.fixture(scope="module")
+def event_index_volume_attrs() -> List[str]:
+    return ["DEMError", "StepError", "TooMuchWater", "VolError", "VolError2"]
