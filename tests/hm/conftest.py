@@ -69,3 +69,8 @@ def separated_folders() -> List[str]:
 @pytest.fixture(scope="module")
 def separated_folders_file_names() -> List[str]:
     return ["1.txt", "1_left.txt", "1_right.txt"]
+
+
+@pytest.fixture(scope="module")
+def overtopping_file() -> str:
+    return "tests/hm/data/overtopping.txt"
