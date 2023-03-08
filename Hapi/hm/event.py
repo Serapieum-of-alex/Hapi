@@ -21,20 +21,20 @@ class Event:
 
     Methods
     -------
-        1- IndexToDate
-        2- CreateEventIndex
-        3- GetAllEvents
-        4- Overtopping
-        5- VolumeError
-        6- OverlayMaps
-        7- ReadEventIndex
-        8- Histogram
-        9- Drop
-        10- Save
-        11- GetEventBeginning
-        12- GetEventEnd
-        13- PrepareForPlotting
-        14- ListAttributes
+    indexToDate
+    createEventIndex
+    getAllEvents
+    readOvertopping
+    calculateVolumeError
+    OverlayMaps
+    readEventIndex
+    histogram
+    drop
+    to_csv
+    getEventBeginning
+    getEventEnd
+    prepareForPlotting
+    listAttributes
     """
 
     def __init__(
@@ -406,7 +406,10 @@ class Event:
     def histogram(
         self, Day, ExcludeValue, OccupiedCellsOnly, Map=1, filter1=0.2, filter2=15
     ):
-        """Histogram Histogram method extract values fro the event MaxDepth map and plot the histogram th emethod check first if you already extracted the values before then plot the histogram.
+        """histogram.
+
+            - Histogram method extract values fro the event MaxDepth map and plot the histogram th emethod check
+            first if you already extracted the values before then plot the histogram.
 
         Parameters
         ----------
@@ -499,21 +502,21 @@ class Event:
         self.event_index = dataframe
 
     def to_csv(self, path):
-        """Save Save method saves the event_index table.
+        """Save.
+
+            - Save method saves the event_index table.
 
         Parameters
         ----------
         path : [str]
             path to where you want to save the table.
-
-        Returns
-        -------
-        None.
         """
-        self.event_index.to_csv(path, header=True, index=None)  # index_label = "Index"
+        self.event_index.to_csv(path, header=True, index=None)
 
     def getEventBeginning(self, loc):
-        """GetEventBeginning. event_beginning method returns the index of the beginning of the event in the event_index dataframe.
+        """GetEventBeginning.
+
+            - event_beginning method returns the index of the beginning of the event in the event_index dataframe.
 
         Parameters
         ----------
@@ -527,10 +530,9 @@ class Event:
 
         Example
         ------
-            1- if you want to get the beginning of the event that has the highest
-            overtopping
-            HighOvertoppingInd = event_index['Overtopping'].idxmax()
-            ind = event_beginning(HighOvertoppingInd)
+        if you want to get the beginning of the event that has the highest overtopping
+        >>> HighOvertoppingInd = event_index['Overtopping'].idxmax()
+        >>> ind = event_beginning(HighOvertoppingInd)
         """
         # loc = np.where(self.event_index['id'] == day)[0][0]
         # get all the days in the same event before that day as the inundation in the maps may
@@ -567,10 +569,9 @@ class Event:
 
         Example
         -------
-        1- if you want to get the beginning of the event that has the highest
-        overtopping
-        HighOvertoppingInd = event_index['Overtopping'].idxmax()
-        ind = event_beginning(HighOvertoppingInd)
+        if you want to get the beginning of the event that has the highest overtopping
+        >>> HighOvertoppingInd = event_index['Overtopping'].idxmax()
+        >>> ind = event_beginning(HighOvertoppingInd)
         """
         # loc = np.where(self.event_index['id'] == day)[0][0]
         # get all the days in the same event before that day as the inundation in the maps may
@@ -590,7 +591,11 @@ class Event:
         return ind, day
 
     def prepareForPlotting(self, ColumnName):
-        """PrepareForPlotting. PrepareForPlotting takes a time series in the event_index dataframe and fill the days that does not exist in date column and fill it with zero to properly plot it without letting the graph mislead the viewer of connecting the data over the gap period.
+        """PrepareForPlotting.
+
+            - PrepareForPlotting takes a time series in the event_index dataframe and fill the days that does not
+            exist in date column and fill it with zero to properly plot it without letting the graph mislead the
+            viewer of connecting the data over the gap period.
 
         Parameters
         ----------
@@ -599,7 +604,7 @@ class Event:
 
         Returns
         -------
-        NewDataFrame : [Dataframe]
+        DataFrame : [Dataframe]
             dataframe with a date column, and the required column
         """
         NewDataFrame = pd.DataFrame()
@@ -627,7 +632,3 @@ class Event:
                 print(str(key) + " : " + repr(self.__dict__[key]))
 
         print("\n")
-
-
-if __name__ == "__main__":
-    x = Event("Event")
