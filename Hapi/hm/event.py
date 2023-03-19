@@ -40,14 +40,14 @@ class Event:
     def __init__(
         self,
         name,
-        start="1950-1-1",
-        days=36890,
-        left_overtopping_suffix="_left.txt",
-        right_overtopping_suffix="_right.txt",
-        depth_prefix="DepthMax",
-        duration_prefix="Duration",
-        return_period_prefix="ReturnPeriod",
-        compressed=True,
+        start: str = "1950-1-1",
+        days: int = 36890,
+        left_overtopping_suffix: str = "_left.txt",
+        right_overtopping_suffix: str = "_right.txt",
+        depth_prefix: str = "DepthMax",
+        duration_prefix: str = "Duration",
+        return_period_prefix: str = "ReturnPeriod",
+        compressed: bool = True,
     ):
         """Event. To instantiate the Event class you need to provide the following arguments.
 
@@ -190,22 +190,33 @@ class Event:
 
         self.end_days = IDs
 
-    def Overtopping(self, overtopping_path: str):
-        """Overtopping. Overtopping method reads the overtopping file and check if the event_index dataframe has already need created by the CreateEventIndex method, it will add the overtopping to it, if not it will create the event_index dataframe.
+    def readOvertopping(self, overtopping_path: str, delimiter: str = r"\s+"):
+        r"""Overtopping.
 
-        Inputs:
-            1- overtopping_path:
-                [String] path including the file name and extention of the Overtopping
-                file result from the 1D model
-        Outputs:
-            1- event_index:
-                [dataframe] this method creates an instance attribute of type
-                dataframe with columns ['id','continue', 'IndDiff', 'Duration',
-                'Overtopping', 'OvertoppingCum', 'Volume']
+            - Overtopping method reads the overtopping file and check if the event_index
+            dataframe has already need created by the CreateEventIndex method, it will add
+            the overtopping to it, if not it will create the event_index dataframe.
+
+        Parameters
+        ----------
+        overtopping_path: [String]
+            path including the file name and extention of the Overtopping
+            file result from the 1D model, the file has the follwoing headers.
+            >>>  Step	overtopping(m3/s)
+            >>>  14342            850.8
+            >>>  14373            893.4
+            >>>  14374           1049.7
+        delimiter: [str]
+            Delimeter used in the overtopping file Default is space (r"\s+").
+
+        Returns
+        -------
+        event_index: [dataframe]
+            this method creates an instance attribute of type
+            dataframe with columns ['id','continue', 'IndDiff', 'Duration',
+            'Overtopping', 'OvertoppingCum', 'Volume']
         """
-        OverTopTotal = pd.read_csv(
-            overtopping_path, delimiter=r"\s+"
-        )  # , header = None
+        OverTopTotal = pd.read_csv(overtopping_path, delimiter=delimiter)
         # FIXME
         # if the flood event does not have overtopping for 1 day then continues to
         # overtop after the method considers it as two separate events however
@@ -304,7 +315,10 @@ class Event:
         self.event_index["VolError2"] = self.event_index["VolError"] / 20
 
     def overlayMaps(self, path, BaseMapF, ExcludedValue, OccupiedCellsOnly, SavePath):
-        """OverlayMaps. OverlayMaps method reads all the maps in the folder given by path input and overlay them with the basemap and for each value in the basemap it create a dictionary with the intersected values from all maps.
+        """OverlayMaps.
+
+            - OverlayMaps method reads all the maps in the folder given by path input and overlay them with the
+            basemap and for each value in the basemap it create a dictionary with the intersected values from all maps.
 
         Parameters
         ----------
@@ -364,7 +378,7 @@ class Event:
         inundatedSubs = list(self.DepthValues.keys())
         for i in range(len(inundatedSubs)):
             np.savetxt(
-                SavePath + "/" + str(inundatedSubs[i]) + ".txt",
+                f"{SavePath}/{inundatedSubs[i]}.txt",
                 self.DepthValues[inundatedSubs[i]],
                 fmt="%4.2f",
             )
@@ -484,7 +498,7 @@ class Event:
         dataframe = dataframe.loc[:, columns]
         self.event_index = dataframe
 
-    def save(self, path):
+    def to_csv(self, path):
         """Save Save method saves the event_index table.
 
         Parameters

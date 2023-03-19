@@ -69,3 +69,32 @@ def separated_folders() -> List[str]:
 @pytest.fixture(scope="module")
 def separated_folders_file_names() -> List[str]:
     return ["1.txt", "1_left.txt", "1_right.txt"]
+
+
+@pytest.fixture(scope="module")
+def overtopping_file() -> str:
+    return "tests/hm/data/overtopping.txt"
+
+
+@pytest.fixture(scope="module")
+def volume_error_file() -> str:
+    return "tests/hm/data/VolError.txt"
+
+
+@pytest.fixture(scope="module")
+def event_instance_attrs() -> List[str]:
+    return [
+        "left_overtopping_suffix",
+        "right_overtopping_suffix",
+        "duration_prefix",
+        "return_period_prefix",
+        "two_d_result_path",
+        "compressed",
+        "extracted_values",
+        "event_index",
+    ]
+
+
+@pytest.fixture(scope="module")
+def event_index_volume_attrs() -> List[str]:
+    return ["DEMError", "StepError", "TooMuchWater", "VolError", "VolError2"]
