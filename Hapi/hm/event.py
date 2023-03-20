@@ -1,7 +1,5 @@
-"""Created on Tue Feb  4 14:57:30 2020.
-
-@author: mofarrag
-"""
+"""1D riven Events."""
+from typing import Tuple, Dict
 import datetime as dt
 
 import matplotlib.pyplot as plt
@@ -9,8 +7,6 @@ import numpy as np
 import pandas as pd
 from pandas.core.frame import DataFrame
 from pyramids.raster import Raster
-
-# import os
 
 
 class Event:
@@ -314,7 +310,14 @@ class Event:
         )
         self.event_index["VolError2"] = self.event_index["VolError"] / 20
 
-    def overlayMaps(self, path, BaseMapF, ExcludedValue, OccupiedCellsOnly, SavePath):
+    def overlayMaps(
+        self,
+        path: str,
+        base_map: str,
+        excluded_value,
+        occupied_cells_only: bool,
+        save_to: str,
+    ) -> Tuple[Dict, DataFrame]:
         """OverlayMaps.
 
             - OverlayMaps method reads all the maps in the folder given by path input and overlay them with the
@@ -324,14 +327,14 @@ class Event:
         ----------
         path: [String]
             a path to the folder includng the maps.
-        BaseMapF: [String]
+        base_map: [String]
             a path includng the name of the ASCII and extention like
             path="data/cropped.asc"
-        ExcludedValue: [Numeric]
+        excluded_value: [Numeric]
             values you want to exclude from exteacted values
-        OccupiedCellsOnly: [Bool]
-            if you want to count only cells that is not ExcludedValue.
-        SavePath: [String]
+        occupied_cells_only: [Bool]
+            if you want to count only cells that is not excluded_value.
+        save_to: [String]
             a path to the folder to save a text file for each
             value in the base map including all the intersected values
             from other maps.
@@ -346,11 +349,11 @@ class Event:
         """
         self.DepthValues, NonZeroCells = Raster.overlayMaps(
             path,
-            BaseMapF,
+            base_map,
             self.depth_prefix,
-            ExcludedValue,
+            excluded_value,
             self.compressed,
-            OccupiedCellsOnly,
+            occupied_cells_only,
         )
 
         # NonZeroCells dataframe with the first column as the "file" name and the second column
@@ -378,7 +381,7 @@ class Event:
         inundatedSubs = list(self.DepthValues.keys())
         for i in range(len(inundatedSubs)):
             np.savetxt(
-                f"{SavePath}/{inundatedSubs[i]}.txt",
+                f"{save_to}/{inundatedSubs[i]}.txt",
                 self.DepthValues[inundatedSubs[i]],
                 fmt="%4.2f",
             )
@@ -404,7 +407,7 @@ class Event:
         self.indexToDate()
 
     def histogram(
-        self, Day, ExcludeValue, OccupiedCellsOnly, Map=1, filter1=0.2, filter2=15
+        self, Day, ExcludeValue, occupied_cells_only, Map=1, filter1=0.2, filter2=15
     ):
         """histogram.
 
@@ -417,7 +420,7 @@ class Event:
             DESCRIPTION.
         ExcludeValue : [Integer]
             DESCRIPTION.
-        OccupiedCellsOnly : TYPE
+        occupied_cells_only : TYPE
             DESCRIPTION.
         Map : [integer], optional
             1 for the max depth maps, 2 for the duration map, 3 for the
@@ -437,23 +440,16 @@ class Event:
             if Day not in list(self.extracted_values.keys()):
                 # depth map
                 if Map == 1:
-                    path = (
-                        self.two_d_result_path + self.depth_prefix + str(Day) + ".zip"
-                    )
+                    path = f"{self.two_d_result_path}{self.depth_prefix}{Day}.zip"
                 elif Map == 2:
-                    path = (
-                        self.two_d_result_path
-                        + self.duration_prefix
-                        + str(Day)
-                        + ".zip"
-                    )
+                    path = f"{self.two_d_result_path}{self.duration_prefix}{Day}.zip"
                 else:
                     path = (
                         f"{self.two_d_result_path}{self.return_period_prefix}{Day}.zip"
                     )
 
                 ExtractedValues, NonZeroCells = Raster.extractValues(
-                    path, ExcludeValue, self.compressed, OccupiedCellsOnly
+                    path, ExcludeValue, self.compressed, occupied_cells_only
                 )
                 self.extracted_values[Day] = ExtractedValues
 
