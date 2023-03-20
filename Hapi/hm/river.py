@@ -263,6 +263,10 @@ class River:
         # convert the index into date
         return self.reference_index.loc[index, "date"]
 
+
+    def fffff(self, day, hour):
+        return self.indexToDate(day) + dt.timedelta(hours=hour - 1)
+
     def dateToIndex(self, date: Union[dt.datetime, str], fmt: str = "%Y-%m-%d"):
         """DateToIndex.
 
@@ -862,6 +866,7 @@ class River:
         path: str = None,
         fill_missing: bool = False,
         chunk_size: int = None,
+        delimiter: str = r"\s+",
         extension: str = ".txt",
     ):
         """Read1DResult.
@@ -886,6 +891,8 @@ class River:
             Fill the missing days. The default is False.
         chunk_size: [int]
             size of the chunk if you want to read the file in chunks Default is = None
+        delimiter: [str]
+            delimiter separating the columns in the result file. Default is r"\s+", which is a space delimiter.
         extension: [str]
             the extension of the file. Default is ".txt"
 
@@ -906,7 +913,7 @@ class River:
             data = pd.read_csv(
                 path,
                 header=None,
-                delimiter=r"\s+",
+                delimiter=delimiter,
                 index_col=False,
                 compression="infer",
                 # engine="pyarrow"
@@ -3443,6 +3450,24 @@ class Reach(River):
         self.xs_names = self.cross_sections["xsid"].tolist()
         self.xsno = len(self.xs_names)
 
+    def extract_results(self, xs_id: int, variable: str = "q") -> pd.Series:
+        # first extract the xs results
+        f = self.results_1d.loc[
+            self.results_1d["xs"] == xs_id, ["day", "hour", variable]
+        ].reset_index(drop=True)
+        # get the gerogorian date from the ordinal date
+        f["date"] = f.apply(lambda x: self.fffff(x["day"], x["hour"]), axis=1)
+        if variable == "q":
+            g = self.xs_hydrograph.merge(f, how="left", left_index=True, right_on="date")[variable].values
+        elif variable == "h":
+            g = self.xs_water_depth.merge(f, how="left", left_index=True, right_on="date")[variable].values
+        elif variable == "wl":
+            g = self.xs_water_level.merge(f, how="left", left_index=True, right_on="date")[variable].values
+
+        # data = self.results_1d
+        # g = data.loc[data["xs"] == xs_id, :]
+        return g
+
     def read1DResult(
         self,
         from_day: Union[int, str] = None,
@@ -3452,6 +3477,7 @@ class Reach(River):
         path: str = None,
         xsid: int = None,
         chunk_size: int = None,
+        delimiter: str = r"\s+",
         extension: str = ".txt",
     ):
         """read1DResult.
@@ -3480,6 +3506,8 @@ class Reach(River):
             it. The default is None.
         chunk_size: [int]
             size of the chunk if you want to read the file in chunks Default is = None.
+        delimiter: [str]
+            delimiter separating the columns in the result file. Default is r"\s+", which is a space delimiter.
         extension: [str]
             The extension of the file. Default is ".txt"
 
@@ -3513,6 +3541,7 @@ class Reach(River):
                 path=path,
                 fill_missing=fill_missing,
                 chunk_size=chunk_size,
+                delimiter=delimiter,
                 extension=extension,
             )
         # get the index of the days and convert them into  dates
@@ -3561,84 +3590,23 @@ class Reach(River):
                     + self.RP["HQ2"].tolist()[0]
                 )
         else:
-            try:
-                self.xs_hydrograph[self.last_xs] = self.results_1d.loc[
-                    self.results_1d["xs"] == self.last_xs, "q"
-                ].values
-                self.xs_hydrograph[self.first_xs] = self.results_1d.loc[
-                    self.results_1d["xs"] == self.first_xs, "q"
-                ].values
-                if xsid:
-                    self.xs_hydrograph[xsid] = self.results_1d.loc[
-                        self.results_1d["xs"] == xsid, "q"
-                    ].values
-            except ValueError:
-                # TODO: still not obvious what is the problem in the 1D result file, but for the time being assign
-                #  the time series to the length that it fits in the dataframe.
-                vals = self.results_1d.loc[
-                    self.results_1d["xs"] == self.last_xs, "q"
-                ].values
-                end_ind = self.xs_hydrograph.index[len(vals) - 1]
-                self.xs_hydrograph.loc[:end_ind, self.last_xs] = vals
-                vals = self.results_1d.loc[
-                    self.results_1d["xs"] == self.first_xs, "q"
-                ].values
-                self.xs_hydrograph.loc[:end_ind, self.first_xs] = vals
-
-                if xsid:
-                    vals = self.results_1d.loc[
-                        self.results_1d["xs"] == xsid, "q"
-                    ].values
-                    self.xs_hydrograph.loc[:end_ind, xsid] = vals
-        try:
-            self.xs_water_level[self.last_xs] = self.results_1d.loc[
-                self.results_1d["xs"] == self.last_xs, "wl"
-            ].values
-            self.xs_water_level[self.first_xs] = self.results_1d.loc[
-                self.results_1d["xs"] == self.first_xs, "wl"
-            ].values
-
-            self.xs_water_depth[self.last_xs] = self.results_1d.loc[
-                self.results_1d["xs"] == self.last_xs, "h"
-            ].values
-            self.xs_water_depth[self.first_xs] = self.results_1d.loc[
-                self.results_1d["xs"] == self.first_xs, "h"
-            ].values
-
+            self.xs_hydrograph[self.last_xs] = self.extract_results(self.last_xs, variable = "q")
+            self.xs_hydrograph[self.first_xs] = self.extract_results(self.first_xs, variable = "q")
             if xsid:
-                self.xs_water_level[xsid] = self.results_1d.loc[
-                    self.results_1d["xs"] == xsid, "wl"
-                ].values
-                self.xs_water_depth[xsid] = self.results_1d.loc[
-                    self.results_1d["xs"] == xsid, "h"
-                ].values
-        except ValueError:
-            # WARNING: Temporary solution for the rhine river reach no 36, to be deleted later.
-            vals = self.results_1d.loc[
-                self.results_1d["xs"] == self.last_xs, "wl"
-            ].values
-            end_ind = self.xs_water_level.index[len(vals) - 1]
+                self.xs_hydrograph[xsid] = self.extract_results(xsid, variable = "q")
 
-            self.xs_water_level.loc[:end_ind, self.last_xs] = vals
-            self.xs_water_level.loc[:end_ind, self.first_xs] = self.results_1d.loc[
-                self.results_1d["xs"] == self.first_xs, "wl"
-            ].values
+        self.xs_water_level[self.last_xs] = self.extract_results(self.last_xs, variable="wl")
+        self.xs_water_level[self.first_xs] = self.extract_results(self.first_xs, variable="wl")
+        self.xs_water_depth[self.last_xs] = self.extract_results(self.last_xs, variable="h")
+        self.xs_water_depth[self.first_xs] = self.extract_results(self.first_xs, variable="h")
 
-            self.xs_water_depth.loc[:end_ind, self.last_xs] = self.results_1d.loc[
-                self.results_1d["xs"] == self.last_xs, "h"
-            ].values
-            self.xs_water_depth.loc[:end_ind, self.first_xs] = self.results_1d.loc[
-                self.results_1d["xs"] == self.first_xs, "h"
-            ].values
+        if xsid:
+            self.xs_water_level[xsid] = self.extract_results(xsid, variable="wl")
+            self.xs_water_depth[xsid] = self.extract_results(xsid, variable="h")
 
-            if xsid:
-                self.xs_water_level.loc[:end_ind, xsid] = self.results_1d.loc[
-                    self.results_1d["xs"] == xsid, "wl"
-                ].values
-                self.xs_water_depth.loc[:end_ind, xsid] = self.results_1d.loc[
-                    self.results_1d["xs"] == xsid, "h"
-                ].values
-
+        self.xs_water_level.dropna(axis=0, inplace=True)
+        self.xs_water_depth.dropna(axis=0, inplace=True)
+        self.xs_hydrograph.dropna(axis=0, inplace=True)
         # check the first day in the results and get the date of the first day and last day
         ## create time series
         self.from_beginning = self.results_1d["day"][0]
