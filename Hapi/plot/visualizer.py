@@ -369,8 +369,8 @@ class Visualize:
                 + 1
             ]
         else:
-            ii = Sub.dateToIndex(start)
-            ii2 = Sub.dateToIndex(end)
+            ii = Sub.date_to_ordinal(start)
+            ii2 = Sub.date_to_ordinal(end)
             Period = list(range(ii, ii2 + 1))
 
         counter = [(i, j) for i in Period for j in hours]
