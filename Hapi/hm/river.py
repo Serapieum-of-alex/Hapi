@@ -191,10 +191,6 @@ class River:
             The default is ''.
         fmt: [string]
             format of the date. fmt="%Y-%m-%d %H:%M:%S"
-
-        Returns
-        -------
-        None.
         """
         # positional arguments
         assert isinstance(start, str), "start argument has to be string"
@@ -242,7 +238,7 @@ class River:
 
         self.indsub = pd.date_range(self.start, self.end, freq=self.freq)
 
-    def indexToDate(self, index: int):
+    def ordinal_to_date(self, index: int):
         """IndexToDate.
 
         IndexToDate takes an integer number and returns the date coresponding
@@ -263,11 +259,23 @@ class River:
         # convert the index into date
         return self.reference_index.loc[index, "date"]
 
+    def _get_date(self, day, hour):
+        """Get date for the 1D result data frame.
 
-    def fffff(self, day, hour):
-        return self.indexToDate(day) + dt.timedelta(hours=hour - 1)
+        Parameters
+        ----------
+        day: [int]
+            ordinal date
+        hour: [int]
+            gour.
 
-    def dateToIndex(self, date: Union[dt.datetime, str], fmt: str = "%Y-%m-%d"):
+        Returns
+        -------
+        datetime
+        """
+        return self.ordinal_to_date(day) + dt.timedelta(hours=hour - 1)
+
+    def date_to_ordinal(self, date: Union[dt.datetime, str], fmt: str = "%Y-%m-%d"):
         """DateToIndex.
 
         DateToIndex takes a date and returns a the order of the days in the
@@ -494,8 +502,8 @@ class River:
         Start, End = wholefile[35][:-1].split(" ")
         self.SimStartIndex = int(Start)
         self.SimEndIndex = int(End)
-        self.SimStart = self.indexToDate(self.SimStartIndex)
-        self.SimEnd = self.indexToDate(self.SimEndIndex)
+        self.SimStart = self.ordinal_to_date(self.SimStartIndex)
+        self.SimEnd = self.ordinal_to_date(self.SimEndIndex)
         self.OneDTempR = 60  # in seconds
 
         # 1D thresholds
@@ -742,8 +750,8 @@ class River:
         h = pd.DataFrame(index=indmin, columns=xsname)
         q = pd.DataFrame(index=indmin, columns=xsname)
 
-        ii = self.dateToIndex(start)
-        ii2 = self.dateToIndex(end) + 1
+        ii = self.date_to_ordinal(start)
+        ii2 = self.date_to_ordinal(end) + 1
         list2 = list(range(ii, ii2))
 
         if self.version < 4:
@@ -773,10 +781,7 @@ class River:
                 q.loc[ind1:ind2, :] = qq
 
                 # BC
-                bc = np.loadtxt(
-                    self.us_bc_path + str(self.id) + "-" + str(i) + ".txt",
-                    dtype=np.float16,
-                )
+                bc = np.loadtxt(f"{self.us_bc_path}{self.id}-{i}.txt", dtype=np.float16)
                 bc_q.loc[bc_q.index[i - list2[0]], :] = bc[:, 0]
                 bc_h.loc[bc_h.index[i - list2[0]]] = bc[:, 1]
 
@@ -786,13 +791,9 @@ class River:
             self.h_bc_1min = bc_h[:]
         else:
             for i in list2:
-                path = (
-                    f"{self.one_min_result_path}H-{str(self.indexToDate(i))[:10]}.csv"
-                )
+                path = f"{self.one_min_result_path}H-{str(self.ordinal_to_date(i))[:10]}.csv"
                 hh = np.transpose(np.loadtxt(path, delimiter=",", dtype=np.float16))
-                path = (
-                    f"{self.one_min_result_path}Q-{str(self.indexToDate(i))[:10]}.csv"
-                )
+                path = f"{self.one_min_result_path}Q-{str(self.ordinal_to_date(i))[:10]}.csv"
                 qq = np.transpose(np.loadtxt(path, delimiter=",", dtype=np.float16))
 
                 h = h + self.cross_sections["bed level"].values
@@ -809,12 +810,12 @@ class River:
             # TODO to be checked later now for testing
             self.from_beginning = 1  # self.results_1d['day'][0]
 
-            self.first_day = self.indexToDate(self.from_beginning)
+            self.first_day = self.ordinal_to_date(self.from_beginning)
             # if there are empty days at the beginning the filling missing days is not going to detect it
             # so ignore it here by starting from the first day in the data (data['day'][0]) dataframe
             # empty days at the beginning
-            self.first_day_results = self.indexToDate(self.from_beginning)
-            self.last_day = self.indexToDate(len(self.reference_index))
+            self.first_day_results = self.ordinal_to_date(self.from_beginning)
+            self.last_day = self.ordinal_to_date(len(self.reference_index))
 
             # last days+1 as range does not include the last element
             self.days_list = list(range(self.from_beginning, len(self.reference_index)))
@@ -869,7 +870,7 @@ class River:
         delimiter: str = r"\s+",
         extension: str = ".txt",
     ):
-        """Read1DResult.
+        r"""Read1DResult.
 
         Read-1D Result
 
@@ -1516,13 +1517,13 @@ class River:
             # space is rows , time is columns
             # save results of each day separately
             np.savetxt(
-                path + "Q-" + name + ".csv",
+                f"{path}Q-{name}.csv",
                 self.Q.transpose(),
                 fmt="%.3f",
                 delimiter=",",
             )
             np.savetxt(
-                path + "H-" + name + ".csv",
+                f"{path}H-{name}.csv",
                 self.H.transpose(),
                 fmt="%.3f",
                 delimiter=",",
@@ -2151,13 +2152,13 @@ class River:
         RightOverTop = list()
         # get names of files that has _left or _right at its end
         if overtopping_result_path is None:
-            overtopping_result_path = self.onedresultpath
+            overtopping_result_path = self.one_d_result_path
 
         All1DFiles = os.listdir(overtopping_result_path)
         for i in range(len(All1DFiles)):
-            if All1DFiles[i].endswith(self.leftovertopping_suffix):
+            if All1DFiles[i].endswith(self.left_overtopping_suffix):
                 leftOverTop.append(All1DFiles[i])
-            if All1DFiles[i].endswith(self.rightovertopping_suffix):
+            if All1DFiles[i].endswith(self.right_overtopping_suffix):
                 RightOverTop.append(All1DFiles[i])
 
         # two dictionaries for overtopping left and right
@@ -2180,7 +2181,7 @@ class River:
                 )
                 # add the sub basin to the overtopping dictionary of sub-basins
                 OverToppingSubsLeft[
-                    leftOverTop[i][: -len(self.leftovertopping_suffix)]
+                    leftOverTop[i][: -len(self.left_overtopping_suffix)]
                 ] = dict()
             except:
                 continue
@@ -2189,7 +2190,7 @@ class River:
             # for each XS get the days
             for j in range(len(XSs)):
                 OverToppingSubsLeft[
-                    leftOverTop[i][: -len(self.leftovertopping_suffix)]
+                    leftOverTop[i][: -len(self.left_overtopping_suffix)]
                 ][XSs[j]] = list(set(data[0][data[2] == XSs[j]].tolist()))
 
         for i in range(len(RightOverTop)):
@@ -2203,7 +2204,7 @@ class River:
                 )
                 # add the sub basin to the overtopping dictionary of sub-basins
                 OverToppingSubsRight[
-                    RightOverTop[i][: -len(self.rightovertopping_suffix)]
+                    RightOverTop[i][: -len(self.right_overtopping_suffix)]
                 ] = dict()
             except:
                 continue
@@ -2212,7 +2213,7 @@ class River:
             # for each XS get the days
             for j in range(len(XSs)):
                 OverToppingSubsRight[
-                    RightOverTop[i][: -len(self.rightovertopping_suffix)]
+                    RightOverTop[i][: -len(self.right_overtopping_suffix)]
                 ][XSs[j]] = list(set(data[0][data[2] == XSs[j]].tolist()))
 
         self.OverToppingSubsLeft = OverToppingSubsLeft
@@ -3451,18 +3452,40 @@ class Reach(River):
         self.xsno = len(self.xs_names)
 
     def extract_results(self, xs_id: int, variable: str = "q") -> pd.Series:
+        """Extract XS results.
+
+            - Extract the results from the 1D dataframe (results_1d) for a fiven xs and convert it from the form of
+            day, hour, <q>, to datetime, <q>, and merge it to the xs_hydrograph, xs_water_level, xs_water_depth
+
+        Parameters
+        ----------
+        xs_id: [int]
+            cross-section id.
+        variable: [str]
+            h, q, wl
+
+        Returns
+        -------
+        pd.Series
+        """
         # first extract the xs results
         f = self.results_1d.loc[
             self.results_1d["xs"] == xs_id, ["day", "hour", variable]
         ].reset_index(drop=True)
         # get the gerogorian date from the ordinal date
-        f["date"] = f.apply(lambda x: self.fffff(x["day"], x["hour"]), axis=1)
+        f["date"] = f.apply(lambda x: self._get_date(x["day"], x["hour"]), axis=1)
         if variable == "q":
-            g = self.xs_hydrograph.merge(f, how="left", left_index=True, right_on="date")[variable].values
+            g = self.xs_hydrograph.merge(
+                f, how="left", left_index=True, right_on="date"
+            )[variable].values
         elif variable == "h":
-            g = self.xs_water_depth.merge(f, how="left", left_index=True, right_on="date")[variable].values
+            g = self.xs_water_depth.merge(
+                f, how="left", left_index=True, right_on="date"
+            )[variable].values
         elif variable == "wl":
-            g = self.xs_water_level.merge(f, how="left", left_index=True, right_on="date")[variable].values
+            g = self.xs_water_level.merge(
+                f, how="left", left_index=True, right_on="date"
+            )[variable].values
 
         # data = self.results_1d
         # g = data.loc[data["xs"] == xs_id, :]
@@ -3480,7 +3503,7 @@ class Reach(River):
         delimiter: str = r"\s+",
         extension: str = ".txt",
     ):
-        """read1DResult.
+        r"""read1DResult.
 
         - Read1DResult method reads the 1D result of the river reach the method is returns the hydrograph of the first
         and last cross section.
@@ -3550,8 +3573,8 @@ class Reach(River):
         if not to_day:
             to_day = self.results_1d.loc[len(self.results_1d) - 1, "day"]
 
-        start = self.indexToDate(from_day)
-        end = self.indexToDate(to_day + 1)
+        start = self.ordinal_to_date(from_day)
+        end = self.ordinal_to_date(to_day + 1)
 
         if not isinstance(self.xs_hydrograph, DataFrame):
             self.xs_hydrograph = pd.DataFrame(
@@ -3590,15 +3613,27 @@ class Reach(River):
                     + self.RP["HQ2"].tolist()[0]
                 )
         else:
-            self.xs_hydrograph[self.last_xs] = self.extract_results(self.last_xs, variable = "q")
-            self.xs_hydrograph[self.first_xs] = self.extract_results(self.first_xs, variable = "q")
+            self.xs_hydrograph[self.last_xs] = self.extract_results(
+                self.last_xs, variable="q"
+            )
+            self.xs_hydrograph[self.first_xs] = self.extract_results(
+                self.first_xs, variable="q"
+            )
             if xsid:
-                self.xs_hydrograph[xsid] = self.extract_results(xsid, variable = "q")
+                self.xs_hydrograph[xsid] = self.extract_results(xsid, variable="q")
 
-        self.xs_water_level[self.last_xs] = self.extract_results(self.last_xs, variable="wl")
-        self.xs_water_level[self.first_xs] = self.extract_results(self.first_xs, variable="wl")
-        self.xs_water_depth[self.last_xs] = self.extract_results(self.last_xs, variable="h")
-        self.xs_water_depth[self.first_xs] = self.extract_results(self.first_xs, variable="h")
+        self.xs_water_level[self.last_xs] = self.extract_results(
+            self.last_xs, variable="wl"
+        )
+        self.xs_water_level[self.first_xs] = self.extract_results(
+            self.first_xs, variable="wl"
+        )
+        self.xs_water_depth[self.last_xs] = self.extract_results(
+            self.last_xs, variable="h"
+        )
+        self.xs_water_depth[self.first_xs] = self.extract_results(
+            self.first_xs, variable="h"
+        )
 
         if xsid:
             self.xs_water_level[xsid] = self.extract_results(xsid, variable="wl")
@@ -3610,7 +3645,7 @@ class Reach(River):
         # check the first day in the results and get the date of the first day and last day
         ## create time series
         self.from_beginning = self.results_1d["day"][0]
-        self.first_day = self.indexToDate(self.from_beginning)
+        self.first_day = self.ordinal_to_date(self.from_beginning)
         # if there are empty days at the beginning the filling missing days is
         # not going to detect it so ignore it here by starting from the first
         # day in the data (data['day'][0]) dataframe empty days at the
@@ -3618,9 +3653,9 @@ class Reach(River):
         # TODO
         # the from_beginning and first_day_results are exactly the same
         # delete one of them
-        self.first_day_results = self.indexToDate(self.results_1d.loc[0, "day"])
+        self.first_day_results = self.ordinal_to_date(self.results_1d.loc[0, "day"])
         last_day = self.results_1d.loc[self.results_1d.index[-1], "day"]
-        self.last_day = self.indexToDate(last_day)
+        self.last_day = self.ordinal_to_date(last_day)
 
         # last days+1 as range does not include the last element
         self.days_list = list(
@@ -3889,7 +3924,7 @@ class Reach(River):
         # end = self.reference_index.loc[to_day,'date']
 
         ind = pd.date_range(
-            self.indexToDate(from_day), self.indexToDate(to_day), freq="D"
+            self.ordinal_to_date(from_day), self.ordinal_to_date(to_day), freq="D"
         )
 
         if ColumnName == "q" and not hasattr(self, "resampled_q"):
@@ -5546,27 +5581,37 @@ class Reach(River):
 
         Histogram Extracts the values that are located in the same location in the BaseMap as the Reach-basin
 
-        :param Day:
-        :param BaseMapF:
-        :param ExcludeValue:
-        :param OccupiedCellsOnly: [boolean] True if you want to count only cells that is not zero and not
-                                    to extract the values.
-        :param Map: [1/2/3] 1 for depthmax maps, 2 for duration maps, 3 for return period maps
-        :param filter1: [real] execlude lower values than filter1
-        :param filter2: [real] execlude values higher than filter2
-        :return:
+        Parameters
+        ----------
+        Day:
+        BaseMapF:
+        ExcludeValue:
+        OccupiedCellsOnly: [boolean]
+            True if you want to count only cells that is not zero and not to extract the values.
+        Map: [1/2/3]
+            1 for depthmax maps, 2 for duration maps, 3 for return period maps
+        filter1: [real]
+            execlude lower values than filter1
+        filter2: [real]
+            execlude values higher than filter2
+
+        Returns
+        -------
             extracted_values [list] list of extracted values
         """
         # check if the object has the attribute extracted_values
         if hasattr(self, "extracted_values"):
             # depth map
             if Map == 1:
-                path = self.twodresultpath + self.depthprefix + str(Day) + ".zip"
+                path = self.two_d_result_path + self.depth_prefix + str(Day) + ".zip"
             elif Map == 2:
-                path = self.twodresultpath + self.durationprefix + str(Day) + ".zip"
+                path = self.two_d_result_path + self.duration_prefix + str(Day) + ".zip"
             else:
                 path = (
-                    self.twodresultpath + self.returnperiod_prefix + str(Day) + ".zip"
+                    self.two_d_result_path
+                    + self.returnperiod_prefix
+                    + str(Day)
+                    + ".zip"
                 )
 
             ExtractedValues, NonZeroCells = raster.overlayMap(
