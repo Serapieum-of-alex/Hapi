@@ -268,6 +268,16 @@ class River:
     def cross_sections(self, value):
         self._cross_sections = value
 
+    @property
+    def event_index(self):
+        """Event index."""
+        return self._event_index
+
+    @event_index.setter
+    def event_index(self, value: DataFrame):
+        """Event index."""
+        self._event_index = value
+
     def _get_date(self, day, hour):
         """Get date for the 1D result data frame.
 
@@ -1729,7 +1739,7 @@ class River:
         --------
         >>> import Hapi.hm.river as R
         >>> HM = R.River('Hydraulic model')
-        >>> stat_properties_path = "path/to/results/statistical analysis/DistributionProperties.csv"
+        >>> stat_properties_path = "path/to/results/statistical analysis/distribution-properties.csv"
         >>> HM.statistical_properties(stat_properties_path)
         >>> HM.SP
                        id       c        loc      scale  D-static  P-Value
@@ -2244,7 +2254,7 @@ class River:
         self.OverToppingSubsLeft = OverToppingSubsLeft
         self.OverToppingSubsRight = OverToppingSubsRight
 
-    def get_overtopped_xs(self, day, allEventdays=True):
+    def get_overtopped_xs(self, day: int, allEventdays=True):
         """GetOvertoppedXS.
 
         GetOvertoppedXS method get the cross sections that was overtopped in
@@ -2287,11 +2297,11 @@ class River:
                 XSleft, XSright = RIM2River.GetOvertoppedXS(day,False)
         """
         if allEventdays:
-            loc = np.where(self.EventIndex["id"] == day)[0][0]
+            loc = np.where(self.event_index["id"] == day)[0][0]
             # get all the days in the same event before that day as the inundation in the maps may
             # happen due to any of the days before not in this day
-            Eventdays = self.EventIndex.loc[
-                loc - self.EventIndex.loc[loc, "IndDiff"] : loc, "id"
+            Eventdays = self.event_index.loc[
+                loc - self.event_index.loc[loc, "IndDiff"] : loc, "id"
             ].tolist()
         else:
             Eventdays = [day]
