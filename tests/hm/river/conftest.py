@@ -189,3 +189,8 @@ def onemin_results_len() -> int:
 @pytest.fixture(scope="module")
 def statistical_properties_columns() -> list:
     return SP_columns
+
+
+@pytest.fixture(scope="module")
+def overtopping_files_dir() -> str:
+    return "tests/hm/data/overtopping_files"

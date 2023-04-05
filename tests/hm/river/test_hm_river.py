@@ -946,13 +946,17 @@ def test_get_bankfull_depth(
 
 
 def test_read_overtopping(
-    version: int, river_cross_section_path: str, xs_total_no: int, xs_col_no: int
+    version: int,
+    river_cross_section_path: str,
+    xs_total_no: int,
+    xs_col_no: int,
+    overtopping_files_dir: str,
 ):
     rivers = River("HM", version=version)
     rivers.read_xs(river_cross_section_path)
 
     rivers.read_overtopping(
-        overtopping_result_path="tests/hm/data/overtopping_files", delimiter=","
+        overtopping_result_path=overtopping_files_dir, delimiter=","
     )
     assert hasattr(rivers, "overtopping_reaches_left")
     assert hasattr(rivers, "overtopping_reaches_right")
