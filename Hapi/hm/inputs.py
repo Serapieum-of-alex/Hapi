@@ -178,7 +178,7 @@ class Inputs(River):
 
         Returns
         -------
-        Statistical Properties.csv:
+        statistical-properties.csv:
             file containing some statistical properties like mean, std, min, 5%, 25%,
             median, 75%, 95%, max, t_beg, t_end, nyr, q1.5, q2, q5, q10, q25, q50,
             q100, q200, q500.
@@ -232,7 +232,7 @@ class Inputs(River):
 
         # Output file
         statistical_properties.to_csv(
-            f"{save_to}/Statistical Properties.csv", float_format="%.4f"
+            f"{save_to}/statistical-properties.csv", float_format="%.4f"
         )
 
         distribution_properties.to_csv(
