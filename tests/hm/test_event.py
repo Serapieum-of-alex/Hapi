@@ -25,3 +25,11 @@ def test_calculateVolumeError(
     event_obg.create_from_overtopping(overtopping_file)
     event_obg.calculate_volume_error(volume_error_file)
     assert all([i in event_obg.event_index.columns for i in event_index_volume_attrs])
+
+
+def test_read_event_index(
+    event_index_file: str, volume_error_file: str, event_index_volume_attrs2: List[str]
+):
+    event = Event.read_event_index("test", event_index_file, start="1955-01-01")
+    assert isinstance(event.event_index, DataFrame)
+    assert all([i in event.event_index.columns for i in event_index_volume_attrs2])

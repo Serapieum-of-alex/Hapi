@@ -2347,21 +2347,23 @@ class River:
         loc = np.where(self.cross_sections["xsid"] == xsid)[0][0]
         return self.cross_sections.loc[loc, "id"]
 
-    def get_flooded_subs(self, OvertoppedXS=[], day=[1], allEventdays=True):
+    def get_flooded_reaches(
+        self, overtopped_xs: List = None, day: int = None, all_event_days=True
+    ):
         """GetFloodedSubs.
 
             GetFloodedSubs gets the inundeated sub-basins
 
         Parameters
         ----------
-        OvertoppedXS : [list], optional
+        overtopped_xs : [list], optional
             list of cross sections overtopped (if you already used the GetOvertoppedXS
             method to get the overtopped XSs for a specific day).The default is [].
             If entered the algorithm is not going to look at the over arguments
             of the method.
         day : [list], optional
             if you want to get the flooded subs for a specific list of days. The default is 1.
-        allEventdays : [Bool], optional in case user entered OvertoppedXS
+        all_event_days : [Bool], optional in case user entered overtopped_xs
             if the user entered day the all_event_days is a must. The default is True.
 
         Returns
@@ -2372,28 +2374,34 @@ class River:
         Examples
         --------
         - get the flooded subs for a specific days
-            >>> floodedSubs = River.GetFloodedSubs(day = [1122,1123], all_event_days=False)
+            >>> floodedSubs = River.get_flooded_reaches(day = [1122,1123], all_event_days=False)
 
         - get the flooded subs from already obtained overtopped XSs
             >>> day = 1122
-            >>> XSleft, XSright = River.GetOvertoppedXS(day,False)
-            >>> floodedSubs = River.GetFloodedSubs(OvertoppedXS = XSleft + XSright, all_event_days=False)
+            >>> XSleft, XSright = River.get_overtopped_xs(day, False)
+            >>> floodedSubs = River.get_flooded_reaches(overtopped_xs = XSleft + XSright, all_event_days=False)
         """
+        if overtopped_xs is None:
+            overtopped_xs = []
+
+        if day is None:
+            day = [1]
+
         Subs = list()
         # if you already used the GetOvertoppedXS and have a list of xs overtopped
         # at specific day
-        if len(OvertoppedXS) > 0:
-            OvertoppedXS = list(set(OvertoppedXS))
-            for i in range(len(OvertoppedXS)):
-                Subs.append(self.get_sub_basin(OvertoppedXS[i]))
+        if len(overtopped_xs) > 0:
+            overtopped_xs = list(set(overtopped_xs))
+            for i in range(len(overtopped_xs)):
+                Subs.append(self.get_sub_basin(overtopped_xs[i]))
         else:
             for j in range(len(day)):
-                XSLeft, XSRight = self.get_overtopped_xs(day[j], allEventdays)
-                OvertoppedXS = XSLeft + XSRight
-                OvertoppedXS = list(set(OvertoppedXS))
+                XSLeft, XSRight = self.get_overtopped_xs(day[j], all_event_days)
+                overtopped_xs = XSLeft + XSRight
+                overtopped_xs = list(set(overtopped_xs))
 
-                for i in range(len(OvertoppedXS)):
-                    Subs.append(self.get_sub_basin(OvertoppedXS[i]))
+                for i in range(len(overtopped_xs)):
+                    Subs.append(self.get_sub_basin(overtopped_xs[i]))
 
         # to remove duplicate subs
         Subs = list(set(Subs))

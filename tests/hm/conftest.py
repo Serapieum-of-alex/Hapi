@@ -98,3 +98,8 @@ def event_instance_attrs() -> List[str]:
 @pytest.fixture(scope="module")
 def event_index_volume_attrs() -> List[str]:
     return ["DEMError", "StepError", "TooMuchWater", "VolError", "VolError2"]
+
+
+@pytest.fixture(scope="module")
+def event_index_volume_attrs2() -> List[str]:
+    return ["id", "date", "continue", "IndDiff", "Duration", "cells"]

@@ -194,3 +194,8 @@ def statistical_properties_columns() -> list:
 @pytest.fixture(scope="module")
 def overtopping_files_dir() -> str:
     return "tests/hm/data/overtopping_files"
+
+
+@pytest.fixture(scope="module")
+def event_index_file() -> str:
+    return "tests/hm/data/event-index.txt"

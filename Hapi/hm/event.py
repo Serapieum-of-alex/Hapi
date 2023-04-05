@@ -578,19 +578,19 @@ class Event:
         """
         self._event_index.to_csv(path, header=True, index=None)
 
-    def get_event_start(self, loc):
+    def get_event_start(self, loc: int) -> Tuple[int, int]:
         """GetEventBeginning.
 
             - event_beginning method returns the index of the beginning of the event in the event_index dataframe.
 
         Parameters
         ----------
-        loc: [Integer]
+        loc: [int]
             dataframe index of the day you want to trace back to get the begining
 
         Returns
         -------
-        ind: [Integer]
+        ind: [int]
             dataframe index of the beginning day of the event
 
         Example
