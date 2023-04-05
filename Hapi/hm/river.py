@@ -2293,6 +2293,11 @@ class River:
         >>> day = 1122
         >>> XSleft, XSright = river.get_overtopped_xs(day,False)
         """
+        if not hasattr(self, "event_index"):
+            raise ValueError(
+                "event_index does not exist please read the event_index first."
+            )
+
         if all_event_days:
             loc = np.where(self.event_index["id"] == day)[0][0]
             # get all the days in the same event before that day as the inundation in the maps may
@@ -2303,8 +2308,8 @@ class River:
         else:
             Eventdays = [day]
 
-        XSLeft = list()
-        XSRight = list()
+        xs_left = list()
+        xs_right = list()
 
         for k in range(len(Eventdays)):
             dayi = Eventdays[k]
@@ -2316,19 +2321,19 @@ class River:
                 # for each xross section check if the day is sored inside
                 for j in range(len(XSs)):
                     if dayi in self.overtopping_reaches_left[Subid][XSs[j]]:
-                        XSLeft.append(XSs[j])
+                        xs_left.append(XSs[j])
 
             for i in range(len(self.overtopping_reaches_right.keys())):
                 Subid = list(self.overtopping_reaches_right.keys())[i]
                 XSs = list(self.overtopping_reaches_right[Subid].keys())
                 for j in range(len(XSs)):
                     if dayi in self.overtopping_reaches_right[Subid][XSs[j]]:
-                        XSRight.append(XSs[j])
+                        xs_right.append(XSs[j])
 
-        XSLeft = list(set(XSLeft))
-        XSRight = list(set(XSRight))
+        xs_left = list(set(xs_left))
+        xs_right = list(set(xs_right))
 
-        return XSLeft, XSRight
+        return xs_left, xs_right
 
     def get_sub_basin(self, xsid):
         """GetSubBasin.
