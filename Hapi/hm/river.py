@@ -1003,6 +1003,8 @@ class River:
         t2 = dt.datetime.now()
         time_min = (t2 - t1).seconds / 60
         print(f"Time taken to read the file: {time_min:0.2f} min")
+        data.drop_duplicates(inplace=True)
+        data.reset_index(drop=True, inplace=True)
         self.results_1d = data
 
     @staticmethod
@@ -3512,6 +3514,7 @@ class Reach(River):
 
         # data = self.results_1d
         # g = data.loc[data["xs"] == xs_id, :]
+        # g.drop_duplicates(inplace=True)
         return g
 
     def read_1d_results(
