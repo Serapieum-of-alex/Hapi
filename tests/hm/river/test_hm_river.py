@@ -943,3 +943,18 @@ def test_get_bankfull_depth(
     rivers.get_bankfull_depth(bankfulldepth, "dbf2")
     xs = rivers.cross_sections
     assert "dbf2" in xs.columns
+
+
+def test_read_overtopping(
+    version: int, river_cross_section_path: str, xs_total_no: int, xs_col_no: int
+):
+    rivers = River("HM", version=version)
+    rivers.read_xs(river_cross_section_path)
+
+    rivers.read_overtopping(
+        overtopping_result_path="tests/hm/data/overtopping_files", delimiter=","
+    )
+    assert hasattr(rivers, "overtopping_reaches_left")
+    assert hasattr(rivers, "overtopping_reaches_right")
+    assert len(rivers.overtopping_reaches_left.keys()) == 1
+    assert len(rivers.overtopping_reaches_right.keys()) == 1

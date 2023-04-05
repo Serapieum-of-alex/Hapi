@@ -2155,7 +2155,9 @@ class River:
                 logger.info(f"New H = {round(H, 2)}")
                 logger.info("---------------------------")
 
-    def overtopping(self, overtopping_result_path: str = None):
+    def read_overtopping(
+        self, overtopping_result_path: str = None, delimiter: str = r"\s+"
+    ):
         """Overtopping.
 
         Overtopping method reads the overtopping files and for each cross section
@@ -2173,89 +2175,82 @@ class River:
 
         Returns
         -------
-        OverToppingSubsLeft : [dictionary attribute]
+        overtopping_subs_left : [dictionary attribute]
             dictionary having sub-basin ids as a key and for each sub-basins
             it contains dictionary for each cross section having the days of
             overtopping.
-        OverToppingSubsRight : [dictionary attribute]
+        overtopping_subs_right : [dictionary attribute]
             dictionary having sub-basin ids as a key and for each sub-basins
             it contains dictionary for each cross section having the days of
             overtopping.
         """
         # sort files
-        leftOverTop = list()
-        RightOverTop = list()
+        left_overtopping = list()
+        right_overtopping = list()
         # get names of files that has _left or _right at its end
         if overtopping_result_path is None:
             overtopping_result_path = self.one_d_result_path
 
-        All1DFiles = os.listdir(overtopping_result_path)
-        for i in range(len(All1DFiles)):
-            if All1DFiles[i].endswith(self.left_overtopping_suffix):
-                leftOverTop.append(All1DFiles[i])
-            if All1DFiles[i].endswith(self.right_overtopping_suffix):
-                RightOverTop.append(All1DFiles[i])
+        all_1d_files = os.listdir(overtopping_result_path)
+        for i in range(len(all_1d_files)):
+            if all_1d_files[i].endswith(self.left_overtopping_suffix):
+                left_overtopping.append(all_1d_files[i])
+            if all_1d_files[i].endswith(self.right_overtopping_suffix):
+                right_overtopping.append(all_1d_files[i])
 
         # two dictionaries for overtopping left and right
-        OverToppingSubsLeft = dict()
-        OverToppingSubsRight = dict()
+        overtopping_subs_left = dict()
+        overtopping_subs_right = dict()
         # the _left and _right files has all the overtopping discharge
         # but sometimes the sum of all the overtopping is less than a threshold specified
         # and then the 2D  algorithm does not run so these cross sections you will not find
         # any inundation beside it in the maps but you will find it in the _left or _right maps
 
         # for each sub-basin that has overtopping from the left dike
-        for i in range(len(leftOverTop)):
+        for i in range(len(left_overtopping)):
+            # open the file (if there is no column sthe file is empty)
+            data = pd.read_csv(
+                rf"{overtopping_result_path}\{left_overtopping[i]}",
+                header=None,
+                delimiter=delimiter,
+            )
+            # add the sub basin to the overtopping dictionary of sub-basins
+            overtopping_subs_left[
+                left_overtopping[i][: -len(self.left_overtopping_suffix)]
+            ] = dict()
 
-            try:
-                # open the file (if there is no column sthe file is empty)
-                data = pd.read_csv(
-                    rf"{overtopping_result_path}\{leftOverTop[i]}",
-                    header=None,
-                    delimiter=r"\s+",
-                )
-                # add the sub basin to the overtopping dictionary of sub-basins
-                OverToppingSubsLeft[
-                    leftOverTop[i][: -len(self.left_overtopping_suffix)]
-                ] = dict()
-            except:
-                continue
             # get the XS that overtopping happened from
             XSs = list(set(data.loc[:, 2]))
             # for each XS get the days
             for j in range(len(XSs)):
-                OverToppingSubsLeft[
-                    leftOverTop[i][: -len(self.left_overtopping_suffix)]
+                overtopping_subs_left[
+                    left_overtopping[i][: -len(self.left_overtopping_suffix)]
                 ][XSs[j]] = list(set(data[0][data[2] == XSs[j]].tolist()))
 
-        for i in range(len(RightOverTop)):
+        for i in range(len(right_overtopping)):
+            data = pd.read_csv(
+                rf"{overtopping_result_path}\{right_overtopping[i]}",
+                header=None,
+                delimiter=delimiter,
+            )
+            # add the sub basin to the overtopping dictionary of sub-basins
+            overtopping_subs_right[
+                right_overtopping[i][: -len(self.right_overtopping_suffix)]
+            ] = dict()
 
-            try:
-                # open the file
-                data = pd.read_csv(
-                    rf"{overtopping_result_path}\{RightOverTop[i]}",
-                    header=None,
-                    delimiter=r"\s+",
-                )
-                # add the sub basin to the overtopping dictionary of sub-basins
-                OverToppingSubsRight[
-                    RightOverTop[i][: -len(self.right_overtopping_suffix)]
-                ] = dict()
-            except:
-                continue
             # get the XS that overtopping happened from
             XSs = list(set(data.loc[:, 2]))
             # for each XS get the days
             for j in range(len(XSs)):
-                OverToppingSubsRight[
-                    RightOverTop[i][: -len(self.right_overtopping_suffix)]
+                overtopping_subs_right[
+                    right_overtopping[i][: -len(self.right_overtopping_suffix)]
                 ][XSs[j]] = list(set(data[0][data[2] == XSs[j]].tolist()))
 
-        self.OverToppingSubsLeft = OverToppingSubsLeft
-        self.OverToppingSubsRight = OverToppingSubsRight
+        self.overtopping_reaches_left = overtopping_subs_left
+        self.overtopping_reaches_right = overtopping_subs_right
 
-    def get_overtopped_xs(self, day: int, allEventdays=True):
-        """GetOvertoppedXS.
+    def get_overtopped_xs(self, day: int, all_event_days=True):
+        """get_overtopped_xs.
 
         GetOvertoppedXS method get the cross sections that was overtopped in
         a given date(you have to read the overtopping data first with the method
@@ -2267,36 +2262,38 @@ class River:
 
         Parameters
         ----------
-            1-day : [Integer]
-                the day you want to get the overtopped cross section for.
-            2-allEventdays : [Bool], optional
-                if you want to get the overtopped cross section for this day only
-                or for the whole event. The default is True.
+        day : [int]
+            the day you want to get the overtopped cross section for.
+        all_event_days : [Bool], optional
+            if you want to get the overtopped cross section for this day only
+            or for the whole event. The default is True.
 
         Returns
         -------
-            1-XSLeft : [list]
-                list of cross section ids that has overtopping from the left bank.
-            2-XSRight : [list]
-                list of cross section ids that has overtopping from the right bank.
-        Example:
-            1- for a given day
-                RIM2River = RV.River('RIM2.0')
-                RIM2River.Overtopping(wpath2 + "/results/1d/")
-                day = 1122
-                XSleft, XSright = RIM2River.GetOvertoppedXS(day,False)
+        xs_left : [list]
+            list of cross section ids that has overtopping from the left bank.
+        xs_right : [list]
+            list of cross section ids that has overtopping from the right bank.
 
-            2- from the beginning of the event till the given day
-                RIM2River = RV.River('RIM2.0')
-                RIM2River.Overtopping(wpath2 + "/results/1d/")
-                # read precreated event_index table
-                RIM2Event.ReadEventIndex(wpath2 + "/" + "event_index.txt")
-                # give the event_index table to the River Object
-                RIM2River.event_index = RIM1.event_index
-                day = 1122
-                XSleft, XSright = RIM2River.GetOvertoppedXS(day,False)
+        Example
+        -------
+        - for a given day
+        >>> river = River('Rhine')
+        >>> river.Overtopping("/results/1d/")
+        >>> day = 1122
+        >>> XSleft, XSright = river.get_overtopped_xs(day,False)
+
+        - from the beginning of the event till the given day
+        >>> river = River('Rhine')
+        >>> river.create_from_overtopping("/results/1d/")
+        - read precreated event_index table
+        >>> river.read_event_index("event_index.txt")
+        - give the event_index table to the River Object
+        >>> river.event_index = river.event_index
+        >>> day = 1122
+        >>> XSleft, XSright = river.get_overtopped_xs(day,False)
         """
-        if allEventdays:
+        if all_event_days:
             loc = np.where(self.event_index["id"] == day)[0][0]
             # get all the days in the same event before that day as the inundation in the maps may
             # happen due to any of the days before not in this day
@@ -2312,20 +2309,20 @@ class River:
         for k in range(len(Eventdays)):
             dayi = Eventdays[k]
             # for each sub-basin in the overtopping left dict
-            for i in range(len(self.OverToppingSubsLeft.keys())):
-                Subid = list(self.OverToppingSubsLeft.keys())[i]
+            for i in range(len(self.overtopping_reaches_left.keys())):
+                Subid = list(self.overtopping_reaches_left.keys())[i]
                 # get all cross section that overtopped before
-                XSs = list(self.OverToppingSubsLeft[Subid].keys())
+                XSs = list(self.overtopping_reaches_left[Subid].keys())
                 # for each xross section check if the day is sored inside
                 for j in range(len(XSs)):
-                    if dayi in self.OverToppingSubsLeft[Subid][XSs[j]]:
+                    if dayi in self.overtopping_reaches_left[Subid][XSs[j]]:
                         XSLeft.append(XSs[j])
 
-            for i in range(len(self.OverToppingSubsRight.keys())):
-                Subid = list(self.OverToppingSubsRight.keys())[i]
-                XSs = list(self.OverToppingSubsRight[Subid].keys())
+            for i in range(len(self.overtopping_reaches_right.keys())):
+                Subid = list(self.overtopping_reaches_right.keys())[i]
+                XSs = list(self.overtopping_reaches_right[Subid].keys())
                 for j in range(len(XSs)):
-                    if dayi in self.OverToppingSubsRight[Subid][XSs[j]]:
+                    if dayi in self.overtopping_reaches_right[Subid][XSs[j]]:
                         XSRight.append(XSs[j])
 
         XSLeft = list(set(XSLeft))
@@ -2365,7 +2362,7 @@ class River:
         day : [list], optional
             if you want to get the flooded subs for a specific list of days. The default is 1.
         allEventdays : [Bool], optional in case user entered OvertoppedXS
-            if the user entered day the allEventdays is a must. The default is True.
+            if the user entered day the all_event_days is a must. The default is True.
 
         Returns
         -------
@@ -2375,12 +2372,12 @@ class River:
         Examples
         --------
         - get the flooded subs for a specific days
-            >>> floodedSubs = River.GetFloodedSubs(day = [1122,1123], allEventdays=False)
+            >>> floodedSubs = River.GetFloodedSubs(day = [1122,1123], all_event_days=False)
 
         - get the flooded subs from already obtained overtopped XSs
             >>> day = 1122
             >>> XSleft, XSright = River.GetOvertoppedXS(day,False)
-            >>> floodedSubs = River.GetFloodedSubs(OvertoppedXS = XSleft + XSright, allEventdays=False)
+            >>> floodedSubs = River.GetFloodedSubs(OvertoppedXS = XSleft + XSright, all_event_days=False)
         """
         Subs = list()
         # if you already used the GetOvertoppedXS and have a list of xs overtopped
