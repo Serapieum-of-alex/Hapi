@@ -24,7 +24,7 @@ Inputs:
     6-saveto:
         [string ] the path where you want to  save the statistical properties
 Outputs:
-    1-Statistical Properties.csv:
+    1-statistical-properties.csv:
         file containing some statistical properties like mean, std, min, 5%, 25%,
         median, 75%, 95%, max, t_beg, t_end, nyr, q1.5, q2, q5, q10, q25, q50,
         q100, q200, q500
@@ -52,7 +52,7 @@ SavePlots = True
 NoValue = -9
 #%%
 """
-create the DistributionProperties.csv & Statistical Properties.csv files with
+create the distribution-properties.csv & statistical-properties.csv files with
 """
 Inputs35 = IN.Inputs("Observed_Q")
 

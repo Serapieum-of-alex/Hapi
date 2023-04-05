@@ -40,7 +40,7 @@ River.OneDResultPath = rpath + "/results/1d/"
 
 River.read_river_network(rpath + "/inputs/1d/topo/rivernetwork-3segments.txt")
 # River.ReturnPeriod(CompP1 + "/base_data/HYDROMOD/RIM1.0/Observed Period/Statistical Analysis/" + "HQRhine.csv")
-path = r"examples/Hydrodynamic models/test_case/results/customized_results/discharge_long_ts/statistical-analysis-results/DistributionProperties.csv"
+path = r"examples/Hydrodynamic models/test_case/results/customized_results/discharge_long_ts/statistical-analysis-results/distribution-properties.csv"
 River.statistical_properties(path)
 #%%
 
