@@ -312,7 +312,7 @@ class Interface(River):
             int(i[l1 : len(i) - l2]) for i in self.bc_table[self.bc_table.columns[0]]
         ]
 
-    def readBoundaryConditions(
+    def read_boundary_conditions(
         self,
         from_day: Union[str, int] = "",
         to_day: Union[str, int] = "",

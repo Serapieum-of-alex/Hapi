@@ -21,25 +21,25 @@ def test_GroundSurface(
     Read1DResult_path: str,
 ):
     River = R.River("HM", version=version, start=dates[0])
-    River.readXS(river_cross_section_path)
-    River.readRiverNetwork(river_network_path)
+    River.read_xs(river_cross_section_path)
+    River.read_river_network(river_network_path)
     River.one_d_result_path = Read1DResult_path
     Sub = R.Reach(segment3, River)
 
     IF = Interface("Rhine", start=dates[0])
     IF.readBoundaryConditionsTable(interface_bc_path)
-    IF.readBoundaryConditions(
+    IF.read_boundary_conditions(
         path=interface_bc_folder, date_format=interface_bc_date_format
     )
 
-    IF.readXS(river_cross_section_path)
+    IF.read_xs(river_cross_section_path)
     IF.readLateralsTable(interface_Laterals_table_path)
     IF.readLaterals(
         path=interface_Laterals_folder, date_format=interface_Laterals_date_format
     )
 
-    Sub.getFlow(IF)
-    Sub.read1DResult()
+    Sub.get_flow(IF)
+    Sub.read_1d_results()
 
     Vis = V(resolution="Hourly")
     Vis.plotGroundSurface(
@@ -69,8 +69,8 @@ def test_CrossSections(
     plot_xs_seg3_toxs: int,
 ):
     River = R.River("HM", version=version, start=dates[0])
-    River.readXS(river_cross_section_path)
-    River.readRiverNetwork(river_network_path)
+    River.read_xs(river_cross_section_path)
+    River.read_river_network(river_network_path)
     River.one_d_result_path = Read1DResult_path
     Sub = R.Reach(segment3, River)
     Vis = V(resolution="Hourly")
@@ -197,12 +197,12 @@ def test_Plot1minProfile(
 ):
 
     River = R.River("HM", version=version, start=dates[0])
-    River.readXS(river_cross_section_path)
-    River.readRiverNetwork(river_network_path)
+    River.read_xs(river_cross_section_path)
+    River.read_river_network(river_network_path)
     River.us_bc_path = usbc_path
     River.one_min_result_path = subdailyresults_path
     Sub = R.Reach(segment3, River)
-    Sub.readSubDailyResults(
+    Sub.read_sub_daily_results(
         onemin_results_dates[0], onemin_results_dates[1], last_river_reach=lastsegment
     )
 

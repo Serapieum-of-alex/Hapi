@@ -84,14 +84,14 @@ def volume_error_file() -> str:
 @pytest.fixture(scope="module")
 def event_instance_attrs() -> List[str]:
     return [
-        "left_overtopping_suffix",
-        "right_overtopping_suffix",
-        "duration_prefix",
-        "return_period_prefix",
-        "two_d_result_path",
+        "_left_overtopping_suffix",
+        "_right_overtopping_suffix",
+        "_duration_prefix",
+        "_return_period_prefix",
+        "_two_d_result_path",
         "compressed",
         "extracted_values",
-        "event_index",
+        "_event_index",
     ]
 
 

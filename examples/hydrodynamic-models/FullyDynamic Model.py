@@ -16,11 +16,11 @@ Test.oneminresultpath = path + "/data/hydrodynamic model/"
 
 Test.Time = 5 * 60 * 60  # (hrs to seconds)
 # Read Input Data
-Test.readXS(path + "/data/hydrodynamic model/xs_hz.csv")
+Test.read_xs(path + "/data/hydrodynamic model/xs_hz.csv")
 #%% Initial and Boundary condition
 Test.icq = 0
 Test.ich = 12
-Test.readBoundaryConditions(
+Test.read_boundary_conditions(
     path=path + "/data/hydrodynamic model/BCH-2.txt",
     fmt="%Y-%m-%d %H:%M:%S",
     ds=True,
@@ -37,4 +37,4 @@ print("Stability Factor = " + str(Test.stabilityfactor.min()))
 start = "2010-01-01 00:00:00"
 end = "2010-1-1 05:00:00"
 # ffmpeg_path = "F:/Users/mofarrag/.matplotlib/ffmpeg-4.4-full_build/bin/ffmpeg.exe"
-anim = Test.animatefloodwave(start=start, end=end, interval=2, textlocation=-1)
+anim = Test.animate_flood_wave(start=start, end=end, interval=2, textlocation=-1)

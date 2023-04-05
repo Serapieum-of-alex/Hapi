@@ -11,7 +11,7 @@ def test_readLateralsTable(
     interface_Laterals_table_path: str,
 ):
     IF = Interface("Rhine", start=dates[0])
-    IF.readXS(river_cross_section_path)
+    IF.read_xs(river_cross_section_path)
     IF.readLateralsTable(interface_Laterals_table_path)
 
     assert len(IF.laterals_table) == 9 and len(IF.laterals_table.columns) == 2
@@ -28,7 +28,7 @@ class TestreadLaterals:
         test_time_series_length: int,
     ):
         IF = Interface("Rhine", start=dates[0])
-        IF.readXS(river_cross_section_path)
+        IF.read_xs(river_cross_section_path)
         IF.readLateralsTable(interface_Laterals_table_path)
         IF.readLaterals(
             path=interface_Laterals_folder, date_format=interface_Laterals_date_format
@@ -48,7 +48,7 @@ class TestreadLaterals:
         test_time_series_length: int,
     ):
         IF = Interface("Rhine", start=dates[0])
-        IF.readXS(river_cross_section_path)
+        IF.read_xs(river_cross_section_path)
         IF.readLateralsTable(interface_Laterals_table_path)
         IF.readLaterals(
             path=interface_Laterals_folder,
@@ -80,7 +80,7 @@ def test_ReadBoundaryConditions(
 ):
     IF = Interface("Rhine", start=dates[0])
     IF.readBoundaryConditionsTable(interface_bc_path)
-    IF.readBoundaryConditions(
+    IF.read_boundary_conditions(
         path=interface_bc_folder, date_format=interface_bc_date_format
     )
 
@@ -97,7 +97,7 @@ def test_ReadRRMProgression(
     no_laterals: int,
 ):
     IF = Interface("Rhine", start=dates[0])
-    IF.readXS(river_cross_section_path)
+    IF.read_xs(river_cross_section_path)
     IF.readLateralsTable(interface_Laterals_table_path)
     IF.readLaterals(
         path=rrm_resutls_hm_location,

@@ -1,7 +1,7 @@
 """Hydaulic model calibration related function module."""
 import datetime as dt
 from typing import Any, Union
-
+from pathlib import Path
 import geopandas as gpd
 import matplotlib.pyplot as plt
 import numpy as np
@@ -173,6 +173,11 @@ class Calibration(River):
         >>> 0   149  ...  POINT (4278240.426 2843958.864)
         >>> 1   106  ...  POINT (4259614.334 2884750.556)
         """
+        if not Path(path).exists():
+            raise FileNotFoundError(
+                f"The gauges file you have entered: {path} does not exist"
+            )
+
         try:
             self.hm_gauges = gpd.read_file(path, driver="GeoJSON")
         except Exception as e:
@@ -1227,7 +1232,6 @@ class Calibration(River):
         Pandas Series
         """
         # calculate the average of three XS bed level
-        # TODO: use the rolling method in all other smoothing methods
         # https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.rolling.html
         smoothed = series.rolling(window=window, center=True).mean()
         # the bed level at the beginning and end of the egment
@@ -1290,7 +1294,6 @@ class Calibration(River):
             raise ValueError("Please read the cross section first")
 
         reach = self.getReach(reach_id)
-        # TODO: use the rolling method in all other smoothing methods
         reach["zl"] = self._smooth(reach["zl"], window=window)
         reach["zr"] = self._smooth(reach["zr"], window=window)
         self.updateReach(reach)

@@ -21,8 +21,8 @@ Test = River(
 )
 Test.oneminresultpath = path + "/data/hydrodynamic model/"
 #%% Read Input Data
-Test.readXS(path + "/data/hydrodynamic model/xs.csv")
-Test.readBoundaryConditions(
+Test.read_xs(path + "/data/hydrodynamic model/xs.csv")
+Test.read_boundary_conditions(
     path=path + "/data/hydrodynamic model/BCQ-constant.txt", fmt="%Y-%m-%d %H:%M:%S"
 )
 Test.Laterals = False
@@ -31,7 +31,7 @@ Test.icq = 50
 #%% Run the kinematic wave model
 start = "2010-1-1 00:00:00"
 end = "2010-1-1 05:00:00"
-Test.kinematicwave(start, end, fmt="%Y-%m-%d %H:%M:%S")
+Test.kinematic_wave(start, end, fmt="%Y-%m-%d %H:%M:%S")
 #%%
 #%% Run the kinematic wave model
 # start = "2010-1-1 00:00:00"
@@ -41,10 +41,10 @@ Test.kinematicwave(start, end, fmt="%Y-%m-%d %H:%M:%S")
 plotstart = "2010-01-01 00:00:00"
 plotend = "2010-1-1 05:00:00"
 # ffmpeg_path = "F:/Users/mofarrag/.matplotlib/ffmpeg-4.4-full_build/bin/ffmpeg.exe"
-anim = Test.animatefloodwave(start=plotstart, end=plotend, interval=0.0000002)
+anim = Test.animate_flood_wave(start=plotstart, end=plotend, interval=0.0000002)
 #%% save results
 # Test.SaveResult(path + "/data/hydrodynamic model/" )
 #%% read results
 plotstart = "2010-01-01"
 plotend = "2010-1-2"
-Test.readSubDailyResults(plotstart, plotend, fmt="%Y-%m-%d")
+Test.read_sub_daily_results(plotstart, plotend, fmt="%Y-%m-%d")

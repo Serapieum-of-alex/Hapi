@@ -337,7 +337,7 @@ class SaintVenant:
                 for x in range(0, Sub.xsno):
                     # xs[:,:] = 0
                     # calculate the area & perimeter of the whole XS
-                    Coords = River.getVortices(
+                    Coords = River.get_vortices(
                         hx[x],
                         Sub.hl[x],
                         Sub.hr[x],
@@ -346,7 +346,7 @@ class SaintVenant:
                         Sub.mw[x],
                         Sub.Dbf[x],
                     )
-                    xs[x, 0:2] = River.polygonGeometry(Coords)
+                    xs[x, 0:2] = River.polygon_geometry(Coords)
 
                     # area & perimeter of the Upper part only
                     if hx[x] <= Sub.Dbf[x]:

@@ -26,7 +26,7 @@ def test_StatisticalProperties(
     Inputs35 = IN.Inputs("Observed_Q")
     computationalnodes = Calib.hm_gauges["oid"].tolist()
 
-    Inputs35.statisticalProperties(
+    Inputs35.get_statistical_properties(
         computationalnodes,
         Discharge_gauge_long_ts,
         dates[0],
@@ -55,7 +55,7 @@ def test_StatisticalProperties(
         for elem in Inputs35.distribution_properties.index.tolist()
     )
 
-    Inputs35.statisticalProperties(
+    Inputs35.get_statistical_properties(
         computationalnodes,
         Discharge_gauge_long_ts,
         dates[0],

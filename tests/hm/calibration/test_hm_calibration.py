@@ -80,7 +80,7 @@ def test_CalculateProfile(
     calibrateProfile_slope: float,
 ):
     Calib = RC.Calibration("HM", version=version)
-    Calib.readXS(river_cross_section_path)
+    Calib.read_xs(river_cross_section_path)
     Calib.calculateProfile(
         segment3,
         calibrateProfile_DS_bedlevel,
@@ -100,7 +100,7 @@ def test_SmoothMaxSlope(
     segment3: int,
 ):
     Calib = RC.Calibration("HM", version=version)
-    Calib.readXS(river_cross_section_path)
+    Calib.read_xs(river_cross_section_path)
     Calib.smoothMaxSlope(segment3)
 
 
@@ -110,7 +110,7 @@ def test_SmoothBedLevel(
     segment3: int,
 ):
     Calib = RC.Calibration("HM", version=version)
-    Calib.readXS(river_cross_section_path)
+    Calib.read_xs(river_cross_section_path)
     Calib.smoothBedLevel(segment3)
 
 
@@ -120,7 +120,7 @@ def test_SmoothDikeLevel(
     segment3: int,
 ):
     Calib = RC.Calibration("HM", version=version)
-    Calib.readXS(river_cross_section_path)
+    Calib.read_xs(river_cross_section_path)
     Calib.smoothDikeLevel(segment3)
 
 
@@ -131,7 +131,7 @@ def test_DownWardBedLevel(
     DownWardBedLevel_height: float,
 ):
     Calib = RC.Calibration("HM", version=version)
-    Calib.readXS(river_cross_section_path)
+    Calib.read_xs(river_cross_section_path)
     Calib.downWardBedLevel(segment3, DownWardBedLevel_height)
 
 
@@ -141,7 +141,7 @@ def test_SmoothBankLevel(
     segment3: int,
 ):
     Calib = RC.Calibration("HM", version=version)
-    Calib.readXS(river_cross_section_path)
+    Calib.read_xs(river_cross_section_path)
     Calib.smoothBankLevel(segment3)
 
 
@@ -151,7 +151,7 @@ def test_SmoothFloodplainHeight(
     segment3: int,
 ):
     Calib = RC.Calibration("HM", version=version)
-    Calib.readXS(river_cross_section_path)
+    Calib.read_xs(river_cross_section_path)
     Calib.smoothFloodplainHeight(segment3)
 
 
@@ -161,7 +161,7 @@ def test_SmoothBedWidth(
     segment3: int,
 ):
     Calib = RC.Calibration("HM", version=version)
-    Calib.readXS(river_cross_section_path)
+    Calib.read_xs(river_cross_section_path)
     Calib.smoothBedWidth(segment3)
 
 
@@ -171,7 +171,7 @@ def test_CheckFloodplain(
     segment3: int,
 ):
     Calib = RC.Calibration("HM", version=version)
-    Calib.readXS(river_cross_section_path)
+    Calib.read_xs(river_cross_section_path)
     Calib.checkFloodplain()
 
 

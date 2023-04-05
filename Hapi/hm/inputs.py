@@ -113,7 +113,7 @@ class Inputs(River):
                 f"{save_path}/{Nodes.loc[i, 0]}.txt", header=None, index=None
             )
 
-    def statisticalProperties(
+    def get_statistical_properties(
         self,
         gauges: list,
         rdir: str,
@@ -242,46 +242,12 @@ class Inputs(River):
         self.statistical_properties = statistical_properties
         self.distribution_properties = distribution_properties
 
-    def WriteHQFile(self, NoNodes: int, StatisticalPropertiesFile: str, save_to: str):
-        """WriteHQFile.
-
-        Parameters
-        ----------
-        NoNodes:
-        StatisticalPropertiesFile:
-        save_to:
-        Returns
-        -------
-        None
-        """
-        # Create a table of all nodes and sub-basins
-        HQ = pd.DataFrame(
-            index=list(range(NoNodes)), columns=["id", "2yrs", "10yrs", "100yrs"]
-        )
-        HQ.loc[:, ["2yrs", "10yrs", "100yrs"]] = -1
-        HQ.loc[:, "id"] = range(1, NoNodes + 1)
-        statistical_properties = pd.read_csv(StatisticalPropertiesFile)
-        for i in range(len(statistical_properties)):
-            # i=0
-            HQ.loc[
-                statistical_properties.loc[i, "id"] - 1, "2yrs"
-            ] = statistical_properties.loc[i, "q2"]
-            HQ.loc[
-                statistical_properties.loc[i, "id"] - 1, "10yrs"
-            ] = statistical_properties.loc[i, "q10"]
-            HQ.loc[
-                statistical_properties.loc[i, "id"] - 1, "100yrs"
-            ] = statistical_properties.loc[i, "q100"]
-
-        # save the HQ file
-        HQ.to_csv(save_to, float_format="%%.2f".format, index=False, header=None)
-
     @staticmethod
     def StringSpace(Inp):
         """StringSpace."""
         return str(Inp) + "  "
 
-    def returnPeriod(
+    def return_period(
         self,
         MapsPath,
         prefix,

@@ -44,14 +44,14 @@ Path = wpath + "/processing/def1D.txt"
 River.read1DConfigFile(Path)
 #%%
 IF = Interface("Rhine")
-IF.readXS(RIM2Files + "/XS.csv")
-IF.readRiverNetwork(RIM2Files + "/rivernetwork.txt")
+IF.read_xs(RIM2Files + "/XS.csv")
+IF.read_river_network(RIM2Files + "/rivernetwork.txt")
 IF.readLateralsTable(wpath + "/inputs/1d/topo/laterals-segment24.txt")
 IF.readLaterals(Path=wpath + "/inputs/1d/hydro/", date_format="%d_%m_%Y")
 IF.readBoundaryConditionsTable(
     wpath + "/inputs/1d/topo/BonundaryConditions-segment24.txt"
 )
-IF.readBoundaryConditions(Path=wpath + "/inputs/1d/hydro/", date_format="%d_%m_%Y")
+IF.read_boundary_conditions(Path=wpath + "/inputs/1d/hydro/", date_format="%d_%m_%Y")
 #%% Reach-basin
 """ Write the Reach-ID you want to visualize its results """
 
@@ -70,24 +70,24 @@ storewl = np.zeros(shape=(River.XSno, 2))
 for i in range(River.NoSeg):
     SubID = River.Segments[i]
     Sub = R.Reach(SubID, River, RunModel=True)
-    Sub.getFlow(IF, SubID)
+    Sub.get_flow(IF, SubID)
     # HQ : is a rating curve table contains discharge at the first column and coresponding
     # water depth at the second column
     # HQ is allocated inside the RatingCurve subroutine
-    Sub.getRatingCurve()
+    Sub.get_rating_curve()
     # get the area and perimeters of the cross section if the water level is at
     # min of the intermediate point left and right and then the max of both
-    Sub.getXSGeometry()
-    Sub.getUSHydrograph(River)
+    Sub.get_xs_geometry()
+    Sub.get_us_hydrograph(River)
 
-    s = River.dateToIndex(str(River.SimStart)[:-9])
+    s = River.date_to_ordinal(str(River.SimStart)[:-9])
 
-    e = River.dateToIndex(str(River.SimEnd + dt.timedelta(days=1))[:-9])
+    e = River.date_to_ordinal(str(River.SimEnd + dt.timedelta(days=1))[:-9])
     for step in range(s, e):
-        step = River.indexToDate(step)
+        step = River.ordinal_to_date(step)
 
         print("Step-" + str(step))
-        step_ind = River.dateToIndex(step)
+        step_ind = River.date_to_ordinal(step)
         # get the max discharge
         Q = Sub.Laterals.loc[step : step + dt.timedelta(days=1), :]
         # index starts from 1
