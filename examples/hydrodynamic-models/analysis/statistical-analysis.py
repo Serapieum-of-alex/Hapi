@@ -47,7 +47,7 @@ Calib.readGaugesTable(GaugesF)
 WarmUpPeriod = 0
 start = "1955-1-1"
 TSdirectory = "examples/Hydrodynamic models/test_case/inputs/gauges/discharge_long_ts/"
-saveto = TSdirectory + "/Statistical analysis results/"
+saveto = TSdirectory + "/statistical-analysis-results/"
 SavePlots = True
 NoValue = -9
 #%%
@@ -58,7 +58,7 @@ Inputs35 = IN.Inputs("Observed_Q")
 
 computationalnodes = Calib.hm_gauges["oid"].tolist()
 
-Inputs35.statisticalProperties(
+Inputs35.statistical_properties(
     computationalnodes,
     TSdirectory,
     start,
@@ -73,12 +73,12 @@ Inputs35.statisticalProperties(
 #%% using gumbel
 Inputs35 = IN.Inputs("Observed_Q")
 
-Inputs35.readXS(
+Inputs35.read_xs(
     "examples/Hydrodynamic models/test_case/inputs/1d/topo/xs_same_downward-3segment.csv"
 )
 computationalnodes = Calib.hm_gauges["oid"].tolist()
 
-Inputs35.statisticalProperties(
+Inputs35.statistical_properties(
     computationalnodes,
     TSdirectory,
     start,
@@ -93,13 +93,13 @@ Inputs35.statisticalProperties(
 )
 #%% for the results
 TSdirectory = "examples/Hydrodynamic models/test_case/results/customized_results/discharge_long_ts/"
-saveto = TSdirectory + "/Statistical analysis results/"
+saveto = TSdirectory + "/statistical-analysis-results/"
 Inputs35 = IN.Inputs("HM_results")
-Inputs35.readXS(
+Inputs35.read_xs(
     "examples/Hydrodynamic models/test_case/inputs/1d/topo/xs_same_downward-3segment.csv"
 )
 
-Inputs35.statisticalProperties(
+Inputs35.statistical_properties(
     Inputs35.segments,
     TSdirectory,
     start,

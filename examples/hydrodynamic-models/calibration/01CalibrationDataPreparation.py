@@ -41,8 +41,8 @@ start = "1955-1-1"
 rrmstart = "1955-1-1"
 River = R.River("RIM", version=3, start=start, rrmstart=rrmstart)
 River.onedresultpath = hm_results_path
-River.readSlope(hm_data + "/slope_rhine.csv")
-River.readXS(hm_data + "/xs_rhine.csv")
+River.read_slope(hm_data + "/slope_rhine.csv")
+River.read_xs(hm_data + "/xs_rhine.csv")
 #%%
 column = "oid"
 segments = list(set(Calib.hm_gauges["id"]))
@@ -53,7 +53,7 @@ for i in range(20, len(segments)):
         print(f"{hm_results_path}/{SubID}.zip file does not exist")
         continue
     Sub = R.Reach(SubID, River)
-    Sub.read1DResult(path=hm_results_path, extension=".zip")
+    Sub.read_1d_results(path=hm_results_path, extension=".zip")
     # get the gauges that are in the segment
     Gauges = Calib.hm_gauges.loc[Calib.hm_gauges["id"] == SubID, :]
     Gauges.index = range(len(Gauges))
@@ -65,7 +65,7 @@ for i in range(20, len(segments)):
             fname = str(SubID) + "_" + str(GagueXS)
 
         # Extract Results at the gauges
-        Sub.read1DResult(xsid=GagueXS)
+        Sub.read_1d_results(xsid=GagueXS)
         print("Extract the XS results - " + str(fname))
         Q = Sub.xs_hydrograph[GagueXS].resample("D").mean().to_frame()
         Q["date"] = ["'" + str(i)[:10] + "'" for i in Q.index]

@@ -46,7 +46,7 @@ def Discharge_gauge_long_ts() -> str:
 
 @pytest.fixture(scope="module")
 def Statistical_analisis_path() -> str:
-    return "examples/hydrodynamic-models/test_case/inputs/gauges/discharge_long_ts/Statistical analysis results"
+    return "examples/hydrodynamic-models/test_case/inputs/gauges/discharge_long_ts/statistical-analysis-results"
 
 
 @pytest.fixture(scope="module")

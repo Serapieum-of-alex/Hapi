@@ -5,9 +5,7 @@ model
 """
 import datetime as dt
 import os
-
 import matplotlib
-
 matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 import numpy as np
@@ -17,10 +15,9 @@ import Hapi.hm.calibration as RC
 import Hapi.hm.river as R
 from Hapi.hm.interface import Interface
 from Hapi.plot.visualizer import Visualize as V
-
 # %% Paths
 """change directory to the processing folder inside the project folder"""
-rpath = os.path.join(os.getcwd() + "/examples/Hydrodynamic models/test_case")
+rpath = "examples/Hydrodynamic-models/test_case"
 # rpath = ""
 saveto = rpath
 tolopogy_file = rpath + "/inputs/1d/topo/"
@@ -74,42 +71,42 @@ Calib.hm_gauges.sort_values(by="id", inplace=True, ignore_index=True)
 # %% create the river object
 start = "1955-1-1"
 rrmstart = "1955-1-1"
-River = R.River("HM", version=3, start=start, rrmstart=rrmstart)
+River = R.River("HM", version=3, start=start, rrm_start=rrmstart)
 #%%
-path = r"C:\gdrive\01Algorithms\Hydrology\Hapi\examples\Hydrodynamic models\test_case\processing\def1D-1segment.yaml"
-River.readConfig(path)
+path = r"C:\gdrive\01Algorithms\Hydrology\Hapi\examples\Hydrodynamic-models\test_case\processing\def1D-1segment.yaml"
+River.read_config(path)
 #%%
 # read the data of the river
 """the hourly results"""
-River.onedresultpath = onedresultpath
+River.one_d_result_path = onedresultpath
 River.us_bc_path = usbcpath
 """the 1min results if exist"""
 # River.one_min_result_path = one_min_result_path
 """river slope, cross-sections, and river network"""
-River.readSlope(river_slope)
-River.readXS(xs_file)
-River.readRiverNetwork(river_network)
+River.read_slope(river_slope)
+River.read_xs(xs_file)
+River.read_river_network(river_network)
 """If you run part of the river and want to use its results as a boundary conditions for another run """
 River.customized_runs_path = customized_runs_path
 """ the results of the rain-runoff model"""
-River.rrmpath = rrmpath
+River.rrm_path = rrmpath
 """2D model results"""
 # River.two_d_result_path = two_d_result_path
 # River.compressed = True
 # %% Interface
 # The interface between the rainfall-runoff model and the hydraulic model
 IF = Interface("Rhine", start=start)
-IF.readXS(xs_file)
-IF.readRiverNetwork(river_network)
+IF.read_xs(xs_file)
+IF.read_river_network(river_network)
 IF.readLateralsTable(laterals_table_path)
 IF.readLaterals(laterals_path, date_format="%d_%m_%Y")
 IF.readBoundaryConditionsTable(boundary_condition_table)
-IF.readBoundaryConditions(path=boundary_condition_path, date_format="%d_%m_%Y")
+IF.read_boundary_conditions(path=boundary_condition_path, date_format="%d_%m_%Y")
 # %% river segment
 """ Write the segment-ID you want to visualize its results """
 SubID = 1
 Sub = R.Reach(SubID, River)
-Sub.getFlow(IF)
+Sub.get_flow(IF)
 
 ## read RIM results
 """
@@ -118,7 +115,7 @@ read the 1D result file and extract only the first and last xs wl and hydrograph
 if the results exists in a separate path than the project path (not in the results/1d) provide the new results path here
 """
 # path = "F:/RFM/ClimXtreme/rim_base_data/setup/rhine/results/1d/New folder/"
-Sub.read1DResult()
+Sub.read_1d_results()
 # %% Select the gauge
 """
 if the river segment has more than one gauge change this variable to the gauge
@@ -134,7 +131,7 @@ try:
     gaugename = str(gauges.loc[gaugei, "name"])
     gaugexs = gauges.loc[gaugei, "xsid"]
     segment_xs = str(SubID) + "_" + str(gaugexs)
-    Laterals = Sub.getLaterals(gaugexs)
+    Laterals = Sub.get_laterals(gaugexs)
     print(print(gauges))
 except KeyError:
     print("No gauge - choose another gauge to compare")
@@ -158,7 +155,7 @@ to be filled with zero values
 # read rainfall runoff model result
 # check if there is a rainfall runoff hydrograph with the name of the segment
 try:
-    Sub.readRRMHydrograph(
+    Sub.read_rrm_hydrograph(
         stationname,
         date_format="'%Y-%m-%d'",
         location=2,
@@ -171,7 +168,7 @@ try:
     # read the 1D result file and extract only the first and last xs wl
     # and hydrograph
     # Path = "F:/RFM/mHM2RIM_testcase/RIM/results/1d/finished/"
-    Sub.read1DResult(xsid=gaugexs)  # ,Path = Path,FromDay = 18264, ToDay=18556
+    Sub.read_1d_results(xsid=gaugexs)  # ,Path = Path,FromDay = 18264, ToDay=18556
     print("Extract the XS results")
 except:
     # read results of at the gauge
@@ -180,9 +177,9 @@ except:
     print("calibration result of the XS is read")
 
 # read US boundary  hydrographs
-Sub.readUSHydrograph()
+Sub.read_us_hydrograph()
 # Sum the laterals and the BC/US hydrograph
-Sub.getTotalFlow(gaugexs)
+Sub.get_total_flow(gaugexs)
 # %% Plot the Discharge hydrograph
 hmorder = 11
 gaugeorder = 7
@@ -197,7 +194,7 @@ specificxs = False
 start = str(Sub.first_day)[:-9]
 end = str(Sub.last_day)[:-9]
 
-fig, ax = Sub.plotQ(
+fig, ax = Sub.plot_q(
     Calib,
     gaugexs,
     start,
@@ -232,7 +229,7 @@ endError = end
 # startgauge = gauges.loc[gaugei, 'Qstart']
 # endgauge = gauges.loc[gaugei, 'Qend']
 
-Sub.calculateQMetrics(
+Sub.calculate_q_metrics(
     Calib, stationname, gaugexs, Filter=Filter, start=startError, end=endError
 )
 
@@ -243,17 +240,17 @@ Sub.calculateQMetrics(
 xss = []
 start = str(Sub.first_day)[:-9]
 end = "1955-03-01"
-fromxs = ""
-toxs = ""
-fig, ax = Sub.plotHydrographProgression(
+fromxs = None
+toxs = None
+fig, ax = Sub.plot_hydrograph_progression(
     xss,
     start,
     end,
-    fromxs=fromxs,
-    toxs=toxs,
-    linewidth=2,
+    from_xs=fromxs,
+    to_xs=toxs,
+    line_width=2,
     spacing=20,
-    figsize=(6, 4),
+    fig_size=(6, 4),
     xlabels=5,
 )
 
@@ -264,12 +261,12 @@ fig, ax = Sub.plotHydrographProgression(
 start = str(Sub.first_day.date())
 end = str(Sub.last_day.date())
 
-Sub.plotWL(Calib, start, end, gaugexs, stationname, gaugename, plotgauge=True)
+Sub.plot_wl(Calib, start, end, gaugexs, stationname, gaugename, plotgauge=True)
 
 startError = start
 endError = end
 
-Sub.calculateWLMetrics(
+Sub.calculate_wl_metrics(
     Calib,
     stationname,
     gaugexs,
@@ -313,7 +310,7 @@ without the need to run all the upstream sub-basins
 you have to un comment the following two lines
 """
 # Path = wpath + "/results/customized_results/"
-Sub.saveHydrograph(Sub.last_xs)  # Path
+Sub.save_hydrograph(Sub.last_xs)  # Path
 # %% Filters
 """
 check the max sf
@@ -343,7 +340,7 @@ dataX = Sub.results_1d[Sub.results_1d["h"] == 0.01]
 start = "1955-01-01"
 end = "1955-03-21"
 
-Sub.readBoundaryConditions(start=start, end=end)
+Sub.read_boundary_conditions(start=start, end=end)
 #%% Visualize
 fromxs = ""  # 16030
 toxs = ""  # 16067
@@ -401,7 +398,7 @@ Vis.SaveProfileAnimation(Anim, Path=SavePath, fps=30, ffmpegPath=ffmpegPath)
 start = "1955-01-01"
 end = "1955-01-10"
 
-Sub.readSubDailyResults(start, end, last_river_reach=True)
+Sub.read_sub_daily_results(start, end, last_river_reach=True)
 #%%
 # negative values
 # TODO : check CheckNegativeQ makes problem
@@ -433,7 +430,7 @@ date = "1955-01-05"
 Vis.Plot1minProfile(Sub, date, nxlabels=20)
 #%%  plot BC
 date = "1955-01-05"
-Sub.plotBC(date)
+Sub.plot_bc(date)
 #%% new table
 """
 this part is to plot the geometric properties of the cross sectin

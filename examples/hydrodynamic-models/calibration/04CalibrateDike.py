@@ -34,22 +34,22 @@ River = R.River("RIM", version=3, days=days, start=start)
 # River.OneDResultPath = wpath + "/results/1d/"
 # RIM2Files = "F:/02Case studies/Rhine/base_data/Calibration/RIM2.0/01 calibrated parameters/06-15042020/"
 
-River.readXS(oldxsPath)
-River.readSlope(rpath + "/inputs/1d/topo/slope.csv")
+River.read_xs(oldxsPath)
+River.read_slope(rpath + "/inputs/1d/topo/slope.csv")
 River.OneDResultPath = rpath + "/results/1d/"
 
-River.readRiverNetwork(rpath + "/inputs/1d/topo/rivernetwork-3segments.txt")
+River.read_river_network(rpath + "/inputs/1d/topo/rivernetwork-3segments.txt")
 # River.ReturnPeriod(CompP1 + "/base_data/HYDROMOD/RIM1.0/Observed Period/Statistical Analysis/" + "HQRhine.csv")
-path = r"examples/Hydrodynamic models/test_case/results/customized_results/discharge_long_ts/Statistical analysis results/DistributionProperties.csv"
-River.statisticalProperties(path)
+path = r"examples/Hydrodynamic models/test_case/results/customized_results/discharge_long_ts/statistical-analysis-results/DistributionProperties.csv"
+River.statistical_properties(path)
 #%%
 
 # calculate the capacity of the bankfull area
-River.getCapacity("Qbkf")
+River.get_river_capacity("Qbkf")
 # calculate the capacity of the whole cross section till the lowest dike level
-River.getCapacity("Qc2", Option=2)
+River.get_river_capacity("Qc2", Option=2)
 
-River.calibrateDike("RP", "QcRP")
+River.calibrate_dike("RP", "QcRP")
 River.cross_sections["ZlDiff"] = (
     River.cross_sections["zlnew"].values - River.cross_sections["zl"].values
 )
@@ -65,7 +65,7 @@ River.cross_sections["ZrDiff"] = (
 Event = E.Event("RIM2.0")
 Event.overtopping(wpath + "/processing/" + "overtopping.txt")
 # get the end days of each event
-Event.getAllEvents()
+Event.get_all_events()
 
 River.EventIndex = Event.event_index
 # read the left and right overtopping 1D results
@@ -76,7 +76,7 @@ XSright = list()
 print("No of Events = " + str(len(Event.end_days)))
 for i in range(len(Event.end_days)):
     # get the cross sectin that was overtopped for a specific day
-    XSlefti, XSrighti = River.getOvertoppedXS(Event.end_days[i], True)
+    XSlefti, XSrighti = River.get_overtopped_xs(Event.end_days[i], True)
     XSleft = XSleft + XSlefti
     XSright = XSright + XSrighti
 

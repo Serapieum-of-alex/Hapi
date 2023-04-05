@@ -52,7 +52,7 @@ Calib.readRRM(
     location=2,
     path2=f"{rrm_path}/rrm_location",
 )
-Calib.readRiverNetwork(hm_files + "/rivernetwork-3segments.txt")
+Calib.read_river_network(hm_files + "/rivernetwork-3segments.txt")
 #%% calculate metrics
 Calib.HMvsRRM()  # start ="1990-01-01"
 # mHM vs observed

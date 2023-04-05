@@ -28,13 +28,13 @@ NoValue = -9
 Calib = RC.Calibration("HM", 3, gauge_id_col="id")
 #%%
 Rhine = R.River("HM")
-Rhine.statisticalProperties(
+Rhine.statistical_properties(
     hm_path + "/Statistical analysis/" + "DistributionProperties.csv",
     Distibution="Gumbel",
 )
 
 Rhine_obs = R.River("Observed")
-Rhine_obs.statisticalProperties(
+Rhine_obs.statistical_properties(
     observed_path + "/Statistical analysis/" + "DistributionProperties.csv",
     Distibution="Gumbel",
 )
@@ -81,12 +81,12 @@ for i in range(len(Qgauges)):
     tod = Qgauges.loc[i, "end"]
     # HM
     Qrp = np.array(Calib.annual_max_hm_q.loc[fromd:tod, Sub])
-    Calib.RPHM.loc[fromd:tod, Sub] = Rhine.getReturnPeriod(
+    Calib.RPHM.loc[fromd:tod, Sub] = Rhine.get_return_period(
         Sub, Qrp, distribution="Gumbel"
     )
     # Obs
     Qrp = np.array(Calib.annual_max_obs_q.loc[fromd:tod, Sub])
-    Calib.RPObs.loc[fromd:tod, Sub] = Rhine_obs.getReturnPeriod(
+    Calib.RPObs.loc[fromd:tod, Sub] = Rhine_obs.get_return_period(
         Sub, Qrp, distribution="Gumbel"
     )
 
@@ -161,11 +161,13 @@ for i in range(len(Qgauges)):
     # GRDC.Qrp.loc[GRDC.Qrp.index[i],:] = gumbel_r.ppf(F,loc=GRDC.SP.loc[i,"loc"], scale=GRDC.SP.loc[i,"scale"])
     # River1.Qrp.loc[River1.Qrp.index[i],:] = gumbel_r.ppf(F,loc=River1.SP.loc[i,"loc"], scale=River1.SP.loc[i,"scale"])
     # River2.Qrp.loc[River2.Qrp.index[i],:] = gumbel_r.ppf(F,loc=River2.SP.loc[i,"loc"], scale=River2.SP.loc[i,"scale"])
-    Rhine_obs.Qrp.loc[SubID, :] = Rhine_obs.getQForReturnPeriod(
+    Rhine_obs.Qrp.loc[SubID, :] = Rhine_obs.get_Q_for_return_period(
         SubID, T, distribution="Gumbel"
     )
     # River1.Qrp.loc[River1.Qrp.index[i],:] = River1.GetQForReturnPeriod(GRDC.SP.loc[i,"id"], T)
-    Rhine.Qrp.loc[SubID, :] = Rhine.getQForReturnPeriod(SubID, T, distribution="Gumbel")
+    Rhine.Qrp.loc[SubID, :] = Rhine.get_Q_for_return_period(
+        SubID, T, distribution="Gumbel"
+    )
 #%% plot the frequency curves separately
 color1 = "#27408B"
 color2 = "#DC143C"

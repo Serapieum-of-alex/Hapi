@@ -37,7 +37,7 @@ def test_StatisticalProperties(
         distribution="GUM",
         method="lmoments",
     )
-    assert os.path.exists(os.path.join(Statistical_analisis_path, "Figures"))
+    assert os.path.exists(f"{Statistical_analisis_path}/figures")
     assert all(
         elem in Inputs35.statistical_properties.columns.tolist()
         for elem in statisticalpr_columns
@@ -66,7 +66,7 @@ def test_StatisticalProperties(
         method="lmoments",
     )
 
-    assert os.path.exists(os.path.join(Statistical_analisis_path, "Figures"))
+    assert os.path.exists(f"{Statistical_analisis_path}/figures")
     assert all(
         elem in Inputs35.statistical_properties.columns.tolist()
         for elem in statisticalpr_columns
