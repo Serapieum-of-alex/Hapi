@@ -64,7 +64,7 @@ class Calibration(Catchment):
             name, start, end, fmt, SpatialResolution, TemporalResolution, RouteRiver
         )
 
-    def readObjectiveFn(self, OF, args):
+    def readObjectiveFn(self, OF: callable, args):
         """readObjectiveFn.
 
         readObjectiveFn method takes the objective function and and any arguments

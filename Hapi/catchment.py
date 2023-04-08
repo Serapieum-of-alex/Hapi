@@ -934,6 +934,8 @@ class Catchment:
             'NSEhf', 'KGE', 'WB','Pearson-CC','R2'] calculated between the simulated
             hydrographs and the gauge data
         """
+        if self.GaugesTable is None:
+            raise ValueError("please read the gauges table first.")
 
         if not FW1:
             self.Qsim = pd.DataFrame(index=self.Index, columns=self.QGauges.columns)

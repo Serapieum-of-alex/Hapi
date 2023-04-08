@@ -197,7 +197,6 @@ class Run(Catchment):
         q_uz: [3D array]
             Distributed discharge for each cell
         """
-        # input dimensions
         assert (
             np.shape(self.Prec)[0] == self.rows
             and np.shape(self.ET)[0] == self.rows
