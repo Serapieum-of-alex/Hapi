@@ -159,7 +159,7 @@ class Catchment:
         self.Metrics = None
 
     def readRainfall(
-        self, path: str, start: str = None, end: str = None, fmt: str = None
+        self, path: str, start: str = None, end: str = None, fmt: str = "%Y-%m-%d"
     ):
         """readRainfall.
 
@@ -197,7 +197,7 @@ class Catchment:
                 path, with_order=True, start=start, end=end, fmt=fmt
             )
             cube.read_dataset()
-            self.Prec = cube.data
+            self.Prec = np.moveaxis(cube.data, 0, -1)
             self.TS = (
                 self.Prec.shape[2] + 1
             )  # no of time steps =length of time series +1
@@ -211,9 +211,9 @@ class Catchment:
         self,
         path: str,
         ll_temp: Union[list, np.ndarray] = None,
-        start: str = "",
-        end: str = "",
-        fmt: str = "",
+        start: str = None,
+        end: str = None,
+        fmt: str = "%Y-%m-%d",
     ):
         """readTemperature.
 
@@ -251,7 +251,7 @@ class Catchment:
                 path, with_order=True, start=start, end=end, fmt=fmt
             )
             cube.read_dataset()
-            self.Temp = cube.data
+            self.Temp = np.moveaxis(cube.data, 0, -1)
             assert type(self.Temp) == np.ndarray, "array should be of type numpy array"
 
             if ll_temp is None:
@@ -263,7 +263,7 @@ class Catchment:
 
             logger.debug("Temperature data are read successfully")
 
-    def readET(self, path: str, start: str = "", end: str = "", fmt: str = ""):
+    def readET(self, path: str, start: str = None, end: str = None, fmt: str = "%Y-%m-%d"):
         """readET.
 
         Parameters
@@ -298,7 +298,7 @@ class Catchment:
                 path, with_order=True, start=start, end=end, fmt=fmt
             )
             cube.read_dataset()
-            self.ET = cube.data
+            self.ET = np.moveaxis(cube.data, 0, -1)
             assert type(self.ET) == np.ndarray, "array should be of type numpy array"
             logger.debug("Potential Evapotranspiration data are read successfully")
 

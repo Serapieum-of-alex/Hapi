@@ -148,20 +148,25 @@ class TestDistributed:
         assert coello.RouteRiver == "Muskingum"
         assert isinstance(coello.start, dt.datetime)
 
-    # def test_read_inputs(
-    #         self,
-    #         coello_start_date: str,
-    #         coello_end_date: str
-    # ):
-    #     coello = Catchment(
-    #         "coello",
-    #         coello_start_date,
-    #         coello_end_date,
-    #         SpatialResolution="Distributed",
-    #         TemporalResolution="Daily",
-    #         fmt="%Y-%m-%d",
-    #     )
-    #     coello.readRainfall("tests/rrm/data/evap")
-    #     coello.readTemperature("tests/rrm/data/prec")
-    #     coello.readET("tests/rrm/data/temp")
-    #     print("ssss")
+    def test_read_inputs(
+            self,
+            coello_start_date: str,
+            coello_end_date: str
+    ):
+        coello = Catchment(
+            "coello",
+            coello_start_date,
+            coello_end_date,
+            SpatialResolution="Distributed",
+            TemporalResolution="Daily",
+            fmt="%Y-%m-%d",
+        )
+        coello.readRainfall("tests/rrm/data/evap", start=coello_start_date, end=coello_end_date)
+        coello.readTemperature("tests/rrm/data/prec", start=coello_start_date, end=coello_end_date)
+        coello.readET("tests/rrm/data/temp", start=coello_start_date, end=coello_end_date)
+        assert isinstance(coello.Prec, np.ndarray)
+        assert isinstance(coello.Temp, np.ndarray)
+        assert isinstance(coello.ET, np.ndarray)
+        assert coello.Prec.shape == (13, 14, 11)
+        assert coello.ET.shape == (13, 14, 11)
+
