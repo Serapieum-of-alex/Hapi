@@ -6,9 +6,11 @@ import datetime as dt
 import numpy as np
 import pandas as pd
 from pandas.core.frame import DataFrame
+
 # from pyramids.raster import Raster
 from pyramids.dataset import Dataset
 from cleopatra.statistics import Statistic
+
 
 class Event:
     """Event.
@@ -476,7 +478,13 @@ class Event:
         return cls(name, start=start, event_index=event_index)
 
     def histogram(
-        self, Day: int, exclude_value: Any = 0, Map=1, upper_bound=None, lower_bound=None, **kwargs
+        self,
+        Day: int,
+        exclude_value: Any = 0,
+        Map=1,
+        upper_bound=None,
+        lower_bound=None,
+        **kwargs,
     ):
         """histogram.
 
@@ -525,7 +533,12 @@ class Event:
 
         hist = Statistic(extracted_values)
         fig, ax, opts = hist.histogram(
-            bins=15, color="#0504aa", alpha=0.7, rwidth=0.85, ylabel="Frequency", **kwargs
+            bins=15,
+            color="#0504aa",
+            alpha=0.7,
+            rwidth=0.85,
+            ylabel="Frequency",
+            **kwargs,
         )
         return fig, ax, opts
 
