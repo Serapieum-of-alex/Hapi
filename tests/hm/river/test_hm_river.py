@@ -3,6 +3,7 @@ from typing import List
 
 import matplotlib.pyplot as plt
 import pandas as pd
+from pandas.core.frame import DataFrame
 from matplotlib.figure import Figure
 
 import Hapi.hm.calibration as RC
@@ -1026,25 +1027,30 @@ def test_get_flooded_reaches(
     assert flooded_reaches == [1]
 
 
-# def test_detailed_overtopping(
-#     version: int,
-#     river_cross_section_path: str,
-#     xs_total_no: int,
-#     xs_col_no: int,
-#     overtopping_files_dir: str,
-#     event_index_file: str,
-# ):
-#     rivers = River("HM", version=version)
-#     rivers.read_xs(river_cross_section_path)
-#
-#     rivers.read_overtopping(
-#         overtopping_result_path=overtopping_files_dir, delimiter=","
-#     )
-#
-#     event = Event.read_event_index("test", event_index_file, start="1955-01-01")
-#     rivers.event_index = event.event_index
-#     _, start_day = event.get_event_start(0)
-#     xs_flood_l, xs_flood_r = rivers.get_overtopped_xs(start_day, True)
-#     rivers.detailed_overtopping(flooded_reaches, event_days, delimiter=",")
-#     assert xs_flood_l == [1]
-#     assert xs_flood_r == [1, 5, 7, 9, 12, 15]
+def test_detailed_overtopping(
+    version: int,
+    river_cross_section_path: str,
+    xs_total_no: int,
+    xs_col_no: int,
+    overtopping_files_dir: str,
+    event_index_file: str,
+):
+    rivers = River("HM", version=version)
+    rivers.one_d_result_path = overtopping_files_dir
+    rivers.read_xs(river_cross_section_path)
+    rivers.read_overtopping(
+        overtopping_result_path=overtopping_files_dir, delimiter=","
+    )
+    event = Event.read_event_index("test", event_index_file, start="1955-01-01")
+    rivers.event_index = event.event_index
+    _, start_day = event.get_event_start(0)
+    _, end_day = event.get_event_end(0)
+    xs_flood_l, xs_flood_r = rivers.get_overtopped_xs(start_day, True)
+    flooded_reaches = rivers.get_flooded_reaches(overtopped_xs=xs_flood_l + xs_flood_r)
+
+    event_days = list(range(start_day, end_day + 1))
+    rivers.detailed_overtopping(flooded_reaches, event_days, delimiter=",")
+    assert isinstance(rivers.detailed_overtopping_left, DataFrame)
+    assert isinstance(rivers.detailed_overtopping_right, DataFrame)
+    assert "sum" in rivers.detailed_overtopping_right.columns
+    assert "sum" in rivers.detailed_overtopping_left.columns
