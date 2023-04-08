@@ -1,5 +1,5 @@
 from types import ModuleType
-from typing import Dict
+from typing import Dict, List
 import datetime as dt
 import numpy as np
 from pandas.core.frame import DataFrame
@@ -9,6 +9,7 @@ import Hapi.rrm.hbv_bergestrom92 as HBVLumped
 from Hapi.catchment import Catchment
 from Hapi.rrm.routing import Routing
 from Hapi.run import Run
+import Hapi.rrm.hbv_bergestrom92 as HBV
 
 
 def test_create_catchment_instance(coello_rrm_date: list):
@@ -199,5 +200,23 @@ class TestDistributed:
         assert coello.FlowDirArr.shape == (13, 14)
         assert coello.FDT == coello_fdt
 
-
+    def test_read_lumped_model(
+            self,
+            coello_start_date: str,
+            coello_end_date: str,
+            coello_cat_area: int,
+            coello_initial_cond: List,
+    ):
+        coello = Catchment(
+            "coello",
+            coello_start_date,
+            coello_end_date,
+            SpatialResolution="Distributed",
+            TemporalResolution="Daily",
+            fmt="%Y-%m-%d",
+        )
+        coello.readLumpedModel(HBV, coello_cat_area, coello_initial_cond)
+        assert coello.LumpedModel == HBV
+        assert coello.CatArea == coello_cat_area
+        assert coello.InitialCond == coello_initial_cond
 
