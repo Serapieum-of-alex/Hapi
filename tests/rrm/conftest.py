@@ -32,6 +32,32 @@ def coello_temp_path() -> str:
 def coello_acc_path() -> str:
     return "tests/rrm/data/gis/acc4000.tif"
 
+@pytest.fixture(scope="module")
+def coello_acc_values() -> List:
+    return [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            10,
+            11,
+            13,
+            15,
+            16,
+            17,
+            23,
+            43,
+            44,
+            48,
+            55,
+            59,
+            63,
+            86,
+            88,
+        ]
 
 @pytest.fixture(scope="module")
 def coello_fd_path() -> str:

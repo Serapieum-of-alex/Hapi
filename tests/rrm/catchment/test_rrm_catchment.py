@@ -177,12 +177,13 @@ class TestDistributed:
         assert coello.ET.shape == (13, 14, 11)
 
     def test_read_gis_inputs(
-        self,
-        coello_start_date: str,
-        coello_end_date: str,
-        coello_fd_path: str,
-        coello_acc_path: str,
-        coello_fdt: Dict,
+            self,
+            coello_start_date: str,
+            coello_end_date: str,
+            coello_fd_path: str,
+            coello_acc_path: str,
+            coello_fdt: Dict,
+            coello_acc_values: List
     ):
         coello = Catchment(
             "coello",
@@ -196,30 +197,7 @@ class TestDistributed:
         coello.readFlowDir(coello_fd_path)
         assert coello.Outlet[0][0] == 10
         assert coello.Outlet[1][0] == 13
-        assert coello.acc_val == [
-            0,
-            1,
-            2,
-            3,
-            4,
-            5,
-            6,
-            10,
-            11,
-            13,
-            15,
-            16,
-            17,
-            23,
-            43,
-            44,
-            48,
-            55,
-            59,
-            63,
-            86,
-            88,
-        ]
+        assert coello.acc_val == coello_acc_values
         assert isinstance(coello.FlowDirArr, np.ndarray)
         assert coello.FlowDirArr.shape == (13, 14)
         assert coello.FDT == coello_fdt
