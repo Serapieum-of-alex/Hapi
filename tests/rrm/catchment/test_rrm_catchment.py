@@ -244,3 +244,24 @@ class TestDistributed:
         assert all(coello.UB == UB)
         assert coello.Snow == Snow
         assert coello.Maxbas == False
+
+    def test_read_gauge_data(
+        self,
+        coello_start_date: str,
+        coello_end_date: str,
+        coello_acc_path: str,
+        coello_gauges_table: str,
+    ):
+        coello = Catchment(
+            "coello",
+            coello_start_date,
+            coello_end_date,
+            SpatialResolution="Distributed",
+            TemporalResolution="Daily",
+            fmt="%Y-%m-%d",
+        )
+        coello.readGaugeTable(coello_gauges_table, coello_acc_path)
+        assert isinstance(coello.GaugesTable, DataFrame)
+        assert all(
+            elem in coello.GaugesTable.columns for elem in ["cell_row", "cell_col"]
+        )

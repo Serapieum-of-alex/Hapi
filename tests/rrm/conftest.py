@@ -177,3 +177,8 @@ def coello_parameter_bounds() -> Tuple[List, List]:
     UB = np.loadtxt("tests/rrm/data/calibration/UB-tot.txt", usecols=0)
     LB = np.loadtxt("tests/rrm/data/calibration/LB-tot.txt", usecols=0)
     return LB, UB
+
+
+@pytest.fixture(scope="module")
+def coello_gauges_table() -> str:
+    return "tests/rrm/data/calibration/gauges.csv"
