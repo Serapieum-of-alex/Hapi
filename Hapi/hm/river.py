@@ -3128,8 +3128,8 @@ class River:
 
         self.HQ = HQ[:, :]
 
-    def get_days(self, from_day: int, to_day: int):
-        """getDays.
+    def get_days(self, from_day: int, to_day: int, delimiter: str = r"\s+"):
+        r"""getDays.
 
         GetDays method check if input days exist in the 1D result data
         or not since hydraulic model simulates only days where discharge is above
@@ -3143,6 +3143,8 @@ class River:
             the day you want to read the result from.
         to_day : [int]
             the day you want to read the result to.
+        delimiter: [str]
+            delimiter used in the 1D result files. Default is r"\s+".
 
         Returns
         -------
@@ -3150,23 +3152,20 @@ class River:
             stating whether the given days exist or not, and if not two alternatives are given instead.
             (the earliest day before the given day and the earliest day after the given day).
         """
-        data = pd.read_csv(
-            rf"{self.one_d_result_path}\{self.id}.txt", header=None, delimiter=r"\s+"
-        )
-        data.columns = ["day", "hour", "xs", "q", "h", "wl"]
+        self._read_1d_results(self.id, delimiter=delimiter, fill_missing=False)
+        data = self.results_1d
         days = list(set(data["day"]))
         days.sort()
 
         if from_day not in days:
             Alt1 = from_day
-
             stop = 0
             # search for the from_day in the days column
             while stop == 0:
                 try:
-                    np.where(data["day"] == Alt1)[0][0]  # loc =
+                    np.where(data["day"] == Alt1)[0][0]
                     stop = 1
-                except:
+                except IndexError:
                     Alt1 = Alt1 - 1
                     # logger.debug(Alt1)
                     if Alt1 <= 0:
@@ -3174,89 +3173,66 @@ class River:
                     continue
 
             Alt2 = from_day
-            # from_day =
             # search for closest later days
             stop = 0
             while stop == 0:
-                # for i in range(0,10):
                 try:
-                    np.where(data["day"] == Alt2)[0][0]  # loc =
+                    np.where(data["day"] == Alt2)[0][0]
                     stop = 1
-                except:
+                except IndexError:
                     Alt2 = Alt2 + 1
-                    # logger.debug(Alt2)
                     if Alt2 >= data.loc[len(data) - 1, "day"]:
                         stop = 1
                     continue
 
-            text = (
-                """"
-            the from_day you entered does not exist in the data, and the closest day earlier than your input day is
+            text = f"""
+            the from_day you entered does not exist in the data, and the closest day earlier than your input day is  {Alt1} and the closest later day is {Alt2}
             """
-                + str(Alt1)
-                + """  and the closest later day is """
-                + str(Alt2)
-            )
-            logger.debug(text)
 
+            logger.debug(text)
             if abs(Alt1 - from_day) > abs(Alt2 - from_day):
                 Alt1 = Alt2
         else:
             logger.debug("from_day you entered does exist in the data ")
-            # Alt1 = False
             Alt1 = from_day
 
         # if to_day does not exist in the results
         if to_day not in days:
             Alt3 = to_day
-
             stop = 0
             # search for the to_day in the days column
             while stop == 0:
-                # for i in range(0,10):
                 try:
-                    np.where(data["day"] == Alt3)[0][0]  # loc =
+                    np.where(data["day"] == Alt3)[0][0]
                     stop = 1
-                except:
+                except IndexError:
                     Alt3 = Alt3 - 1
-                    # logger.debug(Alt1)
                     if Alt3 <= 0:
                         stop = 1
                     continue
 
             Alt4 = to_day
-            # from_day =
             # search for closest later days
             stop = 0
             while stop == 0:
-                # for i in range(0,10):
                 try:
-                    np.where(data["day"] == Alt4)[0][0]  # loc =
+                    np.where(data["day"] == Alt4)[0][0]
                     stop = 1
-                except:
+                except IndexError:
                     Alt4 = Alt4 + 1
-                    # logger.debug(Alt2)
                     if Alt4 >= data.loc[len(data) - 1, "day"]:
                         Alt4 = data.loc[len(data) - 1, "day"]
                         stop = 1
                     continue
-            # Alt3 = [Alt3, Alt4]
-            text = (
-                """"
-            the to_day you entered does not exist in the data, and the closest day earlier than your input day is
+            text = f"""
+            the to_day you entered does not exist in the data, and the closest day earlier than your input day is  {Alt3} and the closest later day is {Alt4}
             """
-                + str(Alt3)
-                + """  and the closest later day is """
-                + str(Alt4)
-            )
             logger.debug(text)
 
             if abs(Alt3 - to_day) > abs(Alt4 - to_day):
                 Alt3 = Alt4
-
         else:
             logger.debug("to_day you entered does exist in the data ")
-            # Alt3 = False
             Alt3 = to_day
 
         return Alt1, Alt3

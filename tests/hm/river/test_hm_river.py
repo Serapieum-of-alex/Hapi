@@ -1054,3 +1054,21 @@ def test_detailed_overtopping(
     assert isinstance(rivers.detailed_overtopping_right, DataFrame)
     assert "sum" in rivers.detailed_overtopping_right.columns
     assert "sum" in rivers.detailed_overtopping_left.columns
+
+
+def test_get_days(
+    version: int,
+    river_cross_section_path: str,
+    xs_total_no: int,
+    xs_col_no: int,
+    overtopping_files_dir: str,
+    event_index_file: str,
+):
+    rivers = River("HM", version=version)
+    rivers.read_xs(river_cross_section_path)
+    rivers.one_d_result_path = overtopping_files_dir
+    reach_id = 1
+    reach = Reach(reach_id, rivers)
+    alter1, alter2 = reach.get_days(35, 25, delimiter=",")
+    assert alter1 == 35
+    assert alter2 == 34
