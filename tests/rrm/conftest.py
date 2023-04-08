@@ -1,4 +1,5 @@
-from typing import Dict
+from typing import Dict, Tuple
+import numpy as np
 from tests.rrm.calibration.conftest import *
 from tests.rrm.catchment.conftest import *
 
@@ -32,32 +33,34 @@ def coello_temp_path() -> str:
 def coello_acc_path() -> str:
     return "tests/rrm/data/gis/acc4000.tif"
 
+
 @pytest.fixture(scope="module")
 def coello_acc_values() -> List:
     return [
-            0,
-            1,
-            2,
-            3,
-            4,
-            5,
-            6,
-            10,
-            11,
-            13,
-            15,
-            16,
-            17,
-            23,
-            43,
-            44,
-            48,
-            55,
-            59,
-            63,
-            86,
-            88,
-        ]
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        10,
+        11,
+        13,
+        15,
+        16,
+        17,
+        23,
+        43,
+        44,
+        48,
+        55,
+        59,
+        63,
+        86,
+        88,
+    ]
+
 
 @pytest.fixture(scope="module")
 def coello_fd_path() -> str:
@@ -167,3 +170,10 @@ def coello_cat_area() -> int:
 @pytest.fixture(scope="module")
 def coello_initial_cond() -> List:
     return [0, 5, 5, 5, 0]
+
+
+@pytest.fixture(scope="module")
+def coello_parameter_bounds() -> Tuple[List, List]:
+    UB = np.loadtxt("tests/rrm/data/calibration/UB-tot.txt", usecols=0)
+    LB = np.loadtxt("tests/rrm/data/calibration/LB-tot.txt", usecols=0)
+    return LB, UB

@@ -1,5 +1,5 @@
 from types import ModuleType
-from typing import Dict, List
+from typing import Dict, List, Tuple
 import datetime as dt
 import numpy as np
 from pandas.core.frame import DataFrame
@@ -177,13 +177,13 @@ class TestDistributed:
         assert coello.ET.shape == (13, 14, 11)
 
     def test_read_gis_inputs(
-            self,
-            coello_start_date: str,
-            coello_end_date: str,
-            coello_fd_path: str,
-            coello_acc_path: str,
-            coello_fdt: Dict,
-            coello_acc_values: List
+        self,
+        coello_start_date: str,
+        coello_end_date: str,
+        coello_fd_path: str,
+        coello_acc_path: str,
+        coello_fdt: Dict,
+        coello_acc_values: List,
     ):
         coello = Catchment(
             "coello",
@@ -221,3 +221,26 @@ class TestDistributed:
         assert coello.LumpedModel == HBV
         assert coello.CatArea == coello_cat_area
         assert coello.InitialCond == coello_initial_cond
+
+    def test_read_parameters_bound(
+        self,
+        coello_start_date: str,
+        coello_end_date: str,
+        coello_parameter_bounds: Tuple[List, List],
+    ):
+        LB = coello_parameter_bounds[0]
+        UB = coello_parameter_bounds[1]
+        Snow = False
+        coello = Catchment(
+            "coello",
+            coello_start_date,
+            coello_end_date,
+            SpatialResolution="Distributed",
+            TemporalResolution="Daily",
+            fmt="%Y-%m-%d",
+        )
+        coello.readParametersBounds(UB, LB, Snow)
+        assert all(coello.LB == LB)
+        assert all(coello.UB == UB)
+        assert coello.Snow == Snow
+        assert coello.Maxbas == False
