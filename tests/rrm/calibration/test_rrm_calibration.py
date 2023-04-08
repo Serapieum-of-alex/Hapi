@@ -101,3 +101,13 @@ class TestDistributed:
         assert coello.SpatialResolution == "distributed"
         assert coello.RouteRiver == "Muskingum"
         assert isinstance(coello.start, dt.datetime)
+
+    def test_read_objective_Fn(self, coello_start_date: str, coello_end_date: str):
+        coello = Calibration(
+            "coello",
+            coello_start_date,
+            coello_end_date,
+        )
+        coello.readObjectiveFn(PC.RMSE, [])
+        assert coello.OF == PC.RMSE
+        assert coello.OFArgs == []
