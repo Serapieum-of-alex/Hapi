@@ -213,3 +213,13 @@ def coello_rows() -> int:
 @pytest.fixture(scope="module")
 def coello_cols() -> int:
     return 14
+
+
+@pytest.fixture(scope="module")
+def coello_parameters() -> np.ndarray:
+    return np.loadtxt("tests/rrm/data/calibration/parameters.csv")
+
+
+@pytest.fixture(scope="module")
+def coello_parameters_dist() -> np.ndarray:
+    return np.load("tests/rrm/data/calibration/parameters.npy")
