@@ -325,13 +325,12 @@ class Catchment:
             number of cells in the domain
         """
         # data type
-        assert isinstance(path, str), "Precpath input should be string type"
+        if not isinstance(path, str):
+            raise TypeError("Precpath input should be string type")
         # check wether the path exists or not
         assert os.path.exists(path), path + " you have provided does not exist"
         # check the extension of the accumulation file
-        assert (
-            path[-4:] == ".tif"
-        ), "please add the extension at the end of the Flow accumulation raster path input"
+        assert path.endswith(".tif"), "please add the extension at the end of the Flow accumulation raster path input"
         # check wether the path exists or not
         assert os.path.exists(path), path + " you have provided does not exist"
 
@@ -445,7 +444,7 @@ class Catchment:
         ), "flow direction raster should contain values 1,2,4,8,16,32,64,128 only "
 
         # create the flow direction table
-        dem = DEM.read_file(FlowDir)
+        dem = DEM(FlowDir)
         self.FDT = dem.flowDirectionTable()
         logger.debug("Flow Direction input is read successfully")
 
