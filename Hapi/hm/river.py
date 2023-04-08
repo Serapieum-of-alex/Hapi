@@ -277,7 +277,7 @@ class River:
 
     @property
     def usbc(self):
-        """Upstream Boundary condition"""
+        """Upstream Boundary condition."""
         return self._usbc
 
     # @usbc.setter
@@ -286,7 +286,7 @@ class River:
 
     @property
     def dsbc(self):
-        """Downstream boundary condition"""
+        """Downstream boundary condition."""
         return self._dsbc
 
     def _get_date(self, day, hour):
@@ -2169,7 +2169,7 @@ class River:
     def read_overtopping(
         self, overtopping_result_path: str = None, delimiter: str = r"\s+"
     ):
-        """Overtopping.
+        r"""Overtopping.
 
         Overtopping method reads the overtopping files and for each cross section
         in each sub-basin it will strore the days where overtopping happens
@@ -2441,12 +2441,14 @@ class River:
         return Subs
 
     def _get_detailed_overtopping(
-            self, flooded_reaches: List[int], event_days: List[int], left: bool, delimiter: str
+        self,
+        flooded_reaches: List[int],
+        event_days: List[int],
+        left: bool,
+        delimiter: str,
     ) -> DataFrame:
         columns = flooded_reaches + ["sum"]
-        detailed_overtopping = pd.DataFrame(
-            index=event_days + ["sum"], columns=columns
-        )
+        detailed_overtopping = pd.DataFrame(index=event_days + ["sum"], columns=columns)
 
         if left:
             suffix = self.left_overtopping_suffix
@@ -2465,18 +2467,18 @@ class River:
                 # check whether this sub basin has flooded in this particular day
                 if day_i in days:
                     # filter the dataframe to the discharge column (3) and the days
-                    detailed_overtopping.loc[
-                        day_i, reach_i
-                    ] = data.loc[data[0] == day_i, 3].sum()
+                    detailed_overtopping.loc[day_i, reach_i] = data.loc[
+                        data[0] == day_i, 3
+                    ].sum()
                 else:
-                    detailed_overtopping.loc[ day_i, reach_i] = 0
+                    detailed_overtopping.loc[day_i, reach_i] = 0
 
             return detailed_overtopping
 
     def detailed_overtopping(
-            self, flooded_reaches: List[int], event_days: List[int], delimiter: str = r"\s+"
+        self, flooded_reaches: List[int], event_days: List[int], delimiter: str = r"\s+"
     ):
-        """DetailedOvertopping.
+        r"""DetailedOvertopping.
 
         DetailedOvertopping method takes list of days and the flooded subs-basins
         in those days and get the left and right overtopping for each sub-basin for
