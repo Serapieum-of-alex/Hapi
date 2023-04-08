@@ -187,9 +187,6 @@ class DistParameters:
         ----------
         par_g : [list]
             list of parameters
-        raster : [gdal.dataset]
-            raster to get the spatial information of the catchment
-            (DEM, flow accumulation or flow direction raster)
         no_parameters : [integer]
             no of parameters of the cell according to the rainfall runoff model
         no_lumped_par : [integer]

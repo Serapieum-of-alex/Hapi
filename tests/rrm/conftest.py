@@ -216,6 +216,11 @@ def coello_cols() -> int:
 
 
 @pytest.fixture(scope="module")
+def coello_shape(coello_rows, coello_cols) -> Tuple:
+    return coello_rows, coello_cols
+
+
+@pytest.fixture(scope="module")
 def coello_parameters() -> np.ndarray:
     return np.loadtxt("tests/rrm/data/calibration/parameters.csv")
 
@@ -223,3 +228,8 @@ def coello_parameters() -> np.ndarray:
 @pytest.fixture(scope="module")
 def coello_parameters_dist() -> np.ndarray:
     return np.load("tests/rrm/data/calibration/parameters.npy")
+
+
+@pytest.fixture(scope="module")
+def coello_dist_parameters_maxbas() -> str:
+    return "tests/rrm/data/parameters/maxbas"

@@ -575,7 +575,7 @@ class Catchment:
             # parameters
             cube = Datacube.read_separate_files(path, with_order=True)
             cube.read_dataset()
-            self.Parameters = cube.data
+            self.Parameters = np.moveaxis(cube.data, 0, -1)
             # self.Parameters = Raster.readRastersFolder(path)
         else:
             if not os.path.exists(path):
