@@ -5,7 +5,6 @@ segment
 """
 import datetime as dt
 import os
-import zipfile
 from bisect import bisect
 from pathlib import Path
 from typing import Any, Optional, Tuple, Union, List, Callable
@@ -13,12 +12,10 @@ from typing import Any, Optional, Tuple, Union, List, Callable
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import pandas.errors
 import yaml
 from loguru import logger
 from matplotlib.figure import Figure
 from pandas.core.frame import DataFrame
-from pyramids.raster import Raster as raster
 from scipy.stats import genextreme, gumbel_r
 from serapeum_utils.utils import class_attr_initialize, class_method_parse
 from statista import metrics as Pf
@@ -103,8 +100,8 @@ class River:
         id=None,
         QBC=None,
         HBC=None,
-        usbc=None,
-        dsbc=None,
+        # usbc=None,
+        # dsbc=None,
         results_1d=None,
         Q=None,
         H=None,
@@ -277,6 +274,20 @@ class River:
     def event_index(self, value: DataFrame):
         """Event index."""
         self._event_index = value
+
+    @property
+    def usbc(self):
+        """Upstream Boundary condition"""
+        return self._usbc
+
+    # @usbc.setter
+    # def usbc(self, value):
+    #     self._usbc = value
+
+    @property
+    def dsbc(self):
+        """Downstream boundary condition"""
+        return self._dsbc
 
     def _get_date(self, day, hour):
         """Get date for the 1D result data frame.
@@ -687,9 +698,9 @@ class River:
             BC = BC.drop(BC.columns[0], axis=1)
 
             ind = pd.date_range(BC.index[0], BC.index[-1], freq=self.freq)
-            self.usbc = pd.DataFrame(index=ind, columns=BC.columns)
+            self._usbc = pd.DataFrame(index=ind, columns=BC.columns)
 
-            self.usbc.loc[:, :] = (
+            self._usbc.loc[:, :] = (
                 BC.loc[:, :].resample(self.freq).mean().interpolate("linear")
             )
 
@@ -699,9 +710,9 @@ class River:
                 BC = BC.drop(BC.columns[0], axis=1)
 
                 ind = pd.date_range(BC.index[0], BC.index[-1], freq=self.freq)
-                self.dsbc = pd.DataFrame(index=ind, columns=BC.columns)
+                self._dsbc = pd.DataFrame(index=ind, columns=BC.columns)
 
-                self.dsbc.loc[:, :] = (
+                self._dsbc.loc[:, :] = (
                     BC.loc[:, :].resample(self.freq).mean().interpolate("linear")
                 )
 
@@ -878,7 +889,7 @@ class River:
 
         return data
 
-    def read_1d_results(
+    def _read_1d_results(
         self,
         Subid: int,
         from_day: Optional[int] = None,
@@ -2168,18 +2179,35 @@ class River:
         the sufix you used for the left overtopping file and the sufix you used
         for the right overtopping file
 
-        Inputs:
-        -------
+        Parameters
+        ----------
         overtopping_result_path: [str]
             a path to the folder includng 2D results.
+        delimiter: [str]
+            Default is r"\s+".
 
         Returns
         -------
-        overtopping_subs_left : [dictionary attribute]
+        overtopping_reaches_left : [dictionary attribute]
             dictionary having sub-basin ids as a key and for each sub-basins
             it contains dictionary for each cross section having the days of
             overtopping.
-        overtopping_subs_right : [dictionary attribute]
+            {reach_1: {xs_1: [day1, day2, ....]}}
+            >>> {
+            >>>     '10': {
+            >>>             17466: [10296, 10293, 10294, 10295],
+            >>>             17444: [10292, 10293, 10294, 10295, 10296, 5918, 5919]
+            >>>          },
+            >>>     '11': {17669: [10292, 10293, 10294, 10295, 10296]},
+            >>>     '12': {
+            >>>             17692: [10292, 10293, 10294, 10295, 10296, 5918, 5919],
+            >>>             17693: [10296, 10293, 10294, 10295],
+            >>>             17694: [10292, 10293, 10294, 10295, 10296]
+            >>>          },
+            >>>     '13': {17921: [8200, 8201, 8199], 17922: [8200, 8201, 8198, 8199]},
+            >>>     '15': {18153: [8200, 8201, 8199]
+            >>> }
+        overtopping_reaches_right : [dictionary attribute]
             dictionary having sub-basin ids as a key and for each sub-basins
             it contains dictionary for each cross section having the days of
             overtopping.
@@ -2412,7 +2440,42 @@ class River:
         Subs = list(set(Subs))
         return Subs
 
-    def detailed_overtopping(self, floodedSubs, eventdays):
+    def _get_detailed_overtopping(
+            self, flooded_reaches: List[int], event_days: List[int], left: bool, delimiter: str
+    ) -> DataFrame:
+        columns = flooded_reaches + ["sum"]
+        detailed_overtopping = pd.DataFrame(
+            index=event_days + ["sum"], columns=columns
+        )
+
+        if left:
+            suffix = self.left_overtopping_suffix
+        else:
+            suffix = self.right_overtopping_suffix
+
+        for i, reach_i in enumerate(flooded_reaches):
+            data = pd.read_csv(
+                rf"{self.one_d_result_path}\{reach_i}{suffix}",
+                header=None,
+                delimiter=delimiter,
+            )
+            # get the days in the sub
+            days = list(set(data.loc[:, 0]))
+            for j, day_i in enumerate(event_days):
+                # check whether this sub basin has flooded in this particular day
+                if day_i in days:
+                    # filter the dataframe to the discharge column (3) and the days
+                    detailed_overtopping.loc[
+                        day_i, reach_i
+                    ] = data.loc[data[0] == day_i, 3].sum()
+                else:
+                    detailed_overtopping.loc[ day_i, reach_i] = 0
+
+            return detailed_overtopping
+
+    def detailed_overtopping(
+            self, flooded_reaches: List[int], event_days: List[int], delimiter: str = r"\s+"
+    ):
         """DetailedOvertopping.
 
         DetailedOvertopping method takes list of days and the flooded subs-basins
@@ -2421,99 +2484,56 @@ class River:
 
         Parameters
         ----------
-            1-floodedSubs : [list]
-                list of sub-basins that are flooded during the given days.
-            2-eventdays : [list]
-                list od daysof an event.
+        flooded_reaches : [list]
+            list of sub-basins that are flooded during the given days.
+        event_days : [list]
+            list od daysof an event.
+
+        delimiter: str
+            Default is r"\s+".
 
         Returns
         -------
-            1-detailed_overtopping_left : [dataframe attribute]
-                dataframe having for each day of the event the left overtopping
-                to each sub-basin.
+        detailed_overtopping_left : [dataframe attribute]
+            dataframe having for each day of the event the left overtopping
+            to each sub-basin.
+                         5       sum
+            8195     892.0     892.0
+            8196   20534.7   20534.7
+            8197   66490.8   66490.8
+            8198   99162.4   99162.4
+            8199  129359.3  129359.3
+            8200  123513.0  123513.0
+            sum   439952.2       NaN
 
-            2-detailed_overtopping_right : [dataframe attribute]
-                dataframe having for each day of the event the right overtopping
-                to each sub-basin.
+        detailed_overtopping_right : [dataframe attribute]
+            dataframe having for each day of the event the right overtopping
+            to each sub-basin.
         """
-        columns = floodedSubs + ["sum"]
-        self.detailed_overtopping_left = pd.DataFrame(
-            index=eventdays + ["sum"], columns=columns
-        )
-        self.detailed_overtopping_right = pd.DataFrame(
-            index=eventdays + ["sum"], columns=columns
+        self.detailed_overtopping_left = self._get_detailed_overtopping(
+            flooded_reaches, event_days, left=True, delimiter=delimiter
         )
 
-        # Left Bank
-        for i in range(len(floodedSubs)):
-            try:
-                # try to open and read the overtopping file
-                data = pd.read_csv(
-                    rf"{self.onedresultpath}\{floodedSubs[i]}{self.leftovertopping_suffix}",
-                    header=None,
-                    delimiter=r"\s+",
-                )
-                # get the days in the sub
-                days = list(set(data.loc[:, 0]))
-
-                for j in range(len(eventdays)):
-                    # check whether this sub basin has flooded in this particular day
-                    if eventdays[j] in days:
-                        # filter the dataframe to the discharge column (3) and the days
-                        self.detailed_overtopping_left.loc[
-                            eventdays[j], floodedSubs[i]
-                        ] = data.loc[data[0] == eventdays[j], 3].sum()
-                    else:
-                        self.detailed_overtopping_left.loc[
-                            eventdays[j], floodedSubs[i]
-                        ] = 0
-            except:
-                self.detailed_overtopping_left.loc[:, floodedSubs[i]] = 0
-                continue
-
-        # right Bank
-        for i in range(len(floodedSubs)):
-            try:
-                # try to open and read the overtopping file
-                data = pd.read_csv(
-                    rf"{self.onedresultpath}\{floodedSubs[i]}{self.rightovertopping_suffix}",
-                    header=None,
-                    delimiter=r"\s+",
-                )
-                # get the days in the sub
-                days = list(set(data.loc[:, 0]))
-
-                for j in range(len(eventdays)):
-                    # check whether this sub basin has flooded in this particular day
-                    if eventdays[j] in days:
-                        # filter the dataframe to the discharge column (3) and the days
-                        self.detailed_overtopping_right.loc[
-                            eventdays[j], floodedSubs[i]
-                        ] = data.loc[data[0] == eventdays[j], 3].sum()
-                    else:
-                        self.detailed_overtopping_right.loc[
-                            eventdays[j], floodedSubs[i]
-                        ] = 0
-            except:
-                self.detailed_overtopping_right.loc[eventdays[j], floodedSubs[i]] = 0
-                continue
+        self.detailed_overtopping_right = self._get_detailed_overtopping(
+            flooded_reaches, event_days, left=False, delimiter=delimiter
+        )
 
         # sum overtopping for each day
-        for j in range(len(eventdays)):
+        for j, day_i in enumerate(event_days):
             self.detailed_overtopping_left.loc[
-                eventdays[j], "sum"
-            ] = self.detailed_overtopping_left.loc[eventdays[j], :].sum()
+                day_i, "sum"
+            ] = self.detailed_overtopping_left.loc[day_i, :].sum()
             self.detailed_overtopping_right.loc[
-                eventdays[j], "sum"
-            ] = self.detailed_overtopping_right.loc[eventdays[j], :].sum()
+                day_i, "sum"
+            ] = self.detailed_overtopping_right.loc[day_i, :].sum()
         # sum overtopping for each sub basin
-        for j in range(len(floodedSubs)):
+        for j, reach_i in enumerate(flooded_reaches):
             self.detailed_overtopping_left.loc[
-                "sum", floodedSubs[j]
-            ] = self.detailed_overtopping_left.loc[:, floodedSubs[j]].sum()
+                "sum", reach_i
+            ] = self.detailed_overtopping_left.loc[:, reach_i].sum()
             self.detailed_overtopping_right.loc[
-                "sum", floodedSubs[j]
-            ] = self.detailed_overtopping_right.loc[:, floodedSubs[j]].sum()
+                "sum", reach_i
+            ] = self.detailed_overtopping_right.loc[:, reach_i].sum()
 
         # self.detailed_overtopping_left.loc['sum','sum'] = self.detailed_overtopping_left.loc[:,'sum'].sum()
         # self.detailed_overtopping_right.loc['sum','sum'] = self.detailed_overtopping_right.loc[:,'sum'].sum()
@@ -2526,12 +2546,12 @@ class River:
 
         Parameters
         ----------
-            Bankful : [Bool], optional
-                if the cross section data has a bankful depth or not. The default is False.
+        Bankful : [Bool], optional
+            if the cross section data has a bankful depth or not. The default is False.
 
         Returns
         -------
-            1-coordenates will be added to the "crosssection" attribute.
+        coordenates will be added to the "crosssection" attribute.
         """
         if Bankful:
             self.cross_sections = self.cross_sections.assign(
@@ -2682,18 +2702,18 @@ class River:
 
         Parameters
         ----------
-            1-Coords : [array]
-                numpy array in the shape of (n*2) where n is the number of points
+        Coords : [array]
+            numpy array in the shape of (n*2) where n is the number of points
 
         Returns
         -------
-            1-area : [float]
-                area between the coordinates.
+        area : [float]
+            area between the coordinates.
 
         Example:
         -------
-            coords = np.array([[0,1],[0,0],[5,0],[5,1]])
-            River.PolyArea(coords)
+        coords = np.array([[0,1],[0,0],[5,0],[5,1]])
+        River.PolyArea(coords)
         """
         Coords = np.array(Coords)
         area = 0.0
@@ -3110,24 +3130,23 @@ class River:
         """getDays.
 
         GetDays method check if input days exist in the 1D result data
-        or not since RIM1.0 simulate only days where discharge is above
+        or not since hydraulic model simulates only days where discharge is above
         a certain value (2 years return period), you have to enter the
         one_d_result_path attribute of the instance first to read the results of
         the given sub-basin
 
         Parameters
         ----------
-            1-from_day : [integer]
-                the day you want to read the result from.
-            2-to_day : [integer]
-                the day you want to read the result to.
+        from_day : [int]
+            the day you want to read the result from.
+        to_day : [int]
+            the day you want to read the result to.
 
         Returns
         -------
-            1-Message stating whether the given days exist or not, and if not two
-            alternatives are given instead (the earliest day before the given day
-                                            and the earliest day after the given
-                                            day).
+        Message: [str]
+            stating whether the given days exist or not, and if not two alternatives are given instead.
+            (the earliest day before the given day and the earliest day after the given day).
         """
         data = pd.read_csv(
             rf"{self.one_d_result_path}\{self.id}.txt", header=None, delimiter=r"\s+"
@@ -3240,143 +3259,143 @@ class River:
 
         return Alt1, Alt3
 
-    @staticmethod
-    def correct_maps(DEMpath, Filelist, Resultpath, MapsPrefix, FilterValue, Saveto):
-        """CorrectMaps.
-
-        CorrectMaps method check every 2D result that starts with the given Mapsprefix
-        and replace the Nan value with zeros and the values higher than 99 with zeros
-
-        Parameters
-        ----------
-        DEMpath : [String]
-            path to the DEM ascii file including the name and extension
-            (i.e., c/files/RhineDEM.asc) .
-        Filelist : [String]
-            - if you have a list of files to correct enter the Filelist as the path to the file
-            containing the names
-            ex,
-                Filelist = "F:/RFM/RIM_all/RIM1.0/M35(done)/errorlist.txt"
-
-            - if you want to check all the files in the resultpath enter the
-            Filelist as '0'
-            ex,
-                Filelist = '0'
-        Resultpath : [String]
-            path where the Maps exist.
-        MapsPrefix : [String]
-            the name prefix that distinguish the maps you want to correct from
-            other maps in the same folder, like the first part of the name you
-            use to name all files.
-        FilterValue: []
-
-        Saveto : [String]
-            path to where you will save the corrected files.
-
-        Returns
-        -------
-        Errors : [list]
-            list of the files' names that has errors and are already corrected.
-        """
-        DEM, SpatialRef = raster.readASCII(DEMpath)
-        NoDataValue = SpatialRef[-1]
-
-        # filter and get the required maps
-        if Filelist == "0":
-            # read list of file names
-            AllResults = os.listdir(Resultpath)
-
-            MapsNameList = list()
-            for i in range(len(AllResults)):
-                if AllResults[i].startswith(MapsPrefix):
-                    MapsNameList.append(AllResults[i])
-        elif type(Filelist) == str:
-            MapsNameList = pd.read_csv(Filelist, header=None)[0].tolist()
-
-        Errors = list()
-
-        for k in range(len(MapsNameList)):
-            try:
-                # open the zip file
-                compressedfile = zipfile.ZipFile(Resultpath + "/" + MapsNameList[k])
-            except:
-                logger.debug("Error Opening the compressed file")
-                Errors.append(MapsNameList[k][len(MapsPrefix) : -4])
-                continue
-
-            # get the file name
-            fname = compressedfile.infolist()[0]
-            # get the time step from the file name
-            timestep = int(fname.filename[len(MapsPrefix) : -4])
-            logger.debug("File No = " + str(k))
-
-            ASCIIF = compressedfile.open(fname)
-            SpatialRef = ASCIIF.readlines()[:6]
-            ASCIIF = compressedfile.open(fname)
-            ASCIIRaw = ASCIIF.readlines()[6:]
-            rows = len(ASCIIRaw)
-            cols = len(ASCIIRaw[0].split())
-            MapArray = np.ones((rows, cols), dtype=np.float32) * 0
-            # read the ascii file
-            for i in range(rows):
-                x = ASCIIRaw[i].split()
-                MapArray[i, :] = list(map(float, x))
-
-            Save = 0
-            # Clip all maps
-            if MapArray[DEM == NoDataValue].max() > 0:
-                MapArray[DEM == NoDataValue] = 0
-                Save = 1
-            # replace nan values with zero
-            if len(MapArray[np.isnan(MapArray)]) > 0:
-                MapArray[np.isnan(MapArray)] = 0
-                Save = 1
-            # replace FilterValue in the result raster with 0
-            if len(MapArray[MapArray >= FilterValue]) > 0:
-                MapArray[MapArray >= FilterValue] = 0
-                Save = 1
-
-            if Save == 1:
-                logger.debug("File= " + str(timestep))
-                # write the new file
-                fname = MapsPrefix + str(timestep) + ".asc"
-                newfile = Saveto + "/" + fname
-
-                with open(newfile, "w") as File:
-                    # write the first lines
-                    for i in range(len(SpatialRef)):
-                        File.write(str(SpatialRef[i].decode()[:-2]) + "\n")
-
-                    for i in range(rows):
-                        File.writelines(list(map(raster.stringSpace, MapArray[i, :])))
-                        File.write("\n")
-
-                # zip the file
-                with zipfile.ZipFile(
-                    Saveto + "/" + fname[:-4] + ".zip", "w", zipfile.ZIP_DEFLATED
-                ) as newzip:
-                    newzip.write(Saveto + "/" + fname, arcname=fname)
-                # delete the file
-                os.remove(Saveto + "/" + fname)
-
-        return Errors
-
-    def listAttributes(self):
-        """ListAttributes.
-
-        Print Attributes List
-        """
-        logger.debug("\n")
-        logger.debug(
-            f"Attributes List of: {repr(self.__dict__['name'])} - {self.__class__.__name__} Instance\n"
-        )
-        self_keys = list(self.__dict__.keys())
-        self_keys.sort()
-        for key in self_keys:
-            if key != "name":
-                logger.debug(str(key) + " : " + repr(self.__dict__[key]))
-
-        logger.debug("\n")
+    # @staticmethod
+    # def correct_maps(DEMpath, Filelist, Resultpath, MapsPrefix, FilterValue, Saveto):
+    #     """CorrectMaps.
+    #
+    #     CorrectMaps method check every 2D result that starts with the given Mapsprefix
+    #     and replace the Nan value with zeros and the values higher than 99 with zeros
+    #
+    #     Parameters
+    #     ----------
+    #     DEMpath : [String]
+    #         path to the DEM ascii file including the name and extension
+    #         (i.e., c/files/RhineDEM.asc) .
+    #     Filelist : [String]
+    #         - if you have a list of files to correct enter the Filelist as the path to the file
+    #         containing the names
+    #         ex,
+    #             Filelist = "F:/RFM/RIM_all/RIM1.0/M35(done)/errorlist.txt"
+    #
+    #         - if you want to check all the files in the resultpath enter the
+    #         Filelist as '0'
+    #         ex,
+    #             Filelist = '0'
+    #     Resultpath : [String]
+    #         path where the Maps exist.
+    #     MapsPrefix : [String]
+    #         the name prefix that distinguish the maps you want to correct from
+    #         other maps in the same folder, like the first part of the name you
+    #         use to name all files.
+    #     FilterValue: []
+    #
+    #     Saveto : [String]
+    #         path to where you will save the corrected files.
+    #
+    #     Returns
+    #     -------
+    #     Errors : [list]
+    #         list of the files' names that has errors and are already corrected.
+    #     """
+    #     DEM, SpatialRef = raster.readASCII(DEMpath)
+    #     NoDataValue = SpatialRef[-1]
+    #
+    #     # filter and get the required maps
+    #     if Filelist == "0":
+    #         # read list of file names
+    #         AllResults = os.listdir(Resultpath)
+    #
+    #         MapsNameList = list()
+    #         for i in range(len(AllResults)):
+    #             if AllResults[i].startswith(MapsPrefix):
+    #                 MapsNameList.append(AllResults[i])
+    #     elif type(Filelist) == str:
+    #         MapsNameList = pd.read_csv(Filelist, header=None)[0].tolist()
+    #
+    #     Errors = list()
+    #
+    #     for k in range(len(MapsNameList)):
+    #         try:
+    #             # open the zip file
+    #             compressedfile = zipfile.ZipFile(Resultpath + "/" + MapsNameList[k])
+    #         except:
+    #             logger.debug("Error Opening the compressed file")
+    #             Errors.append(MapsNameList[k][len(MapsPrefix) : -4])
+    #             continue
+    #
+    #         # get the file name
+    #         fname = compressedfile.infolist()[0]
+    #         # get the time step from the file name
+    #         timestep = int(fname.filename[len(MapsPrefix) : -4])
+    #         logger.debug("File No = " + str(k))
+    #
+    #         ASCIIF = compressedfile.open(fname)
+    #         SpatialRef = ASCIIF.readlines()[:6]
+    #         ASCIIF = compressedfile.open(fname)
+    #         ASCIIRaw = ASCIIF.readlines()[6:]
+    #         rows = len(ASCIIRaw)
+    #         cols = len(ASCIIRaw[0].split())
+    #         MapArray = np.ones((rows, cols), dtype=np.float32) * 0
+    #         # read the ascii file
+    #         for i in range(rows):
+    #             x = ASCIIRaw[i].split()
+    #             MapArray[i, :] = list(map(float, x))
+    #
+    #         Save = 0
+    #         # Clip all maps
+    #         if MapArray[DEM == NoDataValue].max() > 0:
+    #             MapArray[DEM == NoDataValue] = 0
+    #             Save = 1
+    #         # replace nan values with zero
+    #         if len(MapArray[np.isnan(MapArray)]) > 0:
+    #             MapArray[np.isnan(MapArray)] = 0
+    #             Save = 1
+    #         # replace FilterValue in the result raster with 0
+    #         if len(MapArray[MapArray >= FilterValue]) > 0:
+    #             MapArray[MapArray >= FilterValue] = 0
+    #             Save = 1
+    #
+    #         if Save == 1:
+    #             logger.debug("File= " + str(timestep))
+    #             # write the new file
+    #             fname = MapsPrefix + str(timestep) + ".asc"
+    #             newfile = Saveto + "/" + fname
+    #
+    #             with open(newfile, "w") as File:
+    #                 # write the first lines
+    #                 for i in range(len(SpatialRef)):
+    #                     File.write(str(SpatialRef[i].decode()[:-2]) + "\n")
+    #
+    #                 for i in range(rows):
+    #                     File.writelines(list(map(raster.stringSpace, MapArray[i, :])))
+    #                     File.write("\n")
+    #
+    #             # zip the file
+    #             with zipfile.ZipFile(
+    #                 Saveto + "/" + fname[:-4] + ".zip", "w", zipfile.ZIP_DEFLATED
+    #             ) as newzip:
+    #                 newzip.write(Saveto + "/" + fname, arcname=fname)
+    #             # delete the file
+    #             os.remove(Saveto + "/" + fname)
+    #
+    #     return Errors
+    #
+    # def listAttributes(self):
+    #     """ListAttributes.
+    #
+    #     Print Attributes List
+    #     """
+    #     logger.debug("\n")
+    #     logger.debug(
+    #         f"Attributes List of: {repr(self.__dict__['name'])} - {self.__class__.__name__} Instance\n"
+    #     )
+    #     self_keys = list(self.__dict__.keys())
+    #     self_keys.sort()
+    #     for key in self_keys:
+    #         if key != "name":
+    #             logger.debug(str(key) + " : " + repr(self.__dict__[key]))
+    #
+    #     logger.debug("\n")
 
 
 class Reach(River):
@@ -3602,8 +3621,7 @@ class Reach(River):
             )
         # if the results are not read yet read it
         if not isinstance(self.results_1d, DataFrame):
-            River.read_1d_results(
-                self,
+            self._read_1d_results(
                 self.id,
                 from_day,
                 to_day,
@@ -4028,12 +4046,12 @@ class Reach(River):
             F, loc=self.SP.loc[0, "loc"], scale=self.SP.loc[0, "scale"]
         )
 
-    def detailed_overtopping(self, eventdays):
+    def detailed_overtopping(self, event_days):
         """DetailedOvertopping. DetailedOvertopping method takes list of days and get the left and right overtopping for the sub-basin each day.
 
         Parameters
         ----------
-            1-eventdays : [list]
+            1-event_days : [list]
                 list od daysof an event.
 
         Returns
@@ -4047,15 +4065,15 @@ class Reach(River):
             3-all_overtopping_vs_xs:
             4-all_overtopping_vs_time:
         """
-        # River.DetailedOvertopping(self, [self.id], eventdays)
+        # River.DetailedOvertopping(self, [self.id], event_days)
         XSs = self.cross_sections.loc[:, "xsid"].tolist()
         columns = [self.id] + XSs + ["sum"]
         self.detailed_overtopping_left = pd.DataFrame(
-            index=eventdays + ["sum"], columns=columns
+            index=event_days + ["sum"], columns=columns
         )
         self.detailed_overtopping_left.loc[:, columns] = 0
         self.detailed_overtopping_right = pd.DataFrame(
-            index=eventdays + ["sum"], columns=columns
+            index=event_days + ["sum"], columns=columns
         )
         self.detailed_overtopping_right.loc[:, columns] = 0
         # Left Bank
@@ -4071,27 +4089,27 @@ class Reach(River):
             # get the days in the sub
             days = list(set(data.loc[:, "day"]))
 
-            for j in range(len(eventdays)):
+            for j in range(len(event_days)):
                 # check whether this sub basin has flooded in this particular day
-                if eventdays[j] in days:
+                if event_days[j] in days:
                     # filter the dataframe to the discharge column (3) and the days
                     self.detailed_overtopping_left.loc[
-                        eventdays[j], self.id
-                    ] = data.loc[data["day"] == eventdays[j], "q"].sum()
+                        event_days[j], self.id
+                    ] = data.loc[data["day"] == event_days[j], "q"].sum()
                     # get the xss that was overtopped in that particular day
                     XSday = list(
-                        set(data.loc[data["day"] == eventdays[j], "xsid"].tolist())
+                        set(data.loc[data["day"] == event_days[j], "xsid"].tolist())
                     )
 
                     for i in range(len(XSday)):
-                        # dataXS = data['q'].loc[data['day'] == eventdays[j]][data['xsid'] == XSday[i]].sum()
-                        self.detailed_overtopping_left.loc[eventdays[j], XSday[i]] = (
+                        # dataXS = data['q'].loc[data['day'] == event_days[j]][data['xsid'] == XSday[i]].sum()
+                        self.detailed_overtopping_left.loc[event_days[j], XSday[i]] = (
                             data["q"]
-                            .loc[data["day"] == eventdays[j]][data["xsid"] == XSday[i]]
+                            .loc[data["day"] == event_days[j]][data["xsid"] == XSday[i]]
                             .sum()
                         )
                 else:
-                    self.detailed_overtopping_left.loc[eventdays[j], self.id] = 0
+                    self.detailed_overtopping_left.loc[event_days[j], self.id] = 0
         except:
             self.detailed_overtopping_left.loc[:, self.id] = 0
 
@@ -4107,40 +4125,40 @@ class Reach(River):
             # get the days in the sub
             days = list(set(data.loc[:, "day"]))
 
-            for j in range(len(eventdays)):
+            for j in range(len(event_days)):
                 # check whether this sub basin has flooded in this particular day
-                if eventdays[j] in days:
+                if event_days[j] in days:
                     # filter the dataframe to the discharge column (3) and the days
                     self.detailed_overtopping_right.loc[
-                        eventdays[j], self.id
-                    ] = data.loc[data["day"] == eventdays[j], "q"].sum()
+                        event_days[j], self.id
+                    ] = data.loc[data["day"] == event_days[j], "q"].sum()
                     # get the xss that was overtopped in that particular day
                     XSday = list(
-                        set(data.loc[data["day"] == eventdays[j], "xsid"].tolist())
+                        set(data.loc[data["day"] == event_days[j], "xsid"].tolist())
                     )
 
                     for i in range(len(XSday)):
-                        # dataXS = data['q'].loc[data['day'] == eventdays[j]][data['xsid'] == XSday[i]].sum()
-                        self.detailed_overtopping_right.loc[eventdays[j], XSday[i]] = (
+                        # dataXS = data['q'].loc[data['day'] == event_days[j]][data['xsid'] == XSday[i]].sum()
+                        self.detailed_overtopping_right.loc[event_days[j], XSday[i]] = (
                             data["q"]
-                            .loc[data["day"] == eventdays[j]][data["xsid"] == XSday[i]]
+                            .loc[data["day"] == event_days[j]][data["xsid"] == XSday[i]]
                             .sum()
                         )
 
                 else:
-                    self.detailed_overtopping_right.loc[eventdays[j], self.id] = 0
+                    self.detailed_overtopping_right.loc[event_days[j], self.id] = 0
         except:
             # logger.debug("file did not open")
             self.detailed_overtopping_right.loc[:, self.id] = 0
 
         # sum overtopping for each day
-        for j in range(len(eventdays)):
+        for j in range(len(event_days)):
             self.detailed_overtopping_left.loc[
-                eventdays[j], "sum"
-            ] = self.detailed_overtopping_left.loc[eventdays[j], XSs].sum()
+                event_days[j], "sum"
+            ] = self.detailed_overtopping_left.loc[event_days[j], XSs].sum()
             self.detailed_overtopping_right.loc[
-                eventdays[j], "sum"
-            ] = self.detailed_overtopping_right.loc[eventdays[j], XSs].sum()
+                event_days[j], "sum"
+            ] = self.detailed_overtopping_right.loc[event_days[j], XSs].sum()
         # sum overtopping for each sub basin
         for j in range(len(XSs)):
             self.detailed_overtopping_left.loc[
@@ -4163,13 +4181,13 @@ class Reach(River):
         )
 
         self.all_overtopping_vs_time = pd.DataFrame()
-        self.all_overtopping_vs_time["id"] = eventdays
+        self.all_overtopping_vs_time["id"] = event_days
         self.all_overtopping_vs_time.loc[:, "Overtopping"] = (
-            self.detailed_overtopping_left.loc[eventdays, "sum"]
-            + self.detailed_overtopping_right.loc[eventdays, "sum"]
+            self.detailed_overtopping_left.loc[event_days, "sum"]
+            + self.detailed_overtopping_right.loc[event_days, "sum"]
         ).tolist()
         self.all_overtopping_vs_time.loc[:, "date"] = (
-            self.reference_index.loc[eventdays[0] : eventdays[-1], "date"]
+            self.reference_index.loc[event_days[0] : event_days[-1], "date"]
         ).tolist()
 
     def save_hydrograph(self, xsid: int, path: str = None, Option: int = 1):
@@ -5612,71 +5630,6 @@ class Reach(River):
         logger.debug("MAE= " + str(MAE))
 
         return MBE, MAE, RMSE, KGE, NSEHF, NSE
-
-    def histogram(
-        self,
-        Day,
-        BaseMapF,
-        ExcludeValue,
-        OccupiedCellsOnly,
-        Map=1,
-        filter1=0.2,
-        filter2=15,
-    ):
-        """Histogram.
-
-        Histogram Extracts the values that are located in the same location in the BaseMap as the Reach-basin
-
-        Parameters
-        ----------
-        Day:
-        BaseMapF:
-        ExcludeValue:
-        OccupiedCellsOnly: [boolean]
-            True if you want to count only cells that is not zero and not to extract the values.
-        Map: [1/2/3]
-            1 for depthmax maps, 2 for duration maps, 3 for return period maps
-        filter1: [real]
-            execlude lower values than filter1
-        filter2: [real]
-            execlude values higher than filter2
-
-        Returns
-        -------
-            extracted_values [list] list of extracted values
-        """
-        # check if the object has the attribute extracted_values
-        if hasattr(self, "extracted_values"):
-            # depth map
-            if Map == 1:
-                path = self.two_d_result_path + self.depth_prefix + str(Day) + ".zip"
-            elif Map == 2:
-                path = self.two_d_result_path + self.duration_prefix + str(Day) + ".zip"
-            else:
-                path = (
-                    self.two_d_result_path
-                    + self.returnperiod_prefix
-                    + str(Day)
-                    + ".zip"
-                )
-
-            ExtractedValues, NonZeroCells = raster.overlayMap(
-                path, BaseMapF, ExcludeValue, self.compressed, OccupiedCellsOnly
-            )
-
-            self.ExtractedValues = ExtractedValues[self.id]
-        # filter values
-        ExtractedValues = [j for j in ExtractedValues if j > filter1]
-        ExtractedValues = [j for j in ExtractedValues if j < filter2]
-        # plot
-        fig, ax1 = plt.subplots(figsize=(10, 8))
-        ax1.hist(ExtractedValues, bins=15, alpha=0.4)  # width = 0.2,
-        ax1.set_ylabel("Frequency RIM1.0", fontsize=15)
-        ax1.yaxis.label.set_color("#27408B")
-        ax1.set_xlabel("Depth Ranges (m)", fontsize=15)
-        # ax1.cla
-
-        ax1.tick_params(axis="y", color="#27408B")
 
     def ListAttributes(self):
         """Print Attributes List."""
