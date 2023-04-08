@@ -131,12 +131,9 @@ def test_save_lumped_results(
     Coello.saveResults(Result=5, path=Path)
 
 
-
 class TestDistributed:
     def test_create_catchment_instance(
-            self,
-            coello_start_date: str,
-            coello_end_date: str
+        self, coello_start_date: str, coello_end_date: str
     ):
         coello = Catchment(
             "coello",
@@ -151,12 +148,12 @@ class TestDistributed:
         assert isinstance(coello.start, dt.datetime)
 
     def test_read_meteo_inputs(
-            self,
-            coello_start_date: str,
-            coello_end_date: str,
-            coello_evap_path: str,
-            coello_prec_path: str,
-            coello_temp_path: str,
+        self,
+        coello_start_date: str,
+        coello_end_date: str,
+        coello_evap_path: str,
+        coello_prec_path: str,
+        coello_temp_path: str,
     ):
         coello = Catchment(
             "coello",
@@ -166,8 +163,12 @@ class TestDistributed:
             TemporalResolution="Daily",
             fmt="%Y-%m-%d",
         )
-        coello.readRainfall(coello_evap_path, start=coello_start_date, end=coello_end_date)
-        coello.readTemperature(coello_prec_path, start=coello_start_date, end=coello_end_date)
+        coello.readRainfall(
+            coello_evap_path, start=coello_start_date, end=coello_end_date
+        )
+        coello.readTemperature(
+            coello_prec_path, start=coello_start_date, end=coello_end_date
+        )
         coello.readET(coello_temp_path, start=coello_start_date, end=coello_end_date)
         assert isinstance(coello.Prec, np.ndarray)
         assert isinstance(coello.Temp, np.ndarray)
@@ -176,12 +177,12 @@ class TestDistributed:
         assert coello.ET.shape == (13, 14, 11)
 
     def test_read_gis_inputs(
-            self,
-            coello_start_date: str,
-            coello_end_date: str,
-            coello_fd_path: str,
-            coello_acc_path: str,
-            coello_fdt: Dict
+        self,
+        coello_start_date: str,
+        coello_end_date: str,
+        coello_fd_path: str,
+        coello_acc_path: str,
+        coello_fdt: Dict,
     ):
         coello = Catchment(
             "coello",
@@ -195,17 +196,40 @@ class TestDistributed:
         coello.readFlowDir(coello_fd_path)
         assert coello.Outlet[0][0] == 10
         assert coello.Outlet[1][0] == 13
-        assert coello.acc_val == [0, 1, 2, 3, 4, 5, 6, 10, 11, 13, 15, 16, 17, 23, 43, 44, 48, 55, 59, 63, 86, 88]
+        assert coello.acc_val == [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            10,
+            11,
+            13,
+            15,
+            16,
+            17,
+            23,
+            43,
+            44,
+            48,
+            55,
+            59,
+            63,
+            86,
+            88,
+        ]
         assert isinstance(coello.FlowDirArr, np.ndarray)
         assert coello.FlowDirArr.shape == (13, 14)
         assert coello.FDT == coello_fdt
 
     def test_read_lumped_model(
-            self,
-            coello_start_date: str,
-            coello_end_date: str,
-            coello_cat_area: int,
-            coello_initial_cond: List,
+        self,
+        coello_start_date: str,
+        coello_end_date: str,
+        coello_cat_area: int,
+        coello_initial_cond: List,
     ):
         coello = Catchment(
             "coello",
@@ -219,4 +243,3 @@ class TestDistributed:
         assert coello.LumpedModel == HBV
         assert coello.CatArea == coello_cat_area
         assert coello.InitialCond == coello_initial_cond
-

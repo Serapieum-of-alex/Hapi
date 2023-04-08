@@ -986,3 +986,27 @@ def test_get_overtopped_xs(
     xs_flood_l, xs_flood_r = rivers.get_overtopped_xs(start_day, True)
     assert xs_flood_l == [1]
     assert xs_flood_r == [1, 5, 7, 9, 12, 15]
+
+
+# def test_detailed_overtopping(
+#     version: int,
+#     river_cross_section_path: str,
+#     xs_total_no: int,
+#     xs_col_no: int,
+#     overtopping_files_dir: str,
+#     event_index_file: str,
+# ):
+#     rivers = River("HM", version=version)
+#     rivers.read_xs(river_cross_section_path)
+#
+#     rivers.read_overtopping(
+#         overtopping_result_path=overtopping_files_dir, delimiter=","
+#     )
+#
+#     event = Event.read_event_index("test", event_index_file, start="1955-01-01")
+#     rivers.event_index = event.event_index
+#     _, start_day = event.get_event_start(0)
+#     xs_flood_l, xs_flood_r = rivers.get_overtopped_xs(start_day, True)
+#     rivers.detailed_overtopping(flooded_reaches, event_days, delimiter=",")
+#     assert xs_flood_l == [1]
+#     assert xs_flood_r == [1, 5, 7, 9, 12, 15]
