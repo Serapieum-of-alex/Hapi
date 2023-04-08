@@ -61,80 +61,8 @@ class Calibration(Catchment):
             Lumped or 'Distributed' . The default is 'Lumped'.
         TemporalResolution : [str], optional
             "Hourly" or "Daily". The default is "Daily".
-
-        Returns
-        -------
-        None.
         """
-        self.name = name
-        self.start = dt.datetime.strptime(start, fmt)
-        self.end = dt.datetime.strptime(end, fmt)
-        self.SpatialResolution = SpatialResolution
-        self.TemporalResolution = TemporalResolution
-
-        conversionfactor = (1000 * 24 * 60 * 60) / (1000**2)
-
-        if TemporalResolution.lower() == "daily":
-            self.dt = 1  # 24
-            self.conversionfactor = conversionfactor * 1
-            self.Index = pd.date_range(self.start, self.end, freq="D")
-        elif TemporalResolution.lower() == "hourly":
-            self.dt = 1  # 24
-            self.conversionfactor = conversionfactor * 1 / 24
-            self.Index = pd.date_range(self.start, self.end, freq="H")
-        else:
-            # TODO calculate the teporal resolution factor
-            # q mm , area sq km  (1000**2)/1000/f/60/60 = 1/(3.6*f)
-            # if daily tfac=24 if hourly tfac=1 if 15 min tfac=0.25
-            self.Tfactor = 24
-
-        self.RouteRiver = RouteRiver
-        self.RouteRiver = RouteRiver
-        self.Parameters = None
-        self.data = None
-        self.Prec = None
-        self.TS = None
-        self.Temp = None
-        self.ET = None
-        self.ll_temp = None
-        self.QGauges = None
-        self.Snow = None
-        self.Maxbas = None
-        self.LumpedModel = None
-        self.CatArea = None
-        self.InitialCond = None
-        self.q_init = None
-        self.GaugesTable = None
-        self.UB = None
-        self.LB = None
-        self.cols = None
-        self.rows = None
-        self.NoDataValue = None
-        self.FlowAccArr = None
-        self.no_elem = None
-        self.acc_val = None
-        self.Outlet = None
-        self.CellSize = None
-        self.px_area = None
-        self.px_tot_area = None
-        self.FlowDirArr = None
-        self.FDT = None
-        self.FPLArr = None
-        (
-            self.DEM,
-            self.BankfullDepth,
-            self.RiverWidth,
-            self.RiverRoughness,
-            self.FloodPlainRoughness,
-        ) = (None, None, None, None, None)
-        self.qout, self.Qtot = None, None
-        self.quz_routed, self.qlz_translated, self.statevariables = None, None, None
-        self.anim = None
-        self.quz, self.qlz = None, None
-        self.Qsim = None
-        self.Metrics = None
-
-        pass
+        super().__init__(name, start, end, fmt, SpatialResolution, TemporalResolution, RouteRiver)
 
     def readObjectiveFn(self, OF, args):
         """readObjectiveFn.

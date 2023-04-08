@@ -99,7 +99,7 @@ class TestDistributed:
             TemporalResolution = "Daily",
             fmt = "%Y-%m-%d"
         )
-        assert coello.SpatialResolution == "Distributed"
+        assert coello.SpatialResolution == "distributed"
         assert coello.RouteRiver == "Muskingum"
         assert isinstance(coello.start, dt.datetime)
 
