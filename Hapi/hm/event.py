@@ -1,14 +1,14 @@
 """1D riven Events."""
 import os
-from typing import Tuple, Dict, Union
+from typing import Tuple, Any, Union
 import datetime as dt
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from pandas.core.frame import DataFrame
-from pyramids.raster import Raster
-
+# from pyramids.raster import Raster
+from pyramids.dataset import Dataset
+from cleopatra.statistics import Statistic
 
 class Event:
     """Event.
@@ -371,85 +371,85 @@ class Event:
         )
         self._event_index["VolError2"] = self._event_index["VolError"] / 20
 
-    def overlay_maps(
-        self,
-        path: str,
-        base_map: str,
-        excluded_value,
-        occupied_cells_only: bool,
-        save_to: str,
-    ) -> Tuple[Dict, DataFrame]:
-        """OverlayMaps.
-
-            - OverlayMaps method reads all the maps in the folder given by path input and overlay them with the
-            basemap and for each value in the basemap it create a dictionary with the intersected values from all maps.
-
-        Parameters
-        ----------
-        path: [String]
-            a path to the folder includng the maps.
-        base_map: [String]
-            a path includng the name of the ASCII and extention like
-            path="data/cropped.asc"
-        excluded_value: [Numeric]
-            values you want to exclude from exteacted values
-        occupied_cells_only: [Bool]
-            if you want to count only cells that is not excluded_value.
-        save_to: [String]
-            a path to the folder to save a text file for each
-            value in the base map including all the intersected values
-            from other maps.
-
-        Returns
-        -------
-        extracted_values: [Dict]
-            dictonary with a list of values in the basemap as keys and for each key a list of all the intersected
-            values in the maps from the path
-        NonZeroCells: [dataframe]
-            dataframe with the first column as the "file" name and the second column is the number of cells in each map
-        """
-        self.depth_values, non_zero_cells = Raster.overlayMaps(
-            path,
-            base_map,
-            self.depth_prefix,
-            excluded_value,
-            self.compressed,
-            occupied_cells_only,
-        )
-
-        # non_zero_cells dataframe with the first column as the "file" name and the second column
-        # is the number of cells in each map
-
-        non_zero_cells["days"] = [
-            int(i[len(self.depth_prefix) : -4])
-            for i in non_zero_cells["files"].tolist()
-        ]
-        # get the numbe of inundated cells in the Event index data frame
-        self._event_index["cells"] = 0
-        event_days = self._event_index["id"].values
-        for i, event_i in non_zero_cells.iterrows():
-            # get the location in the _event_index dataframe
-            day_i = event_i["days"]
-            diff = abs(event_days - day_i)
-            loc = diff.argmin()
-            if diff[loc] > 20:
-                df = pd.DataFrame()
-                df.loc[0, ["id", "cells"]] = [day_i, event_i["cells"]]
-                self._event_index = pd.concat([self._event_index, df]).reset_index(
-                    drop=True
-                )
-            else:
-                self._event_index.loc[loc, "cells"] = event_i["cells"]
-
-        self._event_index.sort_values(["id"], axis=0, inplace=True)
-        # save depths of each sub-basin
-        inundatedSubs = list(self.depth_values.keys())
-        for i in range(len(inundatedSubs)):
-            np.savetxt(
-                f"{save_to}/{inundatedSubs[i]}.txt",
-                self.depth_values[inundatedSubs[i]],
-                fmt="%4.2f",
-            )
+    # def overlay_maps(
+    #     self,
+    #     path: str,
+    #     base_map: str,
+    #     excluded_value,
+    #     occupied_cells_only: bool,
+    #     save_to: str,
+    # ) -> Tuple[Dict, DataFrame]:
+    #     """OverlayMaps.
+    #
+    #         - OverlayMaps method reads all the maps in the folder given by path input and overlay them with the
+    #         basemap and for each value in the basemap it create a dictionary with the intersected values from all maps.
+    #
+    #     Parameters
+    #     ----------
+    #     path: [String]
+    #         a path to the folder includng the maps.
+    #     base_map: [String]
+    #         a path includng the name of the ASCII and extention like
+    #         path="data/cropped.asc"
+    #     excluded_value: [Numeric]
+    #         values you want to exclude from exteacted values
+    #     occupied_cells_only: [Bool]
+    #         if you want to count only cells that is not excluded_value.
+    #     save_to: [String]
+    #         a path to the folder to save a text file for each
+    #         value in the base map including all the intersected values
+    #         from other maps.
+    #
+    #     Returns
+    #     -------
+    #     extracted_values: [Dict]
+    #         dictonary with a list of values in the basemap as keys and for each key a list of all the intersected
+    #         values in the maps from the path
+    #     NonZeroCells: [dataframe]
+    #         dataframe with the first column as the "file" name and the second column is the number of cells in each map
+    #     """
+    #     self.depth_values, non_zero_cells = Raster.overlayMaps(
+    #         path,
+    #         base_map,
+    #         self.depth_prefix,
+    #         excluded_value,
+    #         self.compressed,
+    #         occupied_cells_only,
+    #     )
+    #
+    #     # non_zero_cells dataframe with the first column as the "file" name and the second column
+    #     # is the number of cells in each map
+    #
+    #     non_zero_cells["days"] = [
+    #         int(i[len(self.depth_prefix) : -4])
+    #         for i in non_zero_cells["files"].tolist()
+    #     ]
+    #     # get the numbe of inundated cells in the Event index data frame
+    #     self._event_index["cells"] = 0
+    #     event_days = self._event_index["id"].values
+    #     for i, event_i in non_zero_cells.iterrows():
+    #         # get the location in the _event_index dataframe
+    #         day_i = event_i["days"]
+    #         diff = abs(event_days - day_i)
+    #         loc = diff.argmin()
+    #         if diff[loc] > 20:
+    #             df = pd.DataFrame()
+    #             df.loc[0, ["id", "cells"]] = [day_i, event_i["cells"]]
+    #             self._event_index = pd.concat([self._event_index, df]).reset_index(
+    #                 drop=True
+    #             )
+    #         else:
+    #             self._event_index.loc[loc, "cells"] = event_i["cells"]
+    #
+    #     self._event_index.sort_values(["id"], axis=0, inplace=True)
+    #     # save depths of each sub-basin
+    #     inundatedSubs = list(self.depth_values.keys())
+    #     for i in range(len(inundatedSubs)):
+    #         np.savetxt(
+    #             f"{save_to}/{inundatedSubs[i]}.txt",
+    #             self.depth_values[inundatedSubs[i]],
+    #             fmt="%4.2f",
+    #         )
 
     @classmethod
     def read_event_index(cls, name: str, path: str, start: str):
@@ -476,7 +476,7 @@ class Event:
         return cls(name, start=start, event_index=event_index)
 
     def histogram(
-        self, Day, ExcludeValue, occupied_cells_only, Map=1, filter1=0.2, filter2=15
+        self, Day: int, exclude_value: Any = 0, Map=1, upper_bound=None, lower_bound=None, **kwargs
     ):
         """histogram.
 
@@ -487,63 +487,47 @@ class Event:
         ----------
         Day : [Integer]
             DESCRIPTION.
-        ExcludeValue : [Integer]
-            DESCRIPTION.
-        occupied_cells_only : TYPE
+        exclude_value : [Integer]
             DESCRIPTION.
         Map : [integer], optional
             1 for the max depth maps, 2 for the duration map, 3 for the
             return period maps. The default is 1.
-        filter1: [float, int]
+        upper_bound: [float, int]
             Default is 0.2
-        filter2: [float, int]
+        lower_bound: [float, int]
             Default is 15
-
-        Returns
-        -------
-        None.
         """
-        # check if the object has the attribute extracted_values
         if hasattr(self, "extracted_values"):
             # get the list of event that then object has their Extractedvalues
             if Day not in list(self.extracted_values.keys()):
                 # depth map
                 if Map == 1:
-                    path = f"{self.two_d_result_path}{self.depth_prefix}{Day}.zip"
+                    path = f"{self.two_d_result_path}{self.depth_prefix}{Day}.tif"
                 elif Map == 2:
-                    path = f"{self.two_d_result_path}{self.duration_prefix}{Day}.zip"
+                    path = f"{self.two_d_result_path}{self.duration_prefix}{Day}.tif"
                 else:
                     path = (
-                        f"{self.two_d_result_path}{self.return_period_prefix}{Day}.zip"
+                        f"{self.two_d_result_path}{self.return_period_prefix}{Day}.tif"
                     )
 
-                ExtractedValues, non_zero_cells = Raster.extractValues(
-                    path, ExcludeValue, self.compressed, occupied_cells_only
-                )
-                self.extracted_values[Day] = ExtractedValues
+                dataset = Dataset.read_file(path)
+                extracted_values = dataset.extract(exclude_value=exclude_value)
+                # non_zero_cells = len(extracted_values)
 
-        ExtractedValues = self.extracted_values[Day]
+                self.extracted_values[Day] = extracted_values
+
+        extracted_values = self.extracted_values[Day]
         # filter values
-        ExtractedValues = [j for j in ExtractedValues if j > filter1]
-        ExtractedValues = [j for j in ExtractedValues if j < filter2]
-        # plot
-        # fig, ax1 = plt.subplots(fig_size=(10,8))
-        # ax1.hist(extracted_values, bins=15, alpha = 0.4) #width = 0.2,
+        if lower_bound is not None:
+            extracted_values = [j for j in extracted_values if j > lower_bound]
+        if upper_bound is not None:
+            extracted_values = [j for j in extracted_values if j < upper_bound]
 
-        n, bins, patches = plt.hist(
-            x=ExtractedValues, bins=15, color="#0504aa", alpha=0.7, rwidth=0.85
+        hist = Statistic(extracted_values)
+        fig, ax, opts = hist.histogram(
+            bins=15, color="#0504aa", alpha=0.7, rwidth=0.85, ylabel="Frequency", **kwargs
         )
-        plt.grid(axis="y", alpha=0.75)
-        plt.xlabel("Value", fontsize=15)
-        plt.ylabel("Frequency", fontsize=15)
-        plt.xticks(fontsize=15)
-        plt.yticks(fontsize=15)
-
-        plt.ylabel("Frequency", fontsize=15)
-        plt.tight_layout()
-        # plt.title('Normal Distribution Histogram matplotlib',font_size=15)
-        plt.show()
-        return n, bins, patches
+        return fig, ax, opts
 
     def drop(self, DropList):
         """Drop Drop method deletes columns from the event_index dataframe.
