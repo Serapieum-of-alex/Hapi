@@ -1,5 +1,5 @@
 from typing import List
-import pytest
+from matplotlib.figure import Figure
 from pandas import DataFrame
 from Hapi.hm.event import Event
 
@@ -42,3 +42,14 @@ def test_get_event_start(event_index_file: str, event_index_volume_attrs2: List[
     end_ind, end_day = event.get_event_end(max_overtopping_ind)
     assert start_day == 8195
     assert end_day == 8200
+
+
+def test_detailed_overtopping(
+    event_index_file: str,
+):
+    event = Event.read_event_index("test", event_index_file, start="1955-01-01")
+    event.two_d_result_path = "tests/hm/data"
+    fig, ax, opts = event.histogram(8200, 0, 1)
+    # {"n": n, "bins": bins, "patches": patches}
+    assert isinstance(fig, Figure)
+    assert all(elem in opts.keys() for elem in ["n", "bins", "patches"])

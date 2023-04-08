@@ -481,7 +481,7 @@ class Event:
         self,
         Day: int,
         exclude_value: Any = 0,
-        Map=1,
+        map_type: int = 1,
         upper_bound=None,
         lower_bound=None,
         **kwargs,
@@ -497,7 +497,7 @@ class Event:
             DESCRIPTION.
         exclude_value : [Integer]
             DESCRIPTION.
-        Map : [integer], optional
+        map_type : [integer], optional
             1 for the max depth maps, 2 for the duration map, 3 for the
             return period maps. The default is 1.
         upper_bound: [float, int]
@@ -509,19 +509,18 @@ class Event:
             # get the list of event that then object has their Extractedvalues
             if Day not in list(self.extracted_values.keys()):
                 # depth map
-                if Map == 1:
-                    path = f"{self.two_d_result_path}{self.depth_prefix}{Day}.tif"
-                elif Map == 2:
-                    path = f"{self.two_d_result_path}{self.duration_prefix}{Day}.tif"
+                if map_type == 1:
+                    path = f"{self.two_d_result_path}/{self.depth_prefix}{Day}.tif"
+                elif map_type == 2:
+                    path = f"{self.two_d_result_path}/{self.duration_prefix}{Day}.tif"
                 else:
                     path = (
-                        f"{self.two_d_result_path}{self.return_period_prefix}{Day}.tif"
+                        f"{self.two_d_result_path}/{self.return_period_prefix}{Day}.tif"
                     )
 
                 dataset = Dataset.read_file(path)
                 extracted_values = dataset.extract(exclude_value=exclude_value)
                 # non_zero_cells = len(extracted_values)
-
                 self.extracted_values[Day] = extracted_values
 
         extracted_values = self.extracted_values[Day]
