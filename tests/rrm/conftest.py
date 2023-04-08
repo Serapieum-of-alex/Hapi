@@ -1,5 +1,6 @@
 from typing import Dict, Tuple
 import numpy as np
+from osgeo import gdal
 from tests.rrm.calibration.conftest import *
 from tests.rrm.catchment.conftest import *
 
@@ -32,6 +33,11 @@ def coello_temp_path() -> str:
 @pytest.fixture(scope="module")
 def coello_acc_path() -> str:
     return "tests/rrm/data/gis/acc4000.tif"
+
+
+@pytest.fixture(scope="module")
+def coello_acc_raster() -> gdal.Dataset:
+    return gdal.Open("tests/rrm/data/gis/acc4000.tif")
 
 
 @pytest.fixture(scope="module")
@@ -192,3 +198,18 @@ def coello_gauge_names() -> List:
 @pytest.fixture(scope="module")
 def coello_gauges_path() -> str:
     return "tests/rrm/data/calibration"
+
+
+@pytest.fixture(scope="module")
+def coello_no_parameters() -> int:
+    return 12
+
+
+@pytest.fixture(scope="module")
+def coello_rows() -> int:
+    return 13
+
+
+@pytest.fixture(scope="module")
+def coello_cols() -> int:
+    return 14

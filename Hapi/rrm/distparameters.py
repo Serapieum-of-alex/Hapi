@@ -160,7 +160,9 @@ class DistParameters:
         self.totnumberpar = self.no_parameters * self.no_elem + no_lumped_par
         # parameters in array
         # create a 2d array [no_parameters, no_cells]
-        self.Par2d = np.zeros(shape=(self.no_parameters, self.no_elem), dtype=np.float)
+        self.Par2d = np.zeros(
+            shape=(self.no_parameters, self.no_elem), dtype=np.float32
+        )
 
         if Function == 1:
             self.Function = self.par3dLumped
