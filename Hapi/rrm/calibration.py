@@ -7,11 +7,9 @@ runoff at known locations based on given performance function
 
 @author: Mostafa
 """
-import datetime as dt
 from typing import Any, Optional
 
 import numpy as np
-import pandas as pd
 from Oasis.harmonysearch import HSapi
 from Oasis.optimization import Optimization
 
@@ -62,7 +60,9 @@ class Calibration(Catchment):
         TemporalResolution : [str], optional
             "Hourly" or "Daily". The default is "Daily".
         """
-        super().__init__(name, start, end, fmt, SpatialResolution, TemporalResolution, RouteRiver)
+        super().__init__(
+            name, start, end, fmt, SpatialResolution, TemporalResolution, RouteRiver
+        )
 
     def readObjectiveFn(self, OF, args):
         """readObjectiveFn.

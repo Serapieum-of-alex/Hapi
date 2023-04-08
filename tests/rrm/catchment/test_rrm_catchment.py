@@ -173,8 +173,8 @@ class TestDistributed:
         assert isinstance(coello.Prec, np.ndarray)
         assert isinstance(coello.Temp, np.ndarray)
         assert isinstance(coello.ET, np.ndarray)
-        assert coello.Prec.shape == (13, 14, 11)
-        assert coello.ET.shape == (13, 14, 11)
+        assert coello.Prec.shape == (13, 14, 10)
+        assert coello.ET.shape == (13, 14, 10)
 
     def test_read_gis_inputs(
         self,
@@ -245,7 +245,7 @@ class TestDistributed:
         assert coello.Snow == Snow
         assert coello.Maxbas == False
 
-    def test_read_gauge_data(
+    def test_read_gauge_table(
         self,
         coello_start_date: str,
         coello_end_date: str,
@@ -265,3 +265,25 @@ class TestDistributed:
         assert all(
             elem in coello.GaugesTable.columns for elem in ["cell_row", "cell_col"]
         )
+
+    def test_read_gauge(
+        self,
+        coello_start_date: str,
+        coello_end_date: str,
+        coello_acc_path: str,
+        coello_gauges_table: str,
+        coello_gauges_path: str,
+        coello_gauge_names: List,
+    ):
+        coello = Catchment(
+            "coello",
+            coello_start_date,
+            coello_end_date,
+            SpatialResolution="Distributed",
+            TemporalResolution="Daily",
+            fmt="%Y-%m-%d",
+        )
+        coello.readGaugeTable(coello_gauges_table, coello_acc_path)
+        coello.readDischargeGauges(coello_gauges_path, column="id", fmt="%Y-%m-%d")
+        assert isinstance(coello.QGauges, DataFrame)
+        assert all(elem in coello.QGauges.columns for elem in coello_gauge_names)

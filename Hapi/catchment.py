@@ -263,7 +263,9 @@ class Catchment:
 
             logger.debug("Temperature data are read successfully")
 
-    def readET(self, path: str, start: str = None, end: str = None, fmt: str = "%Y-%m-%d"):
+    def readET(
+        self, path: str, start: str = None, end: str = None, fmt: str = "%Y-%m-%d"
+    ):
         """readET.
 
         Parameters
@@ -330,7 +332,9 @@ class Catchment:
         # check wether the path exists or not
         assert os.path.exists(path), path + " you have provided does not exist"
         # check the extension of the accumulation file
-        assert path.endswith(".tif"), "please add the extension at the end of the Flow accumulation raster path input"
+        assert path.endswith(
+            ".tif"
+        ), "please add the extension at the end of the Flow accumulation raster path input"
         # check wether the path exists or not
         assert os.path.exists(path), path + " you have provided does not exist"
 
@@ -635,7 +639,11 @@ class Catchment:
         logger.debug("Parameters are read successfully")
 
     def readLumpedModel(
-        self, LumpedModel, CatArea: Union[float, int], InitialCond: list, q_init=None
+        self,
+        LumpedModel: ModuleType,
+        CatArea: Union[float, int],
+        InitialCond: list,
+        q_init=None,
     ):
         """readLumpedModel.
 
@@ -730,7 +738,7 @@ class Catchment:
         ----------
         path : [str]
             path to the gauge file.
-        Flowaccpath : [str], optional
+        FlowaccPath : [str], optional
             path to the Flow acc raster. The default is ''.
         fmt: [str]
             Default is "%Y-%m-%d"
@@ -818,21 +826,20 @@ class Catchment:
                 name = self.GaugesTable.loc[i, "id"]
                 if readfrom != "":
                     f = pd.read_csv(
-                        path + str(name) + ".csv",
+                        f"{path}/{name}.csv",
                         index_col=0,
                         delimiter=delimiter,
                         skiprows=readfrom,
                     )  # ,#delimiter="\t"
                 else:
                     f = pd.read_csv(
-                        path + str(name) + ".csv",
+                        f"{path}/{name}.csv",
                         header=0,
                         index_col=0,
                         delimiter=delimiter,
                     )
 
                 f.index = [dt.datetime.strptime(i, fmt) for i in f.index.tolist()]
-
                 self.QGauges[int(name)] = f.loc[self.start : self.end, f.columns[-1]]
         else:
             if not os.path.exists(path):

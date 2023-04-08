@@ -11,7 +11,7 @@ def coello_start_date() -> str:
 
 @pytest.fixture(scope="module")
 def coello_end_date() -> str:
-    return "2009-01-11"
+    return "2009-01-10"
 
 
 @pytest.fixture(scope="module")
@@ -182,3 +182,13 @@ def coello_parameter_bounds() -> Tuple[List, List]:
 @pytest.fixture(scope="module")
 def coello_gauges_table() -> str:
     return "tests/rrm/data/calibration/gauges.csv"
+
+
+@pytest.fixture(scope="module")
+def coello_gauge_names() -> List:
+    return [1, 2, 3, 4, 5, 6]
+
+
+@pytest.fixture(scope="module")
+def coello_gauges_path() -> str:
+    return "tests/rrm/data/calibration"
