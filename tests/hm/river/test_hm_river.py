@@ -965,6 +965,25 @@ def test_read_overtopping(
     assert len(rivers.overtopping_reaches_right.keys()) == 1
 
 
+def test_get_event_start_end(
+    version: int,
+    river_cross_section_path: str,
+    xs_total_no: int,
+    xs_col_no: int,
+    overtopping_files_dir: str,
+    event_index_file: str,
+):
+    rivers = River("HM", version=version)
+    rivers.read_xs(river_cross_section_path)
+    event = Event.read_event_index("test", event_index_file, start="1955-01-01")
+    max_overtopping_ind = event.event_index["cells"].idxmax()
+
+    _, start_day = event.get_event_start(max_overtopping_ind)
+    _, end_day = event.get_event_end(max_overtopping_ind)
+    assert start_day == 8195
+    assert end_day == 8200
+
+
 def test_get_overtopped_xs(
     version: int,
     river_cross_section_path: str,
@@ -975,17 +994,36 @@ def test_get_overtopped_xs(
 ):
     rivers = River("HM", version=version)
     rivers.read_xs(river_cross_section_path)
-
     rivers.read_overtopping(
         overtopping_result_path=overtopping_files_dir, delimiter=","
     )
-
     event = Event.read_event_index("test", event_index_file, start="1955-01-01")
     rivers.event_index = event.event_index
     _, start_day = event.get_event_start(0)
     xs_flood_l, xs_flood_r = rivers.get_overtopped_xs(start_day, True)
     assert xs_flood_l == [1]
     assert xs_flood_r == [1, 5, 7, 9, 12, 15]
+
+
+def test_get_flooded_reaches(
+    version: int,
+    river_cross_section_path: str,
+    xs_total_no: int,
+    xs_col_no: int,
+    overtopping_files_dir: str,
+    event_index_file: str,
+):
+    rivers = River("HM", version=version)
+    rivers.read_xs(river_cross_section_path)
+    rivers.read_overtopping(
+        overtopping_result_path=overtopping_files_dir, delimiter=","
+    )
+    event = Event.read_event_index("test", event_index_file, start="1955-01-01")
+    rivers.event_index = event.event_index
+    _, start_day = event.get_event_start(0)
+    xs_flood_l, xs_flood_r = rivers.get_overtopped_xs(start_day, True)
+    flooded_reaches = rivers.get_flooded_reaches(overtopped_xs=xs_flood_l + xs_flood_r)
+    assert flooded_reaches == [1]
 
 
 # def test_detailed_overtopping(
