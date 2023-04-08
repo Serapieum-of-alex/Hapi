@@ -17,11 +17,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import statista.metrics as PC
-from digitalearth.static import Map
+from digitalearth.static import StaticGlyph
 from loguru import logger
 from osgeo import gdal
-from pyramids.catchment import Catchment as GC
-from pyramids.raster import Raster
+from pyramids.dem import DEM
+from pyramids.dataset import Dataset, Datacube
 
 from Hapi.plot.visualizer import Visualize as Vis
 
@@ -158,12 +158,14 @@ class Catchment:
         self.Qsim = None
         self.Metrics = None
 
-    def readRainfall(self, Path: str, start: str = "", end: str = "", fmt: str = ""):
+    def readRainfall(
+        self, path: str, start: str = None, end: str = None, fmt: str = None
+    ):
         """readRainfall.
 
         Parameters
         ----------
-        Path : [String]
+        path : [String]
             path to the Folder contains precipitation rasters.
         fmt: [str]
             format of the given date
@@ -177,21 +179,25 @@ class Catchment:
 
         Returns
         -------
-        Prec : [array attribute]
+        prec : [array attribute]
             array containing the spatial rainfall values
         """
         if self.Prec is None:
             # data type
-            assert isinstance(Path, str), "PrecPath input should be string type"
+            assert isinstance(path, str), "Precpath input should be string type"
             # check wether the path exists or not
-            if not os.path.exists(Path):
-                raise FileNotFoundError(f"{Path} you have provided does not exist")
+            if not os.path.exists(path):
+                raise FileNotFoundError(f"{path} you have provided does not exist")
             # check wether the folder has the rasters or not
             assert (
-                len(os.listdir(Path)) > 0
-            ), f"{Path} folder you have provided is empty"
+                len(os.listdir(path)) > 0
+            ), f"{path} folder you have provided is empty"
             # read data
-            self.Prec = Raster.readRastersFolder(Path, start=start, end=end, fmt=fmt)
+            cube = Datacube.read_separate_files(
+                path, with_order=True, start=start, end=end, fmt=fmt
+            )
+            cube.read_dataset()
+            self.Prec = cube.data
             self.TS = (
                 self.Prec.shape[2] + 1
             )  # no of time steps =length of time series +1
@@ -203,7 +209,7 @@ class Catchment:
 
     def readTemperature(
         self,
-        Path: str,
+        path: str,
         ll_temp: Union[list, np.ndarray] = None,
         start: str = "",
         end: str = "",
@@ -213,7 +219,7 @@ class Catchment:
 
         Parameters
         ----------
-        Path : [String]
+        path : [String]
             path to the Folder contains temperature rasters.
         fmt: [str]
             format of the given date
@@ -233,15 +239,19 @@ class Catchment:
         """
         if self.Temp is None:
             # data type
-            assert type(Path) == str, "PrecPath input should be string type"
+            assert type(path) == str, "Precpath input should be string type"
             # check wether the path exists or not
-            assert os.path.exists(Path), Path + " you have provided does not exist"
+            assert os.path.exists(path), path + " you have provided does not exist"
             # check wether the folder has the rasters or not
-            assert len(os.listdir(Path)) > 0, (
-                Path + " folder you have provided is empty"
+            assert len(os.listdir(path)) > 0, (
+                path + " folder you have provided is empty"
             )
             # read data
-            self.Temp = Raster.readRastersFolder(Path, start=start, end=end, fmt=fmt)
+            cube = Datacube.read_separate_files(
+                path, with_order=True, start=start, end=end, fmt=fmt
+            )
+            cube.read_dataset()
+            self.Temp = cube.data
             assert type(self.Temp) == np.ndarray, "array should be of type numpy array"
 
             if ll_temp is None:
@@ -253,12 +263,12 @@ class Catchment:
 
             logger.debug("Temperature data are read successfully")
 
-    def readET(self, Path: str, start: str = "", end: str = "", fmt: str = ""):
+    def readET(self, path: str, start: str = "", end: str = "", fmt: str = ""):
         """readET.
 
         Parameters
         ----------
-        Path : [String]
+        path : [String]
             path to the Folder contains Evapotranspiration rasters.
         fmt: [str]
             format of the given date
@@ -276,24 +286,28 @@ class Catchment:
         """
         if self.ET is None:
             # data type
-            assert type(Path) == str, "PrecPath input should be string type"
+            assert type(path) == str, "Precpath input should be string type"
             # check wether the path exists or not
-            assert os.path.exists(Path), Path + " you have provided does not exist"
+            assert os.path.exists(path), path + " you have provided does not exist"
             # check wether the folder has the rasters or not
-            assert len(os.listdir(Path)) > 0, (
-                Path + " folder you have provided is empty"
+            assert len(os.listdir(path)) > 0, (
+                path + " folder you have provided is empty"
             )
             # read data
-            self.ET = Raster.readRastersFolder(Path, start=start, end=end, fmt=fmt)
+            cube = Datacube.read_separate_files(
+                path, with_order=True, start=start, end=end, fmt=fmt
+            )
+            cube.read_dataset()
+            self.ET = cube.data
             assert type(self.ET) == np.ndarray, "array should be of type numpy array"
             logger.debug("Potential Evapotranspiration data are read successfully")
 
-    def readFlowAcc(self, Path: str):
+    def readFlowAcc(self, path: str):
         """readFlowAcc.
 
         Parameters
         ----------
-        Path : [String]
+        path : [String]
             path to the Flow Accumulation raster of the catchment
             (it should include the raster name and extension).
 
@@ -311,17 +325,17 @@ class Catchment:
             number of cells in the domain
         """
         # data type
-        assert isinstance(Path, str), "PrecPath input should be string type"
+        assert isinstance(path, str), "Precpath input should be string type"
         # check wether the path exists or not
-        assert os.path.exists(Path), Path + " you have provided does not exist"
+        assert os.path.exists(path), path + " you have provided does not exist"
         # check the extension of the accumulation file
         assert (
-            Path[-4:] == ".tif"
+            path[-4:] == ".tif"
         ), "please add the extension at the end of the Flow accumulation raster path input"
         # check wether the path exists or not
-        assert os.path.exists(Path), Path + " you have provided does not exist"
+        assert os.path.exists(path), path + " you have provided does not exist"
 
-        FlowAcc = gdal.Open(Path)
+        FlowAcc = gdal.Open(path)
         [self.rows, self.cols] = FlowAcc.ReadAsArray().shape
         # check flow accumulation input raster
         self.NoDataValue = FlowAcc.GetRasterBand(1).GetNoDataValue()
@@ -379,15 +393,15 @@ class Catchment:
 
         logger.debug("Flow Accmulation input is read successfully")
 
-    def readFlowDir(self, Path: str):
+    def readFlowDir(self, path: str):
         """Read Flow Direction.
 
             reads the flow direction raster.
 
         Parameters
         ----------
-        Path : [str]
-            Path to the flow direction raster.
+        path : [str]
+            path to the flow direction raster.
 
         Returns
         -------
@@ -397,16 +411,16 @@ class Catchment:
             flow direction table
         """
         # data type
-        assert isinstance(Path, str), "PrecPath input should be string type"
+        assert isinstance(path, str), "Precpath input should be string type"
         # check wether the path exists or not
-        assert os.path.exists(Path), Path + " you have provided does not exist"
+        assert os.path.exists(path), path + " you have provided does not exist"
         # check the extension of the accumulation file
         assert (
-            Path[-4:] == ".tif"
+            path[-4:] == ".tif"
         ), "please add the extension at the end of the Flow accumulation raster path input"
         # check wether the path exists or not
-        assert os.path.exists(Path), Path + " you have provided does not exist"
-        FlowDir = gdal.Open(Path)
+        assert os.path.exists(path), path + " you have provided does not exist"
+        FlowDir = gdal.Open(path)
 
         [rows, cols] = FlowDir.ReadAsArray().shape
         self.FlowDirArr = FlowDir.ReadAsArray().astype(float)
@@ -431,18 +445,19 @@ class Catchment:
         ), "flow direction raster should contain values 1,2,4,8,16,32,64,128 only "
 
         # create the flow direction table
-        self.FDT = GC.flowDirectionTable(FlowDir)
+        dem = DEM.read_file(FlowDir)
+        self.FDT = dem.flowDirectionTable()
         logger.debug("Flow Direction input is read successfully")
 
-    def ReadFlowPathLength(self, Path: str):
-        """Read Flow Path Length method.
+    def ReadFlowPathLength(self, path: str):
+        """Read Flow path Length method.
 
             reads the flow path length.
 
         Parameters
         ----------
-        Path : [str]
-            Path to the file.
+        path : [str]
+            path to the file.
 
         Returns
         -------
@@ -458,16 +473,16 @@ class Catchment:
             number of cells in the domain
         """
         # data type
-        assert isinstance(Path, str), "PrecPath input should be string type"
+        assert isinstance(path, str), "Precpath input should be string type"
         # input values
-        FPL_ext = Path[-4:]
+        FPL_ext = path[-4:]
         assert (
             FPL_ext == ".tif"
         ), "please add the extension at the end of the Flow accumulation raster path input"
         # check wether the path exists or not
-        assert os.path.exists(Path), Path + " you have provided does not exist"
+        assert os.path.exists(path), path + " you have provided does not exist"
 
-        FPL = gdal.Open(Path)
+        FPL = gdal.Open(path)
         [self.rows, self.cols] = FPL.ReadAsArray().shape
         self.FPLArr = FPL.ReadAsArray()
         self.NoDataValue = FPL.GetRasterBand(1).GetNoDataValue()
@@ -481,7 +496,7 @@ class Catchment:
             (self.FPLArr[np.isnan(self.FPLArr)])
         )
 
-        logger.debug("Flow Path length input is read successfully")
+        logger.debug("Flow path length input is read successfully")
 
     def ReadRiverGeometry(
         self,
@@ -520,14 +535,14 @@ class Catchment:
         FloodPlainRoughness = gdal.Open(FloodPlainRoughnessF)
         self.FloodPlainRoughness = FloodPlainRoughness.ReadAsArray()
 
-    def readParameters(self, Path: str, Snow: bool = False, Maxbas: bool = False):
+    def readParameters(self, path: str, Snow: bool = False, Maxbas: bool = False):
         """readParameters.
 
         readParameters method reads the parameters' raster
 
         Parameters
         ----------
-        Path : [str]
+        path : [str]
             path to the folder where the raster exist.
         Snow : [integer]
             False if you dont want to run the snow related processes and 1 if there is snow.
@@ -547,22 +562,25 @@ class Catchment:
         """
         if self.SpatialResolution.lower() == "distributed":
             # data type
-            assert type(Path) == str, "PrecPath input should be string type"
+            assert type(path) == str, "Precpath input should be string type"
             # check wether the path exists or not
-            assert os.path.exists(Path), Path + " you have provided does not exist"
+            assert os.path.exists(path), path + " you have provided does not exist"
             # check wether the folder has the rasters or not
-            assert len(os.listdir(Path)) > 0, (
-                Path + " folder you have provided is empty"
+            assert len(os.listdir(path)) > 0, (
+                path + " folder you have provided is empty"
             )
             # parameters
-            self.Parameters = Raster.readRastersFolder(Path)
+            cube = Datacube.read_separate_files(path, with_order=True)
+            cube.read_dataset()
+            self.Parameters = cube.data
+            # self.Parameters = Raster.readRastersFolder(path)
         else:
-            if not os.path.exists(Path):
+            if not os.path.exists(path):
                 raise FileNotFoundError(
                     "The parameters file you have entered does not exist"
                 )
 
-            self.Parameters = pd.read_csv(Path, index_col=0, header=None)[1].tolist()
+            self.Parameters = pd.read_csv(path, index_col=0, header=None)[1].tolist()
 
         assert (
             not Snow or Snow
@@ -666,15 +684,15 @@ class Catchment:
 
         logger.debug("Lumped model is read successfully")
 
-    def readLumpedInputs(self, Path: str, ll_temp: Union[list, np.ndarray] = None):
+    def readLumpedInputs(self, path: str, ll_temp: Union[list, np.ndarray] = None):
         """readLumpedInputs. readLumpedInputs method read the meteorological data of lumped mode.
 
         [precipitation, Evapotranspiration, temperature, long term average temperature]
 
         Parameters
         ----------
-        Path : [string]
-            Path to the input file, data has to be in the order of
+        path : [string]
+            path to the input file, data has to be in the order of
             [date, precipitation, ET, Temp].
         ll_temp : [bool], optional
             average long term temperature, if None it is calculated inside the
@@ -688,7 +706,7 @@ class Catchment:
             average long term temperature.
         """
         self.data = pd.read_csv(
-            Path, header=0, delimiter=",", index_col=0  # "\t", #skiprows=11,
+            path, header=0, delimiter=",", index_col=0  # "\t", #skiprows=11,
         )
         self.data = self.data.values
 
@@ -702,7 +720,7 @@ class Catchment:
 
         logger.debug("Lumped Model inputs are read successfully")
 
-    def readGaugeTable(self, Path: str, FlowaccPath: str = "", fmt: str = "%Y-%m-%d"):
+    def readGaugeTable(self, path: str, FlowaccPath: str = "", fmt: str = "%Y-%m-%d"):
         """readGaugeTable. readGaugeTable reads the table where the data about the gauges are listed.
 
         [x coordinate, y coordinate, 'area ratio', 'weight'], the coordinates are
@@ -711,10 +729,10 @@ class Catchment:
 
         Parameters
         ----------
-        Path : [str]
-            Path to the gauge file.
-        FlowaccPath : [str], optional
-            Path to the Flow acc raster. The default is ''.
+        path : [str]
+            path to the gauge file.
+        Flowaccpath : [str], optional
+            path to the Flow acc raster. The default is ''.
         fmt: [str]
             Default is "%Y-%m-%d"
 
@@ -724,10 +742,10 @@ class Catchment:
             the table of the gauges.
         """
         # read the gauge table
-        if Path.endswith(".geojson"):
-            self.GaugesTable = gpd.read_file(Path, driver="GeoJSON")
+        if path.endswith(".geojson"):
+            self.GaugesTable = gpd.read_file(path, driver="GeoJSON")
         else:
-            self.GaugesTable = pd.read_csv(Path)
+            self.GaugesTable = pd.read_csv(path)
         col_list = self.GaugesTable.columns.tolist()
 
         if "start" in col_list:
@@ -742,15 +760,15 @@ class Catchment:
             # if hasattr(self, 'FlowAcc'):
             FlowAcc = gdal.Open(FlowaccPath)
             # calculate the nearest cell to each station
-            self.GaugesTable.loc[:, ["cell_row", "cell_col"]] = GC.nearestCell(
-                FlowAcc, self.GaugesTable[["id", "x", "y"]][:]
-            )  # ,'weight'
+            dataset = Dataset(FlowAcc)
+            loc_arr = dataset.locate_points(self.GaugesTable)
+            self.GaugesTable.loc[:, ["cell_row", "cell_col"]] = loc_arr
 
         logger.debug("Gauge Table is read successfully")
 
     def readDischargeGauges(
         self,
-        Path: str,
+        path: str,
         delimiter: str = ",",
         column: str = "id",
         fmt: str = "%Y-%m-%d",
@@ -763,8 +781,8 @@ class Catchment:
 
         Parameters
         ----------
-        Path : [str]
-            Path the the gauge discharge data.
+        path : [str]
+            path the the gauge discharge data.
         delimiter : [str], optional
             the delimiter between the date and the discharge column. The default is ",".
         column : [str], optional
@@ -801,14 +819,14 @@ class Catchment:
                 name = self.GaugesTable.loc[i, "id"]
                 if readfrom != "":
                     f = pd.read_csv(
-                        Path + str(name) + ".csv",
+                        path + str(name) + ".csv",
                         index_col=0,
                         delimiter=delimiter,
                         skiprows=readfrom,
                     )  # ,#delimiter="\t"
                 else:
                     f = pd.read_csv(
-                        Path + str(name) + ".csv",
+                        path + str(name) + ".csv",
                         header=0,
                         index_col=0,
                         delimiter=delimiter,
@@ -818,14 +836,14 @@ class Catchment:
 
                 self.QGauges[int(name)] = f.loc[self.start : self.end, f.columns[-1]]
         else:
-            if not os.path.exists(Path):
+            if not os.path.exists(path):
                 raise FileNotFoundError(
-                    f"The file you have entered{Path} does not exist"
+                    f"The file you have entered{path} does not exist"
                 )
 
             self.QGauges = pd.DataFrame(index=ind)
             f = pd.read_csv(
-                Path, header=0, index_col=0, delimiter=delimiter
+                path, header=0, index_col=0, delimiter=delimiter
             )  # ,#delimiter="\t", skiprows=11,
             f.index = [dt.datetime.strptime(i, fmt) for i in f.index.tolist()]
             self.QGauges[f.columns[0]] = f.loc[self.start : self.end, f.columns[0]]
@@ -1268,20 +1286,20 @@ class Catchment:
         if Gauges:
             kwargs["Points"] = self.GaugesTable
 
-        anim = Map.AnimateArray(Arr, Time, self.no_elem, Title=Title, **kwargs)
+        anim = StaticGlyph.AnimateArray(Arr, Time, self.no_elem, Title=Title, **kwargs)
 
         self.anim = anim
 
         return anim
 
-    def saveAnimation(self, VideoFormat="gif", Path="", SaveFrames=20):
+    def saveAnimation(self, VideoFormat="gif", path="", SaveFrames=20):
         """saveAnimation. saveAnimation.
 
         Parameters
         ----------
         VideoFormat : [str], optional
             possible formats ['mp4','mov', 'avi', 'gif']. The default is "gif".
-        Path : [str], optional
+        path : [str], optional
             path inclusinf the video format. The default is ''.
         SaveFrames : [integer], optional
             speed of the video. The default is 20.
@@ -1291,7 +1309,7 @@ class Catchment:
         None.
         """
         Vis.SaveAnimation(
-            self.anim, VideoFormat=VideoFormat, Path=Path, SaveFrames=SaveFrames
+            self.anim, VideoFormat=VideoFormat, Path=path, SaveFrames=SaveFrames
         )
 
     def saveResults(
@@ -1300,7 +1318,7 @@ class Catchment:
         Result: int = 1,
         start: str = "",
         end: str = "",
-        Path: str = "",
+        path: str = "",
         Prefix: str = "",
         fmt: str = "%Y-%m-%d",
     ):
@@ -1319,8 +1337,8 @@ class Catchment:
             start date. The default is ''.
         end : [str], optional
             end date. The default is ''.
-        Path : [str], optional
-            PAth to the directory where you want to save the results. The default is ''.
+        path : [str], optional
+            path to the directory where you want to save the results. The default is ''.
         Prefix : [str], optional
             prefix to add to the name of the result files. The default is ''.
         fmt : [str], optional
@@ -1353,35 +1371,35 @@ class Catchment:
                 Prefix = "Result_"
 
             # create list of names
-            Path = Path + Prefix
-            names = [Path + str(i)[:10] for i in self.Index[starti:endi]]
+            path = path + Prefix
+            names = [path + str(i)[:10] for i in self.Index[starti:endi]]
             names = [i.replace("-", "_") for i in names]
             names = [i.replace(" ", "_") for i in names]
             names = [i + ".tif" for i in names]
             if Result == 1:
-                Raster.rastersLike(src, self.Qtot[:, :, starti:endi], names)
+                Dataset.rastersLike(src, self.Qtot[:, :, starti:endi], names)
             elif Result == 2:
-                Raster.rastersLike(src, self.quz_routed[:, :, starti:endi], names)
+                Dataset.rastersLike(src, self.quz_routed[:, :, starti:endi], names)
             elif Result == 3:
-                Raster.rastersLike(src, self.qlz_translated[:, :, starti:endi], names)
+                Dataset.rastersLike(src, self.qlz_translated[:, :, starti:endi], names)
             elif Result == 4:
-                Raster.rastersLike(
+                Dataset.rastersLike(
                     src, self.statevariables[:, :, starti:endi, 0], names
                 )
             elif Result == 5:
-                Raster.rastersLike(
+                Dataset.rastersLike(
                     src, self.statevariables[:, :, starti:endi, 1], names
                 )
             elif Result == 6:
-                Raster.rastersLike(
+                Dataset.rastersLike(
                     src, self.statevariables[:, :, starti:endi, 2], names
                 )
             elif Result == 7:
-                Raster.rastersLike(
+                Dataset.rastersLike(
                     src, self.statevariables[:, :, starti:endi, 3], names
                 )
             elif Result == 8:
-                Raster.rastersLike(
+                Dataset.rastersLike(
                     src, self.statevariables[:, :, starti:endi, 4], names
                 )
         else:
@@ -1392,18 +1410,18 @@ class Catchment:
 
             if Result == 1:
                 data["Qsim"] = self.Qsim[starti:endi]
-                data.to_csv(Path, index=False, float_format="%.3f")
+                data.to_csv(path, index=False, float_format="%.3f")
             elif Result == 2:
                 data["Quz"] = self.quz[starti:endi]
-                data.to_csv(Path, index=False, float_format="%.3f")
+                data.to_csv(path, index=False, float_format="%.3f")
             elif Result == 3:
                 data["Qlz"] = self.qlz[starti:endi]
-                data.to_csv(Path, index=False, float_format="%.3f")
+                data.to_csv(path, index=False, float_format="%.3f")
             elif Result == 4:
                 data[["SP", "SM", "UZ", "LZ", "WC"]] = self.statevariables[
                     starti:endi, :
                 ]
-                data.to_csv(Path, index=False, float_format="%.3f")
+                data.to_csv(path, index=False, float_format="%.3f")
             elif Result == 5:
                 data["Qsim"] = self.Qsim[starti:endi]
                 data["Quz"] = self.quz[starti:endi]
@@ -1411,7 +1429,7 @@ class Catchment:
                 data[["SP", "SM", "UZ", "LZ", "WC"]] = self.statevariables[
                     starti:endi, :
                 ]
-                data.to_csv(Path, index=False, float_format="%.3f")
+                data.to_csv(path, index=False, float_format="%.3f")
             else:
                 assert False, "the possible options are from 1 to 5"
 
@@ -1502,14 +1520,14 @@ class Lake:
         )
         self.StageDischargeCurve = None
 
-    def readMeteoData(self, Path: str, fmt: str):
+    def readMeteoData(self, path: str, fmt: str):
         """readMeteoData. readMeteoData reads the meteorological data for the lake.
 
         [rainfall, ET, temperature]
 
         Parameters
         ----------
-        Path : [str]
+        path : [str]
             path to the meteo data file, containing the data in the follwoing
             order [date, rainfall, ET, temperature].
         fmt : [str]
@@ -1521,7 +1539,7 @@ class Lake:
             array containing the meteorological data
         """
 
-        df = pd.read_csv(Path, index_col=0)
+        df = pd.read_csv(path, index_col=0)
         df.index = [dt.datetime.strptime(date, fmt) for date in df.index]
 
         if self.Split:
@@ -1531,19 +1549,19 @@ class Lake:
 
         logger.debug("Lake Meteo data are read successfully")
 
-    def readParameters(self, Path):
+    def readParameters(self, path):
         """readParameters. readParameters method reads the lake parameters.
 
         Parameters
         ----------
-        Path : [str]
-            Path to the parameter file.
+        path : [str]
+            path to the parameter file.
 
         Returns
         -------
         Parameters : [array].
         """
-        Parameters = np.loadtxt(Path).tolist()
+        Parameters = np.loadtxt(path).tolist()
         self.Parameters = Parameters
         logger.debug("Lake Parameters are read successfully")
 

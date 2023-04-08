@@ -4,8 +4,7 @@
 """
 
 import numpy as np
-from pyramids.raster import Raster as raster
-
+from pyramids.dataset import Dataset
 from Hapi.rrm.routing import Routing as routing
 
 
@@ -300,7 +299,9 @@ class DistributedRRM:
 
         # Get the mask
         # mask, no_val = raster.get_mask(DEM)
-        mask, no_val = raster.getRasterData(DEM)
+        dataset = Dataset(DEM)
+        no_val = dataset.no_data_value[0]
+        mask = dataset.read_array()
         # shape of the fpl raster (rows, columns)-------------- rows are x and columns are y
         x_ext, y_ext = mask.shape
         #    y_ext, x_ext = mask.shape # shape of the fpl raster (rows, columns)------------ should change rows are y and columns are x

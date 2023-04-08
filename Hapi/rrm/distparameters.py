@@ -10,8 +10,7 @@ import os
 
 import numpy as np
 from osgeo import gdal
-from pyramids.catchment import Catchment as GC
-from pyramids.raster import Raster
+from pyramids.dataset import Dataset
 
 
 class DistParameters:
@@ -643,7 +642,8 @@ class DistParameters:
         cols = DEM.RasterXSize
 
         # get the indices of the flow direction path
-        fd_index = GC.flowDirectionIndex(FD)
+        dem = DEM(FD)
+        fd_index = dem.flowDirectionIndex()
 
         # read the river location raster
         river_A = River.ReadAsArray()
@@ -849,7 +849,9 @@ class DistParameters:
             ]
 
         for i in range(np.shape(self.Par3d)[2]):
-            Raster.rasterLike(self.raster, self.Par3d[:, :, i], pnme[i])
+            Dataset.dataset_like(
+                self.raster, self.Par3d[:, :, i], driver="geotiff", path=pnme[i]
+            )
 
     def ListAttributes(self):
         """Print Attributes List."""

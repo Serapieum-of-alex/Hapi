@@ -16,7 +16,7 @@ import matplotlib.colors as colors
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from cleopatra.array import Array
+from cleopatra.styles import Styles
 from matplotlib import animation, gridspec
 from matplotlib.animation import FuncAnimation
 from scipy.stats import gumbel_r
@@ -73,7 +73,7 @@ class Visualize:
         TYPE
             DESCRIPTION.
         """
-        return Array.getLineStyle(style)
+        return Styles.get_line_style(style)
 
     @staticmethod
     def getMarkerStyle(style: int):
@@ -91,7 +91,7 @@ class Visualize:
         TYPE
             DESCRIPTION.
         """
-        return Array.getMarkerStyle(style)
+        return Styles.get_marker_style(style)
 
     def plotGroundSurface(
         self,
@@ -1828,7 +1828,7 @@ class Visualize:
                         xlabel = 'Inundation Depth (m)', ylabel = 'Frequency', legend_size = 15,
                          font_size=15, label_size = 15, axis_font_size = 11,
                          legend = ['RIM1.0', 'RIM2.0'], pdf = False, Save = False,
-                         name = str(Event1.event_index.loc[EndInd,'id']))
+                         name = str(Event1.event_index.loc[end_ind,'id']))
         """
         # update the default options
         Fkeys = list(kwargs.keys())
