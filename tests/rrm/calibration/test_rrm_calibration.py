@@ -84,3 +84,22 @@ def test_LumpedCalibration(
     # cal_parameters = Coello.lumpedCalibration(Basic_inputs, OptimizationArgs, printError=None)
 
     # assert len(Coello.Qsim) == 1095 and Coello.Qsim.columns.to_list() == ['q']
+
+class TestDistributed:
+    def test_create_calibration_instance(
+        self,
+        coello_start_date: str,
+        coello_end_date: str
+        ):
+        coello = Calibration(
+            "coello",
+            coello_start_date,
+            coello_end_date,
+            SpatialResolution = "Distributed",
+            TemporalResolution = "Daily",
+            fmt = "%Y-%m-%d"
+        )
+        assert coello.SpatialResolution == "Distributed"
+        assert coello.RouteRiver == "Muskingum"
+        assert isinstance(coello.start, dt.datetime)
+

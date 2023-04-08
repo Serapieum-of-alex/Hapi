@@ -1,5 +1,5 @@
 from types import ModuleType
-
+import datetime as dt
 import numpy as np
 from pandas.core.frame import DataFrame
 from pandas.core.indexes.datetimes import DatetimeIndex
@@ -126,4 +126,42 @@ def test_save_lumped_results(
     Route = 1
     Run.runLumped(Coello, Route, RoutingFn)
     Path = "examples/hydrological-model/data/lumped_model/test-Lumped-Model_results.txt"
-    Coello.saveResults(Result=5, Path=Path)
+    Coello.saveResults(Result=5, path=Path)
+
+
+
+class TestDistributed:
+    def test_create_catchment_instance(
+            self,
+            coello_start_date: str,
+            coello_end_date: str
+    ):
+        coello = Catchment(
+            "coello",
+            coello_start_date,
+            coello_end_date,
+            SpatialResolution="Distributed",
+            TemporalResolution="Daily",
+            fmt="%Y-%m-%d",
+        )
+        assert coello.SpatialResolution == "distributed"
+        assert coello.RouteRiver == "Muskingum"
+        assert isinstance(coello.start, dt.datetime)
+
+    # def test_read_inputs(
+    #         self,
+    #         coello_start_date: str,
+    #         coello_end_date: str
+    # ):
+    #     coello = Catchment(
+    #         "coello",
+    #         coello_start_date,
+    #         coello_end_date,
+    #         SpatialResolution="Distributed",
+    #         TemporalResolution="Daily",
+    #         fmt="%Y-%m-%d",
+    #     )
+    #     coello.readRainfall("tests/rrm/data/evap")
+    #     coello.readTemperature("tests/rrm/data/prec")
+    #     coello.readET("tests/rrm/data/temp")
+    #     print("ssss")
