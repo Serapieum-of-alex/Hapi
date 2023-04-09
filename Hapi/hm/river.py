@@ -2166,7 +2166,7 @@ class River:
                 logger.info(f"New H = {round(H, 2)}")
                 logger.info("---------------------------")
 
-    def read_overtopping(
+    def parse_overtopping(
         self, overtopping_result_path: str = None, delimiter: str = r"\s+"
     ):
         r"""Overtopping.
@@ -4001,7 +4001,7 @@ class Reach(River):
         elif column_name == "h":
             self.resampled_h.loc[:, xsid] = Q.tolist()
 
-    def detailed_statistical_calculation(self, T):
+    def detailed_statistical_calculation(self, T: Union[list, np.ndarray]):
         """DetailedStatisticalCalculation.
 
             DetailedStatisticalCalculation method calculates the discharge related to a specific given return period.
@@ -4016,6 +4016,7 @@ class Reach(River):
         None.
         """
         assert hasattr(self, "SP"), "you "
+        T = np.array(T)
         F = 1 - (1 / T)
         self.Qrp = pd.DataFrame()
         self.Qrp["RP"] = T

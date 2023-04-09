@@ -957,7 +957,7 @@ def test_read_overtopping(
     rivers = River("HM", version=version)
     rivers.read_xs(river_cross_section_path)
 
-    rivers.read_overtopping(
+    rivers.parse_overtopping(
         overtopping_result_path=overtopping_files_dir, delimiter=","
     )
     assert hasattr(rivers, "overtopping_reaches_left")
@@ -995,7 +995,7 @@ def test_get_overtopped_xs(
 ):
     rivers = River("HM", version=version)
     rivers.read_xs(river_cross_section_path)
-    rivers.read_overtopping(
+    rivers.parse_overtopping(
         overtopping_result_path=overtopping_files_dir, delimiter=","
     )
     event = Event.read_event_index("test", event_index_file, start="1955-01-01")
@@ -1016,7 +1016,7 @@ def test_get_flooded_reaches(
 ):
     rivers = River("HM", version=version)
     rivers.read_xs(river_cross_section_path)
-    rivers.read_overtopping(
+    rivers.parse_overtopping(
         overtopping_result_path=overtopping_files_dir, delimiter=","
     )
     event = Event.read_event_index("test", event_index_file, start="1955-01-01")
@@ -1038,7 +1038,7 @@ def test_river_detailed_overtopping(
     rivers = River("HM", version=version)
     rivers.one_d_result_path = overtopping_files_dir
     rivers.read_xs(river_cross_section_path)
-    rivers.read_overtopping(
+    rivers.parse_overtopping(
         overtopping_result_path=overtopping_files_dir, delimiter=","
     )
     event = Event.read_event_index("test", event_index_file, start="1955-01-01")
