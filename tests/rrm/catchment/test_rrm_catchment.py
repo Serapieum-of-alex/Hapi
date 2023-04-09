@@ -319,6 +319,98 @@ class TestDistributed:
         assert coello.Snow == Snow
         assert coello.Maxbas is True
 
+
+class TestFW1:
+    def test_run_dist(
+        self,
+        coello_start_date: str,
+        coello_end_date: str,
+        coello_evap_path: str,
+        coello_prec_path: str,
+        coello_temp_path: str,
+        coello_fd_path: str,
+        coello_acc_path: str,
+        coello_cat_area: int,
+        coello_initial_cond: List,
+        coello_dist_parameters_maxbas: str,
+        coello_shape: Tuple,
+    ):
+        coello = Catchment(
+            "coello",
+            coello_start_date,
+            coello_end_date,
+            SpatialResolution="Distributed",
+            TemporalResolution="Daily",
+            fmt="%Y-%m-%d",
+        )
+        coello.readRainfall(
+            coello_evap_path, start=coello_start_date, end=coello_end_date
+        )
+        coello.readTemperature(
+            coello_prec_path, start=coello_start_date, end=coello_end_date
+        )
+        coello.readET(coello_temp_path, start=coello_start_date, end=coello_end_date)
+        coello.readFlowAcc(coello_acc_path)
+        # coello.readFlowDir(coello_fd_path)
+        Snow = False
+        coello.readParameters(coello_dist_parameters_maxbas, Snow, Maxbas=True)
+        coello.readLumpedModel(HBV, coello_cat_area, coello_initial_cond)
+        Run.runFW1(coello)
+        assert isinstance(coello.qout, np.ndarray)
+        assert len(coello.qout) == 10
+        assert coello.statevariables.shape == (coello_shape[0], coello_shape[1], 11, 5)
+        assert coello.quz.shape == (coello_shape[0], coello_shape[1], 11)
+        assert coello.qlz.shape == (coello_shape[0], coello_shape[1], 11)
+
+    def test_extract_results(
+        self,
+        coello_start_date: str,
+        coello_end_date: str,
+        coello_evap_path: str,
+        coello_prec_path: str,
+        coello_temp_path: str,
+        coello_fd_path: str,
+        coello_acc_path: str,
+        coello_cat_area: int,
+        coello_initial_cond: List,
+        coello_dist_parameters_maxbas: str,
+        coello_shape: Tuple,
+        coello_gauges_table: str,
+        coello_gauges_path: str,
+    ):
+        coello = Catchment(
+            "coello",
+            coello_start_date,
+            coello_end_date,
+            SpatialResolution="Distributed",
+            TemporalResolution="Daily",
+            fmt="%Y-%m-%d",
+        )
+        coello.readRainfall(
+            coello_evap_path, start=coello_start_date, end=coello_end_date
+        )
+        coello.readTemperature(
+            coello_prec_path, start=coello_start_date, end=coello_end_date
+        )
+        coello.readET(coello_temp_path, start=coello_start_date, end=coello_end_date)
+        coello.readFlowAcc(coello_acc_path)
+        # coello.readFlowDir(coello_fd_path)
+
+        coello.readGaugeTable(coello_gauges_table, coello_acc_path)
+        coello.readDischargeGauges(coello_gauges_path, column="id", fmt="%Y-%m-%d")
+
+        Snow = False
+        coello.readParameters(coello_dist_parameters_maxbas, Snow, Maxbas=True)
+        coello.readLumpedModel(HBV, coello_cat_area, coello_initial_cond)
+        Run.runFW1(coello)
+
+        coello.extractDischarge(CalculateMetrics=True, FW1=True)
+        assert isinstance(coello.Metrics, DataFrame)
+        assert len(coello.Metrics) == 7
+        assert len(coello.Qsim) == 10
+
+
+class TestMuskingum:
     def test_run_dist(
         self,
         coello_start_date: str,

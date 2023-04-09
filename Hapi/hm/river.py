@@ -2490,9 +2490,8 @@ class River:
             list of sub-basins that are flooded during the given days.
         event_days : [list]
             list od daysof an event.
-
         delimiter: str
-            Default is r"\s+".
+            Delimiter used in the 1D result files. Default is r"\s+".
 
         Returns
         -------
@@ -4024,149 +4023,95 @@ class Reach(River):
             F, loc=self.SP.loc[0, "loc"], scale=self.SP.loc[0, "scale"]
         )
 
-    def detailed_overtopping(self, event_days):
-        """DetailedOvertopping. DetailedOvertopping method takes list of days and get the left and right overtopping for the sub-basin each day.
+    def _get_reach_overtopping(
+        self, left: bool, event_days: List[int], delimiter: str = r"\s+"
+    ):
+
+        xs_s = self.cross_sections.loc[:, "xsid"].tolist()
+        columns = [f"reach-{self.id}"] + xs_s + ["sum"]
+        df = pd.DataFrame(index=event_days + ["sum"], columns=columns)
+        df.loc[:, columns] = 0
+
+        if left:
+            path = rf"{self.one_d_result_path}/{self.id}{self.left_overtopping_suffix}"
+        else:
+            path = rf"{self.one_d_result_path}/{self.id}{self.right_overtopping_suffix}"
+
+        data = pd.read_csv(path, header=None, delimiter=delimiter)
+        data.columns = ["day", "hour", "xsid", "q", "wl"]
+        # get the days in the sub
+        days = set(data.loc[:, "day"])
+        for day_j in event_days:
+            # check whether this sub basin has flooded in this particular day
+            if day_j in days:
+                # filter the dataframe to the discharge column (3) and the days
+                df.loc[day_j, f"reach-{self.id}"] = data.loc[
+                    data["day"] == day_j, "q"
+                ].sum()
+                # get the xss that was overtopped in that particular day
+                xs_day = set(data.loc[data["day"] == day_j, "xsid"].tolist())
+                for xs_i in xs_day:
+                    df.loc[day_j, xs_i] = data.loc[data["day"] == day_j, "q"][
+                        data["xsid"] == xs_i
+                    ].sum()
+            else:
+                df.loc[day_j, f"reach-{self.id}"] = 0
+
+            # calculate sum
+            df.loc[day_j, "sum"] = df.loc[day_j, xs_s].sum()
+
+        for xs_j in xs_s:
+            df.loc["sum", xs_j] = df.loc[:, xs_j].sum()
+
+        df.loc["sum", f"reach-{self.id}"] = df.loc[:, f"reach-{self.id}"].sum()
+
+        return df
+
+    def detailed_overtopping(self, event_days: List[int], delimiter: str = r"\s+"):
+        r"""DetailedOvertopping.
+
+            - DetailedOvertopping method takes list of days and get the left and right overtopping for the sub-basin
+            each day.
 
         Parameters
         ----------
-            1-event_days : [list]
-                list od daysof an event.
+        event_days : [list]
+            list od daysof an event.
+        delimiter: str
+            Delimiter used in the 1D result files. Default is r"\s+".
 
         Returns
         -------
-            1- detailed_overtopping_left:[data frame attribute]
-                containing the computational node and rainfall-runoff results
-                (hydrograph)with columns ['id', Nodeid ]
-            2-detailed_overtopping_right:[data frame attribute]
-                containing the computational node and rainfall-runoff results
-                (hydrograph)with columns ['id', Nodeid ]
-            3-all_overtopping_vs_xs:
-            4-all_overtopping_vs_time:
+        detailed_overtopping_left:[DataFrame attribute]
+            containing the computational node and rainfall-runoff results
+            (hydrograph)with columns ['id', Nodeid ]
+        detailed_overtopping_right:[DataFrame attribute]
+            containing the computational node and rainfall-runoff results
+            (hydrograph)with columns ['id', Nodeid ]
+        all_overtopping_vs_xs:
+        all_overtopping_vs_time:
         """
-        # River.DetailedOvertopping(self, [self.id], event_days)
-        XSs = self.cross_sections.loc[:, "xsid"].tolist()
-        columns = [self.id] + XSs + ["sum"]
-        self.detailed_overtopping_left = pd.DataFrame(
-            index=event_days + ["sum"], columns=columns
-        )
-        self.detailed_overtopping_left.loc[:, columns] = 0
-        self.detailed_overtopping_right = pd.DataFrame(
-            index=event_days + ["sum"], columns=columns
-        )
-        self.detailed_overtopping_right.loc[:, columns] = 0
+        xs_s = self.cross_sections.loc[:, "xsid"].tolist()
         # Left Bank
-        try:
-            # try to open and read the overtopping file
-            data = pd.read_csv(
-                f"{self.one_d_result_path}{self.id}{self.left_over_topping_suffix}",
-                header=None,
-                delimiter=r"\s+",
-            )
-
-            data.columns = ["day", "hour", "xsid", "q", "wl"]
-            # get the days in the sub
-            days = list(set(data.loc[:, "day"]))
-
-            for j in range(len(event_days)):
-                # check whether this sub basin has flooded in this particular day
-                if event_days[j] in days:
-                    # filter the dataframe to the discharge column (3) and the days
-                    self.detailed_overtopping_left.loc[
-                        event_days[j], self.id
-                    ] = data.loc[data["day"] == event_days[j], "q"].sum()
-                    # get the xss that was overtopped in that particular day
-                    XSday = list(
-                        set(data.loc[data["day"] == event_days[j], "xsid"].tolist())
-                    )
-
-                    for i in range(len(XSday)):
-                        # dataXS = data['q'].loc[data['day'] == event_days[j]][data['xsid'] == XSday[i]].sum()
-                        self.detailed_overtopping_left.loc[event_days[j], XSday[i]] = (
-                            data["q"]
-                            .loc[data["day"] == event_days[j]][data["xsid"] == XSday[i]]
-                            .sum()
-                        )
-                else:
-                    self.detailed_overtopping_left.loc[event_days[j], self.id] = 0
-        except:
-            self.detailed_overtopping_left.loc[:, self.id] = 0
-
+        df_left = self._get_reach_overtopping(True, event_days, delimiter=delimiter)
         # right Bank
-        try:
-            # try to open and read the overtopping file
-            data = pd.read_csv(
-                rf"{self.one_d_result_path}\{self.id}{self.right_overtopping_suffix}",
-                header=None,
-                delimiter=r"\s+",
-            )
-            data.columns = ["day", "hour", "xsid", "q", "wl"]
-            # get the days in the sub
-            days = list(set(data.loc[:, "day"]))
-
-            for j in range(len(event_days)):
-                # check whether this sub basin has flooded in this particular day
-                if event_days[j] in days:
-                    # filter the dataframe to the discharge column (3) and the days
-                    self.detailed_overtopping_right.loc[
-                        event_days[j], self.id
-                    ] = data.loc[data["day"] == event_days[j], "q"].sum()
-                    # get the xss that was overtopped in that particular day
-                    XSday = list(
-                        set(data.loc[data["day"] == event_days[j], "xsid"].tolist())
-                    )
-
-                    for i in range(len(XSday)):
-                        # dataXS = data['q'].loc[data['day'] == event_days[j]][data['xsid'] == XSday[i]].sum()
-                        self.detailed_overtopping_right.loc[event_days[j], XSday[i]] = (
-                            data["q"]
-                            .loc[data["day"] == event_days[j]][data["xsid"] == XSday[i]]
-                            .sum()
-                        )
-
-                else:
-                    self.detailed_overtopping_right.loc[event_days[j], self.id] = 0
-        except:
-            # logger.debug("file did not open")
-            self.detailed_overtopping_right.loc[:, self.id] = 0
-
-        # sum overtopping for each day
-        for j in range(len(event_days)):
-            self.detailed_overtopping_left.loc[
-                event_days[j], "sum"
-            ] = self.detailed_overtopping_left.loc[event_days[j], XSs].sum()
-            self.detailed_overtopping_right.loc[
-                event_days[j], "sum"
-            ] = self.detailed_overtopping_right.loc[event_days[j], XSs].sum()
-        # sum overtopping for each sub basin
-        for j in range(len(XSs)):
-            self.detailed_overtopping_left.loc[
-                "sum", XSs[j]
-            ] = self.detailed_overtopping_left.loc[:, XSs[j]].sum()
-            self.detailed_overtopping_right.loc[
-                "sum", XSs[j]
-            ] = self.detailed_overtopping_right.loc[:, XSs[j]].sum()
-
-        self.detailed_overtopping_left.loc[
-            "sum", self.id
-        ] = self.detailed_overtopping_left.loc[:, self.id].sum()
-        self.detailed_overtopping_right.loc[
-            "sum", self.id
-        ] = self.detailed_overtopping_right.loc[:, self.id].sum()
+        df_right = self._get_reach_overtopping(False, event_days, delimiter=delimiter)
 
         self.all_overtopping_vs_xs = (
-            self.detailed_overtopping_left.loc["sum", XSs]
-            + self.detailed_overtopping_right.loc["sum", XSs]
-        )
-
+            df_left.loc["sum", xs_s] + df_right.loc["sum", xs_s]
+        ).to_frame()
         self.all_overtopping_vs_time = pd.DataFrame()
         self.all_overtopping_vs_time["id"] = event_days
         self.all_overtopping_vs_time.loc[:, "Overtopping"] = (
-            self.detailed_overtopping_left.loc[event_days, "sum"]
-            + self.detailed_overtopping_right.loc[event_days, "sum"]
+            df_left.loc[event_days, "sum"] + df_right.loc[event_days, "sum"]
         ).tolist()
+
         self.all_overtopping_vs_time.loc[:, "date"] = (
             self.reference_index.loc[event_days[0] : event_days[-1], "date"]
         ).tolist()
+
+        self.detailed_overtopping_right = df_right
+        self.detailed_overtopping_left = df_left
 
     def save_hydrograph(self, xsid: int, path: str = None, Option: int = 1):
         """Save Hydrograph.

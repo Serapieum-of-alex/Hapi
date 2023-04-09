@@ -1027,7 +1027,7 @@ def test_get_flooded_reaches(
     assert flooded_reaches == [1]
 
 
-def test_detailed_overtopping(
+def test_river_detailed_overtopping(
     version: int,
     river_cross_section_path: str,
     xs_total_no: int,
@@ -1071,4 +1071,43 @@ def test_get_days(
     reach = Reach(reach_id, rivers)
     alter1, alter2 = reach.get_days(35, 25, delimiter=",")
     assert alter1 == 35
-    assert alter2 == 34
+    assert alter2 == 30
+
+
+def test_reach_detailed_overtopping(
+    version: int,
+    river_cross_section_path: str,
+    xs_total_no: int,
+    xs_col_no: int,
+    overtopping_files_dir: str,
+    event_index_file: str,
+):
+    rivers = River("HM", version=version)
+    rivers.read_xs(river_cross_section_path)
+    rivers.one_d_result_path = overtopping_files_dir
+    reach_id = 1
+    reach = Reach(reach_id, rivers)
+    reach.read_1d_results(fill_missing=False, delimiter=",")
+    event_days = [35, 36, 37, 38]
+    reach.detailed_overtopping(event_days, delimiter=",")
+
+    assert isinstance(reach.all_overtopping_vs_xs, DataFrame)
+    assert reach.all_overtopping_vs_xs.index.tolist() == reach.xs_names
+    assert reach.all_overtopping_vs_xs.columns.tolist() == ["sum"]
+
+    assert isinstance(reach.all_overtopping_vs_time, DataFrame)
+    assert reach.all_overtopping_vs_time.loc[:, "id"].tolist() == event_days
+    assert reach.all_overtopping_vs_time.columns.tolist() == [
+        "id",
+        "Overtopping",
+        "date",
+    ]
+
+    cols = [f"reach-{reach.id}"] + reach.xs_names + ["sum"]
+    rows = event_days + ["sum"]
+    assert isinstance(reach.detailed_overtopping_right, DataFrame)
+    assert isinstance(reach.detailed_overtopping_left, DataFrame)
+    assert reach.detailed_overtopping_right.columns.tolist() == cols
+    assert reach.detailed_overtopping_left.columns.tolist() == cols
+    assert reach.detailed_overtopping_right.index.tolist() == rows
+    assert reach.detailed_overtopping_left.index.tolist() == rows
