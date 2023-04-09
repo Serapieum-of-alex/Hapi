@@ -17,13 +17,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import statista.metrics as PC
-from digitalearth.static import StaticGlyph
+from cleopatra.array import Array
 from loguru import logger
 from osgeo import gdal
 from pyramids.dem import DEM
 from pyramids.dataset import Dataset, Datacube
-
-from Hapi.plot.visualizer import Visualize as Vis
 
 
 class Catchment:
@@ -1288,37 +1286,41 @@ class Catchment:
             self.Temp[self.FlowAccArr == self.NoDataValue, :] = np.nan
             Arr = self.Temp[:, :, starti:endi]
             Title = "Temperature"
+        else:
+            raise ValueError("There are only 11 plotting options")
 
         Time = self.Index[starti:endi]
 
         if Gauges:
             kwargs["Points"] = self.GaugesTable
 
-        anim = StaticGlyph.AnimateArray(Arr, Time, self.no_elem, Title=Title, **kwargs)
+        array = Array(Arr)
+        anim = array.animate(Time, title=Title, **kwargs)
+        # anim = StaticGlyph.AnimateArray(Arr, Time, self.no_elem, Title=Title, **kwargs)
 
         self.anim = anim
 
         return anim
 
-    def saveAnimation(self, VideoFormat="gif", path="", SaveFrames=20):
-        """saveAnimation. saveAnimation.
-
-        Parameters
-        ----------
-        VideoFormat : [str], optional
-            possible formats ['mp4','mov', 'avi', 'gif']. The default is "gif".
-        path : [str], optional
-            path inclusinf the video format. The default is ''.
-        SaveFrames : [integer], optional
-            speed of the video. The default is 20.
-
-        Returns
-        -------
-        None.
-        """
-        Vis.SaveAnimation(
-            self.anim, VideoFormat=VideoFormat, Path=path, SaveFrames=SaveFrames
-        )
+    # def saveAnimation(self, VideoFormat="gif", path="", SaveFrames=20):
+    #     """saveAnimation. saveAnimation.
+    #
+    #     Parameters
+    #     ----------
+    #     VideoFormat : [str], optional
+    #         possible formats ['mp4','mov', 'avi', 'gif']. The default is "gif".
+    #     path : [str], optional
+    #         path inclusinf the video format. The default is ''.
+    #     SaveFrames : [integer], optional
+    #         speed of the video. The default is 20.
+    #
+    #     Returns
+    #     -------
+    #     None.
+    #     """
+    #     Vis.SaveAnimation(
+    #         self.anim, VideoFormat=VideoFormat, Path=path, SaveFrames=SaveFrames
+    #     )
 
     def saveResults(
         self,

@@ -1,23 +1,12 @@
-""".
-
-Created on Sat Mar 14 16:36:01 2020
-
-@author: mofarrag
-"""
+"""Plotting functions."""
 import datetime as dt
 import math
-import os
-
-# from collections import OrderedDict
 from typing import List, Optional, Union
-
-import matplotlib as mpl
-import matplotlib.colors as colors
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from cleopatra.styles import Styles
-from matplotlib import animation, gridspec
+from matplotlib import gridspec
 from matplotlib.animation import FuncAnimation
 from scipy.stats import gumbel_r
 
@@ -1688,124 +1677,6 @@ class Visualize:
         ax1.grid()
 
     @staticmethod
-    def saveProfileAnimation(Anim, Path="", fps=3, ffmpeg_path=""):
-        """SaveProfileAnimation.
-
-        save video animation
-        available extentions .mov, .gif, .avi, .mp4
-
-        Parameters
-        ----------
-        Anim : TYPE
-            DESCRIPTION.
-        Path : TYPE, optional
-            DESCRIPTION. The default is ''.
-        fps : TYPE, optional
-            DESCRIPTION. The default is 3.
-        ffmpeg_path : TYPE, optional
-            DESCRIPTION. The default is ''.
-
-        in order to save a video using matplotlib you have to download ffmpeg
-        from https://ffmpeg.org/ and define this path to matplotlib
-
-        import matplotlib as mpl
-        mpl.rcParams['animation.ffmpeg_path'] = "path where you saved the
-                                                ffmpeg.exe/ffmpeg.exe"
-
-        Returns
-        -------
-        None.
-        """
-        message = """
-            please visit https://ffmpeg.org/ and download a version of ffmpeg
-            compitable with your operating system, and copy the content of the
-            folder and paste it in the "c:/user/.matplotlib/ffmpeg-static/"
-            """
-        if ffmpeg_path == "":
-            ffmpeg_path = (
-                os.getenv("HOME") + "/.matplotlib/ffmpeg-static/bin/ffmpeg.exe"
-            )
-            assert os.path.exists(ffmpeg_path), "{0}".format(message)
-
-        mpl.rcParams["animation.ffmpeg_path"] = ffmpeg_path
-
-        Ext = Path.split(".")[1]
-        if Ext == "gif":
-            msg = """ please enter a valid path to save the animation"""
-            assert len(Path) >= 1 and Path.endswith(".gif"), "{0}".format(msg)
-
-            writergif = animation.PillowWriter(fps=fps)
-            Anim.save(Path, writer=writergif)
-        else:
-            try:
-                if Ext == "avi" or Ext == "mov":
-                    writervideo = animation.FFMpegWriter(fps=fps, bitrate=1800)
-                    Anim.save(Path, writer=writervideo)
-                elif Ext == "mp4":
-                    writermp4 = animation.FFMpegWriter(fps=fps, bitrate=1800)
-                    Anim.save(Path, writer=writermp4)
-
-            except FileNotFoundError:
-                msg = """ please visit https://ffmpeg.org/ and download a
-                    version of ffmpeg compitable with your operating system, for
-                    more details please check the method definition
-                    """
-                print("{0}".format(msg))
-
-    def SaveAnimation(anim, VideoFormat="gif", Path="", SaveFrames=20):
-        """saveAnimation.
-
-        Save animation
-
-        Parameters
-        ----------
-        anim : TYPE
-            DESCRIPTION.
-        VideoFormat : TYPE, optional
-            DESCRIPTION. The default is "gif".
-        Path : TYPE, optional
-            DESCRIPTION. The default is ''.
-        SaveFrames : TYPE, optional
-            DESCRIPTION. The default is 20.
-
-        in order to save a video using matplotlib you have to download ffmpeg from
-        https://ffmpeg.org/ and define this path to matplotlib
-
-        import matplotlib as mpl
-        mpl.rcParams['animation.ffmpeg_path'] = "path where you saved the ffmpeg.exe/ffmpeg.exe"
-
-        Returns
-        -------
-        None.
-        """
-        ffmpegPath = os.getenv("HOME") + "/.matplotlib/ffmpeg-static/bin/ffmpeg.exe"
-
-        message = """
-        please visit https://ffmpeg.org/ and download a version of ffmpeg compitable
-        with your operating system, and copy the content of the folder and paste it
-        in the "c:/user/.matplotlib/ffmpeg-static/"
-        """
-        assert os.path.exists(ffmpegPath), message
-
-        mpl.rcParams["animation.ffmpeg_path"] = ffmpegPath
-
-        if VideoFormat == "gif":
-            writergif = animation.PillowWriter(fps=SaveFrames)
-            anim.save(Path, writer=writergif)
-        else:
-            try:
-                if VideoFormat == "avi" or VideoFormat == "mov":
-                    writervideo = animation.FFMpegWriter(fps=SaveFrames, bitrate=1800)
-                    anim.save(Path, writer=writervideo)
-                elif VideoFormat == "mp4":
-                    writermp4 = animation.FFMpegWriter(fps=SaveFrames, bitrate=1800)
-                    anim.save(Path, writer=writermp4)
-            except FileNotFoundError:
-                print(
-                    "please visit https://ffmpeg.org/ and download a version of ffmpeg compitable with your operating system, for more details please check the method definition"
-                )
-
-    @staticmethod
     def Histogram(v1, v2, NoAxis=2, filter1=0.2, Save=False, pdf=True, **kwargs):
         """Histogram.
 
@@ -1994,37 +1865,3 @@ class Visualize:
                 print(f"{key} : {repr(self.__dict__[key])}")
 
         print("\n")
-
-
-class MidpointNormalize(colors.Normalize):
-    """MidpointNormalize.
-
-    !TODO needs docs
-    """
-
-    def __init__(self, vmin=None, vmax=None, midpoint=None, clip=False):
-        self.midpoint = midpoint
-        colors.Normalize.__init__(self, vmin, vmax, clip)
-
-    def __call__(self, value, clip=None):
-        """MidpointNormalize.
-
-        ! TODO needs docs
-
-        Parameters
-        ----------
-        value : TYPE
-            DESCRIPTION.
-        clip : TYPE, optional
-            DESCRIPTION. The default is None.
-
-        Returns
-        -------
-        TYPE
-            DESCRIPTION.
-        """
-        # I'm ignoring masked values and all kinds of edge cases to make a
-        # simple example...
-        x, y = [self.vmin, self.midpoint, self.vmax], [0, 0.5, 1]
-
-        return np.ma.masked_array(np.interp(value, x, y))
