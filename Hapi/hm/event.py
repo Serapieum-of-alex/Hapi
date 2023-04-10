@@ -1,6 +1,6 @@
 """1D riven Events."""
 import os
-from typing import Tuple, Any, Union
+from typing import Tuple, Any, Union, Dict
 from pathlib import Path
 import datetime as dt
 import yaml
@@ -28,17 +28,29 @@ class Catalog:
     @property
     def events(self):
         """Event days."""
-        return list(self.catalog.keys())
+        return list(self._catalog.keys())
 
-    @property
     def __len__(self):
         """Length."""
-        return len(self.events)
+        return len(self._catalog.keys())
 
-    @property
     def __iter__(self):
         """Iterate."""
-        return iter(self.catalog.keys())
+        return iter(self._catalog.items())
+
+    # def __setitem__(self, key, value):
+    #     """Set event."""
+    #     # if key in self.events:
+    #     #     raise KeyError(f"event: {key} already exists")
+    #     self._catalog[key] = value
+
+    def __getitem__(self, item):
+        """Get Event."""
+        if item not in self.events:
+            raise KeyError(
+                f"there is no event: {item}, available events are: {self.events}"
+            )
+        return self._catalog[item]
 
     @classmethod
     def read_file(cls, path: str):
@@ -70,7 +82,7 @@ class Catalog:
                 pass
 
             if isinstance(val, list):
-                new_dict[key] = list(map(Catalog.float_3, in_dict[key]))
+                new_dict[key] = list(map(float, in_dict[key]))  # Catalog.float_3
             elif isinstance(val, dict):
                 new_dict[key] = Catalog._serialize(val)
             else:
@@ -166,6 +178,9 @@ class Event:
         )
         self.reference_index = self.create_reference_index(self.start, freq="D")
         self._event_index = event_index
+        if event_index is not None:
+            self._number_events = len(self.event_index.loc[:, "index"].unique())
+
         self._left_overtopping_suffix = left_overtopping_suffix
         self._right_overtopping_suffix = right_overtopping_suffix
         self._depth_prefix = depth_prefix
@@ -196,6 +211,11 @@ class Event:
     def event_index(self):
         """Event index."""
         return self._event_index
+
+    @property
+    def numer_events(self):
+        """Events Number."""
+        return self._number_events
 
     @property
     def depth_prefix(self):
@@ -239,6 +259,39 @@ class Event:
         df["date"] = date
         return df
 
+    def get_event_by_index(self, event_i: int) -> Dict[str, str]:
+        """get_event_by_index.
+
+            using the index get the event last day.
+
+        Parameters
+        ----------
+        event_i: [int]
+            the order of the event.
+
+        Returns
+        -------
+        Dict:
+            {'start': 35, 'end': 38, 'cells': 1023}
+        """
+        if event_i > self.numer_events:
+            raise ValueError(f"There are only {self.numer_events}, given: {event_i}")
+        # ind = self.event_index.loc[:, "index"].values
+        # row = np.where(ind == event_i)[0][-1]
+        # return self.event_index.loc[row, "id"]
+        df = self.event_index[self.event_index["index"] == event_i].reset_index(
+            drop=True
+        )
+        ind = len(df) - 1
+        event_data = {
+            "start": df.loc[0, "id"],
+            "end": df.loc[ind, "id"],
+        }
+        if "cells" in df.columns:
+            event_data["cells"] = df.loc[ind, "cells"]
+
+        return event_data
+
     @classmethod
     def create_from_index(
         cls,
@@ -266,12 +319,14 @@ class Event:
             temporal resolution of the simulation. Default is "D".
         fmt: [str]
             Default is "%Y-%m-%d".
+        event_duration: [int]
+            Default is 10.
 
         Returns
         -------
         event_index: [dataframe]
-            this method creates an instance attribute of type dataframe with columns ['id','continue', 'IndDiff',
-            'Duration']
+            this method creates an instance attribute of type dataframe with columns ['id','continue', 'ind_diff',
+            'duration']
         """
         # read the index file (containing the id of the days where flood happens (2D
         # algorithm works))
@@ -462,9 +517,8 @@ class Event:
         path: str,
         base_map: str,
         excluded_value,
-        save_to: str,
     ) -> Catalog:
-        """OverlayMaps.
+        """Overlay_maps.
 
             - OverlayMaps method reads all the maps in the folder given by path input and overlay them with the
             basemap and for each value in the basemap it create a dictionary with the intersected values from all maps.
@@ -478,23 +532,15 @@ class Event:
             path="data/cropped.asc"
         excluded_value: [Numeric]
             values you want to exclude from exteacted values
-        save_to: [String]
-            a path to the folder to save a text file for each
-            value in the base map including all the intersected values
-            from other maps.
 
         Returns
         -------
         extracted_values: [Dict]
             dictonary with a list of values in the basemap as keys and for each key a list of all the intersected
             values in the maps from the path
-        NonZeroCells: [dataframe]
-            dataframe with the first column as the "file" name and the second column is the number of cells in each map
         """
         classes_map = Dataset.read_file(base_map)
         # get the numbe of inundated cells in the Event index data frame
-        # self._event_index["cells"] = 0
-        # event_days = self._event_index["id"].values
         ind_unique = self.event_index.loc[:, "index"].unique()
         ind = self.event_index.loc[:, "index"].values
         event_catalog = {}
@@ -672,30 +718,19 @@ class Event:
         day = self.event_index.loc[ind, "id"]
         return ind, day
 
-        # # filter the dataframe and get only the 'indDiff' and 'id' columns
-        # FilteredEvent = self.event_index.loc[:,['ind_diff','id']]
-        # FilteredEvent['diff'] = FilteredEvent.index - ind
-        # # get only days before the day you inputed
-        # FilteredEvent = FilteredEvent[FilteredEvent['diff'] <=0 ]
-        # # start to search from down to up till you get the first 0 in the ind_diff
-        # for i in range(self.event_index['duration'].max()):
-
-        #     if FilteredEvent.loc[len(FilteredEvent)-1-i,'ind_diff'] == 0:
-        #         break
-
-        # return FilteredEvent.index[len(FilteredEvent)-1-i]
-
     def get_event_end(self, loc):
-        """GetEventEnd. method returns the index of the beginning of the event in the event_index dataframe.
+        """get_event_end.
+
+            - method returns the index of the beginning of the event in the event_index dataframe.
 
         Parameters
         ----------
-        loc: [Integer]
+        loc: [int]
             dataframe index of the day you want to trace back to get the begining
 
         Returns
         -------
-        ind: [Integer]
+        ind: [int]
             dataframe index of the beginning day of the event
 
         Example

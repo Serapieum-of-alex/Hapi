@@ -5,14 +5,14 @@ from pandas import DataFrame
 from Hapi.hm.event import Event, Catalog
 
 
-def test_create_event_instance(event_instance_attrs: List[str]) -> Event:
+def test_create_event_instance(event_instance_attrs: List[str]):
     event_obg = Event(f"test")
     assert event_obg.depth_prefix == "DepthMax"
     assert isinstance(event_obg.reference_index, DataFrame)
     assert all([i in event_obg.__dict__.keys() for i in event_instance_attrs])
 
 
-def test_create_from_overtopping(overtopping_file: str) -> Event:
+def test_create_from_overtopping(overtopping_file: str):
     event_obg = Event("test")
     event_obg.create_from_overtopping(overtopping_file)
     assert hasattr(event_obg, "event_index")
@@ -45,6 +45,14 @@ def test_get_event_start(event_index_file: str, event_index_volume_attrs2: List[
     assert end_day == 8200
 
 
+def test_get_event_by_index(
+    event_index_file: str, volume_error_file: str, event_index_volume_attrs2: List[str]
+):
+    event = Event.read_event_index("test", event_index_file, start="1955-01-01")
+    event_details = event.get_event_by_index(1)
+    assert event_details == {"start": 35, "end": 38, "cells": 1023}
+
+
 def test_detailed_overtopping(
     event_index_file: str,
 ):
@@ -73,3 +81,23 @@ class TestCatalog:
         catalog.to_file(save_to)
         assert os.path.exists(path)
         os.remove(save_to)
+
+    def test_dunder_methods(self):
+        path = "tests/hm/data/catalog.yaml"
+        catalog = Catalog.read_file(path)
+        # test __len__
+        assert len(catalog) == 2
+        # test __iter__
+        assert len(list(catalog)) == 2
+        # test __getitem__
+        assert catalog[19] == {
+            "day": 19,
+            "depth": {
+                5: [0.0199, 0.0099, 0.14, 0.09, 0.0199, 0.0399],
+                29: [0.4199, 0.31, 0.31, 0.3499, 0.34, 0.4099],
+            },
+            "reaches": [29.0, 5.0],
+        }
+        # test __setitem__
+        # catalog[20] == {}
+        # assert 20 in catalog.events
