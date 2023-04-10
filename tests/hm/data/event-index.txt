@@ -1,4 +1,4 @@
-id,date,continue,IndDiff,Duration,cells
+id,date,continue,ind_diff,duration,cells
 35,1955-02-04,0,0,0,0
 36,1955-02-05,1,1,2,0
 38,1955-02-07,0,0,0,1023

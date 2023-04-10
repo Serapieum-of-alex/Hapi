@@ -2331,7 +2331,7 @@ class River:
             # get all the days in the same event before that day as the inundation in the maps may
             # happen due to any of the days before not in this day
             Eventdays = self.event_index.loc[
-                loc - self.event_index.loc[loc, "IndDiff"] : loc, "id"
+                loc - self.event_index.loc[loc, "ind_diff"] : loc, "id"
             ].tolist()
         else:
             Eventdays = [day]

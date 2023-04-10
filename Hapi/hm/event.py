@@ -1,15 +1,94 @@
 """1D riven Events."""
 import os
 from typing import Tuple, Any, Union
+from pathlib import Path
 import datetime as dt
-
+import yaml
 import numpy as np
 import pandas as pd
 from pandas.core.frame import DataFrame
-
-# from pyramids.raster import Raster
 from pyramids.dataset import Dataset
 from cleopatra.statistics import Statistic
+
+
+class Catalog:
+    """Flood catalog."""
+
+    float_3 = lambda x: float(round(x, 3))
+
+    def __init__(self, catalog: dict):
+        self._catalog = catalog
+        pass
+
+    @property
+    def catalog(self):
+        """Catalog."""
+        return self._catalog
+
+    @property
+    def events(self):
+        """Event days."""
+        return list(self.catalog.keys())
+
+    @property
+    def __len__(self):
+        """Length."""
+        return len(self.events)
+
+    @property
+    def __iter__(self):
+        """Iterate."""
+        return iter(self.catalog.keys())
+
+    @classmethod
+    def read_file(cls, path: str):
+        """Read catalog.
+
+        Parameters
+        ----------
+        path: str
+        """
+        path = Path(path)
+        if not path.exists():
+            raise FileNotFoundError(
+                f"the path you entered does not exist: {path.absolute()}"
+            )
+
+        with open(path.absolute(), "r") as stream:
+            catalog = yaml.safe_load(stream)
+
+        return cls(catalog)
+
+    @staticmethod
+    def _serialize(in_dict: dict):
+        # convert the keys to int
+        new_dict = {}
+        for key, val in in_dict.items():
+            try:
+                key = int(key)
+            except ValueError:
+                pass
+
+            if isinstance(val, list):
+                new_dict[key] = list(map(Catalog.float_3, in_dict[key]))
+            elif isinstance(val, dict):
+                new_dict[key] = Catalog._serialize(val)
+            else:
+                new_dict[key] = int(val)
+
+        return new_dict
+
+    def to_file(self, path: str):
+        """Save catalog.
+
+        Parameters
+        ----------
+        path: path
+        """
+        cat = self._serialize(self.catalog)
+
+        with open(path, "w") as outfile:
+            yaml.dump(cat, outfile, default_flow_style=False)
 
 
 class Event:
@@ -162,7 +241,13 @@ class Event:
 
     @classmethod
     def create_from_index(
-        cls, name: str, path: str, start: str, freq: str = "D", fmt: str = "%Y-%m-%d"
+        cls,
+        name: str,
+        path: str,
+        start: str,
+        freq: str = "D",
+        fmt: str = "%Y-%m-%d",
+        event_duration: int = 10,
     ):
         """create_from_index.
 
@@ -188,12 +273,6 @@ class Event:
             this method creates an instance attribute of type dataframe with columns ['id','continue', 'IndDiff',
             'Duration']
         """
-        # FIXME
-        # if the flood event does not have overtopping for 1 day then continues to
-        # overtop after the method considers it as two separate events however
-        # it is the same event (if the gap is less than 10 days it is still
-        # considered the same event)
-
         # read the index file (containing the id of the days where flood happens (2D
         # algorithm works))
         if not os.path.exists(path):
@@ -205,30 +284,35 @@ class Event:
         event_index = pd.read_csv(path, header=None)
         event_index.rename(columns={0: "id"}, inplace=True)
         # convert the index into date
-
         event_index = Event.ordinal_to_date(event_index, reference_index)
-
-        event_index.loc[:, "continue"] = 0
         # index difference maybe different than the duration as there might be
         # a gap in the middle of the event
-        event_index.loc[:, "IndDiff"] = 0
-        event_index.loc[:, "Duration"] = 0
+        cols = ["continue", "ind_diff", "duration", "index"]
+        event_index.loc[:, cols] = 0
 
         # the first day in the index file is an event beginning
+        k = 1
+        event_index.loc[0, "index"] = k
         event_beginning = event_index.loc[0, "date"]
         for i in range(1, len(event_index)):
             # if the day is previous day+1
-            if event_index.loc[i, "id"] == event_index.loc[i - 1, "id"] + 1:
+            if (
+                event_index.loc[i, "id"]
+                <= event_index.loc[i - 1, "id"] + event_duration
+            ):
                 # then the event continues
                 event_index.loc[i, "continue"] = 1
                 # increase the duration
-                event_index.loc[i, "IndDiff"] = event_index.loc[i - 1, "IndDiff"] + 1
+                event_index.loc[i, "ind_diff"] = event_index.loc[i - 1, "ind_diff"] + 1
 
-                event_index.loc[i, "Duration"] = (
+                event_index.loc[i, "duration"] = (
                     event_index.loc[i, "date"] - event_beginning
                 ).days + 1
             else:  # if not then the day is the start of another event
+                k = k + 1
                 event_beginning = event_index.loc[i, "date"]
+
+            event_index.loc[i, "index"] = k
 
         return cls(name, start=start, event_index=event_index)
 
@@ -270,7 +354,7 @@ class Event:
         -------
         event_index: [DataFrame]
             this method creates an instance attribute of type
-            dataframe with columns ['id','continue', 'IndDiff', 'Duration',
+            dataframe with columns ['id','continue', 'ind_diff', 'duration',
             'Overtopping', 'OvertoppingCum', 'Volume']
         """
         overtop_total = pd.read_csv(path, delimiter=delimiter)
@@ -291,8 +375,8 @@ class Event:
             self._event_index.loc[:, "continue"] = 0
             # index difference maybe different than the duration as there might be
             # a gap in the middle of the event
-            self._event_index.loc[:, "IndDiff"] = 0
-            self._event_index.loc[:, "Duration"] = 0
+            self._event_index.loc[:, "ind_diff"] = 0
+            self._event_index.loc[:, "duration"] = 0
 
             # the first day in the index file is an event beginning
             self.event_beginning = self._event_index.loc[0, "date"]
@@ -305,11 +389,11 @@ class Event:
                     # then the event continues
                     self._event_index.loc[i, "continue"] = 1
                     # increase the duration
-                    self._event_index.loc[i, "IndDiff"] = (
-                        self._event_index.loc[i - 1, "IndDiff"] + 1
+                    self._event_index.loc[i, "ind_diff"] = (
+                        self._event_index.loc[i - 1, "ind_diff"] + 1
                     )
 
-                    self._event_index.loc[i, "Duration"] = (
+                    self._event_index.loc[i, "duration"] = (
                         self._event_index.loc[i, "date"] - self.event_beginning
                     ).days + 1
                 else:  # if not then the day is the start of another event
@@ -373,85 +457,71 @@ class Event:
         )
         self._event_index["VolError2"] = self._event_index["VolError"] / 20
 
-    # def overlay_maps(
-    #     self,
-    #     path: str,
-    #     base_map: str,
-    #     excluded_value,
-    #     occupied_cells_only: bool,
-    #     save_to: str,
-    # ) -> Tuple[Dict, DataFrame]:
-    #     """OverlayMaps.
-    #
-    #         - OverlayMaps method reads all the maps in the folder given by path input and overlay them with the
-    #         basemap and for each value in the basemap it create a dictionary with the intersected values from all maps.
-    #
-    #     Parameters
-    #     ----------
-    #     path: [String]
-    #         a path to the folder includng the maps.
-    #     base_map: [String]
-    #         a path includng the name of the ASCII and extention like
-    #         path="data/cropped.asc"
-    #     excluded_value: [Numeric]
-    #         values you want to exclude from exteacted values
-    #     occupied_cells_only: [Bool]
-    #         if you want to count only cells that is not excluded_value.
-    #     save_to: [String]
-    #         a path to the folder to save a text file for each
-    #         value in the base map including all the intersected values
-    #         from other maps.
-    #
-    #     Returns
-    #     -------
-    #     extracted_values: [Dict]
-    #         dictonary with a list of values in the basemap as keys and for each key a list of all the intersected
-    #         values in the maps from the path
-    #     NonZeroCells: [dataframe]
-    #         dataframe with the first column as the "file" name and the second column is the number of cells in each map
-    #     """
-    #     self.depth_values, non_zero_cells = Raster.overlayMaps(
-    #         path,
-    #         base_map,
-    #         self.depth_prefix,
-    #         excluded_value,
-    #         self.compressed,
-    #         occupied_cells_only,
-    #     )
-    #
-    #     # non_zero_cells dataframe with the first column as the "file" name and the second column
-    #     # is the number of cells in each map
-    #
-    #     non_zero_cells["days"] = [
-    #         int(i[len(self.depth_prefix) : -4])
-    #         for i in non_zero_cells["files"].tolist()
-    #     ]
-    #     # get the numbe of inundated cells in the Event index data frame
-    #     self._event_index["cells"] = 0
-    #     event_days = self._event_index["id"].values
-    #     for i, event_i in non_zero_cells.iterrows():
-    #         # get the location in the _event_index dataframe
-    #         day_i = event_i["days"]
-    #         diff = abs(event_days - day_i)
-    #         loc = diff.argmin()
-    #         if diff[loc] > 20:
-    #             df = pd.DataFrame()
-    #             df.loc[0, ["id", "cells"]] = [day_i, event_i["cells"]]
-    #             self._event_index = pd.concat([self._event_index, df]).reset_index(
-    #                 drop=True
-    #             )
-    #         else:
-    #             self._event_index.loc[loc, "cells"] = event_i["cells"]
-    #
-    #     self._event_index.sort_values(["id"], axis=0, inplace=True)
-    #     # save depths of each sub-basin
-    #     inundatedSubs = list(self.depth_values.keys())
-    #     for i in range(len(inundatedSubs)):
-    #         np.savetxt(
-    #             f"{save_to}/{inundatedSubs[i]}.txt",
-    #             self.depth_values[inundatedSubs[i]],
-    #             fmt="%4.2f",
-    #         )
+    def overlay_maps(
+        self,
+        path: str,
+        base_map: str,
+        excluded_value,
+        save_to: str,
+    ) -> Catalog:
+        """OverlayMaps.
+
+            - OverlayMaps method reads all the maps in the folder given by path input and overlay them with the
+            basemap and for each value in the basemap it create a dictionary with the intersected values from all maps.
+
+        Parameters
+        ----------
+        path: [String]
+            a path to the folder includng the maps.
+        base_map: [String]
+            a path includng the name of the ASCII and extention like
+            path="data/cropped.asc"
+        excluded_value: [Numeric]
+            values you want to exclude from exteacted values
+        save_to: [String]
+            a path to the folder to save a text file for each
+            value in the base map including all the intersected values
+            from other maps.
+
+        Returns
+        -------
+        extracted_values: [Dict]
+            dictonary with a list of values in the basemap as keys and for each key a list of all the intersected
+            values in the maps from the path
+        NonZeroCells: [dataframe]
+            dataframe with the first column as the "file" name and the second column is the number of cells in each map
+        """
+        classes_map = Dataset.read_file(base_map)
+        # get the numbe of inundated cells in the Event index data frame
+        # self._event_index["cells"] = 0
+        # event_days = self._event_index["id"].values
+        ind_unique = self.event_index.loc[:, "index"].unique()
+        ind = self.event_index.loc[:, "index"].values
+        event_catalog = {}
+
+        for ind_i in ind_unique:
+            event_catalog_i = {}
+            row = np.where(ind == ind_i)[0][-1]
+            # convert into int to be able to dump it to json
+            event_i = self.event_index.loc[row, "id"]
+            event_catalog_i["day"] = event_i
+            inundation_map = f"{path}/{self.depth_prefix}{event_i}.tif"
+            if os.path.exists(inundation_map):
+                dataset = Dataset.read_file(inundation_map)
+                depth_values = dataset.overlay(
+                    classes_map,
+                    excluded_value,
+                )
+                event_catalog_i["reaches"] = list(depth_values.keys())
+                event_catalog_i["depth"] = depth_values
+            else:
+                event_catalog_i["reaches"] = []
+                event_catalog_i["depth"] = {}
+
+            event_catalog[event_i] = event_catalog_i
+
+        catalog = Catalog(event_catalog)
+        return catalog
 
     @classmethod
     def read_event_index(cls, name: str, path: str, start: str):
@@ -598,19 +668,19 @@ class Event:
         # loc = np.where(self.event_index['id'] == day)[0][0]
         # get all the days in the same event before that day as the inundation in the maps may
         # happen due to any of the days before not in this day
-        ind = self.event_index.index[loc - self.event_index.loc[loc, "IndDiff"]]
+        ind = self.event_index.index[loc - self.event_index.loc[loc, "ind_diff"]]
         day = self.event_index.loc[ind, "id"]
         return ind, day
 
         # # filter the dataframe and get only the 'indDiff' and 'id' columns
-        # FilteredEvent = self.event_index.loc[:,['IndDiff','id']]
+        # FilteredEvent = self.event_index.loc[:,['ind_diff','id']]
         # FilteredEvent['diff'] = FilteredEvent.index - ind
         # # get only days before the day you inputed
         # FilteredEvent = FilteredEvent[FilteredEvent['diff'] <=0 ]
-        # # start to search from down to up till you get the first 0 in the IndDiff
-        # for i in range(self.event_index['Duration'].max()):
+        # # start to search from down to up till you get the first 0 in the ind_diff
+        # for i in range(self.event_index['duration'].max()):
 
-        #     if FilteredEvent.loc[len(FilteredEvent)-1-i,'IndDiff'] == 0:
+        #     if FilteredEvent.loc[len(FilteredEvent)-1-i,'ind_diff'] == 0:
         #         break
 
         # return FilteredEvent.index[len(FilteredEvent)-1-i]
@@ -639,11 +709,11 @@ class Event:
         # happen due to any of the days before not in this day
 
         # filter the dataframe and get only the 'indDiff' and 'id' columns
-        FilteredEvent = self.event_index.loc[:, ["continue", "id"]]
+        filtered_event = self.event_index.loc[:, ["continue", "id"]]
         # get only days before the day you inputed
-        for i in range(loc + 1, len(FilteredEvent)):
+        for i in range(loc + 1, len(filtered_event)):
             # start search from the following day
-            if FilteredEvent.loc[i, "continue"] != 1:
+            if filtered_event.loc[i, "continue"] != 1:
                 break
 
         ind = i - 1
@@ -651,8 +721,8 @@ class Event:
 
         return ind, day
 
-    def prepare_for_plotting(self, ColumnName):
-        """PrepareForPlotting.
+    def prepare_for_plotting(self, column_name: str):
+        """Prepare For Plotting.
 
             - PrepareForPlotting takes a time series in the event_index dataframe and fill the days that does not
             exist in date column and fill it with zero to properly plot it without letting the graph mislead the
@@ -660,7 +730,7 @@ class Event:
 
         Parameters
         ----------
-        ColumnName : [String]
+        column_name : [str]
             name of the columns you want.
 
         Returns
@@ -668,16 +738,14 @@ class Event:
         DataFrame : [Dataframe]
             dataframe with a date column, and the required column
         """
-        NewDataFrame = pd.DataFrame()
-        NewDataFrame["date"] = self.reference_index["date"].tolist()
-        NewDataFrame[ColumnName] = 0
+        df = pd.DataFrame()
+        df["date"] = self.reference_index["date"].tolist()
+        df[column_name] = 0
         for i in range(len(self.event_index)):
-            loc = np.where(NewDataFrame["date"] == self.event_index.loc[i, "date"])[0][
-                0
-            ]
-            NewDataFrame.loc[loc, ColumnName] = self.event_index.loc[i, ColumnName]
+            loc = np.where(df["date"] == self.event_index.loc[i, "date"])[0][0]
+            df.loc[loc, column_name] = self.event_index.loc[i, column_name]
 
-        return NewDataFrame
+        return df
 
     def ListAttributes(self):
         """Print Attributes List."""

@@ -102,4 +102,4 @@ def event_index_volume_attrs() -> List[str]:
 
 @pytest.fixture(scope="module")
 def event_index_volume_attrs2() -> List[str]:
-    return ["id", "date", "continue", "IndDiff", "Duration", "cells"]
+    return ["id", "date", "continue", "ind_diff", "duration", "cells"]

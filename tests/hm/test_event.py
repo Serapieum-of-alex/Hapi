@@ -1,7 +1,8 @@
+import os
 from typing import List
 from matplotlib.figure import Figure
 from pandas import DataFrame
-from Hapi.hm.event import Event
+from Hapi.hm.event import Event, Catalog
 
 
 def test_create_event_instance(event_instance_attrs: List[str]) -> Event:
@@ -53,3 +54,22 @@ def test_detailed_overtopping(
     # {"n": n, "bins": bins, "patches": patches}
     assert isinstance(fig, Figure)
     assert all(elem in opts.keys() for elem in ["n", "bins", "patches"])
+
+
+class TestCatalog:
+    def test_read_file(self):
+        path = "tests/hm/data/catalog.yaml"
+        catalog = Catalog.read_file(path)
+        assert isinstance(catalog.catalog, dict)
+        assert catalog.events == [19, 50]
+
+    def test_to_file(self):
+        path = "tests/hm/data/catalog.yaml"
+        save_to = "tests/hm/data/save_catalog.yaml"
+        if os.path.exists(save_to):
+            os.remove(save_to)
+
+        catalog = Catalog.read_file(path)
+        catalog.to_file(save_to)
+        assert os.path.exists(path)
+        os.remove(save_to)
