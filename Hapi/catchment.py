@@ -237,7 +237,7 @@ class Catchment:
         """
         if self.Temp is None:
             # data type
-            assert type(path) == str, "Precpath input should be string type"
+            assert isinstance(path, str), "Precpath input should be string type"
             # check wether the path exists or not
             assert os.path.exists(path), path + " you have provided does not exist"
             # check wether the folder has the rasters or not
@@ -250,7 +250,9 @@ class Catchment:
             )
             cube.read_dataset()
             self.Temp = np.moveaxis(cube.data, 0, -1)
-            assert type(self.Temp) == np.ndarray, "array should be of type numpy array"
+            assert isinstance(
+                self.Temp, np.ndarray
+            ), "array should be of type numpy array"
 
             if ll_temp is None:
                 self.ll_temp = np.zeros_like(self.Temp, dtype=np.float32)
@@ -286,7 +288,7 @@ class Catchment:
         """
         if self.ET is None:
             # data type
-            assert type(path) == str, "Precpath input should be string type"
+            assert isinstance(path, str), "Precpath input should be string type"
             # check wether the path exists or not
             assert os.path.exists(path), path + " you have provided does not exist"
             # check wether the folder has the rasters or not
@@ -299,7 +301,9 @@ class Catchment:
             )
             cube.read_dataset()
             self.ET = np.moveaxis(cube.data, 0, -1)
-            assert type(self.ET) == np.ndarray, "array should be of type numpy array"
+            assert isinstance(
+                self.ET, np.ndarray
+            ), "array should be of type numpy array"
             logger.debug("Potential Evapotranspiration data are read successfully")
 
     def readFlowAcc(self, path: str):
@@ -563,7 +567,7 @@ class Catchment:
         """
         if self.SpatialResolution.lower() == "distributed":
             # data type
-            assert type(path) == str, "Precpath input should be string type"
+            assert isinstance(path, str), "Precpath input should be string type"
             # check wether the path exists or not
             assert os.path.exists(path), path + " you have provided does not exist"
             # check wether the folder has the rasters or not
@@ -681,7 +685,7 @@ class Catchment:
         self.InitialCond = InitialCond
 
         if q_init is not None:
-            assert type(q_init) == float, "q_init should be of type float"
+            assert isinstance(q_init, float), "q_init should be of type float"
         self.q_init = q_init
 
         if self.InitialCond is not None:
@@ -1632,7 +1636,7 @@ class Lake:
         self.InitialCond = InitialCond
 
         if self.InitialCond is not None:
-            assert type(self.InitialCond) == list, "init_st should be of type list"
+            assert isinstance(self.InitialCond, list), "init_st should be of type list"
 
         self.Snow = Snow
         self.OutflowCell = OutflowCell
