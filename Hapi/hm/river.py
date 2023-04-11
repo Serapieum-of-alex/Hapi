@@ -2238,7 +2238,7 @@ class River:
         for i in range(len(left_overtopping)):
             # open the file (if there is no column sthe file is empty)
             data = pd.read_csv(
-                rf"{overtopping_result_path}\{left_overtopping[i]}",
+                rf"{overtopping_result_path}/{left_overtopping[i]}",
                 header=None,
                 delimiter=delimiter,
             )
@@ -2257,7 +2257,7 @@ class River:
 
         for i in range(len(right_overtopping)):
             data = pd.read_csv(
-                rf"{overtopping_result_path}\{right_overtopping[i]}",
+                rf"{overtopping_result_path}/{right_overtopping[i]}",
                 header=None,
                 delimiter=delimiter,
             )
@@ -2380,7 +2380,7 @@ class River:
         return self.cross_sections.loc[loc, "id"]
 
     def get_flooded_reaches(
-        self, overtopped_xs: List = None, day: int = None, all_event_days=True
+        self, overtopped_xs: List = None, day: List[int] = None, all_event_days=True
     ):
         """GetFloodedSubs.
 
@@ -2415,9 +2415,10 @@ class River:
         """
         if overtopped_xs is None:
             overtopped_xs = []
-
-        if day is None:
-            day = [1]
+            if day is None:
+                raise ValueError(
+                    "You have to enter the overtopped_xs or the day, both are given None"
+                )
 
         reaches = []
         # if you already used the GetOvertoppedXS and have a list of xs overtopped
