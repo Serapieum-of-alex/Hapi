@@ -2457,7 +2457,7 @@ class River:
 
         for i, reach_i in enumerate(flooded_reaches):
             data = pd.read_csv(
-                rf"{self.one_d_result_path}\{reach_i}{suffix}",
+                rf"{self.one_d_result_path}/{reach_i}{suffix}",
                 header=None,
                 delimiter=delimiter,
             )
@@ -3127,7 +3127,9 @@ class River:
 
         self.HQ = HQ[:, :]
 
-    def get_days(self, from_day: int, to_day: int, delimiter: str = r"\s+"):
+    def get_days(
+        self, from_day: int, to_day: int, delimiter: str = r"\s+", verbose: bool = True
+    ):
         r"""getDays.
 
         GetDays method check if input days exist in the 1D result data
@@ -3144,6 +3146,8 @@ class River:
             the day you want to read the result to.
         delimiter: [str]
             delimiter used in the 1D result files. Default is r"\s+".
+        verbose: [bool]
+            to print details of the function.
 
         Returns
         -------
@@ -3183,16 +3187,16 @@ class River:
                     if Alt2 >= data.loc[len(data) - 1, "day"]:
                         stop = 1
                     continue
-
-            text = f"""
-            the from_day you entered does not exist in the data, and the closest day earlier than your input day is  {Alt1} and the closest later day is {Alt2}
-            """
-
-            logger.debug(text)
+            if verbose:
+                text = f"""
+                the from_day you entered does not exist in the data, and the closest day earlier than your input day is  {Alt1} and the closest later day is {Alt2}
+                """
+                logger.debug(text)
             if abs(Alt1 - from_day) > abs(Alt2 - from_day):
                 Alt1 = Alt2
         else:
-            logger.debug("from_day you entered does exist in the data ")
+            if verbose:
+                logger.debug("from_day you entered does exist in the data ")
             Alt1 = from_day
 
         # if to_day does not exist in the results
@@ -3223,15 +3227,18 @@ class River:
                         Alt4 = data.loc[len(data) - 1, "day"]
                         stop = 1
                     continue
-            text = f"""
-            the to_day you entered does not exist in the data, and the closest day earlier than your input day is  {Alt3} and the closest later day is {Alt4}
-            """
-            logger.debug(text)
+            if verbose:
+                text = f"""
+                the to_day you entered does not exist in the data, and the closest day earlier than your input day is  {Alt3} and the closest later day is {Alt4}
+                """
+                logger.debug(text)
 
             if abs(Alt3 - to_day) > abs(Alt4 - to_day):
                 Alt3 = Alt4
         else:
-            logger.debug("to_day you entered does exist in the data ")
+            if verbose:
+                logger.debug("to_day you entered does exist in the data ")
+
             Alt3 = to_day
 
         return Alt1, Alt3
@@ -4038,7 +4045,11 @@ class Reach(River):
         else:
             path = rf"{self.one_d_result_path}/{self.id}{self.right_overtopping_suffix}"
 
-        data = pd.read_csv(path, header=None, delimiter=delimiter)
+        try:
+            data = pd.read_csv(path, header=None, delimiter=delimiter)
+        except FileNotFoundError:
+            return df
+
         data.columns = ["day", "hour", "xsid", "q", "wl"]
         # get the days in the sub
         days = set(data.loc[:, "day"])
