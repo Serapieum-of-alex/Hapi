@@ -18,7 +18,6 @@ class Catalog:
 
     def __init__(self, catalog: dict):
         self._catalog = catalog
-        pass
 
     @property
     def catalog(self):

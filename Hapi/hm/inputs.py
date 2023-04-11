@@ -196,16 +196,16 @@ class Inputs(River):
         )
 
         skip = []
-        for i in range(len(gauges)):
+        for gauge_i in gauges:
             try:
-                time_series.loc[:, int(gauges[i])] = pd.read_csv(
-                    f"{rdir}/{int(gauges[i])}{file_extension}",
+                time_series.loc[:, int(gauge_i)] = pd.read_csv(
+                    f"{rdir}/{int(gauge_i)}{file_extension}",
                     skiprows=1,
                     header=None,
                 )[1].tolist()
             except FileNotFoundError:
-                logger.warning(f"File {int(gauges[i])}{file_extension} does not exist")
-                skip.append(int(gauges[i]))
+                logger.warning(f"File {int(gauge_i)}{file_extension} does not exist")
+                skip.append(int(gauge_i))
 
         start_date = dt.datetime.strptime(start, date_format)
         end_date = start_date + dt.timedelta(days=time_series.shape[0] - 1)
@@ -341,9 +341,6 @@ class Inputs(River):
         # read sub basin map id
         SubIDMap = gdal.Open(SubIDMapF)
         SubIDMapV = SubIDMap.ReadAsArray()
-        # NoValue = SubIDMap.GetRasterBand(1).GetNoDataValue()
-        # SubIDMapV[SubIDMapV == NoValue] = 0
-        # plt.imshow(SubIDMapV)
 
         # read the added subs reference text file
         ExtraSubs = pd.read_csv(ExtraSubsF)
