@@ -2362,7 +2362,7 @@ class River:
 
         return xs_left, xs_right
 
-    def get_sub_basin(self, xsid):
+    def get_sub_basin(self, xsid: int):
         """GetSubBasin.
 
         GetSubBasin method returned the sub-basin that the Cross section belong
@@ -2419,25 +2419,25 @@ class River:
         if day is None:
             day = [1]
 
-        Subs = list()
+        reaches = []
         # if you already used the GetOvertoppedXS and have a list of xs overtopped
         # at specific day
         if len(overtopped_xs) > 0:
             overtopped_xs = list(set(overtopped_xs))
-            for i in range(len(overtopped_xs)):
-                Subs.append(self.get_sub_basin(overtopped_xs[i]))
+            for xs_i in overtopped_xs:
+                reaches.append(self.get_sub_basin(xs_i))
         else:
-            for j in range(len(day)):
-                XSLeft, XSRight = self.get_overtopped_xs(day[j], all_event_days)
+            for day_i in day:
+                XSLeft, XSRight = self.get_overtopped_xs(day_i, all_event_days)
                 overtopped_xs = XSLeft + XSRight
                 overtopped_xs = list(set(overtopped_xs))
 
-                for i in range(len(overtopped_xs)):
-                    Subs.append(self.get_sub_basin(overtopped_xs[i]))
+                for xs_i in overtopped_xs:
+                    reaches.append(self.get_sub_basin(xs_i))
 
         # to remove duplicate subs
-        Subs = list(set(Subs))
-        return Subs
+        reaches = list(set(reaches))
+        return reaches
 
     def _get_detailed_overtopping(
         self,

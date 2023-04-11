@@ -1050,7 +1050,10 @@ def test_get_flooded_reaches(
     )
     event = Event.read_event_index("test", event_index_file, start="1955-01-01")
     rivers.event_index = event.event_index
-    _, start_day = event.get_event_start(0)
+    # _, start_day = event.get_event_start(0)
+
+    event_details = event.get_event_by_index(1)
+    start_day = event_details["start"]
 
     xs_flood_l, xs_flood_r = rivers.get_overtopped_xs(start_day, True)
     flooded_reaches = rivers.get_flooded_reaches(overtopped_xs=xs_flood_l + xs_flood_r)
