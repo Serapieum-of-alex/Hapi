@@ -985,25 +985,54 @@ def test_get_event_start_end(
     assert end_day == 8200
 
 
-def test_get_overtopped_xs(
-    version: int,
-    river_cross_section_path: str,
-    xs_total_no: int,
-    xs_col_no: int,
-    overtopping_files_dir: str,
-    event_index_file: str,
-):
-    rivers = River("HM", version=version)
-    rivers.read_xs(river_cross_section_path)
-    rivers.parse_overtopping(
-        overtopping_result_path=overtopping_files_dir, delimiter=","
-    )
-    event = Event.read_event_index("test", event_index_file, start="1955-01-01")
-    rivers.event_index = event.event_index
-    _, start_day = event.get_event_start(0)
-    xs_flood_l, xs_flood_r = rivers.get_overtopped_xs(start_day, True)
-    assert xs_flood_l == [1]
-    assert xs_flood_r == [1, 5, 7, 9, 12, 15]
+class TestEvent:
+    def test_get_overtopped_xs_one_day(
+        self,
+        version: int,
+        river_cross_section_path: str,
+        xs_total_no: int,
+        xs_col_no: int,
+        overtopping_files_dir: str,
+        event_index_file: str,
+    ):
+        rivers = River("HM", version=version)
+        rivers.read_xs(river_cross_section_path)
+        rivers.parse_overtopping(
+            overtopping_result_path=overtopping_files_dir, delimiter=","
+        )
+        event = Event.read_event_index("test", event_index_file, start="1955-01-01")
+        rivers.event_index = event.event_index
+        # _, start_day = event.get_event_start(0)
+        # _, end_day = event.get_event_end(0)
+        event_details = event.get_event_by_index(1)
+        start_day = event_details["start"]
+        xs_flood_l, xs_flood_r = rivers.get_overtopped_xs(start_day, False)
+        assert xs_flood_l == [1]
+        assert xs_flood_r == [1, 5, 7, 9, 12, 15]
+
+    def test_get_overtopped_xs_all_days(
+        self,
+        version: int,
+        river_cross_section_path: str,
+        xs_total_no: int,
+        xs_col_no: int,
+        overtopping_files_dir: str,
+        event_index_file: str,
+    ):
+        rivers = River("HM", version=version)
+        rivers.read_xs(river_cross_section_path)
+        rivers.parse_overtopping(
+            overtopping_result_path=overtopping_files_dir, delimiter=","
+        )
+        event = Event.read_event_index("test", event_index_file, start="1955-01-01")
+        rivers.event_index = event.event_index
+
+        event_details = event.get_event_by_index(1)
+        end_day = event_details["end"]
+
+        xs_flood_l, xs_flood_r = rivers.get_overtopped_xs(end_day, True)
+        assert xs_flood_l == [8, 1, 10, 5]
+        assert xs_flood_r == [1, 5, 7, 9, 12, 15]
 
 
 def test_get_flooded_reaches(
@@ -1022,6 +1051,7 @@ def test_get_flooded_reaches(
     event = Event.read_event_index("test", event_index_file, start="1955-01-01")
     rivers.event_index = event.event_index
     _, start_day = event.get_event_start(0)
+
     xs_flood_l, xs_flood_r = rivers.get_overtopped_xs(start_day, True)
     flooded_reaches = rivers.get_flooded_reaches(overtopped_xs=xs_flood_l + xs_flood_r)
     assert flooded_reaches == [1]
@@ -1092,7 +1122,7 @@ def test_reach_detailed_overtopping(
     reach.detailed_overtopping(event_days, delimiter=",")
 
     assert isinstance(reach.all_overtopping_vs_xs, DataFrame)
-    assert reach.all_overtopping_vs_xs.index.tolist() == reach.xs_names
+    assert reach.all_overtopping_vs_xs.index.tolist() == [1, 5, 7, 8, 9, 10, 12, 15]
     assert reach.all_overtopping_vs_xs.columns.tolist() == ["sum"]
 
     assert isinstance(reach.all_overtopping_vs_time, DataFrame)

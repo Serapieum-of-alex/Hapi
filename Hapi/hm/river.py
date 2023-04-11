@@ -2280,21 +2280,20 @@ class River:
     def get_overtopped_xs(self, day: int, all_event_days=True):
         """get_overtopped_xs.
 
-        GetOvertoppedXS method get the cross sections that was overtopped in
-        a given date(you have to read the overtopping data first with the method
-        Overtopping), since inudation maps gets the max depth for the whole event
-        the method can also trace the event back to the beginning and get all
-        the overtopped XS from the beginning of the Event till the given day
-        (you have to give the River object the event_index attribute from the
-        Event Object)
+            - get_overtopped_xs method get the cross sections that was overtopped in a given date
+            - you have to read the overtopping data first with the method parse_overtopping
+            - since inudation maps gets the max depth for the whole event the method can also trace the event back
+            to the beginning and get all the overtopped XS from the beginning of the Event till the given day
+            - you have to give the River object the event_index attribute from the Event Object.
 
         Parameters
         ----------
         day : [int]
             the day you want to get the overtopped cross section for.
         all_event_days : [Bool], optional
-            if you want to get the overtopped cross section for this day only
-            or for the whole event. The default is True.
+            if you want to get the overtopped cross section for this day only or for the whole event. The default is
+            True.
+            - if True the function trace from the given day back till the beginning of the event.
 
         Returns
         -------
@@ -2319,7 +2318,7 @@ class River:
         - give the event_index table to the River Object
         >>> river.event_index = river.event_index
         >>> day = 1122
-        >>> XSleft, XSright = river.get_overtopped_xs(day,False)
+        >>> XSleft, XSright = river.get_overtopped_xs(day, False)
         """
         if not hasattr(self, "event_index"):
             raise ValueError(
@@ -2327,36 +2326,36 @@ class River:
             )
 
         if all_event_days:
+            # first get event index
             loc = np.where(self.event_index["id"] == day)[0][0]
-            # get all the days in the same event before that day as the inundation in the maps may
-            # happen due to any of the days before not in this day
-            Eventdays = self.event_index.loc[
-                loc - self.event_index.loc[loc, "ind_diff"] : loc, "id"
-            ].tolist()
+            ind = self.event_index.loc[loc, "index"]
+            event_days = self.event_index.loc[
+                self.event_index["index"] == ind, "id"
+            ].values.tolist()
+            # as it might be gaps in the middle get the first and last day and generate list of all days.
+            event_days = list(range(event_days[0], event_days[-1] + 1))
         else:
-            Eventdays = [day]
+            event_days = [day]
 
         xs_left = list()
         xs_right = list()
 
-        for k in range(len(Eventdays)):
-            dayi = Eventdays[k]
-            # for each sub-basin in the overtopping left dict
-            for i in range(len(self.overtopping_reaches_left.keys())):
-                Subid = list(self.overtopping_reaches_left.keys())[i]
+        for day_i in event_days:
+            # for each river reach in the overtopping left dict
+            for reach_i in self.overtopping_reaches_left.keys():
                 # get all cross section that overtopped before
-                XSs = list(self.overtopping_reaches_left[Subid].keys())
+                XSs = list(self.overtopping_reaches_left[reach_i].keys())
                 # for each xross section check if the day is sored inside
-                for j in range(len(XSs)):
-                    if dayi in self.overtopping_reaches_left[Subid][XSs[j]]:
-                        xs_left.append(XSs[j])
+                for xs_i in XSs:
+                    if day_i in self.overtopping_reaches_left[reach_i][xs_i]:
+                        xs_left.append(xs_i)
 
-            for i in range(len(self.overtopping_reaches_right.keys())):
-                Subid = list(self.overtopping_reaches_right.keys())[i]
-                XSs = list(self.overtopping_reaches_right[Subid].keys())
-                for j in range(len(XSs)):
-                    if dayi in self.overtopping_reaches_right[Subid][XSs[j]]:
-                        xs_right.append(XSs[j])
+            for reach_i in self.overtopping_reaches_right.keys():
+                XSs = list(self.overtopping_reaches_right[reach_i].keys())
+
+                for xs_i in XSs:
+                    if day_i in self.overtopping_reaches_right[reach_i][xs_i]:
+                        xs_right.append(xs_i)
 
         xs_left = list(set(xs_left))
         xs_right = list(set(xs_right))
@@ -4086,11 +4085,43 @@ class Reach(River):
         detailed_overtopping_left:[DataFrame attribute]
             containing the computational node and rainfall-runoff results
             (hydrograph)with columns ['id', Nodeid ]
+                reach-5 16705 16706 16707 16708 16709  ... 16850 16851 16852 16853 16854    sum
+            35     75.5     0     0     0     0     0  ...     0     0     0     0     0   75.5
+            36    374.3     0     0     0     0     0  ...     0     0     0     0     0  374.3
+            37    179.0     0     0     0     0     0  ...     0     0     0     0     0  179.0
+            38     15.3     0     0     0     0     0  ...     0     0     0     0     0   15.3
+            39        0     0     0     0     0     0  ...     0     0     0     0     0      0
+            40        0     0     0     0     0     0  ...     0     0     0     0     0      0
+            sum   644.1     0     0     0     0     0  ...     0     0     0     0     0      0
         detailed_overtopping_right:[DataFrame attribute]
             containing the computational node and rainfall-runoff results
             (hydrograph)with columns ['id', Nodeid ]
+                reach-5 16705 16706 16707 16708 16709  ... 16850 16851 16852 16853 16854    sum
+            35     95.6     0     0     0     0     0  ...     0     0     0     0     0   95.6
+            36    805.6     0     0     0     0     0  ...     0     0     0     0     0  805.6
+            37    267.5     0     0     0     0     0  ...     0     0     0     0     0  267.5
+            38      9.0     0     0     0     0     0  ...     0     0     0     0     0    9.0
+            39        0     0     0     0     0     0  ...     0     0     0     0     0      0
+            40        0     0     0     0     0     0  ...     0     0     0     0     0      0
+            sum  1177.7     0     0     0     0     0  ...     0     0     0     0     0      0
         all_overtopping_vs_xs:
+                      sum
+            16760    58.7
+            16781     0.7
+            16797     7.9
+            16806    98.6
+            16808   105.3
+            16809    64.0
+            16810  1166.2
+            16833   320.4
         all_overtopping_vs_time:
+           id  Overtopping       date
+            0  35        171.1 1955-02-04
+            1  36       1179.9 1955-02-05
+            2  37        446.5 1955-02-06
+            3  38         24.3 1955-02-07
+            4  39          0.0 1955-02-08
+            5  40          0.0 1955-02-09
         """
         xs_s = self.cross_sections.loc[:, "xsid"].tolist()
         # Left Bank
@@ -4098,9 +4129,9 @@ class Reach(River):
         # right Bank
         df_right = self._get_reach_overtopping(False, event_days, delimiter=delimiter)
 
-        self.all_overtopping_vs_xs = (
-            df_left.loc["sum", xs_s] + df_right.loc["sum", xs_s]
-        ).to_frame()
+        df = (df_left.loc["sum", xs_s] + df_right.loc["sum", xs_s]).to_frame()
+        self.all_overtopping_vs_xs = df[df["sum"] > 0]
+
         self.all_overtopping_vs_time = pd.DataFrame()
         self.all_overtopping_vs_time["id"] = event_days
         self.all_overtopping_vs_time.loc[:, "Overtopping"] = (
