@@ -157,7 +157,7 @@ class Catalog:
             elif isinstance(val, dict):
                 new_dict[key] = Catalog._serialize(val)
             else:
-                new_dict[key] = int(val)
+                new_dict[key] = int(val) if val is not None else None
 
         return new_dict
 
