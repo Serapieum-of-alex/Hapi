@@ -1,9 +1,10 @@
 """1D riven Events."""
 import os
-from typing import Tuple, Any, Union, Dict
+from typing import Iterator, Tuple, Any, Union, Dict, List
 from pathlib import Path
 import datetime as dt
 import yaml
+from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 from pandas.core.frame import DataFrame
@@ -12,7 +13,61 @@ from cleopatra.statistics import Statistic
 
 
 class Catalog:
-    """Flood catalog."""
+    """Flood catalog.
+
+    - the catalog is a dictionary
+        - keys can be a string or a numeric.
+        - values can only be
+            - numeric
+            - lists:
+                list of numerics
+            - nested dictionary (so this inner dictionary can have only lists or numeric as values)
+
+    - So the following is how the Catalog is structured, where we have two events 19, and 25, for each event
+    there is some properties that we want to store for this event
+    19:
+    {
+        day: 19
+        depth: {5: [0.0199, 0.0099, 0.1400], 29: [0.4199, 0.3100, 0.3100]}
+        reaches: [29.0, 5.0]
+      }
+    25:
+    {
+        day: 25
+        depth: {3: [0.0199, 0.0099, 0.1400], 15: [0.4199, 0.3100, 0.3100]}
+        reaches: [3.0, 15.0]
+        }
+
+    - the catalog will be saved to disk in a yaml file with the following format.
+    19:
+      day: 19
+      depth:
+        5:
+        - 0.0199
+        - 0.0099
+        - 0.1400
+        29:
+        - 0.4199
+        - 0.3100
+        - 0.3100
+      reaches:
+      - 29.0
+      - 5.0
+    25:
+      day: 25
+      depth:
+        3:
+        - 0.0199
+        - 0.0099
+        - 0.1400
+        15:
+        - 0.4199
+        - 0.3100
+        - 0.3100
+      reaches:
+      - 3.0
+      - 15.0
+    """
 
     float_3 = lambda x: float(round(x, 3))
 
@@ -20,28 +75,44 @@ class Catalog:
         self._catalog = catalog
 
     @property
-    def catalog(self):
+    def catalog(self) -> Dict:
         """Catalog."""
         return self._catalog
 
     @property
-    def events(self):
+    def events(self) -> List:
         """Event days."""
         return list(self._catalog.keys())
+
+    def __str__(self):
+        """Print event details."""
+        message = f"""
+                    Number of Events: {len(self)}
+                    Events: {self.events}
+                """
+        return message
+
+    def __repr__(self):
+        """Print event details."""
+        message = f"""
+                    Number of Events: {len(self)}
+                    Events: {self.events}
+                """
+        return message
 
     def __len__(self):
         """Length."""
         return len(self._catalog.keys())
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Any]:
         """Iterate."""
         return iter(self._catalog.items())
 
-    # def __setitem__(self, key, value):
-    #     """Set event."""
-    #     # if key in self.events:
-    #     #     raise KeyError(f"event: {key} already exists")
-    #     self._catalog[key] = value
+    def __setitem__(self, key, value):
+        """Set event."""
+        if key in self.events:
+            raise KeyError(f"event: {key} already exists")
+        self._catalog.update({key: value})
 
     def __getitem__(self, item):
         """Get Event."""
@@ -49,7 +120,8 @@ class Catalog:
             raise KeyError(
                 f"there is no event: {item}, available events are: {self.events}"
             )
-        return self._catalog[item]
+        data = self._catalog[item]
+        return EventData(data)
 
     @classmethod
     def read_file(cls, path: str):
@@ -100,6 +172,27 @@ class Catalog:
 
         with open(path, "w") as outfile:
             yaml.dump(cat, outfile, default_flow_style=False)
+
+
+@dataclass
+class EventData:
+    """Event Data in the catalog."""
+
+    data: Dict
+
+    def parse(self):
+        """Parse event data."""
+        self.day = self.data.get("day")
+        self.depth = self.data.get("depth")
+        self.reaches = self.data.get("reaches")
+        self.overtopping = self._get_overtopping()
+
+    def _get_overtopping(self):
+        over_top = self.data.get("overtopping")
+        df = pd.DataFrame(columns=["cross-sections", "overtopping"])
+        df["cross-sections"] = list(map(int, over_top["cross-sections"]))
+        df["overtopping"] = over_top["volume"]
+        return df
 
 
 class Event:

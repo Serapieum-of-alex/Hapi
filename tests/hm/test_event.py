@@ -2,7 +2,7 @@ import os
 from typing import List
 from matplotlib.figure import Figure
 from pandas import DataFrame
-from Hapi.hm.event import Event, Catalog
+from Hapi.hm.event import Event, Catalog, EventData
 
 
 def test_create_event_instance(event_instance_attrs: List[str]):
@@ -90,7 +90,8 @@ class TestCatalog:
         # test __iter__
         assert len(list(catalog)) == 2
         # test __getitem__
-        assert catalog[19] == {
+        assert isinstance(catalog[19], EventData)
+        assert catalog[19].data == {
             "day": 19,
             "depth": {
                 5: [0.0199, 0.0099, 0.14, 0.09, 0.0199, 0.0399],
@@ -99,5 +100,5 @@ class TestCatalog:
             "reaches": [29.0, 5.0],
         }
         # test __setitem__
-        # catalog[20] == {}
-        # assert 20 in catalog.events
+        catalog[20] = {}
+        assert 20 in catalog.events
