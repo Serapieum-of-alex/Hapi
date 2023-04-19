@@ -4080,9 +4080,9 @@ class Reach(River):
         return df
 
     def detailed_overtopping(self, event_days: List[int], delimiter: str = r"\s+"):
-        r"""DetailedOvertopping.
+        r"""Detailed Overtopping.
 
-            - DetailedOvertopping method takes list of days and get the left and right overtopping for the sub-basin
+            - detailed_overtopping method takes list of days and get the left and right overtopping for the river reach
             each day.
 
         Parameters
@@ -4094,9 +4094,10 @@ class Reach(River):
 
         Returns
         -------
-        detailed_overtopping_left:[DataFrame attribute]
-            containing the computational node and rainfall-runoff results
-            (hydrograph)with columns ['id', Nodeid ]
+        detailed_overtopping_left:[DataFrame]
+            - DataFrame containing the overtopping for each cross-section for each day (unit is m3/s/hour).
+            - The value represent the sum of all hourly values (each is m3/s) for all hours that has overtopping
+            so to convert it to volume multiply it by 60*60.
                 reach-5 16705 16706 16707 16708 16709  ... 16850 16851 16852 16853 16854    sum
             35     75.5     0     0     0     0     0  ...     0     0     0     0     0   75.5
             36    374.3     0     0     0     0     0  ...     0     0     0     0     0  374.3
@@ -4105,9 +4106,10 @@ class Reach(River):
             39        0     0     0     0     0     0  ...     0     0     0     0     0      0
             40        0     0     0     0     0     0  ...     0     0     0     0     0      0
             sum   644.1     0     0     0     0     0  ...     0     0     0     0     0      0
-        detailed_overtopping_right:[DataFrame attribute]
-            containing the computational node and rainfall-runoff results
-            (hydrograph)with columns ['id', Nodeid ]
+        detailed_overtopping_right:[DataFrame]
+            - DataFrame containing the overtopping for each cross-section for each day (unit is m3/s/hour)
+            - The value represent the sum of all hourly values (each is m3/s) for all hours that has overtopping
+            so to convert it to volume multiply it by 60*60.
                 reach-5 16705 16706 16707 16708 16709  ... 16850 16851 16852 16853 16854    sum
             35     95.6     0     0     0     0     0  ...     0     0     0     0     0   95.6
             36    805.6     0     0     0     0     0  ...     0     0     0     0     0  805.6
@@ -4117,6 +4119,9 @@ class Reach(River):
             40        0     0     0     0     0     0  ...     0     0     0     0     0      0
             sum  1177.7     0     0     0     0     0  ...     0     0     0     0     0      0
         all_overtopping_vs_xs:
+            - Sum of the overtopping from every cross-section over the whole event.
+            - The value represent the sum of all hourly values (each is m3/s) for all hours that has overtopping
+            so to convert it to volume multiply it by 60*60.
                       sum
             16760    58.7
             16781     0.7
@@ -4127,6 +4132,9 @@ class Reach(River):
             16810  1166.2
             16833   320.4
         all_overtopping_vs_time:
+            - Sum of the overtopping from all cross-sections for each day of the event.
+            - The value represent the sum of all hourly values (each is m3/s) for all hours that has overtopping
+            so to convert it to volume multiply it by 60*60.
            id  Overtopping       date
             0  35        171.1 1955-02-04
             1  36       1179.9 1955-02-05
