@@ -168,12 +168,29 @@ class TestDistributed:
             fmt="%Y-%m-%d",
         )
         coello.readRainfall(
-            coello_evap_path, start=coello_start_date, end=coello_end_date
+            coello_evap_path,
+            start=coello_start_date,
+            end=coello_end_date,
+            regex_string=r"\d{4}.\d{2}.\d{2}",
+            date=True,
+            file_name_data_fmt="%Y.%m.%d",
         )
         coello.readTemperature(
-            coello_prec_path, start=coello_start_date, end=coello_end_date
+            coello_prec_path,
+            start=coello_start_date,
+            end=coello_end_date,
+            regex_string=r"\d{4}.\d{2}.\d{2}",
+            date=True,
+            file_name_data_fmt="%Y.%m.%d",
         )
-        coello.readET(coello_temp_path, start=coello_start_date, end=coello_end_date)
+        coello.readET(
+            coello_temp_path,
+            start=coello_start_date,
+            end=coello_end_date,
+            regex_string=r"\d{4}.\d{2}.\d{2}",
+            date=True,
+            file_name_data_fmt="%Y.%m.%d",
+        )
         assert isinstance(coello.Prec, np.ndarray)
         assert isinstance(coello.Temp, np.ndarray)
         assert isinstance(coello.ET, np.ndarray)
@@ -344,12 +361,29 @@ class TestFW1:
             fmt="%Y-%m-%d",
         )
         coello.readRainfall(
-            coello_evap_path, start=coello_start_date, end=coello_end_date
+            coello_evap_path,
+            start=coello_start_date,
+            end=coello_end_date,
+            regex_string=r"\d{4}.\d{2}.\d{2}",
+            date=True,
+            file_name_data_fmt="%Y.%m.%d",
         )
         coello.readTemperature(
-            coello_prec_path, start=coello_start_date, end=coello_end_date
+            coello_prec_path,
+            start=coello_start_date,
+            end=coello_end_date,
+            regex_string=r"\d{4}.\d{2}.\d{2}",
+            date=True,
+            file_name_data_fmt="%Y.%m.%d",
         )
-        coello.readET(coello_temp_path, start=coello_start_date, end=coello_end_date)
+        coello.readET(
+            coello_temp_path,
+            start=coello_start_date,
+            end=coello_end_date,
+            regex_string=r"\d{4}.\d{2}.\d{2}",
+            date=True,
+            file_name_data_fmt="%Y.%m.%d",
+        )
         coello.readFlowAcc(coello_acc_path)
         # coello.readFlowDir(coello_fd_path)
         Snow = False
@@ -387,12 +421,29 @@ class TestFW1:
             fmt="%Y-%m-%d",
         )
         coello.readRainfall(
-            coello_evap_path, start=coello_start_date, end=coello_end_date
+            coello_evap_path,
+            start=coello_start_date,
+            end=coello_end_date,
+            regex_string=r"\d{4}.\d{2}.\d{2}",
+            date=True,
+            file_name_data_fmt="%Y.%m.%d",
         )
         coello.readTemperature(
-            coello_prec_path, start=coello_start_date, end=coello_end_date
+            coello_prec_path,
+            start=coello_start_date,
+            end=coello_end_date,
+            regex_string=r"\d{4}.\d{2}.\d{2}",
+            date=True,
+            file_name_data_fmt="%Y.%m.%d",
         )
-        coello.readET(coello_temp_path, start=coello_start_date, end=coello_end_date)
+        coello.readET(
+            coello_temp_path,
+            start=coello_start_date,
+            end=coello_end_date,
+            regex_string=r"\d{4}.\d{2}.\d{2}",
+            date=True,
+            file_name_data_fmt="%Y.%m.%d",
+        )
         coello.readFlowAcc(coello_acc_path)
         # coello.readFlowDir(coello_fd_path)
 
@@ -434,12 +485,29 @@ class TestMuskingum:
             fmt="%Y-%m-%d",
         )
         coello.readRainfall(
-            coello_evap_path, start=coello_start_date, end=coello_end_date
+            coello_evap_path,
+            start=coello_start_date,
+            end=coello_end_date,
+            regex_string=r"\d{4}.\d{2}.\d{2}",
+            date=True,
+            file_name_data_fmt="%Y.%m.%d",
         )
         coello.readTemperature(
-            coello_prec_path, start=coello_start_date, end=coello_end_date
+            coello_prec_path,
+            start=coello_start_date,
+            end=coello_end_date,
+            regex_string=r"\d{4}.\d{2}.\d{2}",
+            date=True,
+            file_name_data_fmt="%Y.%m.%d",
         )
-        coello.readET(coello_temp_path, start=coello_start_date, end=coello_end_date)
+        coello.readET(
+            coello_temp_path,
+            start=coello_start_date,
+            end=coello_end_date,
+            regex_string=r"\d{4}.\d{2}.\d{2}",
+            date=True,
+            file_name_data_fmt="%Y.%m.%d",
+        )
         coello.readFlowAcc(coello_acc_path)
         # coello.readFlowDir(coello_fd_path)
         Snow = False
@@ -477,12 +545,29 @@ class TestMuskingum:
             fmt="%Y-%m-%d",
         )
         coello.readRainfall(
-            coello_evap_path, start=coello_start_date, end=coello_end_date
+            coello_evap_path,
+            start=coello_start_date,
+            end=coello_end_date,
+            regex_string=r"\d{4}.\d{2}.\d{2}",
+            date=True,
+            file_name_data_fmt="%Y.%m.%d",
         )
         coello.readTemperature(
-            coello_prec_path, start=coello_start_date, end=coello_end_date
+            coello_prec_path,
+            start=coello_start_date,
+            end=coello_end_date,
+            regex_string=r"\d{4}.\d{2}.\d{2}",
+            date=True,
+            file_name_data_fmt="%Y.%m.%d",
         )
-        coello.readET(coello_temp_path, start=coello_start_date, end=coello_end_date)
+        coello.readET(
+            coello_temp_path,
+            start=coello_start_date,
+            end=coello_end_date,
+            regex_string=r"\d{4}.\d{2}.\d{2}",
+            date=True,
+            file_name_data_fmt="%Y.%m.%d",
+        )
         coello.readFlowAcc(coello_acc_path)
         # coello.readFlowDir(coello_fd_path)
 

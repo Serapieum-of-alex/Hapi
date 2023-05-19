@@ -157,9 +157,17 @@ class Catchment:
         self.Metrics = None
 
     def readRainfall(
-        self, path: str, start: str = None, end: str = None, fmt: str = "%Y-%m-%d"
+        self,
+        path: str,
+        start: str = None,
+        end: str = None,
+        fmt: str = "%Y-%m-%d",
+        regex_string=r"\d{4}.\d{2}.\d{2}",
+        date: bool = True,
+        file_name_data_fmt: str = None,
+        extension: str = ".tif",
     ):
-        """readRainfall.
+        r"""readRainfall.
 
         Parameters
         ----------
@@ -173,6 +181,25 @@ class Catchment:
         end: [str]
             end date if you want to read the input temperature for a specific period only,
             if not given all rasters in the given path will be read.
+        regex_string: [str]
+            a regex string that we can use to locate the date in the file names.Default is r"\d{4}.\d{
+            2}.\d{2}".
+            >>> fname = "MSWEP_YYYY.MM.DD.tif"
+            >>> regex_string = r"\d{4}.\d{2}.\d{2}"
+            - or
+            >>> fname = "MSWEP_YYYY_M_D.tif"
+            >>> regex_string = r"\d{4}_\d{1}_\d{1}"
+            - if there is a number at the beginning of the name
+            >>> fname = "1_MSWEP_YYYY_M_D.tif"
+            >>> regex_string = r"\d+"
+        date: [bool]
+            True if the number in the file name is a date. Default is True.
+        file_name_data_fmt : [str]
+            if the files names' have a date and you want to read them ordered .Default is None
+            >>> "MSWEP_YYYY.MM.DD.tif"
+            >>> file_name_data_fmt = "%Y.%m.%d"
+        extension: [str]
+            the extension of the files you want to read from the given path. Default is ".tif".
 
 
         Returns
@@ -191,11 +218,19 @@ class Catchment:
                 len(os.listdir(path)) > 0
             ), f"{path} folder you have provided is empty"
             # read data
-            cube = Datacube.read_separate_files(
-                path, with_order=True, start=start, end=end, fmt=fmt
+            cube = Datacube.read_multiple_files(
+                path,
+                with_order=True,
+                regex_string=regex_string,
+                date=date,
+                start=start,
+                end=end,
+                fmt=fmt,
+                file_name_data_fmt=file_name_data_fmt,
+                extension=extension,
             )
-            cube.read_dataset()
-            self.Prec = np.moveaxis(cube.data, 0, -1)
+            cube.open_datacube()
+            self.Prec = np.moveaxis(cube.values, 0, -1)
             self.TS = (
                 self.Prec.shape[2] + 1
             )  # no of time steps =length of time series +1
@@ -212,8 +247,12 @@ class Catchment:
         start: str = None,
         end: str = None,
         fmt: str = "%Y-%m-%d",
+        regex_string=r"\d{4}.\d{2}.\d{2}",
+        date: bool = True,
+        file_name_data_fmt: str = None,
+        extension: str = ".tif",
     ):
-        """readTemperature.
+        r"""readTemperature.
 
         Parameters
         ----------
@@ -229,6 +268,25 @@ class Catchment:
             if not given all rasters in the given path will be read.
         ll_temp: [list/ ndarray]
             long term temperature
+        regex_string: [str]
+            a regex string that we can use to locate the date in the file names.Default is r"\d{4}.\d{
+            2}.\d{2}".
+            >>> fname = "MSWEP_YYYY.MM.DD.tif"
+            >>> regex_string = r"\d{4}.\d{2}.\d{2}"
+            - or
+            >>> fname = "MSWEP_YYYY_M_D.tif"
+            >>> regex_string = r"\d{4}_\d{1}_\d{1}"
+            - if there is a number at the beginning of the name
+            >>> fname = "1_MSWEP_YYYY_M_D.tif"
+            >>> regex_string = r"\d+"
+        date: [bool]
+            True if the number in the file name is a date. Default is True.
+        file_name_data_fmt : [str]
+            if the files names' have a date and you want to read them ordered .Default is None
+            >>> "MSWEP_YYYY.MM.DD.tif"
+            >>> file_name_data_fmt = "%Y.%m.%d"
+        extension: [str]
+            the extension of the files you want to read from the given path. Default is ".tif".
 
         Returns
         -------
@@ -245,11 +303,19 @@ class Catchment:
                 path + " folder you have provided is empty"
             )
             # read data
-            cube = Datacube.read_separate_files(
-                path, with_order=True, start=start, end=end, fmt=fmt
+            cube = Datacube.read_multiple_files(
+                path,
+                with_order=True,
+                regex_string=regex_string,
+                date=date,
+                start=start,
+                end=end,
+                fmt=fmt,
+                file_name_data_fmt=file_name_data_fmt,
+                extension=extension,
             )
-            cube.read_dataset()
-            self.Temp = np.moveaxis(cube.data, 0, -1)
+            cube.open_datacube()
+            self.Temp = np.moveaxis(cube.values, 0, -1)
             assert isinstance(
                 self.Temp, np.ndarray
             ), "array should be of type numpy array"
@@ -264,9 +330,17 @@ class Catchment:
             logger.debug("Temperature data are read successfully")
 
     def readET(
-        self, path: str, start: str = None, end: str = None, fmt: str = "%Y-%m-%d"
+        self,
+        path: str,
+        start: str = None,
+        end: str = None,
+        fmt: str = "%Y-%m-%d",
+        regex_string=r"\d{4}.\d{2}.\d{2}",
+        date: bool = True,
+        file_name_data_fmt: str = None,
+        extension: str = ".tif",
     ):
-        """readET.
+        r"""readET.
 
         Parameters
         ----------
@@ -280,6 +354,25 @@ class Catchment:
         end: [str]
             end date if you want to read the input temperature for a specific period only,
             if not given all rasters in the given path will be read.
+        regex_string: [str]
+            a regex string that we can use to locate the date in the file names.Default is r"\d{4}.\d{
+            2}.\d{2}".
+            >>> fname = "MSWEP_YYYY.MM.DD.tif"
+            >>> regex_string = r"\d{4}.\d{2}.\d{2}"
+            - or
+            >>> fname = "MSWEP_YYYY_M_D.tif"
+            >>> regex_string = r"\d{4}_\d{1}_\d{1}"
+            - if there is a number at the beginning of the name
+            >>> fname = "1_MSWEP_YYYY_M_D.tif"
+            >>> regex_string = r"\d+"
+        date: [bool]
+            True if the number in the file name is a date. Default is True.
+        file_name_data_fmt : [str]
+            if the files names' have a date and you want to read them ordered .Default is None
+            >>> "MSWEP_YYYY.MM.DD.tif"
+            >>> file_name_data_fmt = "%Y.%m.%d"
+        extension: [str]
+            the extension of the files you want to read from the given path. Default is ".tif".
 
         Returns
         -------
@@ -296,11 +389,19 @@ class Catchment:
                 path + " folder you have provided is empty"
             )
             # read data
-            cube = Datacube.read_separate_files(
-                path, with_order=True, start=start, end=end, fmt=fmt
+            cube = Datacube.read_multiple_files(
+                path,
+                with_order=True,
+                regex_string=regex_string,
+                date=date,
+                start=start,
+                end=end,
+                fmt=fmt,
+                file_name_data_fmt=file_name_data_fmt,
+                extension=extension,
             )
-            cube.read_dataset()
-            self.ET = np.moveaxis(cube.data, 0, -1)
+            cube.open_datacube()
+            self.ET = np.moveaxis(cube.values, 0, -1)
             assert isinstance(
                 self.ET, np.ndarray
             ), "array should be of type numpy array"
@@ -575,10 +676,11 @@ class Catchment:
                 path + " folder you have provided is empty"
             )
             # parameters
-            cube = Datacube.read_separate_files(path, with_order=True)
-            cube.read_dataset()
-            self.Parameters = np.moveaxis(cube.data, 0, -1)
-            # self.Parameters = Raster.readRastersFolder(path)
+            cube = Datacube.read_multiple_files(
+                path, with_order=True, regex_string=r"\d+", date=False
+            )
+            cube.open_datacube()
+            self.Parameters = np.moveaxis(cube.values, 0, -1)
         else:
             if not os.path.exists(path):
                 raise FileNotFoundError(
