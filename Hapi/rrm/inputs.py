@@ -315,7 +315,7 @@ class Inputs:
             array contains the average values of the distributed parameters.
         """
         # data type
-        assert type(Path) == str, "PrecPath input should be string type"
+        assert type(Path) == str, "prec_path input should be string type"
         # check wether the path exists or not
         assert os.path.exists(Path), Path + " you have provided does not exist"
         # check wether the folder has the rasters or not
