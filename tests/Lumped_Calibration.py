@@ -19,7 +19,7 @@ end = "2011-12-31"
 name = "Coello"
 
 Coello = Calibration(name, start, end)
-Coello.readLumpedInputs(MeteoDataPath)
+Coello.read_lumped_inputs(MeteoDataPath)
 #%% Basic_inputs
 # catchment area
 AreaCoeff = 1530
@@ -28,7 +28,7 @@ AreaCoeff = 1530
 InitialCond = [0, 10, 10, 10, 0]
 # no snow subroutine
 Snow = 0
-Coello.readLumpedModel(HBVLumped, AreaCoeff, InitialCond)
+Coello.read_lumped_model(HBVLumped, AreaCoeff, InitialCond)
 #%% Calibration parameters
 # Calibration boundaries
 UB = pd.read_csv(Path + "/UB-3.txt", index_col=0, header=None)
@@ -38,7 +38,7 @@ LB = pd.read_csv(Path + "/LB-3.txt", index_col=0, header=None)
 LB = LB[1].tolist()
 
 Maxbas = True
-Coello.readParametersBounds(UB, LB, Snow, Maxbas=Maxbas)
+Coello.read_parameters_bound(UB, LB, Snow, Maxbas=Maxbas)
 #%% additional arguments
 parameters = []
 # Routing
@@ -49,7 +49,7 @@ Basic_inputs = dict(Route=Route, RoutingFn=RoutingFn, InitialValues=parameters)
 #%%
 ### Objective function
 # outlet discharge
-Coello.readDischargeGauges(Path + "Qout_c.csv", fmt="%Y-%m-%d")
+Coello.read_discharge_gauges(Path + "Qout_c.csv", fmt="%Y-%m-%d")
 
 OF_args = []
 OF = PC.RMSE
@@ -117,7 +117,7 @@ print("WB= " + str(round(Metrics["WB"], 2)))
 gaugei = 0
 plotstart = "2009-01-01"
 plotend = "2011-12-31"
-Coello.plotHydrograph(plotstart, plotend, gaugei, Title="Lumped Model")
+Coello.plot_hydrograph(plotstart, plotend, gaugei, Title="Lumped Model")
 
 #%% save the parameters
 ParPath = Path + "Parameters" + str(dt.datetime.now())[0:10] + ".txt"

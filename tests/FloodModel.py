@@ -19,15 +19,15 @@ from Hapi.run import Run
 
 #%% Paths
 path = Comp + "/Coello/Hapi/Data/00inputs/"
-# PrecPath = path + "meteodata/4000/calib/prec" #
+# prec_path = path + "meteodata/4000/calib/prec" #
 PrecPath = path + "meteodata/4000/calib/prec-CPC-NOAA"  #
-# PrecPath = path + "meteodata/4000/calib/prec-MSWEP" #
+# prec_path = path + "meteodata/4000/calib/prec-MSWEP" #
 Evap_Path = path + "meteodata/4000/calib/evap"
 TempPath = path + "meteodata/4000/calib/temp"
 FlowAccPath = path + "GIS/4000/acc4000.tif"
 FlowDPath = path + "GIS/4000/fd4000.tif"
 ParPathRun = "results/parameters/02lumped parameters/Parameter-set-Avg/"
-# ParPathRun = "results/parameters/00default parameters/min/"
+# parameter_path_run = "results/parameters/00default parameters/min/"
 SaveTo = "results/saved rasters/"
 #%% Flood model data
 RiverNetworkF = path + "GIS/4000/river_network.tif"
@@ -48,25 +48,25 @@ start = "2009-01-01"
 end = "2011-12-31"
 name = "Coello"
 Coello = Catchment(
-    name, start, end, SpatialResolution="Distributed", RouteRiver=RouteRiver
+    name, start, end, spatial_resolution="Distributed", routing_method=RouteRiver
 )
 
 
-Coello.readFlowAcc(FlowAccPath)
-Coello.readFlowDir(FlowDPath)
-Coello.ReadRiverGeometry(
+Coello.read_flow_acc(FlowAccPath)
+Coello.read_flow_dir(FlowDPath)
+Coello.read_river_geometry(
     DEMF, BankfullDepthF, RiverWidthF, RiverRoughnessF, FloodPlainRoughnessF
 )
 
-Coello.readParameters(ParPathRun, Snow)
-Coello.readRainfall(PrecPath)
-Coello.readTemperature(TempPath)
-Coello.readET(Evap_Path)
-Coello.readLumpedModel(HBV, AreaCoeff, InitialCond)
+Coello.read_parameters(ParPathRun, Snow)
+Coello.read_rainfall(PrecPath)
+Coello.read_temperature(TempPath)
+Coello.read_et(Evap_Path)
+Coello.read_lumped_model(HBV, AreaCoeff, InitialCond)
 #%% Gauges
-Coello.readGaugeTable(path + "Discharge/stations/gauges.csv", FlowAccPath)
+Coello.read_gauge_table(path + "Discharge/stations/gauges.csv", FlowAccPath)
 GaugesPath = path + "Discharge/stations/"
-Coello.readDischargeGauges(GaugesPath, column="id", fmt="%Y-%m-%d")
+Coello.read_discharge_gauges(GaugesPath, column="id", fmt="%Y-%m-%d")
 #%% Run the model
 """
 Outputs:
@@ -88,7 +88,7 @@ Outputs:
 """
 Run.RunFloodModel(Coello)
 #%% calculate performance criteria
-Coello.extractDischarge(Factor=Coello.GaugesTable["area ratio"].tolist())
+Coello.extract_discharge(Factor=Coello.GaugesTable["area ratio"].tolist())
 
 for i in range(len(Coello.GaugesTable)):
     gaugeid = Coello.GaugesTable.loc[i, "id"]
@@ -106,7 +106,7 @@ gaugei = 5
 plotstart = "2009-01-01"
 plotend = "2011-12-31"
 
-Coello.plotHydrograph(plotstart, plotend, gaugei)
+Coello.plot_hydrograph(plotstart, plotend, gaugei)
 #%%
 """
 =============================================================================
@@ -200,7 +200,7 @@ animation.FuncAnimation.
 plotstart = "2009-01-01"
 plotend = "2009-02-01"
 
-Anim = Coello.plotDistributedResults(
+Anim = Coello.plot_distributed_results(
     plotstart,
     plotend,
     Figsize=(9, 9),

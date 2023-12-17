@@ -27,19 +27,19 @@ Create the model object and read the input data
 start = "2009-01-01"
 end = "2009-04-10"
 name = "Coello"
-Coello = Catchment(name, start, end, SpatialResolution="Distributed")
-Coello.readRainfall(PrecPath)
-Coello.readTemperature(TempPath)
-Coello.readET(Evap_Path)
+Coello = Catchment(name, start, end, spatial_resolution="Distributed")
+Coello.read_rainfall(PrecPath)
+Coello.read_temperature(TempPath)
+Coello.read_et(Evap_Path)
 
-Coello.readFlowAcc(FlowAccPath)
-Coello.readFlowDir(FlowDPath)
-Coello.readParameters(ParPathRun, Snow)
-Coello.readLumpedModel(HBV, AreaCoeff, InitialCond)
+Coello.read_flow_acc(FlowAccPath)
+Coello.read_flow_dir(FlowDPath)
+Coello.read_parameters(ParPathRun, Snow)
+Coello.read_lumped_model(HBV, AreaCoeff, InitialCond)
 #%% Gauges
-Coello.readGaugeTable(Path + "/stations/gauges.csv", FlowAccPath)
+Coello.read_gauge_table(Path + "/stations/gauges.csv", FlowAccPath)
 GaugesPath = Path + "/stations/"
-Coello.readDischargeGauges(GaugesPath, column="id", fmt="%Y-%m-%d")
+Coello.read_discharge_gauges(GaugesPath, column="id", fmt="%Y-%m-%d")
 #%% Run the model
 """
 Outputs:
@@ -61,7 +61,7 @@ Outputs:
 """
 Run.RunHapi(Coello)
 #%% calculate performance criteria
-Coello.extractDischarge(Factor=Coello.GaugesTable["area ratio"].tolist())
+Coello.extract_discharge(Factor=Coello.GaugesTable["area ratio"].tolist())
 
 for i in range(len(Coello.GaugesTable)):
     gaugeid = Coello.GaugesTable.loc[i, "id"]
@@ -79,7 +79,7 @@ gaugei = 5
 plotstart = "2009-01-01"
 plotend = "2011-12-31"
 
-Coello.plotHydrograph(plotstart, plotend, gaugei)
+Coello.plot_hydrograph(plotstart, plotend, gaugei)
 #%%
 """
 =============================================================================
@@ -173,7 +173,7 @@ animation.FuncAnimation.
 plotstart = "2009-01-01"
 plotend = "2009-02-01"
 
-Anim = Coello.plotDistributedResults(
+Anim = Coello.plot_distributed_results(
     plotstart,
     plotend,
     Figsize=(9, 9),

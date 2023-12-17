@@ -35,20 +35,20 @@ Create the model object and read the input data
 Sdate = "2009-01-01"
 Edate = "2011-12-31"
 name = "Coello"
-Coello = Calibration(name, Sdate, Edate, SpatialResolution="Distributed")
+Coello = Calibration(name, Sdate, Edate, spatial_resolution="Distributed")
 ### Meteorological & GIS Data
-Coello.readRainfall(PrecPath)
-Coello.readTemperature(TempPath)
-Coello.readET(Evap_Path)
+Coello.read_rainfall(PrecPath)
+Coello.read_temperature(TempPath)
+Coello.read_et(Evap_Path)
 
-Coello.readFlowAcc(FlowAccPath)
-Coello.readFlowDir(FlowDPath)
-Coello.readLumpedModel(HBV, AreaCoeff, InitialCond)
+Coello.read_flow_acc(FlowAccPath)
+Coello.read_flow_dir(FlowDPath)
+Coello.read_lumped_model(HBV, AreaCoeff, InitialCond)
 
 
 UB = np.loadtxt(CalibPath + "/UB - tot.txt", usecols=0)
 LB = np.loadtxt(CalibPath + "/LB - tot.txt", usecols=0)
-Coello.readParametersBounds(UB, LB, Snow)
+Coello.read_parameters_bound(UB, LB, Snow)
 #%% spatial variability function
 """
 define how generated parameters are going to be distributed spatially
@@ -82,9 +82,9 @@ SpatialVarFun = DP(
 # calculate no of parameters that optimization algorithm is going to generate
 SpatialVarFun.ParametersNO
 #%% Gauges
-Coello.readGaugeTable(Path + "/stations/gauges.csv", FlowAccPath)
+Coello.read_gauge_table(Path + "/stations/gauges.csv", FlowAccPath)
 GaugesPath = Path + "/stations/"
-Coello.readDischargeGauges(GaugesPath, column="id", fmt="%Y-%m-%d")
+Coello.read_discharge_gauges(GaugesPath, column="id", fmt="%Y-%m-%d")
 #%% Objective function
 coordinates = Coello.GaugesTable[["id", "x", "y", "weight"]][:]
 
@@ -93,7 +93,7 @@ OF_args = [coordinates]
 
 
 def OF(Qobs, Qout, q_uz_routed, q_lz_trans, coordinates):
-    Coello.extractDischarge()
+    Coello.extract_discharge()
     all_errors = []
     # error for all internal stations
     for i in range(len(coordinates)):

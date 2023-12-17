@@ -21,7 +21,7 @@ start = "2009-01-01"
 end = "2011-12-31"
 name = "Coello"
 Coello = Catchment(name, start, end)
-Coello.readLumpedInputs(MeteoDataPath)
+Coello.read_lumped_inputs(MeteoDataPath)
 
 ### Basic_inputs
 # catchment area
@@ -30,11 +30,11 @@ CatArea = 1530
 # [Snow pack, Soil moisture, Upper zone, Lower Zone, Water content]
 InitialCond = [0, 10, 10, 10, 0]
 
-Coello.readLumpedModel(HBVLumped, CatArea, InitialCond)
+Coello.read_lumped_model(HBVLumped, CatArea, InitialCond)
 
 ### parameters
 Snow = 0  # no snow subroutine
-Coello.readParameters(Parameterpath, Snow)
+Coello.read_parameters(Parameterpath, Snow)
 
 parameters = pd.read_csv(Parameterpath, index_col=0, header=None)
 parameters.rename(columns={1: "value"}, inplace=True)
@@ -44,11 +44,11 @@ parnames = UB.index
 UB = UB[1].tolist()
 LB = pd.read_csv(Path + "/UB-1-Muskinguk.txt", index_col=0, header=None)
 LB = LB[1].tolist()
-Coello.readParametersBounds(UB, LB, Snow)
+Coello.read_parameters_bound(UB, LB, Snow)
 
 #%%
 # observed flow
-Coello.readDischargeGauges(Path + "Qout_c.csv", fmt="%Y-%m-%d")
+Coello.read_discharge_gauges(Path + "Qout_c.csv", fmt="%Y-%m-%d")
 ### Routing
 Route = 1
 # RoutingFn=Routing.TriangularRouting2
