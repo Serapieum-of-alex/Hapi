@@ -226,16 +226,16 @@ class Run(Catchment):
         Parameters
         ----------
         1-Paths:
-            1-PrecPath:
+            1-prec_path:
                 [String] path to the Folder contains precipitation rasters
-            2-Evap_Path:
+            2-evap_path:
                 [String] path to the Folder contains Evapotranspiration rasters
-            3-TempPath:
+            3-temp_path:
                 [String] path to the Folder contains Temperature rasters
-            4-FlowAccPath:
+            4-flow_acc_path:
                 [String] path to the Flow Accumulation raster of the catchment (it should
                 include the raster name and extension)
-            5-FlowDPath:
+            5-flow_direction_path:
                 [String] path to the Flow Direction raster of the catchment (it should
                 include the raster name and extension)
         7-ParPath:
@@ -256,16 +256,16 @@ class Run(Catchment):
 
         Example
         -------
-        PrecPath = prec_path="meteodata/4000/calib/prec"
-        Evap_Path = evap_path="meteodata/4000/calib/evap"
-        TempPath = temp_path="meteodata/4000/calib/temp"
+        prec_path = prec_path="meteodata/4000/calib/prec"
+        evap_path = evap_path="meteodata/4000/calib/evap"
+        temp_path = temp_path="meteodata/4000/calib/temp"
         DemPath = "GIS/4000/dem4000.tif"
-        FlowAccPath = "GIS/4000/acc4000.tif"
-        FlowDPath = "GIS/4000/fd4000.tif"
+        flow_acc_path = "GIS/4000/acc4000.tif"
+        flow_direction_path = "GIS/4000/fd4000.tif"
         ParPath = "meteodata/4000/parameters"
         p2=[1, 227.31]
-        st, q_out, q_uz_routed = RunModel(PrecPath,Evap_Path,TempPath,DemPath,
-                                          FlowAccPath,FlowDPath,ParPath,p2)
+        st, q_out, q_uz_routed = RunModel(prec_path,evap_path,temp_path,DemPath,
+                                          flow_acc_path,flow_direction_path,ParPath,p2)
         """
         # input data validation
 
