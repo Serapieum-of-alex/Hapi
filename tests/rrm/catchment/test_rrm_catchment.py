@@ -27,7 +27,7 @@ class TestLumped:
         lumped_meteo_data_path: str,
     ):
         Coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
-        Coello.readLumpedInputs(lumped_meteo_data_path)
+        Coello.read_lumped_inputs(lumped_meteo_data_path)
         assert isinstance(Coello.data, np.ndarray)
 
     def test_read_lumped_model(
@@ -37,7 +37,7 @@ class TestLumped:
         coello_InitialCond: list,
     ):
         Coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
-        Coello.readLumpedModel(HBVLumped, coello_AreaCoeff, coello_InitialCond)
+        Coello.read_lumped_model(HBVLumped, coello_AreaCoeff, coello_InitialCond)
         assert isinstance(Coello.LumpedModel, ModuleType)
         assert isinstance(Coello.CatArea, float)
         assert isinstance(Coello.InitialCond, list)
@@ -49,7 +49,7 @@ class TestLumped:
         coello_Snow: int,
     ):
         Coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
-        Coello.readParameters(lumped_parameters_path, coello_Snow)
+        Coello.read_parameters(lumped_parameters_path, coello_Snow)
         assert isinstance(Coello.Parameters, list)
         assert Coello.Snow == coello_Snow
 
@@ -60,7 +60,7 @@ class TestLumped:
         coello_gauges_date_fmt: str,
     ):
         Coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
-        Coello.readDischargeGauges(lumped_gauges_path, fmt=coello_gauges_date_fmt)
+        Coello.read_discharge_gauges(lumped_gauges_path, fmt=coello_gauges_date_fmt)
         assert isinstance(Coello.QGauges, DataFrame)
 
     def test_RunLumped(
@@ -75,11 +75,11 @@ class TestLumped:
         coello_gauges_date_fmt: str,
     ):
         Coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
-        Coello.readLumpedInputs(lumped_meteo_data_path)
-        Coello.readLumpedModel(HBVLumped, coello_AreaCoeff, coello_InitialCond)
-        Coello.readParameters(lumped_parameters_path, coello_Snow)
+        Coello.read_lumped_inputs(lumped_meteo_data_path)
+        Coello.read_lumped_model(HBVLumped, coello_AreaCoeff, coello_InitialCond)
+        Coello.read_parameters(lumped_parameters_path, coello_Snow)
         # discharge gauges
-        Coello.readDischargeGauges(lumped_gauges_path, fmt=coello_gauges_date_fmt)
+        Coello.read_discharge_gauges(lumped_gauges_path, fmt=coello_gauges_date_fmt)
         RoutingFn = Routing.Muskingum_V
         Route = 1
         Run.runLumped(Coello, Route, RoutingFn)
@@ -101,11 +101,11 @@ class TestLumped:
         if os.path.exists(path):
             os.remove(path)
         Coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
-        Coello.readLumpedInputs(lumped_meteo_data_path)
-        Coello.readLumpedModel(HBVLumped, coello_AreaCoeff, coello_InitialCond)
-        Coello.readParameters(lumped_parameters_path, coello_Snow)
+        Coello.read_lumped_inputs(lumped_meteo_data_path)
+        Coello.read_lumped_model(HBVLumped, coello_AreaCoeff, coello_InitialCond)
+        Coello.read_parameters(lumped_parameters_path, coello_Snow)
         # discharge gauges
-        Coello.readDischargeGauges(lumped_gauges_path, fmt=coello_gauges_date_fmt)
+        Coello.read_discharge_gauges(lumped_gauges_path, fmt=coello_gauges_date_fmt)
         RoutingFn = Routing.Muskingum_V
         Route = 1
         Run.runLumped(Coello, Route, RoutingFn)
@@ -143,8 +143,8 @@ class TestDistributed:
             "coello",
             coello_start_date,
             coello_end_date,
-            SpatialResolution="Distributed",
-            TemporalResolution="Daily",
+            spatial_resolution="Distributed",
+            temporal_resolution="Daily",
             fmt="%Y-%m-%d",
         )
         assert coello.SpatialResolution == "distributed"
@@ -163,11 +163,11 @@ class TestDistributed:
             "coello",
             coello_start_date,
             coello_end_date,
-            SpatialResolution="Distributed",
-            TemporalResolution="Daily",
+            spatial_resolution="Distributed",
+            temporal_resolution="Daily",
             fmt="%Y-%m-%d",
         )
-        coello.readRainfall(
+        coello.read_rainfall(
             coello_evap_path,
             start=coello_start_date,
             end=coello_end_date,
@@ -175,7 +175,7 @@ class TestDistributed:
             date=True,
             file_name_data_fmt="%Y.%m.%d",
         )
-        coello.readTemperature(
+        coello.read_temperature(
             coello_prec_path,
             start=coello_start_date,
             end=coello_end_date,
@@ -183,7 +183,7 @@ class TestDistributed:
             date=True,
             file_name_data_fmt="%Y.%m.%d",
         )
-        coello.readET(
+        coello.read_et(
             coello_temp_path,
             start=coello_start_date,
             end=coello_end_date,
@@ -210,12 +210,12 @@ class TestDistributed:
             "coello",
             coello_start_date,
             coello_end_date,
-            SpatialResolution="Distributed",
-            TemporalResolution="Daily",
+            spatial_resolution="Distributed",
+            temporal_resolution="Daily",
             fmt="%Y-%m-%d",
         )
-        coello.readFlowAcc(coello_acc_path)
-        coello.readFlowDir(coello_fd_path)
+        coello.read_flow_acc(coello_acc_path)
+        coello.read_flow_dir(coello_fd_path)
         assert coello.Outlet[0][0] == 10
         assert coello.Outlet[1][0] == 13
         assert coello.acc_val == coello_acc_values
@@ -234,11 +234,11 @@ class TestDistributed:
             "coello",
             coello_start_date,
             coello_end_date,
-            SpatialResolution="Distributed",
-            TemporalResolution="Daily",
+            spatial_resolution="Distributed",
+            temporal_resolution="Daily",
             fmt="%Y-%m-%d",
         )
-        coello.readLumpedModel(HBV, coello_cat_area, coello_initial_cond)
+        coello.read_lumped_model(HBV, coello_cat_area, coello_initial_cond)
         assert coello.LumpedModel == HBV
         assert coello.CatArea == coello_cat_area
         assert coello.InitialCond == coello_initial_cond
@@ -256,11 +256,11 @@ class TestDistributed:
             "coello",
             coello_start_date,
             coello_end_date,
-            SpatialResolution="Distributed",
-            TemporalResolution="Daily",
+            spatial_resolution="Distributed",
+            temporal_resolution="Daily",
             fmt="%Y-%m-%d",
         )
-        coello.readParametersBounds(UB, LB, Snow)
+        coello.read_parameters_bound(UB, LB, Snow)
         assert all(coello.LB == LB)
         assert all(coello.UB == UB)
         assert coello.Snow == Snow
@@ -277,11 +277,11 @@ class TestDistributed:
             "coello",
             coello_start_date,
             coello_end_date,
-            SpatialResolution="Distributed",
-            TemporalResolution="Daily",
+            spatial_resolution="Distributed",
+            temporal_resolution="Daily",
             fmt="%Y-%m-%d",
         )
-        coello.readGaugeTable(coello_gauges_table, coello_acc_path)
+        coello.read_gauge_table(coello_gauges_table, coello_acc_path)
         assert isinstance(coello.GaugesTable, DataFrame)
         assert all(
             elem in coello.GaugesTable.columns for elem in ["cell_row", "cell_col"]
@@ -300,12 +300,12 @@ class TestDistributed:
             "coello",
             coello_start_date,
             coello_end_date,
-            SpatialResolution="Distributed",
-            TemporalResolution="Daily",
+            spatial_resolution="Distributed",
+            temporal_resolution="Daily",
             fmt="%Y-%m-%d",
         )
-        coello.readGaugeTable(coello_gauges_table, coello_acc_path)
-        coello.readDischargeGauges(coello_gauges_path, column="id", fmt="%Y-%m-%d")
+        coello.read_gauge_table(coello_gauges_table, coello_acc_path)
+        coello.read_discharge_gauges(coello_gauges_path, column="id", fmt="%Y-%m-%d")
         assert isinstance(coello.QGauges, DataFrame)
         assert all(elem in coello.QGauges.columns for elem in coello_gauge_names)
 
@@ -322,12 +322,12 @@ class TestDistributed:
             "coello",
             coello_start_date,
             coello_end_date,
-            SpatialResolution="Distributed",
-            TemporalResolution="Daily",
+            spatial_resolution="Distributed",
+            temporal_resolution="Daily",
             fmt="%Y-%m-%d",
         )
         Snow = False
-        coello.readParameters(coello_dist_parameters_maxbas, Snow, Maxbas=True)
+        coello.read_parameters(coello_dist_parameters_maxbas, Snow, Maxbas=True)
         assert coello.Parameters.shape == (
             coello_rows,
             coello_cols,
@@ -356,11 +356,11 @@ class TestFW1:
             "coello",
             coello_start_date,
             coello_end_date,
-            SpatialResolution="Distributed",
-            TemporalResolution="Daily",
+            spatial_resolution="Distributed",
+            temporal_resolution="Daily",
             fmt="%Y-%m-%d",
         )
-        coello.readRainfall(
+        coello.read_rainfall(
             coello_evap_path,
             start=coello_start_date,
             end=coello_end_date,
@@ -368,7 +368,7 @@ class TestFW1:
             date=True,
             file_name_data_fmt="%Y.%m.%d",
         )
-        coello.readTemperature(
+        coello.read_temperature(
             coello_prec_path,
             start=coello_start_date,
             end=coello_end_date,
@@ -376,7 +376,7 @@ class TestFW1:
             date=True,
             file_name_data_fmt="%Y.%m.%d",
         )
-        coello.readET(
+        coello.read_et(
             coello_temp_path,
             start=coello_start_date,
             end=coello_end_date,
@@ -384,11 +384,11 @@ class TestFW1:
             date=True,
             file_name_data_fmt="%Y.%m.%d",
         )
-        coello.readFlowAcc(coello_acc_path)
+        coello.read_flow_acc(coello_acc_path)
         # coello.readFlowDir(coello_fd_path)
         Snow = False
-        coello.readParameters(coello_dist_parameters_maxbas, Snow, Maxbas=True)
-        coello.readLumpedModel(HBV, coello_cat_area, coello_initial_cond)
+        coello.read_parameters(coello_dist_parameters_maxbas, Snow, Maxbas=True)
+        coello.read_lumped_model(HBV, coello_cat_area, coello_initial_cond)
         Run.runFW1(coello)
         assert isinstance(coello.qout, np.ndarray)
         assert len(coello.qout) == 10
@@ -416,11 +416,11 @@ class TestFW1:
             "coello",
             coello_start_date,
             coello_end_date,
-            SpatialResolution="Distributed",
-            TemporalResolution="Daily",
+            spatial_resolution="Distributed",
+            temporal_resolution="Daily",
             fmt="%Y-%m-%d",
         )
-        coello.readRainfall(
+        coello.read_rainfall(
             coello_evap_path,
             start=coello_start_date,
             end=coello_end_date,
@@ -428,7 +428,7 @@ class TestFW1:
             date=True,
             file_name_data_fmt="%Y.%m.%d",
         )
-        coello.readTemperature(
+        coello.read_temperature(
             coello_prec_path,
             start=coello_start_date,
             end=coello_end_date,
@@ -436,7 +436,7 @@ class TestFW1:
             date=True,
             file_name_data_fmt="%Y.%m.%d",
         )
-        coello.readET(
+        coello.read_et(
             coello_temp_path,
             start=coello_start_date,
             end=coello_end_date,
@@ -444,18 +444,18 @@ class TestFW1:
             date=True,
             file_name_data_fmt="%Y.%m.%d",
         )
-        coello.readFlowAcc(coello_acc_path)
+        coello.read_flow_acc(coello_acc_path)
         # coello.readFlowDir(coello_fd_path)
 
-        coello.readGaugeTable(coello_gauges_table, coello_acc_path)
-        coello.readDischargeGauges(coello_gauges_path, column="id", fmt="%Y-%m-%d")
+        coello.read_gauge_table(coello_gauges_table, coello_acc_path)
+        coello.read_discharge_gauges(coello_gauges_path, column="id", fmt="%Y-%m-%d")
 
         Snow = False
-        coello.readParameters(coello_dist_parameters_maxbas, Snow, Maxbas=True)
-        coello.readLumpedModel(HBV, coello_cat_area, coello_initial_cond)
+        coello.read_parameters(coello_dist_parameters_maxbas, Snow, Maxbas=True)
+        coello.read_lumped_model(HBV, coello_cat_area, coello_initial_cond)
         Run.runFW1(coello)
 
-        coello.extractDischarge(CalculateMetrics=True, FW1=True)
+        coello.extract_discharge(CalculateMetrics=True, FW1=True)
         assert isinstance(coello.Metrics, DataFrame)
         assert len(coello.Metrics) == 7
         assert len(coello.Qsim) == 10
@@ -480,11 +480,11 @@ class TestMuskingum:
             "coello",
             coello_start_date,
             coello_end_date,
-            SpatialResolution="Distributed",
-            TemporalResolution="Daily",
+            spatial_resolution="Distributed",
+            temporal_resolution="Daily",
             fmt="%Y-%m-%d",
         )
-        coello.readRainfall(
+        coello.read_rainfall(
             coello_evap_path,
             start=coello_start_date,
             end=coello_end_date,
@@ -492,7 +492,7 @@ class TestMuskingum:
             date=True,
             file_name_data_fmt="%Y.%m.%d",
         )
-        coello.readTemperature(
+        coello.read_temperature(
             coello_prec_path,
             start=coello_start_date,
             end=coello_end_date,
@@ -500,7 +500,7 @@ class TestMuskingum:
             date=True,
             file_name_data_fmt="%Y.%m.%d",
         )
-        coello.readET(
+        coello.read_et(
             coello_temp_path,
             start=coello_start_date,
             end=coello_end_date,
@@ -508,11 +508,11 @@ class TestMuskingum:
             date=True,
             file_name_data_fmt="%Y.%m.%d",
         )
-        coello.readFlowAcc(coello_acc_path)
+        coello.read_flow_acc(coello_acc_path)
         # coello.readFlowDir(coello_fd_path)
         Snow = False
-        coello.readParameters(coello_dist_parameters_maxbas, Snow, Maxbas=True)
-        coello.readLumpedModel(HBV, coello_cat_area, coello_initial_cond)
+        coello.read_parameters(coello_dist_parameters_maxbas, Snow, Maxbas=True)
+        coello.read_lumped_model(HBV, coello_cat_area, coello_initial_cond)
         Run.runFW1(coello)
         assert isinstance(coello.qout, np.ndarray)
         assert len(coello.qout) == 10
@@ -540,11 +540,11 @@ class TestMuskingum:
             "coello",
             coello_start_date,
             coello_end_date,
-            SpatialResolution="Distributed",
-            TemporalResolution="Daily",
+            spatial_resolution="Distributed",
+            temporal_resolution="Daily",
             fmt="%Y-%m-%d",
         )
-        coello.readRainfall(
+        coello.read_rainfall(
             coello_evap_path,
             start=coello_start_date,
             end=coello_end_date,
@@ -552,7 +552,7 @@ class TestMuskingum:
             date=True,
             file_name_data_fmt="%Y.%m.%d",
         )
-        coello.readTemperature(
+        coello.read_temperature(
             coello_prec_path,
             start=coello_start_date,
             end=coello_end_date,
@@ -560,7 +560,7 @@ class TestMuskingum:
             date=True,
             file_name_data_fmt="%Y.%m.%d",
         )
-        coello.readET(
+        coello.read_et(
             coello_temp_path,
             start=coello_start_date,
             end=coello_end_date,
@@ -568,18 +568,18 @@ class TestMuskingum:
             date=True,
             file_name_data_fmt="%Y.%m.%d",
         )
-        coello.readFlowAcc(coello_acc_path)
+        coello.read_flow_acc(coello_acc_path)
         # coello.readFlowDir(coello_fd_path)
 
-        coello.readGaugeTable(coello_gauges_table, coello_acc_path)
-        coello.readDischargeGauges(coello_gauges_path, column="id", fmt="%Y-%m-%d")
+        coello.read_gauge_table(coello_gauges_table, coello_acc_path)
+        coello.read_discharge_gauges(coello_gauges_path, column="id", fmt="%Y-%m-%d")
 
         Snow = False
-        coello.readParameters(coello_dist_parameters_maxbas, Snow, Maxbas=True)
-        coello.readLumpedModel(HBV, coello_cat_area, coello_initial_cond)
+        coello.read_parameters(coello_dist_parameters_maxbas, Snow, Maxbas=True)
+        coello.read_lumped_model(HBV, coello_cat_area, coello_initial_cond)
         Run.runFW1(coello)
 
-        coello.extractDischarge(CalculateMetrics=True, FW1=True)
+        coello.extract_discharge(CalculateMetrics=True, FW1=True)
         assert isinstance(coello.Metrics, DataFrame)
         assert len(coello.Metrics) == 7
         assert len(coello.Qsim) == 10

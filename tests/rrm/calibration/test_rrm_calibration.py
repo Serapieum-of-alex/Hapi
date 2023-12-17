@@ -1,8 +1,6 @@
 import datetime as dt
-
 import numpy as np
 
-# from Hapi.run import Run
 import statista.metrics as PC
 
 import Hapi.rrm.hbv_bergestrom92 as HBVLumped
@@ -18,7 +16,7 @@ def test_ReadParametersBounds(
     Coello = Calibration("rrm", coello_rrm_date[0], coello_rrm_date[1])
     Maxbas = True
     Snow = False
-    Coello.readParametersBounds(lower_bound, upper_bound, Snow, Maxbas=Maxbas)
+    Coello.read_parameters_bound(lower_bound, upper_bound, Snow, Maxbas=Maxbas)
     assert isinstance(Coello.UB, np.ndarray)
     assert isinstance(Coello.LB, np.ndarray)
     assert isinstance(Coello.Snow, bool)
@@ -39,10 +37,10 @@ def test_LumpedCalibration(
     history_files: str,
 ):
     Coello = Calibration("rrm", coello_rrm_date[0], coello_rrm_date[1])
-    Coello.readLumpedInputs(lumped_meteo_data_path)
-    Coello.readLumpedModel(HBVLumped, coello_AreaCoeff, coello_InitialCond)
+    Coello.read_lumped_inputs(lumped_meteo_data_path)
+    Coello.read_lumped_model(HBVLumped, coello_AreaCoeff, coello_InitialCond)
     Maxbas = True
-    Coello.readParametersBounds(lower_bound, upper_bound, coello_Snow, Maxbas=Maxbas)
+    Coello.read_parameters_bound(lower_bound, upper_bound, coello_Snow, Maxbas=Maxbas)
 
     parameters = []
     # Routing
@@ -52,7 +50,7 @@ def test_LumpedCalibration(
     Basic_inputs = dict(Route=Route, RoutingFn=RoutingFn, InitialValues=parameters)
 
     # discharge gauges
-    Coello.readDischargeGauges(lumped_gauges_path, fmt=coello_gauges_date_fmt)
+    Coello.read_discharge_gauges(lumped_gauges_path, fmt=coello_gauges_date_fmt)
 
     OF_args = []
     OF = PC.RMSE
@@ -94,8 +92,8 @@ class TestDistributed:
             "coello",
             coello_start_date,
             coello_end_date,
-            SpatialResolution="Distributed",
-            TemporalResolution="Daily",
+            spatial_resolution="Distributed",
+            temporal_resolution="Daily",
             fmt="%Y-%m-%d",
         )
         assert coello.SpatialResolution == "distributed"

@@ -36,9 +36,9 @@ class Calibration(Catchment):
         start: str,
         end: str,
         fmt: str = "%Y-%m-%d",
-        SpatialResolution: Optional[str] = "Lumped",
-        TemporalResolution: Optional[str] = "Daily",
-        RouteRiver: Optional[str] = "Muskingum",
+        spatial_resolution: Optional[str] = "Lumped",
+        temporal_resolution: Optional[str] = "Daily",
+        routing_method: Optional[str] = "Muskingum",
     ):
         """Calibration.
 
@@ -55,13 +55,19 @@ class Calibration(Catchment):
             end date.
         fmt : [str], optional
             format of the given date. The default is "%Y-%m-%d".
-        SpatialResolution : [str], optional
+        spatial_resolution : [str], optional
             Lumped or 'Distributed' . The default is 'Lumped'.
-        TemporalResolution : [str], optional
+        temporal_resolution : [str], optional
             "Hourly" or "Daily". The default is "Daily".
         """
         super().__init__(
-            name, start, end, fmt, SpatialResolution, TemporalResolution, RouteRiver
+            name,
+            start,
+            end,
+            fmt,
+            spatial_resolution,
+            temporal_resolution,
+            routing_method,
         )
 
     def readObjectiveFn(self, OF: callable, args):
@@ -93,7 +99,7 @@ class Calibration(Catchment):
 
         print("Objective function is read successfully")
 
-    def extractDischarge(self, Factor=None):
+    def extract_discharge(self, Factor=None):
         """extractDischarge.
 
         extractDischarge method extracts the discharge hydrograph in the
@@ -196,12 +202,12 @@ class Calibration(Catchment):
         >>> prec_path = "meteodata/4000/calib/prec"
         >>> evap_path = "meteodata/4000/calib/evap"
         >>> temp_path = "meteodata/4000/calib/temp"
-        >>> FlowAccPath = "GIS/4000/acc4000.tif"
-        >>> FlowDPath = "GIS/4000/fd4000.tif"
+        >>> flow_acc_path = "GIS/4000/acc4000.tif"
+        >>> flow_direction_path = "GIS/4000/fd4000.tif"
         >>> ParPath = "meteodata/4000/parameters.txt"
         >>> p2 = [1, 227.31]
-        >>> st, q_out, q_uz_routed = RunModel(PrecPath, Evap_Path, TempPath, DemPath,
-        >>>                                   FlowAccPath,FlowDPath,ParPath,p2)
+        >>> st, q_out, q_uz_routed = RunModel(prec_path, evap_path, temp_path, DemPath,
+        >>>                                   flow_acc_path,flow_direction_path,ParPath,p2)
         """
         # input dimensions
         # [rows,cols] = self.FlowAcc.ReadAsArray().shape
@@ -369,15 +375,15 @@ class Calibration(Catchment):
 
         Example
         -------
-        PrecPath = prec_path="meteodata/4000/calib/prec"
-        Evap_Path = evap_path="meteodata/4000/calib/evap"
-        TempPath = temp_path="meteodata/4000/calib/temp"
-        FlowAccPath = "GIS/4000/acc4000.tif"
-        FlowDPath = "GIS/4000/fd4000.tif"
+        prec_path = prec_path="meteodata/4000/calib/prec"
+        evap_path = evap_path="meteodata/4000/calib/evap"
+        temp_path = temp_path="meteodata/4000/calib/temp"
+        flow_acc_path = "GIS/4000/acc4000.tif"
+        flow_direction_path = "GIS/4000/fd4000.tif"
         ParPath = "meteodata/4000/"+"parameters.txt"
         p2=[1, 227.31]
-        st, q_out, q_uz_routed = RunModel(PrecPath,Evap_Path,TempPath,DemPath,
-                                          FlowAccPath,FlowDPath,ParPath,p2)
+        st, q_out, q_uz_routed = RunModel(prec_path,evap_path,temp_path,DemPath,
+                                          flow_acc_path,flow_direction_path,ParPath,p2)
         """
         # input dimensions
         # [rows,cols] = self.FlowAcc.ReadAsArray().shape
@@ -529,15 +535,15 @@ class Calibration(Catchment):
 
         Examples
         --------
-            PrecPath = prec_path="meteodata/4000/calib/prec"
-            Evap_Path = evap_path="meteodata/4000/calib/evap"
-            TempPath = temp_path="meteodata/4000/calib/temp"
-            FlowAccPath = "GIS/4000/acc4000.tif"
-            FlowDPath = "GIS/4000/fd4000.tif"
+            prec_path = prec_path="meteodata/4000/calib/prec"
+            evap_path = evap_path="meteodata/4000/calib/evap"
+            temp_path = temp_path="meteodata/4000/calib/temp"
+            flow_acc_path = "GIS/4000/acc4000.tif"
+            flow_direction_path = "GIS/4000/fd4000.tif"
             ParPath = "meteodata/4000/"+"parameters.txt"
             p2=[1, 227.31]
-            st, q_out, q_uz_routed = RunModel(PrecPath,Evap_Path,TempPath,DemPath,
-                                              FlowAccPath,FlowDPath,ParPath,p2)
+            st, q_out, q_uz_routed = RunModel(prec_path,evap_path,temp_path,DemPath,
+                                              flow_acc_path,flow_direction_path,ParPath,p2)
         """
         # basic inputs
         # check if all inputs are included
