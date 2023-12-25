@@ -1,9 +1,8 @@
 import datetime as dt
-
 import matplotlib
 
 matplotlib.use("TkAgg")
-import statista.metrics as PC
+import statista.metrics as metrics
 
 import Hapi.rrm.hbv_bergestrom92 as HBVLumped
 from Hapi.catchment import Catchment
@@ -20,22 +19,22 @@ start = "2009-01-01"
 end = "2011-12-31"
 name = "Coello"
 Coello = Catchment(name, start, end)
-Coello.readLumpedInputs(MeteoDataPath)
+Coello.read_lumped_inputs(MeteoDataPath)
 # %% Lumped model
 # catchment area
 AreaCoeff = 1530
 # [Snow pack, Soil moisture, Upper zone, Lower Zone, Water content]
 InitialCond = [0, 10, 10, 10, 0]
 
-Coello.readLumpedModel(HBVLumped, AreaCoeff, InitialCond)
+Coello.read_lumped_model(HBVLumped, AreaCoeff, InitialCond)
 # %% ### Model Parameters
 # no snow subroutine
 Snow = False
 Maxbas = True
-Coello.readParameters(Parameterpath, Snow, Maxbas=Maxbas)
+Coello.read_parameters(Parameterpath, Snow, maxbas=Maxbas)
 # Coello.Parameters
 # %% ### Observed flow
-Coello.readDischargeGauges(Path + "Qout_c.csv", fmt="%Y-%m-%d")
+Coello.read_discharge_gauges(Path + "Qout_c.csv", fmt="%Y-%m-%d")
 # %% Routing
 # RoutingFn = Routing.TriangularRouting2
 RoutingFn = Routing.TriangularRouting1
@@ -60,11 +59,11 @@ Metrics = dict()
 # gaugeid = Coello.QGauges.columns[-1]
 Qobs = Coello.QGauges["q"]
 
-Metrics["RMSE"] = PC.RMSE(Qobs, Coello.Qsim["q"])
-Metrics["NSE"] = PC.NSE(Qobs, Coello.Qsim["q"])
-Metrics["NSEhf"] = PC.NSEHF(Qobs, Coello.Qsim["q"])
-Metrics["KGE"] = PC.KGE(Qobs, Coello.Qsim["q"])
-Metrics["WB"] = PC.WB(Qobs, Coello.Qsim["q"])
+Metrics["RMSE"] = metrics.rmse(Qobs, Coello.Qsim["q"])
+Metrics["NSE"] = metrics.nse(Qobs, Coello.Qsim["q"])
+Metrics["NSEhf"] = metrics.nse_hf(Qobs, Coello.Qsim["q"])
+Metrics["KGE"] = metrics.kge(Qobs, Coello.Qsim["q"])
+Metrics["WB"] = metrics.wb(Qobs, Coello.Qsim["q"])
 
 print("RMSE= " + str(round(Metrics["RMSE"], 2)))
 print("NSE= " + str(round(Metrics["NSE"], 2)))
@@ -75,13 +74,13 @@ print("WB= " + str(round(Metrics["WB"], 2)))
 gaugei = 0
 plotstart = "2009-01-01"
 plotend = "2011-12-31"
-fig, ax = Coello.plotHydrograph(plotstart, plotend, gaugei, Title="Lumped Model")
+fig, ax = Coello.plot_hydrograph(plotstart, plotend, gaugei, title="Lumped Model")
 # %% ### Save Results
 
 StartDate = "2009-01-01"
 EndDate = "2010-04-20"
 
 Path = f"{SaveTo}{Coello.name}Results-Lumped-Model_{str(dt.datetime.now())[0:10]}.txt"
-Coello.saveResults(Result=5, start=StartDate, end=EndDate, Path=Path)
+Coello.save_results(result=5, start=StartDate, end=EndDate, path=Path)
 
-#%%
+# %%

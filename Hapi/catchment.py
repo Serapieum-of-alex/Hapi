@@ -606,42 +606,33 @@ class Catchment:
 
     def read_river_geometry(
         self,
-        dem_path: str,
-        bankfull_depth_path: str,
-        river_width_path: str,
-        RiverRoughnessF: str,
-        FloodPlainRoughnessF: str,
+        dem_file: str,
+        bankfull_depth_file: str,
+        river_width_file: str,
+        river_roughness_file: str,
+        floodplain_roughness_file: str,
     ):
         """ReadRiverGeometry.
 
         Parameters
         ----------
-        dem_path
-        bankfull_depth_path
-        river_width_path
-        RiverRoughnessF
-        FloodPlainRoughnessF
+        dem_file
+        bankfull_depth_file
+        river_width_file
+        river_roughness_file
+        floodplain_roughness_file
 
         Returns
         -------
         None
         """
-        dem = gdal.Open(dem_path)
-        self.DEM = dem.ReadAsArray()
+        self.DEM = gdal.Open(dem_file).ReadAsArray()
+        self.BankfullDepth = gdal.Open(bankfull_depth_file).ReadAsArray()
+        self.RiverWidth = gdal.Open(river_width_file).ReadAsArray()
+        self.RiverRoughness = gdal.Open(river_roughness_file).ReadAsArray()
+        self.FloodPlainRoughness = gdal.Open(floodplain_roughness_file).ReadAsArray()
 
-        bankfull_depth = gdal.Open(bankfull_depth_path)
-        self.BankfullDepth = bankfull_depth.ReadAsArray()
-
-        river_width = gdal.Open(river_width_path)
-        self.RiverWidth = river_width.ReadAsArray()
-
-        river_roughness = gdal.Open(RiverRoughnessF)
-        self.RiverRoughness = river_roughness.ReadAsArray()
-
-        flood_plain_roughness = gdal.Open(FloodPlainRoughnessF)
-        self.FloodPlainRoughness = flood_plain_roughness.ReadAsArray()
-
-    def read_parameters(self, path: str, snow: bool = False, Maxbas: bool = False):
+    def read_parameters(self, path: str, snow: bool = False, maxbas: bool = False):
         """readParameters.
 
         readParameters method reads the parameters' raster
@@ -654,7 +645,7 @@ class Catchment:
             False if you dont want to run the snow related processes and 1 if there is snow.
             in case of 1 (simulate snow processes) parameters related to snow simulation
             has to be provided. The default is 0.
-        Maxbas : [bool], optional
+        maxbas : [bool], optional
             True if the routing is Maxbas. The default is False.
 
         Returns
@@ -694,47 +685,47 @@ class Catchment:
         ), " snow input defines whether to consider snow subroutine or not it has to be True or False"
 
         self.Snow = snow
-        self.Maxbas = Maxbas
+        self.Maxbas = maxbas
 
         if self.SpatialResolution == "distributed":
-            if snow and Maxbas:
+            if snow and maxbas:
                 assert self.Parameters.shape[2] == 16, (
                     "current version of HBV (with snow) takes 16 parameter you have entered "
                     + str(self.Parameters.shape[2])
                 )
-            elif not snow and Maxbas:
+            elif not snow and maxbas:
                 assert self.Parameters.shape[2] == 11, (
                     "current version of HBV (with snow) takes 11 parameter you have entered "
                     + str(self.Parameters.shape[2])
                 )
-            elif snow and not Maxbas:
+            elif snow and not maxbas:
                 assert self.Parameters.shape[2] == 17, (
                     "current version of HBV (with snow) takes 17 parameter you have entered "
                     + str(self.Parameters.shape[2])
                 )
-            elif not snow and not Maxbas:
+            elif not snow and not maxbas:
                 assert self.Parameters.shape[2] == 12, (
                     "current version of HBV (with snow) takes 12 parameter you have entered "
                     + str(self.Parameters.shape[2])
                 )
         else:
-            if snow and Maxbas:
+            if snow and maxbas:
                 assert len(self.Parameters) == 16, (
                     "current version of HBV (with snow) takes 16 parameter you have entered "
                     + str(len(self.Parameters))
                 )
-            elif not snow and Maxbas:
+            elif not snow and maxbas:
                 if len(self.Parameters) != 11:
                     raise ValueError(
                         f"current version of HBV (with snow) takes 11 parameter you have entered {len(self.Parameters)}"
                     )
 
-            elif snow and not Maxbas:
+            elif snow and not maxbas:
                 assert len(self.Parameters) == 17, (
                     "current version of HBV (with snow) takes 17 parameter you have entered "
                     + str(len(self.Parameters))
                 )
-            elif not snow and not Maxbas:
+            elif not snow and not maxbas:
                 assert len(self.Parameters) == 12, (
                     "current version of HBV (with snow) takes 12 parameter you have entered "
                     + str(len(self.Parameters))
@@ -744,20 +735,20 @@ class Catchment:
 
     def read_lumped_model(
         self,
-        LumpedModel: ModuleType,
-        CatArea: Union[float, int],
-        InitialCond: list,
+        lumped_model,
+        catchment_area: Union[float, int],
+        initial_condition: list,
         q_init=None,
     ):
         """readLumpedModel.
 
         Parameters
         ----------
-        LumpedModel : [module]
+        lumped_model : [module]
             HBV module.
-        CatArea : [numeric]
+        catchment_area : [numeric]
             Catchment area (km2).
-        InitialCond : [list]
+        initial_condition : [list]
             list of the inial condition [SnowPack,SoilMoisture,Upper Zone,
                                          Lower Zone, Water Content].
         q_init : [numeric], optional
@@ -774,20 +765,20 @@ class Catchment:
         """
 
         assert isinstance(
-            LumpedModel, ModuleType
+            lumped_model, ModuleType
         ), "ConceptualModel should be a module or a python file contains functions "
 
-        self.LumpedModel = LumpedModel
-        self.CatArea = CatArea
+        self.LumpedModel = lumped_model
+        self.CatArea = catchment_area
 
         assert (
-            len(InitialCond) == 5
-        ), f"state variables are 5 and the given initial values are {len(InitialCond)}"
+            len(initial_condition) == 5
+        ), f"state variables are 5 and the given initial values are {len(initial_condition)}"
 
-        self.InitialCond = InitialCond
+        self.InitialCond = initial_condition
 
         if q_init is not None:
-            assert isinstance(q_init, float), "q_init should be of type float"
+            assert type(q_init) is float, "q_init should be of type float"
         self.q_init = q_init
 
         if self.InitialCond is not None:
@@ -803,7 +794,7 @@ class Catchment:
         Parameters
         ----------
         path : [string]
-            path to the input file, data has to be in the order of
+            Path to the input file, data has to be in the order of
             [date, precipitation, ET, Temp].
         ll_temp : [bool], optional
             average long term temperature, if None it is calculated inside the
@@ -831,7 +822,9 @@ class Catchment:
 
         logger.debug("Lumped Model inputs are read successfully")
 
-    def read_gauge_table(self, path: str, FlowaccPath: str = "", fmt: str = "%Y-%m-%d"):
+    def read_gauge_table(
+        self, path: str, flow_acc_file: str = "", fmt: str = "%Y-%m-%d"
+    ):
         """readGaugeTable. readGaugeTable reads the table where the data about the gauges are listed.
 
         [x coordinate, y coordinate, 'area ratio', 'weight'], the coordinates are
@@ -841,9 +834,9 @@ class Catchment:
         Parameters
         ----------
         path : [str]
-            path to the gauge file.
-        FlowaccPath : [str], optional
-            path to the Flow acc raster. The default is ''.
+            Path to the gauge file.
+        flow_acc_file : [str], optional
+            Path to the Flow acc raster. The default is ''.
         fmt: [str]
             Default is "%Y-%m-%d"
 
@@ -867,12 +860,12 @@ class Catchment:
                 self.GaugesTable.loc[i, "end"] = dt.datetime.strptime(
                     self.GaugesTable.loc[i, "end"], fmt
                 )
-        if FlowaccPath != "" and "cell_row" not in col_list:
+        if flow_acc_file != "" and "cell_row" not in col_list:
             # if hasattr(self, 'flow_acc'):
-            flow_acc = gdal.Open(FlowaccPath)
+            flow_acc = gdal.Open(flow_acc_file)
             # calculate the nearest cell to each station
             dataset = Dataset(flow_acc)
-            loc_arr = dataset.locate_points(self.GaugesTable)
+            loc_arr = dataset.map_to_array_coordinates(self.GaugesTable)
             self.GaugesTable.loc[:, ["cell_row", "cell_col"]] = loc_arr
 
         logger.debug("Gauge Table is read successfully")
@@ -883,32 +876,32 @@ class Catchment:
         delimiter: str = ",",
         column: str = "id",
         fmt: str = "%Y-%m-%d",
-        Split: bool = False,
-        Date1: str = "",
-        Date2: str = "",
+        split: bool = False,
+        start_date: str = "",
+        end_date: str = "",
         readfrom: str = "",
     ):
         """read_discharge_gauges.
 
-        readDischargeGauges method read the gauge discharge data, discharge of each gauge has to be stored separetly in
-        a file, and the name of the file has to be stored in the Gauges table you entered ubing the method
+        read_discharge_gauges method read the gauge discharge data, discharge of each gauge has to be stored separetly
+        in a file, and the name of the file has to be stored in the Gauges table you entered ubing the method
         "readGaugeTable" under the column "id", the file should contains the date at the first column.
 
         Parameters
         ----------
         path : [str]
-            path the the gauge discharge data.
+            path to the gauge discharge data.
         delimiter : [str], optional
             the delimiter between the date and the discharge column. The default is ",".
         column : [str], optional
             the name of the column where you stored the files names. The default is 'id'.
         fmt : [str], optional
             date format. The default is "%Y-%m-%d".
-        Split : bool, optional
+        split : bool, optional
             True if you want to split the data between two dates. The default is False.
-        Date1 : [str], optional
+        start_date : [str], optional
             start date. The default is ''.
-        Date2 : [str], optional
+        end_date : [str], optional
             end date. The default is ''.
         readfrom: [str]
             Default is "".
@@ -962,33 +955,33 @@ class Catchment:
             f.index = [dt.datetime.strptime(i, fmt) for i in f.index.tolist()]
             self.QGauges[f.columns[0]] = f.loc[self.start : self.end, f.columns[0]]
 
-        if Split:
-            Date1 = dt.datetime.strptime(Date1, fmt)
-            Date2 = dt.datetime.strptime(Date2, fmt)
-            self.QGauges = self.QGauges.loc[Date1:Date2]
+        if split:
+            start_date = dt.datetime.strptime(start_date, fmt)
+            end_date = dt.datetime.strptime(end_date, fmt)
+            self.QGauges = self.QGauges.loc[start_date:end_date]
 
         logger.debug("Gauges data are read successfully")
 
     def read_parameters_bound(
         self,
-        UB: Union[list, np.ndarray],
-        LB: Union[list, np.ndarray],
-        Snow: bool = False,
-        Maxbas: bool = False,
+        upper_bound: Union[list, np.ndarray],
+        lower_bound: Union[list, np.ndarray],
+        snow: bool = False,
+        maxbas: bool = False,
     ):
         """readParametersBounds. readParametersBounds method reads the lower and upper boundarys for each parameter.
 
         Parameters
         ----------
-        UB : [list]
+        upper_bound : [list]
             upper bound.
-        LB : [list]
+        lower_bound : [list]
             lower bound.
-        Snow : [integer]
+        snow : [integer]
             0 if you dont want to run the snow related processes and 1 if there is snow.
             in case of 1 (simulate snow processes) parameters related to snow simulation
             has to be provided. The default is 0.
-        Maxbas: [bool]
+        maxbas: [bool]
             True if the parameters has maxbas.
 
         Returns
@@ -1000,44 +993,46 @@ class Catchment:
         Snow : [integer]
             Snow
         """
-        assert len(UB) == len(LB), "length of UB should be the same like LB"
-        self.UB = np.array(UB)
-        self.LB = np.array(LB)
+        assert len(upper_bound) == len(
+            lower_bound
+        ), "length of UB should be the same like LB"
+        self.UB = np.array(upper_bound)
+        self.LB = np.array(lower_bound)
 
-        if not isinstance(Snow, bool):
+        if not isinstance(snow, bool):
             raise ValueError(
                 " snow input defines whether to consider snow subroutine or not it has to be "
                 "True or False"
             )
-        self.Snow = Snow
-        self.Maxbas = Maxbas
+        self.Snow = snow
+        self.Maxbas = maxbas
 
         logger.debug("Parameters bounds are read successfully")
 
     def extract_discharge(
-        self, CalculateMetrics=True, FW1=False, Factor=None, OnlyOutlet=False
+        self, calculate_metrics=True, frame_work_1=False, factor=None, only_outlet=False
     ):
-        """extract_discharge.
+        """extractDischarge.
 
         extractDischarge method extracts and sums the discharge from the Quz_routed and Qlz_translated arrays at the
         location of the gauges.
 
         Parameters
         ----------
-        CalculateMetrics : bool, optional
+        calculate_metrics : bool, optional
             True if you want to calculate the performance metrics. The default is True.
-        FW1 : [bool], optional
+        frame_work_1 : [bool], optional
             True if the routing function is Maxbas. The default is False.
-        Factor : [list/None]
+        factor : [list/None]
             list of factor if you want to multiply the simulated discharge by
             a factor you have to provide a list of the factor (as many factors
             as the number of gauges). The default is False.
-        OnlyOutlet: [bool]
+        only_outlet: [bool]
             True to extract the discharge only at the outlet.
 
         Returns
         -------
-        Qsim : [dataframe]
+        q_sim : [dataframe]
             dataframe containing the discharge time series of the cells where
             the gauges are located.
         Metrics : [dataframe]
@@ -1048,9 +1043,9 @@ class Catchment:
         if self.GaugesTable is None:
             raise ValueError("please read the gauges table first.")
 
-        if not FW1:
+        if not frame_work_1:
             self.Qsim = pd.DataFrame(index=self.Index, columns=self.QGauges.columns)
-            if CalculateMetrics:
+            if calculate_metrics:
                 index = ["RMSE", "NSE", "NSEhf", "KGE", "WB", "Pearson-CC", "R2"]
                 self.Metrics = pd.DataFrame(index=index, columns=self.QGauges.columns)
             # sum the lower zone and the upper zone discharge
@@ -1062,72 +1057,78 @@ class Catchment:
             self.qout = self.Qtot[outletx, outlety, :]
 
             for i in range(len(self.GaugesTable)):
-                Xind = int(self.GaugesTable.loc[self.GaugesTable.index[i], "cell_row"])
-                Yind = int(self.GaugesTable.loc[self.GaugesTable.index[i], "cell_col"])
+                x_ind = int(self.GaugesTable.loc[self.GaugesTable.index[i], "cell_row"])
+                y_ind = int(self.GaugesTable.loc[self.GaugesTable.index[i], "cell_col"])
                 gaugeid = self.GaugesTable.loc[self.GaugesTable.index[i], "id"]
 
-                # Quz = np.reshape(self.quz_routed[Xind,Yind,:-1],self.TS-1)
-                # Qlz = np.reshape(self.qlz_translated[Xind,Yind,:-1],self.TS-1)
-                # Qsim = Quz + Qlz
+                # Quz = np.reshape(self.quz_routed[x_ind,y_ind,:-1],self.TS-1)
+                # Qlz = np.reshape(self.qlz_translated[x_ind,y_ind,:-1],self.TS-1)
+                # q_sim = Quz + Qlz
 
-                Qsim = np.reshape(self.Qtot[Xind, Yind, :-1], self.TS - 1)
-                if Factor is not None:
-                    self.Qsim.loc[:, gaugeid] = Qsim * Factor[i]
+                q_sim = np.reshape(self.Qtot[x_ind, y_ind, :-1], self.TS - 1)
+                if factor is not None:
+                    self.Qsim.loc[:, gaugeid] = q_sim * factor[i]
                 else:
-                    self.Qsim.loc[:, gaugeid] = Qsim
+                    self.Qsim.loc[:, gaugeid] = q_sim
 
-                if CalculateMetrics:
-                    Qobs = self.QGauges.loc[:, gaugeid]
+                if calculate_metrics:
+                    q_obs = self.QGauges.loc[:, gaugeid]
                     self.Metrics.loc["RMSE", gaugeid] = round(
-                        metrics.RMSE(Qobs, Qsim), 3
+                        metrics.rmse(q_obs, q_sim), 3
                     )
-                    self.Metrics.loc["NSE", gaugeid] = round(metrics.NSE(Qobs, Qsim), 3)
+                    self.Metrics.loc["NSE", gaugeid] = round(
+                        metrics.nse(q_obs, q_sim), 3
+                    )
                     self.Metrics.loc["NSEhf", gaugeid] = round(
-                        metrics.NSEHF(Qobs, Qsim), 3
+                        metrics.nse_hf(q_obs, q_sim), 3
                     )
-                    self.Metrics.loc["KGE", gaugeid] = round(metrics.KGE(Qobs, Qsim), 3)
-                    self.Metrics.loc["WB", gaugeid] = round(metrics.WB(Qobs, Qsim), 3)
+                    self.Metrics.loc["KGE", gaugeid] = round(
+                        metrics.kge(q_obs, q_sim), 3
+                    )
+                    self.Metrics.loc["WB", gaugeid] = round(metrics.wb(q_obs, q_sim), 3)
                     self.Metrics.loc["Pearson-CC", gaugeid] = round(
-                        metrics.PearsonCorre(Qobs, Qsim), 3
+                        metrics.pearson_corre(q_obs, q_sim), 3
                     )
-                    self.Metrics.loc["R2", gaugeid] = round(metrics.R2(Qobs, Qsim), 3)
-        elif FW1 or OnlyOutlet:
+                    self.Metrics.loc["R2", gaugeid] = round(metrics.R2(q_obs, q_sim), 3)
+        elif frame_work_1 or only_outlet:
             self.Qsim = pd.DataFrame(index=self.Index)
             gaugeid = self.GaugesTable.loc[self.GaugesTable.index[-1], "id"]
-            Qsim = np.reshape(self.qout, self.TS - 1)
-            self.Qsim.loc[:, gaugeid] = Qsim
+            q_sim = np.reshape(self.qout, self.TS - 1)
+            self.Qsim.loc[:, gaugeid] = q_sim
 
-            if CalculateMetrics:
+            if calculate_metrics:
                 index = ["RMSE", "NSE", "NSEhf", "KGE", "WB", "Pearson-CC", "R2"]
                 self.Metrics = pd.DataFrame(index=index)
 
                 # if CalculateMetrics:
-                Qobs = self.QGauges.loc[:, gaugeid]
-                self.Metrics.loc["RMSE", gaugeid] = round(metrics.RMSE(Qobs, Qsim), 3)
-                self.Metrics.loc["NSE", gaugeid] = round(metrics.NSE(Qobs, Qsim), 3)
-                self.Metrics.loc["NSEhf", gaugeid] = round(metrics.NSEHF(Qobs, Qsim), 3)
-                self.Metrics.loc["KGE", gaugeid] = round(metrics.KGE(Qobs, Qsim), 3)
-                self.Metrics.loc["WB", gaugeid] = round(metrics.WB(Qobs, Qsim), 3)
-                self.Metrics.loc["Pearson-CC", gaugeid] = round(
-                    metrics.PearsonCorre(Qobs, Qsim), 3
+                q_obs = self.QGauges.loc[:, gaugeid]
+                self.Metrics.loc["RMSE", gaugeid] = round(metrics.rmse(q_obs, q_sim), 3)
+                self.Metrics.loc["NSE", gaugeid] = round(metrics.nse(q_obs, q_sim), 3)
+                self.Metrics.loc["NSEhf", gaugeid] = round(
+                    metrics.nse_hf(q_obs, q_sim), 3
                 )
-                self.Metrics.loc["R2", gaugeid] = round(metrics.R2(Qobs, Qsim), 3)
+                self.Metrics.loc["KGE", gaugeid] = round(metrics.kge(q_obs, q_sim), 3)
+                self.Metrics.loc["WB", gaugeid] = round(metrics.wb(q_obs, q_sim), 3)
+                self.Metrics.loc["Pearson-CC", gaugeid] = round(
+                    metrics.pearson_corre(q_obs, q_sim), 3
+                )
+                self.Metrics.loc["R2", gaugeid] = round(metrics.r2(q_obs, q_sim), 3)
 
     def plot_hydrograph(
         self,
         plotstart: str,
         plotend: str,
         gaugei: int,
-        Hapicolor: Union[tuple, str] = "#004c99",
-        gaugecolor: Union[tuple, str] = "#DC143C",
+        hapi_color: Union[tuple, str] = "#004c99",
+        gauge_color: Union[tuple, str] = "#DC143C",
         linewidth: int = 3,
-        Hapiorder: int = 1,
-        Gaugeorder: int = 0,
+        hapi_order: int = 1,
+        gauge_order: int = 0,
         labelfontsize: int = 10,
-        XMajorfmt: str = "%Y-%m-%d",
-        Noxticks: int = 5,
-        Title: str = "",
-        Xaxis_fmt: str = "%d\n%m",
+        x_major_fmt: str = "%Y-%m-%d",
+        n_ticks: int = 5,
+        title: str = "",
+        x_axis_fmt: str = "%d\n%m",
         label: str = "",
         fmt: str = "%Y-%m-%d",
     ):
@@ -1143,27 +1144,27 @@ class Catchment:
             end date.
         gaugei : [integer]
             order if the gauge in the GaugeTable.
-        Hapicolor : [str], optional
+        hapi_color : [str], optional
             color of the Simulated hydrograph. The default is "#004c99".
-        gaugecolor : [str], optional
+        gauge_color : [str], optional
             color of the gauge. The default is "#DC143C".
         linewidth : [numeric], optional
             line width. The default is 3.
-        Hapiorder : [integer], optional
+        hapi_order : [integer], optional
             the order of the simulated hydrograph to control which hydrograph
             is in the front . The default is 1.
-        Gaugeorder : TYPE, optional
+        gauge_order : TYPE, optional
             the order of the simulated hydrograph to control which hydrograph
             is in the front . The default is 0.
         labelfontsize : numeric, optional
             label size. The default is 10.
-        XMajorfmt : [str], optional
+        x_major_fmt : [str], optional
             format of the x-axis labels. The default is '%Y-%m-%d'.
-        Noxticks : [integer], optional
+        n_ticks : [integer], optional
             number of x-axis ticks. The default is 5.
-        Title: [str]
+        title: [str]
             Default is "".
-        Xaxis_fmt: [str]
+        x_axis_fmt: [str]
             Default is "%d\n%m".
         label: [str]
             Default is "".
@@ -1185,8 +1186,8 @@ class Catchment:
         if self.SpatialResolution == "distributed":
             gaugeid = self.GaugesTable.loc[gaugei, "id"]
 
-            if Title == "":
-                Title = "Gauge - " + str(self.GaugesTable.loc[gaugei, "name"])
+            if title == "":
+                title = "Gauge - " + str(self.GaugesTable.loc[gaugei, "name"])
 
             if label == "":
                 label = str(self.GaugesTable.loc[gaugei, "name"])
@@ -1196,46 +1197,46 @@ class Catchment:
                 "-.",
                 label=label,
                 linewidth=linewidth,
-                color=Hapicolor,
-                zorder=Hapiorder,
+                color=hapi_color,
+                zorder=hapi_order,
             )
-            ax.set_title(Title, fontsize=20)
+            ax.set_title(title, fontsize=20)
         else:
             gaugeid = self.QGauges.columns[0]
-            if Title == "":
-                Title = "Gauge - " + str(gaugeid)
+            if title == "":
+                title = "Gauge - " + str(gaugeid)
             if label == "":
                 label = str(gaugeid)
 
             ax.plot(
                 self.Qsim.loc[plotstart:plotend, gaugeid],
                 "-.",
-                label=Title,
+                label=title,
                 linewidth=linewidth,
-                color=Hapicolor,
-                zorder=Hapiorder,
+                color=hapi_color,
+                zorder=hapi_order,
             )
-            ax.set_title(Title, fontsize=20)
+            ax.set_title(title, fontsize=20)
 
         ax.plot(
             self.QGauges.loc[plotstart:plotend, gaugeid],
             label="Gauge",
             linewidth=linewidth,
-            color=gaugecolor,
-            zorder=Gaugeorder,
+            color=gauge_color,
+            zorder=gauge_order,
         )
 
         ax.tick_params(axis="both", which="major", labelsize=labelfontsize)
         # ax.locator_params(axis="x", nbins=4)
 
-        XMajorfmt = dates.DateFormatter(XMajorfmt)
-        ax.xaxis.set_major_formatter(XMajorfmt)
+        x_major_fmt = dates.DateFormatter(x_major_fmt)
+        ax.xaxis.set_major_formatter(x_major_fmt)
         # ax.xaxis.set_minor_locator(dates.WeekdayLocator(byweekday=(1),
         # interval=1))
 
-        ax.xaxis.set_minor_formatter(dates.DateFormatter(Xaxis_fmt))
+        ax.xaxis.set_minor_formatter(dates.DateFormatter(x_axis_fmt))
 
-        ax.xaxis.set_major_locator(plt.MaxNLocator(Noxticks))
+        ax.xaxis.set_major_locator(plt.MaxNLocator(n_ticks))
 
         ax.legend(fontsize=12)
         ax.set_xlabel("Time", fontsize=12)
@@ -1262,15 +1263,14 @@ class Catchment:
         start: str,
         end: str,
         fmt: str = "%Y-%m-%d",
-        Option: int = 1,
-        Gauges: bool = False,
+        option: int = 1,
+        gauges: bool = False,
         **kwargs,
     ):
         """plotDistributedResults.
 
-        plotDistributedResults animate the time series of the meteorological inputs and the
-        result calculated by the model  like the total discharge, upper zone, and lower zone discharge and the state
-        variables.
+        plotDistributedResults animate the time series of the meteorological inputs and the result calculated by the
+        model  like the total discharge, upper zone, and lower zone discharge and the state variables.
 
         Parameters
         ----------
@@ -1280,12 +1280,12 @@ class Catchment:
             end date
         fmt : [str]
             format of the gicen date. The default is "%Y-%m-%d"
-        Option : [str]
+        option : [str]
             1- Total discharge, 2-Upper zone discharge, 3-ground water,
             4-Snowpack state variable, 5-Soil moisture, 6-Upper zone,
             7-Lower zone, 8-Water content, 9-Precipitation input. 10-ET,
             11-Temperature. The default is 1
-        Gauges : [str]
+        gauges : [str]
             . The default is False
         **kwargs :
             possible keyward args
@@ -1297,7 +1297,7 @@ class Catchment:
                 True to plot the values intop of each cell. The default is True.
             NumSize : integer, optional
                 size of the numbers plotted intop of each cells. The default is 8.
-            Title : [str], optional
+            title : [str], optional
                 title of the plot. The default is 'Total Discharge'.
             title_size : [integer], optional
                 title size. The default is 15.
@@ -1360,79 +1360,79 @@ class Catchment:
         starti = np.where(self.Index == start)[0][0]
         endi = np.where(self.Index == end)[0][0]
 
-        if 1 > Option > 11:
+        if 1 > option > 11:
             raise ValueError("Plotting options are from 1 to 11")
 
-        if Option == 1:
+        if option == 1:
             self.Qtot[self.FlowAccArr == self.NoDataValue, :] = np.nan
-            Arr = self.Qtot[:, :, starti:endi]
-            Title = "Total Discharge"
-        elif Option == 2:
+            arr = self.Qtot[:, :, starti:endi]
+            title = "Total Discharge"
+        elif option == 2:
             self.quz_routed[self.FlowAccArr == self.NoDataValue, :] = np.nan
-            Arr = self.quz_routed[:, :, starti:endi]
-            Title = "Surface Flow"
-        elif Option == 3:
+            arr = self.quz_routed[:, :, starti:endi]
+            title = "Surface Flow"
+        elif option == 3:
             self.qlz_translated[self.FlowAccArr == self.NoDataValue, :] = np.nan
-            Arr = self.qlz_translated[:, :, starti:endi]
-            Title = "Ground Water Flow"
-        elif Option == 4:
+            arr = self.qlz_translated[:, :, starti:endi]
+            title = "Ground Water Flow"
+        elif option == 4:
             self.statevariables[self.FlowAccArr == self.NoDataValue, :, 0] = np.nan
-            Arr = self.statevariables[:, :, starti:endi, 0]
-            Title = "Snow Pack"
-        elif Option == 5:
+            arr = self.statevariables[:, :, starti:endi, 0]
+            title = "Snow Pack"
+        elif option == 5:
             self.statevariables[self.FlowAccArr == self.NoDataValue, :, 1] = np.nan
-            Arr = self.statevariables[:, :, starti:endi, 1]
-            Title = "Soil Moisture"
-        elif Option == 6:
+            arr = self.statevariables[:, :, starti:endi, 1]
+            title = "Soil Moisture"
+        elif option == 6:
             self.statevariables[self.FlowAccArr == self.NoDataValue, :, 2] = np.nan
-            Arr = self.statevariables[:, :, starti:endi, 2]
-            Title = "Upper Zone"
-        elif Option == 7:
+            arr = self.statevariables[:, :, starti:endi, 2]
+            title = "Upper Zone"
+        elif option == 7:
             self.statevariables[self.FlowAccArr == self.NoDataValue, :, 3] = np.nan
-            Arr = self.statevariables[:, :, starti:endi, 3]
-            Title = "Lower Zone"
-        elif Option == 8:
+            arr = self.statevariables[:, :, starti:endi, 3]
+            title = "Lower Zone"
+        elif option == 8:
             self.statevariables[self.FlowAccArr == self.NoDataValue, :, 4] = np.nan
-            Arr = self.statevariables[:, :, starti:endi, 4]
-            Title = "Water Content"
-        elif Option == 9:
+            arr = self.statevariables[:, :, starti:endi, 4]
+            title = "Water Content"
+        elif option == 9:
             self.Prec[self.FlowAccArr == self.NoDataValue, :] = np.nan
-            Arr = self.Prec[:, :, starti:endi]
-            Title = "Precipitation"
-        elif Option == 10:
+            arr = self.Prec[:, :, starti:endi]
+            title = "Precipitation"
+        elif option == 10:
             self.ET[self.FlowAccArr == self.NoDataValue, :] = np.nan
-            Arr = self.ET[:, :, starti:endi]
-            Title = "ET"
-        elif Option == 11:
+            arr = self.ET[:, :, starti:endi]
+            title = "ET"
+        elif option == 11:
             self.Temp[self.FlowAccArr == self.NoDataValue, :] = np.nan
-            Arr = self.Temp[:, :, starti:endi]
-            Title = "Temperature"
+            arr = self.Temp[:, :, starti:endi]
+            title = "Temperature"
         else:
-            raise ValueError("There are only 11 plotting options")
+            raise ValueError("Plotting options are from 1 to 11")
 
-        Time = self.Index[starti:endi]
+        time = self.Index[starti:endi]
 
-        if Gauges:
+        if gauges:
             kwargs["Points"] = self.GaugesTable
 
-        array = Array(Arr)
-        anim = array.animate(Time, title=Title, **kwargs)
+        array = Array(arr)
+        anim = array.animate(time, title=title, **kwargs)
         # anim = StaticGlyph.AnimateArray(Arr, Time, self.no_elem, Title=Title, **kwargs)
 
         self.anim = anim
 
         return anim
 
-    # def saveAnimation(self, VideoFormat="gif", path="", SaveFrames=20):
+    # def save_animation(self, video_format="gif", path="", save_frames=20):
     #     """saveAnimation. saveAnimation.
     #
     #     Parameters
     #     ----------
-    #     VideoFormat : [str], optional
+    #     video_format : [str], optional
     #         possible formats ['mp4','mov', 'avi', 'gif']. The default is "gif".
     #     path : [str], optional
     #         path inclusinf the video format. The default is ''.
-    #     SaveFrames : [integer], optional
+    #     save_frames : [integer], optional
     #         speed of the video. The default is 20.
     #
     #     Returns
@@ -1440,26 +1440,26 @@ class Catchment:
     #     None.
     #     """
     #     Vis.SaveAnimation(
-    #         self.anim, VideoFormat=VideoFormat, Path=path, SaveFrames=SaveFrames
+    #         self.anim, VideoFormat=video_format, Path=path, SaveFrames=save_frames
     #     )
 
-    def saveResults(
+    def save_results(
         self,
-        FlowAccPath: str = "",
-        Result: int = 1,
+        flow_acc_path: str = "",
+        result: int = 1,
         start: str = "",
         end: str = "",
         path: str = "",
-        Prefix: str = "",
+        prefix: str = "",
         fmt: str = "%Y-%m-%d",
     ):
-        """saveResults. saveResults save the results into rasters.
+        """save_results. saveResults save the results into rasters.
 
         Parameters
         ----------
-        FlowAccPath : [path]
+        flow_acc_path : [path]
             Path to Flow acc raster.
-        Result : [integer], optional
+        result : [integer], optional
             1 for the total discharge, 2 for the upper zone discharge, 3 for
             the lower zone discharge, 4 for the snow pack, 5 for the soil
             moisture, 6 upper zone, 7 for the lower zone, 8 for the water content.
@@ -1470,7 +1470,7 @@ class Catchment:
             end date. The default is ''.
         path : [str], optional
             path to the directory where you want to save the results. The default is ''.
-        Prefix : [str], optional
+        prefix : [str], optional
             prefix to add to the name of the result files. The default is ''.
         fmt : [str], optional
             format of the date. The default is "%Y-%m-%d".
@@ -1494,38 +1494,38 @@ class Catchment:
 
         if self.SpatialResolution == "distributed":
             assert (
-                FlowAccPath != ""
-            ), "Please enter the  flow_acc_path parameter to the saveResults method"
-            src = gdal.Open(FlowAccPath)
+                flow_acc_path != ""
+            ), "Please enter the  FlowAccPath parameter to the saveResults method"
+            src = gdal.Open(flow_acc_path)
 
-            if Prefix == "":
-                Prefix = "Result_"
+            if prefix == "":
+                prefix = "Result_"
 
             # create list of names
-            path = path + Prefix
+            path = path + prefix
             names = [path + str(i)[:10] for i in self.Index[starti:endi]]
             # names = [i.replace("-", "_") for i in names]
             # names = [i.replace(" ", "_") for i in names]
             names = [i + ".tif" for i in names]
-            if Result == 1:
+            if result == 1:
                 arr = self.Qtot[:, :, starti:endi]
-            elif Result == 2:
+            elif result == 2:
                 arr = self.quz_routed[:, :, starti:endi]
-            elif Result == 3:
+            elif result == 3:
                 arr = self.qlz_translated[:, :, starti:endi]
-            elif Result == 4:
+            elif result == 4:
                 arr = self.statevariables[:, :, starti:endi, 0]
-            elif Result == 5:
+            elif result == 5:
                 arr = self.statevariables[:, :, starti:endi, 1]
-            elif Result == 6:
+            elif result == 6:
                 arr = self.statevariables[:, :, starti:endi, 2]
-            elif Result == 7:
+            elif result == 7:
                 arr = self.statevariables[:, :, starti:endi, 3]
-            elif Result == 8:
+            elif result == 8:
                 arr = self.statevariables[:, :, starti:endi, 4]
             else:
                 raise ValueError(
-                    f" The Result parameter takes a value between 1 and 8, given: {Result}"
+                    f" The result parameter takes a value between 1 and 8, given: {result}"
                 )
 
             cube = Datacube(Dataset(src), time_length=arr.shape[2])
@@ -1538,21 +1538,21 @@ class Catchment:
 
             data["date"] = ["'" + str(i)[:10] + "'" for i in data.index]
 
-            if Result == 1:
+            if result == 1:
                 data["Qsim"] = self.Qsim[starti:endi]
                 data.to_csv(path, index=False, float_format="%.3f")
-            elif Result == 2:
+            elif result == 2:
                 data["Quz"] = self.quz[starti:endi]
                 data.to_csv(path, index=False, float_format="%.3f")
-            elif Result == 3:
+            elif result == 3:
                 data["Qlz"] = self.qlz[starti:endi]
                 data.to_csv(path, index=False, float_format="%.3f")
-            elif Result == 4:
+            elif result == 4:
                 data[["SP", "SM", "UZ", "LZ", "WC"]] = self.statevariables[
                     starti:endi, :
                 ]
                 data.to_csv(path, index=False, float_format="%.3f")
-            elif Result == 5:
+            elif result == 5:
                 data["Qsim"] = self.Qsim[starti:endi]
                 data["Quz"] = self.quz[starti:endi]
                 data["Qlz"] = self.qlz[starti:endi]
@@ -1583,11 +1583,11 @@ class Lake:
 
     def __init__(
         self,
-        start="",
-        end="",
-        fmt="%Y-%m-%d",
-        TemporalResolution="Daily",
-        Split=False,
+        start: str = "",
+        end: str = "",
+        fmt: str = "%Y-%m-%d",
+        temporal_resolution: str = "Daily",
+        split: bool = False,
     ):
         """Lake. Lake class for lake simulation.
 
@@ -1599,9 +1599,9 @@ class Lake:
             end date. The default is ''.
         fmt : [str], optional
             date format. The default is "%Y-%m-%d".
-        TemporalResolution : [str], optional
+        temporal_resolution : [str], optional
             "Daily" ot "Hourly". The default is "Daily".
-        Split : bool, optional
+        split : bool, optional
             true if you want to split the date between two dates. The default is False.
 
         Returns
@@ -1611,13 +1611,13 @@ class Lake:
 
         self.OutflowCell = None
         self.Snow = None
-        self.Split = Split
+        self.Split = split
         self.start = dt.datetime.strptime(start, fmt)
         self.end = dt.datetime.strptime(end, fmt)
 
-        if TemporalResolution.lower() == "daily":
+        if temporal_resolution.lower() == "daily":
             self.Index = pd.date_range(start, end, freq="D")
-        elif TemporalResolution.lower() == "hourly":
+        elif temporal_resolution.lower() == "hourly":
             self.Index = pd.date_range(start, end, freq="H")
         else:
             assert False, "Error"
@@ -1672,19 +1672,18 @@ class Lake:
         -------
         Parameters : [array].
         """
-        Parameters = np.loadtxt(path).tolist()
-        self.Parameters = Parameters
+        self.Parameters = np.loadtxt(path).tolist()
         logger.debug("Lake Parameters are read successfully")
 
     def read_lumped_model(
         self,
-        LumpedModel,
-        CatArea,
-        LakeArea,
-        InitialCond,
-        OutflowCell,
-        StageDischargeCurve,
-        Snow,
+        lumped_model,
+        catchment_area,
+        lake_area,
+        initial_condition,
+        outflow_cell,
+        stage_discharge_curve,
+        snow,
     ):
         """readLumpedModel.
 
@@ -1692,20 +1691,20 @@ class Lake:
 
         Parameters
         ----------
-        LumpedModel : [module]
+        lumped_model : [module]
             lumped conceptual model.
-        CatArea : [numeric]
+        catchment_area : [numeric]
             catchment area in mk2.
-        LakeArea : [numeric]
+        lake_area : [numeric]
             area of the lake in km2.
-        InitialCond : [list]
+        initial_condition : [list]
             initial condition [Snow Pack, Soil Moisture, Upper Zone, Lower Zone,
                                Water Content, Lake volume].
-        OutflowCell : [list]
+        outflow_cell : [list]
             indeces of the cell where the lake hydrograph is going to be added.
-        StageDischargeCurve : [array]
+        stage_discharge_curve : [array]
             volume-outflow curve.
-        Snow : [integer]
+        snow : [integer]
             0 if you dont want to run the snow related processes and 1 if there is snow.
             in case of 1 (simulate snow processes) parameters related to snow simulation
             has to be provided. The default is 0.
@@ -1724,20 +1723,20 @@ class Lake:
         StageDischargeCurve : [array]
         """
         assert isinstance(
-            LumpedModel, ModuleType
+            lumped_model, ModuleType
         ), "ConceptualModel should be a module or a python file contains functions "
-        self.LumpedModel = LumpedModel
+        self.LumpedModel = lumped_model
 
-        self.CatArea = CatArea
-        self.LakeArea = LakeArea
-        self.InitialCond = InitialCond
+        self.CatArea = catchment_area
+        self.LakeArea = lake_area
+        self.InitialCond = initial_condition
 
         if self.InitialCond is not None:
             assert isinstance(self.InitialCond, list), "init_st should be of type list"
 
-        self.Snow = Snow
-        self.OutflowCell = OutflowCell
-        self.StageDischargeCurve = StageDischargeCurve
+        self.Snow = snow
+        self.OutflowCell = outflow_cell
+        self.StageDischargeCurve = stage_discharge_curve
         logger.debug("Lumped model is read successfully")
 
 

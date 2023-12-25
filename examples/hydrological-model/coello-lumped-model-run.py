@@ -20,21 +20,21 @@ start = "2009-01-01"
 end = "2011-12-31"
 name = "Coello"
 Coello = Catchment(name, start, end)
-Coello.readLumpedInputs(MeteoDataPath)
+Coello.read_lumped_inputs(MeteoDataPath)
 # %% Lumped model
 # catchment area
 AreaCoeff = 1530
 # [Snow pack, Soil moisture, Upper zone, Lower Zone, Water content]
 InitialCond = [0, 10, 10, 10, 0]
 
-Coello.readLumpedModel(HBVLumped, AreaCoeff, InitialCond)
+Coello.read_lumped_model(HBVLumped, AreaCoeff, InitialCond)
 # %% ### Model Parameters
 
 Snow = False  # no snow subroutine
-Coello.readParameters(Parameterpath, Snow)
+Coello.read_parameters(Parameterpath, Snow)
 # Coello.Parameters
 # %% ### Observed flow
-Coello.readDischargeGauges(Path + "Qout_c.csv", fmt="%Y-%m-%d")
+Coello.read_discharge_gauges(Path + "Qout_c.csv", fmt="%Y-%m-%d")
 # %%  ### Routing
 
 # RoutingFn = Routing.TriangularRouting2
@@ -76,11 +76,11 @@ print("WB= " + str(round(Metrics["WB"], 2)))
 gaugei = 0
 plotstart = "2009-01-01"
 plotend = "2011-12-31"
-Coello.plotHydrograph(plotstart, plotend, gaugei, Title="Lumped Model")
+Coello.plot_hydrograph(plotstart, plotend, gaugei, title="Lumped Model")
 # %% ### Save Results
 
 StartDate = "2009-01-01"
 EndDate = "2010-04-20"
 
 Path = SaveTo + "Results-Lumped-Model_" + str(dt.datetime.now())[0:10] + ".txt"
-Coello.saveResults(Result=5, start=StartDate, end=EndDate, Path=Path)
+Coello.save_results(result=5, start=StartDate, end=EndDate, path=Path)

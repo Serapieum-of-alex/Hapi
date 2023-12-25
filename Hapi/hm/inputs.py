@@ -124,7 +124,6 @@ class Inputs(River):
         filter_out: Union[bool, float, int] = False,
         distribution: str = "GEV",
         method: str = "lmoments",
-        estimate_parameters: bool = False,
         quartile: float = 0,
         significance_level: float = 0.1,
         file_extension: str = ".txt",
@@ -165,8 +164,6 @@ class Inputs(River):
             Default is "GEV".
         method: [str]
             available methods are 'mle', 'mm', 'lmoments', optimization. Default is "lmoments"
-        estimate_parameters: [bool]
-            Default is False.
         quartile: [float]
             Default is 0.
         significance_level:
@@ -225,7 +222,7 @@ class Inputs(River):
             filter_out=filter_out,
             distribution=distribution,
             method=method,
-            estimate_parameters=estimate_parameters,
+            # estimate_parameters=estimate_parameters,
             quartile=quartile,
             significance_level=significance_level,
         )
@@ -358,7 +355,6 @@ class Inputs(River):
         # Tofile = Fromfile +1
 
         for k in range(Fromfile, Tofile):
-
             try:
                 # open the zip file
                 Compressedfile = zipfile.ZipFile(MapsPath + "/" + MaxDepthList[k])

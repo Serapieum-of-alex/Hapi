@@ -5,7 +5,7 @@ import datetime as dt
 
 import numpy as np
 import pandas as pd
-import statista.metrics as PC
+import statista.metrics as metrics
 
 import Hapi.rrm.hbv_bergestrom92 as HBVLumped
 from Hapi.rrm.calibration import Calibration
@@ -22,7 +22,7 @@ end = "2011-12-31"
 name = "Coello"
 
 Coello = Calibration(name, start, end)
-Coello.readLumpedInputs(MeteoDataPath)
+Coello.read_lumped_inputs(MeteoDataPath)
 # %% Basic_inputs
 
 # catchment area
@@ -32,7 +32,7 @@ AreaCoeff = 1530
 InitialCond = [0, 10, 10, 10, 0]
 # no snow subroutine
 Snow = False
-Coello.readLumpedModel(HBVLumped, AreaCoeff, InitialCond)
+Coello.read_lumped_model(HBVLumped, AreaCoeff, InitialCond)
 
 # Calibration parameters
 
@@ -44,7 +44,7 @@ LB = pd.read_csv(Path + "/LB-3.txt", index_col=0, header=None)
 LB = LB[1].tolist()
 
 Maxbas = True
-Coello.readParametersBounds(UB, LB, Snow, Maxbas=Maxbas)
+Coello.read_parameters_bound(UB, LB, Snow, maxbas=Maxbas)
 
 ### Additional arguments
 
@@ -58,12 +58,12 @@ Basic_inputs = dict(Route=Route, RoutingFn=RoutingFn, InitialValues=parameters)
 ### Objective function
 
 # outlet discharge
-Coello.readDischargeGauges(Path + "Qout_c.csv", fmt="%Y-%m-%d")
+Coello.read_discharge_gauges(Path + "Qout_c.csv", fmt="%Y-%m-%d")
 
 OF_args = []
-OF = PC.RMSE
+OF = metrics.rmse
 
-Coello.readObjectiveFn(PC.RMSE, OF_args)
+Coello.readObjectiveFn(metrics.rmse, OF_args)
 
 # Calibration
 
@@ -115,11 +115,11 @@ Metrics = dict()
 
 Qobs = Coello.QGauges[Coello.QGauges.columns[0]]
 
-Metrics["RMSE"] = PC.RMSE(Qobs, Coello.Qsim["q"])
-Metrics["NSE"] = PC.NSE(Qobs, Coello.Qsim["q"])
-Metrics["NSEhf"] = PC.NSEHF(Qobs, Coello.Qsim["q"])
-Metrics["KGE"] = PC.KGE(Qobs, Coello.Qsim["q"])
-Metrics["WB"] = PC.WB(Qobs, Coello.Qsim["q"])
+Metrics["RMSE"] = metrics.rmse(Qobs, Coello.Qsim["q"])
+Metrics["NSE"] = metrics.nse(Qobs, Coello.Qsim["q"])
+Metrics["NSEhf"] = metrics.nse_hf(Qobs, Coello.Qsim["q"])
+Metrics["KGE"] = metrics.kge(Qobs, Coello.Qsim["q"])
+Metrics["WB"] = metrics.wb(Qobs, Coello.Qsim["q"])
 
 print("RMSE= " + str(round(Metrics["RMSE"], 2)))
 print("NSE= " + str(round(Metrics["NSE"], 2)))
@@ -132,7 +132,7 @@ print("WB= " + str(round(Metrics["WB"], 2)))
 gaugei = 0
 plotstart = "2009-01-01"
 plotend = "2011-12-31"
-Coello.plotHydrograph(plotstart, plotend, gaugei, Title="Lumped Model")
+Coello.plot_hydrograph(plotstart, plotend, gaugei, title="Lumped Model")
 
 ### Save the Parameters
 
@@ -147,4 +147,4 @@ StartDate = "2009-01-01"
 EndDate = "2010-04-20"
 
 Path = Path + "Results-Lumped-Model" + str(dt.datetime.now())[0:10] + ".txt"
-Coello.saveResults(Result=5, StartDate=StartDate, EndDate=EndDate, Path=Path)
+Coello.save_results(result=5, StartDate=StartDate, EndDate=EndDate, path=Path)

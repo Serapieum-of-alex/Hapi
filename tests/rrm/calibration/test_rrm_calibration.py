@@ -1,8 +1,8 @@
 import datetime as dt
 import numpy as np
 
-import statista.metrics as PC
-
+# from Hapi.run import Run
+import statista.metrics as metrics
 import Hapi.rrm.hbv_bergestrom92 as HBVLumped
 from Hapi.rrm.calibration import Calibration
 from Hapi.rrm.routing import Routing
@@ -16,7 +16,7 @@ def test_ReadParametersBounds(
     Coello = Calibration("rrm", coello_rrm_date[0], coello_rrm_date[1])
     Maxbas = True
     Snow = False
-    Coello.read_parameters_bound(lower_bound, upper_bound, Snow, Maxbas=Maxbas)
+    Coello.read_parameters_bound(lower_bound, upper_bound, Snow, maxbas=Maxbas)
     assert isinstance(Coello.UB, np.ndarray)
     assert isinstance(Coello.LB, np.ndarray)
     assert isinstance(Coello.Snow, bool)
@@ -40,7 +40,7 @@ def test_LumpedCalibration(
     Coello.read_lumped_inputs(lumped_meteo_data_path)
     Coello.read_lumped_model(HBVLumped, coello_AreaCoeff, coello_InitialCond)
     Maxbas = True
-    Coello.read_parameters_bound(lower_bound, upper_bound, coello_Snow, Maxbas=Maxbas)
+    Coello.read_parameters_bound(lower_bound, upper_bound, coello_Snow, maxbas=Maxbas)
 
     parameters = []
     # Routing
@@ -53,7 +53,7 @@ def test_LumpedCalibration(
     Coello.read_discharge_gauges(lumped_gauges_path, fmt=coello_gauges_date_fmt)
 
     OF_args = []
-    OF = PC.RMSE
+    OF = metrics.rmse
 
     Coello.readObjectiveFn(OF, OF_args)
 
@@ -106,6 +106,6 @@ class TestDistributed:
             coello_start_date,
             coello_end_date,
         )
-        coello.readObjectiveFn(PC.RMSE, [])
-        assert coello.OF == PC.RMSE
+        coello.readObjectiveFn(metrics.rmse, [])
+        assert coello.OF == metrics.rmse
         assert coello.OFArgs == []

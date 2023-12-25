@@ -34,7 +34,7 @@ def test_StatisticalProperties(
         SavePlots,
         Statistical_analisis_path,
         filter_out=NoValue,
-        distribution="GUM",
+        distribution="GEV",
         method="lmoments",
     )
     assert os.path.exists(f"{Statistical_analisis_path}/figures")

@@ -18,7 +18,7 @@ from matplotlib.figure import Figure
 from pandas.core.frame import DataFrame
 from scipy.stats import genextreme, gumbel_r
 from serapeum_utils.utils import class_attr_initialize, class_method_parse
-from statista import metrics as Pf
+from statista import metrics as metrics
 from statista.distributions import GEV, Gumbel
 
 from Hapi.hapi_warnings import SilencePandasWarning
@@ -1781,21 +1781,23 @@ class River:
                 col1 = self.SP.columns.to_list().index("RP2")
                 if Distibution == "GEV":
                     dist = GEV()
+                    parameters = {
+                        "shape": self.SP.loc[i, "c"],
+                        "loc": self.SP.loc[i, "loc"],
+                        "scale": self.SP.loc[i, "scale"],
+                    }
                     self.SP.loc[
                         i, self.SP.keys()[col1:].tolist()
-                    ] = dist.theporeticalEstimate(
-                        self.SP.loc[i, "c"],
-                        self.SP.loc[i, "loc"],
-                        self.SP.loc[i, "scale"],
-                        F,
-                    )
+                    ] = dist.theoretical_estimate(parameters, F)
                 else:
                     dist = Gumbel()
+                    parameters = {
+                        "loc": self.SP.loc[i, "loc"],
+                        "scale": self.SP.loc[i, "scale"],
+                    }
                     self.SP.loc[
                         i, self.SP.keys()[col1:].tolist()
-                    ] = dist.theporeticalEstimate(
-                        self.SP.loc[i, "loc"], self.SP.loc[i, "scale"], F
-                    )
+                    ] = dist.theoretical_estimate(parameters, F)
 
     def get_return_period(
         self,
@@ -2089,7 +2091,6 @@ class River:
         self.cross_sections.loc[:, "zrnew"] = self.cross_sections.loc[:, "zr"]
 
         for i in range(len(self.cross_sections) - 2):
-
             if self.cross_sections.loc[i, "id"] == self.cross_sections.loc[i + 1, "id"]:
                 slope = (
                     self.cross_sections.loc[i, "gl"]
@@ -4034,7 +4035,6 @@ class Reach(River):
     def _get_reach_overtopping(
         self, left: bool, event_days: List[int], delimiter: str = r"\s+"
     ):
-
         xs_s = self.cross_sections.loc[:, "xsid"].tolist()
         columns = [f"reach-{self.id}"] + xs_s + ["sum"]
         df = pd.DataFrame(index=event_days + ["sum"], columns=columns)
@@ -4307,7 +4307,7 @@ class Reach(River):
         ax.legend(fontsize=10, loc="best")
         ax.set_xlabel("Time", fontsize=10)
         ax.set_ylabel("Discharge m3/s", fontsize=10)
-        if type(xlabels) != bool:
+        if not isinstance(xlabels, bool):
             start, end = ax.get_xlim()
             ax.xaxis.set_ticks(np.linspace(start, end, xlabels))
 
@@ -4429,7 +4429,7 @@ class Reach(River):
 
         if len(self.usnode) > 1:
             # there is more than one upstream segment
-            if type(self.usnode) == list:
+            if isinstance(self.usnode, list):
                 for i in range(len(self.usnode)):
                     Nodeid = self.usnode[i]
                     # get the order of the segment
@@ -4446,7 +4446,7 @@ class Reach(River):
                 self.us_hydrographs + River.routed_q[:, River.Segments.index(Nodeid)]
             )
 
-        if type(self.BC) != bool:
+        if not isinstance(self.BC, bool):
             self.us_hydrographs = self.us_hydrographs + self.BC.values.reshape(
                 len(self.us_hydrographs)
             )
@@ -5148,7 +5148,7 @@ class Reach(River):
             Laterals = self.get_laterals(specificxs)
 
             # BC
-            if type(self.BC) != bool:
+            if not isinstance(self.BC, bool):
                 ax.plot(
                     self.BC.loc[start:end, self.BC.columns[0]],
                     label="BC",
@@ -5226,14 +5226,14 @@ class Reach(River):
             )
             logger.debug(msg)
 
-        if type(self.xlabels) != bool:
+        if not isinstance(self.xlabels, bool):
             start, end = ax.get_xlim()
-            if type(self.xlabels) == int:
+            if isinstance(self.xlabels, int):
                 ax.xaxis.set_ticks(np.linspace(start, end, self.xlabels))
 
-        if type(self.ylabels) != bool:
+        if not isinstance(self.ylabels, bool):
             start, end = ax.get_ylim()
-            if type(self.ylabels) == int:
+            if isinstance(self.ylabels, int):
                 if start < 0:
                     start = 0
                 ax.yaxis.set_ticks(np.linspace(start, end, self.ylabels))
@@ -5354,11 +5354,11 @@ class Reach(River):
             # q_hm['q'] = sub.results_1d['q'][sub.results_1d['xs'] == gaugexs][sub.results_1d['hour'] == 24][:]
             # q_hm.index = pd.date_range(st2, end2)
         qsim = QHM.loc[st2:end2, "q"].tolist()
-        rmse = round(Pf.RMSE(Qobs, qsim), 0)
-        kge = round(Pf.KGE(Qobs, qsim), 2)
-        wb = round(Pf.WB(Qobs, qsim), 0)
-        nsehf = round(Pf.NSEHF(Qobs, qsim), 2)
-        nse = round(Pf.NSE(Qobs, qsim), 2)
+        rmse = round(metrics.rmse(Qobs, qsim), 0)
+        kge = round(metrics.kge(Qobs, qsim), 2)
+        wb = round(metrics.wb(Qobs, qsim), 0)
+        nsehf = round(metrics.nse_hf(Qobs, qsim), 2)
+        nse = round(metrics.nse(Qobs, qsim), 2)
         logger.debug("--------------------")
         logger.debug("RMSE = " + str(rmse))
         logger.debug("KGE = " + str(kge))
@@ -5444,7 +5444,6 @@ class Reach(River):
         end = dt.datetime.strptime(end, self.fmt)
 
         if self.plotgauge:
-
             GaugeStart = Calib.hm_gauges[Calib.hm_gauges["xsid"] == gaugexs]["WLstart"]
             GaugeEnd = Calib.hm_gauges[Calib.hm_gauges["xsid"] == gaugexs]["WLend"]
 
@@ -5590,12 +5589,12 @@ class Reach(River):
             )
             return
 
-        MBE = round(Pf.MBE(obs, mod), 2)
-        MAE = round(Pf.MAE(obs, mod), 2)
-        RMSE = round(Pf.RMSE(obs, mod), 2)
-        KGE = round(Pf.KGE(obs, mod), 2)
-        NSEHF = round(Pf.NSEHF(obs, mod), 2)
-        NSE = round(Pf.NSE(obs, mod), 2)
+        MBE = round(metrics.mbe(obs, mod), 2)
+        MAE = round(metrics.mae(obs, mod), 2)
+        RMSE = round(metrics.rmse(obs, mod), 2)
+        KGE = round(metrics.kge(obs, mod), 2)
+        NSEHF = round(metrics.nse_hf(obs, mod), 2)
+        NSE = round(metrics.nse(obs, mod), 2)
 
         logger.debug("RMSE= " + str(RMSE))
         logger.debug("KGE= " + str(KGE))

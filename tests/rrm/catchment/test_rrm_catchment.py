@@ -106,10 +106,9 @@ class TestLumped:
         Coello.read_parameters(lumped_parameters_path, coello_Snow)
         # discharge gauges
         Coello.read_discharge_gauges(lumped_gauges_path, fmt=coello_gauges_date_fmt)
-        RoutingFn = Routing.Muskingum_V
         Route = 1
-        Run.runLumped(Coello, Route, RoutingFn)
-        Coello.saveResults(Result=5, path=path)
+        Run.runLumped(Coello, Route, Routing.Muskingum_V)
+        Coello.save_results(result=5, path=path)
 
     # # TODO: still not finished as it does not run the plotHydrograph method
     # def test_PlotHydrograph(
@@ -327,7 +326,7 @@ class TestDistributed:
             fmt="%Y-%m-%d",
         )
         Snow = False
-        coello.read_parameters(coello_dist_parameters_maxbas, Snow, Maxbas=True)
+        coello.read_parameters(coello_dist_parameters_maxbas, Snow, maxbas=True)
         assert coello.Parameters.shape == (
             coello_rows,
             coello_cols,
@@ -387,7 +386,7 @@ class TestFW1:
         coello.read_flow_acc(coello_acc_path)
         # coello.readFlowDir(coello_fd_path)
         Snow = False
-        coello.read_parameters(coello_dist_parameters_maxbas, Snow, Maxbas=True)
+        coello.read_parameters(coello_dist_parameters_maxbas, Snow, maxbas=True)
         coello.read_lumped_model(HBV, coello_cat_area, coello_initial_cond)
         Run.runFW1(coello)
         assert isinstance(coello.qout, np.ndarray)
@@ -450,12 +449,12 @@ class TestFW1:
         coello.read_gauge_table(coello_gauges_table, coello_acc_path)
         coello.read_discharge_gauges(coello_gauges_path, column="id", fmt="%Y-%m-%d")
 
-        Snow = False
-        coello.read_parameters(coello_dist_parameters_maxbas, Snow, Maxbas=True)
+        snow = False
+        coello.read_parameters(coello_dist_parameters_maxbas, snow, maxbas=True)
         coello.read_lumped_model(HBV, coello_cat_area, coello_initial_cond)
         Run.runFW1(coello)
 
-        coello.extract_discharge(CalculateMetrics=True, FW1=True)
+        coello.extract_discharge(calculate_metrics=True, frame_work_1=True)
         assert isinstance(coello.Metrics, DataFrame)
         assert len(coello.Metrics) == 7
         assert len(coello.Qsim) == 10
@@ -511,7 +510,7 @@ class TestMuskingum:
         coello.read_flow_acc(coello_acc_path)
         # coello.readFlowDir(coello_fd_path)
         Snow = False
-        coello.read_parameters(coello_dist_parameters_maxbas, Snow, Maxbas=True)
+        coello.read_parameters(coello_dist_parameters_maxbas, Snow, maxbas=True)
         coello.read_lumped_model(HBV, coello_cat_area, coello_initial_cond)
         Run.runFW1(coello)
         assert isinstance(coello.qout, np.ndarray)
@@ -575,11 +574,11 @@ class TestMuskingum:
         coello.read_discharge_gauges(coello_gauges_path, column="id", fmt="%Y-%m-%d")
 
         Snow = False
-        coello.read_parameters(coello_dist_parameters_maxbas, Snow, Maxbas=True)
+        coello.read_parameters(coello_dist_parameters_maxbas, Snow, maxbas=True)
         coello.read_lumped_model(HBV, coello_cat_area, coello_initial_cond)
         Run.runFW1(coello)
 
-        coello.extract_discharge(CalculateMetrics=True, FW1=True)
+        coello.extract_discharge(calculate_metrics=True, frame_work_1=True)
         assert isinstance(coello.Metrics, DataFrame)
         assert len(coello.Metrics) == 7
         assert len(coello.Qsim) == 10

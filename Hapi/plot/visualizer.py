@@ -1,4 +1,4 @@
-"""Plotting functions."""
+""".Visualizer."""
 import datetime as dt
 import math
 from typing import List, Optional, Union
@@ -1020,7 +1020,6 @@ class Visualize:
 
         # animation function. this is called sequentially
         def animate_min(i):
-
             day_text.set_text("Date = " + str(counter[i]))
             # discharge (ax1)
             x = Sub.xs_names
@@ -1521,7 +1520,6 @@ class Visualize:
         ind2 = startxs_ind
         ind = XSS.index[ind2 - startxs_ind]
         for i in range(figno):
-
             if same_scale:
                 sharex = True
                 sharey = True
@@ -1609,7 +1607,6 @@ class Visualize:
                                         fontsize=text_size,
                                     )
                                 else:
-
                                     ax_XS[j, k].annotate(
                                         "dbf=" + str(round(dbf, 2)),
                                         xy=(x, text_spacing[0][1]),

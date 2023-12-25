@@ -2,7 +2,7 @@
 
 @author: Mostafa
 """
-#%links
+# %links
 # from IPython import get_ipython   # to reset the variable explorer each time
 # get_ipython().magic('reset -f')
 import os
@@ -17,19 +17,19 @@ from Hapi.catchment import Catchment
 # import numpy as np
 from Hapi.run import Run
 
-#%% Paths
+# %% Paths
 path = Comp + "/Coello/Hapi/Data/00inputs/"
-# prec_path = path + "meteodata/4000/calib/prec" #
+# PrecPath = path + "meteodata/4000/calib/prec" #
 PrecPath = path + "meteodata/4000/calib/prec-CPC-NOAA"  #
-# prec_path = path + "meteodata/4000/calib/prec-MSWEP" #
+# PrecPath = path + "meteodata/4000/calib/prec-MSWEP" #
 Evap_Path = path + "meteodata/4000/calib/evap"
 TempPath = path + "meteodata/4000/calib/temp"
 FlowAccPath = path + "GIS/4000/acc4000.tif"
 FlowDPath = path + "GIS/4000/fd4000.tif"
 ParPathRun = "results/parameters/02lumped parameters/Parameter-set-Avg/"
-# parameter_path_run = "results/parameters/00default parameters/min/"
+# ParPathRun = "results/parameters/00default parameters/min/"
 SaveTo = "results/saved rasters/"
-#%% Flood model data
+# %% Flood model data
 RiverNetworkF = path + "GIS/4000/river_network.tif"
 BankfullDepthF = path + "GIS/4000/bankfulldepth.tif"
 RiverWidthF = path + "GIS/4000/river_width.tif"
@@ -37,7 +37,7 @@ RiverRoughnessF = path + "GIS/4000/channel_roughness.tif"
 FloodPlainRoughnessF = path + "GIS/4000/floodplain_roughness.tif"
 DEMF = path + "GIS/4000/dem4000.tif"
 RouteRiver = "Kinematic"
-#%% Meteorological data
+# %% Meteorological data
 AreaCoeff = 1530
 InitialCond = [0, 5, 5, 5, 0]
 Snow = 0
@@ -63,11 +63,11 @@ Coello.read_rainfall(PrecPath)
 Coello.read_temperature(TempPath)
 Coello.read_et(Evap_Path)
 Coello.read_lumped_model(HBV, AreaCoeff, InitialCond)
-#%% Gauges
+# %% Gauges
 Coello.read_gauge_table(path + "Discharge/stations/gauges.csv", FlowAccPath)
 GaugesPath = path + "Discharge/stations/"
 Coello.read_discharge_gauges(GaugesPath, column="id", fmt="%Y-%m-%d")
-#%% Run the model
+# %% Run the model
 """
 Outputs:
     ----------
@@ -87,8 +87,8 @@ Outputs:
         3D array of the lower zone discharge translated at each time step
 """
 Run.RunFloodModel(Coello)
-#%% calculate performance criteria
-Coello.extract_discharge(Factor=Coello.GaugesTable["area ratio"].tolist())
+# %% calculate performance criteria
+Coello.extract_discharge(factor=Coello.GaugesTable["area ratio"].tolist())
 
 for i in range(len(Coello.GaugesTable)):
     gaugeid = Coello.GaugesTable.loc[i, "id"]
@@ -101,13 +101,13 @@ for i in range(len(Coello.GaugesTable)):
     print("WB= " + str(round(Coello.Metrics.loc["WB", gaugeid], 2)))
     print("Pearson CC= " + str(round(Coello.Metrics.loc["Pearson-CC", gaugeid], 2)))
     print("R2 = " + str(round(Coello.Metrics.loc["R2", gaugeid], 2)))
-#%% plot
+# %% plot
 gaugei = 5
 plotstart = "2009-01-01"
 plotend = "2011-12-31"
 
 Coello.plot_hydrograph(plotstart, plotend, gaugei)
-#%%
+# %%
 """
 =============================================================================
 AnimateArray(Arr, Time, NoElem, TicksSpacing = 2, Figsize=(8,8), PlotNumbers=True,
@@ -204,12 +204,12 @@ Anim = Coello.plot_distributed_results(
     plotstart,
     plotend,
     Figsize=(9, 9),
-    Option=1,
+    option=1,
     threshold=160,
     PlotNumbers=True,
     TicksSpacing=5,
     Interval=200,
-    Gauges=True,
+    gauges=True,
     cmap="inferno",
     Textloc=[0.1, 0.2],
     Gaugecolor="red",
@@ -218,21 +218,21 @@ Anim = Coello.plot_distributed_results(
     IDsize=25,
 )
 
-#%%
+# %%
 Path = SaveTo + "anim.gif"
-Coello.saveAnimation(VideoFormat="gif", Path=Path, SaveFrames=3)
-#%% Save the result into rasters
+Coello.save_animation(video_format="gif", path=Path, save_frames=3)
+# %% Save the result into rasters
 
 StartDate = "2009-01-01"
 EndDate = "2010-04-20"
 Prefix = "Qtot_"
 
-Coello.saveResults(
+Coello.save_results(
     FlowAccPath,
-    Result=1,
+    result=1,
     StartDate=StartDate,
     EndDate=EndDate,
-    Path="F:/02Case studies/",
-    Prefix=Prefix,
+    path="F:/02Case studies/",
+    prefix=Prefix,
 )
 # Hapi/Model/results/Coello/

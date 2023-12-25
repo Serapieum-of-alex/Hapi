@@ -3,7 +3,7 @@
 @author: mofarrag
 """
 import pandas as pd
-import statista.metrics as PC
+import statista.metrics as metrics
 from statista.sensitivity import Sensitivity as SA
 
 import Hapi.rrm.hbv_bergestrom92 as HBVLumped
@@ -11,11 +11,11 @@ from Hapi.catchment import Catchment
 from Hapi.rrm.routing import Routing
 from Hapi.run import Run
 
-#%% Paths
+# %% Paths
 Parameterpath = "examples/data/lumped/Coello_Lumped2021-03-08_muskingum.txt"
 MeteoDataPath = "examples/data/lumped/meteo_data-MSWEP.csv"
 Path = "examples/data/lumped/"
-#%%
+# %%
 ### meteorological data
 start = "2009-01-01"
 end = "2011-12-31"
@@ -38,7 +38,7 @@ Coello.read_parameters(Parameterpath, Snow)
 
 parameters = pd.read_csv(Parameterpath, index_col=0, header=None)
 parameters.rename(columns={1: "value"}, inplace=True)
-#%% parameters boundaries
+# %% parameters boundaries
 UB = pd.read_csv(Path + "/LB-1-Muskinguk.txt", index_col=0, header=None)
 parnames = UB.index
 UB = UB[1].tolist()
@@ -46,33 +46,33 @@ LB = pd.read_csv(Path + "/UB-1-Muskinguk.txt", index_col=0, header=None)
 LB = LB[1].tolist()
 Coello.read_parameters_bound(UB, LB, Snow)
 
-#%%
+# %%
 # observed flow
 Coello.read_discharge_gauges(Path + "Qout_c.csv", fmt="%Y-%m-%d")
 ### Routing
 Route = 1
 # RoutingFn=Routing.TriangularRouting2
 RoutingFn = Routing.Muskingum
-#%%
+# %%
 ### run the model
 Run.runLumped(Coello, Route, RoutingFn)
-#%%
+# %%
 Metrics = dict()
 
 Qobs = Coello.QGauges[Coello.QGauges.columns[0]]
 
-Metrics["RMSE"] = PC.RMSE(Qobs, Coello.Qsim["q"])
-Metrics["NSE"] = PC.NSE(Qobs, Coello.Qsim["q"])
-Metrics["NSEhf"] = PC.NSEHF(Qobs, Coello.Qsim["q"])
-Metrics["KGE"] = PC.KGE(Qobs, Coello.Qsim["q"])
-Metrics["WB"] = PC.WB(Qobs, Coello.Qsim["q"])
+Metrics["RMSE"] = metrics.rmse(Qobs, Coello.Qsim["q"])
+Metrics["NSE"] = metrics.nse(Qobs, Coello.Qsim["q"])
+Metrics["NSEhf"] = metrics.nse_hf(Qobs, Coello.Qsim["q"])
+Metrics["KGE"] = metrics.kge(Qobs, Coello.Qsim["q"])
+Metrics["WB"] = metrics.wb(Qobs, Coello.Qsim["q"])
 
 print("RMSE= " + str(round(Metrics["RMSE"], 2)))
 print("NSE= " + str(round(Metrics["NSE"], 2)))
 print("NSEhf= " + str(round(Metrics["NSEhf"], 2)))
 print("KGE= " + str(round(Metrics["KGE"], 2)))
 print("WB= " + str(round(Metrics["WB"], 2)))
-#%%
+# %%
 """
 first the SensitivityAnalysis method takes 4 arguments :
     1-parameters:previous obtained parameters
@@ -109,12 +109,14 @@ as keys,
 Each parameter has a disctionary with two keys 0: list of parameters woth relative values
 1: list of parameter values
 """
+
+
 # For Type 1
 def WrapperType1(Randpar, Route, RoutingFn, Qobs):
     Coello.Parameters = Randpar
 
     Run.runLumped(Coello, Route, RoutingFn)
-    rmse = PC.RMSE(Qobs, Coello.Qsim["q"])
+    rmse = metrics.rmse(Qobs, Coello.Qsim["q"])
     return rmse
 
 
@@ -123,7 +125,7 @@ def WrapperType2(Randpar, Route, RoutingFn, Qobs):
     Coello.Parameters = Randpar
 
     Run.runLumped(Coello, Route, RoutingFn)
-    rmse = PC.RMSE(Qobs, Coello.Qsim["q"])
+    rmse = metrics.rmse(Qobs, Coello.Qsim["q"])
     return rmse, Coello.Qsim["q"]
 
 
@@ -140,15 +142,15 @@ Positions = []
 
 Sen = SA(parameters, Coello.LB, Coello.UB, fn, Positions, 5, Type=Type)
 Sen.OAT(Route, RoutingFn, Qobs)
-#%%
+# %%
 From = ""
 To = ""
 if Type == 1:
     fig, ax1 = Sen.Sobol(
         RealValues=False,
-        Title="Sensitivity Analysis of the RMSE to models parameters",
+        Title="Sensitivity Analysis of the rmse to models parameters",
         xlabel="Maxbas Values",
-        ylabel="RMSE",
+        ylabel="rmse",
         From=From,
         To=To,
         xlabel2="Time",
@@ -158,9 +160,9 @@ if Type == 1:
 elif Type == 2:
     fig, (ax1, ax2) = Sen.Sobol(
         RealValues=False,
-        Title="Sensitivity Analysis of the RMSE to models parameters",
+        Title="Sensitivity Analysis of the rmse to models parameters",
         xlabel="Maxbas Values",
-        ylabel="RMSE",
+        ylabel="rmse",
         From=From,
         To=To,
         xlabel2="Time",

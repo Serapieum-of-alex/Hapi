@@ -13,7 +13,7 @@ import matplotlib
 import numpy as np
 
 matplotlib.use("TkAgg")
-import statista.metrics as Pf
+import statista.metrics as metrics
 
 import Hapi.rrm.hbv as HBV
 import Hapi.rrm.hbv_lake as HBVLake
@@ -50,18 +50,18 @@ Jiboa = Catchment(
     name,
     start_date,
     end_date,
-    SpatialResolution="Distributed",
-    TemporalResolution="Hourly",
+    spatial_resolution="Distributed",
+    temporal_resolution="Hourly",
     fmt="%Y-%m-%d %H:%M:%S",
 )
-Jiboa.readRainfall(PrecPath)
-Jiboa.readTemperature(TempPath)
-Jiboa.readET(Evap_Path)
-Jiboa.readFlowAcc(FlowAccPath)
-Jiboa.readFlowDir(FlowDPath)
-Jiboa.readParameters(ParPath, Snow)
+Jiboa.read_rainfall(PrecPath)
+Jiboa.read_temperature(TempPath)
+Jiboa.read_et(Evap_Path)
+Jiboa.read_flow_acc(FlowAccPath)
+Jiboa.read_flow_dir(FlowDPath)
+Jiboa.read_parameters(ParPath, Snow)
 
-Jiboa.readLumpedModel(HBV, CatchmentArea, InitialCond)
+Jiboa.read_lumped_model(HBV, CatchmentArea, InitialCond)
 # %% Lake Object
 """
 lake meteorological data
@@ -84,32 +84,37 @@ JiboaLake = Lake(
     start=start_date,
     end=end_date,
     fmt="%Y.%m.%d %H:%M:%S",
-    TemporalResolution="Hourly",
-    Split=True,
+    temporal_resolution="Hourly",
+    split=True,
 )
 
-JiboaLake.readMeteoData(LakeMeteoPath, fmt="%d.%m.%Y %H:%M")
-JiboaLake.readParameters(LakeParametersPath)
+JiboaLake.read_meteo_data(LakeMeteoPath, fmt="%d.%m.%Y %H:%M")
+JiboaLake.read_parameters(LakeParametersPath)
 
 StageDischargeCurve = np.loadtxt("inputs/Hapi/meteodata/curve.txt")
 LakeInitCond = np.loadtxt("inputs/Hapi/meteodata/Initia-lake.txt", usecols=0).tolist()
 LakeCatArea = 133.98
 LakeArea = 70.64
 Snow = 0
-JiboaLake.readLumpedModel(
+JiboaLake.read_lumped_model(
     HBVLake, LakeCatArea, LakeArea, LakeInitCond, OutflowCell, StageDischargeCurve, Snow
 )
 # %% Gauges
 Date1 = "14.06.2012 19:00"
 Date2 = "23.12.2013 00:00"
-Jiboa.readGaugeTable(GaugesPath + "GaugesTable.csv", FlowAccPath)
-Jiboa.readDischargeGauges(
-    GaugesPath, column="id", fmt="%d.%m.%Y %H:%M", Split=True, Date1=Date1, Date2=Date2
+Jiboa.read_gauge_table(GaugesPath + "GaugesTable.csv", FlowAccPath)
+Jiboa.read_discharge_gauges(
+    GaugesPath,
+    column="id",
+    fmt="%d.%m.%Y %H:%M",
+    split=True,
+    start_date=Date1,
+    end_date=Date2,
 )
 # %% run the model
 Run.runHAPIwithLake(Jiboa, JiboaLake)
 # %% calculate some metrics
-Jiboa.extractDischarge(OnlyOutlet=True)
+Jiboa.extract_discharge(only_outlet=True)
 
 for i in range(len(Jiboa.GaugesTable)):
     gaugeid = Jiboa.GaugesTable.loc[i, "id"]
@@ -132,18 +137,18 @@ WS["type"] = 1
 WS["N"] = 3
 ModelMetrics = dict()
 ModelMetrics["Calib_RMSEHF"] = round(
-    Pf.RMSEHF(Qobs, Jiboa.Qsim[gaugeid], WS["type"], WS["N"], 0.75), 3
+    metrics.rmse_hf(Qobs, Jiboa.Qsim[gaugeid], WS["type"], WS["N"], 0.75), 3
 )
 ModelMetrics["Calib_RMSELF"] = round(
-    Pf.RMSELF(Qobs, Jiboa.Qsim[gaugeid], WS["type"], WS["N"], 0.75), 3
+    metrics.rmse_lf(Qobs, Jiboa.Qsim[gaugeid], WS["type"], WS["N"], 0.75), 3
 )
-ModelMetrics["Calib_NSEHf"] = round(Pf.NSE(Qobs, Jiboa.Qsim[gaugeid]), 3)
+ModelMetrics["Calib_NSEHf"] = round(metrics.nse(Qobs, Jiboa.Qsim[gaugeid]), 3)
 ModelMetrics["Calib_NSELf"] = round(
-    Pf.NSE(np.log(Qobs), np.log(Jiboa.Qsim[gaugeid])), 3
+    metrics.nse(np.log(Qobs), np.log(Jiboa.Qsim[gaugeid])), 3
 )
-ModelMetrics["Calib_RMSE"] = round(Pf.RMSE(Qobs, Jiboa.Qsim[gaugeid]), 3)
-ModelMetrics["Calib_KGE"] = round(Pf.KGE(Qobs, Jiboa.Qsim[gaugeid]), 3)
-ModelMetrics["Calib_WB"] = round(Pf.WB(Qobs, Jiboa.Qsim[gaugeid]), 3)
+ModelMetrics["Calib_RMSE"] = round(metrics.rmse(Qobs, Jiboa.Qsim[gaugeid]), 3)
+ModelMetrics["Calib_KGE"] = round(metrics.kge(Qobs, Jiboa.Qsim[gaugeid]), 3)
+ModelMetrics["Calib_WB"] = round(metrics.wb(Qobs, Jiboa.Qsim[gaugeid]), 3)
 
 print(ModelMetrics)
 # %% plot
@@ -151,7 +156,7 @@ gaugei = 0
 plotstart = "2012-06-16"
 plotend = "2013-12-23"
 
-Jiboa.plotHydrograph(plotstart, plotend, gaugei)
+Jiboa.plot_hydrograph(plotstart, plotend, gaugei)
 # %%
 """
 =============================================================================
@@ -253,16 +258,16 @@ animation.FuncAnimation.
 plotstart = "2012-07-20"
 plotend = "2012-08-20"
 
-Anim = Jiboa.plotDistributedResults(
+Anim = Jiboa.plot_distributed_results(
     plotstart,
     plotend,
     Figsize=(8, 8),
-    Option=3,
+    option=3,
     threshold=160,
     PlotNumbers=False,
     TicksSpacing=10,
     Interval=10,
-    Gauges=False,
+    gauges=False,
     cmap="inferno",
     Textloc=[0.6, 0.8],
     Gaugecolor="red",
@@ -273,12 +278,12 @@ Anim = Jiboa.plotDistributedResults(
 )
 # %%
 Path = SaveTo + "anim.mov"
-Jiboa.saveAnimation(VideoFormat="mov", Path=Path, SaveFrames=3)
+Jiboa.save_animation(video_format="mov", path=Path, save_frames=3)
 # %% Save Results
 StartDate = "2012-07-20"
 EndDate = "2012-08-20"
 
 Path = SaveTo + "Lumped_Parameters_" + str(dt.datetime.now())[0:10] + "_"
-Jiboa.saveResults(
-    Result=1, StartDate=StartDate, EndDate=EndDate, Path=Path, FlowAccPath=FlowAccPath
+Jiboa.save_results(
+    result=1, StartDate=StartDate, EndDate=EndDate, path=Path, flow_acc_path=FlowAccPath
 )

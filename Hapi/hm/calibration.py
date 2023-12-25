@@ -1605,13 +1605,13 @@ class Calibration(River):
             # shift hm result
             sim[shift:-shift] = sim[0 : -shift * 2]
 
-            Metrics.loc[gauges[i], "rmse"] = round(pf.RMSE(obs, sim), 0)
-            Metrics.loc[gauges[i], "KGE"] = round(pf.KGE(obs, sim), 3)
-            Metrics.loc[gauges[i], "NSE"] = round(pf.NSE(obs, sim), 3)
-            Metrics.loc[gauges[i], "NSEModified"] = round(pf.NSEHF(obs, sim), 3)
-            Metrics.loc[gauges[i], "WB"] = round(pf.WB(obs, sim), 0)
-            Metrics.loc[gauges[i], "MBE"] = round(pf.MBE(obs, sim), 3)
-            Metrics.loc[gauges[i], "MAE"] = round(pf.MAE(obs, sim), 3)
+            Metrics.loc[gauges[i], "rmse"] = round(pf.rmse(obs, sim), 0)
+            Metrics.loc[gauges[i], "KGE"] = round(pf.kge(obs, sim), 3)
+            Metrics.loc[gauges[i], "NSE"] = round(pf.nse(obs, sim), 3)
+            Metrics.loc[gauges[i], "NSEModified"] = round(pf.nse_hf(obs, sim), 3)
+            Metrics.loc[gauges[i], "WB"] = round(pf.wb(obs, sim), 0)
+            Metrics.loc[gauges[i], "MBE"] = round(pf.mbe(obs, sim), 3)
+            Metrics.loc[gauges[i], "MAE"] = round(pf.mae(obs, sim), 3)
 
         return Metrics
 
@@ -1716,7 +1716,7 @@ class Calibration(River):
                 "with 'ReadObservedQ' method"
             )
 
-        ### RRM vs observed
+        # RRM vs observed
         self.metrics_rrm_vs_obs = self.Metrics(
             self.q_gauges,
             self.q_rrm,

@@ -99,7 +99,7 @@ class Calibration(Catchment):
 
         print("Objective function is read successfully")
 
-    def extract_discharge(self, Factor=None):
+    def extract_discharge(self, factor=None):
         """extractDischarge.
 
         extractDischarge method extracts the discharge hydrograph in the
@@ -107,7 +107,7 @@ class Calibration(Catchment):
 
         Parameters
         ----------
-        Factor : [list/None]
+        factor : [list/None]
             list of factor if you want to multiply the simulated discharge by
             a factor you have to provide a list of the factor (as many factors
             as the number of gauges). The default is False.
@@ -129,8 +129,8 @@ class Calibration(Catchment):
 
             Qsim = np.reshape(self.Qtot[Xind, Yind, :-1], self.TS - 1)
 
-            if Factor is not None:
-                self.Qsim[:, i] = Qsim * Factor[i]
+            if factor is not None:
+                self.Qsim[:, i] = Qsim * factor[i]
             else:
                 self.Qsim[:, i] = Qsim
 
@@ -242,8 +242,8 @@ class Calibration(Catchment):
         pll_type = OptimizationArgs[1]
         ApiSolveArgs = OptimizationArgs[2]
         # check optimization arguement
-        assert type(ApiObjArgs) == dict, "store_history should be 0 or 1"
-        assert type(ApiSolveArgs) == dict, "history_fname should be of type string "
+        assert type(ApiObjArgs) is dict, "store_history should be 0 or 1"
+        assert type(ApiSolveArgs) is dict, "history_fname should be of type string "
 
         print("Calibration starts")
 
@@ -416,8 +416,8 @@ class Calibration(Catchment):
         pll_type = OptimizationArgs[1]
         ApiSolveArgs = OptimizationArgs[2]
         # check optimization arguement
-        assert type(ApiObjArgs) == dict, "store_history should be 0 or 1"
-        assert type(ApiSolveArgs) == dict, "history_fname should be of type string "
+        assert type(ApiObjArgs) is dict, "store_history should be 0 or 1"
+        assert type(ApiSolveArgs) is dict, "history_fname should be of type string "
 
         print("Calibration starts")
 

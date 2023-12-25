@@ -10,11 +10,11 @@ import numpy as np
 from osgeo import gdal
 
 import Hapi.rrm.hbv_bergestrom92 as HBV
-import Hapi.sm.performancecriteria as PC
+import statista.metrics as metrics
 from Hapi.rrm.calibration import Calibration
 from Hapi.rrm.distparameters import DistParameters as DP
 
-#%% Paths
+# %% Paths
 Path = Comp + "/data/distributed/coello"
 PrecPath = Path + "/prec"
 Evap_Path = Path + "/evap"
@@ -23,7 +23,7 @@ FlowAccPath = Path + "/GIS/acc4000.tif"
 FlowDPath = Path + "/GIS/fd4000.tif"
 CalibPath = Path + "/calibration"
 SaveTo = Path + "/results"
-#%% Basic_inputs
+# %% Basic_inputs
 AreaCoeff = 1530
 # [sp,sm,uz,lz,wc]
 InitialCond = [0, 5, 5, 5, 0]
@@ -49,7 +49,7 @@ Coello.read_lumped_model(HBV, AreaCoeff, InitialCond)
 UB = np.loadtxt(CalibPath + "/UB - tot.txt", usecols=0)
 LB = np.loadtxt(CalibPath + "/LB - tot.txt", usecols=0)
 Coello.read_parameters_bound(UB, LB, Snow)
-#%% spatial variability function
+# %% spatial variability function
 """
 define how generated parameters are going to be distributed spatially
 totaly distributed or totally distributed with some parameters are lumped
@@ -81,11 +81,11 @@ SpatialVarFun = DP(
 )
 # calculate no of parameters that optimization algorithm is going to generate
 SpatialVarFun.ParametersNO
-#%% Gauges
+# %% Gauges
 Coello.read_gauge_table(Path + "/stations/gauges.csv", FlowAccPath)
 GaugesPath = Path + "/stations/"
 Coello.read_discharge_gauges(GaugesPath, column="id", fmt="%Y-%m-%d")
-#%% Objective function
+# %% Objective function
 coordinates = Coello.GaugesTable[["id", "x", "y", "weight"]][:]
 
 # define the objective function and its arguments
@@ -98,7 +98,7 @@ def OF(Qobs, Qout, q_uz_routed, q_lz_trans, coordinates):
     # error for all internal stations
     for i in range(len(coordinates)):
         all_errors.append(
-            (PC.RMSE(Qobs.loc[:, Qobs.columns[0]], Coello.Qsim[:, i]))
+            (metrics.rmse(Qobs.loc[:, Qobs.columns[0]], Coello.Qsim[:, i]))
         )  # *coordinates.loc[coordinates.index[i],'weight']
     print(all_errors)
     error = sum(all_errors)
@@ -106,7 +106,7 @@ def OF(Qobs, Qout, q_uz_routed, q_lz_trans, coordinates):
 
 
 Coello.readObjectiveFn(OF, OF_args)
-#%% Optimization
+# %% Optimization
 """
 API options
 Create the options dictionary all the optimization parameters should be passed
@@ -134,9 +134,9 @@ pll_type = None
 ApiSolveArgs = dict(store_sol=True, display_opts=True, store_hst=True, hot_start=False)
 
 OptimizationArgs = [ApiObjArgs, pll_type, ApiSolveArgs]
-#%% run calibration
+# %% run calibration
 cal_parameters = Coello.runCalibration(SpatialVarFun, OptimizationArgs, printError=0)
-#%% convert parameters to rasters
+# %% convert parameters to rasters
 # Coello.Parameters = [0.700, 399, 1.704, 0.1021, 0.4622, 0.6237, 0.1251, 0.005, 59.85, 5.241, 94.91, 0.2075]
 SpatialVarFun.Function(Coello.Parameters, kub=SpatialVarFun.Kub, klb=SpatialVarFun.Klb)
 SpatialVarFun.saveParameters(SaveTo)
