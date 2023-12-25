@@ -11,7 +11,7 @@ After preparing all the meteorological, GIS inputs required for the model, and E
     from Hapi.rrm.calibration import Calibration
     import Hapi.rrm.hbv_bergestrom92 as HBV
 
-    import Hapi.statistics.performancecriteria as PC
+    import statista.metrics as metrics
 
     Path = Comp + "/data/distributed/coello"
     PrecPath = Path + "/prec"
@@ -93,7 +93,8 @@ from Hapi.rrm.distparameters import DistParameters as DP
         all_errors=[]
         # error for all internal stations
         for i in range(len(coordinates)):
-            all_errors.append((PC.RMSE(Qobs.loc[:,Qobs.columns[0]],Coello.Qsim[:,i]))) #*coordinates.loc[coordinates.index[i],'weight']
+            all_errors.append((metrics.rmse(Qobs.loc[:,Qobs.columns[0]],Coello.Qsim[:,i]))) #*coordinates.loc[coordinates
+.index[i],'weight']
         print(all_errors)
         error = sum(all_errors)
         return error

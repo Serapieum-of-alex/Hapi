@@ -14,7 +14,7 @@ To calibrate the HBV lumped model inside Hapi you need to follow the same steps 
 	from Hapi.rrm.calibration import Calibration
 	from Hapi.rrm.routing import Routing
 	from Hapi.run import Run
-	import Hapi.statistics.performancecriteria as PC
+	import statista.metrics as metrics
 
 	Parameterpath = Comp + "/data/lumped/Coello_Lumped2021-03-08_muskingum.txt"
 	MeteoDataPath = Comp + "/data/lumped/meteo_data-MSWEP.csv"
@@ -59,9 +59,9 @@ To calibrate the HBV lumped model inside Hapi you need to follow the same steps 
 	Coello.readDischargeGauges(Path+"Qout_c.csv", fmt="%Y-%m-%d")
 
 	OF_args=[]
-	OF=PC.RMSE
+	OF=metrics.rmse
 
-	Coello.readObjectiveFn(PC.RMSE, OF_args)
+	Coello.readObjectiveFn(metrics.rmse, OF_args)
 
 - after defining all the components of the lumped model, we have to define the calibration arguments
 
