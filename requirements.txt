@@ -1,7 +1,6 @@
 cleopatra >=0.4.0
 gdal >=3.7.0
 geopandas >=0.14.1
-hpc >=0.1.3
 joblib >=1.3.2
 loguru >=0.7.2
 matplotlib >=3.7.2
