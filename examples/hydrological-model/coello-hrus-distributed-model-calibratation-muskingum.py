@@ -80,8 +80,8 @@ SpatialVarFun = DP(
     no_parameters,
     no_lumped_par=no_lumped_par,
     lumped_par_pos=lumped_par_pos,
-    HRUs=1,
-    Function=4,
+    hru=1,
+    function=4,
 )
 
 # calculate no of parameters that optimization algorithm is going to generate
