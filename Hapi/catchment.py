@@ -24,6 +24,9 @@ from pyramids.dem import DEM
 from pyramids.dataset import Dataset, Datacube
 
 
+STATE_VARIABLES = ["SP", "SM", "UZ", "LZ", "WC"]
+
+
 class Catchment:
     """Catchment.
 
@@ -214,9 +217,8 @@ class Catchment:
             if not os.path.exists(path):
                 raise FileNotFoundError(f"{path} you have provided does not exist")
             # check wether the folder has the rasters or not
-            assert (
-                len(os.listdir(path)) > 0
-            ), f"{path} folder you have provided is empty"
+            if not len(os.listdir(path)) > 0:
+                f"{path} folder you have provided is empty"
             # read data
             cube = Datacube.read_multiple_files(
                 path,
@@ -234,9 +236,8 @@ class Catchment:
             self.TS = (
                 self.Prec.shape[2] + 1
             )  # no of time steps =length of time series +1
-            assert isinstance(
-                self.Prec, np.ndarray
-            ), "array should be of type numpy array"
+            if not isinstance(self.Prec, np.ndarray):
+                raise TypeError("Prec should be of type numpy array")
 
             logger.debug("Rainfall data are read successfully")
 
@@ -299,9 +300,9 @@ class Catchment:
             # check wether the path exists or not
             assert os.path.exists(path), path + " you have provided does not exist"
             # check wether the folder has the rasters or not
-            assert len(os.listdir(path)) > 0, (
-                path + " folder you have provided is empty"
-            )
+            assert (
+                len(os.listdir(path)) > 0
+            ), f"{path} folder you have provided is empty"
             # read data
             cube = Datacube.read_multiple_files(
                 path,
@@ -385,9 +386,9 @@ class Catchment:
             # check wether the path exists or not
             assert os.path.exists(path), path + " you have provided does not exist"
             # check wether the folder has the rasters or not
-            assert len(os.listdir(path)) > 0, (
-                path + " folder you have provided is empty"
-            )
+            assert (
+                len(os.listdir(path)) > 0
+            ), f"{path} folder you have provided is empty"
             # read data
             cube = Datacube.read_multiple_files(
                 path,
@@ -521,9 +522,10 @@ class Catchment:
         # check wether the path exists or not
         assert os.path.exists(path), path + " you have provided does not exist"
         # check the extension of the accumulation file
-        assert (
-            path[-4:] == ".tif"
-        ), "please add the extension at the end of the Flow accumulation raster path input"
+        if not (path[-4:] == ".tif"):
+            raise ValueError(
+                "please add the extension at the end of the Flow accumulation raster path input"
+            )
         # check wether the path exists or not
         assert os.path.exists(path), path + " you have provided does not exist"
         flow_dir = gdal.Open(path)
@@ -582,9 +584,10 @@ class Catchment:
         assert isinstance(path, str), "Precpath input should be string type"
         # input values
         fpl_ext = path[-4:]
-        assert (
-            fpl_ext == ".tif"
-        ), "please add the extension at the end of the Flow accumulation raster path input"
+        if not (fpl_ext == ".tif"):
+            raise ValueError(
+                "please add the extension at the end of the Flow accumulation raster path input"
+            )
         # check wether the path exists or not
         assert os.path.exists(path), path + " you have provided does not exist"
 
@@ -663,9 +666,9 @@ class Catchment:
             # check wether the path exists or not
             assert os.path.exists(path), path + " you have provided does not exist"
             # check wether the folder has the rasters or not
-            assert len(os.listdir(path)) > 0, (
-                path + " folder you have provided is empty"
-            )
+            assert (
+                len(os.listdir(path)) > 0
+            ), f"{path} folder you have provided is empty"
             # parameters
             cube = Datacube.read_multiple_files(
                 path, with_order=True, regex_string=r"\d+", date=False
@@ -680,40 +683,46 @@ class Catchment:
 
             self.Parameters = pd.read_csv(path, index_col=0, header=None)[1].tolist()
 
-        assert (
-            not snow or snow
-        ), " snow input defines whether to consider snow subroutine or not it has to be True or False"
+        if not (not snow or snow):
+            raise ValueError(
+                "snow input defines whether to consider snow subroutine or not it has to be True or False"
+            )
 
         self.Snow = snow
         self.Maxbas = maxbas
 
         if self.SpatialResolution == "distributed":
             if snow and maxbas:
-                assert self.Parameters.shape[2] == 16, (
-                    "current version of HBV (with snow) takes 16 parameter you have entered "
-                    + str(self.Parameters.shape[2])
-                )
+                if not self.Parameters.shape[2] == 16:
+                    raise ValueError(
+                        "current version of HBV (with snow) takes 16 parameter you have entered "
+                        f"{self.Parameters.shape[2]}"
+                    )
             elif not snow and maxbas:
-                assert self.Parameters.shape[2] == 11, (
-                    "current version of HBV (with snow) takes 11 parameter you have entered "
-                    + str(self.Parameters.shape[2])
-                )
+                if not self.Parameters.shape[2] == 11:
+                    raise ValueError(
+                        "current version of HBV (with snow) takes 11 parameter you have entered "
+                        f"{self.Parameters.shape[2]}"
+                    )
             elif snow and not maxbas:
-                assert self.Parameters.shape[2] == 17, (
-                    "current version of HBV (with snow) takes 17 parameter you have entered "
-                    + str(self.Parameters.shape[2])
-                )
+                if not self.Parameters.shape[2] == 17:
+                    raise ValueError(
+                        "current version of HBV (with snow) takes 17 parameter you have entered "
+                        f"{self.Parameters.shape[2]}"
+                    )
             elif not snow and not maxbas:
-                assert self.Parameters.shape[2] == 12, (
-                    "current version of HBV (with snow) takes 12 parameter you have entered "
-                    + str(self.Parameters.shape[2])
-                )
+                if not self.Parameters.shape[2] == 12:
+                    raise ValueError(
+                        "current version of HBV (with snow) takes 12 parameter you have entered "
+                        f"{self.Parameters.shape[2]}"
+                    )
         else:
             if snow and maxbas:
-                assert len(self.Parameters) == 16, (
-                    "current version of HBV (with snow) takes 16 parameter you have entered "
-                    + str(len(self.Parameters))
-                )
+                if not len(self.Parameters) == 16:
+                    raise ValueError(
+                        f"current version of HBV (with snow) takes 16 parameter you have entered {len(self.Parameters)}"
+                    )
+
             elif not snow and maxbas:
                 if len(self.Parameters) != 11:
                     raise ValueError(
@@ -721,15 +730,16 @@ class Catchment:
                     )
 
             elif snow and not maxbas:
-                assert len(self.Parameters) == 17, (
-                    "current version of HBV (with snow) takes 17 parameter you have entered "
-                    + str(len(self.Parameters))
-                )
+                if not len(self.Parameters) == 17:
+                    raise ValueError(
+                        f"current version of HBV (with snow) takes 17 parameter you have entered{len(self.Parameters)}"
+                    )
+
             elif not snow and not maxbas:
-                assert len(self.Parameters) == 12, (
-                    "current version of HBV (with snow) takes 12 parameter you have entered "
-                    + str(len(self.Parameters))
-                )
+                if not len(self.Parameters) == 12:
+                    raise ValueError(
+                        f"current version of HBV (with snow) takes 12 parameter you have entered {len(self.Parameters)}"
+                    )
 
         logger.debug("Parameters are read successfully")
 
@@ -771,9 +781,10 @@ class Catchment:
         self.LumpedModel = lumped_model
         self.CatArea = catchment_area
 
-        assert (
-            len(initial_condition) == 5
-        ), f"state variables are 5 and the given initial values are {len(initial_condition)}"
+        if not (len(initial_condition) == 5):
+            raise ValueError(
+                f"state variables are 5 and the given initial values are {len(initial_condition)}"
+            )
 
         self.InitialCond = initial_condition
 
@@ -816,9 +827,11 @@ class Catchment:
             self.ll_temp = np.zeros(shape=(len(self.data)), dtype=np.float32)
             self.ll_temp = self.data[:, 2].mean()
 
-        assert (
-            np.shape(self.data)[1] == 3 or np.shape(self.data)[1] == 4
-        ), " meteorological data should be of length at least 3 (prec, ET, temp) or 4(prec, ET, temp, tm) "
+        if not (np.shape(self.data)[1] == 3 or np.shape(self.data)[1] == 4):
+            raise ValueError(
+                "meteorological data should be of length at least 3 (prec, ET, temp) or 4(prec, ET, temp, "
+                "tm) "
+            )
 
         logger.debug("Lumped Model inputs are read successfully")
 
@@ -1548,17 +1561,13 @@ class Catchment:
                 data["Qlz"] = self.qlz[starti:endi]
                 data.to_csv(path, index=False, float_format="%.3f")
             elif result == 4:
-                data[["SP", "SM", "UZ", "LZ", "WC"]] = self.statevariables[
-                    starti:endi, :
-                ]
+                data[STATE_VARIABLES] = self.statevariables[starti:endi, :]
                 data.to_csv(path, index=False, float_format="%.3f")
             elif result == 5:
                 data["Qsim"] = self.Qsim[starti:endi]
                 data["Quz"] = self.quz[starti:endi]
                 data["Qlz"] = self.qlz[starti:endi]
-                data[["SP", "SM", "UZ", "LZ", "WC"]] = self.statevariables[
-                    starti:endi, :
-                ]
+                data[STATE_VARIABLES] = self.statevariables[starti:endi, :]
                 data.to_csv(path, index=False, float_format="%.3f")
             else:
                 assert False, "the possible options are from 1 to 5"
