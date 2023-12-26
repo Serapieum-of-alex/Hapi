@@ -69,9 +69,9 @@ SpatialVarFun = DP(
     no_parameters,
     no_lumped_par=no_lumped_par,
     lumped_par_pos=lumped_par_pos,
-    Function=2,
-    Klb=klb,
-    Kub=kub,
+    function=2,
+    klb=klb,
+    kub=kub,
 )
 # calculate no of parameters that optimization algorithm is going to generate
 print(SpatialVarFun.ParametersNO)
