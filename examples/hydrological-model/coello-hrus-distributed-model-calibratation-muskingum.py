@@ -19,7 +19,7 @@ import Hapi.rrm.hbv_bergestrom92 as HBV
 from Hapi.rrm.calibration import Calibration
 
 # import Hapi.HBV as HBV
-from Hapi.rrm.distparameters import DistParameters as DP
+from Hapi.rrm.parameters import Parameters as DP
 
 path = Comp + "/Coello/HAPI/Data/00inputs/"  # GIS/4000/
 SaveTo = Comp + "/Coello/Hapi/Model/results/"

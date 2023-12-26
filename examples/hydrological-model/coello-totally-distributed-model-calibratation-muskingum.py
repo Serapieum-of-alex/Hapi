@@ -6,7 +6,7 @@ from statista.metrics import rmse
 
 import Hapi.rrm.hbv_bergestrom92 as HBV
 from Hapi.rrm.calibration import Calibration
-from Hapi.rrm.distparameters import DistParameters as DP
+from Hapi.rrm.parameters import Parameters as DP
 
 # %% Paths
 Path = "examples/hydrological-model/data/distributed_model/"

@@ -1,4 +1,4 @@
-"""DistParameters The module contains functions that is responible for distributing parameters spatially (totally distributed, totally distriby-uted with some parameters lumped, all parameters are lumped, hydrologic response units) and also save generated parameters into rasters.
+"""Parameters The module contains functions that is responible for distributing parameters spatially (totally distributed, totally distriby-uted with some parameters lumped, all parameters are lumped, hydrologic response units) and also save generated parameters into rasters.
 
 @author: Mostafa
 """
@@ -13,7 +13,7 @@ from osgeo import gdal
 from pyramids.dataset import Dataset
 
 
-class DistParameters:
+class Parameters:
     """Distripute.
 
         parameter class is used to distribute the values of the parameter vector in the calibration
@@ -35,15 +35,15 @@ class DistParameters:
         no_parameters,
         no_lumped_par=0,
         lumped_par_pos=[],
-        Lake=False,
-        Snow=False,
-        HRUs=False,
-        Function=1,
-        Kub=1,
-        Klb=50,
-        Maskingum=False,
+        lake: bool = False,
+        snow: bool = False,
+        hru: bool = False,
+        function=1,
+        k_upper_bound=1,
+        k_lower_bound=50,
+        maskingum: bool = False,
     ):
-        """DistParameters. To initiate the DistParameters class you have to provide the Flow Acc raster.
+        """Parameters. To initiate the Parameters class you have to provide the Flow Acc raster.
 
         Parameters
         ----------
@@ -56,21 +56,21 @@ class DistParameters:
             Number lumped parameters. The default is 0.
         lumped_par_pos : [integer], optional
             the order of the lumped parameters (order starts wti zero). The default is [].
-        Lake : [integer], optional
+        lake : [integer], optional
             0 if there is no lake and 1 if there is a lake. The default is 0.
-        Snow : [integer]
+        snow : [integer]
             0 if you dont want to run the snow related processes and 1 if there is snow.
             in case of 1 (simulate snow processes) parameters related to snow simulation
             has to be provided. The default is 0.
-        HRUs : [integer], optional
+        hru : [integer], optional
             if the will consider using HRUs. The default is 0.
-        Function : [integer], optional
+        function : [integer], optional
             function you use to distribute parameters. The default is 1.
-        Kub : [numeric], optional
+        k_upper_bound: [numeric], optional
             upper bound for the k-muskingum parameter. The default is 1.
-        Klb : [numeric], optional
+        k_lower_bound: [numeric], optional
             lower bound for the k-muskingum parameter. The default is 0.5.
-        Maskingum : [bool], optional
+        maskingum : [bool], optional
             if the routing function is muskingum. The default is False.
 
         Returns
@@ -97,14 +97,14 @@ class DistParameters:
                     "you have one or more lumped parameters so the position has to be entered as a list"
                 )
 
-        self.Lake = Lake
-        self.Snow = Snow
+        self.Lake = lake
+        self.Snow = snow
         self.no_lumped_par = no_lumped_par
         self.lumped_par_pos = lumped_par_pos
-        self.HRUs = HRUs
-        self.Kub = Kub
-        self.Klb = Klb
-        self.Maskingum = Maskingum
+        self.HRUs = hru
+        self.Kub = k_upper_bound
+        self.Klb = k_lower_bound
+        self.Maskingum = maskingum
         # read the raster
         self.raster = raster
         self.raster_A = raster.ReadAsArray().astype(float)
@@ -164,13 +164,13 @@ class DistParameters:
             shape=(self.no_parameters, self.no_elem), dtype=np.float32
         )
 
-        if Function == 1:
+        if function == 1:
             self.Function = self.par3dLumped
-        elif Function == 2:
+        elif function == 2:
             self.Function = self.par3d
-        elif Function == 3:
+        elif function == 3:
             self.Function = self.par2d_lumpedK1_lake
-        elif Function == 4:
+        elif function == 4:
             self.Function = self.HRU
         # to overwrite any choice user choose if the is HRUs
         if self.HRUs == 1:
@@ -310,7 +310,7 @@ class DistParameters:
 
         # if Maskingum:
         #     for i in range(self.no_elem):
-        #         self.Par3d[self.celli[i],self.cellj[i],-2]= DistParameters.calculateK(self.Par3d[self.celli[i],self.cellj[i],-1],self.Par3d[self.celli[i],self.cellj[i],-2],kub,klb)
+        #         self.Par3d[self.celli[i],self.cellj[i],-2]= Parameters.calculateK(self.Par3d[self.celli[i],self.cellj[i],-1],self.Par3d[self.celli[i],self.cellj[i],-2],kub,klb)
 
     def par3dLumped(self, par_g):  # , kub=1, klb=0.5, Maskingum = True
         r"""par3dLumped method.
@@ -350,9 +350,8 @@ class DistParameters:
         """
         # input data validation
         # data type
-        assert (
-            type(par_g) == np.ndarray or type(par_g) == list
-        ), "par_g should be of type 1d array or list"
+        if not (isinstance(par_g, np.ndarray) or isinstance(par_g, list)):
+            raise ValueError("par_g should be of type 1d array or list")
         # assert isinstance(kub,numbers.Number) , " kub should be a number"
         # assert isinstance(klb,numbers.Number) , " klb should be a number"
 
@@ -370,7 +369,7 @@ class DistParameters:
         # x and the position and upper, lower bound of k value
         # if Maskingum == True:
         #     for i in range(self.no_elem):
-        #         self.Par3d[self.celli[i],self.cellj[i],-2] = DistParameters.calculateK(self.Par3d[self.celli[i],self.cellj[i],-1],
+        #         self.Par3d[self.celli[i],self.cellj[i],-2] = Parameters.calculateK(self.Par3d[self.celli[i],self.cellj[i],-1],
         #                                                                                self.Par3d[self.celli[i],self.cellj[i],-2],
         #                                                                                kub,klb)
 
@@ -473,11 +472,11 @@ class DistParameters:
         # calculate the value of k(travelling time in muskingum based on value of
         # x and the position and upper, lower bound of k value
         # for i in range(self.no_elem):
-        #     self.Par3d[self.celli[i],self.cellj[i],-2]= DistParameters.calculateK(self.Par3d[self.celli[i],self.cellj[i],-1],self.Par3d[self.celli[i],self.cellj[i],-2],kub,klb)
+        #     self.Par3d[self.celli[i],self.cellj[i],-2]= Parameters.calculateK(self.Par3d[self.celli[i],self.cellj[i],-1],self.Par3d[self.celli[i],self.cellj[i],-2],kub,klb)
 
         # lake parameters
         self.lake_par = par_g[len(par_g) - no_parameters_lake :]
-        # self.lake_par[-2] = DistParameters.calculateK(self.lake_par[-1],self.lake_par[-2],kub,klb)
+        # self.lake_par[-2] = Parameters.calculateK(self.lake_par[-1],self.lake_par[-2],kub,klb)
 
         # return self.Par3d, lake_par
 
@@ -547,9 +546,8 @@ class DistParameters:
         """
         # input data validation
         # data type
-        assert (
-            type(par_g) == np.ndarray or type(par_g) == list
-        ), "par_g should be of type 1d array or list"
+        if not (isinstance(par_g, np.ndarray) or isinstance(par_g, list)):
+            raise ValueError("par_g should be of type 1d array or list")
         # assert isinstance(kub,numbers.Number) , " kub should be a number"
         # assert isinstance(klb,numbers.Number) , " klb should be a number"
 
@@ -601,7 +599,7 @@ class DistParameters:
         # calculate the value of k(travelling time in muskingum based on value of
         # x and the position and upper, lower bound of k value
         # for i in range(self.no_elem):
-        #     self.Par2d[-2,i] = DistParameters.calculateK(self.Par2d[-1,i],self.Par2d[-2,i],kub,klb)
+        #     self.Par2d[-2,i] = Parameters.calculateK(self.Par2d[-1,i],self.Par2d[-2,i],kub,klb)
 
         # assign the parameters from the array (no_parameters, no_cells) to
         # the spatially corrected location in par2d each soil type will have the same
@@ -721,7 +719,7 @@ class DistParameters:
 
         Parameters
         ----------
-        The DistParameters object should have the following attributes before tyring so use the saveParameters function
+        The Parameters object should have the following attributes before tyring so use the saveParameters function
         self
             raster : [gdal.dataset]
                 raster to get the spatial information of the catchment
@@ -791,7 +789,7 @@ class DistParameters:
 
         Examples
         --------
-        >>> from Hapi.rrm.distparameters import DistParameters as DP
+        >>> from Hapi.rrm.parameters import Parameters as DP
         >>> DemPath = "GIS/4000/dem4000.tif"
         >>> raster = gdal.Open(DemPath)
         >>> ParPath = "par15_7_2018.txt"
@@ -804,8 +802,8 @@ class DistParameters:
         >>> snow = 0
         >>> DP.saveParameters(DistParFn, raster, par, no_parameters, snow, kub, klb, Path)
         """
-        assert type(Path) == str, "path should be of type string"
-        assert os.path.exists(Path), Path + " you have provided does not exist"
+        assert isinstance(Path, str), "path should be of type string"
+        assert os.path.exists(Path), f"{Path} you have provided does not exist"
 
         # save
         if self.Snow == 0:  # now snow subroutine

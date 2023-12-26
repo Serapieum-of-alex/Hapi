@@ -12,7 +12,7 @@ from osgeo import gdal
 import Hapi.rrm.hbv_bergestrom92 as HBV
 import statista.metrics as metrics
 from Hapi.rrm.calibration import Calibration
-from Hapi.rrm.distparameters import DistParameters as DP
+from Hapi.rrm.parameters import Parameters as DP
 
 # %% Paths
 Path = Comp + "/data/distributed/coello"
@@ -75,9 +75,9 @@ SpatialVarFun = DP(
     no_parameters,
     no_lumped_par=no_lumped_par,
     lumped_par_pos=lumped_par_pos,
-    Function=2,
-    Klb=klb,
-    Kub=kub,
+    function=2,
+    klb=klb,
+    kub=kub,
 )
 # calculate no of parameters that optimization algorithm is going to generate
 SpatialVarFun.ParametersNO

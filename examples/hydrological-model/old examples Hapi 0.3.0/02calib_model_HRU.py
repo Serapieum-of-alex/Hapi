@@ -27,7 +27,7 @@ from osgeo import gdal
 # import Wrapper
 # import Hapi.GISpy as GIS
 import Hapi.gis.giscatchment as GC
-import Hapi.rrm.distparameters as DP
+import Hapi.rrm.parameters as DP
 import Hapi.rrm.hbv as HBV
 import Hapi.sm.performancecriteria as PC
 

@@ -22,7 +22,7 @@ from osgeo import gdal
 from scipy.stats import norm
 
 # functions
-from Hapi.rrm.distparameters import DistParameters as DP
+from Hapi.rrm.parameters import Parameters as DP
 
 # from Hapi.catchment import GISCatchment as gc
 

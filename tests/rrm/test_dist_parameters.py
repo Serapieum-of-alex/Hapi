@@ -1,6 +1,6 @@
 import numpy as np
 from osgeo import gdal
-from Hapi.rrm.distparameters import DistParameters as DP
+from Hapi.rrm.parameters import Parameters as DP
 
 
 def test_create_distparameters_instance(
@@ -20,9 +20,9 @@ def test_create_distparameters_instance(
         coello_no_parameters,
         no_lumped_par=no_lumped_par,
         lumped_par_pos=lumped_par_pos,
-        Function=2,
-        Klb=klb,
-        Kub=kub,
+        function=2,
+        k_lower_bound=klb,
+        k_upper_bound=kub,
     )
     assert SpatialVarFun.no_lumped_par == no_lumped_par
     assert SpatialVarFun.lumped_par_pos == lumped_par_pos
@@ -53,9 +53,9 @@ def test_par3d(
         coello_no_parameters,
         no_lumped_par=no_lumped_par,
         lumped_par_pos=lumped_par_pos,
-        Function=2,
-        Klb=klb,
-        Kub=kub,
+        function=2,
+        k_lower_bound=klb,
+        k_upper_bound=kub,
     )
     SpatialVarFun.Function(coello_parameters)
     arr = SpatialVarFun.Par3d
