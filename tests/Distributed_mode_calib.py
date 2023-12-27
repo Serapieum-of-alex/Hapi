@@ -139,4 +139,4 @@ cal_parameters = Coello.runCalibration(SpatialVarFun, OptimizationArgs, printErr
 # %% convert parameters to rasters
 # Coello.Parameters = [0.700, 399, 1.704, 0.1021, 0.4622, 0.6237, 0.1251, 0.005, 59.85, 5.241, 94.91, 0.2075]
 SpatialVarFun.Function(Coello.Parameters, kub=SpatialVarFun.Kub, klb=SpatialVarFun.Klb)
-SpatialVarFun.saveParameters(SaveTo)
+SpatialVarFun.save_parameters(SaveTo)

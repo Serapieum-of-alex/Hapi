@@ -1,7 +1,10 @@
-"""Parameters The module contains functions that is responible for distributing parameters spatially (totally distributed, totally distriby-uted with some parameters lumped, all parameters are lumped, hydrologic response units) and also save generated parameters into rasters.
+"""Parameters.
 
-@author: Mostafa
+The module contains functions that is responible for distributing parameters spatially
+(totally distributed, totally distriby-uted with some parameters lumped, all parameters are lumped, hydrologic
+response units) and also save generated parameters into rasters.
 """
+from typing import List
 import datetime as dt
 import math
 
@@ -17,7 +20,8 @@ class Parameters:
     """Distripute.
 
         parameter class is used to distribute the values of the parameter vector in the calibration
-        process into the 3D array, considering if some of the parameters are lumped parameters, if you want to distribute the parameters in HRUs.
+        process into the 3D array, considering if some of the parameters are lumped parameters, if you want to
+        distribute the parameters in HRUs.
 
     the method included are
     1- par3d
@@ -32,15 +36,15 @@ class Parameters:
     def __init__(
         self,
         raster,
-        no_parameters,
-        no_lumped_par=0,
-        lumped_par_pos=[],
+        no_parameters: int,
+        no_lumped_par: int = 0,
+        lumped_par_pos: List[int] = None,
         lake: bool = False,
         snow: bool = False,
         hru: bool = False,
-        function=1,
-        k_upper_bound=1,
-        k_lower_bound=50,
+        function: int = 1,
+        k_upper_bound: int = 1,
+        k_lower_bound: int = 50,
         maskingum: bool = False,
     ):
         """Parameters. To initiate the Parameters class you have to provide the Flow Acc raster.
@@ -53,9 +57,15 @@ class Parameters:
         no_parameters : [integer]
             Number of parameters in the HBV model.
         no_lumped_par : [integer], optional
-            Number lumped parameters. The default is 0.
+            Number of lumped parameters, you have to enter the value of
+                the lumped parameter at the end of the list, default is 0 (no lumped parameters)
         lumped_par_pos : [integer], optional
-            the order of the lumped parameters (order starts wti zero). The default is [].
+            list of order or position of the lumped parameter among all
+            the parameters of the lumped model (order starts from 0 to the length
+            of the model parameters), default is [] (empty), the following order
+            of parameters is used for the lumped HBV model used
+            [ltt, utt, rfcf, sfcf, ttm, cfmax, cwh, cfr, fc, beta, e_corr, etf, lp,
+            c_flux, k, k1, alpha, perc, pcorr, Kmuskingum, Xmuskingum]
         lake : [integer], optional
             0 if there is no lake and 1 if there is a lake. The default is 0.
         snow : [integer]
@@ -67,9 +77,9 @@ class Parameters:
         function : [integer], optional
             function you use to distribute parameters. The default is 1.
         k_upper_bound: [numeric], optional
-            upper bound for the k-muskingum parameter. The default is 1.
+            upper bound of K value (traveling time in muskingum routing method). Default is 1 hour
         k_lower_bound: [numeric], optional
-            lower bound for the k-muskingum parameter. The default is 0.5.
+            Lower bound of K value (traveling time in muskingum routing method). Default is 0.5 hour (30 min)
         maskingum : [bool], optional
             if the routing function is muskingum. The default is False.
 
@@ -77,6 +87,9 @@ class Parameters:
         -------
         None.
         """
+        if lumped_par_pos is None:
+            lumped_par_pos = []
+
         assert isinstance(raster, gdal.Dataset), (
             "raster should be read using gdal (gdal dataset please read it "
             "using gdal library) "
@@ -165,48 +178,31 @@ class Parameters:
         )
 
         if function == 1:
-            self.Function = self.par3dLumped
+            self.Function = self.par3d_lumped
         elif function == 2:
             self.Function = self.par3d
         elif function == 3:
-            self.Function = self.par2d_lumpedK1_lake
+            self.Function = self.par2d_lumped_k1_lake
         elif function == 4:
-            self.Function = self.HRU
+            self.Function = self.hydrologic_response_units
         # to overwrite any choice user choose if the is HRUs
         if self.HRUs == 1:
-            self.Function = self.HRU
+            self.Function = self.hydrologic_response_units
 
-        self.ParametersNumber()
+        self.parameters_number()
 
         pass
 
     def par3d(self, par_g):  # , kub=1,klb=0.5,Maskingum=True
-        """par3d method takes a list of parameters [saved as one column or generated as 1D list from optimization algorithm] and distribute them horizontally on number of cells given by a raster.
+        """par3d.
+
+        par3d method takes a list of parameters [saved as one column or generated as 1D list from optimization
+        algorithm] and distribute them horizontally on number of cells given by a raster.
 
         Parameters
         ----------
         par_g : [list]
             list of parameters
-        no_parameters : [integer]
-            no of parameters of the cell according to the rainfall runoff model
-        no_lumped_par : [integer]
-            nomber of lumped parameters, you have to enter the value of
-            the lumped parameter at the end of the list, default is 0 (no lumped parameters)
-        lumped_par_pos : [List]
-            list of order or position of the lumped parameter among all
-            the parameters of the lumped model (order starts from 0 to the length
-            of the model parameters), default is [] (empty), the following order
-            of parameters is used for the lumped HBV model used
-            [ltt, utt, rfcf, sfcf, ttm, cfmax, cwh, cfr, fc, beta, e_corr, etf, lp,
-            c_flux, k, k1, alpha, perc, pcorr, Kmuskingum, Xmuskingum]
-        kub : [float]
-            upper bound of K value (traveling time in muskingum routing method)
-            default is 1 hour
-        klb : [float]
-            Lower bound of K value (traveling time in muskingum routing method)
-            default is 0.5 hour (30 min)
-        Maskingum : [bool], optional
-            if the routing function is muskingum. The default is False.
 
         Returns
         -------
@@ -258,8 +254,10 @@ class Parameters:
         # input values
         if self.no_lumped_par > 0:
             par_no = (self.no_elem * self.no_parameters) + self.no_lumped_par
+
             assert len(par_g) == par_no, (
-                f"As there is {self.no_lumped_par} lumped parameters, length of input parameters should be {self.no_elem}"
+                f"As there is {self.no_lumped_par} lumped parameters, length of input parameters should be "
+                f"{self.no_elem}"
                 + f"*({self.no_parameters + self.no_lumped_par} - {self.no_lumped_par}) + {self.no_lumped_par} = "
                 + f"{self.no_elem * (self.no_parameters - self.no_lumped_par) + self.no_lumped_par} not {len(par_g)}"
                 + " probably you have to add the value of the lumped parameter at the end of the list"
@@ -282,7 +280,7 @@ class Parameters:
                 i * self.no_parameters : (i * self.no_parameters) + self.no_parameters
             ]
 
-        ### lumped parameters
+        # lumped parameters
         if self.no_lumped_par > 0:
             for i in range(self.no_lumped_par):
                 # create a list with the value of the lumped parameter(k1)
@@ -310,9 +308,13 @@ class Parameters:
 
         # if Maskingum:
         #     for i in range(self.no_elem):
-        #         self.Par3d[self.celli[i],self.cellj[i],-2]= Parameters.calculateK(self.Par3d[self.celli[i],self.cellj[i],-1],self.Par3d[self.celli[i],self.cellj[i],-2],kub,klb)
+        #         self.Par3d[self.celli[i],self.cellj[i],-2]=
+        #         Parameters.calculateK(
+        #               self.Par3d[self.celli[i], self.cellj[i],-1], self.Par3d[self.celli[i], self.cellj[i],-2], kub,
+        #               klb
+        #              )
 
-    def par3dLumped(self, par_g):  # , kub=1, klb=0.5, Maskingum = True
+    def par3d_lumped(self, par_g):  # , kub=1, klb=0.5, Maskingum = True
         r"""par3dLumped method.
 
             takes a list of parameters [saved as one column or generated as 1D list from
@@ -322,14 +324,6 @@ class Parameters:
         ----------
         par_g : [list]
             list of parameters
-        kub : [float]
-            upper bound of K value (traveling time in muskingum routing method)
-            default is 1 hour
-        klb : [float]
-            Lower bound of K value (traveling time in muskingum routing method)
-            default is 0.5 hour (30 min)
-        Maskingum : [bool], optional
-            if the routing function is muskingum. The default is False.
 
         Returns
         -------
@@ -339,14 +333,14 @@ class Parameters:
         Example
         -------
         EX1:Lumped parameters
-            raster=gdal.Open("dem.tif")
             [fc, beta, etf, lp, c_flux, k, k1, alpha, perc, pcorr, Kmuskingum, Xmuskingum]
 
-        >>> raster = gdal.Open(f"{path}\soil_classes.tif")
+        >>> from Hapi.rrm.parameters import Parameters as dp
+        >>> raster = gdal.Open("soil_classes.tif")
         >>> no_parameters = 12
+        >>> lumped_par_pos = []
         >>> par_g = np.random.random(no_parameters) #no_elem*(no_parameters-no_lumped_par)
-
-        >>> tot_dist_par = DP.par3dLumped(par_g, raster, no_parameters, lumped_par_pos, kub=1, klb=0.5)
+        >>> tot_dist_par = dp.par3d_lumped(par_g, raster, no_parameters, lumped_par_pos, kub=1, klb=0.5)
         """
         # input data validation
         # data type
@@ -369,13 +363,15 @@ class Parameters:
         # x and the position and upper, lower bound of k value
         # if Maskingum == True:
         #     for i in range(self.no_elem):
-        #         self.Par3d[self.celli[i],self.cellj[i],-2] = Parameters.calculateK(self.Par3d[self.celli[i],self.cellj[i],-1],
-        #                                                                                self.Par3d[self.celli[i],self.cellj[i],-2],
-        #                                                                                kub,klb)
+        #         self.Par3d[self.celli[i],self.cellj[i],-2] = Parameters.calculateK(
+        #         self.Par3d[self.celli[i],self.cellj[i],-1], self.Par3d[self.celli[i],self.cellj[i],-2],kub,klb)
 
     @staticmethod
-    def calculateK(x, position, UB, LB):
-        """calculateK. calculateK method takes value of x parameter and generate 100 random value of k parameters between upper & lower constraint then the output will be the value coresponding to the giving position.
+    def calculate_k(x, position, upper_bound, lower_bound):
+        """calculateK.
+
+        calculateK method takes value of x parameter and generate 100 random value of k parameters between upper &
+        lower constraint then the output will be the value coresponding to the giving position.
 
         Parameters
         ----------
@@ -384,9 +380,9 @@ class Parameters:
             (one of the parameters of muskingum routing method)
         position : [integer]
             random position between upper and lower bounds of the k parameter
-        UB : [numeric]
+        upper_bound : [numeric]
             upper bound for k parameter
-        LB : [numeric]
+        lower_bound : [numeric]
             Lower bound for k parameter
         """
         # k has to be smaller than this constraint
@@ -394,36 +390,27 @@ class Parameters:
         # k has to be greater than this constraint
         constraint2 = 0.5 * 1 / x
         # if constraint is higher than UB take UB
-        if constraint2 >= UB:
-            constraint2 = UB
+        if constraint2 >= upper_bound:
+            constraint2 = upper_bound
         # if constraint is lower than LB take UB
-        if constraint1 <= LB:
-            constraint1 = LB
+        if constraint1 <= lower_bound:
+            constraint1 = lower_bound
 
-        generatedK = np.linspace(constraint1, constraint2, 50)
-        k = generatedK[int(round(position, 0))]
+        generated_k = np.linspace(constraint1, constraint2, 50)
+        k = generated_k[int(round(position, 0))]
         return k
 
-    def par2d_lumpedK1_lake(self, par_g, no_parameters_lake):  # ,kub,klb
-        """par2d_lumpedK1_lake method takes a list of parameters and distribute them horizontally on number of cells given by a raster.
+    def par2d_lumped_k1_lake(self, par_g, no_parameters_lake):  # ,kub,klb
+        """par2d_lumpedK1_lake.
+
+        method takes a list of parameters and distribute them horizontally on number of cells given by a raster.
 
         Parameters
         ----------
         par_g : [list]
             list of parameters
-        raster : [gdal.dataset]
-            raster to get the spatial information of the catchment
-            (DEM, flow accumulation or flow direction raster)
-        no_parameters :[integer]
-            no of parameters of the cell
         no_parameters_lake : [integer]
             no of lake parameters
-        kub : [float]
-            upper bound of K value (traveling time in muskingum routing method)
-            default is 1 hour
-        klb : [float]
-            Lower bound of K value (traveling time in muskingum routing method)
-            default is 0.5 hour (30 min)
 
         Returns
         -------
@@ -472,7 +459,8 @@ class Parameters:
         # calculate the value of k(travelling time in muskingum based on value of
         # x and the position and upper, lower bound of k value
         # for i in range(self.no_elem):
-        #     self.Par3d[self.celli[i],self.cellj[i],-2]= Parameters.calculateK(self.Par3d[self.celli[i],self.cellj[i],-1],self.Par3d[self.celli[i],self.cellj[i],-2],kub,klb)
+        #     self.Par3d[self.celli[i],self.cellj[i],-2] = Parameters.calculateK(
+        #     self.Par3d[self.celli[i],self.cellj[i],-1],self.Par3d[self.celli[i],self.cellj[i],-2],kub,klb)
 
         # lake parameters
         self.lake_par = par_g[len(par_g) - no_parameters_lake :]
@@ -480,7 +468,7 @@ class Parameters:
 
         # return self.Par3d, lake_par
 
-    def HRU(self, par_g):  # ,kub=1,klb=0.5
+    def hydrologic_response_units(self, par_g):  # ,kub=1,klb=0.5
         """HRU.
 
             method takes a list of parameters [saved as one column or generated as 1D list from optimization algorithm]
@@ -491,27 +479,6 @@ class Parameters:
         ----------
         par_g:
             [list] list of parameters
-        raster:
-            [gdal.dataset] classification raster to get the spatial information
-            of the catchment and the to define each cell belongs to which HRU
-        no_parameters
-            [int] no of parameters of the cell according to the rainfall runoff model
-        no_lumped_par:
-            [int] nomber of lumped parameters, you have to enter the value of
-            the lumped parameter at the end of the list, default is 0 (no lumped parameters)
-        lumped_par_pos:
-            [List] list of order or position of the lumped parameter among all
-            the parameters of the lumped model (order starts from 0 to the length
-            of the model parameters), default is [] (empty), the following order
-            of parameters is used for the lumped HBV model used
-            [ltt, utt, rfcf, sfcf, ttm, cfmax, cwh, cfr, fc, beta, e_corr, etf, lp,
-            c_flux, k, k1, alpha, perc, pcorr, Kmuskingum, Xmuskingum]
-        kub:
-            [float] upper bound of K value (traveling time in muskingum routing method)
-            default is 1 hour
-        klb:
-            [float] Lower bound of K value (traveling time in muskingum routing method)
-            default is 0.5 hour (30 min)
 
         Returns
         -------
@@ -565,20 +532,23 @@ class Parameters:
             )
         else:
             # if there is no lumped parameters
-            assert len(par_g) == self.no_elem * self.no_parameters, (
-                f"As there is no lumped parameters length of input parameters should be {self.no_elem}*{self.no_parameters}"
-                + f"={self.no_elem * self.no_parameters}"
-            )
+            if not len(par_g) == self.no_elem * self.no_parameters:
+                raise ValueError(
+                    f"As there is no lumped parameters length of input parameters should be {self.no_elem}*"
+                    f"{self.no_parameters}={self.no_elem * self.no_parameters}"
+                )
 
         # take the parameters from the generated parameters or the 1D list and
         # assign them to each cell
-        self.Par2d = np.zeros(shape=(self.no_parameters, self.no_elem), dtype=np.float)
+        self.Par2d = np.zeros(
+            shape=(self.no_parameters, self.no_elem), dtype=np.float64
+        )
         for i in range(self.no_elem):
             self.Par2d[:, i] = par_g[
                 i * self.no_parameters : (i * self.no_parameters) + self.no_parameters
             ]
 
-        ### lumped parameters
+        # lumped parameters
         if self.no_lumped_par > 0:
             for i in range(self.no_lumped_par):
                 # create a list with the value of the lumped parameter(k1)
@@ -608,45 +578,47 @@ class Parameters:
             self.Par3d[self.raster_A == self.values[i]] = self.Par2d[:, i]
 
     @staticmethod
-    def HRU_HAND(DEM, FD, FPL, River):
-        """HRU_HAND this function calculates inputs for the HAND (height above nearest drainage) method for land use classification.
+    def hru_hand(dem, flow_direction, flow_path_length, river):
+        """hru_hand.
+
+        hru_hand this function calculates inputs for the hand (height above nearest drainage) method for land use
+        classification.
 
         Parameters
         ----------
-        DEM :
-            raster to get the spatial information of the catchment
-            (DEM raster)
-        FD : [gdal.dataset]
+        dem: [gdal.dataset]
+            raster to get the spatial information of the catchment (DEM raster)
+        flow_direction: [gdal.dataset]
             flow direction  raster to get the spatial information of the catchment
-        FPL : [gdal.dataset]
+        flow_path_length: [gdal.dataset]
             raster to get the spatial information of the catchment
-        River : [gdal.dataset]
+        river: [gdal.dataset]
             raster to get the spatial information of the catchment
 
 
         Returns
         -------
-        HAND: [numpy ndarray]
+        hand: [numpy ndarray]
             Height above nearest drainage
 
-        DTND: [numpy ndarray]
+        dist_to_nearest_drain: [numpy ndarray]
             Distance to nearest drainage
         """
         # Use DEM raster information to run all loops
-        dem_A = DEM.ReadAsArray()
-        no_val = np.float32(DEM.GetRasterBand(1).GetNoDataValue())
-        rows = DEM.RasterYSize
-        cols = DEM.RasterXSize
+        dem_a = dem.ReadAsArray()
+        no_val = np.float32(dem.GetRasterBand(1).GetNoDataValue())
+        rows = dem.RasterYSize
+        cols = dem.RasterXSize
 
         # get the indices of the flow direction path
-        dem = DEM(FD)
+        dem = dem(flow_direction)
         fd_index = dem.flowDirectionIndex()
 
         # read the river location raster
-        river_A = River.ReadAsArray()
+        river_a = river.ReadAsArray()
 
         # read the flow path length raster
-        fpl_A = FPL.ReadAsArray()
+        fpl_a = flow_path_length.ReadAsArray()
 
         # trace the flow direction to the nearest river reach and store the location
         # of that nearst reach
@@ -654,8 +626,8 @@ class Parameters:
         try:
             for i in range(rows):
                 for j in range(cols):
-                    if dem_A[i, j] != no_val:
-                        f = river_A[i, j]
+                    if dem_a[i, j] != no_val:
+                        f = river_a[i, j]
                         old_row = i
                         old_cols = j
 
@@ -666,7 +638,7 @@ class Parameters:
                             new_cols = int(fd_index[old_row, old_cols, 1])
                             # print(str(new_row)+","+str(new_cols))
                             # go to the downstream cell
-                            f = river_A[new_row, new_cols]
+                            f = river_a[new_row, new_cols]
                             # down stream cell becomes the current position (old position)
                             old_row = new_row
                             old_cols = new_cols
@@ -675,43 +647,44 @@ class Parameters:
                         nearest_network[i, j, 0] = new_row
                         nearest_network[i, j, 1] = new_cols
 
-        except:
-            assert (
-                False
-            ), "please check the boundaries of your catchment after cropping the catchment using the a polygon it creates anomalies athe boundary "
+        except Exception as e:
+            print(e)
+            raise ValueError(
+                "please check the boundaries of your catchment after cropping the catchment using the a polygon it "
+                "creates anomalies athe boundary"
+            )
 
         # calculate the elevation difference between the cell and the nearest drainage cell
         # or height avove nearst drainage
-        HAND = np.ones((rows, cols)) * np.nan
+        hand = np.ones((rows, cols)) * np.nan
 
         for i in range(rows):
             for j in range(cols):
-                if dem_A[i, j] != no_val:
-                    HAND[i, j] = (
-                        dem_A[i, j]
-                        - dem_A[
+                if dem_a[i, j] != no_val:
+                    hand[i, j] = (
+                        dem_a[i, j]
+                        - dem_a[
                             int(nearest_network[i, j, 0]), int(nearest_network[i, j, 1])
                         ]
                     )
 
-        # calculate the distance to the nearest drainage cell using flow path length
-        # or distance to nearest drainage
-        DTND = np.ones((rows, cols)) * np.nan
+        # calculate the distance to the nearest drainage c  ell using flow path length or distance to nearest drainage
+        dist_to_nearest_drain = np.ones((rows, cols)) * np.nan
 
         for i in range(rows):
             for j in range(cols):
-                if dem_A[i, j] != no_val:
-                    DTND[i, j] = (
-                        fpl_A[i, j]
-                        - fpl_A[
+                if dem_a[i, j] != no_val:
+                    dist_to_nearest_drain[i, j] = (
+                        fpl_a[i, j]
+                        - fpl_a[
                             int(nearest_network[i, j, 0]), int(nearest_network[i, j, 1])
                         ]
                     )
 
-        return HAND, DTND
+        return hand, dist_to_nearest_drain
 
-    def ParametersNumber(self):
-        """ParametersNumber.
+    def parameters_number(self):
+        """parameters_number.
 
             ParametersNO method calculates the nomber of parameters that the optimization algorithm is going top search
             for, use it only in case of totally distributed catchment parameters (in case of lumped parameters no of
@@ -752,7 +725,7 @@ class Parameters:
                 # if there is no lumped parameters
                 self.ParametersNO = self.no_elem * self.no_parameters
 
-    def saveParameters(self, Path):
+    def save_parameters(self, path):
         """SaveParameters.
 
             saveParameters method takes generated parameters by the calibration algorithm, distributed them with a given
@@ -778,7 +751,7 @@ class Parameters:
                  [numeric] upper bound for k parameter in muskingum function
              klb:
                  [numeric] lower bound for k parameter in muskingum function
-        Path:
+        path:
               [string] path to the folder you want to save the parameters in
               default value is None (parameters are going to be saved in the
               current directory)
@@ -797,13 +770,13 @@ class Parameters:
         >>> klb = 0.5
         >>> kub = 1
         >>> no_parameters = 12
-        >>> DistParFn = DP.par3dLumped
+        >>> DistParFn = DP.par3d_lumped
         >>> Path = "parameters/"
         >>> snow = 0
-        >>> DP.saveParameters(DistParFn, raster, par, no_parameters, snow, kub, klb, Path)
+        >>> DP.save_parameters(DistParFn, raster, par, no_parameters, snow, kub, klb, path)
         """
-        assert isinstance(Path, str), "path should be of type string"
-        assert os.path.exists(Path), f"{Path} you have provided does not exist"
+        assert isinstance(path, str), "path should be of type string"
+        assert os.path.exists(path), f"{path} you have provided does not exist"
 
         # save
         if self.Snow == 0:  # now snow subroutine
@@ -840,31 +813,12 @@ class Parameters:
                 "18_perc",
             ]
 
-        if Path is not None:
+        if path is not None:
             pnme = [
-                Path + i + "_" + str(dt.datetime.now())[0:10] + ".tif" for i in pnme
+                path + i + "_" + str(dt.datetime.now())[0:10] + ".tif" for i in pnme
             ]
 
         for i in range(np.shape(self.Par3d)[2]):
             Dataset.dataset_like(
                 self.raster, self.Par3d[:, :, i], driver="geotiff", path=pnme[i]
             )
-
-    def ListAttributes(self):
-        """Print Attributes List."""
-
-        print("\n")
-        print(
-            "Attributes List of: "
-            + repr(self.__dict__["name"])
-            + " - "
-            + self.__class__.__name__
-            + " Instance\n"
-        )
-        self_keys = list(self.__dict__.keys())
-        self_keys.sort()
-        for key in self_keys:
-            if key != "name":
-                print(str(key) + " : " + repr(self.__dict__[key]))
-
-        print("\n")

@@ -53,7 +53,7 @@ Slope = gdal.Open(path + "slope.tif")
 Slope_A = Slope.ReadAsArray()
 no_val_slope = np.float32(Slope.GetRasterBand(1).GetNoDataValue())
 # %% calculate HAND and DTND
-HAND, DTND = DP.HRU_HAND(DEM, FD, FPL, River)
+HAND, DTND = DP.hru_hand(DEM, FD, FPL, River)
 # %% calculate the cdf for
 mean_slope = np.mean(Slope_A[Slope_A != no_val_slope])
 stv_slope = np.std(Slope_A[Slope_A != no_val_slope])

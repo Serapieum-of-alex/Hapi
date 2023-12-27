@@ -43,7 +43,7 @@ par_g = np.random.random(no_elem * (no_parameters - no_lumped_par))
 par_g = np.append(par_g, 55)
 par_g = np.append(par_g, 66)
 
-par_2lumped = DP.HRU(
+par_2lumped = DP.hydrologic_response_units(
     par_g, soil_type, no_parameters, no_lumped_par, lumped_par_pos, kub=1, klb=0.5
 )
 
@@ -56,7 +56,7 @@ lumped_par_pos = [6]
 par_g = np.random.random(no_elem * (no_parameters - no_lumped_par))
 par_g = np.append(par_g, 55)
 
-par_1lump = DP.HRU(
+par_1lump = DP.hydrologic_response_units(
     par_g, soil_type, no_parameters, no_lumped_par, lumped_par_pos, kub=1, klb=0.5
 )
 
@@ -68,6 +68,6 @@ lumped_par_pos = []
 # generate no of parameters equals to model par* no of soil types
 par_g = np.random.random(no_elem * (no_parameters - no_lumped_par))
 
-par_tot = DP.HRU(
+par_tot = DP.hydrologic_response_units(
     par_g, soil_type, no_parameters, no_lumped_par, lumped_par_pos, kub=1, klb=0.5
 )

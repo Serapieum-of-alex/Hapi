@@ -137,4 +137,4 @@ OptimizationArgs = [ApiObjArgs, pll_type, ApiSolveArgs]
 cal_parameters = Coello.runCalibration(SpatialVarFun, OptimizationArgs, printError=1)
 # %%
 SpatialVarFun.Function(Coello.Parameters, kub=SpatialVarFun.Kub, klb=SpatialVarFun.Klb)
-SpatialVarFun.saveParameters(SaveTo)
+SpatialVarFun.save_parameters(SaveTo)
