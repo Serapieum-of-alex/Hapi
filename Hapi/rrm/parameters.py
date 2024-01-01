@@ -1,36 +1,34 @@
 """Parameters.
 
-The module contains functions that is responible for distributing parameters spatially
-(totally distributed, totally distriby-uted with some parameters lumped, all parameters are lumped, hydrologic
+The module contains functions that are responsible for distributing parameters spatially
+(totally distributed, totally distributed with some parameters lumped, all parameters are lumped, hydrologic
 response units) and also save generated parameters into rasters.
 """
 from typing import List
 import datetime as dt
 import math
-
-# import numbers
 import os
-
 import numpy as np
 from osgeo import gdal
 from pyramids.dataset import Dataset
 
 
 class Parameters:
-    """Distripute.
+    """Parameters.
 
         parameter class is used to distribute the values of the parameter vector in the calibration
         process into the 3D array, considering if some of the parameters are lumped parameters, if you want to
         distribute the parameters in HRUs.
 
-    the method included are
-    1- par3d
-    2- par3dLumped
-    3- par2dLumpedK1_lake
-    4- HRU
-    5- HRU_HAND
-    6- ParametersNumber
-    7- saveParameters
+    Methods
+    -------
+        - par3d
+        - par3dLumped
+        - par2dLumpedK1_lake
+        - HRU
+        - HRU_HAND
+        - ParametersNumber
+        - saveParameters
     """
 
     def __init__(
@@ -45,9 +43,11 @@ class Parameters:
         function: int = 1,
         k_upper_bound: int = 1,
         k_lower_bound: int = 50,
-        maskingum: bool = False,
+        muskingum: bool = False,
     ):
-        """Parameters. To initiate the Parameters class you have to provide the Flow Acc raster.
+        """Parameters.
+
+            To initiate the Parameters class, you have to provide the Flow Acc raster.
 
         Parameters
         ----------
@@ -69,18 +69,18 @@ class Parameters:
         lake : [integer], optional
             0 if there is no lake and 1 if there is a lake. The default is 0.
         snow : [integer]
-            0 if you dont want to run the snow related processes and 1 if there is snow.
+            0 if you don't want to run the snow-related processes and 1 if there is snow.
             in case of 1 (simulate snow processes) parameters related to snow simulation
-            has to be provided. The default is 0.
-        hru : [integer], optional
-            if the will consider using HRUs. The default is 0.
-        function : [integer], optional
+             have to be provided. The default is 0.
+        hru: [integer], optional
+            if the parameters will consider using HRUs. The default is 0.
+        function: [integer], optional
             function you use to distribute parameters. The default is 1.
         k_upper_bound: [numeric], optional
             upper bound of K value (traveling time in muskingum routing method). Default is 1 hour
         k_lower_bound: [numeric], optional
             Lower bound of K value (traveling time in muskingum routing method). Default is 0.5 hour (30 min)
-        maskingum : [bool], optional
+        muskingum: [bool], optional
             if the routing function is muskingum. The default is False.
 
         Returns
@@ -91,8 +91,7 @@ class Parameters:
             lumped_par_pos = []
 
         assert isinstance(raster, gdal.Dataset), (
-            "raster should be read using gdal (gdal dataset please read it "
-            "using gdal library) "
+            "raster should be read using gdal (gdal dataset please read it using gdal library) "
         )
         assert isinstance(no_parameters, int), " no_parameters should be integer number"
         assert isinstance(
@@ -107,7 +106,7 @@ class Parameters:
                 )
             else:  # if not int or list
                 raise ValueError(
-                    "you have one or more lumped parameters so the position has to be entered as a list"
+                    "you have one or more lumped parameters, so the position has to be entered as a list"
                 )
 
         self.Lake = lake
@@ -117,7 +116,7 @@ class Parameters:
         self.HRUs = hru
         self.Kub = k_upper_bound
         self.Klb = k_lower_bound
-        self.Maskingum = maskingum
+        self.Maskingum = muskingum
         # read the raster
         self.raster = raster
         self.raster_A = raster.ReadAsArray().astype(float)
@@ -152,7 +151,7 @@ class Parameters:
 
         self.no_parameters = no_parameters
 
-        # store the indeces of the non-empty cells
+        # store the indexes of the non-empty cells
         self.celli = []
         self.cellj = []
         for i in range(self.rows):
@@ -165,7 +164,7 @@ class Parameters:
         self.Par3d = np.zeros([self.rows, self.cols, self.no_parameters]) * np.nan
 
         if no_lumped_par >= 1:
-            # parameters in array
+            # parameters in an array
             # remove a place for the lumped parameter (k1) lower zone coefficient
             self.no_parameters = self.no_parameters - no_lumped_par
 
@@ -263,7 +262,7 @@ class Parameters:
                 + " probably you have to add the value of the lumped parameter at the end of the list"
             )
         else:
-            # if there is no lumped parameters
+            # if there are no lumped parameters
             par_no = self.no_elem * self.no_parameters
             assert len(par_g) == par_no, (
                 f"As there is no lumped parameters length of input parameters should be {self.no_elem} * "
@@ -289,7 +288,7 @@ class Parameters:
                     np.ones((1, self.no_elem))
                     * par_g[(self.no_parameters * np.shape(self.Par2d)[1]) + i]
                 )
-                # put the list of parameter k1 at the 6 row
+                # put the list of parameter k1 at the 6th row.
                 self.Par2d = np.vstack(
                     [
                         self.Par2d[: self.lumped_par_pos[i], :],
