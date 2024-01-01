@@ -1,9 +1,12 @@
+import os
 from pathlib import Path
 import numpy as np
 from geopandas import GeoDataFrame
 from Hapi.rrm.inputs import Inputs
 
 from pyramids.dataset import Datacube
+
+os.system("python Hapi/parameters/download_parameters.py")
 
 
 def test_prepare_inputs(
