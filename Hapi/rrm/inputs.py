@@ -1,23 +1,15 @@
-"""Created on Wed May 16 03:50:00 2018.
-
-@author: Mostafa
-"""
+"""Rainfall-runoff Inputs."""
+from typing import Union
+from pathlib import Path
 import datetime as dt
 import os
-import shutil
-
-import numpy as np
 import pandas as pd
-import rasterio
-from loguru import logger
-from osgeo import gdal
-from pyramids.raster import Raster as raster
-from rasterio.plot import show
-from rasterstats import zonal_stats
+from geopandas import GeoDataFrame
+from pyramids.dataset import Dataset, Datacube
 
 import Hapi
 
-ParamList = [
+PARAMETERS_LIST = [
     "01_tt",
     "02_rfcf",
     "03_sfcf",
@@ -55,7 +47,7 @@ class Inputs:
         8- ListAttributes
     """
 
-    def __init__(self, src):
+    def __init__(self, src: str):
         """Rainfall Inputs.
 
         Parameters
@@ -68,41 +60,22 @@ class Inputs:
         self.source_dem = src
         pass
 
-    @staticmethod
-    def createTempFolder(file_name: str = "AllignedRasters"):
-        """Create a temporary folder for calculation.
-
-            creates a folder in the temporary directory for making some operations on rasters
-
-        Parameters
-        ----------
-        file_name: [str]
-            folder name
-        """
-        try:
-            os.makedirs(os.path.join(os.environ["TEMP"], file_name))
-        except WindowsError:
-            # if not able to create the folder delete the folder with the same name and create one empty
-            shutil.rmtree(os.path.join(os.environ["TEMP"] + f"/{file_name}"))
-            os.makedirs(os.path.join(os.environ["TEMP"], file_name))
-
-        temp = os.environ["TEMP"] + f"/{file_name}/"
-        return temp
-
-    def prepareInputs(self, input_folder: str, folder_name: str):
+    def prepare_inputs(
+        self, input_folder: Union[str, Path], output_folder: Union[str, Path]
+    ):
         """prepareInputs.
 
-        this function prepare downloaded raster data to have the same align and
+        this function prepares downloaded raster data to have the same alignment and
         nodatavalue from a GIS raster (DEM, flow accumulation, flow direction raster)
-        and return a folder with the output rasters with a name "New_Rasters"
+        and returns a folder with the output rasters with a name "New_Rasters"
 
         Parameters
         ----------
-        input_folder: [str]
+        input_folder: [str/Path]
             path of the folder of the rasters you want to adjust their
             no of rows, columns and resolution (alignment) like raster A
             the folder should not have any other files except the rasters.
-        folder_name: [str]
+        output_folder: [str]
             name to create a folder to store resulted rasters.
 
         Example
@@ -111,132 +84,87 @@ class Inputs:
             >>> dem_path = "01GIS/inputs/4000/acc4000.tif"
             >>> prec_in_path = "02Precipitation/CHIRPS/Daily/"
             >>> In = Inputs(dem_path)
-            >>> In.prepareInputs(prec_in_path, "prec")
+            >>> In.prepare_inputs(prec_in_path, "prec")
         Ex2:
             >>> dem_path="01GIS/inputs/4000/acc4000.tif"
             >>> outputpath="00inputs/meteodata/4000/"
             >>> evap_in_path="03Weather_Data/evap/"
             >>> In = Inputs(dem_path)
-            >>> Inputs.prepareInputs(evap_in_path, f"{outputpath}/evap")
+            >>> Inputs.prepare_inputs(evap_in_path, f"{outputpath}/evap")
         """
-        if not isinstance(folder_name, str):
-            print("folder_name input should be string type")
-        # create a new folder for new created alligned rasters in temp
-        # check if you can create the folder
-        try:
-            os.makedirs(os.path.join(os.environ["TEMP"], "AllignedRasters"))
-        except WindowsError:
-            # if not able to create the folder delete the folder with the same name and create one empty
-            shutil.rmtree(os.path.join(os.environ["TEMP"] + "/AllignedRasters"))
-            os.makedirs(os.path.join(os.environ["TEMP"], "AllignedRasters"))
+        if not isinstance(output_folder, str):
+            print("output_folder input should be string type")
 
-        temp = os.environ["TEMP"] + "/AllignedRasters/"
-
-        # match alignment
-        print(
-            "- First alligned files will be created in a folder 'AllignedRasters' in the Temp folder in you "
-            "environment variable"
-        )
-        raster.matchDataAlignment(self.source_dem, input_folder, temp)
-        # create new folder in the current directory for alligned and nodatavalue matched cells
-        try:
-            os.makedirs(os.path.join(os.getcwd(), folder_name))
-        except (WindowsError, FileExistsError):
-            raise FileExistsError(
-                f"please The function is trying to create a folder with a name {folder_name}  "
-                f"to complete the process if there is a folder with the same name please rename "
-                f"it to other name"
-            )
-        # match nodata value
-        print(
-            "- Second matching NoDataValue from the DEM raster too all raster will be created in the outputpath"
-        )
-        raster.cropAlignedFolder(temp, self.source_dem, f"{folder_name}/")
-        # delete the processing folder from temp
-        shutil.rmtree(temp)
+        mask = Dataset.read_file(self.source_dem)
+        cube = Datacube.read_multiple_files(input_folder, with_order=False)
+        cube.open_datacube()
+        cube.align(mask)
+        cube.crop(mask, inplace=True)
+        path = [f"{output_folder}/{file.split('/')[-1]}" for file in cube.files]
+        cube.to_file(path)
 
     @staticmethod
-    def extractParametersBoundaries(Basin):
+    def extract_parameters_boundaries(basin: GeoDataFrame):
         """extractParametersBoundaries.
 
         extractParametersBoundaries
 
         Parameters
         ----------
-        Basin : [Geodataframe]
+        basin: [Geodataframe]
             gepdataframe of catchment polygon, make sure that the geodataframe contains
             one row only, if not merge all the polygons in the shapefile first.
 
         Returns
         -------
-        UB : [list]
+        ub: [list]
             list of the upper bound of the parameters.
-        LB : [list]
+        lb: [list]
             list of the lower bound of the parameters.
 
         the parameters are
             ["tt", "sfcf","cfmax","cwh","cfr","fc","beta",
              "lp","k0","k1","k2","uzl","perc", "maxbas"]
         """
-        ParametersPath = os.path.dirname(Hapi.__file__)
-        ParametersPath = ParametersPath + "/parameters"
-        ParamList = [
-            "01_tt",
-            "02_rfcf",
-            "03_sfcf",
-            "04_cfmax",
-            "05_cwh",
-            "06_cfr",
-            "07_fc",
-            "08_beta",
-            "09_etf",
-            "10_lp",
-            "11_k0",
-            "12_k1",
-            "13_k2",
-            "14_uzl",
-            "15_perc",
-            "16_maxbas",
-            "17_K_muskingum",
-            "18_x_muskingum",
-        ]
+        parameters_path = f"{os.path.dirname(Hapi.__file__)}/parameters"
 
-        raster_obj = rasterio.open(ParametersPath + "/max/" + ParamList[0] + ".tif")
-        Basin = Basin.to_crs(crs=raster_obj.crs)
+        dataset = Dataset.read_file(f"{parameters_path}/max/{PARAMETERS_LIST[0]}.tif")
+        basin = basin.to_crs(crs=dataset.crs)
         # max values
-        UB = list()
-        for i in range(len(ParamList)):
-            raster_obj = rasterio.open(ParametersPath + "/max/" + ParamList[i] + ".tif")
-            array = raster_obj.read(1)
-            affine = raster_obj.transform
-            UB.append(
-                zonal_stats(Basin, array, affine=affine, stats=["max"])[0]["max"]
-            )  # stats=['min', 'max', 'mean', 'median', 'majority']
+        ub = list()
+        for i in range(len(PARAMETERS_LIST)):
+            dataset = Dataset.read_file(
+                f"{parameters_path}/max/{PARAMETERS_LIST[i]}.tif"
+            )
+            vals = dataset.stats(mask=basin)
+            ub.append(vals.loc[vals.index[0], "max"])
 
         # min values
-        LB = list()
-        for i in range(len(ParamList)):
-            raster_obj = rasterio.open(ParametersPath + "/min/" + ParamList[i] + ".tif")
-            array = raster_obj.read(1)
-            affine = raster_obj.transform
-            LB.append(zonal_stats(Basin, array, affine=affine, stats=["min"])[0]["min"])
+        lb = list()
+        for i in range(len(PARAMETERS_LIST)):
+            dataset = Dataset.read_file(
+                f"{parameters_path}/min/{PARAMETERS_LIST[i]}.tif"
+            )
+            vals = dataset.stats(mask=basin)
+            lb.append(vals.loc[vals.index[0], "min"])
 
-        Par = pd.DataFrame(index=ParamList)
+        par = pd.DataFrame(index=PARAMETERS_LIST)
 
-        Par["UB"] = UB
-        Par["LB"] = LB
-        # plot the given basin with the parameters raster
-        ax = show((raster_obj, 1), with_bounds=True)
-        Basin.plot(facecolor="None", edgecolor="blue", linewidth=2, ax=ax)
-        # ax.set_xbound([Basin.bounds.loc[0,'minx']-10,Basin.bounds.loc[0,'maxx']+10])
-        # ax.set_ybound([Basin.bounds.loc[0,'miny']-1, Basin.bounds.loc[0,'maxy']+1])
+        par["ub"] = ub
+        par["lb"] = lb
 
-        return Par
+        return par
 
-    def extractParameters(self, gdf, scenario, as_raster=False, save_to=""):
-        """extractParameters.
+    def extract_parameters(
+        self,
+        gdf: Union[GeoDataFrame, str],
+        scenario: str,
+        as_raster: bool = False,
+        save_to: str = "",
+    ):
+        """extract_parameters.
 
-        extractParameters method extracts the parameter rasters at the location
+        extractParameters method extracts the parameter raster at the location
         of the source raster, there are 12 set of parameters 10 sets of parameters
         (Beck et al., (2016)) and the max, min and average of all sets
 
@@ -248,7 +176,7 @@ class Inputs:
 
         Parameters
         ----------
-        gdf: [Geodataframe]
+        gdf: [GeoDataFrame]
             gepdataframe of catchment polygon, make sure that the geodataframe contains
             one row only, if not merge all the polygons in the shapefile first.
         scenario: [str]
@@ -257,7 +185,7 @@ class Inputs:
         as_raster: [bool]
             Default is False.
         save_to: [str]
-            path to a directory where you want to save the rasters.
+            path to a directory where you want to save the raster's.
 
         Returns
         -------
@@ -270,70 +198,100 @@ class Inputs:
              "lp","k0","k1","k2","uzl","perc", "maxbas",'K_muskingum',
              'x_muskingum']
         """
-        ParametersPath = os.path.dirname(Hapi.__file__)
-        ParametersPath = ParametersPath + "/parameters/" + scenario
+        parameters_path = os.path.dirname(Hapi.__file__)
+        parameters_path = f"{parameters_path}/parameters/{scenario}"
 
         if not as_raster:
-            raster_obj = rasterio.open(f"{ParametersPath}/{ParamList[0]}.tif")
-            gdf = gdf.to_crs(crs=raster_obj.crs)
-            # max values
-            Par = list()
-            for i in range(len(ParamList)):
-                raster_obj = rasterio.open(f"{ParametersPath}/{ParamList[i]}.tif")
-                array = raster_obj.read(1)
-                affine = raster_obj.transform
-                Par.append(
-                    zonal_stats(gdf, array, affine=affine, stats=["max"])[0]["max"]
-                )  # stats=['min', 'max', 'mean', 'median', 'majority']
+            dataset = Dataset.read_file(f"{parameters_path}/{PARAMETERS_LIST[0]}.tif")
+            gdf = gdf.to_crs(crs=dataset.crs)
 
-            # plot the given basin with the parameters raster
-
-            # Plot DEM
-            ax = show((raster_obj, 1), with_bounds=True)
-            gdf.plot(facecolor="None", edgecolor="blue", linewidth=2, ax=ax)
-            # ax.set_xbound([Basin.bounds.loc[0,'minx']-10,Basin.bounds.loc[0,'maxx']+10])
-            # ax.set_ybound([Basin.bounds.loc[0,'miny']-1, Basin.bounds.loc[0,'maxy']+1])
-
-            return Par
+            stats = pd.DataFrame(columns=["min", "max", "mean", "std"])
+            for i in range(len(PARAMETERS_LIST)):
+                dataset = Dataset.read_file(
+                    f"{parameters_path}/{PARAMETERS_LIST[i]}.tif"
+                )
+                vals = dataset.stats(mask=gdf)
+                stats.loc[PARAMETERS_LIST[i], :] = vals.loc[
+                    :, ["min", "max", "mean", "std"]
+                ].values
+            return stats
         else:
-            Inputs.prepareInputs(gdf, f"{ParametersPath}/", save_to)
+            self.prepare_inputs(f"{parameters_path}/", save_to)
 
     @staticmethod
-    def createLumpedInputs(Path):
-        """createLumpedInputs.
+    def create_lumped_inputs(
+        path: str,
+        regex_string=r"\d{4}.\d{2}.\d{2}",
+        date: bool = True,
+        file_name_data_fmt: str = None,
+        start: str = None,
+        end: str = None,
+        fmt: str = "%Y-%m-%d",
+        extension: str = ".tif",
+    ) -> list:
+        """create_lumped_inputs.
 
-        createLumpedInputs method generate a lumped parameters from
-        distributed parameters by taking the average
+        create_lumped_inputs method generates lumped parameters from distributed parameters by taking the average
+
         Parameters
         ----------
-        Path : [str]
+        path: [str]
             path to folder that contains the parameter rasters.
+        regex_string: [str]
+            a regex string that we can use to locate the date in the file names.Default is
+            r"d{4}.d{2}.d{2}".
+            >>> fname = “MSWEP_YYYY.MM.DD.tif”
+            >>> regex_string = r”d{4}.d{2}.d{2}”
+            - or
+            >>> fname = “MSWEP_YYYY_M_D.tif”
+            >>> regex_string = r”d{4}_d{1}_d{1}”
+            - if there is a number at the beginning of the name
+            >>> fname = “1_MSWEP_YYYY_M_D.tif”
+            >>> regex_string = r”d+”
+        date: [bool]
+            True if the number in the file name is a date. Default is True.
+        file_name_data_fmt : [str]
+            if the files names' have a date, and you want to read them ordered .Default is None
+            >>> "MSWEP_YYYY.MM.DD.tif"
+            >>> file_name_data_fmt = "%Y.%m.%d"
+        start: [str]
+            start date if you want to read the input raster for a specific period only and not all rasters,
+            if not given all rasters in the given path will be read.
+        end: [str]
+            end date if you want to read the input temperature for a specific period only,
+            if not given all rasters in the given path will be read.
+        fmt: [str]
+            format of the given date in the start/end parameter.
+        extension: [str]
+            the extension of the files you want to read from the given path. Default is ".tif".
 
         Returns
         -------
-        data : [array]
-            array contains the average values of the distributed parameters.
+        List:
+            list containing the average values of the distributed parameters.
         """
-        # data type
-        assert type(Path) == str, "prec_path input should be string type"
-        # check wether the path exists or not
-        assert os.path.exists(Path), Path + " you have provided does not exist"
-        # check wether the folder has the rasters or not
-        assert len(os.listdir(Path)) > 0, Path + " folder you have provided is empty"
-        # read data
-        data = raster.readRastersFolder(Path)
-        # get the No data value from the first raster in the folder
-        scr = gdal.Open(f"{Path}/{os.listdir(Path)[0]}")
-        _, NoDataValue = raster.getRasterData(scr)
-        data[data == NoDataValue] = np.nan
+        cube = Datacube.read_multiple_files(
+            path,
+            with_order=True,
+            regex_string=regex_string,
+            date=date,
+            start=start,
+            end=end,
+            fmt=fmt,
+            file_name_data_fmt=file_name_data_fmt,
+            extension=extension,
+        )
+        cube.open_datacube()
+        avg = []
+        for i in range(cube.time_length):
+            dataset = cube.iloc(i)
+            stats = dataset.stats()
+            avg.append(stats.loc[stats.index[0], "mean"])
 
-        data = np.nanmean(data, axis=0)
-        data = data.mean(0)
-
-        return data
+        return avg
 
     @staticmethod
-    def renameFiles(
+    def rename_files(
         path: str, prefix: str = "", fmt: str = "%Y.%m.%d", freq: str = "daily"
     ):
         """renameFiles.
@@ -400,17 +358,3 @@ class Inputs:
             os.rename(
                 f"{path}/{df.loc[i, 'files']}", f"{path}/{df.loc[i, 'new_names']}"
             )
-
-    def listAttributes(self):
-        """Print Attributes List."""
-        logger.info("\n")
-        logger.info(
-            f"Attributes List of: {repr(self.__dict__['name'])} - {self.__class__.__name__} Instance\n"
-        )
-        self_keys = list(self.__dict__.keys())
-        self_keys.sort()
-        for key in self_keys:
-            if key != "name":
-                logger.info(f"{key} : {repr(self.__dict__[key])}")
-
-        logger.info("\n")

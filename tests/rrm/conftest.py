@@ -1,8 +1,20 @@
 from typing import Dict, Tuple
 import numpy as np
+import geopandas as gpd
+from geopandas import GeoDataFrame
 from osgeo import gdal
 from tests.rrm.calibration.conftest import *
 from tests.rrm.catchment.conftest import *
+
+
+@pytest.fixture(scope="module")
+def rrm_test_results() -> str:
+    return "tests/rrm/data/test_results"
+
+
+@pytest.fixture(scope="module")
+def coello_basin() -> GeoDataFrame:
+    return gpd.read_file("tests/rrm/data/coello/coello-basin-extended.geojson")
 
 
 @pytest.fixture(scope="module")
@@ -179,10 +191,10 @@ def coello_initial_cond() -> List:
 
 
 @pytest.fixture(scope="module")
-def coello_parameter_bounds() -> Tuple[List, List]:
-    UB = np.loadtxt("tests/rrm/data/coello/calibration/UB-tot.txt", usecols=0)
-    LB = np.loadtxt("tests/rrm/data/coello/calibration/LB-tot.txt", usecols=0)
-    return LB, UB
+def coello_parameter_bounds() -> Tuple[list, list]:
+    ub = np.loadtxt("tests/rrm/data/coello/calibration/ub-tot.txt", usecols=0).tolist()
+    lb = np.loadtxt("tests/rrm/data/coello/calibration/lb-tot.txt", usecols=0).tolist()
+    return lb, ub
 
 
 @pytest.fixture(scope="module")
