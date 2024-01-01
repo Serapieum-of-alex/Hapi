@@ -212,11 +212,11 @@ class Catchment:
         """
         if self.Prec is None:
             # data type
-            assert isinstance(path, str), "Precpath input should be string type"
-            # check wether the path exists or not
+            assert isinstance(path, str), "path input should be string type"
+            # check whether the path exists or not
             if not os.path.exists(path):
                 raise FileNotFoundError(f"{path} you have provided does not exist")
-            # check wether the folder has the rasters or not
+            # check whether the folder has the rasters or not
             if not len(os.listdir(path)) > 0:
                 f"{path} folder you have provided is empty"
             # read data
