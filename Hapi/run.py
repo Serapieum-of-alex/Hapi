@@ -14,7 +14,8 @@ import pandas as pd
 from loguru import logger
 
 from Hapi.catchment import Catchment
-from Hapi.hm.saintvenant import SaintVenant
+
+# from Hapi.hm.saintvenant import SaintVenant
 from Hapi.rrm.wrapper import Wrapper
 
 
@@ -130,9 +131,9 @@ class Run(Catchment):
         # run the model
         Wrapper.RRMModel(self)
         print("RRM has finished")
-        SV = SaintVenant()
-        SV.KinematicRaster(self)
-        print("1D model Run has finished")
+        # SV = SaintVenant()
+        # SV.KinematicRaster(self)
+        # print("1D model Run has finished")
 
     def runHAPIwithLake(self, Lake):
         """Run model with lake.
