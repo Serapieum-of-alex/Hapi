@@ -17,6 +17,13 @@ def download_03_parameter():
         par.get_parameter_set(3)
 
 
+@pytest.fixture(scope="class")
+def download_03_parameter_2():
+    """Download Parameter Set 03"""
+    par = Parameter()
+    par.get_parameter_set(3)
+
+
 @pytest.fixture(scope="session")
 def download_max_min_parameter():
     """Download Parameter Set 03"""

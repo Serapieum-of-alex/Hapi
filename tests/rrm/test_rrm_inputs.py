@@ -49,7 +49,7 @@ class TestExtractParameters:
 
     def test_as_raster_false(
         self,
-        download_03_parameter,
+        download_03_parameter_2,
         coello_prec_path: str,
         coello_acc_path: str,
         rrm_test_results: str,
