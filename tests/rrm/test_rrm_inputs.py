@@ -83,7 +83,9 @@ class TestExtractParameters:
         ).all()
 
 
-def test_extract_parameters_boundaries(coello_basin: GeoDataFrame):
+def test_extract_parameters_boundaries(
+    download_max_min_parameter, coello_basin: GeoDataFrame
+):
     """Test extract_parameters function in Inputs class"""
     par = Inputs.extract_parameters_boundaries(coello_basin)
     upper_bound_valid = [

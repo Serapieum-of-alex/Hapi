@@ -13,7 +13,14 @@ def download_03_parameter():
     """Download Parameter Set 03"""
     par = Parameter()
     par.get_parameter_set(3)
-    print("Parameter Set 03 is successfully downloaded")
+
+
+@pytest.fixture(scope="session")
+def download_max_min_parameter():
+    """Download Parameter Set 03"""
+    par = Parameter()
+    par.get_parameter_set("max")
+    par.get_parameter_set("min")
 
 
 @pytest.fixture(scope="module")
