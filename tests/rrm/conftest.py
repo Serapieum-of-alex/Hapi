@@ -8,7 +8,7 @@ from tests.rrm.calibration.conftest import *
 from tests.rrm.catchment.conftest import *
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="class")
 def download_03_parameter():
     """Download Parameter Set 03"""
     par = Parameter()
