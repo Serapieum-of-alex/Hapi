@@ -1,3 +1,4 @@
+import os
 from typing import Dict, Tuple
 import numpy as np
 import geopandas as gpd
@@ -11,16 +12,19 @@ from tests.rrm.catchment.conftest import *
 @pytest.fixture(scope="class")
 def download_03_parameter():
     """Download Parameter Set 03"""
-    par = Parameter()
-    par.get_parameter_set(3)
+    if not os.path.exists("Hapi/parameters/03"):
+        par = Parameter()
+        par.get_parameter_set(3)
 
 
 @pytest.fixture(scope="session")
 def download_max_min_parameter():
     """Download Parameter Set 03"""
     par = Parameter()
-    par.get_parameter_set("max")
-    par.get_parameter_set("min")
+    if not os.path.exists("Hapi/parameters/max"):
+        par.get_parameter_set("max")
+    if not os.path.exists("Hapi/parameters/min"):
+        par.get_parameter_set("min")
 
 
 @pytest.fixture(scope="module")
