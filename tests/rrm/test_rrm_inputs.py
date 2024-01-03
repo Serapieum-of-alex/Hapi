@@ -1,19 +1,15 @@
-import os
 from pathlib import Path
 import numpy as np
 from geopandas import GeoDataFrame
 from Hapi.rrm.inputs import Inputs
-
 from pyramids.dataset import Datacube
-
-os.system("python Hapi/parameters/download_parameters.py")
 
 
 def test_prepare_inputs(
     coello_prec_path: str, coello_acc_path: str, rrm_test_results: str
 ):
     """Test prepare_inputs function in Inputs class"""
-    rpath = Path(f"{rrm_test_results}/prapare_inputs")
+    rpath = Path(f"{rrm_test_results}/prepare_inputs")
     # if rpath.exists():
     #     rpath.unlink()
 
@@ -30,7 +26,11 @@ def test_prepare_inputs(
 
 class TestExtractParameters:
     def test_as_raster(
-        self, coello_prec_path: str, coello_acc_path: str, rrm_test_results: str
+        self,
+        download_03_parameter,
+        coello_prec_path: str,
+        coello_acc_path: str,
+        rrm_test_results: str,
     ):
         """Test extract_parameters function in Inputs class"""
         rpath = Path(f"{rrm_test_results}/extract_parameter")
@@ -49,6 +49,7 @@ class TestExtractParameters:
 
     def test_as_raster_false(
         self,
+        download_03_parameter,
         coello_prec_path: str,
         coello_acc_path: str,
         rrm_test_results: str,

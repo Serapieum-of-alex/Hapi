@@ -3,8 +3,17 @@ import numpy as np
 import geopandas as gpd
 from geopandas import GeoDataFrame
 from osgeo import gdal
+from Hapi.parameters.parameters import Parameter
 from tests.rrm.calibration.conftest import *
 from tests.rrm.catchment.conftest import *
+
+
+@pytest.fixture(scope="session")
+def download_03_parameter():
+    """Download Parameter Set 03"""
+    par = Parameter()
+    par.get_parameter_set(3)
+    print("Parameter Set 03 is successfully downloaded")
 
 
 @pytest.fixture(scope="module")
