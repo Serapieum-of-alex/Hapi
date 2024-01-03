@@ -1,7 +1,7 @@
 """RUN.
 
-RUN contains functions to to connect the parameter spatial distribution
-function with the with both component of the spatial representation of the hydrological
+RUN contains functions to connect the parameter spatial distribution
+function with both components of the spatial representation of the hydrological
 process (conceptual model & spatial routing) to calculate the predicted
 runoff at known locations based on given performance function
 
@@ -177,7 +177,7 @@ class Run(Catchment):
         ), "Lake meteorological data has to have the same length as the distributed raster data"
         assert (
             np.shape(Lake.MeteoData)[1] >= 3
-        ), "Lake Meteo data has to have at least three columns rain, ET, and Temp"
+        ), "Lake Meteo data has to have at least three columns of rain, ET, and Temp"
 
         # run the model
         Wrapper.RRMWithlake(self, Lake)
