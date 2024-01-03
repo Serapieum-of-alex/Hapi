@@ -44,7 +44,7 @@ class Run(Catchment):
 
         Returns
         -------
-        statevariables: [numpy attribute]
+        state_variables: [numpy attribute]
             4D array (rows,cols,time,states) states are [sp,wc,sm,uz,lv]
         qlz: [numpy attribute]
             3D array of the lower zone discharge
@@ -345,7 +345,7 @@ class Run(Catchment):
         """
         if RoutingFn is None:
             RoutingFn = []
-        if self.TemporalResolution.lower() == "daily":
+        if self.temporal_resolution.lower() == "daily":
             ind = pd.date_range(self.start, self.end, freq="D")
         else:
             ind = pd.date_range(self.startdate, self.enddate, freq="H")

@@ -68,7 +68,6 @@ class Parameter:
             "17_K_muskingum",
             "18_x_muskingum",
         ]
-        pass
 
     # def get_parameter_set(self, parameter_set_id, directory=None):
 

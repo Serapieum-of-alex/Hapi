@@ -75,7 +75,7 @@ class Wrapper:
 
         Returns
         -------
-        statevariables:
+        state_variables:
             [numpy ndarray] 4D array (rows,cols,time,states) states are [sp,wc,sm,uz,lv]
         qlz:
             [numpy ndarray] 3D array of the lower zone discharge
@@ -132,7 +132,7 @@ class Wrapper:
             t,
             et,
             Lake.Parameters,
-            [Model.conversionfactor, Lake.CatArea, Lake.LakeArea],
+            [Model.conversion_factor, Lake.CatArea, Lake.LakeArea],
             Lake.StageDischargeCurve,
             0,
             init_st=Lake.InitialCond,
@@ -146,7 +146,7 @@ class Wrapper:
             Lake.Qlake[0],
             Lake.Parameters[11],
             Lake.Parameters[12],
-            Model.conversionfactor,
+            Model.conversion_factor,
         )
 
         # subcatchment
@@ -158,7 +158,7 @@ class Wrapper:
             Lake.QlakeR[0],
             Model.Parameters[Lake.OutflowCell[0], Lake.OutflowCell[1], 10],
             Model.Parameters[Lake.OutflowCell[0], Lake.OutflowCell[1], 11],
-            Model.conversionfactor,
+            Model.conversion_factor,
         )
 
         qlake = np.append(qlake, qlake[-1])
@@ -245,7 +245,7 @@ class Wrapper:
             t,
             et,
             Lake.Parameters,
-            [Model.conversionfactor, Lake.CatArea, Lake.LakeArea],
+            [Model.conversion_factor, Lake.CatArea, Lake.LakeArea],
             Lake.StageDischargeCurve,
             0,
             init_st=Lake.InitialCond,
@@ -260,7 +260,7 @@ class Wrapper:
             Lake.Qlake[0],
             Lake.Parameters[11],
             Lake.Parameters[12],
-            Model.conversionfactor,
+            Model.conversion_factor,
         )
 
         # subcatchment
@@ -283,7 +283,7 @@ class Wrapper:
 
         qout = qlz1 + quz1
 
-        # qout = (qlz1 + quz1) * Model.CatArea / (Model.conversionfactor* 3.6)
+        # qout = (qlz1 + quz1) * Model.CatArea / (Model.conversion_factor* 3.6)
 
         Model.qout = qout[:-1] + Lake.QlakeR
 
@@ -338,7 +338,7 @@ class Wrapper:
         tm = Model.data[:, 3]
 
         # from the conceptual model calculate the upper and lower response mm/time step
-        Model.quz, Model.qlz, Model.statevariables = Model.LumpedModel.Simulate(
+        Model.quz, Model.qlz, Model.state_variables = Model.LumpedModel.Simulate(
             p,
             t,
             et,
@@ -350,8 +350,8 @@ class Wrapper:
         )
         # q mm , area sq km  (1000**2)/1000/f/60/60 = 1/(3.6*f)
         # if daily tfac=24 if hourly tfac=1 if 15 min tfac=0.25
-        Model.quz = Model.quz * Model.CatArea / Model.conversionfactor
-        Model.qlz = Model.qlz * Model.CatArea / Model.conversionfactor
+        Model.quz = Model.quz * Model.CatArea / Model.conversion_factor
+        Model.qlz = Model.qlz * Model.CatArea / Model.conversion_factor
 
         Model.Qsim = Model.quz + Model.qlz
 

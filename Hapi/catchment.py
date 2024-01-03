@@ -1,7 +1,4 @@
-"""Created on Wed Mar 31 02:10:49 2021.
-
-@author: mofarrag
-"""
+"""Catchment."""
 
 __name__ = "catchment"
 
@@ -57,7 +54,7 @@ class Catchment:
     def __init__(
         self,
         name: str,
-        startdata: str,
+        start_data: str,
         end: str,
         fmt: str = "%Y-%m-%d",
         spatial_resolution: Optional[str] = "Lumped",
@@ -70,7 +67,7 @@ class Catchment:
         ----------
         name : [str]
             Name of the Catchment.
-        startdata : [str]
+        start_data : [str]
             starting date.
         end : [str]
             end date.
@@ -86,35 +83,35 @@ class Catchment:
         None.
         """
         self.name = name
-        self.start = dt.datetime.strptime(startdata, fmt)
+        self.start = dt.datetime.strptime(start_data, fmt)
         self.end = dt.datetime.strptime(end, fmt)
 
         if not spatial_resolution.lower() in ["lumped", "distributed"]:
             raise ValueError(
                 "available spatial resolutions are 'lumped' and 'distributed'"
             )
-        self.SpatialResolution = spatial_resolution.lower()
+        self.spatial_resolution = spatial_resolution.lower()
 
         if not temporal_resolution.lower() in ["daily", "hourly"]:
             raise ValueError("available temporal resolutions are 'daily' and 'hourly'")
-        self.TemporalResolution = temporal_resolution.lower()
+        self.temporal_resolution = temporal_resolution.lower()
         # assuming the default dt is 1 day
-        conversionfactor = (1000 * 24 * 60 * 60) / (1000**2)
+        conversion_factor = (1000 * 24 * 60 * 60) / (1000**2)
         if temporal_resolution.lower() == "daily":
             self.dt = 1  # 24
-            self.conversionfactor = conversionfactor * 1
+            self.conversion_factor = conversion_factor * 1
             self.Index = pd.date_range(self.start, self.end, freq="D")
         elif temporal_resolution.lower() == "hourly":
             self.dt = 1  # 24
-            self.conversionfactor = conversionfactor * 1 / 24
+            self.conversion_factor = conversion_factor * 1 / 24
             self.Index = pd.date_range(self.start, self.end, freq="H")
         else:
             # TODO calculate the temporal resolution factor
             # q mm , area sq km  (1000**2)/1000/f/24/60/60 = 1/(3.6*f)
             # if daily tfac=24 if hourly tfac=1 if 15 min tfac=0.25
-            self.conversionfactor = 24
+            self.conversion_factor = 24
 
-        self.RouteRiver = routing_method
+        self.routing_method = routing_method
         self.Parameters = None
         self.data = None
         self.Prec = None
@@ -153,7 +150,7 @@ class Catchment:
             self.FloodPlainRoughness,
         ) = (None, None, None, None, None)
         self.qout, self.Qtot = None, None
-        self.quz_routed, self.qlz_translated, self.statevariables = None, None, None
+        self.quz_routed, self.qlz_translated, self.state_variables = None, None, None
         self.anim = None
         self.quz, self.qlz = None, None
         self.Qsim = None
@@ -207,7 +204,7 @@ class Catchment:
 
         Returns
         -------
-        prec : [array attribute]
+        prec: [array attribute]
             array containing the spatial rainfall values
         """
         if self.Prec is None:
@@ -218,7 +215,7 @@ class Catchment:
                 raise FileNotFoundError(f"{path} you have provided does not exist")
             # check whether the folder has the rasters or not
             if not len(os.listdir(path)) > 0:
-                f"{path} folder you have provided is empty"
+                raise FileNotFoundError(f"{path} folder you have provided is empty")
             # read data
             cube = Datacube.read_multiple_files(
                 path,
@@ -636,36 +633,36 @@ class Catchment:
         self.FloodPlainRoughness = gdal.Open(floodplain_roughness_file).ReadAsArray()
 
     def read_parameters(self, path: str, snow: bool = False, maxbas: bool = False):
-        """readParameters.
+        """read_parameters.
 
-        readParameters method reads the parameters' raster
+            read_parameters method reads the parameters' raster
 
         Parameters
         ----------
-        path : [str]
-            path to the folder where the raster exist.
-        snow : [integer]
-            False if you dont want to run the snow related processes and 1 if there is snow.
-            in case of 1 (simulate snow processes) parameters related to snow simulation
-            has to be provided. The default is 0.
-        maxbas : [bool], optional
+        path: [str]
+            path to the folder where the raster exists.
+        snow: [integer]
+            False if you don't want to run the snow-related processes and 1 if there is snow.
+            in the case of 1 (simulate snow processes), parameters related to snow simulation
+            have to be provided. The default is 0.
+        maxbas: [bool], optional
             True if the routing is Maxbas. The default is False.
 
         Returns
         -------
-        Parameters : [array].
+        Parameters: [array].
             3d array containing the parameters
-        Snow : [integer]
+        Snow: [integer]
             0/1
-        Maxbas : [bool]
+        Maxbas: [bool]
             True/False
         """
-        if self.SpatialResolution.lower() == "distributed":
+        if self.spatial_resolution.lower() == "distributed":
             # data type
-            assert isinstance(path, str), "Precpath input should be string type"
-            # check wether the path exists or not
-            assert os.path.exists(path), path + " you have provided does not exist"
-            # check wether the folder has the rasters or not
+            assert isinstance(path, str), "cpath input should be string type"
+            # check whither the path exists or not
+            assert os.path.exists(path), f"{path} you have provided does not exist"
+            # check whither the folder has the rasters or not
             assert (
                 len(os.listdir(path)) > 0
             ), f"{path} folder you have provided is empty"
@@ -691,54 +688,57 @@ class Catchment:
         self.Snow = snow
         self.Maxbas = maxbas
 
-        if self.SpatialResolution == "distributed":
+        if self.spatial_resolution == "distributed":
             if snow and maxbas:
                 if not self.Parameters.shape[2] == 16:
                     raise ValueError(
-                        "current version of HBV (with snow) takes 16 parameter you have entered "
+                        "current version of HBV (with snow) takes 16 parameters you have entered "
                         f"{self.Parameters.shape[2]}"
                     )
             elif not snow and maxbas:
                 if not self.Parameters.shape[2] == 11:
                     raise ValueError(
-                        "current version of HBV (with snow) takes 11 parameter you have entered "
+                        "current version of HBV (with snow) takes 11 parameters you have entered "
                         f"{self.Parameters.shape[2]}"
                     )
             elif snow and not maxbas:
                 if not self.Parameters.shape[2] == 17:
                     raise ValueError(
-                        "current version of HBV (with snow) takes 17 parameter you have entered "
+                        "current version of HBV (with snow) takes 17 parameters you have entered "
                         f"{self.Parameters.shape[2]}"
                     )
             elif not snow and not maxbas:
                 if not self.Parameters.shape[2] == 12:
                     raise ValueError(
-                        "current version of HBV (with snow) takes 12 parameter you have entered "
+                        "current version of HBV (with snow) takes 12 parameters you have entered "
                         f"{self.Parameters.shape[2]}"
                     )
         else:
             if snow and maxbas:
                 if not len(self.Parameters) == 16:
                     raise ValueError(
-                        f"current version of HBV (with snow) takes 16 parameter you have entered {len(self.Parameters)}"
+                        f"current version of HBV (with snow) takes 16 parameters you have entered"
+                        f" {len(self.Parameters)}"
                     )
 
             elif not snow and maxbas:
                 if len(self.Parameters) != 11:
                     raise ValueError(
-                        f"current version of HBV (with snow) takes 11 parameter you have entered {len(self.Parameters)}"
+                        f"current version of HBV (with snow) takes 11 parameters you have entered"
+                        f" {len(self.Parameters)}"
                     )
 
             elif snow and not maxbas:
                 if not len(self.Parameters) == 17:
                     raise ValueError(
-                        f"current version of HBV (with snow) takes 17 parameter you have entered{len(self.Parameters)}"
+                        f"current version of HBV (with snow) takes 17 parameters you have entered{len(self.Parameters)}"
                     )
 
             elif not snow and not maxbas:
                 if not len(self.Parameters) == 12:
                     raise ValueError(
-                        f"current version of HBV (with snow) takes 12 parameter you have entered {len(self.Parameters)}"
+                        f"current version of HBV (with snow) takes 12 parameters you have entered"
+                        f" {len(self.Parameters)}"
                     )
 
         logger.debug("Parameters are read successfully")
@@ -789,7 +789,7 @@ class Catchment:
         self.InitialCond = initial_condition
 
         if q_init is not None:
-            assert type(q_init) is float, "q_init should be of type float"
+            assert not isinstance(q_init, float), "q_init should be of type float"
         self.q_init = q_init
 
         if self.InitialCond is not None:
@@ -924,12 +924,12 @@ class Catchment:
         GaugesTable : [dataframe].
             dataframe containing the discharge data
         """
-        if self.TemporalResolution.lower() == "daily":
+        if self.temporal_resolution.lower() == "daily":
             ind = pd.date_range(self.start, self.end, freq="D")
         else:
             ind = pd.date_range(self.start, self.end, freq="H")
 
-        if self.SpatialResolution.lower() == "distributed":
+        if self.spatial_resolution.lower() == "distributed":
             assert hasattr(self, "GaugesTable"), "please read the gauges table first"
 
             self.QGauges = pd.DataFrame(
@@ -1196,7 +1196,7 @@ class Catchment:
 
         fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(6, 5))
 
-        if self.SpatialResolution == "distributed":
+        if self.spatial_resolution == "distributed":
             gaugeid = self.GaugesTable.loc[gaugei, "id"]
 
             if title == "":
@@ -1389,24 +1389,24 @@ class Catchment:
             arr = self.qlz_translated[:, :, starti:endi]
             title = "Ground Water Flow"
         elif option == 4:
-            self.statevariables[self.FlowAccArr == self.NoDataValue, :, 0] = np.nan
-            arr = self.statevariables[:, :, starti:endi, 0]
+            self.state_variables[self.FlowAccArr == self.NoDataValue, :, 0] = np.nan
+            arr = self.state_variables[:, :, starti:endi, 0]
             title = "Snow Pack"
         elif option == 5:
-            self.statevariables[self.FlowAccArr == self.NoDataValue, :, 1] = np.nan
-            arr = self.statevariables[:, :, starti:endi, 1]
+            self.state_variables[self.FlowAccArr == self.NoDataValue, :, 1] = np.nan
+            arr = self.state_variables[:, :, starti:endi, 1]
             title = "Soil Moisture"
         elif option == 6:
-            self.statevariables[self.FlowAccArr == self.NoDataValue, :, 2] = np.nan
-            arr = self.statevariables[:, :, starti:endi, 2]
+            self.state_variables[self.FlowAccArr == self.NoDataValue, :, 2] = np.nan
+            arr = self.state_variables[:, :, starti:endi, 2]
             title = "Upper Zone"
         elif option == 7:
-            self.statevariables[self.FlowAccArr == self.NoDataValue, :, 3] = np.nan
-            arr = self.statevariables[:, :, starti:endi, 3]
+            self.state_variables[self.FlowAccArr == self.NoDataValue, :, 3] = np.nan
+            arr = self.state_variables[:, :, starti:endi, 3]
             title = "Lower Zone"
         elif option == 8:
-            self.statevariables[self.FlowAccArr == self.NoDataValue, :, 4] = np.nan
-            arr = self.statevariables[:, :, starti:endi, 4]
+            self.state_variables[self.FlowAccArr == self.NoDataValue, :, 4] = np.nan
+            arr = self.state_variables[:, :, starti:endi, 4]
             title = "Water Content"
         elif option == 9:
             self.Prec[self.FlowAccArr == self.NoDataValue, :] = np.nan
@@ -1505,7 +1505,7 @@ class Catchment:
         starti = np.where(self.Index == start)[0][0]
         endi = np.where(self.Index == end)[0][0] + 1
 
-        if self.SpatialResolution == "distributed":
+        if self.spatial_resolution == "distributed":
             assert (
                 flow_acc_path != ""
             ), "Please enter the  FlowAccPath parameter to the saveResults method"
@@ -1527,15 +1527,15 @@ class Catchment:
             elif result == 3:
                 arr = self.qlz_translated[:, :, starti:endi]
             elif result == 4:
-                arr = self.statevariables[:, :, starti:endi, 0]
+                arr = self.state_variables[:, :, starti:endi, 0]
             elif result == 5:
-                arr = self.statevariables[:, :, starti:endi, 1]
+                arr = self.state_variables[:, :, starti:endi, 1]
             elif result == 6:
-                arr = self.statevariables[:, :, starti:endi, 2]
+                arr = self.state_variables[:, :, starti:endi, 2]
             elif result == 7:
-                arr = self.statevariables[:, :, starti:endi, 3]
+                arr = self.state_variables[:, :, starti:endi, 3]
             elif result == 8:
-                arr = self.statevariables[:, :, starti:endi, 4]
+                arr = self.state_variables[:, :, starti:endi, 4]
             else:
                 raise ValueError(
                     f" The result parameter takes a value between 1 and 8, given: {result}"
@@ -1561,13 +1561,13 @@ class Catchment:
                 data["Qlz"] = self.qlz[starti:endi]
                 data.to_csv(path, index=False, float_format="%.3f")
             elif result == 4:
-                data[STATE_VARIABLES] = self.statevariables[starti:endi, :]
+                data[STATE_VARIABLES] = self.state_variables[starti:endi, :]
                 data.to_csv(path, index=False, float_format="%.3f")
             elif result == 5:
                 data["Qsim"] = self.Qsim[starti:endi]
                 data["Quz"] = self.quz[starti:endi]
                 data["Qlz"] = self.qlz[starti:endi]
-                data[STATE_VARIABLES] = self.statevariables[starti:endi, :]
+                data[STATE_VARIABLES] = self.state_variables[starti:endi, :]
                 data.to_csv(path, index=False, float_format="%.3f")
             else:
                 assert False, "the possible options are from 1 to 5"

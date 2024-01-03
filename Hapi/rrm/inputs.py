@@ -72,9 +72,8 @@ class Inputs:
         Parameters
         ----------
         input_folder: [str/Path]
-            path of the folder of the rasters you want to adjust their
-            no of rows, columns and resolution (alignment) like raster A
-            the folder should not have any other files except the rasters.
+            path of the folder of the rasters you want to adjust their no of rows, columns and resolution (alignment)
+            like a source raster.
         output_folder: [str]
             name to create a folder to store resulted rasters.
 
@@ -87,10 +86,10 @@ class Inputs:
             >>> In.prepare_inputs(prec_in_path, "prec")
         Ex2:
             >>> dem_path="01GIS/inputs/4000/acc4000.tif"
-            >>> outputpath="00inputs/meteodata/4000/"
+            >>> output_path="00inputs/meteodata/4000/"
             >>> evap_in_path="03Weather_Data/evap/"
             >>> In = Inputs(dem_path)
-            >>> Inputs.prepare_inputs(evap_in_path, f"{outputpath}/evap")
+            >>> Inputs.prepare_inputs(evap_in_path, f"{output_path}/evap")
         """
         if not isinstance(output_folder, str):
             print("output_folder input should be string type")
@@ -111,9 +110,9 @@ class Inputs:
 
         Parameters
         ----------
-        basin: [Geodataframe]
-            gepdataframe of catchment polygon, make sure that the geodataframe contains
-            one row only, if not merge all the polygons in the shapefile first.
+        basin: [GeoDataFrame]
+            catchment polygon, make sure that the geodataframe contains one row only, if not merge all the polygons
+            in the shapefile first.
 
         Returns
         -------
@@ -177,7 +176,7 @@ class Inputs:
         Parameters
         ----------
         gdf: [GeoDataFrame]
-            gepdataframe of catchment polygon, make sure that the geodataframe contains
+            geodataframe of catchment polygon, make sure that the geodataframe contains
             one row only, if not merge all the polygons in the shapefile first.
         scenario: [str]
             name of the parameter set, there are 12 sets of parameters

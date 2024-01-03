@@ -96,8 +96,8 @@ class TestDistributed:
             temporal_resolution="Daily",
             fmt="%Y-%m-%d",
         )
-        assert coello.SpatialResolution == "distributed"
-        assert coello.RouteRiver == "Muskingum"
+        assert coello.spatial_resolution == "distributed"
+        assert coello.routing_method == "Muskingum"
         assert isinstance(coello.start, dt.datetime)
 
     def test_read_objective_Fn(self, coello_start_date: str, coello_end_date: str):

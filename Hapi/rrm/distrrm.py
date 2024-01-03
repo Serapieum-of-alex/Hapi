@@ -69,17 +69,17 @@ class DistributedRRM:
 
         Returns
         -------
-        statevariables : [numpy ndarray]
+        state_variables : [numpy ndarray]
              4D array (rows,cols,time,states) states are [sp,wc,sm,uz,lv]
         qlz : [numpy ndarray]
             3D array of the lower zone discharge (lumped calculation for each cell separately)
         quz : [numpy ndarray]
             3D array of the upper zone discharge
         """
-        Model.statevariables = np.zeros(
+        Model.state_variables = np.zeros(
             [Model.rows, Model.cols, Model.TS, 5], dtype=np.float32
         )
-        # Model.statevariables[:] = np.nan
+        # Model.state_variables[:] = np.nan
         Model.quz = np.zeros([Model.rows, Model.cols, Model.TS], dtype=np.float32)
         # Model.q_uz[:] = np.nan
         Model.qlz = np.zeros([Model.rows, Model.cols, Model.TS], dtype=np.float32)
@@ -91,7 +91,7 @@ class DistributedRRM:
                     (
                         Model.quz[x, y, :],
                         Model.qlz[x, y, :],
-                        Model.statevariables[x, y, :, :],
+                        Model.state_variables[x, y, :, :],
                     ) = Model.LumpedModel.Simulate(
                         prec=Model.Prec[x, y, :],
                         temp=Model.Temp[x, y, :],
@@ -106,11 +106,11 @@ class DistributedRRM:
         area_coef = Model.CatArea / Model.px_tot_area
         # convert quz from mm/time step to m3/sec
         Model.quz = (
-            Model.quz * Model.px_area * area_coef / Model.conversionfactor
+            Model.quz * Model.px_area * area_coef / Model.conversion_factor
         )  # Timef*3.6
         # convert Qlz to m3/sec
         Model.qlz = (
-            Model.qlz * Model.px_area * area_coef / Model.conversionfactor
+            Model.qlz * Model.px_area * area_coef / Model.conversion_factor
         )  # Timef*3.6
 
     @staticmethod
@@ -183,7 +183,7 @@ class DistributedRRM:
                         and Model.FlowAccArr[x, y] == Model.acc_val[j]
                     ):
                         if (
-                            Model.RouteRiver != "Muskingum"
+                            Model.routing_method != "Muskingum"
                             and Model.BankfullDepth[x, y] > 0
                         ):
                             continue

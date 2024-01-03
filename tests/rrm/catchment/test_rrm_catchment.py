@@ -17,7 +17,7 @@ def test_create_catchment_instance(coello_rrm_date: list):
     Coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
     assert Coello.dt == 1
     assert isinstance(Coello.Index, DatetimeIndex)
-    assert isinstance(Coello.RouteRiver, str)
+    assert isinstance(Coello.routing_method, str)
 
 
 class TestLumped:
@@ -146,8 +146,8 @@ class TestDistributed:
             temporal_resolution="Daily",
             fmt="%Y-%m-%d",
         )
-        assert coello.SpatialResolution == "distributed"
-        assert coello.RouteRiver == "Muskingum"
+        assert coello.spatial_resolution == "distributed"
+        assert coello.routing_method == "Muskingum"
         assert isinstance(coello.start, dt.datetime)
 
     def test_read_meteo_inputs(
@@ -391,7 +391,7 @@ class TestFW1:
         Run.runFW1(coello)
         assert isinstance(coello.qout, np.ndarray)
         assert len(coello.qout) == 10
-        assert coello.statevariables.shape == (coello_shape[0], coello_shape[1], 11, 5)
+        assert coello.state_variables.shape == (coello_shape[0], coello_shape[1], 11, 5)
         assert coello.quz.shape == (coello_shape[0], coello_shape[1], 11)
         assert coello.qlz.shape == (coello_shape[0], coello_shape[1], 11)
 
@@ -515,7 +515,7 @@ class TestMuskingum:
         Run.runFW1(coello)
         assert isinstance(coello.qout, np.ndarray)
         assert len(coello.qout) == 10
-        assert coello.statevariables.shape == (coello_shape[0], coello_shape[1], 11, 5)
+        assert coello.state_variables.shape == (coello_shape[0], coello_shape[1], 11, 5)
         assert coello.quz.shape == (coello_shape[0], coello_shape[1], 11)
         assert coello.qlz.shape == (coello_shape[0], coello_shape[1], 11)
 
