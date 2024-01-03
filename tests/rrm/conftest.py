@@ -208,8 +208,12 @@ def coello_initial_cond() -> List:
 
 @pytest.fixture(scope="module")
 def coello_parameter_bounds() -> Tuple[list, list]:
-    ub = np.loadtxt("tests/rrm/data/coello/calibration/ub-tot.txt", usecols=0).tolist()
-    lb = np.loadtxt("tests/rrm/data/coello/calibration/lb-tot.txt", usecols=0).tolist()
+    ub = np.loadtxt(
+        "tests/rrm/data/coello/calibration/upper-bound-tot.txt", usecols=0
+    ).tolist()
+    lb = np.loadtxt(
+        "tests/rrm/data/coello/calibration/lower-bound-tot.txt", usecols=0
+    ).tolist()
     return lb, ub
 
 
