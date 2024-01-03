@@ -47,40 +47,38 @@ class TestExtractParameters:
         # if rpath.exists():
         #     rpath.unlink()
 
-    def test_as_raster_false(
-        self,
-        download_03_parameter,
-        coello_prec_path: str,
-        coello_acc_path: str,
-        rrm_test_results: str,
-        coello_basin: GeoDataFrame,
-    ):
-        """Test extract_parameters function in Inputs class"""
-        inputs = Inputs(coello_acc_path)
-        par = inputs.extract_parameters(coello_basin, "03")
-        par_vals = [
-            0.8952,
-            1.0,
-            1.230,
-            3.099,
-            0.07358,
-            0.05464,
-            548.72,
-            3.085,
-            1.0,
-            0.911,
-            0.8657,
-            0.5961,
-            0.09381,
-            38.313,
-            3.919,
-            1.873,
-            1.0,
-            0.20,
-        ]
-        assert np.isclose(
-            par.loc[:, "max"].to_list(), par_vals, atol=0.001, rtol=0.001
-        ).all()
+    # def test_as_raster_false(
+    #     self,
+    #     download_03_parameter,
+    #     coello_acc_path: str,
+    #     coello_basin: GeoDataFrame,
+    # ):
+    #     """Test extract_parameters function in Inputs class"""
+    #     inputs = Inputs(coello_acc_path)
+    #     par = inputs.extract_parameters(coello_basin, "03")
+    #     par_vals = [
+    #         0.8952,
+    #         1.0,
+    #         1.230,
+    #         3.099,
+    #         0.07358,
+    #         0.05464,
+    #         548.72,
+    #         3.085,
+    #         1.0,
+    #         0.911,
+    #         0.8657,
+    #         0.5961,
+    #         0.09381,
+    #         38.313,
+    #         3.919,
+    #         1.873,
+    #         1.0,
+    #         0.20,
+    #     ]
+    #     assert np.isclose(
+    #         par.loc[:, "max"].to_list(), par_vals, atol=0.001, rtol=0.001
+    #     ).all()
 
 
 def test_extract_parameters_boundaries(

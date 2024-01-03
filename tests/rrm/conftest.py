@@ -9,7 +9,7 @@ from tests.rrm.calibration.conftest import *
 from tests.rrm.catchment.conftest import *
 
 
-@pytest.fixture(scope="class")
+@pytest.fixture(scope="session")
 def download_03_parameter():
     """Download Parameter Set 03"""
     if not os.path.exists("Hapi/parameters/03"):
