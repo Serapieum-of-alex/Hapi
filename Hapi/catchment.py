@@ -17,7 +17,7 @@ import statista.metrics as metrics
 from cleopatra.array import Array
 from loguru import logger
 from osgeo import gdal
-from pyramids.dem import DEM
+from Hapi.dem import DEM
 from pyramids.dataset import Dataset, Datacube
 
 
@@ -551,7 +551,7 @@ class Catchment:
 
         # create the flow direction table
         dem = DEM(flow_dir)
-        self.FDT = dem.flowDirectionTable()
+        self.FDT = dem.flow_direction_table()
         logger.debug("Flow Direction input is read successfully")
 
     def read_flow_path_length(self, path: str):
