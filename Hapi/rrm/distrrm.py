@@ -12,7 +12,7 @@ class DistributedRRM:
     """DistributedRRM class.
 
         runs simulation in lumped form for each cell separetly and rout the discharge between the cells following
-        the rivernetwork.
+        the river network.
 
     Methods
     -------

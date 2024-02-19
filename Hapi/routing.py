@@ -2,14 +2,9 @@
 
 1- Muskingum cunge
 2- triangular (MAXBAS) routing function
-
-Created on Sun Apr 29 17:42:04 2018
-
-@author: Mostafa
 """
 
 from typing import Union
-
 import numpy as np
 
 

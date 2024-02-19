@@ -88,7 +88,7 @@ from Hapi.rrm.distparameters import DistParameters as DP
     # define the objective function and its arguments
     OF_args = [coordinates]
 
-    def OF(Qobs, Qout, q_uz_routed, q_lz_trans, coordinates):
+    def objective_function(Qobs, Qout, q_uz_routed, q_lz_trans, coordinates):
         Coello.extractDischarge()
         all_errors=[]
         # error for all internal stations
@@ -99,7 +99,7 @@ from Hapi.rrm.distparameters import DistParameters as DP
         error = sum(all_errors)
         return error
 
-    Coello.readObjectiveFn(OF, OF_args)
+    Coello.read_objective_function(objective_function, OF_args)
 
 -Calibration algorithm Arguments
 ------------------------------------

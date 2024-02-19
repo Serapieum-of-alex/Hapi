@@ -1,7 +1,5 @@
 import datetime as dt
 import numpy as np
-
-# from Hapi.run import Run
 import statista.metrics as metrics
 import Hapi.rrm.hbv_bergestrom92 as HBVLumped
 from Hapi.rrm.calibration import Calibration
@@ -53,9 +51,9 @@ def test_LumpedCalibration(
     Coello.read_discharge_gauges(lumped_gauges_path, fmt=coello_gauges_date_fmt)
 
     OF_args = []
-    OF = metrics.rmse
+    objective_function = metrics.rmse
 
-    Coello.readObjectiveFn(OF, OF_args)
+    Coello.read_objective_function(objective_function, OF_args)
 
     ApiObjArgs = dict(
         hms=100,
@@ -106,6 +104,6 @@ class TestDistributed:
             coello_start_date,
             coello_end_date,
         )
-        coello.readObjectiveFn(metrics.rmse, [])
-        assert coello.OF == metrics.rmse
+        coello.read_objective_function(metrics.rmse, [])
+        assert coello.objective_function == metrics.rmse
         assert coello.OFArgs == []

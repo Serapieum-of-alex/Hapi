@@ -61,7 +61,7 @@ To calibrate the HBV lumped model inside Hapi you need to follow the same steps 
 	OF_args=[]
 	OF=metrics.rmse
 
-	Coello.readObjectiveFn(metrics.rmse, OF_args)
+	Coello.read_objective_function(metrics.rmse, OF_args)
 
 - after defining all the components of the lumped model, we have to define the calibration arguments
 

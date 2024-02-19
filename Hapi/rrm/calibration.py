@@ -70,18 +70,18 @@ class Calibration(Catchment):
             routing_method,
         )
 
-    def readObjectiveFn(self, OF: callable, args):
-        """readObjectiveFn.
+    def read_objective_function(self, objective_function: callable, args):
+        """read_objective_function.
 
-        readObjectiveFn method takes the objective function and and any arguments
+        read_objective_function method takes the objective function and any arguments
         that are needed to be passed to the objective function.
 
         Parameters
         ----------
-        OF : [function]
+        objective_function : [function]
             callable function to calculate any kind of metric to be used in the
             calibration.
-        args : [positional/keyword arguments]
+        args: [positional/keyword arguments]
             any kind of argument you want to pass to your objective function.
 
         Returns
@@ -89,8 +89,10 @@ class Calibration(Catchment):
         None.
         """
         # check objective_function
-        assert callable(OF), "The Objective function should be a function"
-        self.OF = OF
+        assert callable(
+            objective_function
+        ), "The Objective function should be a function"
+        self.objective_function = objective_function
 
         if args is None:
             args = []
@@ -107,7 +109,7 @@ class Calibration(Catchment):
 
         Parameters
         ----------
-        factor : [list/None]
+        factor: [list/None]
             list of factor if you want to multiply the simulated discharge by
             a factor you have to provide a list of the factor (as many factors
             as the number of gauges). The default is False.
@@ -135,7 +137,7 @@ class Calibration(Catchment):
                 self.Qsim[:, i] = Qsim
 
             # Qobs = Coello.QGauges.loc[:,gaugeid]
-            # error = error + OF(Qobs, Qsim)
+            # error = error + objective_function(Qobs, Qsim)
 
         # return error
 
@@ -259,7 +261,7 @@ class Calibration(Catchment):
                 Wrapper.RRMModel(self)
                 # calculate performance of the model
                 try:
-                    error = self.OF(
+                    error = self.objective_function(
                         self.QGauges, *[self.GaugesTable]
                     )  # self.qout, self.quz_routed, self.qlz_translated,
                     f = list(range(9, len(par), SpatialVarFun.no_parameters))
@@ -421,7 +423,7 @@ class Calibration(Catchment):
 
         print("Calibration starts")
 
-        ### calculate the objective function
+        # calculate the objective function
         def opt_fun(par):
             try:
                 # distribute the parameters
@@ -433,8 +435,10 @@ class Calibration(Catchment):
                 Wrapper.FW1(self)
                 # calculate performance of the model
                 try:
-                    # error = self.OF(self.QGauges, self.qout, self.quz_routed, self.qlz_translated,*[self.GaugesTable])
-                    error = self.OF(self.QGauges, self.qout, *[self.GaugesTable])
+                    # error = self.objective_function(self.QGauges, self.qout, self.quz_routed, self.qlz_translated,*[self.GaugesTable])
+                    error = self.objective_function(
+                        self.QGauges, self.qout, *[self.GaugesTable]
+                    )
                 except TypeError:  # if no of inputs less than what the function needs
                     assert (
                         False
@@ -452,7 +456,7 @@ class Calibration(Catchment):
 
             return error, [], fail
 
-        ### define the optimization components
+        # define the optimization components
         opt_prob = Optimization("HBV Calibration", opt_fun)
         for i in range(len(self.LB)):
             opt_prob.addVar(
@@ -581,7 +585,7 @@ class Calibration(Catchment):
                 Wrapper.Lumped(self, Route, RoutingFn)
                 # calculate performance of the model
                 try:
-                    error = self.OF(
+                    error = self.objective_function(
                         self.QGauges[self.QGauges.columns[-1]], self.Qsim, *self.OFArgs
                     )
                     g = [
@@ -654,26 +658,3 @@ class Calibration(Catchment):
         self.Parameters = res[1]
 
         return res
-
-    def ListAttributes(self):
-        """Print Attributes List."""
-
-        print("\n")
-        print(
-            "Attributes List of: "
-            + repr(self.__dict__["name"])
-            + " - "
-            + self.__class__.__name__
-            + " Instance\n"
-        )
-        self_keys = list(self.__dict__.keys())
-        self_keys.sort()
-        for key in self_keys:
-            if key != "name":
-                print(str(key) + " : " + repr(self.__dict__[key]))
-
-        print("\n")
-
-
-if __name__ == "__main__":
-    print("Calibration")

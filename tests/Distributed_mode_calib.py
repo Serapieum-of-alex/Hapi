@@ -92,7 +92,7 @@ coordinates = Coello.GaugesTable[["id", "x", "y", "weight"]][:]
 OF_args = [coordinates]
 
 
-def OF(Qobs, Qout, q_uz_routed, q_lz_trans, coordinates):
+def objective_function(Qobs, Qout, q_uz_routed, q_lz_trans, coordinates):
     Coello.extract_discharge()
     all_errors = []
     # error for all internal stations
@@ -105,7 +105,7 @@ def OF(Qobs, Qout, q_uz_routed, q_lz_trans, coordinates):
     return error
 
 
-Coello.readObjectiveFn(OF, OF_args)
+Coello.read_objective_function(objective_function, OF_args)
 # %% Optimization
 """
 API options

@@ -52,9 +52,9 @@ Basic_inputs = dict(Route=Route, RoutingFn=RoutingFn, InitialValues=parameters)
 Coello.read_discharge_gauges(Path + "Qout_c.csv", fmt="%Y-%m-%d")
 
 OF_args = []
-OF = metrics.rmse
+objective_function = metrics.rmse
 
-Coello.readObjectiveFn(metrics.rmse, OF_args)
+Coello.read_objective_function(metrics.rmse, OF_args)
 # %% Optimization
 """
 API options
