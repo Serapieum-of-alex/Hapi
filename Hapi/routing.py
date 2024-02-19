@@ -246,7 +246,6 @@ class Routing:
             maxbasW = np.ones(int(IntPart))
 
         for x in range(int(MAXBAS)):
-
             if x < (MAXBAS / 2.0) - 1:
                 # Integral of  x dx with slope of 60 degree Equilateral triangle
                 ynow = np.tan(np.pi / 3) * (x + 1)

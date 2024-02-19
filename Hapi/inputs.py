@@ -239,18 +239,18 @@ class Inputs:
         regex_string: [str]
             a regex string that we can use to locate the date in the file names.Default is
             r"d{4}.d{2}.d{2}".
-            >>> fname = “MSWEP_YYYY.MM.DD.tif”
-            >>> regex_string = r”d{4}.d{2}.d{2}”
+            >>> fname = 'MSWEP_YYYY.MM.DD.tif'
+            >>> regex_string = r'd{4}.d{2}.d{2}'
             - or
-            >>> fname = “MSWEP_YYYY_M_D.tif”
-            >>> regex_string = r”d{4}_d{1}_d{1}”
+            >>> fname = 'MSWEP_YYYY_M_D.tif'
+            >>> regex_string = r'd{4}_d{1}_d{1}'
             - if there is a number at the beginning of the name
-            >>> fname = “1_MSWEP_YYYY_M_D.tif”
-            >>> regex_string = r”d+”
+            >>> fname = '1_MSWEP_YYYY_M_D.tif'
+            >>> regex_string = r'd+'
         date: [bool]
             True if the number in the file name is a date. Default is True.
         file_name_data_fmt : [str]
-            if the files names' have a date, and you want to read them ordered .Default is None
+            if the files' names have a date, and you want to read them ordered .Default is None
             >>> "MSWEP_YYYY.MM.DD.tif"
             >>> file_name_data_fmt = "%Y.%m.%d"
         start: [str]
@@ -296,7 +296,7 @@ class Inputs:
         """renameFiles.
 
         renameFiles method takes the path to a folder where you want to put a number
-        at the begining of the raster names indicating the order of the raster based on
+        at the beginning of the raster names indicating the order of the raster based on
         its date
 
         Parameters
@@ -304,16 +304,15 @@ class Inputs:
         path : [str]
             path where the rasters are stored.
         prefix: [str]
-            any string you want to add to the raster names, (i.e the dataset name precipitation_ecmwf). Default is "".
-        fmt : [String], optional
+            any string you want to add to the raster names, (i.e., the dataset name precipitation_ecmwf). Default is "".
+        fmt: [String], optional
             the format of the date. The default is '%Y.%m.%d'.
         freq: [str]
             Default is "daily".
 
         Returns
         -------
-        files in the Path are going to have a new name including the order at
-        the begining of the name.
+        files in the Path are going to have a new name including the order at the beginning of the name.
         """
         if not os.path.exists(path):
             raise FileNotFoundError("The directory you have entered does not exist")

@@ -8,7 +8,7 @@ from pandas.core.indexes.datetimes import DatetimeIndex
 
 import Hapi.rrm.hbv_bergestrom92 as HBVLumped
 from Hapi.catchment import Catchment
-from Hapi.rrm.routing import Routing
+from Hapi.routing import Routing
 from Hapi.run import Run
 import Hapi.rrm.hbv_bergestrom92 as HBV
 

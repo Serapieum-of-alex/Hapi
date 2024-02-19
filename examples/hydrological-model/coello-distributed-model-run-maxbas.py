@@ -44,7 +44,7 @@ Coello.read_discharge_gauges(f"{Path}stations/", column="id", fmt="%Y-%m-%d")
 """
 Outputs:
     ----------
-    1-statevariables: [numpy attribute]
+    1-state_variables: [numpy attribute]
         4D array (rows,cols,time,states) states are [sp,wc,sm,uz,lv]
     2-qlz: [numpy attribute]
         3D array of the lower zone discharge

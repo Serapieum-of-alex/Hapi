@@ -1,7 +1,7 @@
 from pathlib import Path
 import numpy as np
 from geopandas import GeoDataFrame
-from Hapi.rrm.inputs import Inputs
+from Hapi.inputs import Inputs
 from pyramids.dataset import Datacube
 
 

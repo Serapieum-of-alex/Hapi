@@ -16,7 +16,7 @@ from loguru import logger
 from Hapi.catchment import Catchment
 
 # from Hapi.hm.saintvenant import SaintVenant
-from Hapi.rrm.wrapper import Wrapper
+from Hapi.wrapper import Wrapper
 
 
 class Run(Catchment):

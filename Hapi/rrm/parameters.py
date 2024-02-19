@@ -90,9 +90,9 @@ class Parameters:
         if lumped_par_pos is None:
             lumped_par_pos = []
 
-        assert isinstance(raster, gdal.Dataset), (
-            "raster should be read using gdal (gdal dataset please read it using gdal library) "
-        )
+        assert isinstance(
+            raster, gdal.Dataset
+        ), "raster should be read using gdal (gdal dataset please read it using gdal library) "
         assert isinstance(no_parameters, int), " no_parameters should be integer number"
         assert isinstance(
             no_lumped_par, int
@@ -192,7 +192,7 @@ class Parameters:
 
         pass
 
-    def par3d(self, par_g):  # , kub=1,klb=0.5,Maskingum=True
+    def par3d(self, par_g):  # , kub=1,klb=0.5, Maskingum=True
         """par3d.
 
         par3d method takes a list of parameters [saved as one column or generated as 1D list from optimization

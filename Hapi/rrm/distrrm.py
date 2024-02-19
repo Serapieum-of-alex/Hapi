@@ -5,7 +5,7 @@
 
 import numpy as np
 from pyramids.dataset import Dataset
-from Hapi.rrm.routing import Routing as routing
+from Hapi.routing import Routing as routing
 
 
 class DistributedRRM:

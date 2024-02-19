@@ -6,7 +6,7 @@ import numpy as np
 
 from Hapi.rrm import hbv_lake
 from Hapi.rrm.distrrm import DistributedRRM as distrrm
-from Hapi.rrm.routing import Routing as routing
+from Hapi.routing import Routing as routing
 
 
 class Wrapper:

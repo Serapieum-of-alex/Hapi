@@ -5,7 +5,7 @@ import numpy as np
 import statista.metrics as metrics
 import Hapi.rrm.hbv_bergestrom92 as HBVLumped
 from Hapi.rrm.calibration import Calibration
-from Hapi.rrm.routing import Routing
+from Hapi.routing import Routing
 
 
 def test_ReadParametersBounds(
