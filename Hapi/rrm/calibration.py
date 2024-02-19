@@ -7,7 +7,7 @@ runoff at known locations based on given performance function
 
 @author: Mostafa
 """
-from typing import Any, Optional
+from typing import Any, Optional, List
 
 import numpy as np
 from Oasis.harmonysearch import HSapi
@@ -26,7 +26,7 @@ class Calibration(Catchment):
     performance of predicted runoff at known locations based on given
     performance function
 
-    The calibration class is sub-class from the Catchment super class so you
+    The calibration class is subclass from the Catchment superclass, so you
     need to create the Catchment object first to be able to run the calibration
     """
 
@@ -42,7 +42,7 @@ class Calibration(Catchment):
     ):
         """Calibration.
 
-        to instantiate the Calibration object you need to provide the following
+        to instantiate the Calibration object, you need to provide the following
         arguments
 
         Parameters
@@ -53,11 +53,11 @@ class Calibration(Catchment):
             starting date.
         end : [str]
             end date.
-        fmt : [str], optional
+        fmt: [str], optional
             format of the given date. The default is "%Y-%m-%d".
-        spatial_resolution : [str], optional
-            Lumped or 'Distributed' . The default is 'Lumped'.
-        temporal_resolution : [str], optional
+        spatial_resolution: [str], optional
+            Lumped or 'Distributed'. The default is 'Lumped'.
+        temporal_resolution: [str], optional
             "Hourly" or "Daily". The default is "Daily".
         """
         super().__init__(
@@ -101,7 +101,7 @@ class Calibration(Catchment):
 
         print("Objective function is read successfully")
 
-    def extract_discharge(self, factor=None):
+    def extract_discharge(self, factor: List = None):
         """extractDischarge.
 
         extractDischarge method extracts the discharge hydrograph in the
@@ -141,7 +141,7 @@ class Calibration(Catchment):
 
         # return error
 
-    def runCalibration(self, SpatialVarFun, OptimizationArgs, printError=None):
+    def run_calibration(self, SpatialVarFun, OptimizationArgs, printError=None):
         """Run Calibration.
 
             - This function runs the calibration algorithm for the conceptual distributed

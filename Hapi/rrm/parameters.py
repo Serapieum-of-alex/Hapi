@@ -649,12 +649,12 @@ class Parameters:
         except Exception as e:
             print(e)
             raise ValueError(
-                "please check the boundaries of your catchment after cropping the catchment using the a polygon it "
-                "creates anomalies athe boundary"
+                "please check the boundaries of your catchment.  After cropping the catchment using a polygon, it "
+                "creates anomalies at the boundary"
             )
 
         # calculate the elevation difference between the cell and the nearest drainage cell
-        # or height avove nearst drainage
+        # or height above nearst drainage
         hand = np.ones((rows, cols)) * np.nan
 
         for i in range(rows):
