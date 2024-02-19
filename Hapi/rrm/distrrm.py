@@ -16,7 +16,7 @@ class DistributedRRM:
 
     Methods
     -------
-        1-RunLumpedRRM
+        1-run_lumped_model
         2-SpatialRouting
         3-DistMaxBas1
         4-DistMaxBas2
@@ -27,7 +27,7 @@ class DistributedRRM:
         pass
 
     @staticmethod
-    def RunLumpedRRM(Model):
+    def run_lumped_model(Model):
         """Run Lumped RRM.
 
             - runs the rainfall runoff lumped model (HBV, GR4,...) separately for each cell and  return a time series
@@ -155,7 +155,7 @@ class DistributedRRM:
         #    #new
         #    quz[lakecell[0],lakecell[1],:]=quz[lakecell[0],lakecell[1],:]+q_lake
 
-        ### cells at the divider
+        # cells at the divider
         Model.quz_routed = np.zeros_like(Model.quz)
 
         # lower zone discharge is going to be just translated without any attenuation
@@ -164,14 +164,14 @@ class DistributedRRM:
 
         Model.qlz_translated = np.zeros_like(Model.quz)
         # Model.Qtot = np.zeros_like(Model.quz)
-        # for all cell with 0 flow acc put the quz
+        # for all cells with 0 flow acc put the quz
         for x in range(Model.rows):  # no of rows
             for y in range(Model.cols):  # no of columns
                 if not np.isnan(Model.FlowAccArr[x, y]) and Model.FlowAccArr[x, y] == 0:
                     Model.quz_routed[x, y, :] = Model.quz[x, y, :]
                     Model.qlz_translated[x, y, :] = Model.qlz[x, y, :]
 
-        ### remaining cells
+        # remaining cells
         for j in range(1, len(Model.acc_val)):
             # TODO parallelize
             # all cells with the same acc_val can run at the same time
@@ -291,9 +291,8 @@ class DistributedRRM:
         q_0=None,
     ):
         """Original Routing function."""
-
         n_steps = sp_prec.shape[2] + 1  # no of time steps =length of time series +1
-        # intiialise vector of nans to fill states
+        # initialize vector of nans to fill states
         dummy_states = np.empty([n_steps, 5])  # [sp,sm,uz,lz,wc]
         dummy_states[:] = np.nan
 
@@ -384,7 +383,7 @@ class DistributedRRM:
         st = np.array(st)
         qlz = np.array(qlz)
         quz = np.array(quz)
-        # %% convert quz from mm/time step to m3/sec
+        # convert quz from mm/time step to m3/sec
         area_coef = p2[1] / px_tot_area
         quz = quz * px_area * area_coef / (p2[0] * 3.6)
 
@@ -401,7 +400,7 @@ class DistributedRRM:
         #    no_cells=list(set([int(flow_acc_plan[i,j]) for i in range(x_ext) for j in range(y_ext) if flow_acc_plan[i,j] != no_val]))
         no_cells.sort()
 
-        # %% routing lake discharge with DS cell k & x and adding to cell Q
+        # routing lake discharge with DS cell k & x and adding to cell Q
         q_lake = routing.Muskingum_V(
             q_lake,
             q_lake[0],
@@ -413,14 +412,14 @@ class DistributedRRM:
         # both lake & Quz are in m3/s
         # new
         quz[lakecell[0], lakecell[1], :] = quz[lakecell[0], lakecell[1], :] + q_lake
-        # %% cells at the divider
+        # cells at the divider
         quz_routed = np.zeros_like(quz) * np.nan
         # for all cell with 0 flow acc put the quz
         for x in range(x_ext):  # no of rows
             for y in range(y_ext):  # no of columns
                 if mask[x, y] != no_val and flow_acc_plan[x, y] == 0:
                     quz_routed[x, y, :] = quz[x, y, :]
-        # %% new
+        # new
         for j in range(1, len(no_cells)):  # 2):#
             for x in range(x_ext):  # no of rows
                 for y in range(y_ext):  # no of columns
@@ -446,7 +445,7 @@ class DistributedRRM:
                         #                        q=q_r
                         # add the routed upstream flows to the current Quz in the cell
                         quz_routed[x, y, :] = quz[x, y, :] + q_r
-        # %% check if the max flow _acc is at the outlet
+        # check if the max flow _acc is at the outlet
         #    if tot_elem != np.nanmax(flow_acc_plan):
         #        raise ("flow accumulation plan is not correct")
         # outlet is the cell that has the max flow_acc
@@ -455,7 +454,7 @@ class DistributedRRM:
         )  # np.nanmax(flow_acc_plan)
         outletx = outlet[0][0]
         outlety = outlet[1][0]
-        # %%
+
         qlz = np.array(
             [np.nanmean(qlz[:, :, i]) for i in range(n_steps)]
         )  # average of all cells (not routed mm/timestep)

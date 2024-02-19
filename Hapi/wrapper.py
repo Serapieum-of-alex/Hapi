@@ -91,7 +91,7 @@ class Wrapper:
             [numpy ndarray] 3D array of the lower zone discharge translated at each time step
         """
         # run the rainfall runoff model separately
-        distrrm.RunLumpedRRM(Model)
+        distrrm.run_lumped_model(Model)
 
         # run the GIS part to rout from cell to another
         distrrm.SpatialRouting(Model)
@@ -150,7 +150,7 @@ class Wrapper:
         )
 
         # subcatchment
-        distrrm.RunLumpedRRM(Model)
+        distrrm.run_lumped_model(Model)
 
         # routing lake discharge with DS cell k & x and adding to cell Q
         qlake = routing.Muskingum_V(
@@ -194,7 +194,7 @@ class Wrapper:
         """
 
         # subcatchment
-        distrrm.RunLumpedRRM(Model)
+        distrrm.run_lumped_model(Model)
 
         distrrm.DistMaxbas1(Model)
 
@@ -264,7 +264,7 @@ class Wrapper:
         )
 
         # subcatchment
-        distrrm.RunLumpedRRM(Model)
+        distrrm.run_lumped_model(Model)
 
         distrrm.DistMAXBAS(Model)
 
