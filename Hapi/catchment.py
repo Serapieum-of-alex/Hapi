@@ -279,7 +279,7 @@ class Catchment:
         date: [bool]
             True if the number in the file name is a date. Default is True.
         file_name_data_fmt : [str]
-            if the files names' have a date and you want to read them ordered .Default is None
+            if the files names' have a date, and you want to read them ordered .Default is None
             >>> "MSWEP_YYYY.MM.DD.tif"
             >>> file_name_data_fmt = "%Y.%m.%d"
         extension: [str]
@@ -296,9 +296,8 @@ class Catchment:
             # check whether the path exists or not
             assert os.path.exists(path), path + " you have provided does not exist"
             # check whether the folder has the rasters or not
-            assert (
-                len(os.listdir(path)) > 0
-            ), f"{path} folder you have provided is empty"
+            if not len(os.listdir(path)) > 0:
+                raise Exception(f"The folder you have provided is empty: {path}")
             # read data
             cube = Datacube.read_multiple_files(
                 path,
@@ -382,9 +381,8 @@ class Catchment:
             # check whether the path exists or not
             assert os.path.exists(path), path + " you have provided does not exist"
             # check whether the folder has the rasters or not
-            assert (
-                len(os.listdir(path)) > 0
-            ), f"{path} folder you have provided is empty"
+            if not len(os.listdir(path)) > 0:
+                raise Exception(f"The folder you have provided is empty: {path}")
             # read data
             cube = Datacube.read_multiple_files(
                 path,
@@ -662,9 +660,8 @@ class Catchment:
             # check whither the path exists or not
             assert os.path.exists(path), f"{path} you have provided does not exist"
             # check whither the folder has the rasters or not
-            assert (
-                len(os.listdir(path)) > 0
-            ), f"{path} folder you have provided is empty"
+            if not len(os.listdir(path)) > 0:
+                raise Exception(f"The folder you have provided is empty: {path}")
             # parameters
             cube = Datacube.read_multiple_files(
                 path, with_order=True, regex_string=r"\d+", date=False
@@ -900,7 +897,7 @@ class Catchment:
 
         Parameters
         ----------
-        path : [str]
+        path: [str]
             path to the gauge discharge data.
         delimiter: [str], optional
             the delimiter between the date and the discharge column. The default is ",".
@@ -908,7 +905,7 @@ class Catchment:
             the name of the column where you stored the files' names. The default is 'id'.
         fmt: [str], optional
             date format. The default is "%Y-%m-%d".
-        split : bool, optional
+        split: bool, optional
             True if you want to split the data between two dates. The default is False.
         start_date: [str], optional
             start date. The default is ''.
@@ -1131,13 +1128,13 @@ class Catchment:
         self,
         start_date: str,
         end_date: str,
-        gaugei: int,
+        gauge: int,
         hapi_color: Union[tuple, str] = "#004c99",
         gauge_color: Union[tuple, str] = "#DC143C",
-        linewidth: int = 3,
+        line_width: int = 3,
         hapi_order: int = 1,
         gauge_order: int = 0,
-        labelfontsize: int = 10,
+        label_font_size: int = 10,
         x_major_fmt: str = "%Y-%m-%d",
         n_ticks: int = 5,
         title: str = "",
@@ -1155,21 +1152,21 @@ class Catchment:
             starting date.
         end_date: [str]
             end date.
-        gaugei: [integer]
+        gauge: [integer]
             order if the gauge in the GaugeTable.
         hapi_color: [str], optional
             color of the Simulated hydrograph. The default is "#004c99".
         gauge_color: [str], optional
             color of the gauge. The default is "#DC143C".
-        linewidth: [numeric], optional
+        line_width: [numeric], optional
             line width. The default is 3.
         hapi_order: [integer], optional
             the order of the simulated hydrograph to control which hydrograph
-            is in the front . The default is 1.
+            is in the front. The default is 1.
         gauge_order: TYPE, optional
             the order of the simulated hydrograph to control which hydrograph
-            is in the front . The default is 0.
-        labelfontsize: numeric, optional
+            is in the front. The default is 0.
+        label_font_size: numeric, optional
             label size. The default is 10.
         x_major_fmt: [str], optional
             format of the x-axis labels. The default is '%Y-%m-%d'.
@@ -1197,19 +1194,19 @@ class Catchment:
         fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(6, 5))
 
         if self.spatial_resolution == "distributed":
-            gauge_id = self.GaugesTable.loc[gaugei, "id"]
+            gauge_id = self.GaugesTable.loc[gauge, "id"]
 
             if title == "":
-                title = "Gauge - " + str(self.GaugesTable.loc[gaugei, "name"])
+                title = "Gauge - " + str(self.GaugesTable.loc[gauge, "name"])
 
             if label == "":
-                label = str(self.GaugesTable.loc[gaugei, "name"])
+                label = str(self.GaugesTable.loc[gauge, "name"])
 
             ax.plot(
                 self.Qsim.loc[start_date:end_date, gauge_id],
                 "-.",
                 label=label,
-                linewidth=linewidth,
+                linewidth=line_width,
                 color=hapi_color,
                 zorder=hapi_order,
             )
@@ -1225,7 +1222,7 @@ class Catchment:
                 self.Qsim.loc[start_date:end_date, gauge_id],
                 "-.",
                 label=title,
-                linewidth=linewidth,
+                linewidth=line_width,
                 color=hapi_color,
                 zorder=hapi_order,
             )
@@ -1234,12 +1231,12 @@ class Catchment:
         ax.plot(
             self.QGauges.loc[start_date:end_date, gauge_id],
             label="Gauge",
-            linewidth=linewidth,
+            linewidth=line_width,
             color=gauge_color,
             zorder=gauge_order,
         )
 
-        ax.tick_params(axis="both", which="major", labelsize=labelfontsize)
+        ax.tick_params(axis="both", which="major", labelsize=label_font_size)
         # ax.locator_params(axis="x", nbins=4)
 
         x_major_fmt = dates.DateFormatter(x_major_fmt)
@@ -1287,29 +1284,29 @@ class Catchment:
 
         Parameters
         ----------
-        start : [str]
+        start: [str]
             starting date
-        end : [str]
+        end: [str]
             end date
-        fmt : [str]
+        fmt: [str]
             format of the given date. The default is "%Y-%m-%d"
         option : [str]
             1- Total discharge, 2-Upper zone discharge, 3-ground water,
             4-Snowpack state variable, 5-Soil moisture, 6-Upper zone,
             7-Lower zone, 8-Water content, 9-Precipitation input. 10-ET,
-            11-Temperature. The default is 1
+            11-Temperature. The default is 1.
         gauges: [str]
             gauge name. The default is False
         **kwargs :
-            possible keyward args
+            possible keyword args
             TicksSpacing: [integer], optional
-                Spacing in the colorbar ticks. The default is 2.
+                Spacing in the color bar ticks. The default is 2.
             Figsize: [tuple], optional
                 figure size. The default is (8,8).
             PlotNumbers: [bool], optional
-                True to plot the values intop of each cell. The default is True.
+                True to plot the values on top of each cell. The default is True.
             NumSize: integer, optional
-                size of the numbers plotted intop of each cells. The default is 8.
+                size of the numbers plotted on top of each cell. The default is 8.
             title: [str], optional
                 title of the plot. The default is 'Total Discharge'.
             title_size: [integer], optional
@@ -1370,60 +1367,60 @@ class Catchment:
         start = dt.datetime.strptime(start, fmt)
         end = dt.datetime.strptime(end, fmt)
 
-        starti = np.where(self.Index == start)[0][0]
-        endi = np.where(self.Index == end)[0][0]
+        start_i = np.where(self.Index == start)[0][0]
+        end_i = np.where(self.Index == end)[0][0]
 
         if 1 > option > 11:
             raise ValueError("Plotting options are from 1 to 11")
 
         if option == 1:
             self.Qtot[self.FlowAccArr == self.NoDataValue, :] = np.nan
-            arr = self.Qtot[:, :, starti:endi]
+            arr = self.Qtot[:, :, start_i:end_i]
             title = "Total Discharge"
         elif option == 2:
             self.quz_routed[self.FlowAccArr == self.NoDataValue, :] = np.nan
-            arr = self.quz_routed[:, :, starti:endi]
+            arr = self.quz_routed[:, :, start_i:end_i]
             title = "Surface Flow"
         elif option == 3:
             self.qlz_translated[self.FlowAccArr == self.NoDataValue, :] = np.nan
-            arr = self.qlz_translated[:, :, starti:endi]
+            arr = self.qlz_translated[:, :, start_i:end_i]
             title = "Ground Water Flow"
         elif option == 4:
             self.state_variables[self.FlowAccArr == self.NoDataValue, :, 0] = np.nan
-            arr = self.state_variables[:, :, starti:endi, 0]
+            arr = self.state_variables[:, :, start_i:end_i, 0]
             title = "Snow Pack"
         elif option == 5:
             self.state_variables[self.FlowAccArr == self.NoDataValue, :, 1] = np.nan
-            arr = self.state_variables[:, :, starti:endi, 1]
+            arr = self.state_variables[:, :, start_i:end_i, 1]
             title = "Soil Moisture"
         elif option == 6:
             self.state_variables[self.FlowAccArr == self.NoDataValue, :, 2] = np.nan
-            arr = self.state_variables[:, :, starti:endi, 2]
+            arr = self.state_variables[:, :, start_i:end_i, 2]
             title = "Upper Zone"
         elif option == 7:
             self.state_variables[self.FlowAccArr == self.NoDataValue, :, 3] = np.nan
-            arr = self.state_variables[:, :, starti:endi, 3]
+            arr = self.state_variables[:, :, start_i:end_i, 3]
             title = "Lower Zone"
         elif option == 8:
             self.state_variables[self.FlowAccArr == self.NoDataValue, :, 4] = np.nan
-            arr = self.state_variables[:, :, starti:endi, 4]
+            arr = self.state_variables[:, :, start_i:end_i, 4]
             title = "Water Content"
         elif option == 9:
             self.Prec[self.FlowAccArr == self.NoDataValue, :] = np.nan
-            arr = self.Prec[:, :, starti:endi]
+            arr = self.Prec[:, :, start_i:end_i]
             title = "Precipitation"
         elif option == 10:
             self.ET[self.FlowAccArr == self.NoDataValue, :] = np.nan
-            arr = self.ET[:, :, starti:endi]
+            arr = self.ET[:, :, start_i:end_i]
             title = "ET"
         elif option == 11:
             self.Temp[self.FlowAccArr == self.NoDataValue, :] = np.nan
-            arr = self.Temp[:, :, starti:endi]
+            arr = self.Temp[:, :, start_i:end_i]
             title = "Temperature"
         else:
             raise ValueError("Plotting options are from 1 to 11")
 
-        time = self.Index[starti:endi]
+        time = self.Index[start_i:end_i]
 
         if gauges:
             kwargs["Points"] = self.GaugesTable
@@ -1502,40 +1499,42 @@ class Catchment:
         else:
             end = dt.datetime.strptime(end, fmt)
 
-        starti = np.where(self.Index == start)[0][0]
-        endi = np.where(self.Index == end)[0][0] + 1
+        start_i = np.where(self.Index == start)[0][0]
+        end_i = np.where(self.Index == end)[0][0] + 1
 
         if self.spatial_resolution == "distributed":
-            assert (
-                flow_acc_path != ""
-            ), "Please enter the FlowAccPath parameter to the saveResults method"
+            if flow_acc_path == "":
+                raise Exception(
+                    "Please enter the FlowAccPath parameter to the saveResults method"
+                )
+
             src = gdal.Open(flow_acc_path)
 
             if prefix == "":
                 prefix = "Result_"
 
-            # create list of names
+            # create a list of names
             path = path + prefix
-            names = [path + str(i)[:10] for i in self.Index[starti:endi]]
+            names = [path + str(i)[:10] for i in self.Index[start_i:end_i]]
             # names = [i.replace("-", "_") for i in names]
             # names = [i.replace(" ", "_") for i in names]
             names = [i + ".tif" for i in names]
             if result == 1:
-                arr = self.Qtot[:, :, starti:endi]
+                arr = self.Qtot[:, :, start_i:end_i]
             elif result == 2:
-                arr = self.quz_routed[:, :, starti:endi]
+                arr = self.quz_routed[:, :, start_i:end_i]
             elif result == 3:
-                arr = self.qlz_translated[:, :, starti:endi]
+                arr = self.qlz_translated[:, :, start_i:end_i]
             elif result == 4:
-                arr = self.state_variables[:, :, starti:endi, 0]
+                arr = self.state_variables[:, :, start_i:end_i, 0]
             elif result == 5:
-                arr = self.state_variables[:, :, starti:endi, 1]
+                arr = self.state_variables[:, :, start_i:end_i, 1]
             elif result == 6:
-                arr = self.state_variables[:, :, starti:endi, 2]
+                arr = self.state_variables[:, :, start_i:end_i, 2]
             elif result == 7:
-                arr = self.state_variables[:, :, starti:endi, 3]
+                arr = self.state_variables[:, :, start_i:end_i, 3]
             elif result == 8:
-                arr = self.state_variables[:, :, starti:endi, 4]
+                arr = self.state_variables[:, :, start_i:end_i, 4]
             else:
                 raise ValueError(
                     f" The result parameter takes a value between 1 and 8, given: {result}"
@@ -1552,22 +1551,22 @@ class Catchment:
             data["date"] = ["'" + str(i)[:10] + "'" for i in data.index]
 
             if result == 1:
-                data["Qsim"] = self.Qsim[starti:endi]
+                data["Qsim"] = self.Qsim[start_i:end_i]
                 data.to_csv(path, index=False, float_format="%.3f")
             elif result == 2:
-                data["Quz"] = self.quz[starti:endi]
+                data["Quz"] = self.quz[start_i:end_i]
                 data.to_csv(path, index=False, float_format="%.3f")
             elif result == 3:
-                data["Qlz"] = self.qlz[starti:endi]
+                data["Qlz"] = self.qlz[start_i:end_i]
                 data.to_csv(path, index=False, float_format="%.3f")
             elif result == 4:
-                data[STATE_VARIABLES] = self.state_variables[starti:endi, :]
+                data[STATE_VARIABLES] = self.state_variables[start_i:end_i, :]
                 data.to_csv(path, index=False, float_format="%.3f")
             elif result == 5:
-                data["Qsim"] = self.Qsim[starti:endi]
-                data["Quz"] = self.quz[starti:endi]
-                data["Qlz"] = self.qlz[starti:endi]
-                data[STATE_VARIABLES] = self.state_variables[starti:endi, :]
+                data["Qsim"] = self.Qsim[start_i:end_i]
+                data["Quz"] = self.quz[start_i:end_i]
+                data["Qlz"] = self.qlz[start_i:end_i]
+                data[STATE_VARIABLES] = self.state_variables[start_i:end_i, :]
                 data.to_csv(path, index=False, float_format="%.3f")
             else:
                 assert False, "the possible options are from 1 to 5"
@@ -1602,13 +1601,13 @@ class Lake:
 
         Parameters
         ----------
-        start : [str], optional
+        start: [str], optional
             start date. The default is ''.
-        end : [str], optional
+        end: [str], optional
             end date. The default is ''.
-        fmt : [str], optional
+        fmt: [str], optional
             date format. The default is "%Y-%m-%d".
-        temporal_resolution : [str], optional
+        temporal_resolution: [str], optional
             "Daily" ot "Hourly". The default is "Daily".
         split : bool, optional
             true if you want to split the date between two dates. The default is False.
@@ -1648,14 +1647,14 @@ class Lake:
         Parameters
         ----------
         path : [str]
-            path to the meteo data file, containing the data in the follwoing
+            path to the meteo data file, containing the data in the following
             order [date, rainfall, ET, temperature].
         fmt : [str]
             date format.
 
         Returns
         -------
-        MeteoData : [array].
+        MeteoData: [array].
             array containing the meteorological data
         """
 
@@ -1679,7 +1678,7 @@ class Lake:
 
         Returns
         -------
-        Parameters : [array].
+        Parameters: [array].
         """
         self.Parameters = np.loadtxt(path).tolist()
         logger.debug("Lake Parameters are read successfully")
@@ -1710,13 +1709,13 @@ class Lake:
             initial condition [Snow Pack, Soil Moisture, Upper Zone, Lower Zone,
                                Water Content, Lake volume].
         outflow_cell : [list]
-            indeces of the cell where the lake hydrograph is going to be added.
+            indexes of the cell where the lake hydrograph is going to be added.
         stage_discharge_curve : [array]
             volume-outflow curve.
         snow : [integer]
-            0 if you dont want to run the snow related processes and 1 if there is snow.
+            0 if you don't want to run the snow-related processes and 1 if there is snow.
             in case of 1 (simulate snow processes) parameters related to snow simulation
-            has to be provided. The default is 0.
+             have to be provided. The default is 0.
 
         Returns
         -------
@@ -1725,11 +1724,10 @@ class Lake:
         CatArea : [numeric]
             Catchment area (km2).
         InitialCond : [list]
-            list of the inial condition [SnowPack,SoilMoisture,Upper Zone,
-                                         Lower Zone, Water Content].
+            list of the initial condition [SnowPack, SoilMoisture, Upper Zone, Lower Zone, Water Content].
         Snow : [integer]
             0/1
-        StageDischargeCurve : [array]
+        StageDischargeCurve: [array]
         """
         assert isinstance(
             lumped_model, ModuleType
@@ -1747,7 +1745,3 @@ class Lake:
         self.OutflowCell = outflow_cell
         self.StageDischargeCurve = stage_discharge_curve
         logger.debug("Lumped model is read successfully")
-
-
-if __name__ == "__main__":
-    logger.debug("Catchment module")
