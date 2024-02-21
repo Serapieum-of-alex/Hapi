@@ -21,7 +21,7 @@ class Calibration(Catchment):
     """Calibration.
 
     Calibration class contains to connect the parameter spatial distribution
-    function with the with both component of the spatial representation of the
+    function with both components of the spatial representation of the
     hydrological process (conceptual model & spatial routing) to calculate the
     performance of predicted runoff at known locations based on given
     performance function
