@@ -11,7 +11,7 @@ To calibrate the HBV lumped model inside Hapi you need to follow the same steps 
 	import pandas as pd
 	import datetime as dt
 	import Hapi.rrm.hbv_bergestrom92 as HBVLumped
-	from Hapi.rrm.calibration import Calibration
+	from Hapi.calibration import Calibration
 	from Hapi.rrm.routing import Routing
 	from Hapi.run import Run
 	import statista.metrics as metrics

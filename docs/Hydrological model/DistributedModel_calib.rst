@@ -8,7 +8,7 @@ After preparing all the meteorological, GIS inputs required for the model, and E
     import numpy as np
     import datetime as dt
     import gdal
-    from Hapi.rrm.calibration import Calibration
+    from Hapi.calibration import Calibration
     import Hapi.rrm.hbv_bergestrom92 as HBV
 
     import statista.metrics as metrics

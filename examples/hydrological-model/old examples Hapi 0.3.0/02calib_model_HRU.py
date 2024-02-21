@@ -32,7 +32,7 @@ import Hapi.rrm.hbv as HBV
 import Hapi.sm.performancecriteria as PC
 
 # functions
-from Hapi.rrm.calibration import RunCalibration
+from Hapi.calibration import RunCalibration
 
 # from pyOpt import Optimization, ALHSO,Optimizer
 

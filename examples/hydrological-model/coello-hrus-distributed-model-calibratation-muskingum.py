@@ -16,7 +16,7 @@ from statista.metrics import rmse
 import Hapi.rrm.hbv_bergestrom92 as HBV
 
 # functions
-from Hapi.rrm.calibration import Calibration
+from Hapi.calibration import Calibration
 
 # import Hapi.HBV as HBV
 from Hapi.rrm.parameters import Parameters as DP

@@ -11,7 +11,7 @@ from osgeo import gdal
 
 import Hapi.rrm.hbv_bergestrom92 as HBV
 import statista.metrics as metrics
-from Hapi.rrm.calibration import Calibration
+from Hapi.calibration import Calibration
 from Hapi.rrm.parameters import Parameters as DP
 
 # %% Paths
