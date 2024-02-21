@@ -8,7 +8,7 @@ import Hapi.rrm.hbv_bergestrom92 as HBV
 from Hapi.catchment import Catchment
 from Hapi.run import Run
 
-#%% Paths
+# %% Paths
 Path = Comp + "/data/distributed/coello"
 PrecPath = Path + "/prec"
 Evap_Path = Path + "/evap"
@@ -17,7 +17,7 @@ FlowAccPath = Path + "/GIS/acc4000.tif"
 FlowDPath = Path + "/GIS/fd4000.tif"
 
 ParPathRun = Path + "/Parameter set-Avg/"
-#%% Meteorological data
+# %% Meteorological data
 AreaCoeff = 1530
 InitialCond = [0, 5, 5, 5, 0]
 Snow = 0
@@ -27,24 +27,24 @@ Create the model object and read the input data
 start = "2009-01-01"
 end = "2009-04-10"
 name = "Coello"
-Coello = Catchment(name, start, end, SpatialResolution="Distributed")
-Coello.readRainfall(PrecPath)
-Coello.readTemperature(TempPath)
-Coello.readET(Evap_Path)
+Coello = Catchment(name, start, end, spatial_resolution="Distributed")
+Coello.read_rainfall(PrecPath)
+Coello.read_temperature(TempPath)
+Coello.read_et(Evap_Path)
 
-Coello.readFlowAcc(FlowAccPath)
-Coello.readFlowDir(FlowDPath)
-Coello.readParameters(ParPathRun, Snow)
-Coello.readLumpedModel(HBV, AreaCoeff, InitialCond)
-#%% Gauges
-Coello.readGaugeTable(Path + "/stations/gauges.csv", FlowAccPath)
+Coello.read_flow_acc(FlowAccPath)
+Coello.read_flow_dir(FlowDPath)
+Coello.read_parameters(ParPathRun, Snow)
+Coello.read_lumped_model(HBV, AreaCoeff, InitialCond)
+# %% Gauges
+Coello.read_gauge_table(Path + "/stations/gauges.csv", FlowAccPath)
 GaugesPath = Path + "/stations/"
-Coello.readDischargeGauges(GaugesPath, column="id", fmt="%Y-%m-%d")
-#%% Run the model
+Coello.read_discharge_gauges(GaugesPath, column="id", fmt="%Y-%m-%d")
+# %% Run the model
 """
 Outputs:
     ----------
-    1-statevariables: [numpy attribute]
+    1-state_variables: [numpy attribute]
         4D array (rows,cols,time,states) states are [sp,wc,sm,uz,lv]
     2-qlz: [numpy attribute]
         3D array of the lower zone discharge
@@ -60,8 +60,8 @@ Outputs:
         3D array of the lower zone discharge translated at each time step
 """
 Run.RunHapi(Coello)
-#%% calculate performance criteria
-Coello.extractDischarge(Factor=Coello.GaugesTable["area ratio"].tolist())
+# %% calculate performance criteria
+Coello.extract_discharge(factor=Coello.GaugesTable["area ratio"].tolist())
 
 for i in range(len(Coello.GaugesTable)):
     gaugeid = Coello.GaugesTable.loc[i, "id"]
@@ -74,13 +74,13 @@ for i in range(len(Coello.GaugesTable)):
     print("WB= " + str(round(Coello.Metrics.loc["WB", gaugeid], 2)))
     print("Pearson CC= " + str(round(Coello.Metrics.loc["Pearson-CC", gaugeid], 2)))
     print("R2 = " + str(round(Coello.Metrics.loc["R2", gaugeid], 2)))
-#%% plot
+# %% plot
 gaugei = 5
 plotstart = "2009-01-01"
 plotend = "2011-12-31"
 
-Coello.plotHydrograph(plotstart, plotend, gaugei)
-#%%
+Coello.plot_hydrograph(plotstart, plotend, gaugei)
+# %%
 """
 =============================================================================
 AnimateArray(Arr, Time, NoElem, TicksSpacing = 2, Figsize=(8,8), PlotNumbers=True,
@@ -173,16 +173,16 @@ animation.FuncAnimation.
 plotstart = "2009-01-01"
 plotend = "2009-02-01"
 
-Anim = Coello.plotDistributedResults(
+Anim = Coello.plot_distributed_results(
     plotstart,
     plotend,
     Figsize=(9, 9),
-    Option=1,
+    option=1,
     threshold=160,
     PlotNumbers=True,
     TicksSpacing=5,
     Interval=200,
-    Gauges=True,
+    gauges=True,
     cmap="inferno",
     Textloc=[0.1, 0.2],
     Gaugecolor="red",
@@ -191,20 +191,20 @@ Anim = Coello.plotDistributedResults(
     IDsize=25,
 )
 
-#%%
+# %%
 SaveTo = Path + "/results/anim.gif"
-Coello.saveAnimation(VideoFormat="gif", Path=SaveTo, SaveFrames=3)
-#%% Save the result into rasters
+Coello.save_animation(video_format="gif", path=SaveTo, save_frames=3)
+# %% Save the result into rasters
 
 StartDate = "2009-01-01"
 EndDate = "2009-04-10"
 Prefix = "Qtot_"
 SaveTo = Path + "/results/"
-Coello.saveResults(
+Coello.save_results(
     FlowAccPath,
-    Result=1,
+    result=1,
     StartDate=StartDate,
     EndDate=EndDate,
-    Path=SaveTo,
-    Prefix=Prefix,
+    path=SaveTo,
+    prefix=Prefix,
 )

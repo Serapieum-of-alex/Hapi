@@ -11,15 +11,15 @@ import datetime as dt
 
 import numpy as np
 from osgeo import gdal
-from statista.metrics import RMSE
+from statista.metrics import rmse
 
 import Hapi.rrm.hbv_bergestrom92 as HBV
 
 # functions
-from Hapi.rrm.calibration import Calibration
+from Hapi.calibration import Calibration
 
 # import Hapi.HBV as HBV
-from Hapi.rrm.distparameters import DistParameters as DP
+from Hapi.rrm.parameters import Parameters as DP
 
 path = Comp + "/Coello/HAPI/Data/00inputs/"  # GIS/4000/
 SaveTo = Comp + "/Coello/Hapi/Model/results/"
@@ -41,17 +41,17 @@ Create the model object and read the input data
 start_date = "2009-01-01"
 end_date = "2011-12-31"
 name = "Coello"
-Coello = Calibration(name, start_date, end_date, SpatialResolution="Distributed")
-Coello.readRainfall(PrecPath)
-Coello.readTemperature(TempPath)
-Coello.readET(Evap_Path)
-Coello.readFlowAcc(FlowAccPath)
-Coello.readFlowDir(FlowDPath)
-Coello.readLumpedModel(HBV, AreaCoeff, InitialCond)
+Coello = Calibration(name, start_date, end_date, spatial_resolution="Distributed")
+Coello.read_rainfall(PrecPath)
+Coello.read_temperature(TempPath)
+Coello.read_et(Evap_Path)
+Coello.read_flow_acc(FlowAccPath)
+Coello.read_flow_dir(FlowDPath)
+Coello.read_lumped_model(HBV, AreaCoeff, InitialCond)
 # %%
 UB = np.loadtxt(path + "/Basic_inputs/UB_HRU.txt", usecols=0)
 LB = np.loadtxt(path + "/Basic_inputs/LB_HRU.txt", usecols=0)
-Coello.readParametersBounds(UB, LB, Snow)
+Coello.read_parameters_bound(UB, LB, Snow)
 # %% spatial variability function
 """
 define how generated parameters are going to be distributed spatially
@@ -80,8 +80,8 @@ SpatialVarFun = DP(
     no_parameters,
     no_lumped_par=no_lumped_par,
     lumped_par_pos=lumped_par_pos,
-    HRUs=1,
-    Function=4,
+    hru=1,
+    function=4,
 )
 
 # calculate no of parameters that optimization algorithm is going to generate
@@ -93,9 +93,9 @@ print("Number of parameters = " + str(SpatialVarFun.ParametersNO))
 # this nomber is just an indication to prepare the UB & LB file don't input it to the model
 # SpatialVarArgs=[raster,no_parameters,no_lumped_par,lumped_par_pos]
 # %% Gauges
-Coello.readGaugeTable(path + "Discharge/stations/gauges.csv", FlowAccPath)
+Coello.read_gauge_table(path + "Discharge/stations/gauges.csv", FlowAccPath)
 GaugesPath = path + "Discharge/stations/"
-Coello.readDischargeGauges(GaugesPath, column="id", fmt="%Y-%m-%d")
+Coello.read_discharge_gauges(GaugesPath, column="id", fmt="%Y-%m-%d")
 # %% Objective function
 coordinates = Coello.GaugesTable[["id", "x", "y", "weight"]][:]
 
@@ -103,20 +103,20 @@ coordinates = Coello.GaugesTable[["id", "x", "y", "weight"]][:]
 OF_args = [coordinates]
 
 
-def OF(Qobs, coordinates):  # Qout, q_uz_routed, q_lz_trans,
-    Coello.extractDischarge()
+def objective_function(Qobs, coordinates):  # Qout, q_uz_routed, q_lz_trans,
+    Coello.extract_discharge()
     all_errors = []
     # error for all internal stations
     for i in range(len(coordinates)):
-        all_errors.append((RMSE(Qobs.loc[:, Qobs.columns[0]], Coello.Qsim[:, i])))
+        all_errors.append((rmse(Qobs.loc[:, Qobs.columns[0]], Coello.Qsim[:, i])))
     # outlet observed discharge is at the end of the array
-    # all_errors.append((PC.RMSE(Qobs.loc[:,Qobs.columns[-1]],Qout))*coordinates.loc[coordinates.index[-1],'weight'])
+    # all_errors.append((PC.rmse(Qobs.loc[:,Qobs.columns[-1]],Qout))*coordinates.loc[coordinates.index[-1],'weight'])
     print(str(np.round(all_errors, 3)))
     error = sum(all_errors)
     return error
 
 
-Coello.readObjectiveFn(OF, OF_args)
+Coello.read_objective_function(objective_function, OF_args)
 # %% Optimization
 """
 API options
@@ -148,4 +148,4 @@ OptimizationArgs = [ApiObjArgs, pll_type, ApiSolveArgs]
 cal_parameters = Coello.runCalibration(SpatialVarFun, OptimizationArgs, printError=0)
 # %% convert parameters to rasters
 SpatialVarFun.Function(Coello.Parameters, kub=SpatialVarFun.Kub, klb=SpatialVarFun.Klb)
-SpatialVarFun.saveParameters(SaveTo)
+SpatialVarFun.save_parameters(SaveTo)

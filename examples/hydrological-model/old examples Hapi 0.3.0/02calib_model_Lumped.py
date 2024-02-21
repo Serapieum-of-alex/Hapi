@@ -1,5 +1,5 @@
 """This code is developed to calibrate the HBV model in a lumped spatial representation using."""
-#%library
+# %library
 import numpy as np
 import pandas as pd
 
@@ -9,7 +9,7 @@ import Hapi.performancecriteria as PC
 from Hapi.calibration import Calibration
 from Hapi.routing import Routing
 
-#%%
+# %%
 ### meteorological data
 
 data = pd.read_csv(
@@ -53,25 +53,25 @@ Qobs = np.loadtxt(path + "Qout_c.txt")
 
 # define the objective function and its arguments
 OF_args = []
-OF = PC.RMSE
+objective_function = PC.RMSE
 
 ### Optimization
 store_history = 1
 history_fname = "par_history.txt"
 OptimizationArgs = [store_history, history_fname]
-#%%
+# %%
 # run calibration
 cal_parameters = Calibration.LumpedCalibration(
     ConceptualModel,
     data,
     Basic_inputs,
-    OF,
+    objective_function,
     OF_args,
     Qobs,
     OptimizationArgs,
     printError=None,
 )
-#%% convert parameters to rasters
+# %% convert parameters to rasters
 ParPath = "par15_7_2018.txt"
 par = np.loadtxt(ParPath)
 klb = 0.5

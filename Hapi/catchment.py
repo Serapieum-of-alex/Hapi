@@ -1,7 +1,4 @@
-"""Created on Wed Mar 31 02:10:49 2021.
-
-@author: mofarrag
-"""
+"""Catchment."""
 
 __name__ = "catchment"
 
@@ -16,22 +13,23 @@ import matplotlib.dates as dates
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import statista.metrics as PC
-from digitalearth.static import Map
+import statista.metrics as metrics
+from cleopatra.array import Array
 from loguru import logger
 from osgeo import gdal
-from pyramids.catchment import Catchment as GC
-from pyramids.raster import Raster
+from Hapi.dem import DEM
+from pyramids.dataset import Dataset, Datacube
 
-from Hapi.plot.visualizer import Visualize as Vis
+
+STATE_VARIABLES = ["SP", "SM", "UZ", "LZ", "WC"]
 
 
 class Catchment:
     """Catchment.
 
-        The class include methods to read the meteorological and Spatial inputs of the distributed hydrological model.
-        Catchment class also reads the data of the gauges, it is a super class that has the run subclass,
-        so you need to build the catchment object and hand it as an inpit to the Run class to run the model.
+        The class includes methods to read the meteorological and Spatial inputs of the distributed hydrological model.
+        Catchment class also reads the data of the gauges, it is a superclass that has the run subclass,
+        so you need to build the catchment object and hand it as an input to the Run class to run the model.
 
     Methods
     -------
@@ -56,12 +54,12 @@ class Catchment:
     def __init__(
         self,
         name: str,
-        startdata: str,
+        start_data: str,
         end: str,
         fmt: str = "%Y-%m-%d",
-        SpatialResolution: Optional[str] = "Lumped",
-        TemporalResolution: Optional[str] = "Daily",
-        RouteRiver: Optional[str] = "Muskingum",
+        spatial_resolution: Optional[str] = "Lumped",
+        temporal_resolution: Optional[str] = "Daily",
+        routing_method: Optional[str] = "Muskingum",
     ):
         """Catchment.
 
@@ -69,15 +67,15 @@ class Catchment:
         ----------
         name : [str]
             Name of the Catchment.
-        startdata : [str]
+        start_data : [str]
             starting date.
         end : [str]
             end date.
-        fmt : [str], optional
+        fmt: [str], optional
             format of the given date. The default is "%Y-%m-%d".
-        SpatialResolution : TYPE, optional
-            Lumped or 'Distributed' . The default is 'Lumped'.
-        TemporalResolution : TYPE, optional
+        spatial_resolution: [str, optional]
+            Lumped or 'Distributed'. The default is 'Lumped'.
+        temporal_resolution : TYPE, optional
             "Hourly" or "Daily". The default is "Daily".
 
         Returns
@@ -85,35 +83,35 @@ class Catchment:
         None.
         """
         self.name = name
-        self.start = dt.datetime.strptime(startdata, fmt)
+        self.start = dt.datetime.strptime(start_data, fmt)
         self.end = dt.datetime.strptime(end, fmt)
 
-        if not SpatialResolution.lower() in ["lumped", "distributed"]:
+        if not spatial_resolution.lower() in ["lumped", "distributed"]:
             raise ValueError(
                 "available spatial resolutions are 'lumped' and 'distributed'"
             )
-        self.SpatialResolution = SpatialResolution.lower()
+        self.spatial_resolution = spatial_resolution.lower()
 
-        if not TemporalResolution.lower() in ["daily", "hourly"]:
+        if not temporal_resolution.lower() in ["daily", "hourly"]:
             raise ValueError("available temporal resolutions are 'daily' and 'hourly'")
-        self.TemporalResolution = TemporalResolution.lower()
+        self.temporal_resolution = temporal_resolution.lower()
         # assuming the default dt is 1 day
-        conversionfactor = (1000 * 24 * 60 * 60) / (1000**2)
-        if TemporalResolution.lower() == "daily":
+        conversion_factor = (1000 * 24 * 60 * 60) / (1000**2)
+        if temporal_resolution.lower() == "daily":
             self.dt = 1  # 24
-            self.conversionfactor = conversionfactor * 1
+            self.conversion_factor = conversion_factor * 1
             self.Index = pd.date_range(self.start, self.end, freq="D")
-        elif TemporalResolution.lower() == "hourly":
+        elif temporal_resolution.lower() == "hourly":
             self.dt = 1  # 24
-            self.conversionfactor = conversionfactor * 1 / 24
+            self.conversion_factor = conversion_factor * 1 / 24
             self.Index = pd.date_range(self.start, self.end, freq="H")
         else:
             # TODO calculate the temporal resolution factor
             # q mm , area sq km  (1000**2)/1000/f/24/60/60 = 1/(3.6*f)
             # if daily tfac=24 if hourly tfac=1 if 15 min tfac=0.25
-            self.conversionfactor = 24
+            self.conversion_factor = 24
 
-        self.RouteRiver = RouteRiver
+        self.routing_method = routing_method
         self.Parameters = None
         self.data = None
         self.Prec = None
@@ -152,19 +150,29 @@ class Catchment:
             self.FloodPlainRoughness,
         ) = (None, None, None, None, None)
         self.qout, self.Qtot = None, None
-        self.quz_routed, self.qlz_translated, self.statevariables = None, None, None
+        self.quz_routed, self.qlz_translated, self.state_variables = None, None, None
         self.anim = None
         self.quz, self.qlz = None, None
         self.Qsim = None
         self.Metrics = None
 
-    def readRainfall(self, Path: str, start: str = "", end: str = "", fmt: str = ""):
-        """readRainfall.
+    def read_rainfall(
+        self,
+        path: str,
+        start: str = None,
+        end: str = None,
+        fmt: str = "%Y-%m-%d",
+        regex_string=r"\d{4}.\d{2}.\d{2}",
+        date: bool = True,
+        file_name_data_fmt: str = None,
+        extension: str = ".tif",
+    ):
+        r"""readRainfall.
 
         Parameters
         ----------
-        Path : [String]
-            path to the Folder contains precipitation rasters.
+        path: [str]
+            A path to the Folder contains precipitation rasters.
         fmt: [str]
             format of the given date
         start: [str]
@@ -173,48 +181,80 @@ class Catchment:
         end: [str]
             end date if you want to read the input temperature for a specific period only,
             if not given all rasters in the given path will be read.
+        regex_string: [str]
+            a regex string that we can use to locate the date in the file names.Default is r"\d{4}.\d{
+            2}.\d{2}".
+            >>> fname = "MSWEP_YYYY.MM.DD.tif"
+            >>> regex_string = r"\d{4}.\d{2}.\d{2}"
+            - or
+            >>> fname = "MSWEP_YYYY_M_D.tif"
+            >>> regex_string = r"\d{4}_\d{1}_\d{1}"
+            - if there is a number at the beginning of the name
+            >>> fname = "1_MSWEP_YYYY_M_D.tif"
+            >>> regex_string = r"\d+"
+        date: [bool]
+            True if the number in the file name is a date. Default is True.
+        file_name_data_fmt : [str]
+            if the files names' have a date and you want to read them ordered .Default is None
+            >>> "MSWEP_YYYY.MM.DD.tif"
+            >>> file_name_data_fmt = "%Y.%m.%d"
+        extension: [str]
+            the extension of the files you want to read from the given path. Default is ".tif".
 
 
         Returns
         -------
-        Prec : [array attribute]
+        prec: [array attribute]
             array containing the spatial rainfall values
         """
         if self.Prec is None:
             # data type
-            assert isinstance(Path, str), "PrecPath input should be string type"
-            # check wether the path exists or not
-            if not os.path.exists(Path):
-                raise FileNotFoundError(f"{Path} you have provided does not exist")
-            # check wether the folder has the rasters or not
-            assert (
-                len(os.listdir(Path)) > 0
-            ), f"{Path} folder you have provided is empty"
+            assert isinstance(path, str), "path input should be string type"
+            # check whether the path exists or not
+            if not os.path.exists(path):
+                raise FileNotFoundError(f"{path} you have provided does not exist")
+            # check whether the folder has the rasters or not
+            if not len(os.listdir(path)) > 0:
+                raise FileNotFoundError(f"{path} folder you have provided is empty")
             # read data
-            self.Prec = Raster.readRastersFolder(Path, start=start, end=end, fmt=fmt)
-            self.TS = (
-                self.Prec.shape[2] + 1
-            )  # no of time steps =length of time series +1
-            assert isinstance(
-                self.Prec, np.ndarray
-            ), "array should be of type numpy array"
+            cube = Datacube.read_multiple_files(
+                path,
+                with_order=True,
+                regex_string=regex_string,
+                date=date,
+                start=start,
+                end=end,
+                fmt=fmt,
+                file_name_data_fmt=file_name_data_fmt,
+                extension=extension,
+            )
+            cube.open_datacube()
+            self.Prec = np.moveaxis(cube.values, 0, -1)
+            self.TS = self.Prec.shape[2] + 1
+            # no of time steps =length of time series +1
+            if not isinstance(self.Prec, np.ndarray):
+                raise TypeError("Prec should be of type numpy array")
 
             logger.debug("Rainfall data are read successfully")
 
-    def readTemperature(
+    def read_temperature(
         self,
-        Path: str,
+        path: str,
         ll_temp: Union[list, np.ndarray] = None,
-        start: str = "",
-        end: str = "",
-        fmt: str = "",
+        start: str = None,
+        end: str = None,
+        fmt: str = "%Y-%m-%d",
+        regex_string=r"\d{4}.\d{2}.\d{2}",
+        date: bool = True,
+        file_name_data_fmt: str = None,
+        extension: str = ".tif",
     ):
-        """readTemperature.
+        r"""readTemperature.
 
         Parameters
         ----------
-        Path : [String]
-            path to the Folder contains temperature rasters.
+        path: [str]
+            A path to the Folder contains temperature rasters.
         fmt: [str]
             format of the given date
         start: [str]
@@ -224,25 +264,57 @@ class Catchment:
             end date if you want to read the input temperature for a specific period only,
             if not given all rasters in the given path will be read.
         ll_temp: [list/ ndarray]
-            long term temperature
+            long-term temperature
+        regex_string: [str]
+            a regex string that we can use to locate the date in the file names. Default is r"\d{4}.\d{
+            2}.\d{2}".
+            >>> fname = "MSWEP_YYYY.MM.DD.tif"
+            >>> regex_string = r"\d{4}.\d{2}.\d{2}"
+            - or
+            >>> fname = "MSWEP_YYYY_M_D.tif"
+            >>> regex_string = r"\d{4}_\d{1}_\d{1}"
+            - if there is a number at the beginning of the name
+            >>> fname = "1_MSWEP_YYYY_M_D.tif"
+            >>> regex_string = r"\d+"
+        date: [bool]
+            True if the number in the file name is a date. Default is True.
+        file_name_data_fmt : [str]
+            if the files names' have a date, and you want to read them ordered .Default is None
+            >>> "MSWEP_YYYY.MM.DD.tif"
+            >>> file_name_data_fmt = "%Y.%m.%d"
+        extension: [str]
+            the extension of the files you want to read from the given path. Default is ".tif".
 
         Returns
         -------
-        Temp : [array attribute]
+        Temp: [array attribute]
             array containing the spatial temperature values
         """
         if self.Temp is None:
             # data type
-            assert type(Path) == str, "PrecPath input should be string type"
-            # check wether the path exists or not
-            assert os.path.exists(Path), Path + " you have provided does not exist"
-            # check wether the folder has the rasters or not
-            assert len(os.listdir(Path)) > 0, (
-                Path + " folder you have provided is empty"
-            )
+            assert isinstance(path, str), "path input should be string type"
+            # check whether the path exists or not
+            assert os.path.exists(path), path + " you have provided does not exist"
+            # check whether the folder has the rasters or not
+            if not len(os.listdir(path)) > 0:
+                raise Exception(f"The folder you have provided is empty: {path}")
             # read data
-            self.Temp = Raster.readRastersFolder(Path, start=start, end=end, fmt=fmt)
-            assert type(self.Temp) == np.ndarray, "array should be of type numpy array"
+            cube = Datacube.read_multiple_files(
+                path,
+                with_order=True,
+                regex_string=regex_string,
+                date=date,
+                start=start,
+                end=end,
+                fmt=fmt,
+                file_name_data_fmt=file_name_data_fmt,
+                extension=extension,
+            )
+            cube.open_datacube()
+            self.Temp = np.moveaxis(cube.values, 0, -1)
+            assert isinstance(
+                self.Temp, np.ndarray
+            ), "array should be of type numpy array"
 
             if ll_temp is None:
                 self.ll_temp = np.zeros_like(self.Temp, dtype=np.float32)
@@ -253,12 +325,22 @@ class Catchment:
 
             logger.debug("Temperature data are read successfully")
 
-    def readET(self, Path: str, start: str = "", end: str = "", fmt: str = ""):
-        """readET.
+    def read_et(
+        self,
+        path: str,
+        start: str = None,
+        end: str = None,
+        fmt: str = "%Y-%m-%d",
+        regex_string=r"\d{4}.\d{2}.\d{2}",
+        date: bool = True,
+        file_name_data_fmt: str = None,
+        extension: str = ".tif",
+    ):
+        r"""readET.
 
         Parameters
         ----------
-        Path : [String]
+        path : [String]
             path to the Folder contains Evapotranspiration rasters.
         fmt: [str]
             format of the given date
@@ -268,38 +350,70 @@ class Catchment:
         end: [str]
             end date if you want to read the input temperature for a specific period only,
             if not given all rasters in the given path will be read.
+        regex_string: [str]
+            a regex string that we can use to locate the date in the file names.Default is r"\d{4}.\d{
+            2}.\d{2}".
+            >>> fname = "MSWEP_YYYY.MM.DD.tif"
+            >>> regex_string = r"\d{4}.\d{2}.\d{2}"
+            - or
+            >>> fname = "MSWEP_YYYY_M_D.tif"
+            >>> regex_string = r"\d{4}_\d{1}_\d{1}"
+            - if there is a number at the beginning of the name
+            >>> fname = "1_MSWEP_YYYY_M_D.tif"
+            >>> regex_string = r"\d+"
+        date: [bool]
+            True if the number in the file name is a date. Default is True.
+        file_name_data_fmt : [str]
+            if the files names' have a date and you want to read them ordered .Default is None
+            >>> "MSWEP_YYYY.MM.DD.tif"
+            >>> file_name_data_fmt = "%Y.%m.%d"
+        extension: [str]
+            the extension of the files you want to read from the given path. Default is ".tif".
 
         Returns
         -------
-        ET : [array attribute]
+        ET: [array attribute]
             array containing the spatial Evapotranspiration values
         """
         if self.ET is None:
             # data type
-            assert type(Path) == str, "PrecPath input should be string type"
-            # check wether the path exists or not
-            assert os.path.exists(Path), Path + " you have provided does not exist"
-            # check wether the folder has the rasters or not
-            assert len(os.listdir(Path)) > 0, (
-                Path + " folder you have provided is empty"
-            )
+            assert isinstance(path, str), "path input should be string type"
+            # check whether the path exists or not
+            assert os.path.exists(path), path + " you have provided does not exist"
+            # check whether the folder has the rasters or not
+            if not len(os.listdir(path)) > 0:
+                raise Exception(f"The folder you have provided is empty: {path}")
             # read data
-            self.ET = Raster.readRastersFolder(Path, start=start, end=end, fmt=fmt)
-            assert type(self.ET) == np.ndarray, "array should be of type numpy array"
+            cube = Datacube.read_multiple_files(
+                path,
+                with_order=True,
+                regex_string=regex_string,
+                date=date,
+                start=start,
+                end=end,
+                fmt=fmt,
+                file_name_data_fmt=file_name_data_fmt,
+                extension=extension,
+            )
+            cube.open_datacube()
+            self.ET = np.moveaxis(cube.values, 0, -1)
+            assert isinstance(
+                self.ET, np.ndarray
+            ), "array should be of type numpy array"
             logger.debug("Potential Evapotranspiration data are read successfully")
 
-    def readFlowAcc(self, Path: str):
+    def read_flow_acc(self, path: str):
         """readFlowAcc.
 
         Parameters
         ----------
-        Path : [String]
+        path : [String]
             path to the Flow Accumulation raster of the catchment
             (it should include the raster name and extension).
 
         Returns
         -------
-        FlowAcc : [array attribute]
+        flow_acc: [array attribute]
             array containing the spatial Evapotranspiration values
         rows: [integer]
             number of rows in the flow acc array
@@ -311,21 +425,22 @@ class Catchment:
             number of cells in the domain
         """
         # data type
-        assert isinstance(Path, str), "PrecPath input should be string type"
-        # check wether the path exists or not
-        assert os.path.exists(Path), Path + " you have provided does not exist"
+        if not isinstance(path, str):
+            raise TypeError("path input should be string type")
+        # check whether the path exists or not
+        assert os.path.exists(path), path + " you have provided does not exist"
         # check the extension of the accumulation file
-        assert (
-            Path[-4:] == ".tif"
+        assert path.endswith(
+            ".tif"
         ), "please add the extension at the end of the Flow accumulation raster path input"
-        # check wether the path exists or not
-        assert os.path.exists(Path), Path + " you have provided does not exist"
+        # check whether the path exists or not
+        assert os.path.exists(path), path + " you have provided does not exist"
 
-        FlowAcc = gdal.Open(Path)
-        [self.rows, self.cols] = FlowAcc.ReadAsArray().shape
+        flow_acc = gdal.Open(path)
+        [self.rows, self.cols] = flow_acc.ReadAsArray().shape
         # check flow accumulation input raster
-        self.NoDataValue = FlowAcc.GetRasterBand(1).GetNoDataValue()
-        self.FlowAccArr = FlowAcc.ReadAsArray()
+        self.NoDataValue = flow_acc.GetRasterBand(1).GetNoDataValue()
+        self.FlowAccArr = flow_acc.ReadAsArray()
 
         # check if the flow acc array is integer convert it to float
         if self.FlowAccArr.dtype == "int":
@@ -366,7 +481,7 @@ class Catchment:
 
         # calculate area covered by cells
         geo_trans = (
-            FlowAcc.GetGeoTransform()
+            flow_acc.GetGeoTransform()
         )  # get the coordinates of the top left corner and cell size [x,dx,y,dy]
         dx = np.abs(geo_trans[1]) / 1000.0  # dx in Km
         dy = np.abs(geo_trans[-1]) / 1000.0  # dy in Km
@@ -379,39 +494,40 @@ class Catchment:
 
         logger.debug("Flow Accmulation input is read successfully")
 
-    def readFlowDir(self, Path: str):
+    def read_flow_dir(self, path: str):
         """Read Flow Direction.
 
             reads the flow direction raster.
 
         Parameters
         ----------
-        Path : [str]
-            Path to the flow direction raster.
+        path : [str]
+            path to the flow direction raster.
 
         Returns
         -------
-        FlowDirArr : [array].
+        FlowDirArr: [array].
             array of the flow direction raster
-        FDT : [dictionary]
+        FDT: [dictionary]
             flow direction table
         """
         # data type
-        assert isinstance(Path, str), "PrecPath input should be string type"
-        # check wether the path exists or not
-        assert os.path.exists(Path), Path + " you have provided does not exist"
+        assert isinstance(path, str), "path input should be string type"
+        # check whether the path exists or not
+        assert os.path.exists(path), path + " you have provided does not exist"
         # check the extension of the accumulation file
-        assert (
-            Path[-4:] == ".tif"
-        ), "please add the extension at the end of the Flow accumulation raster path input"
-        # check wether the path exists or not
-        assert os.path.exists(Path), Path + " you have provided does not exist"
-        FlowDir = gdal.Open(Path)
+        if not (path[-4:] == ".tif"):
+            raise ValueError(
+                "please add the extension at the end of the Flow accumulation raster path input"
+            )
+        # check whether the path exists or not
+        assert os.path.exists(path), path + " you have provided does not exist"
+        flow_dir = gdal.Open(path)
 
-        [rows, cols] = FlowDir.ReadAsArray().shape
-        self.FlowDirArr = FlowDir.ReadAsArray().astype(float)
+        [rows, cols] = flow_dir.ReadAsArray().shape
+        self.FlowDirArr = flow_dir.ReadAsArray().astype(float)
         # check flow direction input raster
-        fd_noval = FlowDir.GetRasterBand(1).GetNoDataValue()
+        fd_noval = flow_dir.GetRasterBand(1).GetNoDataValue()
 
         for i in range(rows):
             for j in range(cols):
@@ -431,23 +547,24 @@ class Catchment:
         ), "flow direction raster should contain values 1,2,4,8,16,32,64,128 only "
 
         # create the flow direction table
-        self.FDT = GC.flowDirectionTable(FlowDir)
+        dem = DEM(flow_dir)
+        self.FDT = dem.flow_direction_table()
         logger.debug("Flow Direction input is read successfully")
 
-    def ReadFlowPathLength(self, Path: str):
-        """Read Flow Path Length method.
+    def read_flow_path_length(self, path: str):
+        """Read Flow path Length method.
 
             reads the flow path length.
 
         Parameters
         ----------
-        Path : [str]
-            Path to the file.
+        path : [str]
+            path to the file.
 
         Returns
         -------
         FPLArr : [array]
-            flpw path length array
+            flow path length array
         rows : [integer]
             number of rows in the flow acc array
         cols : [integer]
@@ -458,19 +575,20 @@ class Catchment:
             number of cells in the domain
         """
         # data type
-        assert isinstance(Path, str), "PrecPath input should be string type"
+        assert isinstance(path, str), "path input should be string type"
         # input values
-        FPL_ext = Path[-4:]
-        assert (
-            FPL_ext == ".tif"
-        ), "please add the extension at the end of the Flow accumulation raster path input"
-        # check wether the path exists or not
-        assert os.path.exists(Path), Path + " you have provided does not exist"
+        fpl_ext = path[-4:]
+        if not (fpl_ext == ".tif"):
+            raise ValueError(
+                "please add the extension at the end of the Flow accumulation raster path input"
+            )
+        # check whether the path exists or not
+        assert os.path.exists(path), path + " you have provided does not exist"
 
-        FPL = gdal.Open(Path)
-        [self.rows, self.cols] = FPL.ReadAsArray().shape
-        self.FPLArr = FPL.ReadAsArray()
-        self.NoDataValue = FPL.GetRasterBand(1).GetNoDataValue()
+        fpl = gdal.Open(path)
+        [self.rows, self.cols] = fpl.ReadAsArray().shape
+        self.FPLArr = fpl.ReadAsArray()
+        self.NoDataValue = fpl.GetRasterBand(1).GetNoDataValue()
 
         for i in range(self.rows):
             for j in range(self.cols):
@@ -481,162 +599,170 @@ class Catchment:
             (self.FPLArr[np.isnan(self.FPLArr)])
         )
 
-        logger.debug("Flow Path length input is read successfully")
+        logger.debug("Flow path length input is read successfully")
 
-    def ReadRiverGeometry(
+    def read_river_geometry(
         self,
-        DEMF: str,
-        BankfulldepthF: str,
-        RiverWidthF: str,
-        RiverRoughnessF: str,
-        FloodPlainRoughnessF: str,
+        dem_file: str,
+        bankfull_depth_file: str,
+        river_width_file: str,
+        river_roughness_file: str,
+        floodplain_roughness_file: str,
     ):
         """ReadRiverGeometry.
 
         Parameters
         ----------
-        DEMF
-        BankfulldepthF
-        RiverWidthF
-        RiverRoughnessF
-        FloodPlainRoughnessF
+        dem_file
+        bankfull_depth_file
+        river_width_file
+        river_roughness_file
+        floodplain_roughness_file
 
         Returns
         -------
         None
         """
-        DEM = gdal.Open(DEMF)
-        self.DEM = DEM.ReadAsArray()
+        self.DEM = gdal.Open(dem_file).ReadAsArray()
+        self.BankfullDepth = gdal.Open(bankfull_depth_file).ReadAsArray()
+        self.RiverWidth = gdal.Open(river_width_file).ReadAsArray()
+        self.RiverRoughness = gdal.Open(river_roughness_file).ReadAsArray()
+        self.FloodPlainRoughness = gdal.Open(floodplain_roughness_file).ReadAsArray()
 
-        BankfullDepth = gdal.Open(BankfulldepthF)
-        self.BankfullDepth = BankfullDepth.ReadAsArray()
+    def read_parameters(self, path: str, snow: bool = False, maxbas: bool = False):
+        """read_parameters.
 
-        RiverWidth = gdal.Open(RiverWidthF)
-        self.RiverWidth = RiverWidth.ReadAsArray()
-
-        RiverRoughness = gdal.Open(RiverRoughnessF)
-        self.RiverRoughness = RiverRoughness.ReadAsArray()
-
-        FloodPlainRoughness = gdal.Open(FloodPlainRoughnessF)
-        self.FloodPlainRoughness = FloodPlainRoughness.ReadAsArray()
-
-    def readParameters(self, Path: str, Snow: bool = False, Maxbas: bool = False):
-        """readParameters.
-
-        readParameters method reads the parameters' raster
+            read_parameters method reads the parameters' raster
 
         Parameters
         ----------
-        Path : [str]
-            path to the folder where the raster exist.
-        Snow : [integer]
-            False if you dont want to run the snow related processes and 1 if there is snow.
-            in case of 1 (simulate snow processes) parameters related to snow simulation
-            has to be provided. The default is 0.
-        Maxbas : [bool], optional
+        path: [str]
+            path to the folder where the raster exists.
+        snow: [integer]
+            False if you don't want to run the snow-related processes and 1 if there is snow.
+            in the case of 1 (simulate snow processes), parameters related to snow simulation
+            have to be provided. The default is 0.
+        maxbas: [bool], optional
             True if the routing is Maxbas. The default is False.
 
         Returns
         -------
-        Parameters : [array].
+        Parameters: [array].
             3d array containing the parameters
-        Snow : [integer]
+        Snow: [integer]
             0/1
-        Maxbas : [bool]
+        Maxbas: [bool]
             True/False
         """
-        if self.SpatialResolution.lower() == "distributed":
+        if self.spatial_resolution.lower() == "distributed":
             # data type
-            assert type(Path) == str, "PrecPath input should be string type"
-            # check wether the path exists or not
-            assert os.path.exists(Path), Path + " you have provided does not exist"
-            # check wether the folder has the rasters or not
-            assert len(os.listdir(Path)) > 0, (
-                Path + " folder you have provided is empty"
-            )
+            assert isinstance(path, str), "cpath input should be string type"
+            # check whither the path exists or not
+            assert os.path.exists(path), f"{path} you have provided does not exist"
+            # check whither the folder has the rasters or not
+            if not len(os.listdir(path)) > 0:
+                raise Exception(f"The folder you have provided is empty: {path}")
             # parameters
-            self.Parameters = Raster.readRastersFolder(Path)
+            cube = Datacube.read_multiple_files(
+                path, with_order=True, regex_string=r"\d+", date=False
+            )
+            cube.open_datacube()
+            self.Parameters = np.moveaxis(cube.values, 0, -1)
         else:
-            if not os.path.exists(Path):
+            if not os.path.exists(path):
                 raise FileNotFoundError(
-                    "The parameters file you have entered does not exist"
+                    "The parameter file you have entered does not exist"
                 )
 
-            self.Parameters = pd.read_csv(Path, index_col=0, header=None)[1].tolist()
+            self.Parameters = pd.read_csv(path, index_col=0, header=None)[1].tolist()
 
-        assert (
-            not Snow or Snow
-        ), " snow input defines whether to consider snow subroutine or not it has to be True or False"
+        if not (not snow or snow):
+            raise ValueError(
+                "snow input defines whether to consider snow subroutine or not it has to be True or False"
+            )
 
-        self.Snow = Snow
-        self.Maxbas = Maxbas
+        self.Snow = snow
+        self.Maxbas = maxbas
 
-        if self.SpatialResolution == "distributed":
-            if Snow and Maxbas:
-                assert self.Parameters.shape[2] == 16, (
-                    "current version of HBV (with snow) takes 16 parameter you have entered "
-                    + str(self.Parameters.shape[2])
-                )
-            elif not Snow and Maxbas:
-                assert self.Parameters.shape[2] == 11, (
-                    "current version of HBV (with snow) takes 11 parameter you have entered "
-                    + str(self.Parameters.shape[2])
-                )
-            elif Snow and not Maxbas:
-                assert self.Parameters.shape[2] == 17, (
-                    "current version of HBV (with snow) takes 17 parameter you have entered "
-                    + str(self.Parameters.shape[2])
-                )
-            elif not Snow and not Maxbas:
-                assert self.Parameters.shape[2] == 12, (
-                    "current version of HBV (with snow) takes 12 parameter you have entered "
-                    + str(self.Parameters.shape[2])
-                )
-        else:
-            if Snow and Maxbas:
-                assert len(self.Parameters) == 16, (
-                    "current version of HBV (with snow) takes 16 parameter you have entered "
-                    + str(len(self.Parameters))
-                )
-            elif not Snow and Maxbas:
-                if len(self.Parameters) != 11:
+        if self.spatial_resolution == "distributed":
+            if snow and maxbas:
+                if not self.Parameters.shape[2] == 16:
                     raise ValueError(
-                        f"current version of HBV (with snow) takes 11 parameter you have entered {len(self.Parameters)}"
+                        "current version of HBV (with snow) takes 16 parameters you have entered "
+                        f"{self.Parameters.shape[2]}"
+                    )
+            elif not snow and maxbas:
+                if not self.Parameters.shape[2] == 11:
+                    raise ValueError(
+                        "current version of HBV (with snow) takes 11 parameters you have entered "
+                        f"{self.Parameters.shape[2]}"
+                    )
+            elif snow and not maxbas:
+                if not self.Parameters.shape[2] == 17:
+                    raise ValueError(
+                        "current version of HBV (with snow) takes 17 parameters you have entered "
+                        f"{self.Parameters.shape[2]}"
+                    )
+            elif not snow and not maxbas:
+                if not self.Parameters.shape[2] == 12:
+                    raise ValueError(
+                        "current version of HBV (with snow) takes 12 parameters you have entered "
+                        f"{self.Parameters.shape[2]}"
+                    )
+        else:
+            if snow and maxbas:
+                if not len(self.Parameters) == 16:
+                    raise ValueError(
+                        f"current version of HBV (with snow) takes 16 parameters you have entered"
+                        f" {len(self.Parameters)}"
                     )
 
-            elif Snow and not Maxbas:
-                assert len(self.Parameters) == 17, (
-                    "current version of HBV (with snow) takes 17 parameter you have entered "
-                    + str(len(self.Parameters))
-                )
-            elif not Snow and not Maxbas:
-                assert len(self.Parameters) == 12, (
-                    "current version of HBV (with snow) takes 12 parameter you have entered "
-                    + str(len(self.Parameters))
-                )
+            elif not snow and maxbas:
+                if len(self.Parameters) != 11:
+                    raise ValueError(
+                        f"current version of HBV (with snow) takes 11 parameters you have entered"
+                        f" {len(self.Parameters)}"
+                    )
+
+            elif snow and not maxbas:
+                if not len(self.Parameters) == 17:
+                    raise ValueError(
+                        f"current version of HBV (with snow) takes 17 parameters you have entered{len(self.Parameters)}"
+                    )
+
+            elif not snow and not maxbas:
+                if not len(self.Parameters) == 12:
+                    raise ValueError(
+                        f"current version of HBV (with snow) takes 12 parameters you have entered"
+                        f" {len(self.Parameters)}"
+                    )
 
         logger.debug("Parameters are read successfully")
 
-    def readLumpedModel(
-        self, LumpedModel, CatArea: Union[float, int], InitialCond: list, q_init=None
+    def read_lumped_model(
+        self,
+        lumped_model,
+        catchment_area: Union[float, int],
+        initial_condition: list,
+        q_init=None,
     ):
         """readLumpedModel.
 
         Parameters
         ----------
-        LumpedModel : [module]
+        lumped_model : [module]
             HBV module.
-        CatArea : [numeric]
+        catchment_area : [numeric]
             Catchment area (km2).
-        InitialCond : [list]
-            list of the inial condition [SnowPack,SoilMoisture,Upper Zone,
+        initial_condition : [list]
+            list of the initial condition [SnowPack, SoilMoisture, Upper Zone,
                                          Lower Zone, Water Content].
-        q_init : [numeric], optional
+        q_init: [numeric], optional
             initial discharge. The default is None.
 
         Returns
         -------
-        LumpedModel : [module].
+        LumpedModel: [module].
             the lumped conceptual model.
         q_init : [numeric]
             initial discharge.
@@ -645,20 +771,21 @@ class Catchment:
         """
 
         assert isinstance(
-            LumpedModel, ModuleType
+            lumped_model, ModuleType
         ), "ConceptualModel should be a module or a python file contains functions "
 
-        self.LumpedModel = LumpedModel
-        self.CatArea = CatArea
+        self.LumpedModel = lumped_model
+        self.CatArea = catchment_area
 
-        assert (
-            len(InitialCond) == 5
-        ), f"state variables are 5 and the given initial values are {len(InitialCond)}"
+        if not (len(initial_condition) == 5):
+            raise ValueError(
+                f"state variables are 5 and the given initial values are {len(initial_condition)}"
+            )
 
-        self.InitialCond = InitialCond
+        self.InitialCond = initial_condition
 
         if q_init is not None:
-            assert type(q_init) == float, "q_init should be of type float"
+            assert not isinstance(q_init, float), "q_init should be of type float"
         self.q_init = q_init
 
         if self.InitialCond is not None:
@@ -666,29 +793,29 @@ class Catchment:
 
         logger.debug("Lumped model is read successfully")
 
-    def readLumpedInputs(self, Path: str, ll_temp: Union[list, np.ndarray] = None):
+    def read_lumped_inputs(self, path: str, ll_temp: Union[list, np.ndarray] = None):
         """readLumpedInputs. readLumpedInputs method read the meteorological data of lumped mode.
 
-        [precipitation, Evapotranspiration, temperature, long term average temperature]
+        [precipitation, Evapotranspiration, temperature, long-term average temperature]
 
         Parameters
         ----------
-        Path : [string]
+        path : [string]
             Path to the input file, data has to be in the order of
             [date, precipitation, ET, Temp].
-        ll_temp : [bool], optional
-            average long term temperature, if None it is calculated inside the
+        ll_temp: [bool], optional
+            average long-term temperature, if None it is calculated inside the
             code. The default is None.
 
         Returns
         -------
-        data : [array].
+        data: [array].
             meteorological data.
-        ll_temp : [array]
-            average long term temperature.
+        ll_temp: [array]
+            average long-term temperature.
         """
         self.data = pd.read_csv(
-            Path, header=0, delimiter=",", index_col=0  # "\t", #skiprows=11,
+            path, header=0, delimiter=",", index_col=0  # "\t", #skiprows=11,
         )
         self.data = self.data.values
 
@@ -696,38 +823,41 @@ class Catchment:
             self.ll_temp = np.zeros(shape=(len(self.data)), dtype=np.float32)
             self.ll_temp = self.data[:, 2].mean()
 
-        assert (
-            np.shape(self.data)[1] == 3 or np.shape(self.data)[1] == 4
-        ), " meteorological data should be of length at least 3 (prec, ET, temp) or 4(prec, ET, temp, tm) "
+        if not (np.shape(self.data)[1] == 3 or np.shape(self.data)[1] == 4):
+            raise ValueError(
+                "meteorological data should be of length at least 3 (prec, ET, temp) or 4(prec, ET, temp, tm) "
+            )
 
         logger.debug("Lumped Model inputs are read successfully")
 
-    def readGaugeTable(self, Path: str, FlowaccPath: str = "", fmt: str = "%Y-%m-%d"):
+    def read_gauge_table(
+        self, path: str, flow_acc_file: str = "", fmt: str = "%Y-%m-%d"
+    ):
         """readGaugeTable. readGaugeTable reads the table where the data about the gauges are listed.
 
         [x coordinate, y coordinate, 'area ratio', 'weight'], the coordinates are
-        mandatory to enter , to locate the gauges and be able to extract the
-        discharge at the coresponding cells.
+        mandatory to enter, to locate the gauges and be able to extract the
+        discharge at the corresponding cells.
 
         Parameters
         ----------
-        Path : [str]
+        path: [str]
             Path to the gauge file.
-        FlowaccPath : [str], optional
+        flow_acc_file: [str], optional
             Path to the Flow acc raster. The default is ''.
         fmt: [str]
             Default is "%Y-%m-%d"
 
         Returns
         -------
-        hm_gauges : [dataframe]
+        hm_gauges: [dataframe]
             the table of the gauges.
         """
         # read the gauge table
-        if Path.endswith(".geojson"):
-            self.GaugesTable = gpd.read_file(Path, driver="GeoJSON")
+        if path.endswith(".geojson"):
+            self.GaugesTable = gpd.read_file(path, driver="GeoJSON")
         else:
-            self.GaugesTable = pd.read_csv(Path)
+            self.GaugesTable = pd.read_csv(path)
         col_list = self.GaugesTable.columns.tolist()
 
         if "start" in col_list:
@@ -738,60 +868,64 @@ class Catchment:
                 self.GaugesTable.loc[i, "end"] = dt.datetime.strptime(
                     self.GaugesTable.loc[i, "end"], fmt
                 )
-        if FlowaccPath != "" and "cell_row" not in col_list:
-            # if hasattr(self, 'FlowAcc'):
-            FlowAcc = gdal.Open(FlowaccPath)
+        if flow_acc_file != "" and "cell_row" not in col_list:
+            # if hasattr(self, 'flow_acc'):
+            flow_acc = gdal.Open(flow_acc_file)
             # calculate the nearest cell to each station
-            self.GaugesTable.loc[:, ["cell_row", "cell_col"]] = GC.nearestCell(
-                FlowAcc, self.GaugesTable[["id", "x", "y"]][:]
-            )  # ,'weight'
+            dataset = Dataset(flow_acc)
+            loc_arr = dataset.map_to_array_coordinates(self.GaugesTable)
+            self.GaugesTable.loc[:, ["cell_row", "cell_col"]] = loc_arr
 
         logger.debug("Gauge Table is read successfully")
 
-    def readDischargeGauges(
+    def read_discharge_gauges(
         self,
-        Path: str,
+        path: str,
         delimiter: str = ",",
         column: str = "id",
         fmt: str = "%Y-%m-%d",
-        Split: bool = False,
-        Date1: str = "",
-        Date2: str = "",
+        split: bool = False,
+        start_date: str = "",
+        end_date: str = "",
         readfrom: str = "",
     ):
-        """readDischargeGauges. readDischargeGauges method read the gauge discharge data, discharge of each gauge has to be stored separetly in a file, and the name of the file has to be stored in the Gauges table you entered ubing the method "readGaugeTable" under the column "id", the file should contains the date at the first column.
+        """read_discharge_gauges.
+
+        read_discharge_gauges method read the gauge discharge data, discharge of each gauge has to be stored separately
+        in a file, and the name of the file has to be stored in the Gauges table you entered using the method
+        "readGaugeTable" under the column "id", the file should contain the date at the first column.
 
         Parameters
         ----------
-        Path : [str]
-            Path the the gauge discharge data.
-        delimiter : [str], optional
+        path: [str]
+            path to the gauge discharge data.
+        delimiter: [str], optional
             the delimiter between the date and the discharge column. The default is ",".
-        column : [str], optional
-            the name of the column where you stored the files names. The default is 'id'.
-        fmt : [str], optional
+        column: [str], optional
+            the name of the column where you stored the files' names. The default is 'id'.
+        fmt: [str], optional
             date format. The default is "%Y-%m-%d".
-        Split : bool, optional
+        split: bool, optional
             True if you want to split the data between two dates. The default is False.
-        Date1 : [str], optional
+        start_date: [str], optional
             start date. The default is ''.
-        Date2 : [str], optional
+        end_date: [str], optional
             end date. The default is ''.
         readfrom: [str]
             Default is "".
 
         Returns
         -------
-        GaugesTable : [dataframe].
+        GaugesTable: [dataframe].
             dataframe containing the discharge data
         """
-        if self.TemporalResolution.lower() == "daily":
+        if self.temporal_resolution.lower() == "daily":
             ind = pd.date_range(self.start, self.end, freq="D")
         else:
             ind = pd.date_range(self.start, self.end, freq="H")
 
-        if self.SpatialResolution.lower() == "distributed":
-            assert hasattr(self, "GaugesTable"), "please read the gauges table first"
+        if self.spatial_resolution.lower() == "distributed":
+            assert hasattr(self, "GaugesTable"), "please read the gauges' table first"
 
             self.QGauges = pd.DataFrame(
                 index=ind, columns=self.GaugesTable[column].tolist()
@@ -801,192 +935,210 @@ class Catchment:
                 name = self.GaugesTable.loc[i, "id"]
                 if readfrom != "":
                     f = pd.read_csv(
-                        Path + str(name) + ".csv",
+                        f"{path}/{name}.csv",
                         index_col=0,
                         delimiter=delimiter,
                         skiprows=readfrom,
                     )  # ,#delimiter="\t"
                 else:
                     f = pd.read_csv(
-                        Path + str(name) + ".csv",
+                        f"{path}/{name}.csv",
                         header=0,
                         index_col=0,
                         delimiter=delimiter,
                     )
 
                 f.index = [dt.datetime.strptime(i, fmt) for i in f.index.tolist()]
-
                 self.QGauges[int(name)] = f.loc[self.start : self.end, f.columns[-1]]
         else:
-            if not os.path.exists(Path):
+            if not os.path.exists(path):
                 raise FileNotFoundError(
-                    f"The file you have entered{Path} does not exist"
+                    f"The file you have entered{path} does not exist"
                 )
 
             self.QGauges = pd.DataFrame(index=ind)
-            f = pd.read_csv(
-                Path, header=0, index_col=0, delimiter=delimiter
-            )  # ,#delimiter="\t", skiprows=11,
+            f = pd.read_csv(path, header=0, index_col=0, delimiter=delimiter)
             f.index = [dt.datetime.strptime(i, fmt) for i in f.index.tolist()]
             self.QGauges[f.columns[0]] = f.loc[self.start : self.end, f.columns[0]]
 
-        if Split:
-            Date1 = dt.datetime.strptime(Date1, fmt)
-            Date2 = dt.datetime.strptime(Date2, fmt)
-            self.QGauges = self.QGauges.loc[Date1:Date2]
+        if split:
+            start_date = dt.datetime.strptime(start_date, fmt)
+            end_date = dt.datetime.strptime(end_date, fmt)
+            self.QGauges = self.QGauges.loc[start_date:end_date]
 
         logger.debug("Gauges data are read successfully")
 
-    def readParametersBounds(
+    def read_parameters_bound(
         self,
-        UB: Union[list, np.ndarray],
-        LB: Union[list, np.ndarray],
-        Snow: bool = False,
-        Maxbas: bool = False,
+        upper_bound: Union[list, np.ndarray],
+        lower_bound: Union[list, np.ndarray],
+        snow: bool = False,
+        maxbas: bool = False,
     ):
-        """readParametersBounds. readParametersBounds method reads the lower and upper boundarys for each parameter.
+        """readParametersBounds. readParametersBounds method reads the lower and upper boundaries for each parameter.
 
         Parameters
         ----------
-        UB : [list]
+        upper_bound : [list]
             upper bound.
-        LB : [list]
+        lower_bound : [list]
             lower bound.
-        Snow : [integer]
-            0 if you dont want to run the snow related processes and 1 if there is snow.
-            in case of 1 (simulate snow processes) parameters related to snow simulation
-            has to be provided. The default is 0.
-        Maxbas: [bool]
-            True if the parameters has maxbas.
+        snow : [integer]
+            0 if you don't want to run the snow-related processes and 1 if there is snow.
+            in case of 1 (simulate snow processes), parameters related to snow simulation
+            have to be provided. The default is 0.
+        maxbas: [bool]
+            True if the parameters have maxbas.
 
         Returns
         -------
-        UB : [list]
+        UB: [list]
             upper bound.
-        LB : [list]
+        LB: [list]
             lower bound.
-        Snow : [integer]
+        Snow: [integer]
             Snow
         """
-        assert len(UB) == len(LB), "length of UB should be the same like LB"
-        self.UB = np.array(UB)
-        self.LB = np.array(LB)
+        assert len(upper_bound) == len(
+            lower_bound
+        ), "the length of UB should be the same as LB"
+        self.UB = np.array(upper_bound)
+        self.LB = np.array(lower_bound)
 
-        if not isinstance(Snow, bool):
+        if not isinstance(snow, bool):
             raise ValueError(
-                " snow input defines whether to consider snow subroutine or not it has to be "
-                "True or False"
+                " snow input defines whether to consider snow subroutine or not it has to be True or False"
             )
-        self.Snow = Snow
-        self.Maxbas = Maxbas
+        self.Snow = snow
+        self.Maxbas = maxbas
 
-        logger.debug("Parameters bounds are read successfully")
+        logger.debug("Parameters' bounds are read successfully")
 
-    def extractDischarge(
-        self, CalculateMetrics=True, FW1=False, Factor=None, OnlyOutlet=False
+    def extract_discharge(
+        self, calculate_metrics=True, frame_work_1=False, factor=None, only_outlet=False
     ):
-        """extractDischarge. extractDischarge method extracts and sums the discharge from the Quz_routed and Qlz_translated arrays at the location of the gauges.
+        """extractDischarge.
+
+        extractDischarge method extracts and sums the discharge from the Quz_routed and Qlz_translated arrays at the
+        location of the gauges.
 
         Parameters
         ----------
-        CalculateMetrics : bool, optional
+        calculate_metrics : bool, optional
             True if you want to calculate the performance metrics. The default is True.
-        FW1 : [bool], optional
+        frame_work_1: [bool], optional
             True if the routing function is Maxbas. The default is False.
-        Factor : [list/None]
+        factor : [list/None]
             list of factor if you want to multiply the simulated discharge by
             a factor you have to provide a list of the factor (as many factors
             as the number of gauges). The default is False.
-        OnlyOutlet: [bool]
+        only_outlet: [bool]
             True to extract the discharge only at the outlet.
 
         Returns
         -------
-        Qsim : [dataframe]
+        q_sim : [dataframe]
             dataframe containing the discharge time series of the cells where
             the gauges are located.
         Metrics : [dataframe]
-            data frame containing the followinf metrics ['RMSE', 'NSE',
-            'NSEhf', 'KGE', 'WB','Pearson-CC','R2'] calculated between the simulated
-            hydrographs and the gauge data
+            data frame containing the following metrics ['RMSE', 'NSE', 'NSEhf', 'KGE', 'WB','Pearson-CC',
+            'R2'] calculated between the simulated hydrographs and the gauge data.
         """
+        if self.GaugesTable is None:
+            raise ValueError("please read the gauges' table first.")
 
-        if not FW1:
+        if not frame_work_1:
             self.Qsim = pd.DataFrame(index=self.Index, columns=self.QGauges.columns)
-            if CalculateMetrics:
+            if calculate_metrics:
                 index = ["RMSE", "NSE", "NSEhf", "KGE", "WB", "Pearson-CC", "R2"]
                 self.Metrics = pd.DataFrame(index=index, columns=self.QGauges.columns)
             # sum the lower zone and the upper zone discharge
-            outletx = self.Outlet[0][0]
-            outlety = self.Outlet[1][0]
+            outlet_x = self.Outlet[0][0]
+            outlet_y = self.Outlet[1][0]
 
-            # self.qout = self.qlz_translated[outletx,outlety,:] + self.quz_routed[outletx,outlety,:]
+            # self.qout = self.qlz_translated[outlet_x,outlet_y,:] + self.quz_routed[outlet_x,outlet_y,:]
             # self.Qtot = self.qlz_translated + self.quz_routed
-            self.qout = self.Qtot[outletx, outlety, :]
+            self.qout = self.Qtot[outlet_x, outlet_y, :]
 
             for i in range(len(self.GaugesTable)):
-                Xind = int(self.GaugesTable.loc[self.GaugesTable.index[i], "cell_row"])
-                Yind = int(self.GaugesTable.loc[self.GaugesTable.index[i], "cell_col"])
-                gaugeid = self.GaugesTable.loc[self.GaugesTable.index[i], "id"]
+                x_ind = int(self.GaugesTable.loc[self.GaugesTable.index[i], "cell_row"])
+                y_ind = int(self.GaugesTable.loc[self.GaugesTable.index[i], "cell_col"])
+                gauge_id = self.GaugesTable.loc[self.GaugesTable.index[i], "id"]
 
-                # Quz = np.reshape(self.quz_routed[Xind,Yind,:-1],self.TS-1)
-                # Qlz = np.reshape(self.qlz_translated[Xind,Yind,:-1],self.TS-1)
-                # Qsim = Quz + Qlz
+                # Quz = np.reshape(self.quz_routed[x_ind,y_ind,:-1],self.TS-1)
+                # Qlz = np.reshape(self.qlz_translated[x_ind,y_ind,:-1],self.TS-1)
+                # q_sim = Quz + Qlz
 
-                Qsim = np.reshape(self.Qtot[Xind, Yind, :-1], self.TS - 1)
-                if Factor is not None:
-                    self.Qsim.loc[:, gaugeid] = Qsim * Factor[i]
+                q_sim = np.reshape(self.Qtot[x_ind, y_ind, :-1], self.TS - 1)
+                if factor is not None:
+                    self.Qsim.loc[:, gauge_id] = q_sim * factor[i]
                 else:
-                    self.Qsim.loc[:, gaugeid] = Qsim
+                    self.Qsim.loc[:, gauge_id] = q_sim
 
-                if CalculateMetrics:
-                    Qobs = self.QGauges.loc[:, gaugeid]
-                    self.Metrics.loc["RMSE", gaugeid] = round(PC.RMSE(Qobs, Qsim), 3)
-                    self.Metrics.loc["NSE", gaugeid] = round(PC.NSE(Qobs, Qsim), 3)
-                    self.Metrics.loc["NSEhf", gaugeid] = round(PC.NSEHF(Qobs, Qsim), 3)
-                    self.Metrics.loc["KGE", gaugeid] = round(PC.KGE(Qobs, Qsim), 3)
-                    self.Metrics.loc["WB", gaugeid] = round(PC.WB(Qobs, Qsim), 3)
-                    self.Metrics.loc["Pearson-CC", gaugeid] = round(
-                        PC.PearsonCorre(Qobs, Qsim), 3
+                if calculate_metrics:
+                    q_obs = self.QGauges.loc[:, gauge_id]
+                    self.Metrics.loc["RMSE", gauge_id] = round(
+                        metrics.rmse(q_obs, q_sim), 3
                     )
-                    self.Metrics.loc["R2", gaugeid] = round(PC.R2(Qobs, Qsim), 3)
-        elif FW1 or OnlyOutlet:
+                    self.Metrics.loc["NSE", gauge_id] = round(
+                        metrics.nse(q_obs, q_sim), 3
+                    )
+                    self.Metrics.loc["NSEhf", gauge_id] = round(
+                        metrics.nse_hf(q_obs, q_sim), 3
+                    )
+                    self.Metrics.loc["KGE", gauge_id] = round(
+                        metrics.kge(q_obs, q_sim), 3
+                    )
+                    self.Metrics.loc["WB", gauge_id] = round(
+                        metrics.wb(q_obs, q_sim), 3
+                    )
+                    self.Metrics.loc["Pearson-CC", gauge_id] = round(
+                        metrics.pearson_corre(q_obs, q_sim), 3
+                    )
+                    self.Metrics.loc["R2", gauge_id] = round(
+                        metrics.R2(q_obs, q_sim), 3
+                    )
+        elif frame_work_1 or only_outlet:
             self.Qsim = pd.DataFrame(index=self.Index)
-            gaugeid = self.GaugesTable.loc[self.GaugesTable.index[-1], "id"]
-            Qsim = np.reshape(self.qout, self.TS - 1)
-            self.Qsim.loc[:, gaugeid] = Qsim
+            gauge_id = self.GaugesTable.loc[self.GaugesTable.index[-1], "id"]
+            q_sim = np.reshape(self.qout, self.TS - 1)
+            self.Qsim.loc[:, gauge_id] = q_sim
 
-            if CalculateMetrics:
+            if calculate_metrics:
                 index = ["RMSE", "NSE", "NSEhf", "KGE", "WB", "Pearson-CC", "R2"]
                 self.Metrics = pd.DataFrame(index=index)
 
                 # if CalculateMetrics:
-                Qobs = self.QGauges.loc[:, gaugeid]
-                self.Metrics.loc["RMSE", gaugeid] = round(PC.RMSE(Qobs, Qsim), 3)
-                self.Metrics.loc["NSE", gaugeid] = round(PC.NSE(Qobs, Qsim), 3)
-                self.Metrics.loc["NSEhf", gaugeid] = round(PC.NSEHF(Qobs, Qsim), 3)
-                self.Metrics.loc["KGE", gaugeid] = round(PC.KGE(Qobs, Qsim), 3)
-                self.Metrics.loc["WB", gaugeid] = round(PC.WB(Qobs, Qsim), 3)
-                self.Metrics.loc["Pearson-CC", gaugeid] = round(
-                    PC.PearsonCorre(Qobs, Qsim), 3
+                q_obs = self.QGauges.loc[:, gauge_id]
+                self.Metrics.loc["RMSE", gauge_id] = round(
+                    metrics.rmse(q_obs, q_sim), 3
                 )
-                self.Metrics.loc["R2", gaugeid] = round(PC.R2(Qobs, Qsim), 3)
+                self.Metrics.loc["NSE", gauge_id] = round(metrics.nse(q_obs, q_sim), 3)
+                self.Metrics.loc["NSEhf", gauge_id] = round(
+                    metrics.nse_hf(q_obs, q_sim), 3
+                )
+                self.Metrics.loc["KGE", gauge_id] = round(metrics.kge(q_obs, q_sim), 3)
+                self.Metrics.loc["WB", gauge_id] = round(metrics.wb(q_obs, q_sim), 3)
+                self.Metrics.loc["Pearson-CC", gauge_id] = round(
+                    metrics.pearson_corre(q_obs, q_sim), 3
+                )
+                self.Metrics.loc["R2", gauge_id] = round(metrics.r2(q_obs, q_sim), 3)
 
-    def plotHydrograph(
+    def plot_hydrograph(
         self,
-        plotstart: str,
-        plotend: str,
-        gaugei: int,
-        Hapicolor: Union[tuple, str] = "#004c99",
-        gaugecolor: Union[tuple, str] = "#DC143C",
-        linewidth: int = 3,
-        Hapiorder: int = 1,
-        Gaugeorder: int = 0,
-        labelfontsize: int = 10,
-        XMajorfmt: str = "%Y-%m-%d",
-        Noxticks: int = 5,
-        Title: str = "",
-        Xaxis_fmt: str = "%d\n%m",
+        start_date: str,
+        end_date: str,
+        gauge: int,
+        hapi_color: Union[tuple, str] = "#004c99",
+        gauge_color: Union[tuple, str] = "#DC143C",
+        line_width: int = 3,
+        hapi_order: int = 1,
+        gauge_order: int = 0,
+        label_font_size: int = 10,
+        x_major_fmt: str = "%Y-%m-%d",
+        n_ticks: int = 5,
+        title: str = "",
+        x_axis_fmt: str = "%d\n%m",
         label: str = "",
         fmt: str = "%Y-%m-%d",
     ):
@@ -996,33 +1148,33 @@ class Catchment:
 
         Parameters
         ----------
-        plotstart : [str]
+        start_date: [str]
             starting date.
-        plotend : [str]
+        end_date: [str]
             end date.
-        gaugei : [integer]
+        gauge: [integer]
             order if the gauge in the GaugeTable.
-        Hapicolor : [str], optional
+        hapi_color: [str], optional
             color of the Simulated hydrograph. The default is "#004c99".
-        gaugecolor : [str], optional
+        gauge_color: [str], optional
             color of the gauge. The default is "#DC143C".
-        linewidth : [numeric], optional
+        line_width: [numeric], optional
             line width. The default is 3.
-        Hapiorder : [integer], optional
+        hapi_order: [integer], optional
             the order of the simulated hydrograph to control which hydrograph
-            is in the front . The default is 1.
-        Gaugeorder : TYPE, optional
+            is in the front. The default is 1.
+        gauge_order: TYPE, optional
             the order of the simulated hydrograph to control which hydrograph
-            is in the front . The default is 0.
-        labelfontsize : numeric, optional
+            is in the front. The default is 0.
+        label_font_size: numeric, optional
             label size. The default is 10.
-        XMajorfmt : [str], optional
+        x_major_fmt: [str], optional
             format of the x-axis labels. The default is '%Y-%m-%d'.
-        Noxticks : [integer], optional
+        n_ticks: [integer], optional
             number of x-axis ticks. The default is 5.
-        Title: [str]
+        title: [str]
             Default is "".
-        Xaxis_fmt: [str]
+        x_axis_fmt: [str]
             Default is "%d\n%m".
         label: [str]
             Default is "".
@@ -1031,70 +1183,70 @@ class Catchment:
 
         Returns
         -------
-        fig : TYPE
+        fig: TYPE
             DESCRIPTION.
-        ax : [matplotlib axes]
+        ax: [matplotlib axes]
             you can control the figure from the axes.
         """
-        plotstart = dt.datetime.strptime(plotstart, fmt)
-        plotend = dt.datetime.strptime(plotend, fmt)
+        start_date = dt.datetime.strptime(start_date, fmt)
+        end_date = dt.datetime.strptime(end_date, fmt)
 
         fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(6, 5))
 
-        if self.SpatialResolution == "distributed":
-            gaugeid = self.GaugesTable.loc[gaugei, "id"]
+        if self.spatial_resolution == "distributed":
+            gauge_id = self.GaugesTable.loc[gauge, "id"]
 
-            if Title == "":
-                Title = "Gauge - " + str(self.GaugesTable.loc[gaugei, "name"])
+            if title == "":
+                title = "Gauge - " + str(self.GaugesTable.loc[gauge, "name"])
 
             if label == "":
-                label = str(self.GaugesTable.loc[gaugei, "name"])
+                label = str(self.GaugesTable.loc[gauge, "name"])
 
             ax.plot(
-                self.Qsim.loc[plotstart:plotend, gaugeid],
+                self.Qsim.loc[start_date:end_date, gauge_id],
                 "-.",
                 label=label,
-                linewidth=linewidth,
-                color=Hapicolor,
-                zorder=Hapiorder,
+                linewidth=line_width,
+                color=hapi_color,
+                zorder=hapi_order,
             )
-            ax.set_title(Title, fontsize=20)
+            ax.set_title(title, fontsize=20)
         else:
-            gaugeid = self.QGauges.columns[0]
-            if Title == "":
-                Title = "Gauge - " + str(gaugeid)
+            gauge_id = self.QGauges.columns[0]
+            if title == "":
+                title = "Gauge - " + str(gauge_id)
             if label == "":
-                label = str(gaugeid)
+                label = str(gauge_id)
 
             ax.plot(
-                self.Qsim.loc[plotstart:plotend, gaugeid],
+                self.Qsim.loc[start_date:end_date, gauge_id],
                 "-.",
-                label=Title,
-                linewidth=linewidth,
-                color=Hapicolor,
-                zorder=Hapiorder,
+                label=title,
+                linewidth=line_width,
+                color=hapi_color,
+                zorder=hapi_order,
             )
-            ax.set_title(Title, fontsize=20)
+            ax.set_title(title, fontsize=20)
 
         ax.plot(
-            self.QGauges.loc[plotstart:plotend, gaugeid],
+            self.QGauges.loc[start_date:end_date, gauge_id],
             label="Gauge",
-            linewidth=linewidth,
-            color=gaugecolor,
-            zorder=Gaugeorder,
+            linewidth=line_width,
+            color=gauge_color,
+            zorder=gauge_order,
         )
 
-        ax.tick_params(axis="both", which="major", labelsize=labelfontsize)
+        ax.tick_params(axis="both", which="major", labelsize=label_font_size)
         # ax.locator_params(axis="x", nbins=4)
 
-        XMajorfmt = dates.DateFormatter(XMajorfmt)
-        ax.xaxis.set_major_formatter(XMajorfmt)
+        x_major_fmt = dates.DateFormatter(x_major_fmt)
+        ax.xaxis.set_major_formatter(x_major_fmt)
         # ax.xaxis.set_minor_locator(dates.WeekdayLocator(byweekday=(1),
         # interval=1))
 
-        ax.xaxis.set_minor_formatter(dates.DateFormatter(Xaxis_fmt))
+        ax.xaxis.set_minor_formatter(dates.DateFormatter(x_axis_fmt))
 
-        ax.xaxis.set_major_locator(plt.MaxNLocator(Noxticks))
+        ax.xaxis.set_major_locator(plt.MaxNLocator(n_ticks))
 
         ax.legend(fontsize=12)
         ax.set_xlabel("Time", fontsize=12)
@@ -1103,82 +1255,85 @@ class Catchment:
 
         if self.Metrics:
             logger.debug("----------------------------------")
-            logger.debug("Gauge - " + str(gaugeid))
-            logger.debug("RMSE= " + str(round(self.Metrics.loc["RMSE", gaugeid], 2)))
-            logger.debug("NSE= " + str(round(self.Metrics.loc["NSE", gaugeid], 2)))
-            logger.debug("NSEhf= " + str(round(self.Metrics.loc["NSEhf", gaugeid], 2)))
-            logger.debug("KGE= " + str(round(self.Metrics.loc["KGE", gaugeid], 2)))
-            logger.debug("WB= " + str(round(self.Metrics.loc["WB", gaugeid], 2)))
+            logger.debug("Gauge - " + str(gauge_id))
+            logger.debug("RMSE= " + str(round(self.Metrics.loc["RMSE", gauge_id], 2)))
+            logger.debug("NSE= " + str(round(self.Metrics.loc["NSE", gauge_id], 2)))
+            logger.debug("NSEhf= " + str(round(self.Metrics.loc["NSEhf", gauge_id], 2)))
+            logger.debug("KGE= " + str(round(self.Metrics.loc["KGE", gauge_id], 2)))
+            logger.debug("WB= " + str(round(self.Metrics.loc["WB", gauge_id], 2)))
             logger.debug(
-                "Pearson-CC= " + str(round(self.Metrics.loc["Pearson-CC", gaugeid], 2))
+                "Pearson-CC= " + str(round(self.Metrics.loc["Pearson-CC", gauge_id], 2))
             )
-            logger.debug("R2= " + str(round(self.Metrics.loc["R2", gaugeid], 2)))
+            logger.debug("R2= " + str(round(self.Metrics.loc["R2", gauge_id], 2)))
 
         return fig, ax
 
-    def plotDistributedResults(
+    def plot_distributed_results(
         self,
         start: str,
         end: str,
         fmt: str = "%Y-%m-%d",
-        Option: int = 1,
-        Gauges: bool = False,
+        option: int = 1,
+        gauges: bool = False,
         **kwargs,
     ):
-        """plotDistributedResults. plotDistributedResults animate the time series of the meteorological inputs and the result calculated by the model  like the total discharge, upper zone, and lower zone discharge and the state variables.
+        """plotDistributedResults.
+
+        plotDistributedResults animate the time series of the meteorological inputs and the result calculated by the
+        model like the total discharge, upper zone, and lower zone discharge and the state variables.
 
         Parameters
         ----------
-        start : [str]
+        start: [str]
             starting date
-        end : [str]
+        end: [str]
             end date
-        fmt : [str]
-            format of the gicen date. The default is "%Y-%m-%d"
-        Option : [str]
+        fmt: [str]
+            format of the given date. The default is "%Y-%m-%d"
+        option : [str]
             1- Total discharge, 2-Upper zone discharge, 3-ground water,
             4-Snowpack state variable, 5-Soil moisture, 6-Upper zone,
             7-Lower zone, 8-Water content, 9-Precipitation input. 10-ET,
-            11-Temperature. The default is 1
-        Gauges : [str]
-            . The default is False
+            11-Temperature. The default is 1.
+        gauges: [str]
+            gauge name. The default is False
         **kwargs :
-            possible keyward args
-            TicksSpacing : [integer], optional
-                Spacing in the colorbar ticks. The default is 2.
-            Figsize : [tuple], optional
+            possible keyword args
+            TicksSpacing: [integer], optional
+                Spacing in the color bar ticks. The default is 2.
+            Figsize: [tuple], optional
                 figure size. The default is (8,8).
-            PlotNumbers : [bool], optional
-                True to plot the values intop of each cell. The default is True.
-            NumSize : integer, optional
-                size of the numbers plotted intop of each cells. The default is 8.
-            Title : [str], optional
+            PlotNumbers: [bool], optional
+                True to plot the values on top of each cell. The default is True.
+            NumSize: integer, optional
+                size of the numbers plotted on top of each cell. The default is 8.
+            title: [str], optional
                 title of the plot. The default is 'Total Discharge'.
-            title_size : [integer], optional
+            title_size: [integer], optional
                 title size. The default is 15.
-            Backgroundcolorthreshold : [float/integer], optional
+            Backgroundcolorthreshold: [float/integer], optional
                 threshold value if the value of the cell is greater, the plotted
                 numbers will be black and if smaller the plotted number will be white
                 if None given the maxvalue/2 will be considered. The default is None.
-            textcolors : TYPE, optional
+            textcolors: TYPE, optional
                 Two colors to be used to plot the values i top of each cell. The default is ("white","black").
-            cbarlabel : str, optional
+            cbarlabel: str, optional
                 label of the color bar. The default is 'Discharge m3/s'.
-            cbarlabelsize : integer, optional
+            cbarlabelsize: integer, optional
                 size of the color bar label. The default is 12.
-            Cbarlength : [float], optional
+            Cbarlength: [float], optional
                 ratio to control the height of the colorbar. The default is 0.75.
-            Interval : [integer], optional
-                number to controlthe speed of the animation. The default is 200.
-            cmap : [str], optional
+            Interval: [integer], optional
+                number to control the speed of the animation. The default is 200.
+            cmap: [str], optional
                 color style. The default is 'coolwarm_r'.
-            Textloc : [list], optional
+            Textloc: [list], optional
                 location of the date text. The default is [0.1,0.2].
-            Gaugecolor : [str], optional
+            Gaugecolor: [str], optional
                 color of the points. The default is 'red'.
-            Gaugesize : [integer], optional
+            Gaugesize: [integer], optional
                 size of the points. The default is 100.
-            ColorScale : integer, optional
+            ColorScale: integer, optional
                 there are 5 options to change the scale of the colors. The default is 1.
                 1- ColorScale 1 is the normal scale
                 2- ColorScale 2 is the power scale
@@ -1186,20 +1341,20 @@ class Catchment:
                 4- ColorScale 4 is the PowerNorm scale
                 5- ColorScale 5 is the BoundaryNorm scale
                 ------------------------------------------------------------------
-                gamma : [float], optional
+                gamma: [float], optional
                     value needed for option 2 . The default is 1./2..
-                linthresh : [float], optional
+                linthresh: [float], optional
                     value needed for option 3. The default is 0.0001.
-                linscale : [float], optional
+                linscale: [float], optional
                     value needed for option 3. The default is 0.001.
-                midpoint : [float], optional
+                midpoint: [float], optional
                     value needed for option 5. The default is 0.
                 ------------------------------------------------------------------
-            orientation : [string], optional
+            orientation: [string], optional
                 orintation of the colorbar horizontal/vertical. The default is 'vertical'.
-            rotation : [number], optional
+            rotation: [number], optional
                 rotation of the colorbar label. The default is -90.
-            **kwargs : [dict]
+            **kwargs: [dict]
                 keys:
                     Points : [dataframe].
                         dataframe contains two columns 'cell_row', and cell_col to
@@ -1212,118 +1367,122 @@ class Catchment:
         start = dt.datetime.strptime(start, fmt)
         end = dt.datetime.strptime(end, fmt)
 
-        starti = np.where(self.Index == start)[0][0]
-        endi = np.where(self.Index == end)[0][0]
+        start_i = np.where(self.Index == start)[0][0]
+        end_i = np.where(self.Index == end)[0][0]
 
-        if 1 > Option > 11:
+        if 1 > option > 11:
             raise ValueError("Plotting options are from 1 to 11")
 
-        if Option == 1:
+        if option == 1:
             self.Qtot[self.FlowAccArr == self.NoDataValue, :] = np.nan
-            Arr = self.Qtot[:, :, starti:endi]
-            Title = "Total Discharge"
-        elif Option == 2:
+            arr = self.Qtot[:, :, start_i:end_i]
+            title = "Total Discharge"
+        elif option == 2:
             self.quz_routed[self.FlowAccArr == self.NoDataValue, :] = np.nan
-            Arr = self.quz_routed[:, :, starti:endi]
-            Title = "Surface Flow"
-        elif Option == 3:
+            arr = self.quz_routed[:, :, start_i:end_i]
+            title = "Surface Flow"
+        elif option == 3:
             self.qlz_translated[self.FlowAccArr == self.NoDataValue, :] = np.nan
-            Arr = self.qlz_translated[:, :, starti:endi]
-            Title = "Ground Water Flow"
-        elif Option == 4:
-            self.statevariables[self.FlowAccArr == self.NoDataValue, :, 0] = np.nan
-            Arr = self.statevariables[:, :, starti:endi, 0]
-            Title = "Snow Pack"
-        elif Option == 5:
-            self.statevariables[self.FlowAccArr == self.NoDataValue, :, 1] = np.nan
-            Arr = self.statevariables[:, :, starti:endi, 1]
-            Title = "Soil Moisture"
-        elif Option == 6:
-            self.statevariables[self.FlowAccArr == self.NoDataValue, :, 2] = np.nan
-            Arr = self.statevariables[:, :, starti:endi, 2]
-            Title = "Upper Zone"
-        elif Option == 7:
-            self.statevariables[self.FlowAccArr == self.NoDataValue, :, 3] = np.nan
-            Arr = self.statevariables[:, :, starti:endi, 3]
-            Title = "Lower Zone"
-        elif Option == 8:
-            self.statevariables[self.FlowAccArr == self.NoDataValue, :, 4] = np.nan
-            Arr = self.statevariables[:, :, starti:endi, 4]
-            Title = "Water Content"
-        elif Option == 9:
+            arr = self.qlz_translated[:, :, start_i:end_i]
+            title = "Ground Water Flow"
+        elif option == 4:
+            self.state_variables[self.FlowAccArr == self.NoDataValue, :, 0] = np.nan
+            arr = self.state_variables[:, :, start_i:end_i, 0]
+            title = "Snow Pack"
+        elif option == 5:
+            self.state_variables[self.FlowAccArr == self.NoDataValue, :, 1] = np.nan
+            arr = self.state_variables[:, :, start_i:end_i, 1]
+            title = "Soil Moisture"
+        elif option == 6:
+            self.state_variables[self.FlowAccArr == self.NoDataValue, :, 2] = np.nan
+            arr = self.state_variables[:, :, start_i:end_i, 2]
+            title = "Upper Zone"
+        elif option == 7:
+            self.state_variables[self.FlowAccArr == self.NoDataValue, :, 3] = np.nan
+            arr = self.state_variables[:, :, start_i:end_i, 3]
+            title = "Lower Zone"
+        elif option == 8:
+            self.state_variables[self.FlowAccArr == self.NoDataValue, :, 4] = np.nan
+            arr = self.state_variables[:, :, start_i:end_i, 4]
+            title = "Water Content"
+        elif option == 9:
             self.Prec[self.FlowAccArr == self.NoDataValue, :] = np.nan
-            Arr = self.Prec[:, :, starti:endi]
-            Title = "Precipitation"
-        elif Option == 10:
+            arr = self.Prec[:, :, start_i:end_i]
+            title = "Precipitation"
+        elif option == 10:
             self.ET[self.FlowAccArr == self.NoDataValue, :] = np.nan
-            Arr = self.ET[:, :, starti:endi]
-            Title = "ET"
-        elif Option == 11:
+            arr = self.ET[:, :, start_i:end_i]
+            title = "ET"
+        elif option == 11:
             self.Temp[self.FlowAccArr == self.NoDataValue, :] = np.nan
-            Arr = self.Temp[:, :, starti:endi]
-            Title = "Temperature"
+            arr = self.Temp[:, :, start_i:end_i]
+            title = "Temperature"
+        else:
+            raise ValueError("Plotting options are from 1 to 11")
 
-        Time = self.Index[starti:endi]
+        time = self.Index[start_i:end_i]
 
-        if Gauges:
+        if gauges:
             kwargs["Points"] = self.GaugesTable
 
-        anim = Map.AnimateArray(Arr, Time, self.no_elem, Title=Title, **kwargs)
+        array = Array(arr)
+        anim = array.animate(time, title=title, **kwargs)
+        # anim = StaticGlyph.AnimateArray(Arr, Time, self.no_elem, Title=Title, **kwargs)
 
         self.anim = anim
 
         return anim
 
-    def saveAnimation(self, VideoFormat="gif", Path="", SaveFrames=20):
-        """saveAnimation. saveAnimation.
+    # def save_animation(self, video_format="gif", path="", save_frames=20):
+    #     """saveAnimation. saveAnimation.
+    #
+    #     Parameters
+    #     ----------
+    #     video_format : [str], optional
+    #         possible formats ['mp4','mov', 'avi', 'gif']. The default is "gif".
+    #     path : [str], optional
+    #         path inclusinf the video format. The default is ''.
+    #     save_frames : [integer], optional
+    #         speed of the video. The default is 20.
+    #
+    #     Returns
+    #     -------
+    #     None.
+    #     """
+    #     Vis.SaveAnimation(
+    #         self.anim, VideoFormat=video_format, Path=path, SaveFrames=save_frames
+    #     )
 
-        Parameters
-        ----------
-        VideoFormat : [str], optional
-            possible formats ['mp4','mov', 'avi', 'gif']. The default is "gif".
-        Path : [str], optional
-            path inclusinf the video format. The default is ''.
-        SaveFrames : [integer], optional
-            speed of the video. The default is 20.
-
-        Returns
-        -------
-        None.
-        """
-        Vis.SaveAnimation(
-            self.anim, VideoFormat=VideoFormat, Path=Path, SaveFrames=SaveFrames
-        )
-
-    def saveResults(
+    def save_results(
         self,
-        FlowAccPath: str = "",
-        Result: int = 1,
+        flow_acc_path: str = "",
+        result: int = 1,
         start: str = "",
         end: str = "",
-        Path: str = "",
-        Prefix: str = "",
+        path: str = "",
+        prefix: str = "",
         fmt: str = "%Y-%m-%d",
     ):
-        """saveResults. saveResults save the results into rasters.
+        """save_results. saveResults save the results into rasters.
 
         Parameters
         ----------
-        FlowAccPath : [path]
+        flow_acc_path : [path]
             Path to Flow acc raster.
-        Result : [integer], optional
+        result: [integer], optional
             1 for the total discharge, 2 for the upper zone discharge, 3 for
             the lower zone discharge, 4 for the snow pack, 5 for the soil
             moisture, 6 upper zone, 7 for the lower zone, 8 for the water content.
             The default is 1.
-        start : [str], optional
+        start: [str], optional
             start date. The default is ''.
-        end : [str], optional
+        end: [str], optional
             end date. The default is ''.
-        Path : [str], optional
-            PAth to the directory where you want to save the results. The default is ''.
-        Prefix : [str], optional
+        path: [str], optional
+            path to the directory where you want to save the results. The default is ''.
+        prefix: [str], optional
             prefix to add to the name of the result files. The default is ''.
-        fmt : [str], optional
+        fmt: [str], optional
             format of the date. The default is "%Y-%m-%d".
 
         Returns
@@ -1340,101 +1499,79 @@ class Catchment:
         else:
             end = dt.datetime.strptime(end, fmt)
 
-        starti = np.where(self.Index == start)[0][0]
-        endi = np.where(self.Index == end)[0][0] + 1
+        start_i = np.where(self.Index == start)[0][0]
+        end_i = np.where(self.Index == end)[0][0] + 1
 
-        if self.SpatialResolution == "distributed":
-            assert (
-                FlowAccPath != ""
-            ), "Please enter the  FlowAccPath parameter to the saveResults method"
-            src = gdal.Open(FlowAccPath)
+        if self.spatial_resolution == "distributed":
+            if flow_acc_path == "":
+                raise Exception(
+                    "Please enter the FlowAccPath parameter to the saveResults method"
+                )
 
-            if Prefix == "":
-                Prefix = "Result_"
+            src = gdal.Open(flow_acc_path)
 
-            # create list of names
-            Path = Path + Prefix
-            names = [Path + str(i)[:10] for i in self.Index[starti:endi]]
-            names = [i.replace("-", "_") for i in names]
-            names = [i.replace(" ", "_") for i in names]
+            if prefix == "":
+                prefix = "Result_"
+
+            # create a list of names
+            path = path + prefix
+            names = [path + str(i)[:10] for i in self.Index[start_i:end_i]]
+            # names = [i.replace("-", "_") for i in names]
+            # names = [i.replace(" ", "_") for i in names]
             names = [i + ".tif" for i in names]
-            if Result == 1:
-                Raster.rastersLike(src, self.Qtot[:, :, starti:endi], names)
-            elif Result == 2:
-                Raster.rastersLike(src, self.quz_routed[:, :, starti:endi], names)
-            elif Result == 3:
-                Raster.rastersLike(src, self.qlz_translated[:, :, starti:endi], names)
-            elif Result == 4:
-                Raster.rastersLike(
-                    src, self.statevariables[:, :, starti:endi, 0], names
+            if result == 1:
+                arr = self.Qtot[:, :, start_i:end_i]
+            elif result == 2:
+                arr = self.quz_routed[:, :, start_i:end_i]
+            elif result == 3:
+                arr = self.qlz_translated[:, :, start_i:end_i]
+            elif result == 4:
+                arr = self.state_variables[:, :, start_i:end_i, 0]
+            elif result == 5:
+                arr = self.state_variables[:, :, start_i:end_i, 1]
+            elif result == 6:
+                arr = self.state_variables[:, :, start_i:end_i, 2]
+            elif result == 7:
+                arr = self.state_variables[:, :, start_i:end_i, 3]
+            elif result == 8:
+                arr = self.state_variables[:, :, start_i:end_i, 4]
+            else:
+                raise ValueError(
+                    f" The result parameter takes a value between 1 and 8, given: {result}"
                 )
-            elif Result == 5:
-                Raster.rastersLike(
-                    src, self.statevariables[:, :, starti:endi, 1], names
-                )
-            elif Result == 6:
-                Raster.rastersLike(
-                    src, self.statevariables[:, :, starti:endi, 2], names
-                )
-            elif Result == 7:
-                Raster.rastersLike(
-                    src, self.statevariables[:, :, starti:endi, 3], names
-                )
-            elif Result == 8:
-                Raster.rastersLike(
-                    src, self.statevariables[:, :, starti:endi, 4], names
-                )
+
+            cube = Datacube(Dataset(src), time_length=arr.shape[2])
+            arr = np.moveaxis(arr, -1, 0)
+            cube.values = arr
+            cube.to_file(names)
         else:
             ind = pd.date_range(start, end, freq="D")
             data = pd.DataFrame(index=ind)
 
             data["date"] = ["'" + str(i)[:10] + "'" for i in data.index]
 
-            if Result == 1:
-                data["Qsim"] = self.Qsim[starti:endi]
-                data.to_csv(Path, index=False, float_format="%.3f")
-            elif Result == 2:
-                data["Quz"] = self.quz[starti:endi]
-                data.to_csv(Path, index=False, float_format="%.3f")
-            elif Result == 3:
-                data["Qlz"] = self.qlz[starti:endi]
-                data.to_csv(Path, index=False, float_format="%.3f")
-            elif Result == 4:
-                data[["SP", "SM", "UZ", "LZ", "WC"]] = self.statevariables[
-                    starti:endi, :
-                ]
-                data.to_csv(Path, index=False, float_format="%.3f")
-            elif Result == 5:
-                data["Qsim"] = self.Qsim[starti:endi]
-                data["Quz"] = self.quz[starti:endi]
-                data["Qlz"] = self.qlz[starti:endi]
-                data[["SP", "SM", "UZ", "LZ", "WC"]] = self.statevariables[
-                    starti:endi, :
-                ]
-                data.to_csv(Path, index=False, float_format="%.3f")
+            if result == 1:
+                data["Qsim"] = self.Qsim[start_i:end_i]
+                data.to_csv(path, index=False, float_format="%.3f")
+            elif result == 2:
+                data["Quz"] = self.quz[start_i:end_i]
+                data.to_csv(path, index=False, float_format="%.3f")
+            elif result == 3:
+                data["Qlz"] = self.qlz[start_i:end_i]
+                data.to_csv(path, index=False, float_format="%.3f")
+            elif result == 4:
+                data[STATE_VARIABLES] = self.state_variables[start_i:end_i, :]
+                data.to_csv(path, index=False, float_format="%.3f")
+            elif result == 5:
+                data["Qsim"] = self.Qsim[start_i:end_i]
+                data["Quz"] = self.quz[start_i:end_i]
+                data["Qlz"] = self.qlz[start_i:end_i]
+                data[STATE_VARIABLES] = self.state_variables[start_i:end_i, :]
+                data.to_csv(path, index=False, float_format="%.3f")
             else:
                 assert False, "the possible options are from 1 to 5"
 
         logger.debug("Data is saved successfully")
-
-    def ListAttributes(self):
-        """Print Attributes List."""
-
-        logger.debug("\n")
-        logger.debug(
-            "Attributes List of: "
-            + repr(self.__dict__["name"])
-            + " - "
-            + self.__class__.__name__
-            + " Instance\n"
-        )
-        self_keys = list(self.__dict__.keys())
-        self_keys.sort()
-        for key in self_keys:
-            if key != "name":
-                logger.debug(str(key) + " : " + repr(self.__dict__[key]))
-
-        logger.debug("\n")
 
 
 class Lake:
@@ -1454,25 +1591,25 @@ class Lake:
 
     def __init__(
         self,
-        start="",
-        end="",
-        fmt="%Y-%m-%d",
-        TemporalResolution="Daily",
-        Split=False,
+        start: str = "",
+        end: str = "",
+        fmt: str = "%Y-%m-%d",
+        temporal_resolution: str = "Daily",
+        split: bool = False,
     ):
         """Lake. Lake class for lake simulation.
 
         Parameters
         ----------
-        start : [str], optional
+        start: [str], optional
             start date. The default is ''.
-        end : [str], optional
+        end: [str], optional
             end date. The default is ''.
-        fmt : [str], optional
+        fmt: [str], optional
             date format. The default is "%Y-%m-%d".
-        TemporalResolution : [str], optional
+        temporal_resolution: [str], optional
             "Daily" ot "Hourly". The default is "Daily".
-        Split : bool, optional
+        split : bool, optional
             true if you want to split the date between two dates. The default is False.
 
         Returns
@@ -1482,13 +1619,13 @@ class Lake:
 
         self.OutflowCell = None
         self.Snow = None
-        self.Split = Split
+        self.Split = split
         self.start = dt.datetime.strptime(start, fmt)
         self.end = dt.datetime.strptime(end, fmt)
 
-        if TemporalResolution.lower() == "daily":
+        if temporal_resolution.lower() == "daily":
             self.Index = pd.date_range(start, end, freq="D")
-        elif TemporalResolution.lower() == "hourly":
+        elif temporal_resolution.lower() == "hourly":
             self.Index = pd.date_range(start, end, freq="H")
         else:
             assert False, "Error"
@@ -1502,26 +1639,26 @@ class Lake:
         )
         self.StageDischargeCurve = None
 
-    def readMeteoData(self, Path: str, fmt: str):
+    def read_meteo_data(self, path: str, fmt: str):
         """readMeteoData. readMeteoData reads the meteorological data for the lake.
 
         [rainfall, ET, temperature]
 
         Parameters
         ----------
-        Path : [str]
-            path to the meteo data file, containing the data in the follwoing
+        path : [str]
+            path to the meteo data file, containing the data in the following
             order [date, rainfall, ET, temperature].
         fmt : [str]
             date format.
 
         Returns
         -------
-        MeteoData : [array].
+        MeteoData: [array].
             array containing the meteorological data
         """
 
-        df = pd.read_csv(Path, index_col=0)
+        df = pd.read_csv(path, index_col=0)
         df.index = [dt.datetime.strptime(date, fmt) for date in df.index]
 
         if self.Split:
@@ -1531,31 +1668,30 @@ class Lake:
 
         logger.debug("Lake Meteo data are read successfully")
 
-    def readParameters(self, Path):
+    def read_parameters(self, path):
         """readParameters. readParameters method reads the lake parameters.
 
         Parameters
         ----------
-        Path : [str]
-            Path to the parameter file.
+        path : [str]
+            path to the parameter file.
 
         Returns
         -------
-        Parameters : [array].
+        Parameters: [array].
         """
-        Parameters = np.loadtxt(Path).tolist()
-        self.Parameters = Parameters
+        self.Parameters = np.loadtxt(path).tolist()
         logger.debug("Lake Parameters are read successfully")
 
-    def readLumpedModel(
+    def read_lumped_model(
         self,
-        LumpedModel,
-        CatArea,
-        LakeArea,
-        InitialCond,
-        OutflowCell,
-        StageDischargeCurve,
-        Snow,
+        lumped_model,
+        catchment_area,
+        lake_area,
+        initial_condition,
+        outflow_cell,
+        stage_discharge_curve,
+        snow,
     ):
         """readLumpedModel.
 
@@ -1563,23 +1699,23 @@ class Lake:
 
         Parameters
         ----------
-        LumpedModel : [module]
+        lumped_model : [module]
             lumped conceptual model.
-        CatArea : [numeric]
+        catchment_area : [numeric]
             catchment area in mk2.
-        LakeArea : [numeric]
+        lake_area : [numeric]
             area of the lake in km2.
-        InitialCond : [list]
+        initial_condition : [list]
             initial condition [Snow Pack, Soil Moisture, Upper Zone, Lower Zone,
                                Water Content, Lake volume].
-        OutflowCell : [list]
-            indeces of the cell where the lake hydrograph is going to be added.
-        StageDischargeCurve : [array]
+        outflow_cell : [list]
+            indexes of the cell where the lake hydrograph is going to be added.
+        stage_discharge_curve : [array]
             volume-outflow curve.
-        Snow : [integer]
-            0 if you dont want to run the snow related processes and 1 if there is snow.
+        snow : [integer]
+            0 if you don't want to run the snow-related processes and 1 if there is snow.
             in case of 1 (simulate snow processes) parameters related to snow simulation
-            has to be provided. The default is 0.
+             have to be provided. The default is 0.
 
         Returns
         -------
@@ -1588,29 +1724,24 @@ class Lake:
         CatArea : [numeric]
             Catchment area (km2).
         InitialCond : [list]
-            list of the inial condition [SnowPack,SoilMoisture,Upper Zone,
-                                         Lower Zone, Water Content].
+            list of the initial condition [SnowPack, SoilMoisture, Upper Zone, Lower Zone, Water Content].
         Snow : [integer]
             0/1
-        StageDischargeCurve : [array]
+        StageDischargeCurve: [array]
         """
         assert isinstance(
-            LumpedModel, ModuleType
+            lumped_model, ModuleType
         ), "ConceptualModel should be a module or a python file contains functions "
-        self.LumpedModel = LumpedModel
+        self.LumpedModel = lumped_model
 
-        self.CatArea = CatArea
-        self.LakeArea = LakeArea
-        self.InitialCond = InitialCond
+        self.CatArea = catchment_area
+        self.LakeArea = lake_area
+        self.InitialCond = initial_condition
 
         if self.InitialCond is not None:
-            assert type(self.InitialCond) == list, "init_st should be of type list"
+            assert isinstance(self.InitialCond, list), "init_st should be of type list"
 
-        self.Snow = Snow
-        self.OutflowCell = OutflowCell
-        self.StageDischargeCurve = StageDischargeCurve
+        self.Snow = snow
+        self.OutflowCell = outflow_cell
+        self.StageDischargeCurve = stage_discharge_curve
         logger.debug("Lumped model is read successfully")
-
-
-if __name__ == "__main__":
-    logger.debug("Catchment module")

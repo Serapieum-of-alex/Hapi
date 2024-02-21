@@ -186,3 +186,33 @@ examples/Hydrodynamic models/test_case/results/q/New folder/*
 examples/Hydrodynamic models/test_case/results/h/New folder/*
 examples/Hydrodynamic models/test_case/results/USbnd/New folder/*
 tests/mo/*
+/tests/rrm/data/test_results/extract_parameter/01_TT.tif
+/tests/rrm/data/test_results/extract_parameter/02_RFCF.tif
+/tests/rrm/data/test_results/extract_parameter/03_SFCF.tif
+/tests/rrm/data/test_results/extract_parameter/04_CFMAX.tif
+/tests/rrm/data/test_results/extract_parameter/05_CWH.tif
+/tests/rrm/data/test_results/extract_parameter/06_CFR.tif
+/tests/rrm/data/test_results/extract_parameter/07_FC.tif
+/tests/rrm/data/test_results/extract_parameter/08_BETA.tif
+/tests/rrm/data/test_results/extract_parameter/09_ETF.tif
+/tests/rrm/data/test_results/extract_parameter/10_LP.tif
+/tests/rrm/data/test_results/extract_parameter/11_K0.tif
+/tests/rrm/data/test_results/extract_parameter/12_K1.tif
+/tests/rrm/data/test_results/extract_parameter/13_K2.tif
+/tests/rrm/data/test_results/extract_parameter/14_UZL.tif
+/tests/rrm/data/test_results/extract_parameter/15_PERC.tif
+/tests/rrm/data/test_results/extract_parameter/16_MAXBAS.tif
+/tests/rrm/data/test_results/extract_parameter/17_K_muskingum.tif
+/tests/rrm/data/test_results/extract_parameter/18_X_muskingum.tif
+/tests/rrm/data/test_results/extract_parameter/ID1.tif
+
+/tests/rrm/data/test_results/prepare_inputs/0_precip_2009.01.01.tif
+/tests/rrm/data/test_results/prepare_inputs/1_precip_2009.01.02.tif
+/tests/rrm/data/test_results/prepare_inputs/2_precip_2009.01.03.tif
+/tests/rrm/data/test_results/prepare_inputs/3_precip_2009.01.04.tif
+/tests/rrm/data/test_results/prepare_inputs/4_precip_2009.01.05.tif
+/tests/rrm/data/test_results/prepare_inputs/5_precip_2009.01.06.tif
+/tests/rrm/data/test_results/prepare_inputs/6_precip_2009.01.07.tif
+/tests/rrm/data/test_results/prepare_inputs/7_precip_2009.01.08.tif
+/tests/rrm/data/test_results/prepare_inputs/8_precip_2009.01.09.tif
+/tests/rrm/data/test_results/prepare_inputs/9_precip_2009.01.10.tif

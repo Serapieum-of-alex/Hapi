@@ -27,12 +27,12 @@ from osgeo import gdal
 # import Wrapper
 # import Hapi.GISpy as GIS
 import Hapi.gis.giscatchment as GC
-import Hapi.rrm.distparameters as DP
+import Hapi.rrm.parameters as DP
 import Hapi.rrm.hbv as HBV
 import Hapi.sm.performancecriteria as PC
 
 # functions
-from Hapi.rrm.calibration import RunCalibration
+from Hapi.calibration import RunCalibration
 
 # from pyOpt import Optimization, ALHSO,Optimizer
 
@@ -129,7 +129,7 @@ acc_A = acc.ReadAsArray()
 OF_args = [coordinates]
 
 
-def OF(Qobs, Qout, q_uz_routed, q_lz_trans, coordinates):
+def objective_function(Qobs, Qout, q_uz_routed, q_lz_trans, coordinates):
     all_errors = []
     # error for all internal stations
     for i in range(len(coordinates) - 1):
@@ -174,7 +174,7 @@ cal_parameters = RunCalibration(
     Basic_inputs,
     SpatialVarFun,
     SpatialVarArgs,
-    OF,
+    objective_function,
     OF_args,
     Qobs,
     OptimizationArgs,

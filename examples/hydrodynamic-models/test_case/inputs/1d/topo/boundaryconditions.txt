@@ -1,3 +1,0 @@
-xsid
-bc_xsid1.txt
-bc_xsid101.txt

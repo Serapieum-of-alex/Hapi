@@ -1,7 +1,7 @@
 """RUN.
 
-RUN contains functions to to connect the parameter spatial distribution
-function with the with both component of the spatial representation of the hydrological
+RUN contains functions to connect the parameter spatial distribution
+function with both components of the spatial representation of the hydrological
 process (conceptual model & spatial routing) to calculate the predicted
 runoff at known locations based on given performance function
 
@@ -14,8 +14,9 @@ import pandas as pd
 from loguru import logger
 
 from Hapi.catchment import Catchment
-from Hapi.hm.saintvenant import SaintVenant
-from Hapi.rrm.wrapper import Wrapper
+
+# from Hapi.hm.saintvenant import SaintVenant
+from Hapi.wrapper import Wrapper
 
 
 class Run(Catchment):
@@ -43,7 +44,7 @@ class Run(Catchment):
 
         Returns
         -------
-        statevariables: [numpy attribute]
+        state_variables: [numpy attribute]
             4D array (rows,cols,time,states) states are [sp,wc,sm,uz,lv]
         qlz: [numpy attribute]
             3D array of the lower zone discharge
@@ -130,9 +131,9 @@ class Run(Catchment):
         # run the model
         Wrapper.RRMModel(self)
         print("RRM has finished")
-        SV = SaintVenant()
-        SV.KinematicRaster(self)
-        print("1D model Run has finished")
+        # SV = SaintVenant()
+        # SV.KinematicRaster(self)
+        # print("1D model Run has finished")
 
     def runHAPIwithLake(self, Lake):
         """Run model with lake.
@@ -176,7 +177,7 @@ class Run(Catchment):
         ), "Lake meteorological data has to have the same length as the distributed raster data"
         assert (
             np.shape(Lake.MeteoData)[1] >= 3
-        ), "Lake Meteo data has to have at least three columns rain, ET, and Temp"
+        ), "Lake Meteo data has to have at least three columns of rain, ET, and Temp"
 
         # run the model
         Wrapper.RRMWithlake(self, Lake)
@@ -197,7 +198,6 @@ class Run(Catchment):
         q_uz: [3D array]
             Distributed discharge for each cell
         """
-        # input dimensions
         assert (
             np.shape(self.Prec)[0] == self.rows
             and np.shape(self.ET)[0] == self.rows
@@ -227,16 +227,16 @@ class Run(Catchment):
         Parameters
         ----------
         1-Paths:
-            1-PrecPath:
+            1-prec_path:
                 [String] path to the Folder contains precipitation rasters
-            2-Evap_Path:
+            2-evap_path:
                 [String] path to the Folder contains Evapotranspiration rasters
-            3-TempPath:
+            3-temp_path:
                 [String] path to the Folder contains Temperature rasters
-            4-FlowAccPath:
+            4-flow_acc_path:
                 [String] path to the Flow Accumulation raster of the catchment (it should
                 include the raster name and extension)
-            5-FlowDPath:
+            5-flow_direction_path:
                 [String] path to the Flow Direction raster of the catchment (it should
                 include the raster name and extension)
         7-ParPath:
@@ -257,16 +257,16 @@ class Run(Catchment):
 
         Example
         -------
-        PrecPath = prec_path="meteodata/4000/calib/prec"
-        Evap_Path = evap_path="meteodata/4000/calib/evap"
-        TempPath = temp_path="meteodata/4000/calib/temp"
+        prec_path = prec_path="meteodata/4000/calib/prec"
+        evap_path = evap_path="meteodata/4000/calib/evap"
+        temp_path = temp_path="meteodata/4000/calib/temp"
         DemPath = "GIS/4000/dem4000.tif"
-        FlowAccPath = "GIS/4000/acc4000.tif"
-        FlowDPath = "GIS/4000/fd4000.tif"
+        flow_acc_path = "GIS/4000/acc4000.tif"
+        flow_direction_path = "GIS/4000/fd4000.tif"
         ParPath = "meteodata/4000/parameters"
         p2=[1, 227.31]
-        st, q_out, q_uz_routed = RunModel(PrecPath,Evap_Path,TempPath,DemPath,
-                                          FlowAccPath,FlowDPath,ParPath,p2)
+        st, q_out, q_uz_routed = RunModel(prec_path,evap_path,temp_path,DemPath,
+                                          flow_acc_path,flow_direction_path,ParPath,p2)
         """
         # input data validation
 
@@ -345,7 +345,7 @@ class Run(Catchment):
         """
         if RoutingFn is None:
             RoutingFn = []
-        if self.TemporalResolution.lower() == "daily":
+        if self.temporal_resolution.lower() == "daily":
             ind = pd.date_range(self.start, self.end, freq="D")
         else:
             ind = pd.date_range(self.startdate, self.enddate, freq="H")

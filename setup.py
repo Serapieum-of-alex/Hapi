@@ -11,12 +11,12 @@ requirements_dev = [line.strip() for line in open("requirements-dev.txt").readli
 
 setup(
     name="HAPI-Nile",
-    version="1.6.0",
+    version="1.7.0",
     description="Distributed hydrological-model",
     author="Mostafa Farrag",
     author_email="moah.farag@gmail.come",
     url="https://github.com/MAfarrag/Hapi",
-    keywords=["Hydrology", "Distributed hydrological model", "Hydaulic model"],
+    keywords=["Hydrology", "Distributed hydrological model"],
     long_description=readme + "\n\n" + history,
     long_description_content_type="text/markdown",
     license="GNU General Public License v3",
@@ -39,4 +39,7 @@ setup(
         "Intended Audience :: Science/Research",
         "Intended Audience :: Developers",
     ],
+    entry_points={
+        "console_scripts": ["mostafa = Hapi.parameters.download_parameters:download"]
+    },
 )

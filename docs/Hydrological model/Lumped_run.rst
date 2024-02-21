@@ -80,22 +80,24 @@ To run the HBV lumped model inside Hapi you need to prepare the meteorological i
 
     Run.runLumped(Coello, Route, RoutingFn)
 
-to calculate some metrics for the quality assessment of the calculate discharge the `performancecriteria` contains some metrics like `RMSE`, `NSE`, `KGE` and `WB` , you need to load it, a measured time series of doscharge for the same period of the simulation is also needed for the comparison.
+to calculate some metrics for the quality assessment of the calculate discharge the `statista.metrics` contains some
+metrics like `rmse`, `nse`, `kge` and `wb` , you need to load it, a measured time series of doscharge for the same
+period of the simulation is also needed for the comparison.
 
-all methods in `performancecriteria` takes two numpy arrays of the same length and return real number.
+all methods in `statista.metrics` takes two numpy arrays of the same length and return real number.
 
 .. code-block:: py
     :linenos:
-    import Hapi.statistics.performancecriteria as PC
+    import statista.metrics as metrics
 
     Metrics = dict()
     Qobs = Coello.QGauges['q']
 
-    Metrics['RMSE'] = PC.RMSE(Qobs, Coello.Qsim['q'])
-    Metrics['NSE'] = PC.NSE(Qobs, Coello.Qsim['q'])
-    Metrics['NSEhf'] = PC.NSEHF(Qobs, Coello.Qsim['q'])
-    Metrics['KGE'] = PC.KGE(Qobs, Coello.Qsim['q'])
-    Metrics['WB'] = PC.WB(Qobs, Coello.Qsim['q'])
+    Metrics['RMSE'] = metrics.rmse(Qobs, Coello.Qsim['q'])
+    Metrics['NSE'] = metrics.nse(Qobs, Coello.Qsim['q'])
+    Metrics['NSEhf'] = metrics.nse_hf(Qobs, Coello.Qsim['q'])
+    Metrics['KGE'] = metrics.kge(Qobs, Coello.Qsim['q'])
+    Metrics['WB'] = metrics.wb(Qobs, Coello.Qsim['q'])
 
     print("RMSE= " + str(round(Metrics['RMSE'],2)))
     print("NSE= " + str(round(Metrics['NSE'],2)))
