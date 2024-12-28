@@ -15,7 +15,7 @@ setup(
     description="Distributed hydrological-model",
     author="Mostafa Farrag",
     author_email="moah.farag@gmail.come",
-    url="https://github.com/MAfarrag/Hapi",
+    url="https://github.com/Serapieum-of-alex/Hapi",
     keywords=["Hydrology", "Distributed hydrological model"],
     long_description=readme + "\n\n" + history,
     long_description_content_type="text/markdown",
