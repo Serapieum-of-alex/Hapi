@@ -18,7 +18,8 @@ from cleopatra.array import Array
 from loguru import logger
 from osgeo import gdal
 from Hapi.dem import DEM
-from pyramids.dataset import Dataset, Datacube
+from pyramids.dataset import Dataset
+from pyramids.datacube import Datacube
 
 
 STATE_VARIABLES = ["SP", "SM", "UZ", "LZ", "WC"]

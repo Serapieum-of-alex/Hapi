@@ -5,7 +5,8 @@ import datetime as dt
 import os
 import pandas as pd
 from geopandas import GeoDataFrame
-from pyramids.dataset import Dataset, Datacube
+from pyramids.dataset import Dataset
+from pyramids.datacube import Datacube
 
 import Hapi
 

@@ -2,7 +2,7 @@ from pathlib import Path
 import numpy as np
 from geopandas import GeoDataFrame
 from Hapi.inputs import Inputs
-from pyramids.dataset import Datacube
+from pyramids.datacube import Datacube
 
 
 def test_prepare_inputs(
