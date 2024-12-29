@@ -40,7 +40,10 @@ dependencies = [
     "scipy >=1.11.4",
     "serapeum_utils >=0.2.0",
     "statista >=0.6.0",
-    "statsmodels >=0.14.1"
+    "statsmodels >=0.14.1",
+    "Oasis >=1.0.2",
+    "cleopatra>=0.5.1",
+    "matplotlib >=3.7.2"
 ]
 
 [project.optional-dependencies]
@@ -58,7 +61,6 @@ dev = [
     "reorder-python-imports >=3.13.0",
     "flake8-pyproject >=1.2.3"
 ]
-viz = ["cleopatra>=0.5.1"]
 
 test = [
     "pytest >= 8.2.2",
