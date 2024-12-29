@@ -20,4 +20,4 @@ dependencies:
   - pytest >=8.2.2
   - pytest-cov >=6.0.0
   - requests >=2.31.0
-  - Oasis >=1.0.2
+  - Oasis >=1.0.3
