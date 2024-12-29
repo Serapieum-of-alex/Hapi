@@ -13,7 +13,7 @@ import matplotlib.dates as dates
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import statista.metrics as metrics
+import statista.descriptors as metrics
 from cleopatra.array import Array
 from loguru import logger
 from osgeo import gdal
@@ -1121,7 +1121,7 @@ class Catchment:
                 self.Metrics.loc["KGE", gauge_id] = round(metrics.kge(q_obs, q_sim), 3)
                 self.Metrics.loc["WB", gauge_id] = round(metrics.wb(q_obs, q_sim), 3)
                 self.Metrics.loc["Pearson-CC", gauge_id] = round(
-                    metrics.pearson_corre(q_obs, q_sim), 3
+                    metrics.pearson_corr_coeff(q_obs, q_sim), 3
                 )
                 self.Metrics.loc["R2", gauge_id] = round(metrics.r2(q_obs, q_sim), 3)
 
