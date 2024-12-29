@@ -196,8 +196,7 @@ class Parameter:
         # Get a list of files
         file_list = self.list_parameters(article_id)
 
-        # dir0 = os.path.join(directory, f"figshare_{article_id}/")
-        os.makedirs(directory, exist_ok=True)  # This might require Python >=3.2
+        os.makedirs(directory, exist_ok=True)
         logger.info(
             f"The download of the parameter set starts to the following directory: {directory}"
         )

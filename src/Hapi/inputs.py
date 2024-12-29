@@ -59,7 +59,6 @@ class Inputs:
             and the extension like "data/dem.tif".
         """
         self.source_dem = src
-        pass
 
     def prepare_inputs(
         self, input_folder: Union[str, Path], output_folder: Union[str, Path]
