@@ -1,13 +1,7 @@
-"""Created on Tue May 22 09:01:55 2018.
+"""Hapi."""
 
-@author: Mostafa
-"""
-try:
-    from importlib.metadata import PackageNotFoundError  # type: ignore
-    from importlib.metadata import version
-except ImportError:  # pragma: no cover
-    from importlib_metadata import PackageNotFoundError  # type: ignore
-    from importlib_metadata import version
+from importlib.metadata import PackageNotFoundError  # type: ignore
+from importlib.metadata import version
 
 
 try:
@@ -15,60 +9,11 @@ try:
 except PackageNotFoundError:  # pragma: no cover
     __version__ = "unknown"
 
-# documentation format
 __author__ = "Mostafa Farrag"
 __email__ = "moah.farag@gmail.com"
 __docformat__ = "restructuredtext"
 
-# Let users know if they're missing any of our hard dependencies
-hard_dependencies = ()  # ("numpy", "pandas", "gdal")
-missing_dependencies = []
 
-for dependency in hard_dependencies:
-    try:
-        __import__(dependency)
-    except ImportError as e:
-        missing_dependencies.append(dependency)
-        print(e)
-
-if missing_dependencies:
-    raise ImportError("Missing required dependencies {0}".format(missing_dependencies))
-
-
-# del hard_dependencies, dependency, missing_dependencies
-
-
-def configuration(parent_package="", top_path=None):
-    """configure."""
-    from numpy.distutils.misc_util import Configuration
-
-    config = Configuration(None, parent_package, top_path)
-    config.set_options(
-        ignore_setup_xxx_py=True,
-        assume_default_configuration=True,
-        delegate_options_to_subpackages=True,
-        quiet=True,
-    )
-
-    # config.add_subpackage("gis")
-    config.add_subpackage("hm")
-    config.add_subpackage("plot")
-    config.add_subpackage("rrm")
-    # config.add_subpackage("rs")
-    # config.add_subpackage("sm")
-    return config
-
-
-# import Hapi.catchment
-# import Hapi.hm
-# import Hapi.java_functions
-# import Hapi.plot
-# import Hapi.rrm
-# import Hapi.run
-# import Hapi.weirdFn
-
-# import Hapi.saintvenant
-# module level doc-string
 __doc__ = """
 Hapi - Hydrological library for Python
 =====================================================================
@@ -87,5 +32,3 @@ Here are just a few of the things that pandas does well:
    calculated discharge values to the correct place
 
 """
-# if __name__=='__main__':
-#     print("Hapi")
