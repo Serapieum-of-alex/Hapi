@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import statista.descriptors as metrics
-from cleopatra.array import Array
+from cleopatra.array_glyph import ArrayGlyph
 from loguru import logger
 from osgeo import gdal
 from Hapi.dem import DEM
@@ -1426,7 +1426,7 @@ class Catchment:
         if gauges:
             kwargs["Points"] = self.GaugesTable
 
-        array = Array(arr)
+        array = ArrayGlyph(arr)
         anim = array.animate(time, title=title, **kwargs)
         # anim = StaticGlyph.AnimateArray(Arr, Time, self.no_elem, Title=Title, **kwargs)
 
