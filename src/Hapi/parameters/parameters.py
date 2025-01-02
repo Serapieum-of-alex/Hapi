@@ -285,3 +285,21 @@ class Parameter:
                 f"Download the Hydrological parameters for the dataset-{set_id}"
             )
             self.get_parameter_set(set_id)
+
+    def _get_set_article_id(self, set_id: int):
+        """get_set_article_id.
+
+            get_set_article_id retrieves the article id for a given parameter set
+
+        Parameters
+        ----------
+        set_id: [int]
+            parameter set index (from 1 to 10, avg, max, and min)
+
+        Returns
+        -------
+        article_id: [int]
+            article id
+        """
+        ind = self.parameter_set_id.index(set_id)
+        return self.article_id[ind]
