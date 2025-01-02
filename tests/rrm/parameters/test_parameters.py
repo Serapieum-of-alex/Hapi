@@ -52,3 +52,11 @@ def test_list_parameters():
     assert len(response) == 19
     response = parameters.list_parameters(1, version=1)
     assert len(response) == 19
+
+def test_retrieve_parameter_set():
+    parameters = Parameter()
+    set_id = 3
+    path = "tests/rrm/data/parameters/test_download_set_3_v1"
+    parameters._retrieve_parameter_set(set_id, directory=path)
+    assert Path(path).exists()
+    assert len(list(Path(path).iterdir())) == 19

@@ -197,8 +197,8 @@ class Parameter:
 
         Parameters
         ----------
-        set_id : int
-            parameter set index (from 1 to 10, avg, max, and min)
+        set_id : [str/int]
+            parameter set id [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, avg, max, min]
         version : str or id, default is None
             Figshare article version. If None, the function selects the most recent version.
 
@@ -208,11 +208,11 @@ class Parameter:
             HTTP request response as a python dict
         """
 
-    def retrieve_parameter_set(self, article_id, directory=None):
         url = self._get_url(set_id, version)
         response = self._send_request("GET", url, headers=self.headers)
         return response["files"]
 
+    def _retrieve_parameter_set(self, set_id, directory=None):
         """retrieveParameterSet.
 
             Retrieve files and save them locally.
@@ -223,17 +223,15 @@ class Parameter:
 
         Parameters
         ----------
-        article_id : str or int
-            Figshare article ID
+        set_id : [str/int]
+            parameter set id [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, avg, max, min]
         directory: [str]
             path
         """
-
         if directory is None:
             directory = os.getcwd()
 
-        # Get a list of files
-        file_list = self.list_parameters(article_id)
+        file_list = self.list_parameters(set_id)
 
         os.makedirs(directory, exist_ok=True)
         logger.info(
