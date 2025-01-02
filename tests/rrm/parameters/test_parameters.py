@@ -10,3 +10,8 @@ def test_constructor():
     assert len(parameters.parameter_set_path) == 13
     assert len(parameters.param_list) == 18
     assert parameters.baseurl == "https://api.figshare.com/v2"
+    assert parameters.headers == {"Content-Type": "application/json"}
+    assert parameters.version == 1
+    parameters.version = 2
+    assert parameters.version == 2
+
