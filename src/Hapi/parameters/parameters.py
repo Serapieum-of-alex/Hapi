@@ -1,7 +1,7 @@
 """hydrological-model parameter."""
 import json
 import os
-from typing import Union
+from typing import Union, List
 from urllib.request import urlretrieve
 
 import requests
@@ -10,66 +10,92 @@ from requests.exceptions import HTTPError
 
 import Hapi
 
+ARTICLE_IDS = [
+    19999901,
+    19999988,
+    19999997,
+    20000006,
+    20000012,
+    20000018,
+    20000015,
+    20000024,
+    20000027,
+    20000030,
+    20153402,
+    20153405,
+    20362374,
+]
+PARAMSTER_NAMES = [
+    "01_tt",
+    "02_rfcf",
+    "03_sfcf",
+    "04_cfmax",
+    "05_cwh",
+    "06_cfr",
+    "07_fc",
+    "08_beta",
+    "09_etf",
+    "10_lp",
+    "11_k0",
+    "12_k1",
+    "13_k2",
+    "14_uzl",
+    "15_perc",
+    "16_maxbas",
+    "17_K_muskingum",
+    "18_x_muskingum",
+]
+URL = "https://api.figshare.com/v2"
+HEADERS = {"Content-Type": "application/json"}
+
 
 class Parameter:
     """Parameter class."""
 
-    def __init__(self):
-        self.parameter_set_id = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, "avg", "max", "min"]
-        self.parameter_set_path = [
-            "01",
-            "02",
-            "03",
-            "04",
-            "05",
-            "06",
-            "07",
-            "08",
-            "09",
-            "10",
-            "avg",
-            "max",
-            "min",
-        ]
-        self.article_id = [
-            19999901,
-            19999988,
-            19999997,
-            20000006,
-            20000012,
-            20000018,
-            20000015,
-            20000024,
-            20000027,
-            20000030,
-            20153402,
-            20153405,
-            20362374,
-        ]
-        self.baseurl = "https://api.figshare.com/v2"
-        self.headers = {"Content-Type": "application/json"}
-        self.param_list = [
-            "01_tt",
-            "02_rfcf",
-            "03_sfcf",
-            "04_cfmax",
-            "05_cwh",
-            "06_cfr",
-            "07_fc",
-            "08_beta",
-            "09_etf",
-            "10_lp",
-            "11_k0",
-            "12_k1",
-            "13_k2",
-            "14_uzl",
-            "15_perc",
-            "16_maxbas",
-            "17_K_muskingum",
-            "18_x_muskingum",
-        ]
+    def __init__(self, version: int = 1):
+        """__init__.
 
-    # def get_parameter_set(self, parameter_set_id, directory=None):
+        Parameters
+        ----------
+        version : int, optional
+            Figshare article version. If None, selects the most recent version. default is 1
+        """
+        self._version = version
+
+
+    @property
+    def param_list(self):
+        return PARAMSTER_NAMES
+
+    @property
+    def baseurl(self):
+        return URL
+
+    @property
+    def headers(self):
+        return HEADERS
+
+    @property
+    def article_id(self):
+        return ARTICLE_IDS
+
+    @property
+    def version(self):
+        return self._version
+
+    @version.setter
+    def version(self, value):
+        self._version = value
+
+    @property
+    def parameter_set_id(self) -> List[str]:
+        name_list = list(range(1, 11))
+        return name_list + ["avg", "max", "min"]
+
+    @property
+    def parameter_set_path(self) -> List[str]:
+        name_list = list(range(1, 11))
+        return [str(name) for name in name_list] + ["avg", "max","min"]
 
     @staticmethod
     def issue_request(method, url, headers, data=None, binary=False):
