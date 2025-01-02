@@ -190,16 +190,15 @@ class Parameter:
         response = self._send_request("GET", url, headers=self.headers)
         return response["files"]
 
-    def list_parameters(self, article_id, version=None):
-        """listFiles.
+    def list_parameters(self, set_id, version=None):
+        """list_parameters.
 
             List all the files associated with a given article.
 
         Parameters
         ----------
-        article_id : str or int
-            Figshare article ID
-
+        set_id : int
+            parameter set index (from 1 to 10, avg, max, and min)
         version : str or id, default is None
             Figshare article version. If None, the function selects the most recent version.
 
@@ -208,15 +207,12 @@ class Parameter:
         response : dict
             HTTP request response as a python dict
         """
-        if version is None:
-            url = f"{self.baseurl}/articles/{article_id}/files"
-            response = self.issue_request("GET", url, headers=self.headers)
-            return response
-        else:
-            request = self.get_set_details(article_id, version)
-            return request["files"]
 
     def retrieve_parameter_set(self, article_id, directory=None):
+        url = self._get_url(set_id, version)
+        response = self._send_request("GET", url, headers=self.headers)
+        return response["files"]
+
         """retrieveParameterSet.
 
             Retrieve files and save them locally.

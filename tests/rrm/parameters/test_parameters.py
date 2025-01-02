@@ -44,3 +44,11 @@ def test_get_set_details():
     assert len(response) == 19
     response = parameters.get_set_details(set_id, version=1)
     assert len(response) == 19
+
+
+def test_list_parameters():
+    parameters = Parameter()
+    response = parameters.list_parameters(1)
+    assert len(response) == 19
+    response = parameters.list_parameters(1, version=1)
+    assert len(response) == 19
