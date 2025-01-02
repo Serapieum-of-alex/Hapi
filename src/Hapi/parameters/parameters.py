@@ -267,7 +267,7 @@ class Parameter:
         else:
             par_path = self.parameter_set_path[ind]
             rpath = f"{os.path.dirname(Hapi.__file__)}/parameters/{par_path}"
-        self.retrieve_parameter_set(article_id, directory=rpath)
+        self._retrieve_parameter_set(article_id, directory=rpath)
 
     def get_parameters(self):
         """get_parameters.
@@ -303,3 +303,31 @@ class Parameter:
         """
         ind = self.parameter_set_id.index(set_id)
         return self.article_id[ind]
+
+    def list_set_versions(self, set_id: int):
+        """ Return the details of an article with a given article ID.
+
+        Parameters
+        ----------
+        set_id : str or int
+            Figshare article ID
+
+        Returns
+        -------
+        response : dict
+            HTTP request response as a python dict
+        """
+        article_id = self._get_set_article_id(set_id)
+        url = f"{self.baseurl}/articles/{article_id}/versions"
+        headers = self._get_headers()
+        response = self._send_request('GET', url, headers=headers)
+        return response
+
+    @staticmethod
+    def _get_headers(token=None):
+        """ HTTP header information"""
+        headers = {'Content-Type': 'application/json'}
+        if token:
+            headers['Authorization'] = 'token {0}'.format(token)
+
+        return headers

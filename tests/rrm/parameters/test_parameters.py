@@ -60,3 +60,12 @@ def test_retrieve_parameter_set():
     parameters._retrieve_parameter_set(set_id, directory=path)
     assert Path(path).exists()
     assert len(list(Path(path).iterdir())) == 19
+
+
+def test_list_set_versions():
+    parameters = Parameter()
+    set_id = 3
+    response = parameters.list_set_versions(set_id)
+    assert len(response) == 1
+    assert response[0]["version"] == 1
+    assert response[0]["url"] == "https://api.figshare.com/v2/articles/19999997/versions/1"
