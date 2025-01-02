@@ -36,3 +36,11 @@ def test_send_request():
     response = parameters._send_request("GET", url, headers=parameters.headers)
     assert len(response["files"]) == 19
 
+
+def test_get_set_details():
+    parameters = Parameter()
+    set_id = 3
+    response = parameters.get_set_details(set_id)
+    assert len(response) == 19
+    response = parameters.get_set_details(set_id, version=1)
+    assert len(response) == 19

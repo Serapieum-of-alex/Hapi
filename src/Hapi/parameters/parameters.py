@@ -171,7 +171,7 @@ class Parameter:
         Parameters
         ----------
         set_id : [str/int]
-            parameter set id
+            parameter set id [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, avg, max, min]
         version: [str/int]
             Figshare article version. If None, selects the most recent version. default is None
 
