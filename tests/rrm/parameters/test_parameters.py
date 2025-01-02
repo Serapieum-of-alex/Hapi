@@ -15,3 +15,13 @@ def test_constructor():
     parameters.version = 2
     assert parameters.version == 2
 
+
+def test_get_url():
+    parameters = Parameter()
+    set_id = 1
+    url = parameters._get_url(set_id)
+    assert url == "https://api.figshare.com/v2/articles/19999901"
+    version = 1
+    url = parameters._get_url(set_id, version)
+    assert url == "https://api.figshare.com/v2/articles/19999901/versions/1"
+

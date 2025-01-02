@@ -97,6 +97,30 @@ class Parameter:
         name_list = list(range(1, 11))
         return [str(name) for name in name_list] + ["avg", "max","min"]
 
+    def _get_url(self, set_id: int, version: int = None):
+        """
+        Return the URL for a given parameter set and version.
+
+        Parameters
+        ----------
+        set_id: int
+            parameter set index (from 1 to 10, avg, max, and min)
+        version: int, default is None
+            Figshare article version. If None, selects the most recent version
+
+        Returns
+        -------
+        url: str
+            URL for the request
+        """
+        article_id = self._get_set_article_id(set_id)
+        if version is None:
+            url = f"{self.baseurl}/articles/{article_id}"
+        else:
+            url = f"{self.baseurl}/articles/{article_id}/versions/{version}"
+
+        return url
+
     @staticmethod
     def issue_request(method, url, headers, data=None, binary=False):
         """issue_request.
@@ -162,16 +186,9 @@ class Parameter:
         >>> set_id = 2
         >>> par.get_set_details(set_id)
         """
-        ind = self.parameter_set_id.index(set_id)
-        article_id = self.article_id[ind]
-
-        if version is None:
-            url = f"{self.baseurl}/articles/{article_id}"
-        else:
-            url = f"{self.baseurl}/articles/{article_id}/versions/{version}"
-
-        response = self.issue_request("GET", url, headers=self.headers)
-        return response
+        url = self._get_url(set_id, version)
+        response = self._send_request("GET", url, headers=self.headers)
+        return response["files"]
 
     def list_parameters(self, article_id, version=None):
         """listFiles.
