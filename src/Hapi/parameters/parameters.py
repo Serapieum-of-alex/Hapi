@@ -122,7 +122,7 @@ class Parameter:
         return url
 
     @staticmethod
-    def issue_request(method, url, headers, data=None, binary=False):
+    def _send_request(method, url, headers, data=None, binary=False):
         """issue_request.
 
             Wrapper for HTTP request.
@@ -157,7 +157,7 @@ class Parameter:
             except ValueError:
                 response_data = response.content
         except HTTPError as error:
-            print("Caught an HTTPError: {}".format(error))
+            print(f"Caught an HTTPError: {error}")
             print("Body:\n", response.text)
             raise
 

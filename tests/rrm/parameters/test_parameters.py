@@ -25,3 +25,14 @@ def test_get_url():
     url = parameters._get_url(set_id, version)
     assert url == "https://api.figshare.com/v2/articles/19999901/versions/1"
 
+
+def test_send_request():
+    # raise for status
+    url = "https://ndownloader.figshare.com/files/35589995"
+    parameters = Parameter()
+    response = parameters._send_request("GET", url, headers=parameters.headers)
+    assert isinstance(response, bytes)
+    url = 'https://api.figshare.com/v2/articles/19999997'
+    response = parameters._send_request("GET", url, headers=parameters.headers)
+    assert len(response["files"]) == 19
+
