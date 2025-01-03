@@ -30,7 +30,7 @@ jobs:
       - name: Install dev-dependencies
         shell: bash -el {0}
         run: |
-            pip install .[test] --no-deps
+            pip install .[test] --no-deps --verbose
 
       - name: Run tests
         shell: bash -el {0}
