@@ -68,7 +68,10 @@ def test_retrieve_parameter_set_e2e():
 
     assert Path(path).exists()
     assert len(list(Path(path).iterdir())) == 19
-    shutil.rmtree(path)
+    try:
+        shutil.rmtree(path)
+    except PermissionError:
+        pass
 
 
 @pytest.mark.e2e
