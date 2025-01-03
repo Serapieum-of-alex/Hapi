@@ -26,7 +26,7 @@ Check relevant points.
 
 # Checklist:
 
-- [ ] updated version number in setup.py/pyproject.toml
+- [ ] updated version number in pyproject.toml
 - [ ] updated environment.yml and the lock file
 - [ ] added changes to History.rst
 - [ ] updated the latest version in README file

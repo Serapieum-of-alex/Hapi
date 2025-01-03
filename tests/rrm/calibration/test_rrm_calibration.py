@@ -1,13 +1,9 @@
 import datetime as dt
-
 import numpy as np
-
-# from Hapi.run import Run
-import statista.metrics as PC
-
+import statista.descriptors as metrics
 import Hapi.rrm.hbv_bergestrom92 as HBVLumped
-from Hapi.rrm.calibration import Calibration
-from Hapi.rrm.routing import Routing
+from Hapi.calibration import Calibration
+from Hapi.routing import Routing
 
 
 def test_ReadParametersBounds(
@@ -18,7 +14,7 @@ def test_ReadParametersBounds(
     Coello = Calibration("rrm", coello_rrm_date[0], coello_rrm_date[1])
     Maxbas = True
     Snow = False
-    Coello.readParametersBounds(lower_bound, upper_bound, Snow, Maxbas=Maxbas)
+    Coello.read_parameters_bound(lower_bound, upper_bound, Snow, maxbas=Maxbas)
     assert isinstance(Coello.UB, np.ndarray)
     assert isinstance(Coello.LB, np.ndarray)
     assert isinstance(Coello.Snow, bool)
@@ -39,10 +35,10 @@ def test_LumpedCalibration(
     history_files: str,
 ):
     Coello = Calibration("rrm", coello_rrm_date[0], coello_rrm_date[1])
-    Coello.readLumpedInputs(lumped_meteo_data_path)
-    Coello.readLumpedModel(HBVLumped, coello_AreaCoeff, coello_InitialCond)
+    Coello.read_lumped_inputs(lumped_meteo_data_path)
+    Coello.read_lumped_model(HBVLumped, coello_AreaCoeff, coello_InitialCond)
     Maxbas = True
-    Coello.readParametersBounds(lower_bound, upper_bound, coello_Snow, Maxbas=Maxbas)
+    Coello.read_parameters_bound(lower_bound, upper_bound, coello_Snow, maxbas=Maxbas)
 
     parameters = []
     # Routing
@@ -52,12 +48,12 @@ def test_LumpedCalibration(
     Basic_inputs = dict(Route=Route, RoutingFn=RoutingFn, InitialValues=parameters)
 
     # discharge gauges
-    Coello.readDischargeGauges(lumped_gauges_path, fmt=coello_gauges_date_fmt)
+    Coello.read_discharge_gauges(lumped_gauges_path, fmt=coello_gauges_date_fmt)
 
     OF_args = []
-    OF = PC.RMSE
+    objective_function = metrics.rmse
 
-    Coello.readObjectiveFn(OF, OF_args)
+    Coello.read_objective_function(objective_function, OF_args)
 
     ApiObjArgs = dict(
         hms=100,
@@ -84,3 +80,30 @@ def test_LumpedCalibration(
     # cal_parameters = Coello.lumpedCalibration(Basic_inputs, OptimizationArgs, printError=None)
 
     # assert len(Coello.Qsim) == 1095 and Coello.Qsim.columns.to_list() == ['q']
+
+
+class TestDistributed:
+    def test_create_calibration_instance(
+        self, coello_start_date: str, coello_end_date: str
+    ):
+        coello = Calibration(
+            "coello",
+            coello_start_date,
+            coello_end_date,
+            spatial_resolution="Distributed",
+            temporal_resolution="Daily",
+            fmt="%Y-%m-%d",
+        )
+        assert coello.spatial_resolution == "distributed"
+        assert coello.routing_method == "Muskingum"
+        assert isinstance(coello.start, dt.datetime)
+
+    def test_read_objective_Fn(self, coello_start_date: str, coello_end_date: str):
+        coello = Calibration(
+            "coello",
+            coello_start_date,
+            coello_end_date,
+        )
+        coello.read_objective_function(metrics.rmse, [])
+        assert coello.objective_function == metrics.rmse
+        assert coello.OFArgs == []

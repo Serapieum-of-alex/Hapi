@@ -49,3 +49,19 @@ History
 * add smoothDikeLevel, getReach and updateReach
 * bump up denpendencies versions
 * move un-necessary functions to serapeum-utils
+
+
+2.0.0 (2025-01-**)
+------------------
+
+Dev
+---
+- Add conda/pypi workfkow
+- Add github release workfkow
+- Add pypi release workfkow
+- remove coverall
+- remove flake8 separate config file
+- move the main packge files inside src directory
+- move the hydrodymanic model to separate repo (serapis)
+- move the plot module to the cleopatra package
+- replace the setup.py by pyproject.toml

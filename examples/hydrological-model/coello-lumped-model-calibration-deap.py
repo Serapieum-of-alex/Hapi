@@ -15,7 +15,7 @@ import statista.metrics as PC
 from deap import algorithms, base, creator, tools
 
 import Hapi.rrm.hbv_bergestrom92 as HBVLumped
-from Hapi.rrm.calibration import Calibration
+from Hapi.calibration import Calibration
 from Hapi.rrm.routing import Routing
 from Hapi.run import Run
 
@@ -30,7 +30,7 @@ end = "2011-12-31"
 name = "Coello"
 
 Coello = Calibration(name, start, end)
-Coello.readLumpedInputs(MeteoDataPath)
+Coello.read_lumped_inputs(MeteoDataPath)
 # %% Basic_inputs
 # catchment area
 AreaCoeff = 1530
@@ -39,7 +39,7 @@ AreaCoeff = 1530
 InitialCond = [0, 10, 10, 10, 0]
 # no snow subroutine
 Snow = False
-Coello.readLumpedModel(HBVLumped, AreaCoeff, InitialCond)
+Coello.read_lumped_model(HBVLumped, AreaCoeff, InitialCond)
 
 # Calibration parameters
 
@@ -51,7 +51,7 @@ LB = pd.read_csv(Path + "/LB-3.txt", index_col=0, header=None)
 LB = LB[1].tolist()
 
 Maxbas = True
-Coello.readParametersBounds(UB, LB, Snow, Maxbas=Maxbas)
+Coello.read_parameters_bound(UB, LB, Snow, maxbas=Maxbas)
 
 ### Additional arguments
 
@@ -61,7 +61,7 @@ Route = 1
 RoutingFn = Routing.TriangularRouting1
 
 # outlet discharge
-Coello.readDischargeGauges(Path + "Qout_c.csv", fmt="%Y-%m-%d")
+Coello.read_discharge_gauges(Path + "Qout_c.csv", fmt="%Y-%m-%d")
 # %% Calibration
 creator.create("FitnessMin", base.Fitness, weights=(1.0,))
 creator.create("IndividualContainer", list, fitness=creator.FitnessMin)
@@ -173,7 +173,7 @@ print("WB= " + str(round(Metrics["WB"], 2)))
 gaugei = 0
 plotstart = "2009-01-01"
 plotend = "2011-12-31"
-Coello.plotHydrograph(plotstart, plotend, gaugei, Title="Lumped Model")
+Coello.plot_hydrograph(plotstart, plotend, gaugei, title="Lumped Model")
 
 # %% Save the Parameters
 
@@ -192,4 +192,4 @@ EndDate = "2010-04-20"
 Path = (
     Path + f"{Coello.name}-results-lumped-model" + str(dt.datetime.now())[0:10] + ".txt"
 )
-Coello.saveResults(Result=5, start=StartDate, end=EndDate, Path=Path)
+Coello.save_results(result=5, start=StartDate, end=EndDate, path=Path)

@@ -8,10 +8,10 @@ After preparing all the meteorological, GIS inputs required for the model, and E
     import numpy as np
     import datetime as dt
     import gdal
-    from Hapi.rrm.calibration import Calibration
+    from Hapi.calibration import Calibration
     import Hapi.rrm.hbv_bergestrom92 as HBV
 
-    import Hapi.statistics.performancecriteria as PC
+    import statista.metrics as metrics
 
     Path = Comp + "/data/distributed/coello"
     PrecPath = Path + "/prec"
@@ -88,17 +88,18 @@ from Hapi.rrm.distparameters import DistParameters as DP
     # define the objective function and its arguments
     OF_args = [coordinates]
 
-    def OF(Qobs, Qout, q_uz_routed, q_lz_trans, coordinates):
+    def objective_function(Qobs, Qout, q_uz_routed, q_lz_trans, coordinates):
         Coello.extractDischarge()
         all_errors=[]
         # error for all internal stations
         for i in range(len(coordinates)):
-            all_errors.append((PC.RMSE(Qobs.loc[:,Qobs.columns[0]],Coello.Qsim[:,i]))) #*coordinates.loc[coordinates.index[i],'weight']
+            all_errors.append((metrics.rmse(Qobs.loc[:,Qobs.columns[0]],Coello.Qsim[:,i]))) #*coordinates.loc[coordinates
+.index[i],'weight']
         print(all_errors)
         error = sum(all_errors)
         return error
 
-    Coello.readObjectiveFn(OF, OF_args)
+    Coello.read_objective_function(objective_function, OF_args)
 
 -Calibration algorithm Arguments
 ------------------------------------
