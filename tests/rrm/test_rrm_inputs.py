@@ -1,8 +1,10 @@
 from pathlib import Path
+
 import numpy as np
 from geopandas import GeoDataFrame
-from Hapi.inputs import Inputs
 from pyramids.datacube import Datacube
+
+from Hapi.inputs import Inputs
 
 
 def test_prepare_inputs(
@@ -38,7 +40,7 @@ class TestExtractParameters:
         #     rpath.unlink()
 
         inputs = Inputs(coello_acc_path)
-        inputs.extract_parameters(None, "03", as_raster=True, save_to=str(rpath))
+        inputs.extract_parameters(None, "3", as_raster=True, save_to=str(rpath))
         assert rpath.exists()
         files = list(rpath.iterdir())
         assert len(files) == 19

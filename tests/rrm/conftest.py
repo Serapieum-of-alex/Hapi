@@ -1,9 +1,11 @@
 import os
 from typing import Dict, Tuple
-import numpy as np
+
 import geopandas as gpd
+import numpy as np
 from geopandas import GeoDataFrame
 from osgeo import gdal
+
 from Hapi.parameters.parameters import Parameter
 from tests.rrm.calibration.conftest import *
 from tests.rrm.catchment.conftest import *
@@ -12,7 +14,7 @@ from tests.rrm.catchment.conftest import *
 @pytest.fixture(scope="session")
 def download_03_parameter():
     """Download Parameter Set 03"""
-    if not os.path.exists("Hapi/parameters/03"):
+    if not os.path.exists("Hapi/parameters/3"):
         par = Parameter()
         par.get_parameter_set(3)
 

@@ -1,7 +1,8 @@
 """hydrological-model parameter."""
+
 import json
 import os
-from typing import Union, List
+from typing import List, Union
 from urllib.request import urlretrieve
 
 import requests
@@ -62,25 +63,29 @@ class Parameter:
         """
         self._version = version
 
-
     @property
     def param_list(self):
+        """param_list."""
         return PARAMSTER_NAMES
 
     @property
     def baseurl(self):
+        """baseurl."""
         return URL
 
     @property
     def headers(self):
+        """headers."""
         return HEADERS
 
     @property
     def article_id(self):
+        """article_id."""
         return ARTICLE_IDS
 
     @property
     def version(self):
+        """version."""
         return self._version
 
     @version.setter
@@ -89,13 +94,15 @@ class Parameter:
 
     @property
     def parameter_set_id(self) -> List[str]:
+        """parameter_set_id."""
         name_list = list(range(1, 11))
         return name_list + ["avg", "max", "min"]
 
     @property
     def parameter_set_path(self) -> List[str]:
+        """parameter_set_path."""
         name_list = list(range(1, 11))
-        return [str(name) for name in name_list] + ["avg", "max","min"]
+        return [str(name) for name in name_list] + ["avg", "max", "min"]
 
     def _get_url(self, set_id: int, version: int = None):
         """
@@ -207,7 +214,6 @@ class Parameter:
         response : dict
             HTTP request response as a python dict
         """
-
         url = self._get_url(set_id, version)
         response = self._send_request("GET", url, headers=self.headers)
         return response["files"]
@@ -261,13 +267,12 @@ class Parameter:
         None
         """
         ind = self.parameter_set_id.index(set_id)
-        article_id = self.article_id[ind]
         if directory is not None:
             rpath = directory
         else:
             par_path = self.parameter_set_path[ind]
             rpath = f"{os.path.dirname(Hapi.__file__)}/parameters/{par_path}"
-        self._retrieve_parameter_set(article_id, directory=rpath)
+        self._retrieve_parameter_set(set_id, directory=rpath)
 
     def get_parameters(self):
         """get_parameters.
@@ -279,8 +284,7 @@ class Parameter:
         -------
         None
         """
-        for i in range(len(self.parameter_set_id)):
-            set_id = self.parameter_set_id[i]
+        for set_id in self.parameter_set_id:
             logger.info(
                 f"Download the Hydrological parameters for the dataset-{set_id}"
             )
@@ -305,7 +309,7 @@ class Parameter:
         return self.article_id[ind]
 
     def list_set_versions(self, set_id: int):
-        """ Return the details of an article with a given article ID.
+        """Return the details of an article with a given article ID.
 
         Parameters
         ----------
@@ -320,14 +324,14 @@ class Parameter:
         article_id = self._get_set_article_id(set_id)
         url = f"{self.baseurl}/articles/{article_id}/versions"
         headers = self._get_headers()
-        response = self._send_request('GET', url, headers=headers)
+        response = self._send_request("GET", url, headers=headers)
         return response
 
     @staticmethod
     def _get_headers(token=None):
-        """ HTTP header information"""
-        headers = {'Content-Type': 'application/json'}
+        """HTTP header information."""
+        headers = {"Content-Type": "application/json"}
         if token:
-            headers['Authorization'] = 'token {0}'.format(token)
+            headers["Authorization"] = "token {0}".format(token)
 
         return headers
