@@ -28,6 +28,7 @@ jobs:
           show-channel-urls: true
 
       - name: Install dev-dependencies
+        shell: bash -el {0}
         run: |
             pip install .[test] --no-deps
 
