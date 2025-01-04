@@ -2,6 +2,7 @@
 
 import json
 import os
+from pathlib import Path
 from typing import Dict, List, Optional, Union
 from urllib.request import urlretrieve
 
@@ -509,3 +510,61 @@ class FigshareAPIClient:
         """
         endpoint = f"articles/{article_id}/versions"
         return self.send_request("GET", endpoint)
+
+
+class FileManager:
+    """
+    Handle file operations such as downloading and saving files.
+
+    Methods
+    -------
+    download_file(url: str, dest_path: Path):
+        Download a file from the specified URL to the destination path.
+    clear_directory(directory: Path):
+        Clears all files in the specified directory.
+
+    Examples
+    --------
+    >>> FileManager.download_file("http://example.com/file", Path("./downloads/file.txt"))
+    >>> FileManager.clear_directory(Path("./downloads"))
+    """
+
+    @staticmethod
+    def download_file(url: str, dest_path: Path):
+        """
+        Download a file from the specified URL to the destination path.
+
+        Parameters
+        ----------
+        url : str
+            The URL of the file to download.
+        dest_path : Path
+            The local file path where the file will be saved.
+
+        Examples
+        --------
+        >>> FileManager.download_file("http://example.com/file", Path("./downloads/file.txt"))
+        """
+        dest_path.parent.mkdir(parents=True, exist_ok=True)
+        urlretrieve(url, dest_path)
+        logger.info(f"File downloaded: {dest_path}")
+
+    @staticmethod
+    def clear_directory(directory: Path):
+        """
+        Clear all files in the specified directory.
+
+        Parameters
+        ----------
+        directory : Path
+            The directory to clear.
+
+        Examples
+        --------
+        >>> FileManager.clear_directory(Path("./downloads"))
+        """
+        if directory.exists():
+            for file in directory.iterdir():
+                if file.is_file():
+                    file.unlink()
+            logger.info(f"Cleared directory: {directory}")

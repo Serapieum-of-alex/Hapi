@@ -95,6 +95,11 @@ max-line-length = 88
 max-complexity = 18
 select = "B,C,E,F,W,T4"
 
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+
 
 [tool.pytest.ini_options]
 markers = [

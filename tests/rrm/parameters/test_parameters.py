@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 import pytest
 
-from Hapi.parameters.parameters import FigshareAPIClient, Parameter
+from Hapi.parameters.parameters import FigshareAPIClient, FileManager, Parameter
 
 
 def test_constructor():
@@ -176,3 +176,49 @@ class TestFigshareAPIClient:
 
         assert response is not None, "Response should not be None."
         assert isinstance(response, list), "Response should be a list."
+
+
+class TestFileManager:
+
+    @pytest.fixture
+    def temp_directory(self, tmp_path):
+        """Fixture to create a temporary directory for testing."""
+        return tmp_path
+
+    def test_directory_creation(self, temp_directory):
+        """Test that a directory is created if it doesn't exist."""
+        new_dir = temp_directory / "new_subdir"
+        file_path = new_dir / "example.txt"
+
+        FileManager.download_file("https://www.example.com", file_path)
+
+        assert new_dir.exists(), "The directory should be created."
+        assert file_path.exists(), "The file should be created in the new directory."
+
+    def test_clear_directory(self, temp_directory):
+        """Test clearing all files in a directory."""
+        # Create sample files
+        for i in range(3):
+            (temp_directory / f"file_{i}.txt").write_text(f"Content {i}")
+
+        FileManager.clear_directory(temp_directory)
+
+        assert not any(
+            temp_directory.iterdir()
+        ), "The directory should be empty after clearing."
+
+    def test_clear_empty_directory(self, temp_directory):
+        """Test clearing an already empty directory."""
+        FileManager.clear_directory(temp_directory)
+
+        assert not any(temp_directory.iterdir()), "The directory should remain empty."
+
+    def test_clear_nonexistent_directory(self):
+        """Test clearing a directory that doesn't exist."""
+        non_existent_dir = Path("./non_existent_directory")
+
+        FileManager.clear_directory(non_existent_dir)
+
+        assert (
+            not non_existent_dir.exists()
+        ), "The directory should not exist and should not cause errors."
