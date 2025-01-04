@@ -2,7 +2,7 @@
 
 import json
 import os
-from typing import List, Union
+from typing import Dict, List, Optional, Union
 from urllib.request import urlretrieve
 
 import requests
@@ -10,6 +10,8 @@ from loguru import logger
 from requests.exceptions import HTTPError
 
 import Hapi
+
+BASE_URL = "https://api.figshare.com/v2"
 
 ARTICLE_IDS = [
     19999901,
@@ -335,3 +337,175 @@ class Parameter:
             headers["Authorization"] = "token {0}".format(token)
 
         return headers
+
+
+class FigshareAPIClient:
+    """
+    A client for interacting with the Figshare API.
+
+    Parameters
+    ----------
+    headers : dict, optional
+        Headers to include in the API requests, by default None.
+
+    Examples
+    --------
+    >>> client = FigshareAPIClient()
+    """
+
+    def __init__(self, headers: Optional[dict] = None):
+        """initialize."""
+        self.base_url = BASE_URL
+        self.headers = headers or {"Content-Type": "application/json"}
+
+    def send_request(
+        self,
+        method: str,
+        endpoint: str,
+        data: Optional[dict] = None,
+        binary: bool = False,
+    ) -> Dict[str, int]:
+        """
+        Send an HTTP request to the Figshare API.
+
+        Parameters
+        ----------
+        method : str
+            HTTP method (e.g., 'GET', 'POST').
+        endpoint : str
+            API endpoint to interact with.
+        data : dict, optional
+            Payload to include in the request, by default None.
+        binary : bool, optional
+            Whether the data payload is binary, by default False.
+
+        Returns
+        -------
+        dict
+            The parsed JSON response from the API.
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            If the API request fails.
+
+        Examples
+        --------
+        >>> client = FigshareAPIClient()
+        >>> response = client.send_request("GET", "articles/19999901") #doctest: +SKIP
+        >>> print(response) #doctest: +SKIP
+        {'files': [{'id': 35589521,
+           'name': '01_TT.tif',
+           'size': 1048736,
+           'is_link_only': False,
+           'download_url': 'https://ndownloader.figshare.com/files/35589521',
+           'supplied_md5': '1ddb354132c2f7f54dec6e72bdb62422',
+           'computed_md5': '1ddb354132c2f7f54dec6e72bdb62422',
+           'mimetype': 'image/tiff'},
+         'authors': [{'id': 11888465,
+           'full_name': 'Mostafa Farrag',
+           'first_name': 'Mostafa',
+           'last_name': 'Farrag',
+           'is_active': True,
+           'url_name': 'Mostafa_Farrag',
+           'orcid_id': '0000-0002-1673-0126'}],
+         'figshare_url': 'https://figshare.com/articles/dataset/parameter_set-1/19999901',
+         'download_disabled': False,
+         ...
+         'version': 2,
+         'status': 'public',
+         'size': 19878928,
+         'created_date': '2022-06-04T14:15:43Z',
+         'modified_date': '2022-06-04T14:15:44Z',
+         'is_public': True,
+         'is_confidential': False,
+         'is_metadata_record': False,
+         'confidential_reason': '',
+         'metadata_reason': '',
+         'license': {'value': 1,
+          'name': 'CC BY 4.0',
+         'id': 19999901,
+         'title': 'Parameter set-1',
+         'doi': '10.6084/m9.figshare.19999901.v2',
+         'url': 'https://api.figshare.com/v2/articles/19999901',
+         'published_date': '2022-06-04T14:15:43Z',
+         'url_private_api': 'https://api.figshare.com/v2/account/articles/19999901',
+         'url_public_api': 'https://api.figshare.com/v2/articles/19999901',
+         'url_private_html': 'https://figshare.com/account/articles/19999901',
+         'url_public_html': 'https://figshare.com/articles/dataset/parameter_set-1/19999901',
+         'timeline': {'posted': '2022-06-04T14:15:43',
+          'firstOnline': '2022-06-04T13:52:54'},
+         }
+        """
+        url = f"{self.base_url}/{endpoint}"
+        payload = json.dumps(data) if data and not binary else data
+
+        try:
+            response = requests.request(method, url, headers=self.headers, data=payload)
+            response.raise_for_status()
+            return response.json() if response.text else None
+        except requests.exceptions.HTTPError as error:
+            logger.error(f"HTTPError: {error}, Response: {response.text}")
+            raise
+
+    def get_article_version(self, article_id: int, version: int) -> Dict[str, int]:
+        """
+        Retrieve a specific version of an article from the Figshare API.
+
+        Parameters
+        ----------
+        article_id : int
+            The ID of the article to retrieve.
+        version : int
+            The version number of the article to retrieve.
+
+        Returns
+        -------
+        dict
+            Details of the specific version of the article.
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            If the API request fails.
+
+        Examples
+        --------
+        >>> client = FigshareAPIClient()
+        >>> response = client.get_article_version(19999901, 1) #doctest: +SKIP
+        >>> print(response) #doctest: +SKIP
+        """
+        endpoint = f"articles/{article_id}/versions/{version}"
+        return self.send_request("GET", endpoint)
+
+    def list_article_versions(self, article_id: int) -> List[Dict[str, int]]:
+        """
+        Retrieve all available versions of a specific article from the Figshare API.
+
+        Parameters
+        ----------
+        article_id : int
+            The ID of the article to retrieve versions for.
+
+        Returns
+        -------
+        List[Dict[str, int]]:
+            A list of available versions for the specified article.
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            If the API request fails.
+
+        Examples
+        --------
+        >>> client = FigshareAPIClient()
+        >>> versions = client.list_article_versions(19999901) #doctest: +SKIP
+        >>> print(versions) #doctest: +SKIP
+        [{'version': 1,
+          'url': 'https://api.figshare.com/v2/articles/19999901/versions/1'},
+         {'version': 2,
+          'url': 'https://api.figshare.com/v2/articles/19999901/versions/2'}]
+        """
+        endpoint = f"articles/{article_id}/versions"
+        return self.send_request("GET", endpoint)

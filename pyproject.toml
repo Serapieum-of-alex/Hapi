@@ -101,7 +101,9 @@ markers = [
     "vfs: mark a test as a virtual file system.",
     "slow: mark test as slow.",
     "fast: mark test as fast.",
-    "plot: test plotting function optional package (deselect with '-m \"not plot\"')"
+    "plot: test plotting function optional package (deselect with '-m \"not plot\"')",
+    "e2e: end-to-end test (deselect with '-m \"not e2e\"')",
+    "mock: mock test (deselect with '-m \"not mock\"')"
 ]
 
 
@@ -109,6 +111,5 @@ markers = [
 requires = [
     "setuptools>=61",
     "wheel",
-#    "tomli>=1.1.0",
 ]
 build-backend = "setuptools.build_meta"

@@ -1,11 +1,10 @@
 import shutil
 from pathlib import Path
 from unittest.mock import patch
-from urllib.request import urlretrieve
 
 import pytest
 
-from Hapi.parameters.parameters import Parameter
+from Hapi.parameters.parameters import FigshareAPIClient, Parameter
 
 
 def test_constructor():
@@ -103,3 +102,77 @@ def test_get_parameters():
     with patch("Hapi.parameters.parameters.Parameter.get_parameter_set") as mock:
         parameters.get_parameters()
         assert mock.call_count == 13
+
+
+class TestFigshareAPIClient:
+
+    def test_figshare_api_client_get_article(self):
+        """
+        Test an actual API call to Figshare's API to retrieve an article.
+
+        This test requires internet access and valid article IDs.
+        """
+        client = FigshareAPIClient()
+        response = client.send_request("GET", "articles/19999901")
+
+        # Check basic response structure
+        assert isinstance(response, dict), "Response should be a dictionary."
+        assert "id" in response, "Response should include an 'id' key."
+        assert (
+            response["id"] == 19999901
+        ), "The article ID should match the requested ID."
+
+    def test_figshare_api_client_get_article_version(self):
+        """
+        Test an actual API call to retrieve a specific version of an article.
+
+        This test requires internet access and valid article IDs.
+        """
+        client = FigshareAPIClient()
+        response = client.get_article_version(article_id=19999901, version=1)
+
+        # Check basic response structure
+        assert isinstance(response, dict), "Response should be a dictionary."
+        assert "id" in response, "Response should include an 'id' key."
+        assert "version" in response, "Response should include a 'version' key."
+        assert (
+            response["version"] == 1
+        ), "The version should match the requested version."
+
+    def test_figshare_api_client_list_article_versions(self):
+        """
+        Test an actual API call to retrieve all available versions of an article.
+
+        This test requires internet access and valid article IDs.
+        """
+        client = FigshareAPIClient()
+        versions = client.list_article_versions(19999901)
+
+        # Check basic response structure
+        assert isinstance(versions, list), "Response should be a list."
+        assert len(versions) > 0, "There should be at least one version."
+        for version in versions:
+            assert (
+                "version" in version
+            ), "Each version entry should include a 'version' key."
+
+    def test_figshare_api_client_invalid_article(self):
+        """
+        Test how the API client handles an invalid article ID.
+        """
+        client = FigshareAPIClient()
+
+        with pytest.raises(Exception):
+            client.send_request("GET", "articles/0")
+
+    def test_figshare_api_client_no_content(self):
+        """
+        Test the API client for an endpoint with no content.
+        """
+        client = FigshareAPIClient()
+        response = client.send_request(
+            "GET", "articles"
+        )  # Assuming this endpoint exists but has no content
+
+        assert response is not None, "Response should not be None."
+        assert isinstance(response, list), "Response should be a list."
