@@ -108,7 +108,8 @@ markers = [
     "fast: mark test as fast.",
     "plot: test plotting function optional package (deselect with '-m \"not plot\"')",
     "e2e: end-to-end test (deselect with '-m \"not e2e\"')",
-    "mock: mock test (deselect with '-m \"not mock\"')"
+    "mock: mock test (deselect with '-m \"not mock\"')",
+    "integration: mock test (deselect with '-m \"not integration\"')"
 ]
 
 

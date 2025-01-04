@@ -1,10 +1,15 @@
 import shutil
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
-from Hapi.parameters.parameters import FigshareAPIClient, FileManager, Parameter
+from Hapi.parameters.parameters import (
+    FigshareAPIClient,
+    FileManager,
+    Parameter,
+    ParameterManager,
+)
 
 
 def test_constructor():
@@ -93,7 +98,10 @@ def test_get_parameter_set():
     parameters.get_parameter_set(set_id, directory=path)
     assert Path(path).exists()
     assert len(list(Path(path).iterdir())) == 19
-    shutil.rmtree(path)
+    try:
+        shutil.rmtree(path)
+    except PermissionError:
+        pass
 
 
 @pytest.mark.mock
@@ -222,3 +230,166 @@ class TestFileManager:
         assert (
             not non_existent_dir.exists()
         ), "The directory should not exist and should not cause errors."
+
+
+@pytest.mark.mock
+class TestParameterManagerMock:
+
+    @pytest.fixture
+    def mock_api_client(self):
+        """Fixture to provide a mock API client."""
+        return MagicMock(spec=FigshareAPIClient)
+
+    @pytest.fixture
+    def parameter_manager(self, mock_api_client):
+        """Fixture to provide a parameter manager with a mocked API client."""
+        return ParameterManager(api_client=mock_api_client)
+
+    def test_get_parameter_set_details(self, parameter_manager, mock_api_client):
+        """Test retrieving details of an article."""
+        mock_api_client.send_request.return_value = {"id": 1, "title": "Sample Article"}
+        result = parameter_manager.get_parameter_set_details(set_id=1)
+
+        mock_api_client.send_request.assert_called_once_with("GET", "articles/19999901")
+        assert result["id"] == 1, "The article ID should match."
+        assert result["title"] == "Sample Article", "The article title should match."
+
+    def test_list_files(self, parameter_manager, mock_api_client):
+        """Test listing all files in an article."""
+        mock_api_client.send_request.return_value = {
+            "files": [{"name": "file1.txt"}, {"name": "file2.txt"}]
+        }
+        result = parameter_manager.list_files(set_id=1)
+
+        mock_api_client.send_request.assert_called_once_with("GET", "articles/19999901")
+        assert len(result) == 2, "There should be two files."
+        assert result[0]["name"] == "file1.txt", "The first file name should match."
+
+    def test_download_files(self, parameter_manager, mock_api_client, tmp_path):
+        """Test downloading files from an article."""
+        mock_api_client.send_request.return_value = {
+            "files": [
+                {"name": "file1.txt", "download_url": "http://example.com/file1"},
+                {"name": "file2.txt", "download_url": "http://example.com/file2"},
+            ]
+        }
+        mock_download = MagicMock()
+        FileManager.download_file = mock_download
+
+        parameter_manager.download_files(set_id=1, dest_directory=tmp_path)
+
+        mock_api_client.send_request.assert_called_once_with("GET", "articles/19999901")
+        assert mock_download.call_count == 2, "Two files should be downloaded."
+        mock_download.assert_any_call(
+            "http://example.com/file1", tmp_path / "file1.txt"
+        )
+        mock_download.assert_any_call(
+            "http://example.com/file2", tmp_path / "file2.txt"
+        )
+
+    def test_get_article_id_from_friendly_id(self, parameter_manager):
+        """Test mapping a friendly ID to an article ID."""
+        result = parameter_manager._get_article_id(1)
+        assert (
+            result == ParameterManager.ARTICLE_IDS[0]
+        ), "The article ID should match the corresponding friendly ID."
+
+        result = parameter_manager._get_article_id("max")
+        assert (
+            result == ParameterManager.ARTICLE_IDS[-2]
+        ), "The article ID should match the corresponding friendly ID."
+
+        with pytest.raises(ValueError):
+            parameter_manager._get_article_id("invalid_id")
+
+    def test_get_article_details_with_version(self, parameter_manager, mock_api_client):
+        """Test retrieving details of an article with a specific version."""
+        mock_api_client.send_request.return_value = {
+            "id": 1,
+            "version": 2,
+            "title": "Sample Article",
+        }
+        result = parameter_manager.get_parameter_set_details(set_id=1, version=2)
+
+        mock_api_client.send_request.assert_called_once_with(
+            "GET", "articles/19999901/versions/2"
+        )
+        assert result["version"] == 2, "The version should match the requested version."
+        assert result["title"] == "Sample Article", "The article title should match."
+
+
+@pytest.mark.integration
+class TestParameterManagerIntegration:
+
+    @pytest.fixture
+    def real_api_client(self):
+        """Provide an actual API client for integration testing."""
+        return FigshareAPIClient()
+
+    @pytest.fixture
+    def int_test_dir(self, tmp_path):
+        """Provide a temporary directory for testing file downloads."""
+        return tmp_path / "integration_test_files"
+
+    @pytest.fixture
+    def parameter_manager(self, real_api_client):
+        """Provide a ParameterManager with a real API client."""
+        return ParameterManager(api_client=real_api_client)
+
+    def test_integration_get_parameter_set_details(self, parameter_manager):
+        """Integration test for retrieving article details."""
+        set_id = 1
+        article_id = 19999901
+        details = parameter_manager.get_parameter_set_details(set_id)
+
+        assert isinstance(details, dict), "Details should be a dictionary."
+        assert "id" in details, "Article details should include an 'id' key."
+        assert (
+            details["id"] == article_id
+        ), "The article ID should match the requested ID."
+
+    def test_integration_list_files(self, parameter_manager):
+        """Integration test for listing files in an article."""
+        set_id = 1
+        files = parameter_manager.list_files(set_id)
+
+        assert isinstance(files, list), "Files should be returned as a list."
+        assert len(files) > 0, "The article should have at least one file."
+        assert "name" in files[0], "Each file should have a 'name' key."
+
+    # def test_integration_download_files(self, parameter_manager):
+    #     """Integration test for downloading files from an article."""
+    #     set_id = 1
+    #     int_test_dir = Path("tests/rrm/data/parameters/download_files")
+    #     int_test_dir.mkdir(parents=True, exist_ok=True)
+    #
+    #     parameter_manager.download_files(set_id, int_test_dir)
+    #
+    #     downloaded_files = list(int_test_dir.iterdir())
+    #     assert (
+    #         len(downloaded_files) == 19
+    #     ), "Files should be downloaded to the specified directory."
+
+    def test_integration_get_article_id(self, parameter_manager):
+        """Integration test for mapping a friendly ID to an article ID."""
+        article_id = parameter_manager._get_article_id(1)
+        assert (
+            article_id == ParameterManager.ARTICLE_IDS[0]
+        ), "The friendly ID should map to the correct article ID."
+
+        article_id = parameter_manager._get_article_id("avg")
+        assert (
+            article_id == ParameterManager.ARTICLE_IDS[-3]
+        ), "The friendly ID 'avg' should map to the correct article ID."
+
+    def test_integration_get_article_details_with_version(self, parameter_manager):
+        """Integration test for retrieving article details with a specific version."""
+        set_id = 1
+        version = 1
+        details = parameter_manager.get_parameter_set_details(set_id, version=version)
+
+        assert isinstance(details, dict), "Details should be a dictionary."
+        assert "version" in details, "Article details should include a 'version' key."
+        assert (
+            details["version"] == version
+        ), "The version should match the requested version."

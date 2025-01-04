@@ -568,3 +568,180 @@ class FileManager:
                 if file.is_file():
                     file.unlink()
             logger.info(f"Cleared directory: {directory}")
+
+
+class ParameterManager:
+    """
+    Manages hydrological parameters and integrates with Figshare for data retrieval.
+
+    Attributes
+    ----------
+    ARTICLE_IDS : list
+        List of article IDs corresponding to parameter sets.
+    PARAMETER_NAMES : list
+        List of parameter names.
+    FRIENDLY_IDS : list
+        User-friendly IDs for parameter sets (e.g., 1-10, avg, max, min).
+
+    Methods
+    -------
+    get_article_details(article_id: int, version: Optional[int] = None):
+        Retrieves details of an article from the Figshare API.
+    list_files(article_id: int, version: Optional[int] = None):
+        Lists all files in an article.
+    download_files(article_id: int, dest_directory: Path, version: Optional[int] = None):
+        Downloads all files in an article to the specified directory.
+    get_article_id_from_friendly_id(friendly_id: Union[int, str]) -> int:
+        Maps a user-friendly ID to the corresponding article ID.
+
+    Examples
+    --------
+    >>> manager = ParameterManager(api_client)
+    >>> files = manager.list_files(12345)
+    >>> manager.download_files(12345, Path("./downloads"))
+    """
+
+    ARTICLE_IDS = [
+        19999901,
+        19999988,
+        19999997,
+        20000006,
+        20000012,
+        20000018,
+        20000015,
+        20000024,
+        20000027,
+        20000030,
+        20153402,
+        20153405,
+        20362374,
+    ]
+
+    PARAMETER_NAMES = [
+        "01_tt",
+        "02_rfcf",
+        "03_sfcf",
+        "04_cfmax",
+        "05_cwh",
+        "06_cfr",
+        "07_fc",
+        "08_beta",
+        "09_etf",
+        "10_lp",
+        "11_k0",
+        "12_k1",
+        "13_k2",
+        "14_uzl",
+        "15_perc",
+        "16_maxbas",
+        "17_K_muskingum",
+        "18_x_muskingum",
+    ]
+
+    FRIENDLY_IDS = list(range(1, 11)) + ["avg", "max", "min"]
+
+    def __init__(self, api_client: FigshareAPIClient):
+        """initialize."""
+        self.api_client = api_client
+
+    def get_parameter_set_details(
+        self, set_id: int, version: Optional[int] = None
+    ) -> Dict[str, int]:
+        """
+        Retrieve details of a parameter set from the Figshare API.
+
+        Parameters
+        ----------
+        set_id : int
+            The ID of the parameter set to retrieve.
+        version : int, optional, default is None
+            The version of the parameter set.
+
+        Returns
+        -------
+        Dict[str, int]:
+            Details of the parameter set.
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            If the API request fails.
+        """
+        article_id = self._get_article_id(set_id)
+        endpoint = f"articles/{article_id}"
+        if version:
+            endpoint += f"/versions/{version}"
+        return self.api_client.send_request("GET", endpoint)
+
+    def list_files(self, set_id: int, version: Optional[int] = None):
+        """
+        List all files in an article.
+
+        Parameters
+        ----------
+        set_id : int
+            The ID of the article to list files for.
+        version : int, optional
+            The version of the article, by default None.
+
+        Returns
+        -------
+        list
+            A list of files in the article.
+        """
+        details = self.get_parameter_set_details(set_id, version)
+        return details.get("files", [])
+
+    def download_files(
+        self, set_id: int, dest_directory: Path, version: Optional[int] = None
+    ):
+        """
+        Download all files in an article to the specified directory.
+
+        Parameters
+        ----------
+        set_id : int
+            The ID of the article to download files from.
+        dest_directory : Path
+            The local directory to save the files.
+        version : int, optional, by default None.
+            The version of the article.
+
+        Examples
+        --------
+        >>> manager.download_files(1, Path("./downloads"))
+        """
+        files = self.list_files(set_id, version)
+        for file in files:
+            dest_path = dest_directory / file["name"]
+            FileManager.download_file(file["download_url"], dest_path)
+
+    def _get_article_id(self, set_id: Union[int, str]) -> int:
+        """
+        Map a user-friendly ID (1-10, avg, max, min) to the corresponding article ID.
+
+        Parameters
+        ----------
+        set_id : int or str
+            The parameter set id (1-10, avg, max, min).
+
+        Returns
+        -------
+        int
+            The corresponding article ID.
+
+        Raises
+        ------
+        ValueError
+            If the friendly ID is invalid.
+
+        Examples
+        --------
+        >>> manager._get_article_id(1)
+        19999901
+        """
+        try:
+            index = self.FRIENDLY_IDS.index(set_id)
+            return self.ARTICLE_IDS[index]
+        except ValueError:
+            raise ValueError(f"Invalid friendly ID: {set_id}")
