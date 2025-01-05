@@ -111,3 +111,19 @@ repos:
         language: system
         pass_filenames: false
         always_run: true
+
+  - repo: local
+    hooks:
+      - id: examples-notebook-check
+        name: nbval
+        entry: pytest --nbval
+        language: system
+        files: \.ipynb$
+
+  - repo: local
+    hooks:
+      - id: doctest
+        name: doctest
+        entry: pytest --doctest-modules
+        language: system
+        files: ^src/.*\.py$
