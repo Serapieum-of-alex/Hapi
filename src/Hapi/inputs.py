@@ -61,7 +61,7 @@ class Inputs:
         self.source_dem = src
 
     def prepare_inputs(
-        self, input_folder: Union[str, Path], output_folder: Union[str, Path]
+        self, inputs_dir: Union[str, Path], outputs_dir: Union[str, Path]
     ):
         """prepareInputs.
 
@@ -71,10 +71,10 @@ class Inputs:
 
         Parameters
         ----------
-        input_folder: [str/Path]
+        inputs_dir: [str/Path]
             path of the folder of the rasters you want to adjust their no of rows, columns and resolution (alignment)
             like a source raster.
-        output_folder: [str]
+        outputs_dir: [str]
             name to create a folder to store resulted rasters.
 
         Example
@@ -91,15 +91,18 @@ class Inputs:
             >>> In = Inputs(dem_path)
             >>> Inputs.prepare_inputs(evap_in_path, f"{output_path}/evap")
         """
-        if not isinstance(output_folder, str):
+        if not isinstance(outputs_dir, str):
             print("output_folder input should be string type")
 
         mask = Dataset.read_file(self.source_dem)
-        cube = Datacube.read_multiple_files(input_folder, with_order=False)
+        if not Path(inputs_dir).exists():
+            raise FileNotFoundError(f"{inputs_dir} does not exist")
+
+        cube = Datacube.read_multiple_files(inputs_dir, with_order=False)
         cube.open_datacube()
         cube.align(mask)
         cube.crop(mask, inplace=True)
-        path = [f"{output_folder}/{file.split('/')[-1]}" for file in cube.files]
+        path = [f"{outputs_dir}/{file.split('/')[-1]}" for file in cube.files]
         cube.to_file(path)
 
     @staticmethod
@@ -126,9 +129,16 @@ class Inputs:
              "lp","k0","k1","k2","uzl","perc", "maxbas"]
         """
         data_dir = Inputs._check_data_dir()
+        max_dir = data_dir / "max"
+        min_dir = data_dir / "min"
+        file_path = data_dir / f"max/{PARAMETERS_LIST[0]}.tif"
 
-        dataset = Dataset.read_file(f"{data_dir}/max/{PARAMETERS_LIST[0]}.tif")
+        if not file_path.exists() or not max_dir.exists() or not min_dir.exists():
+            raise FileNotFoundError(f"check the following files{file_path}, {max_dir}, {min_dir} does not exist")
+
+        dataset = Dataset.read_file(str(file_path))
         basin = basin.to_crs(crs=dataset.crs)
+
         # max values
         ub = list()
         for i in range(len(PARAMETERS_LIST)):
