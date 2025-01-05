@@ -614,7 +614,7 @@ class Parameter:
         self.api_client = FigshareAPIClient()
         self.manager = ParameterManager(self.api_client)
 
-    def get_parameters(self, download_dir: Path):
+    def get_parameters(self, download_dir: Optional[Path] = None):
         r"""
         Download all parameter sets to the specified directory.
 
