@@ -37,7 +37,7 @@ jobs:
 
       - name: Run Tests
         run: |
-          python -m pytest -vvv --cov=src/Hapi --cov-report=xml
+          python -m pytest -vvv  -m "not fig_share" --cov=src/Hapi --cov-report=xml
 
       - name: Upload coverage reports to Codecov with GitHub Action
         uses: codecov/codecov-action@v3
