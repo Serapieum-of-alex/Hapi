@@ -1,115 +1,16 @@
-import shutil
+import os
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 
+from Hapi import __file__ as hapi_init
 from Hapi.parameters.parameters import (
     FigshareAPIClient,
     FileManager,
     Parameter,
     ParameterManager,
 )
-
-
-def test_constructor():
-    parameters = Parameter()
-    assert isinstance(parameters, Parameter)
-    assert len(parameters.article_id) == 13
-    assert len(parameters.parameter_set_id) == 13
-    assert len(parameters.parameter_set_path) == 13
-    assert len(parameters.param_list) == 18
-    assert parameters.baseurl == "https://api.figshare.com/v2"
-    assert parameters.headers == {"Content-Type": "application/json"}
-    assert parameters.version == 1
-    parameters.version = 2
-    assert parameters.version == 2
-
-
-def test_get_url():
-    parameters = Parameter()
-    set_id = 1
-    url = parameters._get_url(set_id)
-    assert url == "https://api.figshare.com/v2/articles/19999901"
-    version = 1
-    url = parameters._get_url(set_id, version)
-    assert url == "https://api.figshare.com/v2/articles/19999901/versions/1"
-
-
-def test_send_request():
-    # raise for status
-    url = "https://ndownloader.figshare.com/files/35589995"
-    parameters = Parameter()
-    response = parameters._send_request("GET", url, headers=parameters.headers)
-    assert isinstance(response, bytes)
-    url = "https://api.figshare.com/v2/articles/19999997"
-    response = parameters._send_request("GET", url, headers=parameters.headers)
-    assert len(response["files"]) == 19
-
-
-def test_get_set_details():
-    parameters = Parameter()
-    set_id = 3
-    response = parameters.get_set_details(set_id)
-    assert len(response) == 19
-    response = parameters.get_set_details(set_id, version=1)
-    assert len(response) == 19
-
-
-def test_list_parameters():
-    parameters = Parameter()
-    response = parameters.list_parameters(1)
-    assert len(response) == 19
-    response = parameters.list_parameters(1, version=1)
-    assert len(response) == 19
-
-
-def test_retrieve_parameter_set_e2e():
-    parameters = Parameter()
-    set_id = 3
-    path = "tests/rrm/data/parameters/test_download_set_3_v1"
-    parameters._retrieve_parameter_set(set_id, directory=path)
-
-    assert Path(path).exists()
-    assert len(list(Path(path).iterdir())) == 19
-    try:
-        shutil.rmtree(path)
-    except PermissionError:
-        pass
-
-
-@pytest.mark.e2e
-def test_list_set_versions():
-    parameters = Parameter()
-    set_id = 3
-    response = parameters.list_set_versions(set_id)
-    assert len(response) == 1
-    assert response[0]["version"] == 1
-    assert (
-        response[0]["url"] == "https://api.figshare.com/v2/articles/19999997/versions/1"
-    )
-
-
-@pytest.mark.e2e
-def test_get_parameter_set():
-    parameters = Parameter()
-    set_id = 3
-    path = "tests/rrm/data/parameters/test_get_parameter_set_3_v1"
-    parameters.get_parameter_set(set_id, directory=path)
-    assert Path(path).exists()
-    assert len(list(Path(path).iterdir())) == 19
-    try:
-        shutil.rmtree(path)
-    except PermissionError:
-        pass
-
-
-@pytest.mark.mock
-def test_get_parameters():
-    parameters = Parameter()
-    with patch("Hapi.parameters.parameters.Parameter.get_parameter_set") as mock:
-        parameters.get_parameters()
-        assert mock.call_count == 13
 
 
 class TestFigshareAPIClient:
@@ -276,7 +177,7 @@ class TestParameterManagerMock:
         mock_download = MagicMock()
         FileManager.download_file = mock_download
 
-        parameter_manager.download_files(set_id=1, dest_directory=tmp_path)
+        parameter_manager.download_files(set_id=1, download_dir=tmp_path)
 
         mock_api_client.send_request.assert_called_once_with("GET", "articles/19999901")
         assert mock_download.call_count == 2, "Two files should be downloaded."
@@ -289,18 +190,18 @@ class TestParameterManagerMock:
 
     def test_get_article_id_from_friendly_id(self, parameter_manager):
         """Test mapping a friendly ID to an article ID."""
-        result = parameter_manager._get_article_id(1)
+        result = parameter_manager.get_article_id(1)
         assert (
             result == ParameterManager.ARTICLE_IDS[0]
         ), "The article ID should match the corresponding friendly ID."
 
-        result = parameter_manager._get_article_id("max")
+        result = parameter_manager.get_article_id("max")
         assert (
             result == ParameterManager.ARTICLE_IDS[-2]
         ), "The article ID should match the corresponding friendly ID."
 
         with pytest.raises(ValueError):
-            parameter_manager._get_article_id("invalid_id")
+            parameter_manager.get_article_id("invalid_id")
 
     def test_get_article_details_with_version(self, parameter_manager, mock_api_client):
         """Test retrieving details of an article with a specific version."""
@@ -372,12 +273,12 @@ class TestParameterManagerIntegration:
 
     def test_integration_get_article_id(self, parameter_manager):
         """Integration test for mapping a friendly ID to an article ID."""
-        article_id = parameter_manager._get_article_id(1)
+        article_id = parameter_manager.get_article_id(1)
         assert (
             article_id == ParameterManager.ARTICLE_IDS[0]
         ), "The friendly ID should map to the correct article ID."
 
-        article_id = parameter_manager._get_article_id("avg")
+        article_id = parameter_manager.get_article_id("avg")
         assert (
             article_id == ParameterManager.ARTICLE_IDS[-3]
         ), "The friendly ID 'avg' should map to the correct article ID."
@@ -393,3 +294,119 @@ class TestParameterManagerIntegration:
         assert (
             details["version"] == version
         ), "The version should match the requested version."
+
+
+@pytest.mark.integration
+class TestParameter:
+
+    @pytest.fixture
+    def int_test_dir(self, tmp_path):
+        """Provide a temporary directory for testing file downloads."""
+        return tmp_path / "integration_test_parameters"
+
+    @pytest.mark.fig_share
+    def test_integration_get_parameters(self, int_test_dir):
+        """Integration test for downloading all parameter sets."""
+        parameter = Parameter(version=1)
+        int_test_dir.mkdir(parents=True, exist_ok=True)
+
+        parameter.get_parameters(int_test_dir)
+
+        downloaded_files = list(int_test_dir.glob("**/*"))
+        assert (
+            len(downloaded_files) > 0
+        ), "Parameter sets should be downloaded to the specified directory."
+
+    @pytest.mark.fig_share
+    def test_integration_get_parameter_set_with_download_dir(self, int_test_dir):
+        """Integration test for downloading all parameter sets."""
+        parameter = Parameter(version=1)
+        int_test_dir.mkdir(parents=True, exist_ok=True)
+
+        parameter.get_parameter_set(1, int_test_dir)
+
+        downloaded_files = list(int_test_dir.glob("**/*"))
+        assert (
+            len(downloaded_files) > 0
+        ), "Parameter sets should be downloaded to the specified directory."
+
+    @pytest.mark.fig_share
+    def test_integration_get_parameter_set_default_download_dir(self):
+        """Integration test for downloading all parameter sets."""
+        download_dir = Path(f"{os.path.dirname(hapi_init)}/parameters/1")
+
+        parameter = Parameter(version=1)
+        parameter.get_parameter_set(1)
+        downloaded_files = list(download_dir.glob("**/*"))
+        assert (
+            len(downloaded_files) == 19
+        ), "Parameter sets should be downloaded to the specified directory."
+
+    def test_integration_list_parameter_names(self):
+        """Integration test for listing parameter names."""
+        parameter = Parameter(version=1)
+        names = parameter.list_parameter_names()
+
+        assert isinstance(names, list), "Parameter names should be returned as a list."
+        assert len(names) == len(
+            parameter.manager.PARAMETER_NAMES
+        ), "The number of parameter names should match."
+        assert (
+            "01_tt" in names
+        ), "Expected parameter name '01_tt' should be in the list."
+
+
+@pytest.mark.mock
+class TestParameterMock:
+
+    @pytest.fixture
+    def mock_parameter_manager(self):
+        """Fixture to provide a mock ParameterManager."""
+        return MagicMock(spec=ParameterManager)
+
+    @pytest.fixture
+    def mock_file_manager(self):
+        """Fixture to provide a mock FileManager."""
+        return MagicMock(spec=FileManager)
+
+    @pytest.fixture
+    def parameter(self, mock_parameter_manager):
+        """Fixture to provide a Parameter instance with a mocked ParameterManager."""
+        parameter_instance = Parameter(version=1)
+        parameter_instance.manager = mock_parameter_manager
+        return parameter_instance
+
+    def test_get_parameters(self, parameter, mock_parameter_manager, tmp_path):
+        """Test downloading all parameter sets."""
+        parameter.get_parameters(tmp_path)
+
+        # Ensure download_files was called for each parameter set ID
+        assert mock_parameter_manager.download_files.call_count == len(
+            ParameterManager.PARAMETER_SET_ID
+        ), "download_files should be called for each parameter set ID."
+        for set_id in ParameterManager.PARAMETER_SET_ID:
+            mock_parameter_manager.download_files.assert_any_call(
+                set_id, tmp_path, parameter.version
+            )
+
+    def test_get_parameter_set(self, parameter, mock_parameter_manager, tmp_path):
+        """Test downloading a parameter set using a friendly ID."""
+        set_id = 1
+        parameter.get_parameter_set(set_id, tmp_path)
+
+        # Ensure download_files was called with the correct arguments
+        mock_parameter_manager.download_files.assert_called_once_with(
+            set_id, tmp_path, parameter.version
+        )
+
+    def test_list_parameter_names(self):
+        """Test listing parameter names."""
+        names = Parameter.list_parameter_names()
+
+        assert isinstance(names, list), "Parameter names should be returned as a list."
+        assert len(names) == len(
+            ParameterManager.PARAMETER_NAMES
+        ), "The number of parameter names should match."
+        assert (
+            "01_tt" in names
+        ), "Expected parameter name '01_tt' should be in the list."

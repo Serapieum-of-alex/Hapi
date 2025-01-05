@@ -8,336 +8,10 @@ from urllib.request import urlretrieve
 
 import requests
 from loguru import logger
-from requests.exceptions import HTTPError
 
-import Hapi
+from Hapi import __file__ as hapi_root
 
 BASE_URL = "https://api.figshare.com/v2"
-
-ARTICLE_IDS = [
-    19999901,
-    19999988,
-    19999997,
-    20000006,
-    20000012,
-    20000018,
-    20000015,
-    20000024,
-    20000027,
-    20000030,
-    20153402,
-    20153405,
-    20362374,
-]
-PARAMSTER_NAMES = [
-    "01_tt",
-    "02_rfcf",
-    "03_sfcf",
-    "04_cfmax",
-    "05_cwh",
-    "06_cfr",
-    "07_fc",
-    "08_beta",
-    "09_etf",
-    "10_lp",
-    "11_k0",
-    "12_k1",
-    "13_k2",
-    "14_uzl",
-    "15_perc",
-    "16_maxbas",
-    "17_K_muskingum",
-    "18_x_muskingum",
-]
-URL = "https://api.figshare.com/v2"
-HEADERS = {"Content-Type": "application/json"}
-
-
-class Parameter:
-    """Parameter class."""
-
-    def __init__(self, version: int = 1):
-        """__init__.
-
-        Parameters
-        ----------
-        version : int, optional
-            Figshare article version. If None, selects the most recent version. default is 1
-        """
-        self._version = version
-
-    @property
-    def param_list(self):
-        """param_list."""
-        return PARAMSTER_NAMES
-
-    @property
-    def baseurl(self):
-        """baseurl."""
-        return URL
-
-    @property
-    def headers(self):
-        """headers."""
-        return HEADERS
-
-    @property
-    def article_id(self):
-        """article_id."""
-        return ARTICLE_IDS
-
-    @property
-    def version(self):
-        """version."""
-        return self._version
-
-    @version.setter
-    def version(self, value):
-        self._version = value
-
-    @property
-    def parameter_set_id(self) -> List[str]:
-        """parameter_set_id."""
-        name_list = list(range(1, 11))
-        return name_list + ["avg", "max", "min"]
-
-    @property
-    def parameter_set_path(self) -> List[str]:
-        """parameter_set_path."""
-        name_list = list(range(1, 11))
-        return [str(name) for name in name_list] + ["avg", "max", "min"]
-
-    def _get_url(self, set_id: int, version: int = None):
-        """
-        Return the URL for a given parameter set and version.
-
-        Parameters
-        ----------
-        set_id: int
-            parameter set index (from 1 to 10, avg, max, and min)
-        version: int, default is None
-            Figshare article version. If None, selects the most recent version
-
-        Returns
-        -------
-        url: str
-            URL for the request
-        """
-        article_id = self._get_set_article_id(set_id)
-        if version is None:
-            url = f"{self.baseurl}/articles/{article_id}"
-        else:
-            url = f"{self.baseurl}/articles/{article_id}/versions/{version}"
-
-        return url
-
-    @staticmethod
-    def _send_request(method, url, headers, data=None, binary=False):
-        """issue_request.
-
-            Wrapper for HTTP request.
-
-        Parameters
-        ----------
-        method : str
-            HTTP method. One of GET, PUT, POST or DELETE
-        url : str
-            URL for the request
-        headers: dict
-            HTTP header information
-        data: dict
-            Figshare article data
-        binary: bool
-            Whether data is binary or not
-
-        Returns
-        -------
-        response_data: dict
-            JSON response for the request returned as python dict
-        """
-        if data is not None and not binary:
-            data = json.dumps(data)
-
-        response = requests.request(method, url, headers=headers, data=data)
-
-        try:
-            response.raise_for_status()
-            try:
-                response_data = json.loads(response.text)
-            except ValueError:
-                response_data = response.content
-        except HTTPError as error:
-            print(f"Caught an HTTPError: {error}")
-            print("Body:\n", response.text)
-            raise
-
-        return response_data
-
-    def get_set_details(self, set_id: Union[int, str], version=None):
-        """get_set_details.
-
-            Return the details of an article with a given article ID.
-
-        Parameters
-        ----------
-        set_id : [str/int]
-            parameter set id [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, avg, max, min]
-        version: [str/int]
-            Figshare article version. If None, selects the most recent version. default is None
-
-        Returns
-        -------
-        response : dict
-            HTTP request response as a python dict
-
-        Examples
-        --------
-        >>> par = Parameter()
-        >>> set_id = 2
-        >>> par.get_set_details(set_id)
-        """
-        url = self._get_url(set_id, version)
-        response = self._send_request("GET", url, headers=self.headers)
-        return response["files"]
-
-    def list_parameters(self, set_id, version=None):
-        """list_parameters.
-
-            List all the files associated with a given article.
-
-        Parameters
-        ----------
-        set_id : [str/int]
-            parameter set id [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, avg, max, min]
-        version : str or id, default is None
-            Figshare article version. If None, the function selects the most recent version.
-
-        Returns
-        -------
-        response : dict
-            HTTP request response as a python dict
-        """
-        url = self._get_url(set_id, version)
-        response = self._send_request("GET", url, headers=self.headers)
-        return response["files"]
-
-    def _retrieve_parameter_set(self, set_id, directory=None):
-        """retrieveParameterSet.
-
-            Retrieve files and save them locally.
-
-        By default, files will be stored in the current working directory
-        under a folder called figshare_<article_id> by default.
-        Specify <out-path> for: <out-path>/figshare_<article_id>
-
-        Parameters
-        ----------
-        set_id : [str/int]
-            parameter set id [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, avg, max, min]
-        directory: [str]
-            path
-        """
-        if directory is None:
-            directory = os.getcwd()
-
-        file_list = self.list_parameters(set_id)
-
-        os.makedirs(directory, exist_ok=True)
-        logger.info(
-            f"The download of the parameter set starts to the following directory: {directory}"
-        )
-
-        for file_dict in file_list:
-            urlretrieve(
-                file_dict["download_url"], os.path.join(directory, file_dict["name"])
-            )
-            logger.info(f"{file_dict['name']} has been downloaded")
-
-    def get_parameter_set(self, set_id: Union[int, str], directory: str = None):
-        """get_parameter_set.
-
-            get_parameter_set retrieves a parameter set
-
-        Parameters
-        ----------
-        set_id: [int]
-            parameter set index (from 1 to 10, avg, max, and min)
-        directory: [str]
-            directory where the downloaded parameters are going to be saved
-
-        Returns
-        -------
-        None
-        """
-        ind = self.parameter_set_id.index(set_id)
-        if directory is not None:
-            rpath = directory
-        else:
-            par_path = self.parameter_set_path[ind]
-            rpath = f"{os.path.dirname(Hapi.__file__)}/parameters/{par_path}"
-        self._retrieve_parameter_set(set_id, directory=rpath)
-
-    def get_parameters(self):
-        """get_parameters.
-
-            get_parameters retrieves all the parameters in the default directory
-            Hapi/Hapi/Parameters/...
-
-        Returns
-        -------
-        None
-        """
-        for set_id in self.parameter_set_id:
-            logger.info(
-                f"Download the Hydrological parameters for the dataset-{set_id}"
-            )
-            self.get_parameter_set(set_id)
-
-    def _get_set_article_id(self, set_id: int):
-        """get_set_article_id.
-
-            get_set_article_id retrieves the article id for a given parameter set
-
-        Parameters
-        ----------
-        set_id: [int]
-            parameter set index (from 1 to 10, avg, max, and min)
-
-        Returns
-        -------
-        article_id: [int]
-            article id
-        """
-        ind = self.parameter_set_id.index(set_id)
-        return self.article_id[ind]
-
-    def list_set_versions(self, set_id: int):
-        """Return the details of an article with a given article ID.
-
-        Parameters
-        ----------
-        set_id : str or int
-            Figshare article ID
-
-        Returns
-        -------
-        response : dict
-            HTTP request response as a python dict
-        """
-        article_id = self._get_set_article_id(set_id)
-        url = f"{self.baseurl}/articles/{article_id}/versions"
-        headers = self._get_headers()
-        response = self._send_request("GET", url, headers=headers)
-        return response
-
-    @staticmethod
-    def _get_headers(token=None):
-        """HTTP header information."""
-        headers = {"Content-Type": "application/json"}
-        if token:
-            headers["Authorization"] = "token {0}".format(token)
-
-        return headers
 
 
 class FigshareAPIClient:
@@ -530,7 +204,7 @@ class FileManager:
     """
 
     @staticmethod
-    def download_file(url: str, dest_path: Path):
+    def download_file(url: str, download_path: Path):
         """
         Download a file from the specified URL to the destination path.
 
@@ -538,16 +212,16 @@ class FileManager:
         ----------
         url : str
             The URL of the file to download.
-        dest_path : Path
+        download_path : Path
             The local file path where the file will be saved.
 
         Examples
         --------
         >>> FileManager.download_file("http://example.com/file", Path("./downloads/file.txt"))
         """
-        dest_path.parent.mkdir(parents=True, exist_ok=True)
-        urlretrieve(url, dest_path)
-        logger.info(f"File downloaded: {dest_path}")
+        download_path.parent.mkdir(parents=True, exist_ok=True)
+        urlretrieve(url, download_path)
+        logger.debug(f"File downloaded: {download_path}")
 
     @staticmethod
     def clear_directory(directory: Path):
@@ -567,7 +241,7 @@ class FileManager:
             for file in directory.iterdir():
                 if file.is_file():
                     file.unlink()
-            logger.info(f"Cleared directory: {directory}")
+            logger.debug(f"Cleared directory: {directory}")
 
 
 class ParameterManager:
@@ -580,7 +254,7 @@ class ParameterManager:
         List of article IDs corresponding to parameter sets.
     PARAMETER_NAMES : list
         List of parameter names.
-    FRIENDLY_IDS : list
+    PARAMETER_SET_ID : list
         User-friendly IDs for parameter sets (e.g., 1-10, avg, max, min).
 
     Methods
@@ -638,7 +312,7 @@ class ParameterManager:
         "18_x_muskingum",
     ]
 
-    FRIENDLY_IDS = list(range(1, 11)) + ["avg", "max", "min"]
+    PARAMETER_SET_ID = list(range(1, 11)) + ["avg", "max", "min"]
 
     def __init__(self, api_client: FigshareAPIClient):
         """initialize."""
@@ -667,7 +341,7 @@ class ParameterManager:
         requests.exceptions.HTTPError
             If the API request fails.
         """
-        article_id = self._get_article_id(set_id)
+        article_id = self.get_article_id(set_id)
         endpoint = f"articles/{article_id}"
         if version:
             endpoint += f"/versions/{version}"
@@ -693,7 +367,7 @@ class ParameterManager:
         return details.get("files", [])
 
     def download_files(
-        self, set_id: int, dest_directory: Path, version: Optional[int] = None
+        self, set_id: int, download_dir: Path, version: Optional[int] = None
     ):
         """
         Download all files in an article to the specified directory.
@@ -702,7 +376,7 @@ class ParameterManager:
         ----------
         set_id : int
             The ID of the article to download files from.
-        dest_directory : Path
+        download_dir : Path
             The local directory to save the files.
         version : int, optional, by default None.
             The version of the article.
@@ -713,10 +387,10 @@ class ParameterManager:
         """
         files = self.list_files(set_id, version)
         for file in files:
-            dest_path = dest_directory / file["name"]
+            dest_path = download_dir / file["name"]
             FileManager.download_file(file["download_url"], dest_path)
 
-    def _get_article_id(self, set_id: Union[int, str]) -> int:
+    def get_article_id(self, set_id: Union[int, str]) -> int:
         """
         Map a user-friendly ID (1-10, avg, max, min) to the corresponding article ID.
 
@@ -737,11 +411,108 @@ class ParameterManager:
 
         Examples
         --------
-        >>> manager._get_article_id(1)
+        >>> manager.get_article_id(1)
         19999901
         """
         try:
-            index = self.FRIENDLY_IDS.index(set_id)
+            index = self.PARAMETER_SET_ID.index(set_id)
             return self.ARTICLE_IDS[index]
         except ValueError:
-            raise ValueError(f"Invalid friendly ID: {set_id}")
+            raise ValueError(
+                f"Invalid Parameter Set ID: {set_id}, valid IDs: {self.PARAMETER_SET_ID}"
+            )
+
+
+class Parameter:
+    """
+    A simplified interface for handling hydrological parameters.
+
+    Attributes
+    ----------
+    version : int
+        The version of the parameter sets to retrieve.
+
+    Methods
+    -------
+    get_parameters(dest_directory: Path):
+        Downloads all parameter sets to the specified directory.
+    get_parameter_by_friendly_id(friendly_id: Union[int, str], dest_directory: Path):
+        Downloads a specific parameter set based on a user-friendly ID.
+    list_parameter_names() -> List[str]:
+        Lists all parameter names.
+
+    Examples
+    --------
+    >>> parameter = Parameter(version=1)
+    >>> parameter.get_parameters(Path("./parameters"))
+    >>> parameter.get_parameter_by_friendly_id(1, Path("./parameters"))
+    """
+
+    def __init__(self, version: int = 1):
+        """initialize."""
+        self.version = version
+        self.api_client = FigshareAPIClient()
+        self.manager = ParameterManager(self.api_client)
+
+    def get_parameters(self, download_dir: Path):
+        """
+        Download all parameter sets to the specified directory.
+
+        Parameters
+        ----------
+        download_dir : Path
+            The directory where parameter sets will be saved.
+
+        Examples
+        --------
+        >>> parameter = Parameter(version=1)
+        >>> parameter.get_parameters(Path("./parameters"))
+        """
+        for set_id in ParameterManager.PARAMETER_SET_ID:
+            self.get_parameter_set(set_id, download_dir)
+            logger.debug(f"Downloaded parameter set: {set_id} to {download_dir}")
+
+    def get_parameter_set(self, set_id: int, download_dir: Optional[Path] = None):
+        """
+        Download all parameter sets to the specified directory.
+
+        Parameters
+        ----------
+        set_id: int
+            The ID of the parameter set to download.
+        download_dir : Path, optional, default is None
+            The directory where parameter sets will be saved.
+
+        Examples
+        --------
+        >>> parameter = Parameter(version=1)
+        >>> parameter.get_parameter_set(Path("./parameters"))
+        """
+        if set_id not in ParameterManager.PARAMETER_SET_ID:
+            raise ValueError(
+                f"Invalid friendly ID: {set_id}, valid IDs: {ParameterManager.PARAMETER_SET_ID}"
+            )
+
+        if download_dir is None:
+            download_dir = Path(f"{os.path.dirname(hapi_root)}/parameters/{set_id}")
+
+        self.manager.download_files(set_id, download_dir, self.version)
+        logger.debug(f"Downloaded parameter set: {set_id} to {download_dir}")
+
+    @staticmethod
+    def list_parameter_names() -> List[str]:
+        """
+        List all parameter names.
+
+        Returns
+        -------
+        list
+            A list of parameter names.
+
+        Examples
+        --------
+        >>> parameter = Parameter(version=1)
+        >>> names = parameter.list_parameter_names()
+        >>> print(names)
+        """
+        return ParameterManager.PARAMETER_NAMES
