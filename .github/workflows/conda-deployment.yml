@@ -41,3 +41,5 @@ jobs:
           conda config --show-sources
           conda config --show
           pytest -sv -m "not plot" -m "not fig_share"
+        env:
+          HAPI_DATA_DIR: ${{ github.workspace }}/src/Hapi/parameters

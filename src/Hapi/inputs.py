@@ -1,12 +1,14 @@
 """Rainfall-runoff Inputs."""
-from typing import Union
-from pathlib import Path
+
 import datetime as dt
 import os
+from pathlib import Path
+from typing import Union
+
 import pandas as pd
 from geopandas import GeoDataFrame
-from pyramids.dataset import Dataset
 from pyramids.datacube import Datacube
+from pyramids.dataset import Dataset
 
 import Hapi
 
@@ -197,8 +199,15 @@ class Inputs:
              "lp","k0","k1","k2","uzl","perc", "maxbas",'K_muskingum',
              'x_muskingum']
         """
-        parameters_path = os.path.dirname(Hapi.__file__)
-        parameters_path = f"{parameters_path}/parameters/{scenario}"
+        data_dir = os.getenv("HAPI_DATA_DIR")
+        if data_dir is None:
+            raise ValueError("HAPI_DATA_DIR environment variable is not set")
+        else:
+            data_dir = Path(data_dir)
+            if not data_dir.exists():
+                raise FileNotFoundError(f"{data_dir} does not exist")
+
+        parameters_path = data_dir / scenario
 
         if not as_raster:
             dataset = Dataset.read_file(f"{parameters_path}/{PARAMETERS_LIST[0]}.tif")
