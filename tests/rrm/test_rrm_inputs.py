@@ -41,8 +41,7 @@ class TestExtractParameters:
         #     rpath.unlink()
 
         inputs = Inputs(coello_acc_path)
-        with patch("os.path.dirname", return_value="src/Hapi"):
-            inputs.extract_parameters(None, "3", as_raster=True, save_to=str(rpath))
+        inputs.extract_parameters(None, "3", as_raster=True, save_to=str(rpath))
         assert rpath.exists()
         files = list(rpath.iterdir())
         assert len(files) == 19
