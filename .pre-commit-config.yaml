@@ -107,7 +107,7 @@ repos:
     hooks:
       - id: pytest-check
         name: pytest-check
-        entry: pytest -vvv --cov=Hapi --cov-report term-missing -m "not fig_share"
+        entry: pytest -vvv --cov=src/Hapi --cov-report term-missing -m "not fig_share"
         language: system
         pass_filenames: false
         always_run: true
