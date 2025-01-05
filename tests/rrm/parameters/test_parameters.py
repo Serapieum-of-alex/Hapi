@@ -334,7 +334,8 @@ class TestParameter:
     @pytest.mark.fig_share
     def test_integration_get_parameter_set_default_download_dir(self):
         """Integration test for downloading all parameter sets."""
-        download_dir = Path(f"{os.path.dirname(hapi_init)}/parameters/1")
+        default_dir = os.getenv("HAPI_DATA_DIR")
+        download_dir = Path(f"{default_dir}/1")
 
         parameter = Parameter(version=1)
         parameter.get_parameter_set(1)

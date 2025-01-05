@@ -608,11 +608,20 @@ class Parameter:
         '18_x_muskingum']
     """
 
-    def __init__(self, version: int = 1):
+    def __init__(self, version: int = 1, download_dir: Optional[Path] = None):
         """initialize."""
         self.version = version
         self.api_client = FigshareAPIClient()
         self.manager = ParameterManager(self.api_client)
+        if download_dir is None:
+            download_dir = os.getenv("HAPI_DATA_DIR")
+            if download_dir is None:
+                raise ValueError("HAPI_DATA_DIR environment variable is not set")
+            else:
+                download_dir = Path(download_dir)
+                download_dir.mkdir(parents=True, exist_ok=True)
+        self.download_dir = download_dir
+
 
     def get_parameters(self, download_dir: Optional[Path] = None):
         r"""
@@ -672,7 +681,7 @@ class Parameter:
             )
 
         if download_dir is None:
-            download_dir = Path(f"{os.path.dirname(hapi_root)}/parameters/{set_id}")
+            download_dir = self.download_dir / f"{set_id}"
 
         self.manager.download_files(set_id, download_dir, self.version)
         logger.debug(f"Downloaded parameter set: {set_id} to {download_dir}")
@@ -700,3 +709,4 @@ class Parameter:
             '18_x_muskingum']
         """
         return ParameterManager.PARAMETER_NAMES
+
