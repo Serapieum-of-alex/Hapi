@@ -161,30 +161,11 @@ examples/data/Hapi.qgz
 *.png
 .vscode
 
-"examples/Hydrodynamic models/test_case/inputs/gauges/discharge_long_ts/Statistical analysis results/Figures/F-444222.png"
-"examples/Hydrodynamic models/test_case/inputs/gauges/discharge_long_ts/Statistical analysis results/Figures/F-888555.png"
-"examples/Hydrodynamic models/test_case/inputs/gauges/discharge_long_ts/Statistical analysis results/Figures/F-999666.png"
-examples/Hydrodynamic models/test_case/resultsMetricsHM_Q_Obs.geojson
-examples/Hydrodynamic models/test_case/resultsMetricsHM_Q_Obs.geojson.csv
-examples/Hydrodynamic models/test_case/resultsMetricsHM_Q_RRM.geojson
-examples/Hydrodynamic models/test_case/resultsMetricsHM_Q_RRM.geojson.csv
-examples/Hydrodynamic models/test_case/resultsMetricsHM_WL_Obs.geojson
-examples/Hydrodynamic models/test_case/resultsMetricsHM_WL_Obs.geojson.csv
-examples/Hydrodynamic models/test_case/resultsMetricsRRM_Q_Obs.geojson
-examples/Hydrodynamic models/test_case/resultsMetricsRRM_Q_Obs.geojson.csv
-Hapi/java_functions.py
 *History*
-Hapi/parameters/*.tif
 *.bin
 *.cue
 examples/hydrological-model/data/distributed_model/calibration/LB - tot.txt
 /examples/Hydrological model/data/meteo_data/meteodata_prepared/temp-rename-example/*.tif
-examples/Hydrodynamic models/test_case/results/q/right_results/*
-examples/Hydrodynamic models/test_case/results/h/right_results/*
-examples/Hydrodynamic models/test_case/results/USbnd/right_results/*
-examples/Hydrodynamic models/test_case/results/q/New folder/*
-examples/Hydrodynamic models/test_case/results/h/New folder/*
-examples/Hydrodynamic models/test_case/results/USbnd/New folder/*
 tests/mo/*
 /tests/rrm/data/test_results/extract_parameter/01_TT.tif
 /tests/rrm/data/test_results/extract_parameter/02_RFCF.tif
