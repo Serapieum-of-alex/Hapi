@@ -94,12 +94,12 @@ class TestFileManager:
         """Fixture to create a temporary directory for testing."""
         return tmp_path
 
-    def test_directory_creation(self, temp_directory):
+    def test_download_file(self, temp_directory):
         """Test that a directory is created if it doesn't exist."""
         new_dir = temp_directory / "new_subdir"
         file_path = new_dir / "example.txt"
-
-        FileManager.download_file("https://www.example.com", file_path)
+        url = "https://www.example.com"
+        FileManager.download_file(url, file_path)
 
         assert new_dir.exists(), "The directory should be created."
         assert file_path.exists(), "The file should be created in the new directory."
@@ -258,18 +258,19 @@ class TestParameterManagerIntegration:
         assert len(files) > 0, "The article should have at least one file."
         assert "name" in files[0], "Each file should have a 'name' key."
 
-    # def test_integration_download_files(self, parameter_manager):
-    #     """Integration test for downloading files from an article."""
-    #     set_id = 1
-    #     int_test_dir = Path("tests/rrm/data/parameters/download_files")
-    #     int_test_dir.mkdir(parents=True, exist_ok=True)
-    #
-    #     parameter_manager.download_files(set_id, int_test_dir)
-    #
-    #     downloaded_files = list(int_test_dir.iterdir())
-    #     assert (
-    #         len(downloaded_files) == 19
-    #     ), "Files should be downloaded to the specified directory."
+    @pytest.mark.fig_share
+    def test_integration_download_files(self, parameter_manager):
+        """Integration test for downloading files from an article."""
+        set_id = 1
+        int_test_dir = Path("tests/rrm/data/parameters/download_files")
+        int_test_dir.mkdir(parents=True, exist_ok=True)
+
+        parameter_manager.download_files(set_id, int_test_dir)
+
+        downloaded_files = list(int_test_dir.iterdir())
+        assert (
+            len(downloaded_files) == 19
+        ), "Files should be downloaded to the specified directory."
 
     def test_integration_get_article_id(self, parameter_manager):
         """Integration test for mapping a friendly ID to an article ID."""

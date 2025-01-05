@@ -149,6 +149,31 @@ class FigshareAPIClient:
         >>> client = FigshareAPIClient()
         >>> response = client.get_article_version(19999901, 1) #doctest: +SKIP
         >>> print(response) #doctest: +SKIP
+        {
+            'url_public_html': 'https://figshare.com/articles/dataset/parameter_set-1/19999901/1',
+            'files': [
+                {'id': 35589521, 'name': '01_TT.tif', 'download_url': 'https://ndownloader.figshare.com/files/35589521',
+                'mimetype': 'image/tiff'},
+                {'id': 35589524, 'name': '02_RFCF.tif', 'download_url': 'https://ndownloader.figshare.com/files/35589524',
+                ],
+            'custom_fields': [],
+            'authors': [
+                {'id': 11888465, 'full_name': 'Mostafa Farrag', 'first_name': 'Mostafa', 'last_name': 'Farrag',
+                'is_active': True, 'url_name': 'Mostafa_Farrag', 'orcid_id': '0000-0002-1673-0126'}
+                ],
+            'figshare_url': 'https://figshare.com/articles/dataset/parameter_set-1/19999901',
+            'description': '<p>hydrology</p>', 'version': 1, 'status': 'public', 'created_date': '2022-06-04T13:52:54Z',
+            'modified_date': '2022-06-04T14:15:43Z', 'is_public': True, 'is_confidential': False,
+            'license': {
+                'value': 1, 'name': 'CC BY 4.0', 'url': 'https://creativecommons.org/licenses/by/4.0/'},
+                'tags': ['hydrology; precipitation; river basin; discharge; modelling; flood forecasting', 'Hydrology'],
+            'citation': 'Farrag, Mostafa (2022). parameter set-1. figshare. Dataset.
+            https://doi.org/10.6084/m9.figshare.19999901.v1', 'id': 19999901, 'title': 'parameter
+            set-1', 'doi': '10.6084/m9.figshare.19999901.v1', 'url': 'https://api.figshare.com/v2/articles/19999901',
+            'published_date': '2022-06-04T13:52:54Z', 'defined_type_name': 'dataset',
+            'url_public_api': 'https://api.figshare.com/v2/articles/19999901',
+            'timeline': {'posted': '2022-06-04T13:52:54', 'firstOnline': '2022-06-04T13:52:54'}
+            }
         """
         endpoint = f"articles/{article_id}/versions/{version}"
         return self.send_request("GET", endpoint)
@@ -187,7 +212,7 @@ class FigshareAPIClient:
 
 
 class FileManager:
-    """
+    r"""
     Handle file operations such as downloading and saving files.
 
     Methods
@@ -199,13 +224,17 @@ class FileManager:
 
     Examples
     --------
-    >>> FileManager.download_file("http://example.com/file", Path("./downloads/file.txt"))
-    >>> FileManager.clear_directory(Path("./downloads"))
+    The FileManager class can be used to download files and clear directories:
+    >>> FileManager.download_file(
+    ... "https://ndownloader.figshare.com/files/35589521", "examples/data/parameters/01_TT.tif"
+    ... ) # doctest: +SKIP
+    2025-01-05 17:24:25.610 | DEBUG    | Hapi.parameters.parameters:download_file:227 - File downloaded: examples\data\parameters\01_TT.tif
+    >>> FileManager.clear_directory("./downloads") # doctest: +SKIP
     """
 
     @staticmethod
     def download_file(url: str, download_path: Path):
-        """
+        r"""
         Download a file from the specified URL to the destination path.
 
         Parameters
@@ -217,26 +246,34 @@ class FileManager:
 
         Examples
         --------
-        >>> FileManager.download_file("http://example.com/file", Path("./downloads/file.txt"))
+        The FileManager class can be used to download files and clear directories:
+        >>> FileManager.download_file(
+        ... "https://ndownloader.figshare.com/files/35589521", "examples/data/parameters/01_TT.tif"
+        ... ) # doctest: +SKIP
+        2025-01-05 17:24:25.610 | DEBUG    | Hapi.parameters.parameters:download_file:227 - File downloaded: examples\data\parameters\01_TT.tif
         """
+        download_path = (
+            Path(download_path) if isinstance(download_path, str) else download_path
+        )
         download_path.parent.mkdir(parents=True, exist_ok=True)
         urlretrieve(url, download_path)
         logger.debug(f"File downloaded: {download_path}")
 
     @staticmethod
-    def clear_directory(directory: Path):
+    def clear_directory(directory: Union[Path, str]):
         """
         Clear all files in the specified directory.
 
         Parameters
         ----------
-        directory : Path
+        directory : Path/str
             The directory to clear.
 
         Examples
         --------
-        >>> FileManager.clear_directory(Path("./downloads"))
+        >>> FileManager.clear_directory("./downloads")
         """
+        directory = Path(directory) if isinstance(directory, str) else directory
         if directory.exists():
             for file in directory.iterdir():
                 if file.is_file():
@@ -245,7 +282,7 @@ class FileManager:
 
 
 class ParameterManager:
-    """
+    r"""
     Manages hydrological parameters and integrates with Figshare for data retrieval.
 
     Attributes
@@ -270,9 +307,46 @@ class ParameterManager:
 
     Examples
     --------
-    >>> manager = ParameterManager(api_client)
-    >>> files = manager.list_files(12345)
-    >>> manager.download_files(12345, Path("./downloads"))
+    First create the Figshare API client:
+        >>> api_client = FigshareAPIClient()
+
+    Then create the ParameterManager:
+        >>> manager = ParameterManager(api_client)
+
+    Retrieve details of a parameter set:
+        >>> set_id = 1
+        >>> files = manager.list_files(set_id) # doctest: +SKIP
+        >>> print(files) # doctest: +SKIP
+        [
+            {'id': 35589521, 'name': '01_TT.tif', 'download_url': 'https://ndownloader.figshare.com/files/35589521', ...},
+            {'id': 35589524, 'name': '02_RFCF.tif', 'download_url': 'https://ndownloader.figshare.com/files/35589524', ...},
+            {'id': 35589527, 'name': '03_SFCF.tif', 'download_url': 'https://ndownloader.figshare.com/files/35589527', ...},
+            ...
+        ]
+
+    Get parameter set details:
+        >>> details = manager.get_parameter_set_details(1) # doctest: +SKIP
+        >>> print(details.keys()) # doctest: +SKIP
+        dict_keys(
+            [
+                'files', 'custom_fields', 'authors', 'figshare_url', 'download_disabled', 'description', 'funding',
+                'funding_list', 'version', 'status', 'size', 'created_date', 'modified_date', 'is_public',
+                'is_confidential', 'is_metadata_record', 'confidential_reason', 'metadata_reason', 'license', 'tags',
+                'categories', 'references', 'has_linked_file', 'citation', 'related_materials', 'is_embargoed',
+                'embargo_date', 'embargo_type', 'embargo_title', 'embargo_reason', 'embargo_options', 'id', 'title',
+                'doi', 'handle', 'url', 'published_date', 'thumb', 'defined_type', 'defined_type_name', 'group_id',
+                'url_private_api', 'url_public_api', 'url_private_html', 'url_public_html', 'timeline',
+                'resource_title', 'resource_doi'
+            ]
+        )
+
+    Download all files in a parameter set:
+        >>> manager.download_files(1, "examples/data/downloads") # doctest: +SKIP
+        2025-01-05 16:48:55.532 | DEBUG    | Hapi.parameters.parameters:download_file:224 - File downloaded: examples\data\downloads\01_TT.tif
+        2025-01-05 16:48:56.158 | DEBUG    | Hapi.parameters.parameters:download_file:224 - File downloaded: examples\data\downloads\02_RFCF.tif
+        2025-01-05 16:48:56.631 | DEBUG    | Hapi.parameters.parameters:download_file:224 - File downloaded: examples\data\downloads\03_SFCF.tif
+        2025-01-05 16:48:57.233 | DEBUG    | Hapi.parameters.parameters:download_file:224 - File downloaded: examples\data\downloads\04_CFMAX.tif
+        ...
     """
 
     ARTICLE_IDS = [
@@ -340,6 +414,30 @@ class ParameterManager:
         ------
         requests.exceptions.HTTPError
             If the API request fails.
+
+        Examples
+        --------
+        First create the Figshare API client:
+            >>> api_client = FigshareAPIClient()
+
+        Then create the ParameterManager:
+            >>> manager = ParameterManager(api_client)
+
+        Get parameter set details:
+            >>> details = manager.get_parameter_set_details(1) # doctest: +SKIP
+            >>> print(details.keys()) # doctest: +SKIP
+            dict_keys(
+                [
+                    'files', 'custom_fields', 'authors', 'figshare_url', 'download_disabled', 'description', 'funding',
+                    'funding_list', 'version', 'status', 'size', 'created_date', 'modified_date', 'is_public',
+                    'is_confidential', 'is_metadata_record', 'confidential_reason', 'metadata_reason', 'license', 'tags',
+                    'categories', 'references', 'has_linked_file', 'citation', 'related_materials', 'is_embargoed',
+                    'embargo_date', 'embargo_type', 'embargo_title', 'embargo_reason', 'embargo_options', 'id', 'title',
+                    'doi', 'handle', 'url', 'published_date', 'thumb', 'defined_type', 'defined_type_name', 'group_id',
+                    'url_private_api', 'url_public_api', 'url_private_html', 'url_public_html', 'timeline',
+                    'resource_title', 'resource_doi'
+                ]
+            )
         """
         article_id = self.get_article_id(set_id)
         endpoint = f"articles/{article_id}"
@@ -362,6 +460,25 @@ class ParameterManager:
         -------
         list
             A list of files in the article.
+
+        Examples
+        --------
+        First create the Figshare API client:
+            >>> api_client = FigshareAPIClient()
+
+        Then create the ParameterManager:
+            >>> manager = ParameterManager(api_client)
+
+        Retrieve details of a parameter set:
+            >>> set_id = 1
+            >>> files = manager.list_files(set_id) # doctest: +SKIP
+            >>> print(files) # doctest: +SKIP
+            [
+                {'id': 35589521, 'name': '01_TT.tif', 'download_url': 'https://ndownloader.figshare.com/files/35589521', ...},
+                {'id': 35589524, 'name': '02_RFCF.tif', 'download_url': 'https://ndownloader.figshare.com/files/35589524', ...},
+                {'id': 35589527, 'name': '03_SFCF.tif', 'download_url': 'https://ndownloader.figshare.com/files/35589527', ...},
+                ...
+            ]
         """
         details = self.get_parameter_set_details(set_id, version)
         return details.get("files", [])
@@ -369,7 +486,7 @@ class ParameterManager:
     def download_files(
         self, set_id: int, download_dir: Path, version: Optional[int] = None
     ):
-        """
+        r"""
         Download all files in an article to the specified directory.
 
         Parameters
@@ -383,8 +500,22 @@ class ParameterManager:
 
         Examples
         --------
-        >>> manager.download_files(1, Path("./downloads"))
+        First create the Figshare API client:
+        >>> api_client = FigshareAPIClient()
+
+        Then create the ParameterManager:
+            >>> manager = ParameterManager(api_client)
+
+        >>> manager.download_files(1, "examples/data/downloads") # doctest: +SKIP
+        2025-01-05 16:48:55.532 | DEBUG    | Hapi.parameters.parameters:download_file:224 - File downloaded: examples\data\downloads\01_TT.tif
+        2025-01-05 16:48:56.158 | DEBUG    | Hapi.parameters.parameters:download_file:224 - File downloaded: examples\data\downloads\02_RFCF.tif
+        2025-01-05 16:48:56.631 | DEBUG    | Hapi.parameters.parameters:download_file:224 - File downloaded: examples\data\downloads\03_SFCF.tif
+        2025-01-05 16:48:57.233 | DEBUG    | Hapi.parameters.parameters:download_file:224 - File downloaded: examples\data\downloads\04_CFMAX.tif
+        ...
         """
+        download_dir = (
+            Path(download_dir) if isinstance(download_dir, str) else download_dir
+        )
         files = self.list_files(set_id, version)
         for file in files:
             dest_path = download_dir / file["name"]
@@ -411,8 +542,15 @@ class ParameterManager:
 
         Examples
         --------
-        >>> manager.get_article_id(1)
-        19999901
+        First create the Figshare API client:
+        >>> api_client = FigshareAPIClient()
+
+        Then create the ParameterManager:
+            >>> manager = ParameterManager(api_client)
+
+        Then get the article ID for a parameter set:
+            >>> manager.get_article_id(1)
+            19999901
         """
         try:
             index = self.PARAMETER_SET_ID.index(set_id)
@@ -424,7 +562,7 @@ class ParameterManager:
 
 
 class Parameter:
-    """
+    r"""
     A simplified interface for handling hydrological parameters.
 
     Attributes
@@ -443,9 +581,31 @@ class Parameter:
 
     Examples
     --------
-    >>> parameter = Parameter(version=1)
-    >>> parameter.get_parameters(Path("./parameters"))
-    >>> parameter.get_parameter_by_friendly_id(1, Path("./parameters"))
+    First create the Parameter object:
+        >>> parameter = Parameter(version=1)
+
+    Then download all parameter sets:
+        >>> parameter.get_parameters("examples/data/parameters") # doctest: +SKIP
+        2025-01-05 16:48:55.532 | DEBUG    | Hapi.parameters.parameters:download_file:224 - File downloaded: examples\data\downloads\01_TT.tif
+        2025-01-05 16:48:56.158 | DEBUG    | Hapi.parameters.parameters:download_file:224 - File downloaded: examples\data\downloads\02_RFCF.tif
+        2025-01-05 16:48:56.631 | DEBUG    | Hapi.parameters.parameters:download_file:224 - File downloaded: examples\data\downloads\03_SFCF.tif
+        2025-01-05 16:48:57.233 | DEBUG    | Hapi.parameters.parameters:download_file:224 - File downloaded: examples\data\downloads\04_CFMAX.tif
+        ...
+
+    Get a specific parameter set:
+        >>> parameter.get_parameter_set(1, "examples/data/parameters") # doctest: +SKIP
+        2025-01-05 16:48:55.532 | DEBUG    | Hapi.parameters.parameters:download_file:224 - File downloaded: examples\data\downloads\01_TT.tif
+        2025-01-05 16:48:56.158 | DEBUG    | Hapi.parameters.parameters:download_file:224 - File downloaded: examples\data\downloads\02_RFCF.tif
+        2025-01-05 16:48:56.631 | DEBUG    | Hapi.parameters.parameters:download_file:224 - File downloaded: examples\data\downloads\03_SFCF.tif
+        2025-01-05 16:48:57.233 | DEBUG    | Hapi.parameters.parameters:download_file:224 - File downloaded: examples\data\downloads\04_CFMAX.tif
+        ...
+
+    Then list all parameter names:
+        >>> names = parameter.list_parameter_names()
+        >>> print(names) # doctest: +NORMALIZE_WHITESPACE
+        ['01_tt', '02_rfcf', '03_sfcf', '04_cfmax', '05_cwh', '06_cfr', '07_fc', '08_beta', '09_etf',
+        '10_lp', '11_k0', '12_k1', '13_k2', '14_uzl', '15_perc', '16_maxbas', '17_K_muskingum',
+        '18_x_muskingum']
     """
 
     def __init__(self, version: int = 1):
@@ -455,7 +615,7 @@ class Parameter:
         self.manager = ParameterManager(self.api_client)
 
     def get_parameters(self, download_dir: Path):
-        """
+        r"""
         Download all parameter sets to the specified directory.
 
         Parameters
@@ -465,15 +625,23 @@ class Parameter:
 
         Examples
         --------
-        >>> parameter = Parameter(version=1)
-        >>> parameter.get_parameters(Path("./parameters"))
+        First create the Parameter object:
+            >>> parameter = Parameter(version=1)
+
+        Then download all parameter sets:
+            >>> parameter.get_parameters("examples/data/parameters") # doctest: +SKIP
+            2025-01-05 16:48:55.532 | DEBUG    | Hapi.parameters.parameters:download_file:224 - File downloaded: examples\data\downloads\01_TT.tif
+            2025-01-05 16:48:56.158 | DEBUG    | Hapi.parameters.parameters:download_file:224 - File downloaded: examples\data\downloads\02_RFCF.tif
+            2025-01-05 16:48:56.631 | DEBUG    | Hapi.parameters.parameters:download_file:224 - File downloaded: examples\data\downloads\03_SFCF.tif
+            2025-01-05 16:48:57.233 | DEBUG    | Hapi.parameters.parameters:download_file:224 - File downloaded: examples\data\downloads\04_CFMAX.tif
+            ...
         """
         for set_id in ParameterManager.PARAMETER_SET_ID:
             self.get_parameter_set(set_id, download_dir)
             logger.debug(f"Downloaded parameter set: {set_id} to {download_dir}")
 
     def get_parameter_set(self, set_id: int, download_dir: Optional[Path] = None):
-        """
+        r"""
         Download all parameter sets to the specified directory.
 
         Parameters
@@ -485,8 +653,16 @@ class Parameter:
 
         Examples
         --------
-        >>> parameter = Parameter(version=1)
-        >>> parameter.get_parameter_set(Path("./parameters"))
+        First create the Parameter object:
+            >>> parameter = Parameter(version=1)
+
+        Get a specific parameter set:
+            >>> parameter.get_parameter_set(1, "examples/data/parameters") # doctest: +SKIP
+            2025-01-05 16:48:55.532 | DEBUG    | Hapi.parameters.parameters:download_file:224 - File downloaded: examples\data\downloads\01_TT.tif
+            2025-01-05 16:48:56.158 | DEBUG    | Hapi.parameters.parameters:download_file:224 - File downloaded: examples\data\downloads\02_RFCF.tif
+            2025-01-05 16:48:56.631 | DEBUG    | Hapi.parameters.parameters:download_file:224 - File downloaded: examples\data\downloads\03_SFCF.tif
+            2025-01-05 16:48:57.233 | DEBUG    | Hapi.parameters.parameters:download_file:224 - File downloaded: examples\data\downloads\04_CFMAX.tif
+            ...
         """
         if set_id not in ParameterManager.PARAMETER_SET_ID:
             raise ValueError(
@@ -511,8 +687,14 @@ class Parameter:
 
         Examples
         --------
-        >>> parameter = Parameter(version=1)
-        >>> names = parameter.list_parameter_names()
-        >>> print(names)
+        First create the Parameter object:
+            >>> parameter = Parameter(version=1)
+
+        Then list all parameter names:
+            >>> names = parameter.list_parameter_names()
+            >>> print(names)  # doctest: +NORMALIZE_WHITESPACE
+            ['01_tt', '02_rfcf', '03_sfcf', '04_cfmax', '05_cwh', '06_cfr', '07_fc', '08_beta', '09_etf',
+            '10_lp', '11_k0', '12_k1', '13_k2', '14_uzl', '15_perc', '16_maxbas', '17_K_muskingum',
+            '18_x_muskingum']
         """
         return ParameterManager.PARAMETER_NAMES
