@@ -10,8 +10,6 @@ from geopandas import GeoDataFrame
 from pyramids.datacube import Datacube
 from pyramids.dataset import Dataset
 
-import Hapi
-
 PARAMETERS_LIST = [
     "01_tt",
     "02_rfcf",
@@ -127,15 +125,15 @@ class Inputs:
             ["tt", "sfcf","cfmax","cwh","cfr","fc","beta",
              "lp","k0","k1","k2","uzl","perc", "maxbas"]
         """
-        parameters_path = f"{os.path.dirname(Hapi.__file__)}/parameters"
+        data_dir = Inputs._check_data_dir()
 
-        dataset = Dataset.read_file(f"{parameters_path}/max/{PARAMETERS_LIST[0]}.tif")
+        dataset = Dataset.read_file(f"{data_dir}/max/{PARAMETERS_LIST[0]}.tif")
         basin = basin.to_crs(crs=dataset.crs)
         # max values
         ub = list()
         for i in range(len(PARAMETERS_LIST)):
             dataset = Dataset.read_file(
-                f"{parameters_path}/max/{PARAMETERS_LIST[i]}.tif"
+                f"{data_dir}/max/{PARAMETERS_LIST[i]}.tif"
             )
             vals = dataset.stats(mask=basin)
             ub.append(vals.loc[vals.index[0], "max"])
@@ -144,7 +142,7 @@ class Inputs:
         lb = list()
         for i in range(len(PARAMETERS_LIST)):
             dataset = Dataset.read_file(
-                f"{parameters_path}/min/{PARAMETERS_LIST[i]}.tif"
+                f"{data_dir}/min/{PARAMETERS_LIST[i]}.tif"
             )
             vals = dataset.stats(mask=basin)
             lb.append(vals.loc[vals.index[0], "min"])
@@ -199,14 +197,7 @@ class Inputs:
              "lp","k0","k1","k2","uzl","perc", "maxbas",'K_muskingum',
              'x_muskingum']
         """
-        data_dir = os.getenv("HAPI_DATA_DIR")
-        if data_dir is None:
-            raise ValueError("HAPI_DATA_DIR environment variable is not set")
-        else:
-            data_dir = Path(data_dir)
-            if not data_dir.exists():
-                raise FileNotFoundError(f"{data_dir} does not exist")
-
+        data_dir = self._check_data_dir()
         parameters_path = data_dir / scenario
 
         if not as_raster:
@@ -365,3 +356,14 @@ class Inputs:
             os.rename(
                 f"{path}/{df.loc[i, 'files']}", f"{path}/{df.loc[i, 'new_names']}"
             )
+
+    @staticmethod
+    def _check_data_dir() -> Path:
+        data_dir = os.getenv("HAPI_DATA_DIR")
+        if data_dir is None:
+            raise ValueError("HAPI_DATA_DIR environment variable is not set")
+        else:
+            data_dir = Path(data_dir)
+            if not data_dir.exists():
+                raise FileNotFoundError(f"{data_dir} does not exist")
+        return data_dir

@@ -10,11 +10,16 @@ from Hapi.parameters.parameters import Parameter
 from tests.rrm.calibration.conftest import *
 from tests.rrm.catchment.conftest import *
 
+data_dir = os.getenv("HAPI_DATA_DIR")
+
+if not os.path.exists(data_dir):
+    raise FileNotFoundError("HAPI_DATA_DIR not found")
+
 
 @pytest.fixture(scope="session")
 def download_03_parameter():
     """Download Parameter Set 03"""
-    if not os.path.exists("src/Hapi/parameters/3"):
+    if not os.path.exists(f"{data_dir}/3"):
         par = Parameter()
         par.get_parameter_set(3)
 
@@ -23,9 +28,9 @@ def download_03_parameter():
 def download_max_min_parameter():
     """Download Parameter Set 03"""
     par = Parameter()
-    if not os.path.exists("Hapi/parameters/max"):
+    if not os.path.exists(f"{data_dir}/max"):
         par.get_parameter_set("max")
-    if not os.path.exists("Hapi/parameters/min"):
+    if not os.path.exists(f"{data_dir}/min"):
         par.get_parameter_set("min")
 
 
