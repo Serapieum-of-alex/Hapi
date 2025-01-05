@@ -602,7 +602,7 @@ class Parameter:
 
     Then list all parameter names:
         >>> names = parameter.list_parameter_names()
-        >>> print(names) # doctest: +NORMALIZE_WHITESPACE
+        >>> print(names)
         ['01_tt', '02_rfcf', '03_sfcf', '04_cfmax', '05_cwh', '06_cfr', '07_fc', '08_beta', '09_etf',
         '10_lp', '11_k0', '12_k1', '13_k2', '14_uzl', '15_perc', '16_maxbas', '17_K_muskingum',
         '18_x_muskingum']
@@ -692,7 +692,7 @@ class Parameter:
 
         Then list all parameter names:
             >>> names = parameter.list_parameter_names()
-            >>> print(names)  # doctest: +NORMALIZE_WHITESPACE
+            >>> print(names)
             ['01_tt', '02_rfcf', '03_sfcf', '04_cfmax', '05_cwh', '06_cfr', '07_fc', '08_beta', '09_etf',
             '10_lp', '11_k0', '12_k1', '13_k2', '14_uzl', '15_perc', '16_maxbas', '17_K_muskingum',
             '18_x_muskingum']
