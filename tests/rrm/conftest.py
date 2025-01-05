@@ -14,7 +14,7 @@ from tests.rrm.catchment.conftest import *
 @pytest.fixture(scope="session")
 def download_03_parameter():
     """Download Parameter Set 03"""
-    if not os.path.exists("Hapi/parameters/3"):
+    if not os.path.exists("src/Hapi/parameters/3"):
         par = Parameter()
         par.get_parameter_set(3)
 

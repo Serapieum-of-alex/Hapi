@@ -393,14 +393,14 @@ class ParameterManager:
         self.api_client = api_client
 
     def get_parameter_set_details(
-        self, set_id: int, version: Optional[int] = None
+        self, set_id: Union[int, str], version: Optional[int] = None
     ) -> Dict[str, int]:
         """
         Retrieve details of a parameter set from the Figshare API.
 
         Parameters
         ----------
-        set_id : int
+        set_id : int/str
             The ID of the parameter set to retrieve.
         version : int, optional, default is None
             The version of the parameter set.
@@ -445,7 +445,7 @@ class ParameterManager:
             endpoint += f"/versions/{version}"
         return self.api_client.send_request("GET", endpoint)
 
-    def list_files(self, set_id: int, version: Optional[int] = None):
+    def list_files(self, set_id: Union[int, str], version: Optional[int] = None):
         """
         List all files in an article.
 
@@ -484,7 +484,7 @@ class ParameterManager:
         return details.get("files", [])
 
     def download_files(
-        self, set_id: int, download_dir: Path, version: Optional[int] = None
+        self, set_id: Union[int, str], download_dir: Path, version: Optional[int] = None
     ):
         r"""
         Download all files in an article to the specified directory.
@@ -640,7 +640,9 @@ class Parameter:
             self.get_parameter_set(set_id, download_dir)
             logger.debug(f"Downloaded parameter set: {set_id} to {download_dir}")
 
-    def get_parameter_set(self, set_id: int, download_dir: Optional[Path] = None):
+    def get_parameter_set(
+        self, set_id: Union[int, str], download_dir: Optional[Path] = None
+    ):
         r"""
         Download all parameter sets to the specified directory.
 
