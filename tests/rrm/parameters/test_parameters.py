@@ -175,7 +175,9 @@ class TestParameterManagerMock:
             ]
         }
 
-        with patch("Hapi.parameters.parameters.FileManager.download_file") as mock_download:
+        with patch(
+            "Hapi.parameters.parameters.FileManager.download_file"
+        ) as mock_download:
             parameter_manager.download_files(set_id=1, download_dir=tmp_path)
 
         mock_api_client.send_request.assert_called_once_with("GET", "articles/19999901")
@@ -376,7 +378,9 @@ class TestParameterMock:
     @pytest.fixture
     def parameter(self, mock_parameter_manager):
         """Fixture to provide a Parameter instance with a mocked ParameterManager."""
-        with patch("os.getenv", return_value="/mocked/path/to/data"):
+        with patch("os.getenv", return_value="/mocked/path/to/data"), patch(
+            "pathlib.Path.mkdir", return_value=None
+        ):
             parameter_instance = Parameter(version=1)
         parameter_instance.manager = mock_parameter_manager
         return parameter_instance
