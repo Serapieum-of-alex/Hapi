@@ -1,10 +1,10 @@
 import os
+import shutil
 from pathlib import Path
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 
-from Hapi import __file__ as hapi_init
 from Hapi.parameters.parameters import (
     FigshareAPIClient,
     FileManager,
@@ -174,10 +174,9 @@ class TestParameterManagerMock:
                 {"name": "file2.txt", "download_url": "http://example.com/file2"},
             ]
         }
-        mock_download = MagicMock()
-        FileManager.download_file = mock_download
 
-        parameter_manager.download_files(set_id=1, download_dir=tmp_path)
+        with patch("Hapi.parameters.parameters.FileManager.download_file") as mock_download:
+            parameter_manager.download_files(set_id=1, download_dir=tmp_path)
 
         mock_api_client.send_request.assert_called_once_with("GET", "articles/19999901")
         assert mock_download.call_count == 2, "Two files should be downloaded."
@@ -271,6 +270,10 @@ class TestParameterManagerIntegration:
         assert (
             len(downloaded_files) == 19
         ), "Files should be downloaded to the specified directory."
+        try:
+            shutil.rmtree(int_test_dir)
+        except PermissionError:
+            pass
 
     def test_integration_get_article_id(self, parameter_manager):
         """Integration test for mapping a friendly ID to an article ID."""
@@ -305,13 +308,12 @@ class TestParameter:
         """Provide a temporary directory for testing file downloads."""
         return tmp_path / "integration_test_parameters"
 
-    @pytest.mark.fig_share
-    def test_integration_get_parameters(self, int_test_dir):
+    def test_integration_get_parameters(self):
         """Integration test for downloading all parameter sets."""
         parameter = Parameter(version=1)
-        int_test_dir.mkdir(parents=True, exist_ok=True)
+        int_test_dir = parameter.download_dir
 
-        parameter.get_parameters(int_test_dir)
+        parameter.get_parameters()
 
         downloaded_files = list(int_test_dir.glob("**/*"))
         assert (
@@ -325,8 +327,8 @@ class TestParameter:
         int_test_dir.mkdir(parents=True, exist_ok=True)
 
         parameter.get_parameter_set(1, int_test_dir)
-
         downloaded_files = list(int_test_dir.glob("**/*"))
+
         assert (
             len(downloaded_files) > 0
         ), "Parameter sets should be downloaded to the specified directory."
@@ -374,12 +376,14 @@ class TestParameterMock:
     @pytest.fixture
     def parameter(self, mock_parameter_manager):
         """Fixture to provide a Parameter instance with a mocked ParameterManager."""
-        parameter_instance = Parameter(version=1)
+        with patch("os.getenv", return_value="/mocked/path/to/data"):
+            parameter_instance = Parameter(version=1)
         parameter_instance.manager = mock_parameter_manager
         return parameter_instance
 
     def test_get_parameters(self, parameter, mock_parameter_manager, tmp_path):
         """Test downloading all parameter sets."""
+
         parameter.get_parameters(tmp_path)
 
         # Ensure download_files was called for each parameter set ID
@@ -388,7 +392,7 @@ class TestParameterMock:
         ), "download_files should be called for each parameter set ID."
         for set_id in ParameterManager.PARAMETER_SET_ID:
             mock_parameter_manager.download_files.assert_any_call(
-                set_id, tmp_path, parameter.version
+                set_id, Path(f"{tmp_path}/{set_id}"), parameter.version
             )
 
     def test_get_parameter_set(self, parameter, mock_parameter_manager, tmp_path):
@@ -398,7 +402,7 @@ class TestParameterMock:
 
         # Ensure download_files was called with the correct arguments
         mock_parameter_manager.download_files.assert_called_once_with(
-            set_id, tmp_path, parameter.version
+            set_id, Path(f"{tmp_path}/{set_id}"), parameter.version
         )
 
     def test_list_parameter_names(self):

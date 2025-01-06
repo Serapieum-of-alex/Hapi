@@ -517,6 +517,7 @@ class ParameterManager:
             Path(download_dir) if isinstance(download_dir, str) else download_dir
         )
         files = self.list_files(set_id, version)
+
         for file in files:
             dest_path = download_dir / file["name"]
             FileManager.download_file(file["download_url"], dest_path)
@@ -682,6 +683,8 @@ class Parameter:
 
         if download_dir is None:
             download_dir = self.download_dir / f"{set_id}"
+        else:
+            download_dir = Path(download_dir) / f"{set_id}"
 
         self.manager.download_files(set_id, download_dir, self.version)
         logger.debug(f"Downloaded parameter set: {set_id} to {download_dir}")
