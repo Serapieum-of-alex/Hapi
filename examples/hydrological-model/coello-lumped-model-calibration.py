@@ -5,7 +5,7 @@ import datetime as dt
 
 import numpy as np
 import pandas as pd
-import statista.metrics as metrics
+import statista.descriptors as metrics
 
 import Hapi.rrm.hbv_bergestrom92 as HBVLumped
 from Hapi.calibration import Calibration

@@ -80,15 +80,15 @@ To run the HBV lumped model inside Hapi you need to prepare the meteorological i
 
     Run.runLumped(Coello, Route, RoutingFn)
 
-to calculate some metrics for the quality assessment of the calculate discharge the `statista.metrics` contains some
+to calculate some metrics for the quality assessment of the calculate discharge the `statista.descriptors` contains some
 metrics like `rmse`, `nse`, `kge` and `wb` , you need to load it, a measured time series of doscharge for the same
 period of the simulation is also needed for the comparison.
 
-all methods in `statista.metrics` takes two numpy arrays of the same length and return real number.
+all methods in `statista.descriptors` takes two numpy arrays of the same length and return real number.
 
 .. code-block:: py
     :linenos:
-    import statista.metrics as metrics
+    import statista.descriptors as metrics
 
     Metrics = dict()
     Qobs = Coello.QGauges['q']

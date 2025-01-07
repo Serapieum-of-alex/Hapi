@@ -3,7 +3,7 @@ import datetime as dt
 import matplotlib
 
 matplotlib.use("TkAgg")
-import statista.metrics as PC
+import statista.descriptors as PC
 
 import Hapi.rrm.hbv_bergestrom92 as HBVLumped
 from Hapi.catchment import Catchment

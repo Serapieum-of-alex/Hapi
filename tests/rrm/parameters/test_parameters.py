@@ -314,8 +314,11 @@ class TestParameter:
         """Integration test for downloading all parameter sets."""
         parameter = Parameter(version=1)
         int_test_dir = parameter.download_dir
-
-        parameter.get_parameters()
+        # mock to download only one parameter set
+        with patch(
+            "Hapi.parameters.parameters.ParameterManager.PARAMETER_SET_ID", new=[1]
+        ):
+            parameter.get_parameters()
 
         downloaded_files = list(int_test_dir.glob("**/*"))
         assert (

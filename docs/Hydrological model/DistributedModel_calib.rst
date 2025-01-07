@@ -11,7 +11,7 @@ After preparing all the meteorological, GIS inputs required for the model, and E
     from Hapi.calibration import Calibration
     import Hapi.rrm.hbv_bergestrom92 as HBV
 
-    import statista.metrics as metrics
+    import statista.descriptors as metrics
 
     Path = Comp + "/data/distributed/coello"
     PrecPath = Path + "/prec"

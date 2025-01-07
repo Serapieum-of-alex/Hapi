@@ -110,6 +110,7 @@ markers = [
     "e2e: end-to-end test (deselect with '-m \"not e2e\"')",
     "mock: mock test (deselect with '-m \"not mock\"')",
     "integration: mock test (deselect with '-m \"not integration\"')",
+    "fig_share: mock test (deselect with '-m \"not fig_share\"')"
 ]
 
 
