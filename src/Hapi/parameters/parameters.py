@@ -9,8 +9,6 @@ from urllib.request import urlretrieve
 import requests
 from loguru import logger
 
-from Hapi import __file__ as hapi_root
-
 BASE_URL = "https://api.figshare.com/v2"
 
 
@@ -623,7 +621,6 @@ class Parameter:
                 download_dir.mkdir(parents=True, exist_ok=True)
         self.download_dir = download_dir
 
-
     def get_parameters(self, download_dir: Optional[Path] = None):
         r"""
         Download all parameter sets to the specified directory.
@@ -713,3 +710,153 @@ class Parameter:
         """
         return ParameterManager.PARAMETER_NAMES
 
+
+def main():
+    """
+    CLI.
+
+    Hapi CLI for Hydrological Parameter Operations.
+    This command-line interface (CLI) provides tools to manage and interact with hydrological parameters.
+    Users can download parameter sets, retrieve specific parameter sets, or list all available parameter names.
+
+    Parameters
+    ----------
+    None
+        The function does not take any parameters directly. All input is handled through command-line arguments.
+
+    Returns
+    -------
+    None
+        The function does not return any values. Outputs are sent to stdout or files, depending on the command.
+
+    Raises
+    ------
+    ValueError
+        If invalid or insufficient arguments are provided.
+    FileNotFoundError
+        If the specified directory for downloads does not exist and cannot be created.
+    requests.exceptions.RequestException
+        If there is an error communicating with the Figshare API.
+
+    Examples
+    --------
+    Download All Parameter Sets
+    ---------------------------
+    ```bash
+    python parameters.py download-parameters --directory /path/to/save --version 1
+    ```
+    - `--directory`: Optional. Specifies the directory to save downloaded parameters. Defaults to the `HAPI_DATA_DIR` environment variable.
+    - `--version`: Optional. Specifies the version of the parameters. Defaults to 1.
+
+    Download a Specific Parameter Set
+    ----------------------------------
+    ```bash
+    python parameters.py download-parameter-set 1 --directory /path/to/save --version 1
+    ```
+    - Replace `1` with the desired parameter set ID (e.g., `avg`, `max`).
+    - `--directory`: Optional. Specifies the directory to save the parameter set.
+    - `--version`: Optional. Specifies the version of the parameter set.
+
+    List Parameter Names
+    ---------------------
+    ```bash
+    python parameters.py list-parameter-names
+    ```
+    This command lists all available parameter names.
+
+    See Also
+    --------
+    Hapi.parameters.parameters.Parameter
+        For details on the `Parameter` class and its methods.
+    Hapi.parameters.parameters.ParameterManager
+        For managing parameter-related operations.
+    requests.exceptions.RequestException
+        For handling errors in HTTP requests.
+
+    Notes
+    -----
+    - Ensure that the `HAPI_DATA_DIR` environment variable is set if the `--directory` option is not used.
+    - The CLI depends on the Figshare API for fetching parameter data.
+
+    Author
+    ------
+    Mostafa Farrag
+        - Email: moah.farag@gmail.com
+        - Project: HAPI-Nile
+
+    References
+    ----------
+    [1] HAPI GitHub Repository: https://github.com/Serapieum-of-alex/Hapi
+    """
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Hapi CLI for parameter operations.")
+
+    subparsers = parser.add_subparsers(dest="command", help="Available commands")
+
+    # Command: download-parameters
+    download_params_parser = subparsers.add_parser(
+        "download-parameters", help="Download all parameter sets."
+    )
+    download_params_parser.add_argument(
+        "--directory",
+        type=str,
+        default=None,
+        help="Directory to save downloaded parameters. Defaults to HAPI_DATA_DIR.",
+    )
+    download_params_parser.add_argument(
+        "--version",
+        type=int,
+        default=1,
+        help="Version of the parameter sets to download. Defaults to 1.",
+    )
+
+    # Command: download-parameter-set
+    download_param_set_parser = subparsers.add_parser(
+        "download-parameter-set", help="Download a specific parameter set."
+    )
+    download_param_set_parser.add_argument(
+        "set_id",
+        type=str,
+        help="ID of the parameter set to download (e.g., 1, avg, max).",
+    )
+    download_param_set_parser.add_argument(
+        "--directory",
+        type=str,
+        default=None,
+        help="Directory to save downloaded parameter set. Defaults to HAPI_DATA_DIR.",
+    )
+    download_param_set_parser.add_argument(
+        "--version",
+        type=int,
+        default=1,
+        help="Version of the parameter set to download. Defaults to 1.",
+    )
+
+    # Command: list-parameter-names
+    subparsers.add_parser(
+        "list-parameter-names", help="List all available parameter names."
+    )
+
+    args = parser.parse_args()
+
+    if args.command == "download-parameters":
+        parameter = Parameter(version=args.version)
+        parameter.get_parameters(download_dir=args.directory)
+
+    elif args.command == "download-parameter-set":
+        parameter = Parameter(version=args.version)
+        parameter.get_parameter_set(set_id=args.set_id, download_dir=args.directory)
+
+    elif args.command == "list-parameter-names":
+        names = Parameter.list_parameter_names()
+        print("Available parameter names:")
+        for name in names:
+            print(f"- {name}")
+
+    else:
+        parser.print_help()
+
+
+if __name__ == "__main__":
+    main()

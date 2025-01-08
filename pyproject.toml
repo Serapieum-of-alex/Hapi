@@ -120,3 +120,8 @@ requires = [
     "wheel",
 ]
 build-backend = "setuptools.build_meta"
+
+[project.scripts]
+download-parameters = "Hapi.parameters.parameters:main"
+download-parameter-set = "Hapi.parameters.parameters:main"
+list-parameter-names = "Hapi.parameters.parameters:main"
