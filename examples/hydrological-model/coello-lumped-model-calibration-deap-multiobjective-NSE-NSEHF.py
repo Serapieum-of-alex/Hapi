@@ -4,13 +4,15 @@
 
 ### Modules
 import datetime as dt
+
 import matplotlib
 import numpy as np
 import pandas as pd
 
 matplotlib.use("TkAgg")
 import random
-import statista.metrics as metrics
+
+import statista.descriptors as metrics
 from deap import algorithms, base, creator, tools
 
 import Hapi.rrm.hbv_bergestrom92 as HBVLumped

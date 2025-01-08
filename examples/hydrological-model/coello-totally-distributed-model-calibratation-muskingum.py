@@ -2,7 +2,7 @@ import datetime as dt
 
 import numpy as np
 from osgeo import gdal
-from statista.metrics import rmse
+from statista.descriptors import rmse
 
 import Hapi.rrm.hbv_bergestrom92 as HBV
 from Hapi.calibration import Calibration
