@@ -65,3 +65,11 @@ Dev
 - move the hydrodymanic model to separate repo (serapis)
 - move the plot module to the cleopatra package
 - replace the setup.py by pyproject.toml
+
+Parameters
+----------
+- remove the parameters from the package and retrieve them with the parameter package.
+- Redesign the parameters module to separate the responsibility of each class (`Parameter`, `ParameterManager`,
+`FileManager`, `FigshareAPIClient`).
+- Add CLI to download the parameters from the FigShare server (`list-parameter-names`, `download-parameter-set`,
+`download-parameters`).
