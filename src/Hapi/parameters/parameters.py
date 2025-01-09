@@ -564,6 +564,8 @@ class Parameter:
     r"""
     A simplified interface for handling hydrological parameters.
 
+    `HAPI_DATA_DIR` environment variable must be set to the directory where parameter sets will be saved.
+
     Attributes
     ----------
     version : int
