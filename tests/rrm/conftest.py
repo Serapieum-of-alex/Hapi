@@ -3,6 +3,7 @@ from typing import Dict, Tuple
 
 import geopandas as gpd
 import numpy as np
+import pytest
 from geopandas import GeoDataFrame
 from osgeo import gdal
 
@@ -10,22 +11,30 @@ from Hapi.parameters.parameters import Parameter
 from tests.rrm.calibration.conftest import *
 from tests.rrm.catchment.conftest import *
 
+@pytest.fixture(scope="session")
+def hapi_data_dir() -> str:
+    data_dir = os.getenv("HAPI_DATA_DIR")
+
+    if data_dir is None or not os.path.exists(data_dir):
+        raise ValueError("please set the `HAPI_DATA_DIR` emvironment variable")
+    return data_dir
+
 
 @pytest.fixture(scope="session")
-def download_03_parameter():
+def download_03_parameter(hapi_data_dir: str):
     """Download Parameter Set 03"""
-    if not os.path.exists("Hapi/parameters/3"):
+    if not os.path.exists(f"{hapi_data_dir}/3"):
         par = Parameter()
         par.get_parameter_set(3)
 
 
 @pytest.fixture(scope="session")
-def download_max_min_parameter():
+def download_max_min_parameter(hapi_data_dir: str):
     """Download Parameter Set 03"""
     par = Parameter()
-    if not os.path.exists("Hapi/parameters/max"):
+    if not os.path.exists(f"{hapi_data_dir}/max"):
         par.get_parameter_set("max")
-    if not os.path.exists("Hapi/parameters/min"):
+    if not os.path.exists(f"{hapi_data_dir}/min"):
         par.get_parameter_set("min")
 
 
