@@ -4,6 +4,7 @@ import json
 import os
 from pathlib import Path
 from typing import Dict, List, Optional, Union
+from urllib.parse import urlparse
 from urllib.request import urlretrieve
 
 import requests
@@ -250,6 +251,11 @@ class FileManager:
         ... ) # doctest: +SKIP
         2025-01-05 17:24:25.610 | DEBUG    | Hapi.parameters.parameters:download_file:227 - File downloaded: examples\data\parameters\01_TT.tif
         """
+        allowed_schemes = {"http", "https"}
+        scheme = urlparse(url).scheme
+        if scheme not in allowed_schemes:
+            raise ValueError(f"URL scheme '{scheme}' is not allowed.")
+
         download_path = (
             Path(download_path) if isinstance(download_path, str) else download_path
         )
@@ -745,7 +751,7 @@ def main():
     Download All Parameter Sets
     ---------------------------
     ```bash
-    python parameters.py download-parameters --directory /path/to/save --version 1
+    download-parameters --directory /path/to/save --version 1
     ```
     - `--directory`: Optional. Specifies the directory to save downloaded parameters. Defaults to the `HAPI_DATA_DIR` environment variable.
     - `--version`: Optional. Specifies the version of the parameters. Defaults to 1.
@@ -753,7 +759,7 @@ def main():
     Download a Specific Parameter Set
     ----------------------------------
     ```bash
-    python parameters.py download-parameter-set 1 --directory /path/to/save --version 1
+    download-parameter-set 1 --directory /path/to/save --version 1
     ```
     - Replace `1` with the desired parameter set ID (e.g., `avg`, `max`).
     - `--directory`: Optional. Specifies the directory to save the parameter set.
@@ -762,7 +768,7 @@ def main():
     List Parameter Names
     ---------------------
     ```bash
-    python parameters.py list-parameter-names
+    list-parameter-names
     ```
     This command lists all available parameter names.
 
