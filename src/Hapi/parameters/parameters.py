@@ -5,7 +5,6 @@ import os
 from pathlib import Path
 from typing import Dict, List, Optional, Union
 from urllib.parse import urlparse
-from urllib.request import urlretrieve
 
 import requests
 from loguru import logger
@@ -260,7 +259,15 @@ class FileManager:
             Path(download_path) if isinstance(download_path, str) else download_path
         )
         download_path.parent.mkdir(parents=True, exist_ok=True)
-        urlretrieve(url, download_path)
+
+        # Perform the download
+        response = requests.get(url, stream=True)
+        response.raise_for_status()
+
+        with open(download_path, "wb") as file:
+            for chunk in response.iter_content(chunk_size=8192):
+                file.write(chunk)
+
         logger.debug(f"File downloaded: {download_path}")
 
     @staticmethod
