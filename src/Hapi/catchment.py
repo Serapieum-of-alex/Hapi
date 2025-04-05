@@ -17,10 +17,10 @@ import statista.descriptors as metrics
 from cleopatra.array_glyph import ArrayGlyph
 from loguru import logger
 from osgeo import gdal
-from Hapi.dem import DEM
-from pyramids.dataset import Dataset
 from pyramids.datacube import Datacube
+from pyramids.dataset import Dataset
 
+from Hapi.dem import DEM
 
 STATE_VARIABLES = ["SP", "SM", "UZ", "LZ", "WC"]
 
@@ -87,13 +87,13 @@ class Catchment:
         self.start = dt.datetime.strptime(start_data, fmt)
         self.end = dt.datetime.strptime(end, fmt)
 
-        if not spatial_resolution.lower() in ["lumped", "distributed"]:
+        if spatial_resolution.lower() not in ["lumped", "distributed"]:
             raise ValueError(
                 "available spatial resolutions are 'lumped' and 'distributed'"
             )
         self.spatial_resolution = spatial_resolution.lower()
 
-        if not temporal_resolution.lower() in ["daily", "hourly"]:
+        if temporal_resolution.lower() not in ["daily", "hourly"]:
             raise ValueError("available temporal resolutions are 'daily' and 'hourly'")
         self.temporal_resolution = temporal_resolution.lower()
         # assuming the default dt is 1 day
@@ -778,7 +778,7 @@ class Catchment:
         self.LumpedModel = lumped_model
         self.CatArea = catchment_area
 
-        if not (len(initial_condition) == 5):
+        if len(initial_condition) != 5:
             raise ValueError(
                 f"state variables are 5 and the given initial values are {len(initial_condition)}"
             )
@@ -815,9 +815,7 @@ class Catchment:
         ll_temp: [array]
             average long-term temperature.
         """
-        self.data = pd.read_csv(
-            path, header=0, delimiter=",", index_col=0  # "\t", #skiprows=11,
-        )
+        self.data = pd.read_csv(path, header=0, delimiter=",", index_col=0)
         self.data = self.data.values
 
         if ll_temp is None:
