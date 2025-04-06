@@ -7,7 +7,7 @@ import statista.descriptors as metrics
 
 import Hapi.rrm.hbv_bergestrom92 as HBVLumped
 from Hapi.catchment import Catchment
-from Hapi.rrm.routing import Routing
+from Hapi.routing import Routing
 from Hapi.run import Run
 
 # %% data
