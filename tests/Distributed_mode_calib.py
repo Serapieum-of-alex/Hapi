@@ -2,16 +2,17 @@
 
 @author: Mostafa
 """
+
 Comp = "F:/01Algorithms/Hydrology/HAPI/examples"
 
 import datetime as dt
 
 import numpy as np
+import statista.descriptors as metrics
 from osgeo import gdal
 
-import Hapi.rrm.hbv_bergestrom92 as HBV
-import statista.metrics as metrics
 from Hapi.calibration import Calibration
+from Hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBV
 from Hapi.rrm.parameters import Parameters as DP
 
 # %% Paths

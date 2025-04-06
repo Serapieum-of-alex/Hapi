@@ -2,11 +2,12 @@
 
 @author: Mostafa
 """
+
 import numpy as np
 
+from Hapi.routing import Routing as routing
 from Hapi.rrm import hbv_lake
 from Hapi.rrm.distrrm import DistributedRRM as distrrm
-from Hapi.routing import Routing as routing
 
 
 class Wrapper:
@@ -338,7 +339,7 @@ class Wrapper:
         tm = Model.data[:, 3]
 
         # from the conceptual model calculate the upper and lower response mm/time step
-        Model.quz, Model.qlz, Model.state_variables = Model.LumpedModel.Simulate(
+        Model.quz, Model.qlz, Model.state_variables = Model.LumpedModel.simulate(
             p,
             t,
             et,

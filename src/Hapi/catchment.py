@@ -3,9 +3,9 @@
 __name__ = "catchment"
 
 import datetime as dt
+import inspect
 import math
 import os
-from types import ModuleType
 from typing import Optional, Union
 
 import geopandas as gpd
@@ -771,11 +771,12 @@ class Catchment:
             initial conditions.
         """
 
-        assert isinstance(
-            lumped_model, ModuleType
-        ), "ConceptualModel should be a module or a python file contains functions "
+        if not inspect.isclass(lumped_model):
+            raise ValueError(
+                "ConceptualModel should be a module or a python file contains functions "
+            )
 
-        self.LumpedModel = lumped_model
+        self.LumpedModel = lumped_model()
         self.CatArea = catchment_area
 
         if len(initial_condition) != 5:
@@ -819,7 +820,7 @@ class Catchment:
         self.data = self.data.values
 
         if ll_temp is None:
-            self.ll_temp = np.zeros(shape=(len(self.data)), dtype=np.float32)
+            # self.ll_temp = np.zeros(shape=(len(self.data)), dtype=np.float32)
             self.ll_temp = self.data[:, 2].mean()
 
         if not (np.shape(self.data)[1] == 3 or np.shape(self.data)[1] == 4):
@@ -1728,9 +1729,11 @@ class Lake:
             0/1
         StageDischargeCurve: [array]
         """
-        assert isinstance(
-            lumped_model, ModuleType
-        ), "ConceptualModel should be a module or a python file contains functions "
+        if not inspect.isclass(lumped_model):
+            raise ValueError(
+                "ConceptualModel should be a module or a python file contains functions "
+            )
+
         self.LumpedModel = lumped_model
 
         self.CatArea = catchment_area

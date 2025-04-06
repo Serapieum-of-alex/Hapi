@@ -5,6 +5,7 @@
 
 import numpy as np
 from pyramids.dataset import Dataset
+
 from Hapi.routing import Routing as routing
 
 
@@ -92,7 +93,7 @@ class DistributedRRM:
                         Model.quz[x, y, :],
                         Model.qlz[x, y, :],
                         Model.state_variables[x, y, :, :],
-                    ) = Model.LumpedModel.Simulate(
+                    ) = Model.LumpedModel.simulate(
                         prec=Model.Prec[x, y, :],
                         temp=Model.Temp[x, y, :],
                         et=Model.ET[x, y, :],
@@ -338,7 +339,7 @@ class DistributedRRM:
                     # Calculate the states per cell
                     # TODO optimise for multiprocessing these loops
                     #                _, _st, _uzg, _lzg = ConceptualModel.simulate_new_model(avg_prec = sp_prec[x, y,:],
-                    _, _st, _uzg, _lzg = ConceptualModel.Simulate(
+                    _, _st, _uzg, _lzg = ConceptualModel.simulate(
                         prec=sp_prec[x, y, :],
                         temp=sp_temp[x, y, :],
                         et=sp_et[x, y, :],
