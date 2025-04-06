@@ -1,11 +1,10 @@
 """This code is developed to calibrate the HBV model in a lumped spatial representation using."""
-# %library
 import numpy as np
 import pandas as pd
 
-# Hapi modules
-import Hapi.hbvlumped as HBVLumped
-import Hapi.performancecriteria as PC
+# The HBVLumped module exists in the `examples/conceptual-model`
+# import Hapi.rrm.hbvlumped as HBVLumped
+import statista.descriptors as PC
 from Hapi.calibration import Calibration
 from Hapi.routing import Routing
 
