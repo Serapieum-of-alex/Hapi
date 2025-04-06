@@ -17,7 +17,7 @@ from deap import algorithms, base, creator, tools
 
 import Hapi.rrm.hbv_bergestrom92 as HBVLumped
 from Hapi.calibration import Calibration
-from Hapi.rrm.routing import Routing
+from Hapi.routing import Routing
 from Hapi.run import Run
 
 # %% Paths

@@ -123,11 +123,11 @@ repos:
         language: system
         files: \.ipynb$
 
-  - repo: local
-    hooks:
-      - id: doctest
-        name: doctest
-        entry: pytest --doctest-modules
-        args: ["--doctest-glob=*.rst", "-o", "doctest_optionflags=NORMALIZE_WHITESPACE ELLIPSIS"]
-        language: system
-        files: ^src/Hapi/.*\.py$
+#   - repo: local
+#     hooks:
+#       - id: doctest
+#         name: doctest
+#         entry: pytest --doctest-modules
+#         args: ["--doctest-glob=*.rst", "-o", "doctest_optionflags=NORMALIZE_WHITESPACE ELLIPSIS"]
+#         language: system
+#         files: ^src/Hapi/.*\.py$

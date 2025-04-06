@@ -1,4 +1,5 @@
 """Distributed model with a maxbas routing scheme."""
+
 import datetime as dt
 
 import pandas as pd
