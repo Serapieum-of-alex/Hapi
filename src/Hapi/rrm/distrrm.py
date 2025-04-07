@@ -1,8 +1,3 @@
-"""Created on Wed Jun 27 19:17:15 2018.
-
-@author: Mostafa
-"""
-
 import numpy as np
 from pyramids.dataset import Dataset
 
@@ -80,9 +75,7 @@ class DistributedRRM:
         Model.state_variables = np.zeros(
             [Model.rows, Model.cols, Model.TS, 5], dtype=np.float32
         )
-        # Model.state_variables[:] = np.nan
         Model.quz = np.zeros([Model.rows, Model.cols, Model.TS], dtype=np.float32)
-        # Model.q_uz[:] = np.nan
         Model.qlz = np.zeros([Model.rows, Model.cols, Model.TS], dtype=np.float32)
 
         for x in range(Model.rows):
@@ -248,12 +241,7 @@ class DistributedRRM:
         ----------
         Model : TYPE
             DESCRIPTION.
-
-        Returns
-        -------
-        None.
         """
-
         MAXBAS = np.nanmax(Model.Parameters[:, :, -1])
         # replace novalue cells by nan
         Model.FPLArr[Model.FPLArr == Model.NoDataValue] = np.nan
@@ -276,7 +264,7 @@ class DistributedRRM:
 
     @staticmethod
     def Dist_HBV2(
-        ConceptualModel,
+        conceptual_model,
         lakecell,
         q_lake,
         DEM,
@@ -338,8 +326,8 @@ class DistributedRRM:
                 if mask[x, y] != no_val:  # only for cells in the domain
                     # Calculate the states per cell
                     # TODO optimise for multiprocessing these loops
-                    #                _, _st, _uzg, _lzg = ConceptualModel.simulate_new_model(avg_prec = sp_prec[x, y,:],
-                    _, _st, _uzg, _lzg = ConceptualModel.simulate(
+                    #                _, _st, _uzg, _lzg = conceptual_model.simulate_new_model(avg_prec = sp_prec[x, y,:],
+                    _, _st, _uzg, _lzg = conceptual_model.simulate(
                         prec=sp_prec[x, y, :],
                         temp=sp_temp[x, y, :],
                         et=sp_et[x, y, :],
@@ -349,7 +337,7 @@ class DistributedRRM:
                         ll_temp=None,
                         q_0=q_0,
                         snow=0,
-                    )  # extra_out = True
+                    )
                     # append column after column in the same row -----------------
                     st_i.append(np.array(_st))
                     # calculate upper zone Q = K1*(LZ_int_1)

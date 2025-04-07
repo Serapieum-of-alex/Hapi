@@ -1629,6 +1629,7 @@ class Lake:
             self.Index = pd.date_range(start, end, freq="H")
         else:
             assert False, "Error"
+
         self.MeteoData = None
         self.Parameters = None
         self.LumpedModel, self.CatArea, self.LakeArea, self.InitialCond = (
