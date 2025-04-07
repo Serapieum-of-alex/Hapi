@@ -193,8 +193,8 @@ class Catchment:
             - if there is a number at the beginning of the name
             >>> fname = "1_MSWEP_YYYY_M_D.tif"
             >>> regex_string = r"\d+"
-        date: [bool]
-            True if the number in the file name is a date. Default is True.
+        date: [bool]. Default is True.
+            True if the number in the file name is a date.
         file_name_data_fmt : [str]
             if the files names' have a date and you want to read them ordered .Default is None
             >>> "MSWEP_YYYY.MM.DD.tif"
@@ -1734,7 +1734,7 @@ class Lake:
                 "ConceptualModel should be a module or a python file contains functions "
             )
 
-        self.LumpedModel = lumped_model
+        self.LumpedModel = lumped_model()
 
         self.CatArea = catchment_area
         self.LakeArea = lake_area

@@ -4,10 +4,8 @@
     from reading input files
 """
 
-from pathlib import Path
-
-root_dir = Path(r"\\MYCLOUDEX2ULTRA\case-studies\el-salvador")
 import datetime as dt
+from pathlib import Path
 
 import matplotlib
 import numpy as np
@@ -15,33 +13,35 @@ import numpy as np
 matplotlib.use("TkAgg")
 import statista.descriptors as metrics
 
-import Hapi.rrm.hbv as HBV
-import Hapi.rrm.hbv_lake as HBVLake
 from Hapi.catchment import Catchment, Lake
+from Hapi.rrm.hbv import HBV
+from Hapi.rrm.hbv_lake import HBVLake
 from Hapi.run import Run
 
+# %%
+root_dir = Path(r"examples/hydrological-model/jiboa/data")
+meteo_inputs_path = root_dir / "meteo-data"
+gis_inputs_path = root_dir / "gis-data"
 # %% Paths
 res = 4000
-"""
-paths to meteorological data
-"""
-PrecPath = root_dir / f"inputs/Hapi/meteodata/{res}/calib/prec_clipped"
-Evap_Path = root_dir / f"inputs/Hapi/meteodata/{res}/calib/evap_clipped"
-TempPath = root_dir / f"inputs/Hapi/meteodata/{res}/calib/temp_clipped"
-FlowAccPath = root_dir / f"inputs/Hapi/GIS/{res}_matched/acc{res}.tif"
-FlowDPath = root_dir / f"inputs/Hapi/GIS/{res}_matched/fd{res}.tif"
-ParPath = root_dir / f"inputs/Hapi/meteodata/{res}/parameters/"
+# paths to meteorological data
+prec_path = meteo_inputs_path / f"prec"
+evap_path = meteo_inputs_path / f"evap"
+temp_path = meteo_inputs_path / f"temp"
+# gis data
+flow_acc_path = gis_inputs_path / f"acc{res}.tif"
+flow_direction_path = gis_inputs_path / f"fd{res}.tif"
+par_path = root_dir / f"parameters/"
+
 # Lake
-LakeMeteoPath = root_dir / "inputs/Hapi/meteodata/lakedata.csv"
-LakeParametersPath = root_dir / f"inputs/Hapi/meteodata/{res}/Lakeparameters.txt"
-GaugesPath = root_dir / "inputs/Hapi/meteodata/Gauges/"
-SaveTo = root_dir / "results/"
+lake_meteo_path = root_dir / "lakedata.csv"
+lake_parameters_path = root_dir / f"Lakeparameters.txt"
+gauges_path = root_dir / "gauges"
+save_to = root_dir / "results/"
 # %% Distributed Model Object
 
-CatchmentArea = 227.31
-InitialCond = np.loadtxt(
-    root_dir / "inputs/Hapi/meteodata/Initia-jiboa.txt", usecols=0
-).tolist()
+catchment_area = 227.31
+initial_conditions = np.loadtxt(root_dir / "initial-jiboa.txt", usecols=0).tolist()
 Snow = 0
 
 start_date = "2012-06-14 19:00:00"
@@ -56,14 +56,21 @@ Jiboa = Catchment(
     temporal_resolution="Hourly",
     fmt="%Y-%m-%d %H:%M:%S",
 )
-Jiboa.read_rainfall(PrecPath)
-Jiboa.read_temperature(TempPath)
-Jiboa.read_et(Evap_Path)
-Jiboa.read_flow_acc(FlowAccPath)
-Jiboa.read_flow_dir(FlowDPath)
-Jiboa.read_parameters(ParPath, Snow)
+regex_exp = r"\d{4}_\d{1,2}_\d{1,2}_\d{1,2}"
+date_format = "%Y_%m_%d_%H"
+Jiboa.read_rainfall(
+    str(prec_path), regex_string=regex_exp, file_name_data_fmt=date_format
+)
+Jiboa.read_temperature(
+    str(temp_path), regex_string=regex_exp, file_name_data_fmt=date_format
+)
+Jiboa.read_et(str(evap_path), regex_string=regex_exp, file_name_data_fmt=date_format)
 
-Jiboa.read_lumped_model(HBV, CatchmentArea, InitialCond)
+Jiboa.read_flow_acc(str(flow_acc_path))
+Jiboa.read_flow_dir(str(flow_direction_path))
+Jiboa.read_parameters(str(par_path), Snow)
+
+Jiboa.read_lumped_model(HBV, catchment_area, initial_conditions)
 # %% Lake Object
 """
 lake meteorological data
@@ -80,8 +87,8 @@ elif res == 500:
 
 start_date = "2012.06.14 19:00:00"
 # Edate = '2014.11.17 00:00:00'
-end_date = "2013.12.23 00:00:00"
-
+# end_date = "2013.12.23 00:00:00"
+end_date = "2012.6.15 14:00:00"
 JiboaLake = Lake(
     start=start_date,
     end=end_date,
@@ -90,13 +97,13 @@ JiboaLake = Lake(
     split=True,
 )
 
-JiboaLake.read_meteo_data(LakeMeteoPath, fmt="%d.%m.%Y %H:%M")
-JiboaLake.read_parameters(LakeParametersPath)
+JiboaLake.read_meteo_data(lake_meteo_path, fmt="%d.%m.%Y %H:%M")
+JiboaLake.read_parameters(lake_parameters_path)
 
-StageDischargeCurve = np.loadtxt(root_dir / "inputs/Hapi/meteodata/curve.txt")
-LakeInitCond = np.loadtxt(
-    root_dir / "inputs/Hapi/meteodata/Initia-lake.txt", usecols=0
-).tolist()
+StageDischargeCurve = np.loadtxt(root_dir / "curve.txt")
+
+LakeInitCond = np.loadtxt(root_dir / "Initial-lake.txt", usecols=0).tolist()
+
 LakeCatArea = 133.98
 LakeArea = 70.64
 Snow = 0
@@ -106,9 +113,9 @@ JiboaLake.read_lumped_model(
 # %% Gauges
 Date1 = "14.06.2012 19:00"
 Date2 = "23.12.2013 00:00"
-Jiboa.read_gauge_table(GaugesPath / "GaugesTable.csv", FlowAccPath)
+Jiboa.read_gauge_table(str(gauges_path / "GaugesTable.csv"), flow_acc_path)
 Jiboa.read_discharge_gauges(
-    GaugesPath,
+    gauges_path,
     column="id",
     fmt="%d.%m.%Y %H:%M",
     split=True,
@@ -281,13 +288,13 @@ Anim = Jiboa.plot_distributed_results(
     gamma=0.08,
 )
 # %%
-Path = SaveTo + "anim.mov"
+Path = save_to + "anim.mov"
 Jiboa.save_animation(video_format="mov", path=Path, save_frames=3)
 # %% Save Results
 start_date = "2012-07-20"
 end_date = "2012-08-20"
 
-Path = SaveTo + "Lumped_Parameters_" + str(dt.datetime.now())[0:10] + "_"
+Path = save_to + "Lumped_Parameters_" + str(dt.datetime.now())[0:10] + "_"
 Jiboa.save_results(
-    result=1, start=start_date, end=end_date, path=Path, flow_acc_path=FlowAccPath
+    result=1, start=start_date, end=end_date, path=Path, flow_acc_path=flow_acc_path
 )

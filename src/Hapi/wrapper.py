@@ -6,8 +6,8 @@
 import numpy as np
 
 from Hapi.routing import Routing as routing
-from Hapi.rrm import hbv_lake
 from Hapi.rrm.distrrm import DistributedRRM as distrrm
+from Hapi.rrm.hbv_lake import HBVLake
 
 
 class Wrapper:
@@ -128,7 +128,7 @@ class Wrapper:
         tm = Lake.MeteoData[:, 3]
 
         # lake simulation
-        Lake.Qlake, _ = hbv_lake.simulate(
+        Lake.Qlake, _ = HBVLake().simulate(
             plake,
             t,
             et,
@@ -241,7 +241,7 @@ class Wrapper:
         tm = Lake.MeteoData[:, 3]
 
         # lake simulation
-        Lake.Qlake, _ = hbv_lake.simulate(
+        Lake.Qlake, _ = HBVLake().simulate(
             plake,
             t,
             et,
