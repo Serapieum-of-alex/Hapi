@@ -50,16 +50,18 @@ class HBVLake(BaseConceptualModel):
         _sf : float
             Snowfall [mm]
         """
-
-        if temp <= ltt:  # if temp <= lower temp threshold
-            _rf = 0.0  # no rainfall all the precipitation will convert into snowfall
+        # if temp <= lower temp threshold
+        if temp <= ltt:
+            # no rainfall all the precipitation will convert into snowfall
+            _rf = 0.0
             _sf = prec * sfcf
-
-        elif temp >= utt:  # if temp > upper threshold
-            _rf = prec * rfcf  # no snowfall all the precipitation becomes rainfall
+        elif temp >= utt:
+            # if temp > upper threshold
+            _rf = prec * rfcf
+            # no snowfall all the precipitation becomes rainfall
             _sf = 0.0
-
-        else:  # if  ltt< temp < utt
+        else:
+            # if  ltt< temp < utt
             _rf = ((temp - ltt) / (utt - ltt)) * prec * rfcf
             _sf = (1.0 - ((temp - ltt) / (utt - ltt))) * prec * sfcf
 
@@ -114,43 +116,42 @@ class HBVLake(BaseConceptualModel):
         _sp_new : float
             Snowpack in posterior state [mm]
         """
-
-        if temp > ttm:  # if temp > melting threshold
+        # if temp > melting threshold
+        if temp > ttm:
             # then either some snow will melt or the entire snow will melt
-            if (
-                cfmax * (temp - ttm) < sp_old + _sf
-            ):  # if amount of melted snow < the entire existing snow (previous amount+new)
+            if cfmax * (temp - ttm) < sp_old + _sf:
+                # if amount of melted snow < the entire existing snow (previous amount+new)
                 _melt = cfmax * (temp - ttm)
-            else:  # if amount of melted snow > the entire existing snow (previous amount+new)
-                _melt = (
-                    sp_old + _sf
-                )  # then the entire existing snow will melt (old snow pack + the current snowfall)
+            else:
+                # if amount of melted snow > the entire existing snow (previous amount+new)
+                _melt = sp_old + _sf
+                # then the entire existing snow will melt (old snow pack + the current snowfall)
 
             _sp_new = sp_old + _sf - _melt
             _wc_int = wc_old + _melt + _rf
-
-        else:  # if temp < melting threshold
+        else:
+            # if temp < melting threshold,
             # then either some water will freeze or all the water willfreeze
-            if (
-                cfr * cfmax * (ttm - temp) < wc_old + _rf
-            ):  # if the amount of frozen water < entire water available
-                _refr = (
-                    cfr * cfmax * (ttm - temp)
-                )  # cfmax*(ttm-temp) is the rate of melting of snow while cfr*cfmax*(ttm-temp) is the rate of freeze of melted water  (rate of freezing > rate of melting)
-            else:  # if the amount of frozen water > entire water available
+            if cfr * cfmax * (ttm - temp) < wc_old + _rf:
+                # if the amount of frozen water < entire water available
+                _refr = cfr * cfmax * (ttm - temp)
+                # cfmax*(ttm-temp) is the melting rate of snow while cfr*cfmax*(ttm-temp) is the freezing rate of
+                # melted water  (rate of freezing > rate of melting)
+            else:
+                # if the amount of frozen water > entire water available
                 _refr = wc_old + _rf
 
             _sp_new = sp_old + _sf + _refr
             _wc_int = wc_old - _refr + _rf
 
-        if (
-            _wc_int > cwh * _sp_new
-        ):  # if water content > holding water capacity of the snow
-            _in = _wc_int - cwh * _sp_new  # water content  will infiltrate
-            _wc_new = (
-                cwh * _sp_new
-            )  # and the capacity of snow of holding water will retained
-        else:  # if water content < holding water capacity of the snow
+        if _wc_int > cwh * _sp_new:
+            # if water content > holding water capacity of the snow
+            _in = _wc_int - cwh * _sp_new
+            # water content will infiltrate
+            _wc_new = cwh * _sp_new
+            # and the capacity of snow of holding water will retained
+        else:
+            # if water content < holding water capacity of the snow
             _in = 0.0  # no infiltration
             _wc_new = _wc_int
 
@@ -403,111 +404,116 @@ class HBVLake(BaseConceptualModel):
 
         return q_r
 
-    def CalculateMaxBas(MAXBAS):
-        """CalculateMaxBas. This function calculate the MAXBAS Weights based on a MAXBAX number The MAXBAS is a HBV parameter that controls the routing.
+    @staticmethod
+    def calculate_max_bas(maxbas):
+        """calculate_max_bas.
+
+        The calculate_max_bas function calculate the maxbas Weights based on a MAXBAX number The maxbas is a HBV
+        parameter that controls the routing.
 
         Parameters
         ----------
-        MAXBAS: [int]
+        maxbas: [int]
             maxbas weight
 
         Example
         -------
-        maxbasW = CalculateMaxBas(5)
+        maxbasW = calculate_max_bas(5)
         maxbasW =
 
             0.0800    0.2400    0.3600    0.2400    0.0800
 
-        It is important to mention that this function allows to obtain weights
-        not only for interger values but from decimals values as well.
+        Notes
+        -----
+        - It is important to mention that this function allows one to obtain weights not only for interger values but
+        from decimal values as well.
         """
         yant = 0
-        Total = 0  # Just to verify how far from the unit is the result
+        total = 0  # Just to verify how far from the unit is the result
 
-        TotalA = (MAXBAS * MAXBAS * np.sin(np.pi / 3)) / 2
+        total_a = (maxbas * maxbas * np.sin(np.pi / 3)) / 2
 
-        IntPart = np.floor(MAXBAS)
+        int_part = np.floor(maxbas)
 
-        RealPart = MAXBAS - IntPart
+        real_part = maxbas - int_part
 
-        PeakPoint = MAXBAS % 2
+        peak_point = maxbas % 2
 
         flag = 1  # 1 = "up"  ; 2 = down
 
-        if RealPart > 0:  # even number 2,4,6,8,10
-            maxbasW = np.ones(int(IntPart) + 1)  # if even add 1
+        if real_part > 0:  # even number 2,4,6,8,10
+            maxbas_w = np.ones(int(int_part) + 1)  # if even add 1
         else:  # odd number
-            maxbasW = np.ones(int(IntPart))
+            maxbas_w = np.ones(int(int_part))
 
-        for x in range(int(MAXBAS)):
+        for x in range(int(maxbas)):
 
-            if x < (MAXBAS / 2.0) - 1:
+            if x < (maxbas / 2.0) - 1:
                 ynow = np.tan(np.pi / 3) * (x + 1)
-                # Integral of  x dx with slope of 60 degree Equilateral triangle
-                maxbasW[x] = ((ynow + yant) / 2) / TotalA  # ' Area / Total Area
+                # Integral of x dx with a slope of 60 degree Equilateral triangle
+                maxbas_w[x] = ((ynow + yant) / 2) / total_a  # ' Area / Total Area
 
             else:  # The area here is calculated by the formlua of a trapezoidal (B1+B2)*h /2
                 if flag == 1:
-                    ynow = np.sin(np.pi / 3) * MAXBAS
-                    if PeakPoint == 0:
-                        maxbasW[x] = ((ynow + yant) / 2) / TotalA
+                    ynow = np.sin(np.pi / 3) * maxbas
+                    if peak_point == 0:
+                        maxbas_w[x] = ((ynow + yant) / 2) / total_a
                     else:
-                        A1 = ((ynow + yant) / 2) * (MAXBAS / 2.0 - x) / TotalA
+                        A1 = ((ynow + yant) / 2) * (maxbas / 2.0 - x) / total_a
                         yant = ynow
-                        ynow = (MAXBAS * np.sin(np.pi / 3)) - (
-                            np.tan(np.pi / 3) * (x + 1 - MAXBAS / 2.0)
+                        ynow = (maxbas * np.sin(np.pi / 3)) - (
+                            np.tan(np.pi / 3) * (x + 1 - maxbas / 2.0)
                         )
-                        A2 = ((ynow + yant) * (x + 1 - MAXBAS / 2.0) / 2) / TotalA
-                        maxbasW[x] = A1 + A2
+                        A2 = ((ynow + yant) * (x + 1 - maxbas / 2.0) / 2) / total_a
+                        maxbas_w[x] = A1 + A2
 
                     flag = 2
                 else:
-                    ynow = MAXBAS * np.sin(np.pi / 3) - np.tan(np.pi / 3) * (
-                        x + 1 - MAXBAS / 2.0
-                    )  # 'sum of the two height in the descending part of the triangle
-                    maxbasW[x] = ((ynow + yant) / 2) / TotalA
+                    ynow = maxbas * np.sin(np.pi / 3) - np.tan(np.pi / 3) * (x + 1 - maxbas / 2.0)
+                    # 'sum of the two heights in the descending part of the triangle
+                    maxbas_w[x] = ((ynow + yant) / 2) / total_a
                     # Multiplying by the height of the trapezoidal and dividing by 2
 
-            Total = Total + maxbasW[x]
+            total = total + maxbas_w[x]
             yant = ynow
 
         x = x + 1
 
-        if RealPart > 0:
-            if np.floor(MAXBAS) == 0:
-                # MAXBAS = 1
-                maxbasW[x] = 1
+        if real_part > 0:
+            if np.floor(maxbas) == 0:
+                # maxbas = 1
+                maxbas_w[x] = 1
                 # NumberofWeights = 1
             else:
-                maxbasW[x] = (yant * (MAXBAS - x) / 2) / TotalA
+                maxbas_w[x] = (yant * (maxbas - x) / 2) / total_a
                 # Total = Total + maxbasW[x]
                 # NumberofWeights = x
         else:
             # NumberofWeights = x - 1
             pass
 
-        return maxbasW
+        return maxbas_w
 
-    def RoutingMAXBAS(self, Q, MAXBAS):
-        """RoutingMAXBAS.
+    def routing_maxbas(self, q, maxbas):
+        """routing_maxbas.
 
-            This function calculate the routing from a input hydrograph using the MAXBAS parameter from the HBV model.
+            This function calculate the routing from a input hydrograph using the maxbas parameter from the HBV model.
 
         Parameters
         ----------
-        Q: [array]
+        q: [array]
             input hydrograph
-        MAXBAS: []
-            MAXBAS weight
+        maxbas: []
+            maxbas weight
         Qout = output hydrograph
         """
-        # CALCULATE MAXBAS WEIGHTS
-        maxbasW = self.CalculateMaxBas(MAXBAS)
-        Qw = np.ones((len(Q), len(maxbasW)))
+        # CALCULATE maxbas WEIGHTS
+        maxbas_w = self.calculate_max_bas(maxbas)
+        qw = np.ones((len(q), len(maxbas_w)))
         # Calculate the matrix discharge
-        for i in range(len(Q)):  # 0 to 10
-            for k in range(len(maxbasW)):  # 0 to 4
-                Qw[i, k] = maxbasW[k] * Q[i]
+        for i in range(len(q)):  # 0 to 10
+            for k in range(len(maxbas_w)):  # 0 to 4
+                qw[i, k] = maxbas_w[k] * q[i]
 
         def mm(A, s):
             tot = []
@@ -519,44 +525,42 @@ class HBVLake(BaseConceptualModel):
 
         # Calculate routing
         j = 0
-        Qout = np.ones((len(Q), 1))
+        qout = np.ones((len(q), 1))
 
-        for i in range(len(Q)):
+        for i in range(len(q)):
             if i == 0:
-                Qout[i] = Qw[i, i]
-            elif i < len(maxbasW) - 1:
-                A = Qw[0 : i + 1, :]
+                qout[i] = qw[i, i]
+            elif i < len(maxbas_w) - 1:
+                A = qw[0 : i + 1, :]
                 s = len(A) - 1  # len(A) is the no of rows or use int(np.shape(A)[0])
                 Su = mm(A, s)
 
-                Qout[i] = sum(Su[0 : i + 1])
+                qout[i] = sum(Su[0 : i + 1])
             else:
-                A = Qw[j : i + 1, :]
+                A = qw[j : i + 1, :]
                 s = len(A) - 1
                 Su = mm(A, s)
-                Qout[i] = sum(Su)
+                qout[i] = sum(Su)
                 j = j + 1
 
-        #        del A ,s, Su
+        return qout
 
-        return Qout  # ,maxbasW
-
-    def _step_run(self, p, p2, v, St, curve):
+    def _step_run(self, parameters, catchment_parameters, v, state_variables, curve):
         """Step run. Makes the calculation of next step of discharge and states.
 
         Parameters
         ----------
-        p : array_like [10]
+        parameters : array_like [10]
             Parameter vector, set up as:
             [fc, beta, e_corr, etf, lp, c_flux, k, k1, alpha, perc]
             9 fixed parameters + 9 optimized parameters + 1 parameter for the lake
-        p2 : array_like [3]
+        catchment_parameters : array_like [3]
             Problem parameter vector setup as:
             [tfac, area, Lake_area]
         v : array_like [4]
             Input vector setup as:
             [prec, temp, evap, llt]
-        St : array_like [5]
+        state_variables : array_like [5]
             Previous model states setup as:
             [sp, sm, uz, lz, wc]
 
@@ -569,34 +573,34 @@ class HBVLake(BaseConceptualModel):
         """
         ## Parse of parameters from input vector to model
         # picipitation function
-        ltt = 1.0  # p[0] # less than utt and less than lowest temp to prevent sf formation
-        utt = 2.0  # p[1]  #very low but it does not matter as temp is 25 so it is greater than 2
-        rfcf = 1.0  # p[16] # all precipitation becomes rainfall
-        sfcf = 0.00001  # p[17] # there is no snow
+        ltt = 1.0  # parameters[0] # less than utt and less than lowest temp to prevent sf formation
+        utt = 2.0  # parameters[1]  #very low but it does not matter as temp is 25 so it is greater than 2
+        rfcf = 1.0  # parameters[16] # all precipitation becomes rainfall
+        sfcf = 0.00001  # parameters[17] # there is no snow
         # snow function
-        ttm = 1  # p[2] #should be very low lower than lowest temp as temp is 25 all the time so it does not matter
-        cfmax = 0.00001  # p[3] as there is no melting  and sp+sf=zero all the time so it doesn't matter the value of cfmax
-        cwh = 0.00001  # p[12] as sp is always zero it doesn't matter all wc will go as inf
-        cfr = 0.000001  # p[13] as temp > ttm all the time so it doesn't matter the value of cfr but put it zero
+        ttm = 1  # parameters[2] #should be very low lower than lowest temp as temp is 25 all the time so it does not matter
+        cfmax = 0.00001  # parameters[3] as there is no melting  and sp+sf=zero all the time so it doesn't matter the value of cfmax
+        cwh = 0.00001  # parameters[12] as sp is always zero it doesn't matter all wc will go as inf
+        cfr = 0.000001  # parameters[13] as temp > ttm all the time so it doesn't matter the value of cfr but put it zero
         # soil function
-        fc = p[0]
-        beta = p[1]
-        e_corr = 1  # p[2]
-        etf = p[2]
-        lp = p[3]
-        c_flux = p[4]
+        fc = parameters[0]
+        beta = parameters[1]
+        e_corr = 1  # parameters[2]
+        etf = parameters[2]
+        lp = parameters[3]
+        c_flux = parameters[4]
         # response function
-        k = p[5]
-        k1 = p[6]
-        alpha = p[7]
-        perc = p[8]
+        k = parameters[5]
+        k1 = parameters[6]
+        alpha = parameters[7]
+        perc = parameters[8]
 
         ## Non optimisable parameters
         # [tfac,jiboa,lake_sub,lake_area]
-        tfac = p2[0]  # tfac=0.25
-        # jiboa_area=p2[1] # AREA = 432
-        lake_sub = p2[1]  # area of lake subcatchment
-        lakeA = p2[2]  # area of the lake
+        tfac = catchment_parameters[0]  # tfac=0.25
+        # jiboa_area=catchment_parameters[1] # AREA = 432
+        lake_sub = catchment_parameters[1]  # area of lake subcatchment
+        lakeA = catchment_parameters[2]  # area of the lake
         #    ilake=lakeA/area  # percentage of the lake area to catchment area
 
         ## Parse of Inputs
@@ -606,22 +610,22 @@ class HBVLake(BaseConceptualModel):
         tm = v[3]  # Long term (monthly) average temperature [C]
 
         ## Parse of states
-        sp_old = St[0]
-        sm_old = St[1]
-        uz_old = St[2]
-        lz_old = St[3]
-        wc_old = St[4]
+        sp_old = state_variables[0]
+        sm_old = state_variables[1]
+        uz_old = state_variables[2]
+        lz_old = state_variables[3]
+        wc_old = state_variables[4]
 
         # if lake_sim:
         area = lake_sub
-        c_le = p[9]
-        lv_old = St[5]
-        pcorr = p[10]
+        c_le = parameters[9]
+        lv_old = state_variables[5]
+        pcorr = parameters[10]
         # else:
         # area=jiboa_area
-        # pcorr=p[9]
+        # pcorr=parameters[9]
 
-        #    pcorr=p[10]
+        #    pcorr=parameters[10]
 
         rf, sf = self._precipitation(temp, ltt, utt, avg_prec, rfcf, sfcf, tfac, pcorr)
         inf, wc_new, sp_new = self._snow(
