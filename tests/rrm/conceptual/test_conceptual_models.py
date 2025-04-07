@@ -149,13 +149,6 @@ def test_hbv(coello_lumped_meteo_data: np.ndarray, coello_lumped_parameters: lis
 
 
 def test_hbv_lake(coello_lumped_meteo_data: np.ndarray, coello_lumped_parameters: list):
-    # p = coello_lumped_meteo_data[:, 0]
-    # et = coello_lumped_meteo_data[:, 1]
-    # t = coello_lumped_meteo_data[:, 2]
-    # tm = coello_lumped_meteo_data[:, 3]
-    # initial_conditions = [0, 10, 10, 10, 0]
-    # snow = False
-    # q_init = None
     conceptual_model = HBVLake()
 
     p_lake = np.array(
