@@ -5,19 +5,18 @@ import datetime as dt
 import pandas as pd
 from osgeo import gdal
 
-import Hapi.rrm.hbv_bergestrom92 as HBV
+from Hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBV
 from Hapi.catchment import Catchment
 from Hapi.run import Run
 
 # %% Paths
-Path = "examples/hydrological-model/data/distributed_model/"
-PrecPath = Path + "/prec"
-Evap_Path = Path + "/evap"
-TempPath = Path + "/temp"
-FlowAccPath = Path + "/GIS/acc4000.tif"
-FlowDPath = Path + "/GIS/fd4000.tif"
-# FlowPathLengthPath = path + "GIS/FPL4000.tif"
-ParPath = Path + "\parameters_initial_maxbas"
+Path = "examples/hydrological-model/data/distributed_model"
+PrecPath = f"{Path}/prec"
+Evap_Path = f"{Path}/evap"
+TempPath = f"{Path}/temp"
+FlowAccPath = f"{Path}/GIS/acc4000.tif"
+FlowDPath = f"{Path}/GIS/fd4000.tif"
+ParPath = f"{Path}/parameters_initial_maxbas"
 # %% Meteorological data
 AreaCoeff = 1530
 InitialCond = [0, 5, 5, 5, 0]
@@ -26,21 +25,19 @@ Snow = 0
 Create the model object and read the input data
 """
 start = "2009-01-01"
-end = "2011-12-31"
+end = "2009-04-10"
 name = "Coello"
 Coello = Catchment(name, start, end, spatial_resolution="Distributed")
-Coello.read_rainfall(PrecPath)
-Coello.read_temperature(TempPath)
-Coello.read_et(Evap_Path)
+Coello.read_rainfall(PrecPath, file_name_data_fmt = "%Y.%m.%d")
+Coello.read_temperature(TempPath, file_name_data_fmt = "%Y.%m.%d")
+Coello.read_et(Evap_Path, file_name_data_fmt = "%Y.%m.%d")
 
 Coello.read_flow_acc(FlowAccPath)
-# Coello.readFlowDir(FlowDPath)
-# Coello.ReadFlowPathLength(FlowPathLengthPath)
 Coello.read_parameters(ParPath, Snow, maxbas=True)
 Coello.read_lumped_model(HBV, AreaCoeff, InitialCond)
 # %% Gauges
-Coello.read_gauge_table(f"{Path}stations/gauges.csv", FlowAccPath)
-Coello.read_discharge_gauges(f"{Path}stations/", column="id", fmt="%Y-%m-%d")
+Coello.read_gauge_table(f"{Path}/stations/gauges.csv", FlowAccPath)
+Coello.read_discharge_gauges(f"{Path}/stations/", column="id", fmt="%Y-%m-%d")
 # %% Run the model
 """
 Outputs:

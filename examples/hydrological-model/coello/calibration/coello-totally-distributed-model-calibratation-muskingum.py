@@ -4,7 +4,7 @@ import numpy as np
 from osgeo import gdal
 from statista.descriptors import rmse
 
-import Hapi.rrm.hbv_bergestrom92 as HBV
+from Hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBV
 from Hapi.calibration import Calibration
 from Hapi.rrm.parameters import Parameters as DP
 
@@ -88,13 +88,13 @@ coordinates = Coello.GaugesTable[["id", "x", "y", "weight"]][:]
 OF_args = [coordinates]
 
 
-def objective_function(Qobs, coordinates):
+def objective_function(q_obs, coordinates):
     Coello.extract_discharge()
     all_errors = []
     # error for all internal stations
     for i in range(len(coordinates)):
         all_errors.append(
-            (rmse(Qobs.loc[:, Qobs.columns[0]], Coello.Qsim[:, i]))
+            (rmse(q_obs.loc[:, q_obs.columns[0]], Coello.Qsim[:, i]))
         )  # *coordinates.loc[coordinates.index[i],'weight']
     print(all_errors)
     error = sum(all_errors)

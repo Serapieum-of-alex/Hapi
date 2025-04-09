@@ -13,12 +13,12 @@ matplotlib.use("TkAgg")
 # %%
 import random
 
-import statista.metrics as metrics
+import statista.descriptors as metrics
 from deap import algorithms, base, creator, tools
 
-import Hapi.rrm.hbv_bergestrom92 as HBVLumped
+from Hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from Hapi.calibration import Calibration
-from Hapi.rrm.routing import Routing
+from Hapi.routing import Routing
 from Hapi.run import Run
 
 ### Paths
