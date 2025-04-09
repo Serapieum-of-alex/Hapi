@@ -23,7 +23,7 @@ this HBV is based on Bergstrom, 1992 two reservoirs with three linear responses
 surface runoff, interflow and baseflow
 """
 
-# libraries
+from typing import Tuple
 import numpy as np
 
 from Hapi.rrm.base_model import BaseConceptualModel
@@ -342,7 +342,9 @@ class HBVBergestrom92(BaseConceptualModel):
 
         return q_r
 
-    def simulate(self, prec, temp, et, ll_temp, par, init_st=None, q_init=None, snow=0):
+    def simulate(
+        self, prec, temp, et, ll_temp, par, init_st=None, q_init=None, snow=0
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Simulate.
 
             Run the HBV model for the number of steps (n) in precipitation.
