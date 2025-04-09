@@ -73,3 +73,9 @@ Parameters
 `FileManager`, `FigshareAPIClient`).
 - Add CLI to download the parameters from the FigShare server (`list-parameter-names`, `download-parameter-set`,
 `download-parameters`).
+
+
+Conceptual Models
+-----------------
+- Refactor the HBV bergestrom 92, HBV Lake, and the HBV conceptual models into classes.
+- move un-used hbv variants to the examples folder.
