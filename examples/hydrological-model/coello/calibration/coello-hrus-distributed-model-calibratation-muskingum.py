@@ -1,24 +1,15 @@
-"""Created on Sun Jun 24 21:02:34 2018.
-
-@author: Mostafa
-"""
 import os
 
-# Comp = "F:/Users/mofarrag/"
 Comp = "L:\My Drive\case studies"
 os.chdir(Comp + "/Coello/HAPI/Model")
 import datetime as dt
 
 import numpy as np
 from osgeo import gdal
-from statista.metrics import rmse
+from statista.descriptors import rmse
 
-import Hapi.rrm.hbv_bergestrom92 as HBV
-
-# functions
+from Hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBV
 from Hapi.calibration import Calibration
-
-# import Hapi.HBV as HBV
 from Hapi.rrm.parameters import Parameters as DP
 
 path = Comp + "/Coello/HAPI/Data/00inputs/"  # GIS/4000/
@@ -103,14 +94,14 @@ coordinates = Coello.GaugesTable[["id", "x", "y", "weight"]][:]
 OF_args = [coordinates]
 
 
-def objective_function(Qobs, coordinates):  # Qout, q_uz_routed, q_lz_trans,
+def objective_function(q_obs, coordinates):  # Qout, q_uz_routed, q_lz_trans,
     Coello.extract_discharge()
     all_errors = []
     # error for all internal stations
     for i in range(len(coordinates)):
-        all_errors.append((rmse(Qobs.loc[:, Qobs.columns[0]], Coello.Qsim[:, i])))
+        all_errors.append((rmse(q_obs.loc[:, q_obs.columns[0]], Coello.Qsim[:, i])))
     # outlet observed discharge is at the end of the array
-    # all_errors.append((PC.rmse(Qobs.loc[:,Qobs.columns[-1]],Qout))*coordinates.loc[coordinates.index[-1],'weight'])
+    # all_errors.append((PC.rmse(q_obs.loc[:,q_obs.columns[-1]],Qout))*coordinates.loc[coordinates.index[-1],'weight'])
     print(str(np.round(all_errors, 3)))
     error = sum(all_errors)
     return error

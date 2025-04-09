@@ -10,21 +10,23 @@ import numpy as np
 import pandas as pd
 
 matplotlib.use("TkAgg")
+# %%
 import random
 
 import statista.descriptors as metrics
 from deap import algorithms, base, creator, tools
 
-import Hapi.rrm.hbv_bergestrom92 as HBVLumped
+from Hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from Hapi.calibration import Calibration
-from Hapi.rrm.routing import Routing
+from Hapi.routing import Routing
 from Hapi.run import Run
 
-# %% Paths
+### Paths
 # Parameterpath = path + "examples/hydrological-model/data/lumped_model/Coello_Lumped2021-03-08_muskingum.txt"
 MeteoDataPath = "examples/hydrological-model/data/lumped_model/meteo_data-MSWEP.csv"
 Path = "examples/hydrological-model/data/lumped_model/"
-# %% Meteorological data
+
+### Meteorological data
 
 start = "2009-01-01"
 end = "2011-12-31"
@@ -40,8 +42,6 @@ AreaCoeff = 1530
 # temporal resolution
 # [Snow pack, Soil moisture, Upper zone, Lower Zone, Water content]
 InitialCond = [0, 10, 10, 10, 0]
-# no snow subroutine
-Snow = False
 Coello.read_lumped_model(HBVLumped, AreaCoeff, InitialCond)
 
 # Calibration parameters
@@ -53,6 +53,8 @@ UB = UB[1].tolist()
 LB = pd.read_csv(Path + "/LB-3.txt", index_col=0, header=None)
 LB = LB[1].tolist()
 
+# no snow subroutine
+Snow = False
 Maxbas = True
 Coello.read_parameters_bound(UB, LB, Snow, maxbas=Maxbas)
 
@@ -66,7 +68,7 @@ RoutingFn = Routing.TriangularRouting1
 # outlet discharge
 Coello.read_discharge_gauges(Path + "Qout_c.csv", fmt="%Y-%m-%d")
 # %% Calibration
-creator.create("Fitness", base.Fitness, weights=(1.0, 1.0))
+creator.create("Fitness", base.Fitness, weights=(1.0, -1.0))
 creator.create("IndividualContainer", list, fitness=creator.Fitness)
 toolbox = base.Toolbox()
 
@@ -98,8 +100,8 @@ def objfn(individual):
     Run.runLumped(Coello, Route, RoutingFn)
     # [Coello.QGauges.columns[-1]]
     NSE = metrics.nse_hf(Coello.QGauges, Coello.Qsim, *Coello.OFArgs)
-    NSEHF = metrics.nse_hf(Coello.QGauges, Coello.Qsim, *Coello.OFArgs)
-    return NSE, NSEHF
+    RMSE = metrics.rmse(Coello.QGauges, Coello.Qsim, *Coello.OFArgs)
+    return NSE, RMSE
 
 
 def feasible(individual):
@@ -170,6 +172,7 @@ print("NSE= " + str(round(Metrics["NSE"], 2)))
 print("NSEhf= " + str(round(Metrics["NSEhf"], 2)))
 print("KGE= " + str(round(Metrics["KGE"], 2)))
 print("WB= " + str(round(Metrics["WB"], 2)))
+
 # %% Plotting Hydrograph
 
 gaugei = 0
@@ -187,7 +190,7 @@ ParPath = (
 )
 parameters = pd.DataFrame(index=parnames)
 # parameters['values'] = cal_parameters[1]
-# parameters.to_csv(ParPath, header=None, float_format="%0.4f")
+parameters.to_csv(ParPath, header=None, float_format="%0.4f")
 
 # %% Save Results
 

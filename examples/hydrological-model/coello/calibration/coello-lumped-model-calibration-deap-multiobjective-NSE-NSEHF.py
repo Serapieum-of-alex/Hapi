@@ -1,4 +1,5 @@
 # Lumped Model Calibration
+
 # - Please change the Path in the following cell to the directory where you stored the case study data
 
 ### Modules
@@ -11,27 +12,29 @@ import pandas as pd
 matplotlib.use("TkAgg")
 import random
 
-import statista.metrics as PC
+import statista.descriptors as metrics
 from deap import algorithms, base, creator, tools
 
-import Hapi.rrm.hbv_bergestrom92 as HBVLumped
+from Hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from Hapi.calibration import Calibration
-from Hapi.rrm.routing import Routing
+from Hapi.routing import Routing
 from Hapi.run import Run
 
 # %% Paths
 # Parameterpath = path + "examples/hydrological-model/data/lumped_model/Coello_Lumped2021-03-08_muskingum.txt"
 MeteoDataPath = "examples/hydrological-model/data/lumped_model/meteo_data-MSWEP.csv"
 Path = "examples/hydrological-model/data/lumped_model/"
+# %% Meteorological data
 
-### Meteorological data
 start = "2009-01-01"
 end = "2011-12-31"
 name = "Coello"
 
 Coello = Calibration(name, start, end)
 Coello.read_lumped_inputs(MeteoDataPath)
-# %% Basic_inputs
+
+### Basic_inputs
+
 # catchment area
 AreaCoeff = 1530
 # temporal resolution
@@ -63,8 +66,8 @@ RoutingFn = Routing.TriangularRouting1
 # outlet discharge
 Coello.read_discharge_gauges(Path + "Qout_c.csv", fmt="%Y-%m-%d")
 # %% Calibration
-creator.create("FitnessMin", base.Fitness, weights=(1.0,))
-creator.create("IndividualContainer", list, fitness=creator.FitnessMin)
+creator.create("Fitness", base.Fitness, weights=(1.0, 1.0))
+creator.create("IndividualContainer", list, fitness=creator.Fitness)
 toolbox = base.Toolbox()
 
 
@@ -84,8 +87,7 @@ print(toolbox.individual())
 toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 print(toolbox.population(1))
 
-# no snow subroutine
-Snow = False
+Snow = 0  # no snow subroutine
 
 Coello.OFArgs = []
 
@@ -95,8 +97,9 @@ def objfn(individual):
     Coello.Parameters = individual
     Run.runLumped(Coello, Route, RoutingFn)
     # [Coello.QGauges.columns[-1]]
-    error = PC.NSEHF(Coello.QGauges, Coello.Qsim, *Coello.OFArgs)
-    return (error,)
+    NSE = metrics.nse_hf(Coello.QGauges, Coello.Qsim, *Coello.OFArgs)
+    NSEHF = metrics.nse_hf(Coello.QGauges, Coello.Qsim, *Coello.OFArgs)
+    return NSE, NSEHF
 
 
 def feasible(individual):
@@ -156,18 +159,17 @@ Metrics = dict()
 
 Qobs = Coello.QGauges[Coello.QGauges.columns[0]]
 
-Metrics["RMSE"] = PC.RMSE(Qobs, Coello.Qsim["q"])
-Metrics["NSE"] = PC.NSE(Qobs, Coello.Qsim["q"])
-Metrics["NSEhf"] = PC.NSEHF(Qobs, Coello.Qsim["q"])
-Metrics["KGE"] = PC.KGE(Qobs, Coello.Qsim["q"])
-Metrics["WB"] = PC.WB(Qobs, Coello.Qsim["q"])
+Metrics["RMSE"] = metrics.rmse(Qobs, Coello.Qsim["q"])
+Metrics["NSE"] = metrics.nse(Qobs, Coello.Qsim["q"])
+Metrics["NSEhf"] = metrics.nse_hf(Qobs, Coello.Qsim["q"])
+Metrics["KGE"] = metrics.kge(Qobs, Coello.Qsim["q"])
+Metrics["WB"] = metrics.wb(Qobs, Coello.Qsim["q"])
 
 print("RMSE= " + str(round(Metrics["RMSE"], 2)))
 print("NSE= " + str(round(Metrics["NSE"], 2)))
 print("NSEhf= " + str(round(Metrics["NSEhf"], 2)))
 print("KGE= " + str(round(Metrics["KGE"], 2)))
 print("WB= " + str(round(Metrics["WB"], 2)))
-
 # %% Plotting Hydrograph
 
 gaugei = 0
@@ -178,7 +180,10 @@ Coello.plot_hydrograph(plotstart, plotend, gaugei, title="Lumped Model")
 # %% Save the Parameters
 
 ParPath = (
-    Path + f"{Coello.name}-lumped-parameters" + str(dt.datetime.now())[0:10] + ".txt"
+    Path
+    + f"{Coello.name}-lumped-parameters-multi-obj"
+    + str(dt.datetime.now())[0:10]
+    + ".txt"
 )
 parameters = pd.DataFrame(index=parnames)
 # parameters['values'] = cal_parameters[1]
@@ -190,6 +195,9 @@ StartDate = "2009-01-01"
 EndDate = "2010-04-20"
 
 Path = (
-    Path + f"{Coello.name}-results-lumped-model" + str(dt.datetime.now())[0:10] + ".txt"
+    Path
+    + f"{Coello.name}-results-lumped-model-multi-obj"
+    + str(dt.datetime.now())[0:10]
+    + ".txt"
 )
 Coello.save_results(result=5, start=StartDate, end=EndDate, path=Path)

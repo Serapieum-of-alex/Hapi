@@ -7,9 +7,9 @@ import numpy as np
 import pandas as pd
 import statista.descriptors as metrics
 
-import Hapi.rrm.hbv_bergestrom92 as HBVLumped
+from Hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from Hapi.calibration import Calibration
-from Hapi.rrm.routing import Routing
+from Hapi.routing import Routing
 from Hapi.run import Run
 
 # %% Paths

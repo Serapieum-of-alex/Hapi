@@ -22,7 +22,7 @@ classifiers = [
     "Intended Audience :: Developers",
 ]
 
-requires-python = ">=3.0"
+requires-python = ">=3.11,<4.0"
 
 dependencies = [
     "gdal == 3.10.0",
@@ -35,7 +35,7 @@ dependencies = [
     "pyramids-gis >=0.6.0",
     "requests >=2.31.0",
     "scipy >=1.11.4",
-    "serapeum_utils >=0.2.0",
+    "serapeum-utils >=0.2.0",
     "statista >=0.6.0",
     "Oasis-Optimization >=1.0.3",
     "cleopatra>=0.5.1",

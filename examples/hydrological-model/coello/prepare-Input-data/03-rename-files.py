@@ -13,6 +13,7 @@ for the exercise to practice renaming the files delete these already renamed ras
 and upzip the temp-lumped-example.zip file then you will get rasters with names that looks like those you will get
 from the download script from CHIRPS or ECMWF.
 """
+
 from Hapi.rrm.inputs import Inputs as IN
 
 path = (

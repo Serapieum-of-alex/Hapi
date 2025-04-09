@@ -4,6 +4,7 @@ currunt_work_directory = Hapi/example
 
 install and use earth2observe package https://github.com/MAfarrag/earth2observe
 """
+
 from earth2observe.chirps import CHIRPS, Catalog
 from earth2observe.earth2observe import Earth2Observe
 from earth2observe.ecmwf import Catalog

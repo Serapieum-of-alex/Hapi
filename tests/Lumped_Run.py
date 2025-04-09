@@ -1,14 +1,10 @@
-"""Created on Sun Jun 24 21:02:34 2018.
-
-@author: Mostafa
-"""
 import datetime as dt
-import statista.metrics as metrics
-import Hapi.rrm.hbv_bergestrom92 as hbv_lumped
 
-# import Hapi.sm.performancecriteria as PC
+import statista.descriptors as metrics
+
 from Hapi.catchment import Catchment
-from Hapi.rrm.routing import Routing
+from Hapi.routing import Routing
+from Hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as hbv_lumped
 from Hapi.run import Run
 
 # %% Paths

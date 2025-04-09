@@ -2,7 +2,8 @@
 
 @author: Mostafa
 """
-#%links
+
+# %links
 from IPython import get_ipython  # to reset the variable explorer each time
 
 get_ipython().magic("reset -f")
@@ -18,11 +19,11 @@ import gdal
 # functions
 import Hapi.gis.raster as GIS
 
-#%library
+# %library
 # import numpy as np
 
 
-#%%
+# %%
 FD = gdal.Open("00inputs/GIS/4000/fd4000.tif")
 fd_A = FD.ReadAsArray()
 # manual adjusting

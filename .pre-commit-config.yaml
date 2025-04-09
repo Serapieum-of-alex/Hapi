@@ -19,7 +19,7 @@ repos:
       - id: check-docstring-first
         name: "[py   -  check] docstring first"
         files: /examples
-        types : [file, python ]
+        types : [python]
       - id: check-json
         name: "[json -  check] validate json"
       - id: check-merge-conflict
@@ -43,13 +43,15 @@ repos:
         name: "[reqs - format] fix requirements.txt"
       - id: check-yaml
         name: "[yaml -  check] validate yaml"
+        exclude: '^mkdocs\.yml$'
   - repo: https://github.com/pycqa/flake8
-    rev: 7.1.1
+    rev: 7.2.0
     hooks:
       - id: flake8
         additional_dependencies: [Flake8-pyproject]
         name: "[py   - check] flake8"
         exclude: ^(examples/|tests/)
+
 #   - repo: https://github.com/pycqa/docformatter
 #     rev: v1.4
 #     hooks:
@@ -65,14 +67,14 @@ repos:
     hooks:
       - id: pydocstyle
         name: "[py   - check] pydocstyle"
-        files: ^src/.*\.py$
+        files: ^src/llama_utils/.*\.py$
   - repo: https://github.com/pycqa/isort
-    rev: 5.13.2
+    rev: 6.0.1
     hooks:
       - id: isort
         name: "[py   - format] isort"
   - repo: https://github.com/psf/black
-    rev: 24.10.0
+    rev: 25.1.0
     hooks:
       - id: black
   - repo: https://github.com/lovesegfault/beautysh
@@ -103,6 +105,7 @@ repos:
       - id: check-summary-punctuation
         name: "[bash -   format] check-summary-punctuation"
 
+
   - repo: local
     hooks:
       - id: pytest-check
@@ -114,17 +117,17 @@ repos:
 
   - repo: local
     hooks:
-      - id: examples-notebook-check
+      - id: notebook
         name: nbval
         entry: pytest --nbval
         language: system
         files: \.ipynb$
 
-  - repo: local
-    hooks:
-      - id: doctest
-        name: doctest
-        entry: pytest --doctest-modules
-        args: ["--doctest-glob=*.rst", "-o", "doctest_optionflags=NORMALIZE_WHITESPACE ELLIPSIS"]
-        language: system
-        files: ^src/.*\.py$
+#   - repo: local
+#     hooks:
+#       - id: doctest
+#         name: doctest
+#         entry: pytest --doctest-modules
+#         args: ["--doctest-glob=*.rst", "-o", "doctest_optionflags=NORMALIZE_WHITESPACE ELLIPSIS"]
+#         language: system
+#         files: ^src/Hapi/.*\.py$

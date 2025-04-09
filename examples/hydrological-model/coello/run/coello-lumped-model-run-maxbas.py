@@ -3,15 +3,15 @@ import datetime as dt
 import matplotlib
 
 matplotlib.use("TkAgg")
-import statista.descriptors as PC
+import statista.descriptors as metrics
 
-import Hapi.rrm.hbv_bergestrom92 as HBVLumped
+from Hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from Hapi.catchment import Catchment
-from Hapi.rrm.routing import Routing
+from Hapi.routing import Routing
 from Hapi.run import Run
 
 # %% data
-Parameterpath = "examples/hydrological-model/data/lumped_model/Coello_Lumped2021-03-08_muskingum.txt"
+Parameterpath = "examples/hydrological-model/data/lumped_model/coello-lumped-parameters2022-03-13-maxbas.txt"
 MeteoDataPath = "examples/hydrological-model/data/lumped_model/meteo_data-MSWEP.csv"
 Path = "examples/hydrological-model/data/lumped_model/"
 SaveTo = "examples/hydrological-model/data/lumped_model/"
@@ -29,16 +29,16 @@ InitialCond = [0, 10, 10, 10, 0]
 
 Coello.read_lumped_model(HBVLumped, AreaCoeff, InitialCond)
 # %% ### Model Parameters
-
-Snow = False  # no snow subroutine
-Coello.read_parameters(Parameterpath, Snow)
+# no snow subroutine
+Snow = False
+Maxbas = True
+Coello.read_parameters(Parameterpath, Snow, maxbas=Maxbas)
 # Coello.Parameters
 # %% ### Observed flow
 Coello.read_discharge_gauges(Path + "Qout_c.csv", fmt="%Y-%m-%d")
-# %%  ### Routing
-
+# %% Routing
 # RoutingFn = Routing.TriangularRouting2
-RoutingFn = Routing.Muskingum_V
+RoutingFn = Routing.TriangularRouting1
 Route = 1
 # %% ### Run The Model
 # Coello.Parameters = [1.0171762638840873,
@@ -55,17 +55,16 @@ Route = 1
 
 Run.runLumped(Coello, Route, RoutingFn)
 # %% ### Calculate performance criteria
-# Coello.extractDischarge(OnlyOutlet=True)
 Metrics = dict()
 
 # gaugeid = Coello.QGauges.columns[-1]
 Qobs = Coello.QGauges["q"]
 
-Metrics["RMSE"] = PC.RMSE(Qobs, Coello.Qsim["q"])
-Metrics["NSE"] = PC.NSE(Qobs, Coello.Qsim["q"])
-Metrics["NSEhf"] = PC.NSEHF(Qobs, Coello.Qsim["q"])
-Metrics["KGE"] = PC.KGE(Qobs, Coello.Qsim["q"])
-Metrics["WB"] = PC.WB(Qobs, Coello.Qsim["q"])
+Metrics["RMSE"] = metrics.rmse(Qobs, Coello.Qsim["q"])
+Metrics["NSE"] = metrics.nse(Qobs, Coello.Qsim["q"])
+Metrics["NSEhf"] = metrics.nse_hf(Qobs, Coello.Qsim["q"])
+Metrics["KGE"] = metrics.kge(Qobs, Coello.Qsim["q"])
+Metrics["WB"] = metrics.wb(Qobs, Coello.Qsim["q"])
 
 print("RMSE= " + str(round(Metrics["RMSE"], 2)))
 print("NSE= " + str(round(Metrics["NSE"], 2)))
@@ -76,11 +75,13 @@ print("WB= " + str(round(Metrics["WB"], 2)))
 gaugei = 0
 plotstart = "2009-01-01"
 plotend = "2011-12-31"
-Coello.plot_hydrograph(plotstart, plotend, gaugei, title="Lumped Model")
+fig, ax = Coello.plot_hydrograph(plotstart, plotend, gaugei, title="Lumped Model")
 # %% ### Save Results
 
 StartDate = "2009-01-01"
 EndDate = "2010-04-20"
 
-Path = SaveTo + "Results-Lumped-Model_" + str(dt.datetime.now())[0:10] + ".txt"
+Path = f"{SaveTo}{Coello.name}Results-Lumped-Model_{str(dt.datetime.now())[0:10]}.txt"
 Coello.save_results(result=5, start=StartDate, end=EndDate, path=Path)
+
+# %%

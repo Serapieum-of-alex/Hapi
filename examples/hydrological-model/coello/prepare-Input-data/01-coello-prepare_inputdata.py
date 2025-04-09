@@ -2,6 +2,7 @@
 Make sure the working directory is set to the examples folder in the Hapi repo"
 currunt_work_directory = Hapi/
 """
+
 import numpy as np
 from osgeo import gdal
 from pyramids.raster import Raster

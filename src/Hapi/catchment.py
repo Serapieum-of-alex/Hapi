@@ -3,9 +3,9 @@
 __name__ = "catchment"
 
 import datetime as dt
+import inspect
 import math
 import os
-from types import ModuleType
 from typing import Optional, Union
 
 import geopandas as gpd
@@ -17,10 +17,10 @@ import statista.descriptors as metrics
 from cleopatra.array_glyph import ArrayGlyph
 from loguru import logger
 from osgeo import gdal
-from Hapi.dem import DEM
-from pyramids.dataset import Dataset
 from pyramids.datacube import Datacube
+from pyramids.dataset import Dataset
 
+from Hapi.dem import DEM
 
 STATE_VARIABLES = ["SP", "SM", "UZ", "LZ", "WC"]
 
@@ -87,13 +87,13 @@ class Catchment:
         self.start = dt.datetime.strptime(start_data, fmt)
         self.end = dt.datetime.strptime(end, fmt)
 
-        if not spatial_resolution.lower() in ["lumped", "distributed"]:
+        if spatial_resolution.lower() not in ["lumped", "distributed"]:
             raise ValueError(
                 "available spatial resolutions are 'lumped' and 'distributed'"
             )
         self.spatial_resolution = spatial_resolution.lower()
 
-        if not temporal_resolution.lower() in ["daily", "hourly"]:
+        if temporal_resolution.lower() not in ["daily", "hourly"]:
             raise ValueError("available temporal resolutions are 'daily' and 'hourly'")
         self.temporal_resolution = temporal_resolution.lower()
         # assuming the default dt is 1 day
@@ -193,8 +193,8 @@ class Catchment:
             - if there is a number at the beginning of the name
             >>> fname = "1_MSWEP_YYYY_M_D.tif"
             >>> regex_string = r"\d+"
-        date: [bool]
-            True if the number in the file name is a date. Default is True.
+        date: [bool]. Default is True.
+            True if the number in the file name is a date.
         file_name_data_fmt : [str]
             if the files names' have a date and you want to read them ordered .Default is None
             >>> "MSWEP_YYYY.MM.DD.tif"
@@ -771,14 +771,15 @@ class Catchment:
             initial conditions.
         """
 
-        assert isinstance(
-            lumped_model, ModuleType
-        ), "ConceptualModel should be a module or a python file contains functions "
+        if not inspect.isclass(lumped_model):
+            raise ValueError(
+                "ConceptualModel should be a module or a python file contains functions "
+            )
 
-        self.LumpedModel = lumped_model
+        self.LumpedModel = lumped_model()
         self.CatArea = catchment_area
 
-        if not (len(initial_condition) == 5):
+        if len(initial_condition) != 5:
             raise ValueError(
                 f"state variables are 5 and the given initial values are {len(initial_condition)}"
             )
@@ -815,13 +816,11 @@ class Catchment:
         ll_temp: [array]
             average long-term temperature.
         """
-        self.data = pd.read_csv(
-            path, header=0, delimiter=",", index_col=0  # "\t", #skiprows=11,
-        )
+        self.data = pd.read_csv(path, header=0, delimiter=",", index_col=0)
         self.data = self.data.values
 
         if ll_temp is None:
-            self.ll_temp = np.zeros(shape=(len(self.data)), dtype=np.float32)
+            # self.ll_temp = np.zeros(shape=(len(self.data)), dtype=np.float32)
             self.ll_temp = self.data[:, 2].mean()
 
         if not (np.shape(self.data)[1] == 3 or np.shape(self.data)[1] == 4):
@@ -1630,6 +1629,7 @@ class Lake:
             self.Index = pd.date_range(start, end, freq="H")
         else:
             assert False, "Error"
+
         self.MeteoData = None
         self.Parameters = None
         self.LumpedModel, self.CatArea, self.LakeArea, self.InitialCond = (
@@ -1730,10 +1730,12 @@ class Lake:
             0/1
         StageDischargeCurve: [array]
         """
-        assert isinstance(
-            lumped_model, ModuleType
-        ), "ConceptualModel should be a module or a python file contains functions "
-        self.LumpedModel = lumped_model
+        if not inspect.isclass(lumped_model):
+            raise ValueError(
+                "ConceptualModel should be a module or a python file contains functions "
+            )
+
+        self.LumpedModel = lumped_model()
 
         self.CatArea = catchment_area
         self.LakeArea = lake_area

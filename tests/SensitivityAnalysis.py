@@ -1,14 +1,10 @@
-"""Created on Sun Jun 21 01:55:25 2020.
-
-@author: mofarrag
-"""
 import pandas as pd
-import statista.metrics as metrics
+import statista.descriptors as metrics
 from statista.sensitivity import Sensitivity as SA
 
-import Hapi.rrm.hbv_bergestrom92 as HBVLumped
 from Hapi.catchment import Catchment
-from Hapi.rrm.routing import Routing
+from Hapi.routing import Routing
+from Hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from Hapi.run import Run
 
 # %% Paths
