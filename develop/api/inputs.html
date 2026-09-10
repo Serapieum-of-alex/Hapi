@@ -2714,10 +2714,7 @@ cross-checking against the model's own date index; the run itself is positional.
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 776</span>
-<span class="normal"> 777</span>
-<span class="normal"> 778</span>
-<span class="normal"> 779</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 779</span>
 <span class="normal"> 780</span>
 <span class="normal"> 781</span>
 <span class="normal"> 782</span>
@@ -3589,7 +3586,10 @@ cross-checking against the model's own date index; the run itself is positional.
 <span class="normal">1648</span>
 <span class="normal">1649</span>
 <span class="normal">1650</span>
-<span class="normal">1651</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">eq</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="normal">1651</span>
+<span class="normal">1652</span>
+<span class="normal">1653</span>
+<span class="normal">1654</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">eq</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">MeteoInputs</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">"""The three meteorological drivers of the rainfall-runoff model, held as aligned cubes.</span>
 
@@ -4518,10 +4518,7 @@ not have one entry per timestep.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">827</span>
-<span class="normal">828</span>
-<span class="normal">829</span>
-<span class="normal">830</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">830</span>
 <span class="normal">831</span>
 <span class="normal">832</span>
 <span class="normal">833</span>
@@ -4543,7 +4540,10 @@ not have one entry per timestep.</p>
 <span class="normal">849</span>
 <span class="normal">850</span>
 <span class="normal">851</span>
-<span class="normal">852</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">852</span>
+<span class="normal">853</span>
+<span class="normal">854</span>
+<span class="normal">855</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Check the three cubes are 3D and share a shape.</span>
 
 <span class="sd">    Raises:</span>
@@ -4673,10 +4673,7 @@ wrong grid. Re-check on assignment instead.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">854</span>
-<span class="normal">855</span>
-<span class="normal">856</span>
-<span class="normal">857</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">857</span>
 <span class="normal">858</span>
 <span class="normal">859</span>
 <span class="normal">860</span>
@@ -4696,7 +4693,10 @@ wrong grid. Re-check on assignment instead.</p>
 <span class="normal">874</span>
 <span class="normal">875</span>
 <span class="normal">876</span>
-<span class="normal">877</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">877</span>
+<span class="normal">878</span>
+<span class="normal">879</span>
+<span class="normal">880</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Set an attribute, keeping the three cubes in agreement.</span>
 
 <span class="sd">    The class promises the cubes share a shape, and `__post_init__` alone cannot hold</span>
@@ -4924,10 +4924,7 @@ contributes would be a guess.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1494</span>
-<span class="normal">1495</span>
-<span class="normal">1496</span>
-<span class="normal">1497</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1497</span>
 <span class="normal">1498</span>
 <span class="normal">1499</span>
 <span class="normal">1500</span>
@@ -4991,7 +4988,10 @@ contributes would be a guess.</p>
 <span class="normal">1558</span>
 <span class="normal">1559</span>
 <span class="normal">1560</span>
-<span class="normal">1561</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">1561</span>
+<span class="normal">1562</span>
+<span class="normal">1563</span>
+<span class="normal">1564</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">combine_netcdf_files</span><span class="p">(</span>
     <span class="n">precipitation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
     <span class="n">temperature</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
@@ -5283,10 +5283,7 @@ from_netcdf_files: The loader <code>source="netcdf_files"</code> dispatches to.<
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1247</span>
-<span class="normal">1248</span>
-<span class="normal">1249</span>
-<span class="normal">1250</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1250</span>
 <span class="normal">1251</span>
 <span class="normal">1252</span>
 <span class="normal">1253</span>
@@ -5437,7 +5434,10 @@ from_netcdf_files: The loader <code>source="netcdf_files"</code> dispatches to.<
 <span class="normal">1398</span>
 <span class="normal">1399</span>
 <span class="normal">1400</span>
-<span class="normal">1401</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="normal">1401</span>
+<span class="normal">1402</span>
+<span class="normal">1403</span>
+<span class="normal">1404</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">from_config</span><span class="p">(</span>
     <span class="bp">cls</span><span class="p">,</span>
     <span class="n">config</span><span class="p">:</span> <span class="n">MeteoConfig</span><span class="p">,</span>
@@ -5814,10 +5814,7 @@ a long file usable for a short run.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1205</span>
-<span class="normal">1206</span>
-<span class="normal">1207</span>
-<span class="normal">1208</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1208</span>
 <span class="normal">1209</span>
 <span class="normal">1210</span>
 <span class="normal">1211</span>
@@ -5854,7 +5851,10 @@ a long file usable for a short run.</p>
 <span class="normal">1242</span>
 <span class="normal">1243</span>
 <span class="normal">1244</span>
-<span class="normal">1245</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="normal">1245</span>
+<span class="normal">1246</span>
+<span class="normal">1247</span>
+<span class="normal">1248</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">from_netcdf</span><span class="p">(</span>
     <span class="bp">cls</span><span class="p">,</span>
     <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
@@ -6118,10 +6118,7 @@ three files do not yield the same shape.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1151</span>
-<span class="normal">1152</span>
-<span class="normal">1153</span>
-<span class="normal">1154</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1154</span>
 <span class="normal">1155</span>
 <span class="normal">1156</span>
 <span class="normal">1157</span>
@@ -6170,7 +6167,10 @@ three files do not yield the same shape.</p>
 <span class="normal">1200</span>
 <span class="normal">1201</span>
 <span class="normal">1202</span>
-<span class="normal">1203</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="normal">1203</span>
+<span class="normal">1204</span>
+<span class="normal">1205</span>
+<span class="normal">1206</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">from_netcdf_files</span><span class="p">(</span>
     <span class="bp">cls</span><span class="p">,</span>
     <span class="n">precipitation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
@@ -6561,10 +6561,7 @@ one, otherwise the first source that does, and None when none do.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1046</span>
-<span class="normal">1047</span>
-<span class="normal">1048</span>
-<span class="normal">1049</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1049</span>
 <span class="normal">1050</span>
 <span class="normal">1051</span>
 <span class="normal">1052</span>
@@ -6664,7 +6661,10 @@ one, otherwise the first source that does, and None when none do.</p>
 <span class="normal">1146</span>
 <span class="normal">1147</span>
 <span class="normal">1148</span>
-<span class="normal">1149</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="normal">1149</span>
+<span class="normal">1150</span>
+<span class="normal">1151</span>
+<span class="normal">1152</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">from_rasters</span><span class="p">(</span>
     <span class="bp">cls</span><span class="p">,</span>
     <span class="n">precipitation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
@@ -7107,10 +7107,7 @@ time axis to write.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1403</span>
-<span class="normal">1404</span>
-<span class="normal">1405</span>
-<span class="normal">1406</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1406</span>
 <span class="normal">1407</span>
 <span class="normal">1408</span>
 <span class="normal">1409</span>
@@ -7196,7 +7193,10 @@ time axis to write.</p>
 <span class="normal">1489</span>
 <span class="normal">1490</span>
 <span class="normal">1491</span>
-<span class="normal">1492</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">1492</span>
+<span class="normal">1493</span>
+<span class="normal">1494</span>
+<span class="normal">1495</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">raster_folder_to_netcdf</span><span class="p">(</span>
     <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
     <span class="n">out_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
@@ -7537,10 +7537,7 @@ its own does.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 990</span>
-<span class="normal"> 991</span>
-<span class="normal"> 992</span>
-<span class="normal"> 993</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 993</span>
 <span class="normal"> 994</span>
 <span class="normal"> 995</span>
 <span class="normal"> 996</span>
@@ -7591,7 +7588,10 @@ its own does.</p>
 <span class="normal">1041</span>
 <span class="normal">1042</span>
 <span class="normal">1043</span>
-<span class="normal">1044</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">validate_against</span><span class="p">(</span>
+<span class="normal">1044</span>
+<span class="normal">1045</span>
+<span class="normal">1046</span>
+<span class="normal">1047</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">validate_against</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">rows</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">cols</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">date_index</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Check the cubes cover the model's grid, and optionally its calendar.</span>
@@ -8201,7 +8201,10 @@ is slated to move to <code>digital-rivers</code>, so it is left as it is and doc
 <span class="normal">743</span>
 <span class="normal">744</span>
 <span class="normal">745</span>
-<span class="normal">746</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">eq</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="normal">746</span>
+<span class="normal">747</span>
+<span class="normal">748</span>
+<span class="normal">749</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">eq</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">FlowNetwork</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""The catchment's routing network and the grid it defines.</span>
 
@@ -8532,28 +8535,31 @@ is slated to move to <code>digital-rivers</code>, so it is left as it is and doc
 <span class="sd">            UserWarning: A raster declares no no-data value, so every cell is treated as</span>
 <span class="sd">                inside the catchment.</span>
 <span class="sd">        """</span>
-        <span class="n">acc</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">flow_acc</span><span class="p">))</span>
-        <span class="n">_warn_if_no_sentinel</span><span class="p">(</span><span class="n">acc</span><span class="p">,</span> <span class="s2">"flow accumulation"</span><span class="p">)</span>
-        <span class="n">acc_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">filled</span><span class="p">(</span>
-            <span class="n">acc</span><span class="o">.</span><span class="n">read_array</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">masked</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-        <span class="p">)</span>
+        <span class="c1"># `with`: on Windows an open GDAL handle keeps a lock on the file, so a script</span>
+        <span class="c1"># that reads a catchment and then moves or rewrites its inputs fails, and a loop</span>
+        <span class="c1"># over basins accumulates handles. Everything read from the dataset is copied into</span>
+        <span class="c1"># arrays here, so nothing needs the handle afterwards.</span>
+        <span class="k">with</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">flow_acc</span><span class="p">))</span> <span class="k">as</span> <span class="n">acc</span><span class="p">:</span>
+            <span class="n">_warn_if_no_sentinel</span><span class="p">(</span><span class="n">acc</span><span class="p">,</span> <span class="s2">"flow accumulation"</span><span class="p">)</span>
+            <span class="n">acc_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">filled</span><span class="p">(</span>
+                <span class="n">acc</span><span class="o">.</span><span class="n">read_array</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">masked</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+            <span class="p">)</span>
+            <span class="n">transform</span> <span class="o">=</span> <span class="n">acc</span><span class="o">.</span><span class="n">transform</span>
 
         <span class="n">dir_arr</span><span class="p">,</span> <span class="n">table</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="n">flow_dir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">direction</span> <span class="o">=</span> <span class="n">DEM</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">flow_dir</span><span class="p">))</span>
-            <span class="n">_warn_if_no_sentinel</span><span class="p">(</span><span class="n">direction</span><span class="p">,</span> <span class="s2">"flow direction"</span><span class="p">)</span>
-            <span class="n">dir_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">filled</span><span class="p">(</span>
-                <span class="n">direction</span><span class="o">.</span><span class="n">read_array</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">masked</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-            <span class="p">)</span>
-            <span class="n">codes</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">_to_int_codes</span><span class="p">(</span><span class="n">dir_arr</span><span class="p">))</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">codes</span> <span class="o">&lt;=</span> <span class="nb">set</span><span class="p">(</span><span class="n">D8_CODES</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="s2">"flow direction raster should contain values 1,2,4,8,16,32,64,128 "</span>
-                    <span class="sa">f</span><span class="s2">"only, found </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">codes</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nb">set</span><span class="p">(</span><span class="n">D8_CODES</span><span class="p">))</span><span class="si">}</span><span class="s2">"</span>
+            <span class="k">with</span> <span class="n">DEM</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">flow_dir</span><span class="p">))</span> <span class="k">as</span> <span class="n">direction</span><span class="p">:</span>
+                <span class="n">_warn_if_no_sentinel</span><span class="p">(</span><span class="n">direction</span><span class="p">,</span> <span class="s2">"flow direction"</span><span class="p">)</span>
+                <span class="n">dir_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">filled</span><span class="p">(</span>
+                    <span class="n">direction</span><span class="o">.</span><span class="n">read_array</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">masked</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
                 <span class="p">)</span>
-            <span class="n">table</span> <span class="o">=</span> <span class="n">direction</span><span class="o">.</span><span class="n">flow_direction_table</span><span class="p">()</span>
-
-        <span class="n">transform</span> <span class="o">=</span> <span class="n">acc</span><span class="o">.</span><span class="n">transform</span>
+                <span class="n">codes</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">_to_int_codes</span><span class="p">(</span><span class="n">dir_arr</span><span class="p">))</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">codes</span> <span class="o">&lt;=</span> <span class="nb">set</span><span class="p">(</span><span class="n">D8_CODES</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="s2">"flow direction raster should contain values 1,2,4,8,16,32,64,128 "</span>
+                        <span class="sa">f</span><span class="s2">"only, found </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">codes</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nb">set</span><span class="p">(</span><span class="n">D8_CODES</span><span class="p">))</span><span class="si">}</span><span class="s2">"</span>
+                    <span class="p">)</span>
+                <span class="n">table</span> <span class="o">=</span> <span class="n">direction</span><span class="o">.</span><span class="n">flow_direction_table</span><span class="p">()</span>
         <span class="n">network</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span>
             <span class="n">flow_acc_arr</span><span class="o">=</span><span class="n">acc_arr</span><span class="p">,</span>
             <span class="n">flow_dir_arr</span><span class="o">=</span><span class="n">dir_arr</span><span class="p">,</span>
@@ -9169,7 +9175,10 @@ inside the catchment.</p>
 <span class="normal">743</span>
 <span class="normal">744</span>
 <span class="normal">745</span>
-<span class="normal">746</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="normal">746</span>
+<span class="normal">747</span>
+<span class="normal">748</span>
+<span class="normal">749</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">from_rasters</span><span class="p">(</span>
     <span class="bp">cls</span><span class="p">,</span> <span class="n">flow_acc</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="n">flow_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FlowNetwork</span><span class="p">:</span>
@@ -9195,28 +9204,31 @@ inside the catchment.</p>
 <span class="sd">        UserWarning: A raster declares no no-data value, so every cell is treated as</span>
 <span class="sd">            inside the catchment.</span>
 <span class="sd">    """</span>
-    <span class="n">acc</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">flow_acc</span><span class="p">))</span>
-    <span class="n">_warn_if_no_sentinel</span><span class="p">(</span><span class="n">acc</span><span class="p">,</span> <span class="s2">"flow accumulation"</span><span class="p">)</span>
-    <span class="n">acc_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">filled</span><span class="p">(</span>
-        <span class="n">acc</span><span class="o">.</span><span class="n">read_array</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">masked</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-    <span class="p">)</span>
+    <span class="c1"># `with`: on Windows an open GDAL handle keeps a lock on the file, so a script</span>
+    <span class="c1"># that reads a catchment and then moves or rewrites its inputs fails, and a loop</span>
+    <span class="c1"># over basins accumulates handles. Everything read from the dataset is copied into</span>
+    <span class="c1"># arrays here, so nothing needs the handle afterwards.</span>
+    <span class="k">with</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">flow_acc</span><span class="p">))</span> <span class="k">as</span> <span class="n">acc</span><span class="p">:</span>
+        <span class="n">_warn_if_no_sentinel</span><span class="p">(</span><span class="n">acc</span><span class="p">,</span> <span class="s2">"flow accumulation"</span><span class="p">)</span>
+        <span class="n">acc_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">filled</span><span class="p">(</span>
+            <span class="n">acc</span><span class="o">.</span><span class="n">read_array</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">masked</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="p">)</span>
+        <span class="n">transform</span> <span class="o">=</span> <span class="n">acc</span><span class="o">.</span><span class="n">transform</span>
 
     <span class="n">dir_arr</span><span class="p">,</span> <span class="n">table</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="n">flow_dir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">direction</span> <span class="o">=</span> <span class="n">DEM</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">flow_dir</span><span class="p">))</span>
-        <span class="n">_warn_if_no_sentinel</span><span class="p">(</span><span class="n">direction</span><span class="p">,</span> <span class="s2">"flow direction"</span><span class="p">)</span>
-        <span class="n">dir_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">filled</span><span class="p">(</span>
-            <span class="n">direction</span><span class="o">.</span><span class="n">read_array</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">masked</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-        <span class="p">)</span>
-        <span class="n">codes</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">_to_int_codes</span><span class="p">(</span><span class="n">dir_arr</span><span class="p">))</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">codes</span> <span class="o">&lt;=</span> <span class="nb">set</span><span class="p">(</span><span class="n">D8_CODES</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">"flow direction raster should contain values 1,2,4,8,16,32,64,128 "</span>
-                <span class="sa">f</span><span class="s2">"only, found </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">codes</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nb">set</span><span class="p">(</span><span class="n">D8_CODES</span><span class="p">))</span><span class="si">}</span><span class="s2">"</span>
+        <span class="k">with</span> <span class="n">DEM</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">flow_dir</span><span class="p">))</span> <span class="k">as</span> <span class="n">direction</span><span class="p">:</span>
+            <span class="n">_warn_if_no_sentinel</span><span class="p">(</span><span class="n">direction</span><span class="p">,</span> <span class="s2">"flow direction"</span><span class="p">)</span>
+            <span class="n">dir_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">filled</span><span class="p">(</span>
+                <span class="n">direction</span><span class="o">.</span><span class="n">read_array</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">masked</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
             <span class="p">)</span>
-        <span class="n">table</span> <span class="o">=</span> <span class="n">direction</span><span class="o">.</span><span class="n">flow_direction_table</span><span class="p">()</span>
-
-    <span class="n">transform</span> <span class="o">=</span> <span class="n">acc</span><span class="o">.</span><span class="n">transform</span>
+            <span class="n">codes</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">_to_int_codes</span><span class="p">(</span><span class="n">dir_arr</span><span class="p">))</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">codes</span> <span class="o">&lt;=</span> <span class="nb">set</span><span class="p">(</span><span class="n">D8_CODES</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">"flow direction raster should contain values 1,2,4,8,16,32,64,128 "</span>
+                    <span class="sa">f</span><span class="s2">"only, found </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">codes</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nb">set</span><span class="p">(</span><span class="n">D8_CODES</span><span class="p">))</span><span class="si">}</span><span class="s2">"</span>
+                <span class="p">)</span>
+            <span class="n">table</span> <span class="o">=</span> <span class="n">direction</span><span class="o">.</span><span class="n">flow_direction_table</span><span class="p">()</span>
     <span class="n">network</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span>
         <span class="n">flow_acc_arr</span><span class="o">=</span><span class="n">acc_arr</span><span class="p">,</span>
         <span class="n">flow_dir_arr</span><span class="o">=</span><span class="n">dir_arr</span><span class="p">,</span>
@@ -10109,15 +10121,7 @@ alignment (coordinate system, rows, columns, resolution).</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1803</span>
-<span class="normal">1804</span>
-<span class="normal">1805</span>
-<span class="normal">1806</span>
-<span class="normal">1807</span>
-<span class="normal">1808</span>
-<span class="normal">1809</span>
-<span class="normal">1810</span>
-<span class="normal">1811</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1811</span>
 <span class="normal">1812</span>
 <span class="normal">1813</span>
 <span class="normal">1814</span>
@@ -10485,7 +10489,15 @@ alignment (coordinate system, rows, columns, resolution).</p>
 <span class="normal">2176</span>
 <span class="normal">2177</span>
 <span class="normal">2178</span>
-<span class="normal">2179</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Inputs</span><span class="p">:</span>
+<span class="normal">2179</span>
+<span class="normal">2180</span>
+<span class="normal">2181</span>
+<span class="normal">2182</span>
+<span class="normal">2183</span>
+<span class="normal">2184</span>
+<span class="normal">2185</span>
+<span class="normal">2186</span>
+<span class="normal">2187</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Inputs</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Rainfall-runoff inputs preparation for distributed hydrological models.</span>
 
 <span class="sd">    The Inputs class provides methods to prepare meteorological and parameter</span>
@@ -10925,16 +10937,16 @@ extension (e.g., <code>"data/dem.tif"</code>).</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1821</span>
-<span class="normal">1822</span>
-<span class="normal">1823</span>
-<span class="normal">1824</span>
-<span class="normal">1825</span>
-<span class="normal">1826</span>
-<span class="normal">1827</span>
-<span class="normal">1828</span>
-<span class="normal">1829</span>
-<span class="normal">1830</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">src</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1829</span>
+<span class="normal">1830</span>
+<span class="normal">1831</span>
+<span class="normal">1832</span>
+<span class="normal">1833</span>
+<span class="normal">1834</span>
+<span class="normal">1835</span>
+<span class="normal">1836</span>
+<span class="normal">1837</span>
+<span class="normal">1838</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">src</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Initialize the Inputs instance with a reference DEM path.</span>
 
 <span class="sd">    Args:</span>
@@ -11202,15 +11214,7 @@ statistics; wrap them in <code>float()</code> if a built-in is required.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2051</span>
-<span class="normal">2052</span>
-<span class="normal">2053</span>
-<span class="normal">2054</span>
-<span class="normal">2055</span>
-<span class="normal">2056</span>
-<span class="normal">2057</span>
-<span class="normal">2058</span>
-<span class="normal">2059</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2059</span>
 <span class="normal">2060</span>
 <span class="normal">2061</span>
 <span class="normal">2062</span>
@@ -11306,7 +11310,15 @@ statistics; wrap them in <code>float()</code> if a built-in is required.</p>
 <span class="normal">2152</span>
 <span class="normal">2153</span>
 <span class="normal">2154</span>
-<span class="normal">2155</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">2155</span>
+<span class="normal">2156</span>
+<span class="normal">2157</span>
+<span class="normal">2158</span>
+<span class="normal">2159</span>
+<span class="normal">2160</span>
+<span class="normal">2161</span>
+<span class="normal">2162</span>
+<span class="normal">2163</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">create_lumped_inputs</span><span class="p">(</span>
     <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">regex_string</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">"\d</span><span class="si">{4}</span><span class="s2">.\d</span><span class="si">{2}</span><span class="s2">.\d</span><span class="si">{2}</span><span class="s2">"</span><span class="p">,</span>
@@ -11603,15 +11615,7 @@ exist.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1979</span>
-<span class="normal">1980</span>
-<span class="normal">1981</span>
-<span class="normal">1982</span>
-<span class="normal">1983</span>
-<span class="normal">1984</span>
-<span class="normal">1985</span>
-<span class="normal">1986</span>
-<span class="normal">1987</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1987</span>
 <span class="normal">1988</span>
 <span class="normal">1989</span>
 <span class="normal">1990</span>
@@ -11673,7 +11677,15 @@ exist.</p>
 <span class="normal">2046</span>
 <span class="normal">2047</span>
 <span class="normal">2048</span>
-<span class="normal">2049</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extract_parameters</span><span class="p">(</span>
+<span class="normal">2049</span>
+<span class="normal">2050</span>
+<span class="normal">2051</span>
+<span class="normal">2052</span>
+<span class="normal">2053</span>
+<span class="normal">2054</span>
+<span class="normal">2055</span>
+<span class="normal">2056</span>
+<span class="normal">2057</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extract_parameters</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">gdf</span><span class="p">:</span> <span class="n">FeatureCollection</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">scenario</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -11874,15 +11886,7 @@ not set.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1915</span>
-<span class="normal">1916</span>
-<span class="normal">1917</span>
-<span class="normal">1918</span>
-<span class="normal">1919</span>
-<span class="normal">1920</span>
-<span class="normal">1921</span>
-<span class="normal">1922</span>
-<span class="normal">1923</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1923</span>
 <span class="normal">1924</span>
 <span class="normal">1925</span>
 <span class="normal">1926</span>
@@ -11936,7 +11940,15 @@ not set.</p>
 <span class="normal">1974</span>
 <span class="normal">1975</span>
 <span class="normal">1976</span>
-<span class="normal">1977</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">1977</span>
+<span class="normal">1978</span>
+<span class="normal">1979</span>
+<span class="normal">1980</span>
+<span class="normal">1981</span>
+<span class="normal">1982</span>
+<span class="normal">1983</span>
+<span class="normal">1984</span>
+<span class="normal">1985</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">extract_parameters_boundaries</span><span class="p">(</span><span class="n">basin</span><span class="p">:</span> <span class="n">FeatureCollection</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Extract upper and lower parameter boundaries for a catchment.</span>
 
@@ -12172,15 +12184,7 @@ irrelevant here and the rasters are read unordered.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/inputs.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1832</span>
-<span class="normal">1833</span>
-<span class="normal">1834</span>
-<span class="normal">1835</span>
-<span class="normal">1836</span>
-<span class="normal">1837</span>
-<span class="normal">1838</span>
-<span class="normal">1839</span>
-<span class="normal">1840</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1840</span>
 <span class="normal">1841</span>
 <span class="normal">1842</span>
 <span class="normal">1843</span>
@@ -12253,7 +12257,15 @@ irrelevant here and the rasters are read unordered.
 <span class="normal">1910</span>
 <span class="normal">1911</span>
 <span class="normal">1912</span>
-<span class="normal">1913</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">prepare_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="n">outputs_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">):</span>
+<span class="normal">1913</span>
+<span class="normal">1914</span>
+<span class="normal">1915</span>
+<span class="normal">1916</span>
+<span class="normal">1917</span>
+<span class="normal">1918</span>
+<span class="normal">1919</span>
+<span class="normal">1920</span>
+<span class="normal">1921</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">prepare_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="n">outputs_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Align and crop input rasters to match the source DEM.</span>
 
 <span class="sd">    Reads all rasters from `inputs_dir`, aligns them to the source</span>
