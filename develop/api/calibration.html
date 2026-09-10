@@ -1851,18 +1851,7 @@ consumes.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/hapi/calibration.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 59</span>
-<span class="normal"> 60</span>
-<span class="normal"> 61</span>
-<span class="normal"> 62</span>
-<span class="normal"> 63</span>
-<span class="normal"> 64</span>
-<span class="normal"> 65</span>
-<span class="normal"> 66</span>
-<span class="normal"> 67</span>
-<span class="normal"> 68</span>
-<span class="normal"> 69</span>
-<span class="normal"> 70</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 70</span>
 <span class="normal"> 71</span>
 <span class="normal"> 72</span>
 <span class="normal"> 73</span>
@@ -2635,7 +2624,28 @@ consumes.</p>
 <span class="normal">840</span>
 <span class="normal">841</span>
 <span class="normal">842</span>
-<span class="normal">843</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Calibration</span><span class="p">:</span>
+<span class="normal">843</span>
+<span class="normal">844</span>
+<span class="normal">845</span>
+<span class="normal">846</span>
+<span class="normal">847</span>
+<span class="normal">848</span>
+<span class="normal">849</span>
+<span class="normal">850</span>
+<span class="normal">851</span>
+<span class="normal">852</span>
+<span class="normal">853</span>
+<span class="normal">854</span>
+<span class="normal">855</span>
+<span class="normal">856</span>
+<span class="normal">857</span>
+<span class="normal">858</span>
+<span class="normal">859</span>
+<span class="normal">860</span>
+<span class="normal">861</span>
+<span class="normal">862</span>
+<span class="normal">863</span>
+<span class="normal">864</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Calibration</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Calibrates a catchment's parameters against observed discharge.</span>
 
 <span class="sd">    Holds the catchment it calibrates rather than being one. It was a subclass, which meant it</span>
@@ -3068,7 +3078,7 @@ consumes.</p>
 
                 <span class="k">except</span> <span class="ne">TypeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                     <span class="c1"># the objective function received fewer inputs than it needs</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">OBJECTIVE_FN_ARGS_ERROR</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+                    <span class="k">raise</span> <span class="n">ObjectiveFunctionArityError</span><span class="p">(</span><span class="n">OBJECTIVE_FN_ARGS_ERROR</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 
                 <span class="c1"># print error</span>
                 <span class="k">if</span> <span class="n">print_error</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
@@ -3076,6 +3086,10 @@ consumes.</p>
                     <span class="nb">print</span><span class="p">(</span><span class="n">par</span><span class="p">)</span>
 
                 <span class="n">fail</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">except</span> <span class="n">ObjectiveFunctionArityError</span><span class="p">:</span>
+                <span class="c1"># Not a bad parameter set: the objective function itself is wired up wrong,</span>
+                <span class="c1"># and every trial would fail the same way. Let it out.</span>
+                <span class="k">raise</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
                 <span class="c1"># A genuine numerical failure for this candidate. Narrowed from a bare</span>
                 <span class="c1"># `except`, which also caught KeyboardInterrupt -- so a long calibration</span>
@@ -3212,7 +3226,7 @@ consumes.</p>
                     <span class="p">)</span>
                 <span class="k">except</span> <span class="ne">TypeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                     <span class="c1"># the objective function received fewer inputs than it needs</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">OBJECTIVE_FN_ARGS_ERROR</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+                    <span class="k">raise</span> <span class="n">ObjectiveFunctionArityError</span><span class="p">(</span><span class="n">OBJECTIVE_FN_ARGS_ERROR</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 
                 <span class="c1"># print error</span>
                 <span class="k">if</span> <span class="n">print_error</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
@@ -3220,6 +3234,9 @@ consumes.</p>
                     <span class="nb">print</span><span class="p">(</span><span class="n">par</span><span class="p">)</span>
 
                 <span class="n">fail</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">except</span> <span class="n">ObjectiveFunctionArityError</span><span class="p">:</span>
+                <span class="c1"># See run_calibration: a wrongly-wired objective is not a bad candidate.</span>
+                <span class="k">raise</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
                 <span class="c1"># See run_calibration: narrowed from a bare `except`.</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">"trial failed, scoring it infeasible: </span><span class="si">{</span><span class="n">exc</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
@@ -3366,7 +3383,7 @@ consumes.</p>
                     <span class="p">]</span>
                 <span class="k">except</span> <span class="ne">TypeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                     <span class="c1"># the objective function received fewer inputs than it needs</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">OBJECTIVE_FN_ARGS_ERROR</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+                    <span class="k">raise</span> <span class="n">ObjectiveFunctionArityError</span><span class="p">(</span><span class="n">OBJECTIVE_FN_ARGS_ERROR</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 
                 <span class="k">if</span> <span class="n">print_error</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
                     <span class="nb">print</span><span class="p">(</span>
@@ -3374,6 +3391,9 @@ consumes.</p>
                     <span class="p">)</span>
                     <span class="c1"># print(par)</span>
                 <span class="n">fail</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">except</span> <span class="n">ObjectiveFunctionArityError</span><span class="p">:</span>
+                <span class="c1"># See run_calibration: a wrongly-wired objective is not a bad candidate.</span>
+                <span class="k">raise</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
                 <span class="c1"># A genuine numerical failure for this candidate. Narrowed from a bare</span>
                 <span class="c1"># `except`, which also caught KeyboardInterrupt -- so a long calibration</span>
@@ -3504,18 +3524,7 @@ replaced once per trial vector, so it comes back carrying the last set tried.</p
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 97</span>
-<span class="normal"> 98</span>
-<span class="normal"> 99</span>
-<span class="normal">100</span>
-<span class="normal">101</span>
-<span class="normal">102</span>
-<span class="normal">103</span>
-<span class="normal">104</span>
-<span class="normal">105</span>
-<span class="normal">106</span>
-<span class="normal">107</span>
-<span class="normal">108</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">108</span>
 <span class="normal">109</span>
 <span class="normal">110</span>
 <span class="normal">111</span>
@@ -3525,7 +3534,18 @@ replaced once per trial vector, so it comes back carrying the last set tried.</p
 <span class="normal">115</span>
 <span class="normal">116</span>
 <span class="normal">117</span>
-<span class="normal">118</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">Catchment</span><span class="p">):</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span>
+<span class="normal">122</span>
+<span class="normal">123</span>
+<span class="normal">124</span>
+<span class="normal">125</span>
+<span class="normal">126</span>
+<span class="normal">127</span>
+<span class="normal">128</span>
+<span class="normal">129</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">Catchment</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Wrap the catchment to be calibrated.</span>
 
 <span class="sd">    Args:</span>
@@ -3724,25 +3744,7 @@ dict.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">678</span>
-<span class="normal">679</span>
-<span class="normal">680</span>
-<span class="normal">681</span>
-<span class="normal">682</span>
-<span class="normal">683</span>
-<span class="normal">684</span>
-<span class="normal">685</span>
-<span class="normal">686</span>
-<span class="normal">687</span>
-<span class="normal">688</span>
-<span class="normal">689</span>
-<span class="normal">690</span>
-<span class="normal">691</span>
-<span class="normal">692</span>
-<span class="normal">693</span>
-<span class="normal">694</span>
-<span class="normal">695</span>
-<span class="normal">696</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">696</span>
 <span class="normal">697</span>
 <span class="normal">698</span>
 <span class="normal">699</span>
@@ -3889,7 +3891,28 @@ dict.</p>
 <span class="normal">840</span>
 <span class="normal">841</span>
 <span class="normal">842</span>
-<span class="normal">843</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calibrate_lumped</span><span class="p">(</span>
+<span class="normal">843</span>
+<span class="normal">844</span>
+<span class="normal">845</span>
+<span class="normal">846</span>
+<span class="normal">847</span>
+<span class="normal">848</span>
+<span class="normal">849</span>
+<span class="normal">850</span>
+<span class="normal">851</span>
+<span class="normal">852</span>
+<span class="normal">853</span>
+<span class="normal">854</span>
+<span class="normal">855</span>
+<span class="normal">856</span>
+<span class="normal">857</span>
+<span class="normal">858</span>
+<span class="normal">859</span>
+<span class="normal">860</span>
+<span class="normal">861</span>
+<span class="normal">862</span>
+<span class="normal">863</span>
+<span class="normal">864</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calibrate_lumped</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">basic_inputs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
     <span class="n">optimization_args</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
@@ -4001,7 +4024,7 @@ dict.</p>
                 <span class="p">]</span>
             <span class="k">except</span> <span class="ne">TypeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="c1"># the objective function received fewer inputs than it needs</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">OBJECTIVE_FN_ARGS_ERROR</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+                <span class="k">raise</span> <span class="n">ObjectiveFunctionArityError</span><span class="p">(</span><span class="n">OBJECTIVE_FN_ARGS_ERROR</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 
             <span class="k">if</span> <span class="n">print_error</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span>
@@ -4009,6 +4032,9 @@ dict.</p>
                 <span class="p">)</span>
                 <span class="c1"># print(par)</span>
             <span class="n">fail</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">except</span> <span class="n">ObjectiveFunctionArityError</span><span class="p">:</span>
+            <span class="c1"># See run_calibration: a wrongly-wired objective is not a bad candidate.</span>
+            <span class="k">raise</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
             <span class="c1"># A genuine numerical failure for this candidate. Narrowed from a bare</span>
             <span class="c1"># `except`, which also caught KeyboardInterrupt -- so a long calibration</span>
@@ -4225,22 +4251,7 @@ dict.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">543</span>
-<span class="normal">544</span>
-<span class="normal">545</span>
-<span class="normal">546</span>
-<span class="normal">547</span>
-<span class="normal">548</span>
-<span class="normal">549</span>
-<span class="normal">550</span>
-<span class="normal">551</span>
-<span class="normal">552</span>
-<span class="normal">553</span>
-<span class="normal">554</span>
-<span class="normal">555</span>
-<span class="normal">556</span>
-<span class="normal">557</span>
-<span class="normal">558</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">558</span>
 <span class="normal">559</span>
 <span class="normal">560</span>
 <span class="normal">561</span>
@@ -4358,7 +4369,25 @@ dict.</p>
 <span class="normal">673</span>
 <span class="normal">674</span>
 <span class="normal">675</span>
-<span class="normal">676</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calibrate_maxbas</span><span class="p">(</span>
+<span class="normal">676</span>
+<span class="normal">677</span>
+<span class="normal">678</span>
+<span class="normal">679</span>
+<span class="normal">680</span>
+<span class="normal">681</span>
+<span class="normal">682</span>
+<span class="normal">683</span>
+<span class="normal">684</span>
+<span class="normal">685</span>
+<span class="normal">686</span>
+<span class="normal">687</span>
+<span class="normal">688</span>
+<span class="normal">689</span>
+<span class="normal">690</span>
+<span class="normal">691</span>
+<span class="normal">692</span>
+<span class="normal">693</span>
+<span class="normal">694</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calibrate_maxbas</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">spatial_var_fun</span><span class="p">:</span> <span class="n">SpatialDistribution</span><span class="p">,</span>
     <span class="n">optimization_args</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
@@ -4451,7 +4480,7 @@ dict.</p>
                 <span class="p">)</span>
             <span class="k">except</span> <span class="ne">TypeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="c1"># the objective function received fewer inputs than it needs</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">OBJECTIVE_FN_ARGS_ERROR</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+                <span class="k">raise</span> <span class="n">ObjectiveFunctionArityError</span><span class="p">(</span><span class="n">OBJECTIVE_FN_ARGS_ERROR</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 
             <span class="c1"># print error</span>
             <span class="k">if</span> <span class="n">print_error</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
@@ -4459,6 +4488,9 @@ dict.</p>
                 <span class="nb">print</span><span class="p">(</span><span class="n">par</span><span class="p">)</span>
 
             <span class="n">fail</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">except</span> <span class="n">ObjectiveFunctionArityError</span><span class="p">:</span>
+            <span class="c1"># See run_calibration: a wrongly-wired objective is not a bad candidate.</span>
+            <span class="k">raise</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
             <span class="c1"># See run_calibration: narrowed from a bare `except`.</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">"trial failed, scoring it infeasible: </span><span class="si">{</span><span class="n">exc</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
@@ -4599,18 +4631,7 @@ contributions rather than discharges.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">327</span>
-<span class="normal">328</span>
-<span class="normal">329</span>
-<span class="normal">330</span>
-<span class="normal">331</span>
-<span class="normal">332</span>
-<span class="normal">333</span>
-<span class="normal">334</span>
-<span class="normal">335</span>
-<span class="normal">336</span>
-<span class="normal">337</span>
-<span class="normal">338</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">338</span>
 <span class="normal">339</span>
 <span class="normal">340</span>
 <span class="normal">341</span>
@@ -4655,7 +4676,18 @@ contributions rather than discharges.</p>
 <span class="normal">380</span>
 <span class="normal">381</span>
 <span class="normal">382</span>
-<span class="normal">383</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extract_discharge</span><span class="p">(</span>
+<span class="normal">383</span>
+<span class="normal">384</span>
+<span class="normal">385</span>
+<span class="normal">386</span>
+<span class="normal">387</span>
+<span class="normal">388</span>
+<span class="normal">389</span>
+<span class="normal">390</span>
+<span class="normal">391</span>
+<span class="normal">392</span>
+<span class="normal">393</span>
+<span class="normal">394</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extract_discharge</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">calculate_metrics</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">factor</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -4813,18 +4845,7 @@ objective function. If None, defaults to an empty list.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">295</span>
-<span class="normal">296</span>
-<span class="normal">297</span>
-<span class="normal">298</span>
-<span class="normal">299</span>
-<span class="normal">300</span>
-<span class="normal">301</span>
-<span class="normal">302</span>
-<span class="normal">303</span>
-<span class="normal">304</span>
-<span class="normal">305</span>
-<span class="normal">306</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">306</span>
 <span class="normal">307</span>
 <span class="normal">308</span>
 <span class="normal">309</span>
@@ -4843,7 +4864,18 @@ objective function. If None, defaults to an empty list.</p>
 <span class="normal">322</span>
 <span class="normal">323</span>
 <span class="normal">324</span>
-<span class="normal">325</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_objective_function</span><span class="p">(</span>
+<span class="normal">325</span>
+<span class="normal">326</span>
+<span class="normal">327</span>
+<span class="normal">328</span>
+<span class="normal">329</span>
+<span class="normal">330</span>
+<span class="normal">331</span>
+<span class="normal">332</span>
+<span class="normal">333</span>
+<span class="normal">334</span>
+<span class="normal">335</span>
+<span class="normal">336</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_objective_function</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">objective_function</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">args</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="kc">None</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Read and store the objective function and its arguments.</span>
@@ -5006,18 +5038,7 @@ rule <code>_parameter_set</code> checks each one against.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">120</span>
-<span class="normal">121</span>
-<span class="normal">122</span>
-<span class="normal">123</span>
-<span class="normal">124</span>
-<span class="normal">125</span>
-<span class="normal">126</span>
-<span class="normal">127</span>
-<span class="normal">128</span>
-<span class="normal">129</span>
-<span class="normal">130</span>
-<span class="normal">131</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">131</span>
 <span class="normal">132</span>
 <span class="normal">133</span>
 <span class="normal">134</span>
@@ -5036,7 +5057,18 @@ rule <code>_parameter_set</code> checks each one against.</p>
 <span class="normal">147</span>
 <span class="normal">148</span>
 <span class="normal">149</span>
-<span class="normal">150</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_parameters_bound</span><span class="p">(</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_parameters_bound</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">upper_bound</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">lower_bound</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
@@ -5241,18 +5273,7 @@ dict.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">390</span>
-<span class="normal">391</span>
-<span class="normal">392</span>
-<span class="normal">393</span>
-<span class="normal">394</span>
-<span class="normal">395</span>
-<span class="normal">396</span>
-<span class="normal">397</span>
-<span class="normal">398</span>
-<span class="normal">399</span>
-<span class="normal">400</span>
-<span class="normal">401</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">401</span>
 <span class="normal">402</span>
 <span class="normal">403</span>
 <span class="normal">404</span>
@@ -5392,7 +5413,22 @@ dict.</p>
 <span class="normal">538</span>
 <span class="normal">539</span>
 <span class="normal">540</span>
-<span class="normal">541</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_calibration</span><span class="p">(</span>
+<span class="normal">541</span>
+<span class="normal">542</span>
+<span class="normal">543</span>
+<span class="normal">544</span>
+<span class="normal">545</span>
+<span class="normal">546</span>
+<span class="normal">547</span>
+<span class="normal">548</span>
+<span class="normal">549</span>
+<span class="normal">550</span>
+<span class="normal">551</span>
+<span class="normal">552</span>
+<span class="normal">553</span>
+<span class="normal">554</span>
+<span class="normal">555</span>
+<span class="normal">556</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_calibration</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">spatial_var_fun</span><span class="p">:</span> <span class="n">SpatialDistribution</span><span class="p">,</span>
     <span class="n">optimization_args</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
@@ -5494,7 +5530,7 @@ dict.</p>
 
             <span class="k">except</span> <span class="ne">TypeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="c1"># the objective function received fewer inputs than it needs</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">OBJECTIVE_FN_ARGS_ERROR</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+                <span class="k">raise</span> <span class="n">ObjectiveFunctionArityError</span><span class="p">(</span><span class="n">OBJECTIVE_FN_ARGS_ERROR</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 
             <span class="c1"># print error</span>
             <span class="k">if</span> <span class="n">print_error</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
@@ -5502,6 +5538,10 @@ dict.</p>
                 <span class="nb">print</span><span class="p">(</span><span class="n">par</span><span class="p">)</span>
 
             <span class="n">fail</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">except</span> <span class="n">ObjectiveFunctionArityError</span><span class="p">:</span>
+            <span class="c1"># Not a bad parameter set: the objective function itself is wired up wrong,</span>
+            <span class="c1"># and every trial would fail the same way. Let it out.</span>
+            <span class="k">raise</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
             <span class="c1"># A genuine numerical failure for this candidate. Narrowed from a bare</span>
             <span class="c1"># `except`, which also caught KeyboardInterrupt -- so a long calibration</span>
