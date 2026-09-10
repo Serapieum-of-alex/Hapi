@@ -2158,15 +2158,16 @@ afterwards.</p>
 <span class="sd">            SimulationResults: The run's output, also assigned to `model.results`:</span>
 
 <span class="sd">            - `state_variables`: 4D array (rows, cols, time, states) where</span>
-<span class="sd">              states are [sp, wc, sm, uz, lv].</span>
+<span class="sd">                states are [sp, wc, sm, uz, lv].</span>
 <span class="sd">            - `qlz`: 3D array of the lower zone discharge.</span>
 <span class="sd">            - `quz`: 3D array of the upper zone discharge.</span>
 <span class="sd">            - `quz_routed`: 3D array of the upper zone discharge</span>
-<span class="sd">              accumulated and routed at each time step.</span>
+<span class="sd">                accumulated and routed at each time step.</span>
 <span class="sd">            - `qlz_translated`: 3D array of the lower zone discharge</span>
-<span class="sd">              translated at each time step.</span>
-<span class="sd">            - `q_total`: `quz_routed + qlz_translated`. Routed by Muskingum, so the outlet</span>
-<span class="sd">              cell carries the outlet hydrograph; `extract_discharge` fills `qout` from it.</span>
+<span class="sd">                translated at each time step.</span>
+<span class="sd">            - `q_total`: `quz_routed + qlz_translated`. Routed by Muskingum, so the</span>
+<span class="sd">                outlet cell carries the outlet hydrograph; `extract_discharge` fills</span>
+<span class="sd">                `qout` from it.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError: If input data arrays have inconsistent</span>
@@ -2283,15 +2284,14 @@ afterwards.</p>
 
 <span class="sd">            - `state_variables`: 4D array of state variables.</span>
 <span class="sd">            - `qout`: 1D array of calculated discharge at the catchment</span>
-<span class="sd">              outlet, summed over every cell.</span>
+<span class="sd">                outlet, summed over every cell.</span>
 <span class="sd">            - `quz`: 3D array of distributed discharge for each cell.</span>
 <span class="sd">            - `q_total`, `quz_routed`, `qlz_translated`: 3D per-cell fields</span>
-<span class="sd">              read by `results.save` and `results.animate`. MAXBAS</span>
-<span class="sd">              routes each cell straight to the outlet, so a cell of `q_total` is</span>
-<span class="sd">              that cell's *contribution* to the outlet — `np.nansum` over the</span>
-<span class="sd">              domain reproduces `qout`. `extract_discharge` reads the routing</span>
-<span class="sd">              off the results and takes the basin-wide sum on this path</span>
-<span class="sd">              automatically.</span>
+<span class="sd">                read by `results.save` and `results.animate`. MAXBAS routes each</span>
+<span class="sd">                cell straight to the outlet, so a cell of `q_total` is that cell's</span>
+<span class="sd">                *contribution* to the outlet — `np.nansum` over the domain</span>
+<span class="sd">                reproduces `qout`. `extract_discharge` reads the routing off the</span>
+<span class="sd">                results and takes the basin-wide sum on this path automatically.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError: If input data arrays have inconsistent</span>
@@ -2529,8 +2529,9 @@ translated at each time step.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p><code>quz_routed + qlz_translated</code>. Routed by Muskingum, so the outlet
-cell carries the outlet hydrograph; <code>extract_discharge</code> fills <code>qout</code> from it.</p>
+                <p><code>quz_routed + qlz_translated</code>. Routed by Muskingum, so the
+outlet cell carries the outlet hydrograph; <code>extract_discharge</code> fills
+<code>qout</code> from it.</p>
               </div>
             </td>
           </tr>
@@ -2599,7 +2600,8 @@ row counts, column counts, or temporal lengths.</p>
 <span class="normal">177</span>
 <span class="normal">178</span>
 <span class="normal">179</span>
-<span class="normal">180</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">180</span>
+<span class="normal">181</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">run_distributed</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">CatchmentLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SimulationResults</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Run the distributed hydrological model.</span>
 
@@ -2615,15 +2617,16 @@ row counts, column counts, or temporal lengths.</p>
 <span class="sd">        SimulationResults: The run's output, also assigned to `model.results`:</span>
 
 <span class="sd">        - `state_variables`: 4D array (rows, cols, time, states) where</span>
-<span class="sd">          states are [sp, wc, sm, uz, lv].</span>
+<span class="sd">            states are [sp, wc, sm, uz, lv].</span>
 <span class="sd">        - `qlz`: 3D array of the lower zone discharge.</span>
 <span class="sd">        - `quz`: 3D array of the upper zone discharge.</span>
 <span class="sd">        - `quz_routed`: 3D array of the upper zone discharge</span>
-<span class="sd">          accumulated and routed at each time step.</span>
+<span class="sd">            accumulated and routed at each time step.</span>
 <span class="sd">        - `qlz_translated`: 3D array of the lower zone discharge</span>
-<span class="sd">          translated at each time step.</span>
-<span class="sd">        - `q_total`: `quz_routed + qlz_translated`. Routed by Muskingum, so the outlet</span>
-<span class="sd">          cell carries the outlet hydrograph; `extract_discharge` fills `qout` from it.</span>
+<span class="sd">            translated at each time step.</span>
+<span class="sd">        - `q_total`: `quz_routed + qlz_translated`. Routed by Muskingum, so the</span>
+<span class="sd">            outlet cell carries the outlet hydrograph; `extract_discharge` fills</span>
+<span class="sd">            `qout` from it.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        ValueError: If input data arrays have inconsistent</span>
@@ -2773,8 +2776,7 @@ does not match the distributed raster data length.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/run.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">236</span>
-<span class="normal">237</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">237</span>
 <span class="normal">238</span>
 <span class="normal">239</span>
 <span class="normal">240</span>
@@ -2805,7 +2807,8 @@ does not match the distributed raster data length.</p>
 <span class="normal">265</span>
 <span class="normal">266</span>
 <span class="normal">267</span>
-<span class="normal">268</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">268</span>
+<span class="normal">269</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">run_distributed_with_lake</span><span class="p">(</span>
     <span class="n">model</span><span class="p">:</span> <span class="n">CatchmentLike</span><span class="p">,</span> <span class="n">lake</span><span class="p">:</span> <span class="n">LakeType</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SimulationResults</span><span class="p">:</span>
@@ -2974,8 +2977,7 @@ dimensions.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/run.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">182</span>
-<span class="normal">183</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">183</span>
 <span class="normal">184</span>
 <span class="normal">185</span>
 <span class="normal">186</span>
@@ -3026,7 +3028,8 @@ dimensions.</p>
 <span class="normal">231</span>
 <span class="normal">232</span>
 <span class="normal">233</span>
-<span class="normal">234</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">234</span>
+<span class="normal">235</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">run_flood</span><span class="p">(</span>
     <span class="n">model</span><span class="p">:</span> <span class="n">CatchmentLike</span><span class="p">,</span> <span class="n">skip_hydraulic_cells</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SimulationResults</span><span class="p">:</span>
@@ -3477,12 +3480,11 @@ outlet, summed over every cell.</p>
             <td>
               <div class="doc-md-description">
                 <p>3D per-cell fields
-read by <code>results.save</code> and <code>results.animate</code>. MAXBAS
-routes each cell straight to the outlet, so a cell of <code>q_total</code> is
-that cell's <em>contribution</em> to the outlet — <code>np.nansum</code> over the
-domain reproduces <code>qout</code>. <code>extract_discharge</code> reads the routing
-off the results and takes the basin-wide sum on this path
-automatically.</p>
+read by <code>results.save</code> and <code>results.animate</code>. MAXBAS routes each
+cell straight to the outlet, so a cell of <code>q_total</code> is that cell's
+<em>contribution</em> to the outlet — <code>np.nansum</code> over the domain
+reproduces <code>qout</code>. <code>extract_discharge</code> reads the routing off the
+results and takes the basin-wide sum on this path automatically.</p>
               </div>
             </td>
           </tr>
@@ -3516,8 +3518,7 @@ row counts, column counts, or temporal lengths.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/run.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">270</span>
-<span class="normal">271</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">271</span>
 <span class="normal">272</span>
 <span class="normal">273</span>
 <span class="normal">274</span>
@@ -3567,15 +3568,14 @@ row counts, column counts, or temporal lengths.</p>
 
 <span class="sd">        - `state_variables`: 4D array of state variables.</span>
 <span class="sd">        - `qout`: 1D array of calculated discharge at the catchment</span>
-<span class="sd">          outlet, summed over every cell.</span>
+<span class="sd">            outlet, summed over every cell.</span>
 <span class="sd">        - `quz`: 3D array of distributed discharge for each cell.</span>
 <span class="sd">        - `q_total`, `quz_routed`, `qlz_translated`: 3D per-cell fields</span>
-<span class="sd">          read by `results.save` and `results.animate`. MAXBAS</span>
-<span class="sd">          routes each cell straight to the outlet, so a cell of `q_total` is</span>
-<span class="sd">          that cell's *contribution* to the outlet — `np.nansum` over the</span>
-<span class="sd">          domain reproduces `qout`. `extract_discharge` reads the routing</span>
-<span class="sd">          off the results and takes the basin-wide sum on this path</span>
-<span class="sd">          automatically.</span>
+<span class="sd">            read by `results.save` and `results.animate`. MAXBAS routes each</span>
+<span class="sd">            cell straight to the outlet, so a cell of `q_total` is that cell's</span>
+<span class="sd">            *contribution* to the outlet — `np.nansum` over the domain</span>
+<span class="sd">            reproduces `qout`. `extract_discharge` reads the routing off the</span>
+<span class="sd">            results and takes the basin-wide sum on this path automatically.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        ValueError: If input data arrays have inconsistent</span>

@@ -2533,7 +2533,116 @@ argument.</p>
 <span class="normal">630</span>
 <span class="normal">631</span>
 <span class="normal">632</span>
-<span class="normal">633</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span>
+<span class="normal">633</span>
+<span class="normal">634</span>
+<span class="normal">635</span>
+<span class="normal">636</span>
+<span class="normal">637</span>
+<span class="normal">638</span>
+<span class="normal">639</span>
+<span class="normal">640</span>
+<span class="normal">641</span>
+<span class="normal">642</span>
+<span class="normal">643</span>
+<span class="normal">644</span>
+<span class="normal">645</span>
+<span class="normal">646</span>
+<span class="normal">647</span>
+<span class="normal">648</span>
+<span class="normal">649</span>
+<span class="normal">650</span>
+<span class="normal">651</span>
+<span class="normal">652</span>
+<span class="normal">653</span>
+<span class="normal">654</span>
+<span class="normal">655</span>
+<span class="normal">656</span>
+<span class="normal">657</span>
+<span class="normal">658</span>
+<span class="normal">659</span>
+<span class="normal">660</span>
+<span class="normal">661</span>
+<span class="normal">662</span>
+<span class="normal">663</span>
+<span class="normal">664</span>
+<span class="normal">665</span>
+<span class="normal">666</span>
+<span class="normal">667</span>
+<span class="normal">668</span>
+<span class="normal">669</span>
+<span class="normal">670</span>
+<span class="normal">671</span>
+<span class="normal">672</span>
+<span class="normal">673</span>
+<span class="normal">674</span>
+<span class="normal">675</span>
+<span class="normal">676</span>
+<span class="normal">677</span>
+<span class="normal">678</span>
+<span class="normal">679</span>
+<span class="normal">680</span>
+<span class="normal">681</span>
+<span class="normal">682</span>
+<span class="normal">683</span>
+<span class="normal">684</span>
+<span class="normal">685</span>
+<span class="normal">686</span>
+<span class="normal">687</span>
+<span class="normal">688</span>
+<span class="normal">689</span>
+<span class="normal">690</span>
+<span class="normal">691</span>
+<span class="normal">692</span>
+<span class="normal">693</span>
+<span class="normal">694</span>
+<span class="normal">695</span>
+<span class="normal">696</span>
+<span class="normal">697</span>
+<span class="normal">698</span>
+<span class="normal">699</span>
+<span class="normal">700</span>
+<span class="normal">701</span>
+<span class="normal">702</span>
+<span class="normal">703</span>
+<span class="normal">704</span>
+<span class="normal">705</span>
+<span class="normal">706</span>
+<span class="normal">707</span>
+<span class="normal">708</span>
+<span class="normal">709</span>
+<span class="normal">710</span>
+<span class="normal">711</span>
+<span class="normal">712</span>
+<span class="normal">713</span>
+<span class="normal">714</span>
+<span class="normal">715</span>
+<span class="normal">716</span>
+<span class="normal">717</span>
+<span class="normal">718</span>
+<span class="normal">719</span>
+<span class="normal">720</span>
+<span class="normal">721</span>
+<span class="normal">722</span>
+<span class="normal">723</span>
+<span class="normal">724</span>
+<span class="normal">725</span>
+<span class="normal">726</span>
+<span class="normal">727</span>
+<span class="normal">728</span>
+<span class="normal">729</span>
+<span class="normal">730</span>
+<span class="normal">731</span>
+<span class="normal">732</span>
+<span class="normal">733</span>
+<span class="normal">734</span>
+<span class="normal">735</span>
+<span class="normal">736</span>
+<span class="normal">737</span>
+<span class="normal">738</span>
+<span class="normal">739</span>
+<span class="normal">740</span>
+<span class="normal">741</span>
+<span class="normal">742</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">SimulationResults</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""The arrays one model run produced, the routing that produced them, and their views.</span>
 
@@ -2835,13 +2944,41 @@ argument.</p>
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError: `option` is not between 1 and 11, the results carry no distributed</span>
 <span class="sd">                run, or a state option was asked for on a run that dropped the states.</span>
-<span class="sd">        """</span>
-        <span class="c1"># cleopatra pulls in matplotlib, and this module is imported by the engines</span>
-        <span class="c1"># (`distrrm`, `wrapper`, `run`). Importing it here keeps a model run free of a</span>
-        <span class="c1"># plotting stack it never uses -- which is the property that made moving these</span>
-        <span class="c1"># methods off `Catchment` worth doing rather than just tidier.</span>
-        <span class="kn">from</span><span class="w"> </span><span class="nn">cleopatra.glyphs.gridded.array_glyph</span><span class="w"> </span><span class="kn">import</span> <span class="n">ArrayGlyph</span><span class="p">,</span> <span class="n">PointOverlay</span>
 
+<span class="sd">        Examples:</span>
+<span class="sd">            - An option outside the table is refused before any array is touched, and</span>
+<span class="sd">              before the plotting stack is imported:</span>
+<span class="sd">                ```python</span>
+<span class="sd">                &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">                &gt;&gt;&gt; from hapi.results import RoutingKind, SimulationResults</span>
+<span class="sd">                &gt;&gt;&gt; cube = np.zeros((2, 3, 4), dtype="float32")</span>
+<span class="sd">                &gt;&gt;&gt; results = SimulationResults(</span>
+<span class="sd">                ...     RoutingKind.MUSKINGUM, cube, cube, None, q_total=cube</span>
+<span class="sd">                ... )</span>
+<span class="sd">                &gt;&gt;&gt; results.animate("2009-01-01", "2009-01-02", option=99)</span>
+<span class="sd">                Traceback (most recent call last):</span>
+<span class="sd">                    ...</span>
+<span class="sd">                ValueError: the option parameter takes a value between 1 and 11, given: 99</span>
+
+<span class="sd">                ```</span>
+<span class="sd">            - Arrays with no run behind them have no calendar and no grid, so they say so</span>
+<span class="sd">              rather than failing on `None` several frames in:</span>
+<span class="sd">                ```python</span>
+<span class="sd">                &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">                &gt;&gt;&gt; from hapi.results import RoutingKind, SimulationResults</span>
+<span class="sd">                &gt;&gt;&gt; cube = np.zeros((2, 3, 4), dtype="float32")</span>
+<span class="sd">                &gt;&gt;&gt; orphan = SimulationResults(RoutingKind.MUSKINGUM, cube, cube, None)</span>
+<span class="sd">                &gt;&gt;&gt; orphan.animate("2009-01-01", "2009-01-02", option=1)</span>
+<span class="sd">                Traceback (most recent call last):</span>
+<span class="sd">                    ...</span>
+<span class="sd">                ValueError: these results carry no run...</span>
+
+<span class="sd">                ```</span>
+
+<span class="sd">        See Also:</span>
+<span class="sd">            save_animation: Writes the animation this builds.</span>
+<span class="sd">            save: Writes the same arrays as rasters or a CSV instead of rendering them.</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">option</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_ANIMATION_OPTIONS</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">"the option parameter takes a value between 1 and "</span>
@@ -2859,6 +2996,14 @@ argument.</p>
         <span class="n">arr</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">run</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">flow_acc_arr</span><span class="p">),</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
 
         <span class="n">time</span> <span class="o">=</span> <span class="n">run</span><span class="o">.</span><span class="n">period</span><span class="o">.</span><span class="n">date_index</span><span class="p">[</span><span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
+
+        <span class="c1"># cleopatra pulls in matplotlib, and this module is imported by the engines</span>
+        <span class="c1"># (`distrrm`, `wrapper`, `run`). Importing it here keeps a model run free of a</span>
+        <span class="c1"># plotting stack it never uses -- which is the property that made moving these</span>
+        <span class="c1"># methods off `Catchment` worth doing rather than just tidier. It sits below the</span>
+        <span class="c1"># checks above so a rejected option or an out-of-range date does not pay for it</span>
+        <span class="c1"># either.</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">cleopatra.glyphs.gridded.array_glyph</span><span class="w"> </span><span class="kn">import</span> <span class="n">ArrayGlyph</span><span class="p">,</span> <span class="n">PointOverlay</span>
 
         <span class="k">if</span> <span class="n">gauges</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># animate expects a 3-column array: [value to display, cell row, cell column].</span>
@@ -2895,6 +3040,25 @@ argument.</p>
 <span class="sd">            ValueError: :meth:`animate` has not been called yet, or the file format is not</span>
 <span class="sd">                supported.</span>
 <span class="sd">            FileNotFoundError: A video format is requested but FFmpeg is not installed.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            - There is nothing to write until :meth:`animate` has built it:</span>
+<span class="sd">                ```python</span>
+<span class="sd">                &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">                &gt;&gt;&gt; from hapi.results import RoutingKind, SimulationResults</span>
+<span class="sd">                &gt;&gt;&gt; cube = np.zeros((2, 3, 4), dtype="float32")</span>
+<span class="sd">                &gt;&gt;&gt; results = SimulationResults(RoutingKind.MUSKINGUM, cube, cube, None)</span>
+<span class="sd">                &gt;&gt;&gt; results.anim is None</span>
+<span class="sd">                True</span>
+<span class="sd">                &gt;&gt;&gt; results.save_animation("flow.gif")</span>
+<span class="sd">                Traceback (most recent call last):</span>
+<span class="sd">                    ...</span>
+<span class="sd">                ValueError: There is no animation to save, call `animate` first</span>
+
+<span class="sd">                ```</span>
+
+<span class="sd">        See Also:</span>
+<span class="sd">            animate: Builds the animation this writes.</span>
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_animation_glyph</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"There is no animation to save, call `animate` first"</span><span class="p">)</span>
@@ -2938,6 +3102,60 @@ argument.</p>
 <span class="sd">                configuration, so a caller forwarding it can hold None.</span>
 <span class="sd">            ValueError: `result` is not a valid option, `flow_acc_path` is missing on a</span>
 <span class="sd">                distributed run, or the results carry no run to date them by.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            - A lumped run writes a CSV, dated by the run's own calendar. Option 1 is the</span>
+<span class="sd">              simulated discharge, which for a lumped run is `q_total` itself:</span>
+<span class="sd">                ```python</span>
+<span class="sd">                &gt;&gt;&gt; import os, tempfile</span>
+<span class="sd">                &gt;&gt;&gt; from pathlib import Path</span>
+<span class="sd">                &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">                &gt;&gt;&gt; from hapi.conceptual import ConceptualModelSetup, ParameterSet</span>
+<span class="sd">                &gt;&gt;&gt; from hapi.period import SimulationPeriod</span>
+<span class="sd">                &gt;&gt;&gt; from hapi.results import RoutingKind, SimulationResults</span>
+<span class="sd">                &gt;&gt;&gt; from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92</span>
+<span class="sd">                &gt;&gt;&gt; from hapi.runs import LumpedRun</span>
+<span class="sd">                &gt;&gt;&gt; period = SimulationPeriod.parse("2009-01-01", "2009-01-03")</span>
+<span class="sd">                &gt;&gt;&gt; run = LumpedRun(</span>
+<span class="sd">                ...     period=period,</span>
+<span class="sd">                ...     data=np.ones((len(period), 4)),</span>
+<span class="sd">                ...     parameters=ParameterSet(np.ones(12), snow=False, maxbas=False),</span>
+<span class="sd">                ...     model_setup=ConceptualModelSetup(</span>
+<span class="sd">                ...         HBVBergestrom92, 100.0, [0.0] * 5, 1.0</span>
+<span class="sd">                ...     ),</span>
+<span class="sd">                ... )</span>
+<span class="sd">                &gt;&gt;&gt; discharge = np.array([1.5, 2.5, 3.5])</span>
+<span class="sd">                &gt;&gt;&gt; results = SimulationResults(</span>
+<span class="sd">                ...     RoutingKind.LUMPED, discharge, discharge, None,</span>
+<span class="sd">                ...     q_total=discharge, run=run,</span>
+<span class="sd">                ... )</span>
+<span class="sd">                &gt;&gt;&gt; path = os.path.join(tempfile.mkdtemp(), "q.csv")</span>
+<span class="sd">                &gt;&gt;&gt; results.save(path=path, result=1)</span>
+<span class="sd">                &gt;&gt;&gt; print(Path(path).read_text().strip())</span>
+<span class="sd">                date,Qsim</span>
+<span class="sd">                '2009-01-01',1.500</span>
+<span class="sd">                '2009-01-02',2.500</span>
+<span class="sd">                '2009-01-03',3.500</span>
+
+<span class="sd">                ```</span>
+<span class="sd">            - `path` is checked before anything else, because a run configuration's</span>
+<span class="sd">              `outputs.results_dir` is optional and a caller can forward `None`:</span>
+<span class="sd">                ```python</span>
+<span class="sd">                &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">                &gt;&gt;&gt; from hapi.results import RoutingKind, SimulationResults</span>
+<span class="sd">                &gt;&gt;&gt; cube = np.zeros((2, 3, 4), dtype="float32")</span>
+<span class="sd">                &gt;&gt;&gt; results = SimulationResults(RoutingKind.MUSKINGUM, cube, cube, None)</span>
+<span class="sd">                &gt;&gt;&gt; results.save(path=None)</span>
+<span class="sd">                Traceback (most recent call last):</span>
+<span class="sd">                    ...</span>
+<span class="sd">                TypeError: path must be a string naming a directory (distributed) or a file (lumped), got NoneType</span>
+
+<span class="sd">                ```</span>
+
+<span class="sd">        See Also:</span>
+<span class="sd">            animate: Renders the same arrays instead of writing them.</span>
+<span class="sd">            hapi.runs.DistributedRun.keep_state_variables: Whether the state options have</span>
+<span class="sd">                anything to write.</span>
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
@@ -3275,6 +3493,41 @@ run, or a state option was asked for on a run that dropped the states.</p>
     </table>
 
 
+<p><span class="doc-section-title">Examples:</span></p>
+    <ul>
+<li>An option outside the table is refused before any array is touched, and
+  before the plotting stack is imported:
+    <div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">hapi.results</span><span class="w"> </span><span class="kn">import</span> <span class="n">RoutingKind</span><span class="p">,</span> <span class="n">SimulationResults</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cube</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">"float32"</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">results</span> <span class="o">=</span> <span class="n">SimulationResults</span><span class="p">(</span>
+<span class="o">...</span>     <span class="n">RoutingKind</span><span class="o">.</span><span class="n">MUSKINGUM</span><span class="p">,</span> <span class="n">cube</span><span class="p">,</span> <span class="n">cube</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">q_total</span><span class="o">=</span><span class="n">cube</span>
+<span class="o">...</span> <span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">results</span><span class="o">.</span><span class="n">animate</span><span class="p">(</span><span class="s2">"2009-01-01"</span><span class="p">,</span> <span class="s2">"2009-01-02"</span><span class="p">,</span> <span class="n">option</span><span class="o">=</span><span class="mi">99</span><span class="p">)</span>
+<span class="n">Traceback</span> <span class="p">(</span><span class="n">most</span> <span class="n">recent</span> <span class="n">call</span> <span class="n">last</span><span class="p">):</span>
+    <span class="o">...</span>
+<span class="ne">ValueError</span><span class="p">:</span> <span class="n">the</span> <span class="n">option</span> <span class="n">parameter</span> <span class="n">takes</span> <span class="n">a</span> <span class="n">value</span> <span class="n">between</span> <span class="mi">1</span> <span class="ow">and</span> <span class="mi">11</span><span class="p">,</span> <span class="n">given</span><span class="p">:</span> <span class="mi">99</span>
+</code></pre></div></li>
+<li>Arrays with no run behind them have no calendar and no grid, so they say so
+  rather than failing on <code>None</code> several frames in:
+    <div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">hapi.results</span><span class="w"> </span><span class="kn">import</span> <span class="n">RoutingKind</span><span class="p">,</span> <span class="n">SimulationResults</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cube</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">"float32"</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">orphan</span> <span class="o">=</span> <span class="n">SimulationResults</span><span class="p">(</span><span class="n">RoutingKind</span><span class="o">.</span><span class="n">MUSKINGUM</span><span class="p">,</span> <span class="n">cube</span><span class="p">,</span> <span class="n">cube</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">orphan</span><span class="o">.</span><span class="n">animate</span><span class="p">(</span><span class="s2">"2009-01-01"</span><span class="p">,</span> <span class="s2">"2009-01-02"</span><span class="p">,</span> <span class="n">option</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">Traceback</span> <span class="p">(</span><span class="n">most</span> <span class="n">recent</span> <span class="n">call</span> <span class="n">last</span><span class="p">):</span>
+    <span class="o">...</span>
+<span class="ne">ValueError</span><span class="p">:</span> <span class="n">these</span> <span class="n">results</span> <span class="n">carry</span> <span class="n">no</span> <span class="n">run</span><span class="o">...</span>
+</code></pre></div></li>
+</ul>
+
+
+<details class="see-also" open>
+  <summary>See Also</summary>
+  <p>save_animation: Writes the animation this builds.
+save: Writes the same arrays as rasters or a CSV instead of rendering them.</p>
+</details>
+
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/results.py</code></summary>
               <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">362</span>
@@ -3368,7 +3621,43 @@ run, or a state option was asked for on a run that dropped the states.</p>
 <span class="normal">450</span>
 <span class="normal">451</span>
 <span class="normal">452</span>
-<span class="normal">453</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">animate</span><span class="p">(</span>
+<span class="normal">453</span>
+<span class="normal">454</span>
+<span class="normal">455</span>
+<span class="normal">456</span>
+<span class="normal">457</span>
+<span class="normal">458</span>
+<span class="normal">459</span>
+<span class="normal">460</span>
+<span class="normal">461</span>
+<span class="normal">462</span>
+<span class="normal">463</span>
+<span class="normal">464</span>
+<span class="normal">465</span>
+<span class="normal">466</span>
+<span class="normal">467</span>
+<span class="normal">468</span>
+<span class="normal">469</span>
+<span class="normal">470</span>
+<span class="normal">471</span>
+<span class="normal">472</span>
+<span class="normal">473</span>
+<span class="normal">474</span>
+<span class="normal">475</span>
+<span class="normal">476</span>
+<span class="normal">477</span>
+<span class="normal">478</span>
+<span class="normal">479</span>
+<span class="normal">480</span>
+<span class="normal">481</span>
+<span class="normal">482</span>
+<span class="normal">483</span>
+<span class="normal">484</span>
+<span class="normal">485</span>
+<span class="normal">486</span>
+<span class="normal">487</span>
+<span class="normal">488</span>
+<span class="normal">489</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">animate</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">start</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">,</span>
     <span class="n">end</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">,</span>
@@ -3415,13 +3704,41 @@ run, or a state option was asked for on a run that dropped the states.</p>
 <span class="sd">    Raises:</span>
 <span class="sd">        ValueError: `option` is not between 1 and 11, the results carry no distributed</span>
 <span class="sd">            run, or a state option was asked for on a run that dropped the states.</span>
-<span class="sd">    """</span>
-    <span class="c1"># cleopatra pulls in matplotlib, and this module is imported by the engines</span>
-    <span class="c1"># (`distrrm`, `wrapper`, `run`). Importing it here keeps a model run free of a</span>
-    <span class="c1"># plotting stack it never uses -- which is the property that made moving these</span>
-    <span class="c1"># methods off `Catchment` worth doing rather than just tidier.</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">cleopatra.glyphs.gridded.array_glyph</span><span class="w"> </span><span class="kn">import</span> <span class="n">ArrayGlyph</span><span class="p">,</span> <span class="n">PointOverlay</span>
 
+<span class="sd">    Examples:</span>
+<span class="sd">        - An option outside the table is refused before any array is touched, and</span>
+<span class="sd">          before the plotting stack is imported:</span>
+<span class="sd">            ```python</span>
+<span class="sd">            &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">            &gt;&gt;&gt; from hapi.results import RoutingKind, SimulationResults</span>
+<span class="sd">            &gt;&gt;&gt; cube = np.zeros((2, 3, 4), dtype="float32")</span>
+<span class="sd">            &gt;&gt;&gt; results = SimulationResults(</span>
+<span class="sd">            ...     RoutingKind.MUSKINGUM, cube, cube, None, q_total=cube</span>
+<span class="sd">            ... )</span>
+<span class="sd">            &gt;&gt;&gt; results.animate("2009-01-01", "2009-01-02", option=99)</span>
+<span class="sd">            Traceback (most recent call last):</span>
+<span class="sd">                ...</span>
+<span class="sd">            ValueError: the option parameter takes a value between 1 and 11, given: 99</span>
+
+<span class="sd">            ```</span>
+<span class="sd">        - Arrays with no run behind them have no calendar and no grid, so they say so</span>
+<span class="sd">          rather than failing on `None` several frames in:</span>
+<span class="sd">            ```python</span>
+<span class="sd">            &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">            &gt;&gt;&gt; from hapi.results import RoutingKind, SimulationResults</span>
+<span class="sd">            &gt;&gt;&gt; cube = np.zeros((2, 3, 4), dtype="float32")</span>
+<span class="sd">            &gt;&gt;&gt; orphan = SimulationResults(RoutingKind.MUSKINGUM, cube, cube, None)</span>
+<span class="sd">            &gt;&gt;&gt; orphan.animate("2009-01-01", "2009-01-02", option=1)</span>
+<span class="sd">            Traceback (most recent call last):</span>
+<span class="sd">                ...</span>
+<span class="sd">            ValueError: these results carry no run...</span>
+
+<span class="sd">            ```</span>
+
+<span class="sd">    See Also:</span>
+<span class="sd">        save_animation: Writes the animation this builds.</span>
+<span class="sd">        save: Writes the same arrays as rasters or a CSV instead of rendering them.</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">option</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_ANIMATION_OPTIONS</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">"the option parameter takes a value between 1 and "</span>
@@ -3439,6 +3756,14 @@ run, or a state option was asked for on a run that dropped the states.</p>
     <span class="n">arr</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">run</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">flow_acc_arr</span><span class="p">),</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
 
     <span class="n">time</span> <span class="o">=</span> <span class="n">run</span><span class="o">.</span><span class="n">period</span><span class="o">.</span><span class="n">date_index</span><span class="p">[</span><span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
+
+    <span class="c1"># cleopatra pulls in matplotlib, and this module is imported by the engines</span>
+    <span class="c1"># (`distrrm`, `wrapper`, `run`). Importing it here keeps a model run free of a</span>
+    <span class="c1"># plotting stack it never uses -- which is the property that made moving these</span>
+    <span class="c1"># methods off `Catchment` worth doing rather than just tidier. It sits below the</span>
+    <span class="c1"># checks above so a rejected option or an out-of-range date does not pay for it</span>
+    <span class="c1"># either.</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">cleopatra.glyphs.gridded.array_glyph</span><span class="w"> </span><span class="kn">import</span> <span class="n">ArrayGlyph</span><span class="p">,</span> <span class="n">PointOverlay</span>
 
     <span class="k">if</span> <span class="n">gauges</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="c1"># animate expects a 3-column array: [value to display, cell row, cell column].</span>
@@ -3688,64 +4013,173 @@ distributed run, or the results carry no run to date them by.</p>
     </table>
 
 
+<p><span class="doc-section-title">Examples:</span></p>
+    <ul>
+<li>A lumped run writes a CSV, dated by the run's own calendar. Option 1 is the
+  simulated discharge, which for a lumped run is <code>q_total</code> itself:
+    <div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="kn">import</span><span class="w"> </span><span class="nn">os</span><span class="o">,</span><span class="w"> </span><span class="nn">tempfile</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">hapi.conceptual</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConceptualModelSetup</span><span class="p">,</span> <span class="n">ParameterSet</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">hapi.period</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimulationPeriod</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">hapi.results</span><span class="w"> </span><span class="kn">import</span> <span class="n">RoutingKind</span><span class="p">,</span> <span class="n">SimulationResults</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">hapi.rrm.hbv_bergestrom92</span><span class="w"> </span><span class="kn">import</span> <span class="n">HBVBergestrom92</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">hapi.runs</span><span class="w"> </span><span class="kn">import</span> <span class="n">LumpedRun</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">period</span> <span class="o">=</span> <span class="n">SimulationPeriod</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="s2">"2009-01-01"</span><span class="p">,</span> <span class="s2">"2009-01-03"</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">run</span> <span class="o">=</span> <span class="n">LumpedRun</span><span class="p">(</span>
+<span class="o">...</span>     <span class="n">period</span><span class="o">=</span><span class="n">period</span><span class="p">,</span>
+<span class="o">...</span>     <span class="n">data</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">period</span><span class="p">),</span> <span class="mi">4</span><span class="p">)),</span>
+<span class="o">...</span>     <span class="n">parameters</span><span class="o">=</span><span class="n">ParameterSet</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">12</span><span class="p">),</span> <span class="n">snow</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">maxbas</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+<span class="o">...</span>     <span class="n">model_setup</span><span class="o">=</span><span class="n">ConceptualModelSetup</span><span class="p">(</span>
+<span class="o">...</span>         <span class="n">HBVBergestrom92</span><span class="p">,</span> <span class="mf">100.0</span><span class="p">,</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">5</span><span class="p">,</span> <span class="mf">1.0</span>
+<span class="o">...</span>     <span class="p">),</span>
+<span class="o">...</span> <span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">discharge</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.5</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">,</span> <span class="mf">3.5</span><span class="p">])</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">results</span> <span class="o">=</span> <span class="n">SimulationResults</span><span class="p">(</span>
+<span class="o">...</span>     <span class="n">RoutingKind</span><span class="o">.</span><span class="n">LUMPED</span><span class="p">,</span> <span class="n">discharge</span><span class="p">,</span> <span class="n">discharge</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span>
+<span class="o">...</span>     <span class="n">q_total</span><span class="o">=</span><span class="n">discharge</span><span class="p">,</span> <span class="n">run</span><span class="o">=</span><span class="n">run</span><span class="p">,</span>
+<span class="o">...</span> <span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">(),</span> <span class="s2">"q.csv"</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">results</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span> <span class="n">result</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="nb">print</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+<span class="n">date</span><span class="p">,</span><span class="n">Qsim</span>
+<span class="s1">'2009-01-01'</span><span class="p">,</span><span class="mf">1.500</span>
+<span class="s1">'2009-01-02'</span><span class="p">,</span><span class="mf">2.500</span>
+<span class="s1">'2009-01-03'</span><span class="p">,</span><span class="mf">3.500</span>
+</code></pre></div></li>
+<li><code>path</code> is checked before anything else, because a run configuration's
+  <code>outputs.results_dir</code> is optional and a caller can forward <code>None</code>:
+    <div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">hapi.results</span><span class="w"> </span><span class="kn">import</span> <span class="n">RoutingKind</span><span class="p">,</span> <span class="n">SimulationResults</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cube</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">"float32"</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">results</span> <span class="o">=</span> <span class="n">SimulationResults</span><span class="p">(</span><span class="n">RoutingKind</span><span class="o">.</span><span class="n">MUSKINGUM</span><span class="p">,</span> <span class="n">cube</span><span class="p">,</span> <span class="n">cube</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">results</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="n">Traceback</span> <span class="p">(</span><span class="n">most</span> <span class="n">recent</span> <span class="n">call</span> <span class="n">last</span><span class="p">):</span>
+    <span class="o">...</span>
+<span class="ne">TypeError</span><span class="p">:</span> <span class="n">path</span> <span class="n">must</span> <span class="n">be</span> <span class="n">a</span> <span class="n">string</span> <span class="n">naming</span> <span class="n">a</span> <span class="n">directory</span> <span class="p">(</span><span class="n">distributed</span><span class="p">)</span> <span class="ow">or</span> <span class="n">a</span> <span class="n">file</span> <span class="p">(</span><span class="n">lumped</span><span class="p">),</span> <span class="n">got</span> <span class="n">NoneType</span>
+</code></pre></div></li>
+</ul>
+
+
+<details class="see-also" open>
+  <summary>See Also</summary>
+  <p>animate: Renders the same arrays instead of writing them.
+hapi.runs.DistributedRun.keep_state_variables: Whether the state options have
+    anything to write.</p>
+</details>
+
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/results.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">474</span>
-<span class="normal">475</span>
-<span class="normal">476</span>
-<span class="normal">477</span>
-<span class="normal">478</span>
-<span class="normal">479</span>
-<span class="normal">480</span>
-<span class="normal">481</span>
-<span class="normal">482</span>
-<span class="normal">483</span>
-<span class="normal">484</span>
-<span class="normal">485</span>
-<span class="normal">486</span>
-<span class="normal">487</span>
-<span class="normal">488</span>
-<span class="normal">489</span>
-<span class="normal">490</span>
-<span class="normal">491</span>
-<span class="normal">492</span>
-<span class="normal">493</span>
-<span class="normal">494</span>
-<span class="normal">495</span>
-<span class="normal">496</span>
-<span class="normal">497</span>
-<span class="normal">498</span>
-<span class="normal">499</span>
-<span class="normal">500</span>
-<span class="normal">501</span>
-<span class="normal">502</span>
-<span class="normal">503</span>
-<span class="normal">504</span>
-<span class="normal">505</span>
-<span class="normal">506</span>
-<span class="normal">507</span>
-<span class="normal">508</span>
-<span class="normal">509</span>
-<span class="normal">510</span>
-<span class="normal">511</span>
-<span class="normal">512</span>
-<span class="normal">513</span>
-<span class="normal">514</span>
-<span class="normal">515</span>
-<span class="normal">516</span>
-<span class="normal">517</span>
-<span class="normal">518</span>
-<span class="normal">519</span>
-<span class="normal">520</span>
-<span class="normal">521</span>
-<span class="normal">522</span>
-<span class="normal">523</span>
-<span class="normal">524</span>
-<span class="normal">525</span>
-<span class="normal">526</span>
-<span class="normal">527</span>
-<span class="normal">528</span>
-<span class="normal">529</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">529</span>
+<span class="normal">530</span>
+<span class="normal">531</span>
+<span class="normal">532</span>
+<span class="normal">533</span>
+<span class="normal">534</span>
+<span class="normal">535</span>
+<span class="normal">536</span>
+<span class="normal">537</span>
+<span class="normal">538</span>
+<span class="normal">539</span>
+<span class="normal">540</span>
+<span class="normal">541</span>
+<span class="normal">542</span>
+<span class="normal">543</span>
+<span class="normal">544</span>
+<span class="normal">545</span>
+<span class="normal">546</span>
+<span class="normal">547</span>
+<span class="normal">548</span>
+<span class="normal">549</span>
+<span class="normal">550</span>
+<span class="normal">551</span>
+<span class="normal">552</span>
+<span class="normal">553</span>
+<span class="normal">554</span>
+<span class="normal">555</span>
+<span class="normal">556</span>
+<span class="normal">557</span>
+<span class="normal">558</span>
+<span class="normal">559</span>
+<span class="normal">560</span>
+<span class="normal">561</span>
+<span class="normal">562</span>
+<span class="normal">563</span>
+<span class="normal">564</span>
+<span class="normal">565</span>
+<span class="normal">566</span>
+<span class="normal">567</span>
+<span class="normal">568</span>
+<span class="normal">569</span>
+<span class="normal">570</span>
+<span class="normal">571</span>
+<span class="normal">572</span>
+<span class="normal">573</span>
+<span class="normal">574</span>
+<span class="normal">575</span>
+<span class="normal">576</span>
+<span class="normal">577</span>
+<span class="normal">578</span>
+<span class="normal">579</span>
+<span class="normal">580</span>
+<span class="normal">581</span>
+<span class="normal">582</span>
+<span class="normal">583</span>
+<span class="normal">584</span>
+<span class="normal">585</span>
+<span class="normal">586</span>
+<span class="normal">587</span>
+<span class="normal">588</span>
+<span class="normal">589</span>
+<span class="normal">590</span>
+<span class="normal">591</span>
+<span class="normal">592</span>
+<span class="normal">593</span>
+<span class="normal">594</span>
+<span class="normal">595</span>
+<span class="normal">596</span>
+<span class="normal">597</span>
+<span class="normal">598</span>
+<span class="normal">599</span>
+<span class="normal">600</span>
+<span class="normal">601</span>
+<span class="normal">602</span>
+<span class="normal">603</span>
+<span class="normal">604</span>
+<span class="normal">605</span>
+<span class="normal">606</span>
+<span class="normal">607</span>
+<span class="normal">608</span>
+<span class="normal">609</span>
+<span class="normal">610</span>
+<span class="normal">611</span>
+<span class="normal">612</span>
+<span class="normal">613</span>
+<span class="normal">614</span>
+<span class="normal">615</span>
+<span class="normal">616</span>
+<span class="normal">617</span>
+<span class="normal">618</span>
+<span class="normal">619</span>
+<span class="normal">620</span>
+<span class="normal">621</span>
+<span class="normal">622</span>
+<span class="normal">623</span>
+<span class="normal">624</span>
+<span class="normal">625</span>
+<span class="normal">626</span>
+<span class="normal">627</span>
+<span class="normal">628</span>
+<span class="normal">629</span>
+<span class="normal">630</span>
+<span class="normal">631</span>
+<span class="normal">632</span>
+<span class="normal">633</span>
+<span class="normal">634</span>
+<span class="normal">635</span>
+<span class="normal">636</span>
+<span class="normal">637</span>
+<span class="normal">638</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
     <span class="n">result</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
@@ -3783,6 +4217,60 @@ distributed run, or the results carry no run to date them by.</p>
 <span class="sd">            configuration, so a caller forwarding it can hold None.</span>
 <span class="sd">        ValueError: `result` is not a valid option, `flow_acc_path` is missing on a</span>
 <span class="sd">            distributed run, or the results carry no run to date them by.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        - A lumped run writes a CSV, dated by the run's own calendar. Option 1 is the</span>
+<span class="sd">          simulated discharge, which for a lumped run is `q_total` itself:</span>
+<span class="sd">            ```python</span>
+<span class="sd">            &gt;&gt;&gt; import os, tempfile</span>
+<span class="sd">            &gt;&gt;&gt; from pathlib import Path</span>
+<span class="sd">            &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">            &gt;&gt;&gt; from hapi.conceptual import ConceptualModelSetup, ParameterSet</span>
+<span class="sd">            &gt;&gt;&gt; from hapi.period import SimulationPeriod</span>
+<span class="sd">            &gt;&gt;&gt; from hapi.results import RoutingKind, SimulationResults</span>
+<span class="sd">            &gt;&gt;&gt; from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92</span>
+<span class="sd">            &gt;&gt;&gt; from hapi.runs import LumpedRun</span>
+<span class="sd">            &gt;&gt;&gt; period = SimulationPeriod.parse("2009-01-01", "2009-01-03")</span>
+<span class="sd">            &gt;&gt;&gt; run = LumpedRun(</span>
+<span class="sd">            ...     period=period,</span>
+<span class="sd">            ...     data=np.ones((len(period), 4)),</span>
+<span class="sd">            ...     parameters=ParameterSet(np.ones(12), snow=False, maxbas=False),</span>
+<span class="sd">            ...     model_setup=ConceptualModelSetup(</span>
+<span class="sd">            ...         HBVBergestrom92, 100.0, [0.0] * 5, 1.0</span>
+<span class="sd">            ...     ),</span>
+<span class="sd">            ... )</span>
+<span class="sd">            &gt;&gt;&gt; discharge = np.array([1.5, 2.5, 3.5])</span>
+<span class="sd">            &gt;&gt;&gt; results = SimulationResults(</span>
+<span class="sd">            ...     RoutingKind.LUMPED, discharge, discharge, None,</span>
+<span class="sd">            ...     q_total=discharge, run=run,</span>
+<span class="sd">            ... )</span>
+<span class="sd">            &gt;&gt;&gt; path = os.path.join(tempfile.mkdtemp(), "q.csv")</span>
+<span class="sd">            &gt;&gt;&gt; results.save(path=path, result=1)</span>
+<span class="sd">            &gt;&gt;&gt; print(Path(path).read_text().strip())</span>
+<span class="sd">            date,Qsim</span>
+<span class="sd">            '2009-01-01',1.500</span>
+<span class="sd">            '2009-01-02',2.500</span>
+<span class="sd">            '2009-01-03',3.500</span>
+
+<span class="sd">            ```</span>
+<span class="sd">        - `path` is checked before anything else, because a run configuration's</span>
+<span class="sd">          `outputs.results_dir` is optional and a caller can forward `None`:</span>
+<span class="sd">            ```python</span>
+<span class="sd">            &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">            &gt;&gt;&gt; from hapi.results import RoutingKind, SimulationResults</span>
+<span class="sd">            &gt;&gt;&gt; cube = np.zeros((2, 3, 4), dtype="float32")</span>
+<span class="sd">            &gt;&gt;&gt; results = SimulationResults(RoutingKind.MUSKINGUM, cube, cube, None)</span>
+<span class="sd">            &gt;&gt;&gt; results.save(path=None)</span>
+<span class="sd">            Traceback (most recent call last):</span>
+<span class="sd">                ...</span>
+<span class="sd">            TypeError: path must be a string naming a directory (distributed) or a file (lumped), got NoneType</span>
+
+<span class="sd">            ```</span>
+
+<span class="sd">    See Also:</span>
+<span class="sd">        animate: Renders the same arrays instead of writing them.</span>
+<span class="sd">        hapi.runs.DistributedRun.keep_state_variables: Whether the state options have</span>
+<span class="sd">            anything to write.</span>
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
@@ -3909,26 +4397,67 @@ supported.</p>
     </table>
 
 
+<p><span class="doc-section-title">Examples:</span></p>
+    <ul>
+<li>There is nothing to write until :meth:<code>animate</code> has built it:
+    <div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">hapi.results</span><span class="w"> </span><span class="kn">import</span> <span class="n">RoutingKind</span><span class="p">,</span> <span class="n">SimulationResults</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cube</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">"float32"</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">results</span> <span class="o">=</span> <span class="n">SimulationResults</span><span class="p">(</span><span class="n">RoutingKind</span><span class="o">.</span><span class="n">MUSKINGUM</span><span class="p">,</span> <span class="n">cube</span><span class="p">,</span> <span class="n">cube</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">results</span><span class="o">.</span><span class="n">anim</span> <span class="ow">is</span> <span class="kc">None</span>
+<span class="kc">True</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">results</span><span class="o">.</span><span class="n">save_animation</span><span class="p">(</span><span class="s2">"flow.gif"</span><span class="p">)</span>
+<span class="n">Traceback</span> <span class="p">(</span><span class="n">most</span> <span class="n">recent</span> <span class="n">call</span> <span class="n">last</span><span class="p">):</span>
+    <span class="o">...</span>
+<span class="ne">ValueError</span><span class="p">:</span> <span class="n">There</span> <span class="ow">is</span> <span class="n">no</span> <span class="n">animation</span> <span class="n">to</span> <span class="n">save</span><span class="p">,</span> <span class="n">call</span> <span class="err">`</span><span class="n">animate</span><span class="err">`</span> <span class="n">first</span>
+</code></pre></div></li>
+</ul>
+
+
+<details class="see-also" open>
+  <summary>See Also</summary>
+  <p>animate: Builds the animation this writes.</p>
+</details>
+
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/results.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">455</span>
-<span class="normal">456</span>
-<span class="normal">457</span>
-<span class="normal">458</span>
-<span class="normal">459</span>
-<span class="normal">460</span>
-<span class="normal">461</span>
-<span class="normal">462</span>
-<span class="normal">463</span>
-<span class="normal">464</span>
-<span class="normal">465</span>
-<span class="normal">466</span>
-<span class="normal">467</span>
-<span class="normal">468</span>
-<span class="normal">469</span>
-<span class="normal">470</span>
-<span class="normal">471</span>
-<span class="normal">472</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_animation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">fps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">491</span>
+<span class="normal">492</span>
+<span class="normal">493</span>
+<span class="normal">494</span>
+<span class="normal">495</span>
+<span class="normal">496</span>
+<span class="normal">497</span>
+<span class="normal">498</span>
+<span class="normal">499</span>
+<span class="normal">500</span>
+<span class="normal">501</span>
+<span class="normal">502</span>
+<span class="normal">503</span>
+<span class="normal">504</span>
+<span class="normal">505</span>
+<span class="normal">506</span>
+<span class="normal">507</span>
+<span class="normal">508</span>
+<span class="normal">509</span>
+<span class="normal">510</span>
+<span class="normal">511</span>
+<span class="normal">512</span>
+<span class="normal">513</span>
+<span class="normal">514</span>
+<span class="normal">515</span>
+<span class="normal">516</span>
+<span class="normal">517</span>
+<span class="normal">518</span>
+<span class="normal">519</span>
+<span class="normal">520</span>
+<span class="normal">521</span>
+<span class="normal">522</span>
+<span class="normal">523</span>
+<span class="normal">524</span>
+<span class="normal">525</span>
+<span class="normal">526</span>
+<span class="normal">527</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_animation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">fps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Save the animation built by :meth:`animate`.</span>
 
 <span class="sd">    The output format is determined by the file extension. GIF uses PillowWriter;</span>
@@ -3942,6 +4471,25 @@ supported.</p>
 <span class="sd">        ValueError: :meth:`animate` has not been called yet, or the file format is not</span>
 <span class="sd">            supported.</span>
 <span class="sd">        FileNotFoundError: A video format is requested but FFmpeg is not installed.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        - There is nothing to write until :meth:`animate` has built it:</span>
+<span class="sd">            ```python</span>
+<span class="sd">            &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">            &gt;&gt;&gt; from hapi.results import RoutingKind, SimulationResults</span>
+<span class="sd">            &gt;&gt;&gt; cube = np.zeros((2, 3, 4), dtype="float32")</span>
+<span class="sd">            &gt;&gt;&gt; results = SimulationResults(RoutingKind.MUSKINGUM, cube, cube, None)</span>
+<span class="sd">            &gt;&gt;&gt; results.anim is None</span>
+<span class="sd">            True</span>
+<span class="sd">            &gt;&gt;&gt; results.save_animation("flow.gif")</span>
+<span class="sd">            Traceback (most recent call last):</span>
+<span class="sd">                ...</span>
+<span class="sd">            ValueError: There is no animation to save, call `animate` first</span>
+
+<span class="sd">            ```</span>
+
+<span class="sd">    See Also:</span>
+<span class="sd">        animate: Builds the animation this writes.</span>
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_animation_glyph</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"There is no animation to save, call `animate` first"</span><span class="p">)</span>

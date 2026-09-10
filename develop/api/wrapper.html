@@ -2151,54 +2151,7 @@ routing.</p>
 <span class="normal">439</span>
 <span class="normal">440</span>
 <span class="normal">441</span>
-<span class="normal">442</span>
-<span class="normal">443</span>
-<span class="normal">444</span>
-<span class="normal">445</span>
-<span class="normal">446</span>
-<span class="normal">447</span>
-<span class="normal">448</span>
-<span class="normal">449</span>
-<span class="normal">450</span>
-<span class="normal">451</span>
-<span class="normal">452</span>
-<span class="normal">453</span>
-<span class="normal">454</span>
-<span class="normal">455</span>
-<span class="normal">456</span>
-<span class="normal">457</span>
-<span class="normal">458</span>
-<span class="normal">459</span>
-<span class="normal">460</span>
-<span class="normal">461</span>
-<span class="normal">462</span>
-<span class="normal">463</span>
-<span class="normal">464</span>
-<span class="normal">465</span>
-<span class="normal">466</span>
-<span class="normal">467</span>
-<span class="normal">468</span>
-<span class="normal">469</span>
-<span class="normal">470</span>
-<span class="normal">471</span>
-<span class="normal">472</span>
-<span class="normal">473</span>
-<span class="normal">474</span>
-<span class="normal">475</span>
-<span class="normal">476</span>
-<span class="normal">477</span>
-<span class="normal">478</span>
-<span class="normal">479</span>
-<span class="normal">480</span>
-<span class="normal">481</span>
-<span class="normal">482</span>
-<span class="normal">483</span>
-<span class="normal">484</span>
-<span class="normal">485</span>
-<span class="normal">486</span>
-<span class="normal">487</span>
-<span class="normal">488</span>
-<span class="normal">489</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Wrapper</span><span class="p">:</span>
+<span class="normal">442</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Wrapper</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Connects rainfall-runoff model components with spatial routing.</span>
 
 <span class="sd">    The Wrapper class connects different components together including</span>
@@ -2226,33 +2179,12 @@ routing.</p>
 <span class="sd">        2. The spatial routing scheme that routes flow following the</span>
 <span class="sd">           river network.</span>
 
-<span class="sd">        The method stores results directly on the Model object,</span>
-<span class="sd">        including `quz`, `qlz`, `qout`, `quz_routed`, and</span>
-<span class="sd">        `qlz_translated` arrays.</span>
-
 <span class="sd">        Args:</span>
-<span class="sd">            Model: Catchment model object containing:</span>
-
-<span class="sd">                - meteo (:class:`~hapi.inputs.MeteoInputs`): The three driver cubes,</span>
-<span class="sd">                  each `(rows, cols, time)`, plus the calendar they cover.</span>
-<span class="sd">                - flow_network (:class:`~hapi.inputs.FlowNetwork`): The flow accumulation</span>
-<span class="sd">                  and direction arrays, the direction table, and the grid they define.</span>
-<span class="sd">                - parameters (numpy.ndarray): 3D array of spatially distributed catchment</span>
-<span class="sd">                  parameters, `(rows, cols, n_parameters)`.</span>
-<span class="sd">                - conversion_factor (float): Depth-to-discharge factor for the temporal</span>
-<span class="sd">                  resolution; 24 for daily, 1 for hourly.</span>
-<span class="sd">                - area (float): Catchment area in km2.</span>
-<span class="sd">                - initial_cond (list): Initial state variable values</span>
-<span class="sd">                  [sp, sm, uz, lz, wc].</span>
-<span class="sd">                - snow (int): 1 to run the snow routine, 0 otherwise.</span>
-
-<span class="sd">            ll_temp (numpy.ndarray, optional): 3D array of long-term</span>
-<span class="sd">                average temperature data. Defaults to None.</span>
-<span class="sd">            q_0 (float, optional): Initial discharge in m3/s.</span>
-<span class="sd">                Defaults to None.</span>
-<span class="sd">            skip_hydraulic_cells (bool, optional): Leave cells with a positive</span>
-<span class="sd">                `bankfull_depth` unrouted, because a 1D hydraulic model routes them.</span>
-<span class="sd">                The flood model's path. Defaults to False.</span>
+<span class="sd">            run: The validated inputs. Reads the drivers, the flow network, the parameter</span>
+<span class="sd">                cube and the conceptual model setup, and honours</span>
+<span class="sd">                :attr:`~hapi.runs.DistributedRun.skip_hydraulic_cells`, which leaves cells</span>
+<span class="sd">                with a positive `river_geometry.bankfull_depth` for a 1D hydraulic model</span>
+<span class="sd">                to route instead.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            SimulationResults: The run's output. Nothing is written to the caller's model;</span>
@@ -2278,9 +2210,9 @@ routing.</p>
 <span class="sd">        routing.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            Model: Catchment model object containing the distributed</span>
-<span class="sd">                model configuration, parameters, and spatial data.</span>
-<span class="sd">            Lake: Lake object containing:</span>
+<span class="sd">            run: The validated inputs. See :class:`~hapi.runs.DistributedRun`, which</span>
+<span class="sd">                `DistributedRun.from_model(model)` builds and checks.</span>
+<span class="sd">            Lake: The lake record, carrying:</span>
 
 <span class="sd">                - MeteoData (numpy.ndarray): 2D array with columns</span>
 <span class="sd">                  for precipitation, evapotranspiration, temperature,</span>
@@ -2294,10 +2226,9 @@ routing.</p>
 <span class="sd">                - OutflowCell (tuple): Row and column indices of the</span>
 <span class="sd">                  lake outflow cell.</span>
 
-<span class="sd">            ll_temp (numpy.ndarray, optional): 3D array of long-term</span>
-<span class="sd">                average temperature data. Defaults to None.</span>
-<span class="sd">            q_0 (float, optional): Initial discharge in m3/s.</span>
-<span class="sd">                Defaults to None.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            SimulationResults: The run's output. Nothing is written to the caller's model;</span>
+<span class="sd">            the entry point in :mod:`hapi.run` is what puts it on `model.results`.</span>
 <span class="sd">        """</span>
         <span class="n">meteo_data</span><span class="p">,</span> <span class="n">lake_parameters</span><span class="p">,</span> <span class="n">outflow_cell</span> <span class="o">=</span> <span class="n">_lake_inputs</span><span class="p">(</span><span class="n">Lake</span><span class="p">)</span>
         <span class="n">plake</span> <span class="o">=</span> <span class="n">meteo_data</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
@@ -2383,8 +2314,8 @@ routing.</p>
 <span class="sd">        nothing downstream writes through the alias.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            Model: Catchment whose `quz` / `qlz` have been routed by</span>
-<span class="sd">                :meth:`DistRRM.route_maxbas`.</span>
+<span class="sd">            results: The results whose `quz` / `qlz` have been routed by</span>
+<span class="sd">                :meth:`~hapi.rrm.distrrm.DistributedRRM.route_maxbas`. Mutated in place.</span>
 <span class="sd">        """</span>
         <span class="n">results</span><span class="o">.</span><span class="n">quz_routed</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">quz</span>
         <span class="n">results</span><span class="o">.</span><span class="n">qlz_translated</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">qlz</span>
@@ -2411,12 +2342,12 @@ routing.</p>
 <span class="sd">        work on this path; see that method for the MAXBAS semantics.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            Model: Catchment model object containing the distributed</span>
-<span class="sd">                model configuration, parameters, and spatial data.</span>
-<span class="sd">            ll_temp (numpy.ndarray, optional): 3D array of long-term</span>
-<span class="sd">                average temperature data. Defaults to None.</span>
-<span class="sd">            q_0 (float, optional): Initial discharge in m3/s.</span>
-<span class="sd">                Defaults to None.</span>
+<span class="sd">            run: The validated inputs. See :class:`~hapi.runs.DistributedRun`, which</span>
+<span class="sd">                `DistributedRun.from_model(model)` builds and checks.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            SimulationResults: The run's output. Nothing is written to the caller's model;</span>
+<span class="sd">            the entry point in :mod:`hapi.run` is what puts it on `model.results`.</span>
 <span class="sd">        """</span>
         <span class="c1"># subcatchment</span>
         <span class="n">results</span> <span class="o">=</span> <span class="n">distrrm</span><span class="o">.</span><span class="n">run_lumped_model</span><span class="p">(</span><span class="n">run</span><span class="p">)</span>
@@ -2451,24 +2382,14 @@ routing.</p>
 <span class="sd">        has been routed using the triangular function.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            Model: Catchment model object containing the distributed</span>
-<span class="sd">                model configuration, parameters, and spatial data.</span>
-<span class="sd">            Lake: Lake object containing:</span>
+<span class="sd">            run: The validated inputs. See :class:`~hapi.runs.DistributedRun`, which</span>
+<span class="sd">                `DistributedRun.from_model(model)` builds and checks.</span>
+<span class="sd">            Lake: The lake record. See :meth:`run_muskingum_with_lake` for the fields it</span>
+<span class="sd">                must carry; this path reads the same ones.</span>
 
-<span class="sd">                - MeteoData (numpy.ndarray): 2D array with columns</span>
-<span class="sd">                  for precipitation, evapotranspiration, temperature,</span>
-<span class="sd">                  and long-term average temperature.</span>
-<span class="sd">                - Parameters (numpy.ndarray): Lake model parameters.</span>
-<span class="sd">                - CatArea (float): Lake catchment area in km2.</span>
-<span class="sd">                - LakeArea (float): Lake surface area in km2.</span>
-<span class="sd">                - StageDischargeCurve (numpy.ndarray): Stage-discharge</span>
-<span class="sd">                  relationship.</span>
-<span class="sd">                - InitialCond (list): Initial condition values.</span>
-
-<span class="sd">            ll_temp (numpy.ndarray, optional): 3D array of long-term</span>
-<span class="sd">                average temperature data. Defaults to None.</span>
-<span class="sd">            q_0 (float, optional): Initial discharge in m3/s.</span>
-<span class="sd">                Defaults to None.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            SimulationResults: The run's output. Nothing is written to the caller's model;</span>
+<span class="sd">            the entry point in :mod:`hapi.run` is what puts it on `model.results`.</span>
 <span class="sd">        """</span>
         <span class="n">meteo_data</span><span class="p">,</span> <span class="n">lake_parameters</span><span class="p">,</span> <span class="n">outflow_cell</span> <span class="o">=</span> <span class="n">_lake_inputs</span><span class="p">(</span><span class="n">Lake</span><span class="p">)</span>
         <span class="n">plake</span> <span class="o">=</span> <span class="n">meteo_data</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
@@ -2538,38 +2459,23 @@ routing.</p>
 <span class="sd">        routes the combined discharge using the provided routing</span>
 <span class="sd">        function.</span>
 
-<span class="sd">        The discharge is converted from mm/timestep to m3/s using</span>
-<span class="sd">        the catchment area and conversion factor. Results are stored</span>
-<span class="sd">        on the Model object as `quz`, `qlz`, `Qsim`, and</span>
-<span class="sd">        `state_variables`.</span>
+<span class="sd">        The discharge is converted from mm/timestep to m3/s using the catchment area and</span>
+<span class="sd">        the period's conversion factor.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            Model: Lumped model object containing:</span>
-
-<span class="sd">                - data (numpy.ndarray): 2D meteorological data array</span>
-<span class="sd">                  with columns for precipitation,</span>
-<span class="sd">                  evapotranspiration, temperature, and long-term</span>
-<span class="sd">                  average temperature.</span>
-<span class="sd">                - Parameters (numpy.ndarray): Conceptual model</span>
-<span class="sd">                  parameters.</span>
-<span class="sd">                - LumpedModel: Conceptual model instance with a</span>
-<span class="sd">                  `simulate` method.</span>
-<span class="sd">                - InitialCond (list): Initial state variable values</span>
-<span class="sd">                  [sp, sm, uz, lz, wc].</span>
-<span class="sd">                - q_init (float): Initial discharge value.</span>
-<span class="sd">                - Snow (int): Flag to include snow module (0 or 1).</span>
-<span class="sd">                - CatArea (float): Catchment area in km2.</span>
-<span class="sd">                - conversion_factor (float): Time step conversion</span>
-<span class="sd">                  factor (1 for hourly, 0.25 for 15 min, 24 for</span>
-<span class="sd">                  daily).</span>
-<span class="sd">                - Maxbas (bool): Whether to use MAXBAS triangular</span>
-<span class="sd">                  routing.</span>
-<span class="sd">                - dt (float): Time step duration.</span>
-
+<span class="sd">            run: The validated inputs. See :class:`~hapi.runs.LumpedRun`, which</span>
+<span class="sd">                `LumpedRun.from_model(model)` builds and checks. Reads the `(time, 4)`</span>
+<span class="sd">                driver record, the parameter set and the conceptual model setup.</span>
 <span class="sd">            Routing (int, optional): Flag to enable routing. Set to</span>
 <span class="sd">                0 to disable, nonzero to enable. Defaults to 0.</span>
 <span class="sd">            RoutingFn (callable): Routing function to apply to the</span>
 <span class="sd">                discharge hydrograph. Must be callable.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            SimulationResults: The run's output, with the total discharge in `q_total` and</span>
+<span class="sd">            `routing` set to `RoutingKind.LUMPED`. Nothing is written to the caller's</span>
+<span class="sd">            model; :meth:`~hapi.run.Run.run_lumped` is what indexes `q_total` by the period</span>
+<span class="sd">            and puts the frame on `model.Qsim`.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            TypeError: If `RoutingFn` is not callable when</span>
@@ -2666,10 +2572,8 @@ routing.</p>
 compute the upper and lower zone discharge, then optionally
 routes the combined discharge using the provided routing
 function.</p>
-<p>The discharge is converted from mm/timestep to m3/s using
-the catchment area and conversion factor. Results are stored
-on the Model object as <code>quz</code>, <code>qlz</code>, <code>Qsim</code>, and
-<code>state_variables</code>.</p>
+<p>The discharge is converted from mm/timestep to m3/s using the catchment area and
+the period's conversion factor.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -2685,34 +2589,16 @@ on the Model object as <code>quz</code>, <code>qlz</code>, <code>Qsim</code>, an
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>Model</code>
+                <code>run</code>
             </td>
             <td>
+                  <code><span title="hapi.runs.LumpedRun">LumpedRun</span></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Lumped model object containing:</p>
-<ul>
-<li>data (numpy.ndarray): 2D meteorological data array
-  with columns for precipitation,
-  evapotranspiration, temperature, and long-term
-  average temperature.</li>
-<li>Parameters (numpy.ndarray): Conceptual model
-  parameters.</li>
-<li>LumpedModel: Conceptual model instance with a
-  <code>simulate</code> method.</li>
-<li>InitialCond (list): Initial state variable values
-  [sp, sm, uz, lz, wc].</li>
-<li>q_init (float): Initial discharge value.</li>
-<li>Snow (int): Flag to include snow module (0 or 1).</li>
-<li>CatArea (float): Catchment area in km2.</li>
-<li>conversion_factor (float): Time step conversion
-  factor (1 for hourly, 0.25 for 15 min, 24 for
-  daily).</li>
-<li>Maxbas (bool): Whether to use MAXBAS triangular
-  routing.</li>
-<li>dt (float): Time step duration.</li>
-</ul>
+                <p>The validated inputs. See :class:<code>~hapi.runs.LumpedRun</code>, which
+<code>LumpedRun.from_model(model)</code> builds and checks. Reads the <code>(time, 4)</code>
+driver record, the parameter set and the conceptual model setup.</p>
               </div>
             </td>
             <td>
@@ -2757,6 +2643,74 @@ discharge hydrograph. Must be callable.</p>
     </table>
 
 
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="&lt;code&gt;hapi.results.SimulationResults&lt;/code&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-dataclass&quot;&gt;&lt;code&gt;dataclass&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt;" href="results.html#hapi.results.SimulationResults">SimulationResults</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The run's output, with the total discharge in <code>q_total</code> and</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="&lt;code&gt;hapi.results.SimulationResults&lt;/code&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-dataclass&quot;&gt;&lt;code&gt;dataclass&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt;" href="results.html#hapi.results.SimulationResults">SimulationResults</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>routing</code> set to <code>RoutingKind.LUMPED</code>. Nothing is written to the caller's</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code>model; </code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>meth:<code>~hapi.run.Run.run_lumped</code> is what indexes <code>q_total</code> by the period</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="&lt;code&gt;hapi.results.SimulationResults&lt;/code&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-dataclass&quot;&gt;&lt;code&gt;dataclass&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt;" href="results.html#hapi.results.SimulationResults">SimulationResults</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>and puts the frame on <code>model.Qsim</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
 <p><span class="doc-section-title">Raises:</span></p>
     <table>
       <thead>
@@ -2783,7 +2737,39 @@ routing is enabled.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/wrapper.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">384</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">352</span>
+<span class="normal">353</span>
+<span class="normal">354</span>
+<span class="normal">355</span>
+<span class="normal">356</span>
+<span class="normal">357</span>
+<span class="normal">358</span>
+<span class="normal">359</span>
+<span class="normal">360</span>
+<span class="normal">361</span>
+<span class="normal">362</span>
+<span class="normal">363</span>
+<span class="normal">364</span>
+<span class="normal">365</span>
+<span class="normal">366</span>
+<span class="normal">367</span>
+<span class="normal">368</span>
+<span class="normal">369</span>
+<span class="normal">370</span>
+<span class="normal">371</span>
+<span class="normal">372</span>
+<span class="normal">373</span>
+<span class="normal">374</span>
+<span class="normal">375</span>
+<span class="normal">376</span>
+<span class="normal">377</span>
+<span class="normal">378</span>
+<span class="normal">379</span>
+<span class="normal">380</span>
+<span class="normal">381</span>
+<span class="normal">382</span>
+<span class="normal">383</span>
+<span class="normal">384</span>
 <span class="normal">385</span>
 <span class="normal">386</span>
 <span class="normal">387</span>
@@ -2841,54 +2827,7 @@ routing is enabled.</p>
 <span class="normal">439</span>
 <span class="normal">440</span>
 <span class="normal">441</span>
-<span class="normal">442</span>
-<span class="normal">443</span>
-<span class="normal">444</span>
-<span class="normal">445</span>
-<span class="normal">446</span>
-<span class="normal">447</span>
-<span class="normal">448</span>
-<span class="normal">449</span>
-<span class="normal">450</span>
-<span class="normal">451</span>
-<span class="normal">452</span>
-<span class="normal">453</span>
-<span class="normal">454</span>
-<span class="normal">455</span>
-<span class="normal">456</span>
-<span class="normal">457</span>
-<span class="normal">458</span>
-<span class="normal">459</span>
-<span class="normal">460</span>
-<span class="normal">461</span>
-<span class="normal">462</span>
-<span class="normal">463</span>
-<span class="normal">464</span>
-<span class="normal">465</span>
-<span class="normal">466</span>
-<span class="normal">467</span>
-<span class="normal">468</span>
-<span class="normal">469</span>
-<span class="normal">470</span>
-<span class="normal">471</span>
-<span class="normal">472</span>
-<span class="normal">473</span>
-<span class="normal">474</span>
-<span class="normal">475</span>
-<span class="normal">476</span>
-<span class="normal">477</span>
-<span class="normal">478</span>
-<span class="normal">479</span>
-<span class="normal">480</span>
-<span class="normal">481</span>
-<span class="normal">482</span>
-<span class="normal">483</span>
-<span class="normal">484</span>
-<span class="normal">485</span>
-<span class="normal">486</span>
-<span class="normal">487</span>
-<span class="normal">488</span>
-<span class="normal">489</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">442</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">run_lumped</span><span class="p">(</span>
     <span class="n">run</span><span class="p">:</span> <span class="n">LumpedRun</span><span class="p">,</span> <span class="n">Routing</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">RoutingFn</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SimulationResults</span><span class="p">:</span>
@@ -2899,38 +2838,23 @@ routing is enabled.</p>
 <span class="sd">    routes the combined discharge using the provided routing</span>
 <span class="sd">    function.</span>
 
-<span class="sd">    The discharge is converted from mm/timestep to m3/s using</span>
-<span class="sd">    the catchment area and conversion factor. Results are stored</span>
-<span class="sd">    on the Model object as `quz`, `qlz`, `Qsim`, and</span>
-<span class="sd">    `state_variables`.</span>
+<span class="sd">    The discharge is converted from mm/timestep to m3/s using the catchment area and</span>
+<span class="sd">    the period's conversion factor.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        Model: Lumped model object containing:</span>
-
-<span class="sd">            - data (numpy.ndarray): 2D meteorological data array</span>
-<span class="sd">              with columns for precipitation,</span>
-<span class="sd">              evapotranspiration, temperature, and long-term</span>
-<span class="sd">              average temperature.</span>
-<span class="sd">            - Parameters (numpy.ndarray): Conceptual model</span>
-<span class="sd">              parameters.</span>
-<span class="sd">            - LumpedModel: Conceptual model instance with a</span>
-<span class="sd">              `simulate` method.</span>
-<span class="sd">            - InitialCond (list): Initial state variable values</span>
-<span class="sd">              [sp, sm, uz, lz, wc].</span>
-<span class="sd">            - q_init (float): Initial discharge value.</span>
-<span class="sd">            - Snow (int): Flag to include snow module (0 or 1).</span>
-<span class="sd">            - CatArea (float): Catchment area in km2.</span>
-<span class="sd">            - conversion_factor (float): Time step conversion</span>
-<span class="sd">              factor (1 for hourly, 0.25 for 15 min, 24 for</span>
-<span class="sd">              daily).</span>
-<span class="sd">            - Maxbas (bool): Whether to use MAXBAS triangular</span>
-<span class="sd">              routing.</span>
-<span class="sd">            - dt (float): Time step duration.</span>
-
+<span class="sd">        run: The validated inputs. See :class:`~hapi.runs.LumpedRun`, which</span>
+<span class="sd">            `LumpedRun.from_model(model)` builds and checks. Reads the `(time, 4)`</span>
+<span class="sd">            driver record, the parameter set and the conceptual model setup.</span>
 <span class="sd">        Routing (int, optional): Flag to enable routing. Set to</span>
 <span class="sd">            0 to disable, nonzero to enable. Defaults to 0.</span>
 <span class="sd">        RoutingFn (callable): Routing function to apply to the</span>
 <span class="sd">            discharge hydrograph. Must be callable.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        SimulationResults: The run's output, with the total discharge in `q_total` and</span>
+<span class="sd">        `routing` set to `RoutingKind.LUMPED`. Nothing is written to the caller's</span>
+<span class="sd">        model; :meth:`~hapi.run.Run.run_lumped` is what indexes `q_total` by the period</span>
+<span class="sd">        and puts the frame on `model.Qsim`.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        TypeError: If `RoutingFn` is not callable when</span>
@@ -3047,48 +2971,15 @@ work on this path; see that method for the MAXBAS semantics.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>Model</code>
+                <code>run</code>
             </td>
             <td>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Catchment model object containing the distributed
-model configuration, parameters, and spatial data.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>ll_temp</code>
-            </td>
-            <td>
-                  <code><span title="numpy.ndarray">ndarray</span></code>
+                  <code><span title="hapi.runs.DistributedRun">DistributedRun</span></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>3D array of long-term
-average temperature data. Defaults to None.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>q_0</code>
-            </td>
-            <td>
-                  <code><span title="float">float</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Initial discharge in m3/s.
-Defaults to None.</p>
+                <p>The validated inputs. See :class:<code>~hapi.runs.DistributedRun</code>, which
+<code>DistributedRun.from_model(model)</code> builds and checks.</p>
               </div>
             </td>
             <td>
@@ -3099,9 +2990,69 @@ Defaults to None.</p>
     </table>
 
 
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="&lt;code&gt;hapi.results.SimulationResults&lt;/code&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-dataclass&quot;&gt;&lt;code&gt;dataclass&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt;" href="results.html#hapi.results.SimulationResults">SimulationResults</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The run's output. Nothing is written to the caller's model;</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code>the entry point in </code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>mod:<code>hapi.run</code> is what puts it on <code>model.results</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/wrapper.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">250</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
 <span class="normal">251</span>
 <span class="normal">252</span>
 <span class="normal">253</span>
@@ -3120,29 +3071,7 @@ Defaults to None.</p>
 <span class="normal">266</span>
 <span class="normal">267</span>
 <span class="normal">268</span>
-<span class="normal">269</span>
-<span class="normal">270</span>
-<span class="normal">271</span>
-<span class="normal">272</span>
-<span class="normal">273</span>
-<span class="normal">274</span>
-<span class="normal">275</span>
-<span class="normal">276</span>
-<span class="normal">277</span>
-<span class="normal">278</span>
-<span class="normal">279</span>
-<span class="normal">280</span>
-<span class="normal">281</span>
-<span class="normal">282</span>
-<span class="normal">283</span>
-<span class="normal">284</span>
-<span class="normal">285</span>
-<span class="normal">286</span>
-<span class="normal">287</span>
-<span class="normal">288</span>
-<span class="normal">289</span>
-<span class="normal">290</span>
-<span class="normal">291</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">269</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">run_maxbas</span><span class="p">(</span><span class="n">run</span><span class="p">:</span> <span class="n">DistributedRun</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SimulationResults</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Run the distributed RRM with triangular function-1 routing.</span>
 
@@ -3160,12 +3089,12 @@ Defaults to None.</p>
 <span class="sd">    work on this path; see that method for the MAXBAS semantics.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        Model: Catchment model object containing the distributed</span>
-<span class="sd">            model configuration, parameters, and spatial data.</span>
-<span class="sd">        ll_temp (numpy.ndarray, optional): 3D array of long-term</span>
-<span class="sd">            average temperature data. Defaults to None.</span>
-<span class="sd">        q_0 (float, optional): Initial discharge in m3/s.</span>
-<span class="sd">            Defaults to None.</span>
+<span class="sd">        run: The validated inputs. See :class:`~hapi.runs.DistributedRun`, which</span>
+<span class="sd">            `DistributedRun.from_model(model)` builds and checks.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        SimulationResults: The run's output. Nothing is written to the caller's model;</span>
+<span class="sd">        the entry point in :mod:`hapi.run` is what puts it on `model.results`.</span>
 <span class="sd">    """</span>
     <span class="c1"># subcatchment</span>
     <span class="n">results</span> <span class="o">=</span> <span class="n">distrrm</span><span class="o">.</span><span class="n">run_lumped_model</span><span class="p">(</span><span class="n">run</span><span class="p">)</span>
@@ -3235,14 +3164,15 @@ has been routed using the triangular function.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>Model</code>
+                <code>run</code>
             </td>
             <td>
+                  <code><span title="hapi.runs.DistributedRun">DistributedRun</span></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Catchment model object containing the distributed
-model configuration, parameters, and spatial data.</p>
+                <p>The validated inputs. See :class:<code>~hapi.runs.DistributedRun</code>, which
+<code>DistributedRun.from_model(model)</code> builds and checks.</p>
               </div>
             </td>
             <td>
@@ -3258,52 +3188,8 @@ model configuration, parameters, and spatial data.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Lake object containing:</p>
-<ul>
-<li>MeteoData (numpy.ndarray): 2D array with columns
-  for precipitation, evapotranspiration, temperature,
-  and long-term average temperature.</li>
-<li>Parameters (numpy.ndarray): Lake model parameters.</li>
-<li>CatArea (float): Lake catchment area in km2.</li>
-<li>LakeArea (float): Lake surface area in km2.</li>
-<li>StageDischargeCurve (numpy.ndarray): Stage-discharge
-  relationship.</li>
-<li>InitialCond (list): Initial condition values.</li>
-</ul>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>ll_temp</code>
-            </td>
-            <td>
-                  <code><span title="numpy.ndarray">ndarray</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>3D array of long-term
-average temperature data. Defaults to None.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>q_0</code>
-            </td>
-            <td>
-                  <code><span title="float">float</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Initial discharge in m3/s.
-Defaults to None.</p>
+                <p>The lake record. See :meth:<code>run_muskingum_with_lake</code> for the fields it
+must carry; this path reads the same ones.</p>
               </div>
             </td>
             <td>
@@ -3314,9 +3200,69 @@ Defaults to None.</p>
     </table>
 
 
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="&lt;code&gt;hapi.results.SimulationResults&lt;/code&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-dataclass&quot;&gt;&lt;code&gt;dataclass&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt;" href="results.html#hapi.results.SimulationResults">SimulationResults</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The run's output. Nothing is written to the caller's model;</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code>the entry point in </code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>mod:<code>hapi.run</code> is what puts it on <code>model.results</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/wrapper.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">293</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">271</span>
+<span class="normal">272</span>
+<span class="normal">273</span>
+<span class="normal">274</span>
+<span class="normal">275</span>
+<span class="normal">276</span>
+<span class="normal">277</span>
+<span class="normal">278</span>
+<span class="normal">279</span>
+<span class="normal">280</span>
+<span class="normal">281</span>
+<span class="normal">282</span>
+<span class="normal">283</span>
+<span class="normal">284</span>
+<span class="normal">285</span>
+<span class="normal">286</span>
+<span class="normal">287</span>
+<span class="normal">288</span>
+<span class="normal">289</span>
+<span class="normal">290</span>
+<span class="normal">291</span>
+<span class="normal">292</span>
+<span class="normal">293</span>
 <span class="normal">294</span>
 <span class="normal">295</span>
 <span class="normal">296</span>
@@ -3373,39 +3319,7 @@ Defaults to None.</p>
 <span class="normal">347</span>
 <span class="normal">348</span>
 <span class="normal">349</span>
-<span class="normal">350</span>
-<span class="normal">351</span>
-<span class="normal">352</span>
-<span class="normal">353</span>
-<span class="normal">354</span>
-<span class="normal">355</span>
-<span class="normal">356</span>
-<span class="normal">357</span>
-<span class="normal">358</span>
-<span class="normal">359</span>
-<span class="normal">360</span>
-<span class="normal">361</span>
-<span class="normal">362</span>
-<span class="normal">363</span>
-<span class="normal">364</span>
-<span class="normal">365</span>
-<span class="normal">366</span>
-<span class="normal">367</span>
-<span class="normal">368</span>
-<span class="normal">369</span>
-<span class="normal">370</span>
-<span class="normal">371</span>
-<span class="normal">372</span>
-<span class="normal">373</span>
-<span class="normal">374</span>
-<span class="normal">375</span>
-<span class="normal">376</span>
-<span class="normal">377</span>
-<span class="normal">378</span>
-<span class="normal">379</span>
-<span class="normal">380</span>
-<span class="normal">381</span>
-<span class="normal">382</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">350</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">run_maxbas_with_lake</span><span class="p">(</span><span class="n">run</span><span class="p">:</span> <span class="n">DistributedRun</span><span class="p">,</span> <span class="n">Lake</span><span class="p">:</span> <span class="n">Lake</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SimulationResults</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Run the distributed RRM with lake and triangular routing.</span>
 
@@ -3420,24 +3334,14 @@ Defaults to None.</p>
 <span class="sd">    has been routed using the triangular function.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        Model: Catchment model object containing the distributed</span>
-<span class="sd">            model configuration, parameters, and spatial data.</span>
-<span class="sd">        Lake: Lake object containing:</span>
+<span class="sd">        run: The validated inputs. See :class:`~hapi.runs.DistributedRun`, which</span>
+<span class="sd">            `DistributedRun.from_model(model)` builds and checks.</span>
+<span class="sd">        Lake: The lake record. See :meth:`run_muskingum_with_lake` for the fields it</span>
+<span class="sd">            must carry; this path reads the same ones.</span>
 
-<span class="sd">            - MeteoData (numpy.ndarray): 2D array with columns</span>
-<span class="sd">              for precipitation, evapotranspiration, temperature,</span>
-<span class="sd">              and long-term average temperature.</span>
-<span class="sd">            - Parameters (numpy.ndarray): Lake model parameters.</span>
-<span class="sd">            - CatArea (float): Lake catchment area in km2.</span>
-<span class="sd">            - LakeArea (float): Lake surface area in km2.</span>
-<span class="sd">            - StageDischargeCurve (numpy.ndarray): Stage-discharge</span>
-<span class="sd">              relationship.</span>
-<span class="sd">            - InitialCond (list): Initial condition values.</span>
-
-<span class="sd">        ll_temp (numpy.ndarray, optional): 3D array of long-term</span>
-<span class="sd">            average temperature data. Defaults to None.</span>
-<span class="sd">        q_0 (float, optional): Initial discharge in m3/s.</span>
-<span class="sd">            Defaults to None.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        SimulationResults: The run's output. Nothing is written to the caller's model;</span>
+<span class="sd">        the entry point in :mod:`hapi.run` is what puts it on `model.results`.</span>
 <span class="sd">    """</span>
     <span class="n">meteo_data</span><span class="p">,</span> <span class="n">lake_parameters</span><span class="p">,</span> <span class="n">outflow_cell</span> <span class="o">=</span> <span class="n">_lake_inputs</span><span class="p">(</span><span class="n">Lake</span><span class="p">)</span>
     <span class="n">plake</span> <span class="o">=</span> <span class="n">meteo_data</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
@@ -3529,9 +3433,6 @@ Defaults to None.</p>
 <li>The spatial routing scheme that routes flow following the
    river network.</li>
 </ol>
-<p>The method stores results directly on the Model object,
-including <code>quz</code>, <code>qlz</code>, <code>qout</code>, <code>quz_routed</code>, and
-<code>qlz_translated</code> arrays.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -3547,79 +3448,18 @@ including <code>quz</code>, <code>qlz</code>, <code>qout</code>, <code>quz_route
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>Model</code>
+                <code>run</code>
             </td>
             <td>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Catchment model object containing:</p>
-<ul>
-<li>meteo (:class:<code>~hapi.inputs.MeteoInputs</code>): The three driver cubes,
-  each <code>(rows, cols, time)</code>, plus the calendar they cover.</li>
-<li>flow_network (:class:<code>~hapi.inputs.FlowNetwork</code>): The flow accumulation
-  and direction arrays, the direction table, and the grid they define.</li>
-<li>parameters (numpy.ndarray): 3D array of spatially distributed catchment
-  parameters, <code>(rows, cols, n_parameters)</code>.</li>
-<li>conversion_factor (float): Depth-to-discharge factor for the temporal
-  resolution; 24 for daily, 1 for hourly.</li>
-<li>area (float): Catchment area in km2.</li>
-<li>initial_cond (list): Initial state variable values
-  [sp, sm, uz, lz, wc].</li>
-<li>snow (int): 1 to run the snow routine, 0 otherwise.</li>
-</ul>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>ll_temp</code>
-            </td>
-            <td>
-                  <code><span title="numpy.ndarray">ndarray</span></code>
+                  <code><span title="hapi.runs.DistributedRun">DistributedRun</span></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>3D array of long-term
-average temperature data. Defaults to None.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>q_0</code>
-            </td>
-            <td>
-                  <code><span title="float">float</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Initial discharge in m3/s.
-Defaults to None.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>skip_hydraulic_cells</code>
-            </td>
-            <td>
-                  <code><span title="bool">bool</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Leave cells with a positive
-<code>bankfull_depth</code> unrouted, because a 1D hydraulic model routes them.
-The flood model's path. Defaults to False.</p>
+                <p>The validated inputs. Reads the drivers, the flow network, the parameter
+cube and the conceptual model setup, and honours
+:attr:<code>~hapi.runs.DistributedRun.skip_hydraulic_cells</code>, which leaves cells
+with a positive <code>river_geometry.bankfull_depth</code> for a 1D hydraulic model
+to route instead.</p>
               </div>
             </td>
             <td>
@@ -3699,28 +3539,7 @@ The flood model's path. Defaults to False.</p>
 <span class="normal"> 98</span>
 <span class="normal"> 99</span>
 <span class="normal">100</span>
-<span class="normal">101</span>
-<span class="normal">102</span>
-<span class="normal">103</span>
-<span class="normal">104</span>
-<span class="normal">105</span>
-<span class="normal">106</span>
-<span class="normal">107</span>
-<span class="normal">108</span>
-<span class="normal">109</span>
-<span class="normal">110</span>
-<span class="normal">111</span>
-<span class="normal">112</span>
-<span class="normal">113</span>
-<span class="normal">114</span>
-<span class="normal">115</span>
-<span class="normal">116</span>
-<span class="normal">117</span>
-<span class="normal">118</span>
-<span class="normal">119</span>
-<span class="normal">120</span>
-<span class="normal">121</span>
-<span class="normal">122</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">101</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">run_muskingum</span><span class="p">(</span><span class="n">run</span><span class="p">:</span> <span class="n">DistributedRun</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SimulationResults</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Run the distributed rainfall-runoff model with spatial routing.</span>
 
@@ -3731,33 +3550,12 @@ The flood model's path. Defaults to False.</p>
 <span class="sd">    2. The spatial routing scheme that routes flow following the</span>
 <span class="sd">       river network.</span>
 
-<span class="sd">    The method stores results directly on the Model object,</span>
-<span class="sd">    including `quz`, `qlz`, `qout`, `quz_routed`, and</span>
-<span class="sd">    `qlz_translated` arrays.</span>
-
 <span class="sd">    Args:</span>
-<span class="sd">        Model: Catchment model object containing:</span>
-
-<span class="sd">            - meteo (:class:`~hapi.inputs.MeteoInputs`): The three driver cubes,</span>
-<span class="sd">              each `(rows, cols, time)`, plus the calendar they cover.</span>
-<span class="sd">            - flow_network (:class:`~hapi.inputs.FlowNetwork`): The flow accumulation</span>
-<span class="sd">              and direction arrays, the direction table, and the grid they define.</span>
-<span class="sd">            - parameters (numpy.ndarray): 3D array of spatially distributed catchment</span>
-<span class="sd">              parameters, `(rows, cols, n_parameters)`.</span>
-<span class="sd">            - conversion_factor (float): Depth-to-discharge factor for the temporal</span>
-<span class="sd">              resolution; 24 for daily, 1 for hourly.</span>
-<span class="sd">            - area (float): Catchment area in km2.</span>
-<span class="sd">            - initial_cond (list): Initial state variable values</span>
-<span class="sd">              [sp, sm, uz, lz, wc].</span>
-<span class="sd">            - snow (int): 1 to run the snow routine, 0 otherwise.</span>
-
-<span class="sd">        ll_temp (numpy.ndarray, optional): 3D array of long-term</span>
-<span class="sd">            average temperature data. Defaults to None.</span>
-<span class="sd">        q_0 (float, optional): Initial discharge in m3/s.</span>
-<span class="sd">            Defaults to None.</span>
-<span class="sd">        skip_hydraulic_cells (bool, optional): Leave cells with a positive</span>
-<span class="sd">            `bankfull_depth` unrouted, because a 1D hydraulic model routes them.</span>
-<span class="sd">            The flood model's path. Defaults to False.</span>
+<span class="sd">        run: The validated inputs. Reads the drivers, the flow network, the parameter</span>
+<span class="sd">            cube and the conceptual model setup, and honours</span>
+<span class="sd">            :attr:`~hapi.runs.DistributedRun.skip_hydraulic_cells`, which leaves cells</span>
+<span class="sd">            with a positive `river_geometry.bankfull_depth` for a 1D hydraulic model</span>
+<span class="sd">            to route instead.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        SimulationResults: The run's output. Nothing is written to the caller's model;</span>
@@ -3818,14 +3616,15 @@ routing.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>Model</code>
+                <code>run</code>
             </td>
             <td>
+                  <code><span title="hapi.runs.DistributedRun">DistributedRun</span></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Catchment model object containing the distributed
-model configuration, parameters, and spatial data.</p>
+                <p>The validated inputs. See :class:<code>~hapi.runs.DistributedRun</code>, which
+<code>DistributedRun.from_model(model)</code> builds and checks.</p>
               </div>
             </td>
             <td>
@@ -3841,7 +3640,7 @@ model configuration, parameters, and spatial data.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Lake object containing:</p>
+                <p>The lake record, carrying:</p>
 <ul>
 <li>MeteoData (numpy.ndarray): 2D array with columns
   for precipitation, evapotranspiration, temperature,
@@ -3861,38 +3660,42 @@ model configuration, parameters, and spatial data.</p>
                 <em>required</em>
             </td>
           </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>ll_temp</code>
-            </td>
-            <td>
-                  <code><span title="numpy.ndarray">ndarray</span></code>
+                  <code><a class="autorefs autorefs-internal" title="&lt;code&gt;hapi.results.SimulationResults&lt;/code&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-dataclass&quot;&gt;&lt;code&gt;dataclass&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt;" href="results.html#hapi.results.SimulationResults">SimulationResults</a></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>3D array of long-term
-average temperature data. Defaults to None.</p>
+                <p>The run's output. Nothing is written to the caller's model;</p>
               </div>
-            </td>
-            <td>
-                <em>required</em>
             </td>
           </tr>
           <tr class="doc-section-item">
             <td>
-                <code>q_0</code>
-            </td>
-            <td>
-                  <code><span title="float">float</span></code>
+                  <code>the entry point in </code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Initial discharge in m3/s.
-Defaults to None.</p>
+                <p>mod:<code>hapi.run</code> is what puts it on <code>model.results</code>.</p>
               </div>
-            </td>
-            <td>
-                <em>required</em>
             </td>
           </tr>
       </tbody>
@@ -3901,7 +3704,28 @@ Defaults to None.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/wrapper.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">124</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">103</span>
+<span class="normal">104</span>
+<span class="normal">105</span>
+<span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span>
+<span class="normal">111</span>
+<span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span>
+<span class="normal">115</span>
+<span class="normal">116</span>
+<span class="normal">117</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span>
+<span class="normal">122</span>
+<span class="normal">123</span>
+<span class="normal">124</span>
 <span class="normal">125</span>
 <span class="normal">126</span>
 <span class="normal">127</span>
@@ -3969,29 +3793,7 @@ Defaults to None.</p>
 <span class="normal">189</span>
 <span class="normal">190</span>
 <span class="normal">191</span>
-<span class="normal">192</span>
-<span class="normal">193</span>
-<span class="normal">194</span>
-<span class="normal">195</span>
-<span class="normal">196</span>
-<span class="normal">197</span>
-<span class="normal">198</span>
-<span class="normal">199</span>
-<span class="normal">200</span>
-<span class="normal">201</span>
-<span class="normal">202</span>
-<span class="normal">203</span>
-<span class="normal">204</span>
-<span class="normal">205</span>
-<span class="normal">206</span>
-<span class="normal">207</span>
-<span class="normal">208</span>
-<span class="normal">209</span>
-<span class="normal">210</span>
-<span class="normal">211</span>
-<span class="normal">212</span>
-<span class="normal">213</span>
-<span class="normal">214</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">192</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">run_muskingum_with_lake</span><span class="p">(</span><span class="n">run</span><span class="p">:</span> <span class="n">DistributedRun</span><span class="p">,</span> <span class="n">Lake</span><span class="p">:</span> <span class="n">Lake</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SimulationResults</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Run the distributed RRM with lake simulation and routing.</span>
 
@@ -4002,9 +3804,9 @@ Defaults to None.</p>
 <span class="sd">    routing.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        Model: Catchment model object containing the distributed</span>
-<span class="sd">            model configuration, parameters, and spatial data.</span>
-<span class="sd">        Lake: Lake object containing:</span>
+<span class="sd">        run: The validated inputs. See :class:`~hapi.runs.DistributedRun`, which</span>
+<span class="sd">            `DistributedRun.from_model(model)` builds and checks.</span>
+<span class="sd">        Lake: The lake record, carrying:</span>
 
 <span class="sd">            - MeteoData (numpy.ndarray): 2D array with columns</span>
 <span class="sd">              for precipitation, evapotranspiration, temperature,</span>
@@ -4018,10 +3820,9 @@ Defaults to None.</p>
 <span class="sd">            - OutflowCell (tuple): Row and column indices of the</span>
 <span class="sd">              lake outflow cell.</span>
 
-<span class="sd">        ll_temp (numpy.ndarray, optional): 3D array of long-term</span>
-<span class="sd">            average temperature data. Defaults to None.</span>
-<span class="sd">        q_0 (float, optional): Initial discharge in m3/s.</span>
-<span class="sd">            Defaults to None.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        SimulationResults: The run's output. Nothing is written to the caller's model;</span>
+<span class="sd">        the entry point in :mod:`hapi.run` is what puts it on `model.results`.</span>
 <span class="sd">    """</span>
     <span class="n">meteo_data</span><span class="p">,</span> <span class="n">lake_parameters</span><span class="p">,</span> <span class="n">outflow_cell</span> <span class="o">=</span> <span class="n">_lake_inputs</span><span class="p">(</span><span class="n">Lake</span><span class="p">)</span>
     <span class="n">plake</span> <span class="o">=</span> <span class="n">meteo_data</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
