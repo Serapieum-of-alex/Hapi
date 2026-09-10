@@ -2645,7 +2645,14 @@ consumes.</p>
 <span class="normal">861</span>
 <span class="normal">862</span>
 <span class="normal">863</span>
-<span class="normal">864</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Calibration</span><span class="p">:</span>
+<span class="normal">864</span>
+<span class="normal">865</span>
+<span class="normal">866</span>
+<span class="normal">867</span>
+<span class="normal">868</span>
+<span class="normal">869</span>
+<span class="normal">870</span>
+<span class="normal">871</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Calibration</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Calibrates a catchment's parameters against observed discharge.</span>
 
 <span class="sd">    Holds the catchment it calibrates rather than being one. It was a subclass, which meant it</span>
@@ -2784,6 +2791,12 @@ consumes.</p>
 <span class="sd">        `read_parameters_bound` rather than by reading a parameter file. Either source works;</span>
 <span class="sd">        this picks whichever ran.</span>
 
+<span class="sd">        The values are copied. `SpatialVarFun` fills the *same* `Par3d` buffer on every</span>
+<span class="sd">        trial, so wrapping it by reference gave every `ParameterSet` -- and, through</span>
+<span class="sd">        `SimulationResults.run`, every set of results -- a view of an array the next trial</span>
+<span class="sd">        overwrites in place. `results.run` is documented as the inputs those arrays came</span>
+<span class="sd">        from; without the copy it described whichever trial happened to run last.</span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            values: The trial parameter array or vector.</span>
 
@@ -2793,12 +2806,13 @@ consumes.</p>
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError: The trial set is not the width the configuration requires.</span>
 <span class="sd">        """</span>
+        <span class="n">settled</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">with_values</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">with_values</span><span class="p">(</span><span class="n">settled</span><span class="p">)</span>
         <span class="n">bounds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span>
         <span class="n">snow</span> <span class="o">=</span> <span class="n">bounds</span><span class="o">.</span><span class="n">snow</span> <span class="k">if</span> <span class="n">bounds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">False</span>
         <span class="n">maxbas</span> <span class="o">=</span> <span class="n">bounds</span><span class="o">.</span><span class="n">maxbas</span> <span class="k">if</span> <span class="n">bounds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">False</span>
-        <span class="k">return</span> <span class="n">ParameterSet</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">snow</span><span class="o">=</span><span class="n">snow</span><span class="p">,</span> <span class="n">maxbas</span><span class="o">=</span><span class="n">maxbas</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ParameterSet</span><span class="p">(</span><span class="n">settled</span><span class="p">,</span> <span class="n">snow</span><span class="o">=</span><span class="n">snow</span><span class="p">,</span> <span class="n">maxbas</span><span class="o">=</span><span class="n">maxbas</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_check_before_optimising</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">narrowing</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""Fail before the optimiser is built rather than on its first trial.</span>
@@ -3744,14 +3758,7 @@ dict.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">696</span>
-<span class="normal">697</span>
-<span class="normal">698</span>
-<span class="normal">699</span>
-<span class="normal">700</span>
-<span class="normal">701</span>
-<span class="normal">702</span>
-<span class="normal">703</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">703</span>
 <span class="normal">704</span>
 <span class="normal">705</span>
 <span class="normal">706</span>
@@ -3912,7 +3919,14 @@ dict.</p>
 <span class="normal">861</span>
 <span class="normal">862</span>
 <span class="normal">863</span>
-<span class="normal">864</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calibrate_lumped</span><span class="p">(</span>
+<span class="normal">864</span>
+<span class="normal">865</span>
+<span class="normal">866</span>
+<span class="normal">867</span>
+<span class="normal">868</span>
+<span class="normal">869</span>
+<span class="normal">870</span>
+<span class="normal">871</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calibrate_lumped</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">basic_inputs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
     <span class="n">optimization_args</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
@@ -4251,14 +4265,7 @@ dict.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">558</span>
-<span class="normal">559</span>
-<span class="normal">560</span>
-<span class="normal">561</span>
-<span class="normal">562</span>
-<span class="normal">563</span>
-<span class="normal">564</span>
-<span class="normal">565</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">565</span>
 <span class="normal">566</span>
 <span class="normal">567</span>
 <span class="normal">568</span>
@@ -4387,7 +4394,14 @@ dict.</p>
 <span class="normal">691</span>
 <span class="normal">692</span>
 <span class="normal">693</span>
-<span class="normal">694</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calibrate_maxbas</span><span class="p">(</span>
+<span class="normal">694</span>
+<span class="normal">695</span>
+<span class="normal">696</span>
+<span class="normal">697</span>
+<span class="normal">698</span>
+<span class="normal">699</span>
+<span class="normal">700</span>
+<span class="normal">701</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calibrate_maxbas</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">spatial_var_fun</span><span class="p">:</span> <span class="n">SpatialDistribution</span><span class="p">,</span>
     <span class="n">optimization_args</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
@@ -4631,14 +4645,7 @@ contributions rather than discharges.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">338</span>
-<span class="normal">339</span>
-<span class="normal">340</span>
-<span class="normal">341</span>
-<span class="normal">342</span>
-<span class="normal">343</span>
-<span class="normal">344</span>
-<span class="normal">345</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">345</span>
 <span class="normal">346</span>
 <span class="normal">347</span>
 <span class="normal">348</span>
@@ -4687,7 +4694,14 @@ contributions rather than discharges.</p>
 <span class="normal">391</span>
 <span class="normal">392</span>
 <span class="normal">393</span>
-<span class="normal">394</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extract_discharge</span><span class="p">(</span>
+<span class="normal">394</span>
+<span class="normal">395</span>
+<span class="normal">396</span>
+<span class="normal">397</span>
+<span class="normal">398</span>
+<span class="normal">399</span>
+<span class="normal">400</span>
+<span class="normal">401</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extract_discharge</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">calculate_metrics</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">factor</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -4845,14 +4859,7 @@ objective function. If None, defaults to an empty list.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">306</span>
-<span class="normal">307</span>
-<span class="normal">308</span>
-<span class="normal">309</span>
-<span class="normal">310</span>
-<span class="normal">311</span>
-<span class="normal">312</span>
-<span class="normal">313</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">313</span>
 <span class="normal">314</span>
 <span class="normal">315</span>
 <span class="normal">316</span>
@@ -4875,7 +4882,14 @@ objective function. If None, defaults to an empty list.</p>
 <span class="normal">333</span>
 <span class="normal">334</span>
 <span class="normal">335</span>
-<span class="normal">336</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_objective_function</span><span class="p">(</span>
+<span class="normal">336</span>
+<span class="normal">337</span>
+<span class="normal">338</span>
+<span class="normal">339</span>
+<span class="normal">340</span>
+<span class="normal">341</span>
+<span class="normal">342</span>
+<span class="normal">343</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_objective_function</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">objective_function</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">args</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="kc">None</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Read and store the objective function and its arguments.</span>
@@ -5273,14 +5287,7 @@ dict.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/calibration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">401</span>
-<span class="normal">402</span>
-<span class="normal">403</span>
-<span class="normal">404</span>
-<span class="normal">405</span>
-<span class="normal">406</span>
-<span class="normal">407</span>
-<span class="normal">408</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">408</span>
 <span class="normal">409</span>
 <span class="normal">410</span>
 <span class="normal">411</span>
@@ -5428,7 +5435,14 @@ dict.</p>
 <span class="normal">553</span>
 <span class="normal">554</span>
 <span class="normal">555</span>
-<span class="normal">556</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_calibration</span><span class="p">(</span>
+<span class="normal">556</span>
+<span class="normal">557</span>
+<span class="normal">558</span>
+<span class="normal">559</span>
+<span class="normal">560</span>
+<span class="normal">561</span>
+<span class="normal">562</span>
+<span class="normal">563</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_calibration</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">spatial_var_fun</span><span class="p">:</span> <span class="n">SpatialDistribution</span><span class="p">,</span>
     <span class="n">optimization_args</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
