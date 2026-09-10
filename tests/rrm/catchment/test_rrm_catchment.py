@@ -87,6 +87,71 @@ class TestLumped:
         assert len(coello.Qsim) == 10
         assert coello.Qsim.columns.to_list() == ["q"]
 
+    def test_run_lumped_with_the_default_routing_flag(
+        self,
+        coello_rrm_date: list,
+        lumped_meteo_data_path: str,
+        coello_AreaCoeff: float,
+        coello_InitialCond: list,
+        lumped_parameters_path: str,
+        coello_Snow: int,
+    ):
+        """Test that the entry point runs with the `Route` default it declares.
+
+        Test scenario:
+            The conceptual model prepends an initial-state slot, so its series is one step
+            longer than the period. Both routed branches trimmed it and the unrouted one did
+            not, so `Run.run_lumped(model)` -- the default -- raised `Length of values
+            (1096) does not match length of index (1095)` when the period indexed the frame.
+            Nothing exercised the default of a public entry point.
+        """
+        coello = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
+        coello.read_lumped_inputs(lumped_meteo_data_path)
+        coello.read_lumped_model(HBVLumped, coello_AreaCoeff, coello_InitialCond)
+        coello.read_parameters(lumped_parameters_path, coello_Snow)
+
+        results = Run.run_lumped(coello)
+
+        assert len(results.q_total) == len(coello.period), (
+            f"the total must cover the period exactly, got {len(results.q_total)} "
+            f"against {len(coello.period)}"
+        )
+        assert len(coello.Qsim) == len(coello.period), (
+            "the frame the entry point builds is indexed by the period"
+        )
+
+    def test_the_routed_and_unrouted_lumped_paths_agree_in_length(
+        self,
+        coello_rrm_date: list,
+        lumped_meteo_data_path: str,
+        coello_AreaCoeff: float,
+        coello_InitialCond: list,
+        lumped_parameters_path: str,
+        coello_Snow: int,
+    ):
+        """Test that turning routing on does not change how long the series is.
+
+        Test scenario:
+            The trim moved out of the two routing branches and above them, so this pins that
+            the routed paths still produce exactly what they produced before -- the length is
+            now a property of the run, not of which branch it took.
+        """
+
+        def build() -> Catchment:
+            model = Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1])
+            model.read_lumped_inputs(lumped_meteo_data_path)
+            model.read_lumped_model(HBVLumped, coello_AreaCoeff, coello_InitialCond)
+            model.read_parameters(lumped_parameters_path, coello_Snow)
+            return model
+
+        unrouted = Run.run_lumped(build())
+        routed = Run.run_lumped(build(), 1, Routing.muskingum_v)
+
+        assert len(unrouted.q_total) == len(routed.q_total), (
+            f"routing must not change the length: {len(unrouted.q_total)} against "
+            f"{len(routed.q_total)}"
+        )
+
     def test_save_lumped_results(
         self,
         coello_rrm_date: list,

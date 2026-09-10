@@ -422,17 +422,23 @@ class Wrapper:
         # The lumped total discharge is exactly what `q_total` means, so it goes there rather
         # than onto the catchment as `Qsim`. `Run.run_lumped` is what indexes it by the period
         # and puts the frame on the model -- so this engine writes nothing outside `results`.
-        q_total = results.quz + results.qlz
+        # The conceptual model prepends an initial-state slot, so its series is one step
+        # longer than the period covers. Trimmed once, here, rather than inside each
+        # routing branch: both routed branches used to do it and the unrouted one did not,
+        # so `Run.run_lumped(model)` -- the entry point's own default, `Route=0` -- produced
+        # an `n + 1` series and then raised `Length of values (1096) does not match length
+        # of index (1095)` when the period indexed it.
+        q_total = (results.quz + results.qlz)[:-1]
 
         if Routing != 0 and run.parameters.maxbas:
             route = RoutingFn
             assert route is not None  # noqa: S101 - guarded above
-            q_total = route(np.array(q_total[:-1]), run.parameters.values[-1])
+            q_total = route(np.array(q_total), run.parameters.values[-1])
         elif Routing != 0:
             route = RoutingFn
             assert route is not None  # noqa: S101 - guarded above
             q_total = route(
-                np.array(q_total[:-1]),
+                np.array(q_total),
                 q_total[0],
                 run.parameters.values[-2],
                 run.parameters.values[-1],

@@ -233,10 +233,10 @@ class TestLumpedRouting:
             unrouted series, so compare against the same run left unrouted, convolved
             independently with the parameter the branch is supposed to use.
         """
-        # Straight to the wrapper: `Run.run_lumped` indexes the series by the period, and the
-        # unrouted one is a step longer than the index, so only the routed form survives that
-        # call. The engine leaves its total in `results.q_total`; `Qsim` is what the entry
-        # point puts on the model.
+        # Straight to the wrapper for the reference series: the engine leaves its total in
+        # `results.q_total`, while `Qsim` is what the entry point puts on the model. Both
+        # forms are now the length of the period -- the initial-state slot is trimmed once,
+        # for every branch, so the unrouted series no longer has to be shortened here.
         unrouted = _lumped_model(
             coello_rrm_date,
             lumped_meteo_data_path,
@@ -257,7 +257,7 @@ class TestLumpedRouting:
 
         maxbas = routed.parameters.values[-1]
         expected = Routing.triangular_routing_1(
-            np.array(np.asarray(unrouted.results.q_total)[:-1]), maxbas
+            np.array(np.asarray(unrouted.results.q_total)), maxbas
         )
         # `run_lumped` wraps the routed series in a date-indexed frame; compare the values.
         actual = np.asarray(routed.Qsim, dtype=float).ravel()
