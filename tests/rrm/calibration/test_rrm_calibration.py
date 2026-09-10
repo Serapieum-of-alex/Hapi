@@ -25,6 +25,36 @@ def test_read_parameters_bounds(
     assert isinstance(Coello.bounds.maxbas, bool)
 
 
+@pytest.mark.parametrize(
+    "width, snow, maxbas",
+    [(10, False, False), (12, True, True), (16, False, True)],
+)
+def test_read_parameters_bounds_refuses_a_width_the_configuration_does_not_call_for(
+    coello_rrm_date: list, width: int, snow: bool, maxbas: bool
+):
+    """Test that bounds of the wrong width are refused where they enter.
+
+    Args:
+        coello_rrm_date: Start and end dates for the model.
+        width: Number of bound values supplied.
+        snow: Whether the snow routine is on.
+        maxbas: Whether MAXBAS routing is on.
+
+    Test scenario:
+        `ParameterSet` holds every trial vector to `PARAMETER_COUNTS[(snow, maxbas)]`, but
+        nothing held the *bounds* to it -- so a mismatch surfaced once per trial, from inside
+        the objective, after the whole optimisation problem had been declared and the
+        optimiser started. The bounds are where the configuration enters; the rule belongs
+        there too.
+    """
+    coello = Calibration(Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1]))
+
+    with pytest.raises(ValueError):
+        coello.read_parameters_bound(
+            [0.0] * width, [1.0] * width, snow, maxbas=maxbas
+        )
+
+
 def test_lumped_calibration(
     coello_rrm_date: list,
     lumped_meteo_data_path: str,

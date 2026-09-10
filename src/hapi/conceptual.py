@@ -293,13 +293,19 @@ class ParameterBounds:
         """Check the two bounds describe the same parameters.
 
         Raises:
-            ValueError: The bounds are different lengths.
+            ValueError: The bounds are different lengths, or do not hold the number of
+                parameters `(snow, maxbas)` calls for.
         """
         if len(self.lower) != len(self.upper):
             raise ValueError(
                 f"the length of UB should be the same as LB, got {len(self.upper)} and "
                 f"{len(self.lower)}"
             )
+        # The same rule every trial vector is held to. Checked here as well because this is
+        # where the configuration enters: a mismatch used to surface once per trial from
+        # `ParameterSet`, after the whole optimisation problem had been declared and the
+        # optimiser started, rather than at the call that got it wrong.
+        validate_parameter_count(self.lower, self.snow, self.maxbas)
         object.__setattr__(self, "lower", np.array(self.lower))
         object.__setattr__(self, "upper", np.array(self.upper))
 
