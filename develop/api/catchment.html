@@ -3087,7 +3087,9 @@ carries no result attributes of its own and no forwarding properties.</p>
 <span class="normal">1282</span>
 <span class="normal">1283</span>
 <span class="normal">1284</span>
-<span class="normal">1285</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Catchment</span><span class="p">:</span>
+<span class="normal">1285</span>
+<span class="normal">1286</span>
+<span class="normal">1287</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Catchment</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Catchment for reading meteorological/spatial inputs and running the model.</span>
 
 <span class="sd">    The Catchment class includes methods to read the meteorological and</span>
@@ -3924,7 +3926,9 @@ carries no result attributes of its own and no forwarding properties.</p>
 <span class="sd">                per-gauge (Muskingum) path. Default is None.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            ValueError: The gauge table has not been read, or the model has not been run.</span>
+<span class="sd">            ValueError: The gauge table has not been read, the model has not been run, or</span>
+<span class="sd">                the results it produced have not been routed -- there is no hydrograph to</span>
+<span class="sd">                extract from a set of arrays no routing step has filled.</span>
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">GaugesTable</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"please read the gauges' table first."</span><span class="p">)</span>
@@ -4689,7 +4693,9 @@ per-gauge (Muskingum) path. Default is None.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The gauge table has not been read, or the model has not been run.</p>
+                <p>The gauge table has not been read, the model has not been run, or
+the results it produced have not been routed -- there is no hydrograph to
+extract from a set of arrays no routing step has filled.</p>
               </div>
             </td>
           </tr>
@@ -4824,7 +4830,9 @@ per-gauge (Muskingum) path. Default is None.</p>
 <span class="normal">1146</span>
 <span class="normal">1147</span>
 <span class="normal">1148</span>
-<span class="normal">1149</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extract_discharge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">calculate_metrics</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">factor</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="normal">1149</span>
+<span class="normal">1150</span>
+<span class="normal">1151</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extract_discharge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">calculate_metrics</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">factor</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Extract and sum discharge at gauge locations.</span>
 
 <span class="sd">    Which hydrograph is the right one depends on how the run was routed, and the results</span>
@@ -4849,7 +4857,9 @@ per-gauge (Muskingum) path. Default is None.</p>
 <span class="sd">            per-gauge (Muskingum) path. Default is None.</span>
 
 <span class="sd">    Raises:</span>
-<span class="sd">        ValueError: The gauge table has not been read, or the model has not been run.</span>
+<span class="sd">        ValueError: The gauge table has not been read, the model has not been run, or</span>
+<span class="sd">            the results it produced have not been routed -- there is no hydrograph to</span>
+<span class="sd">            extract from a set of arrays no routing step has filled.</span>
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">GaugesTable</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"please read the gauges' table first."</span><span class="p">)</span>
@@ -5771,9 +5781,7 @@ Figure and ax is the matplotlib Axes object.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1151</span>
-<span class="normal">1152</span>
-<span class="normal">1153</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1153</span>
 <span class="normal">1154</span>
 <span class="normal">1155</span>
 <span class="normal">1156</span>
@@ -5905,7 +5913,9 @@ Figure and ax is the matplotlib Axes object.</p>
 <span class="normal">1282</span>
 <span class="normal">1283</span>
 <span class="normal">1284</span>
-<span class="normal">1285</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_hydrograph</span><span class="p">(</span>
+<span class="normal">1285</span>
+<span class="normal">1286</span>
+<span class="normal">1287</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_hydrograph</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">start_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">,</span>
     <span class="n">end_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">,</span>
