@@ -387,10 +387,11 @@ class SimulationResults:
             start: Starting date of the animation.
             end: End date of the animation.
             fmt: Format a string date is read with. Default is "%Y-%m-%d".
-            option: Variable to animate. 1 - Total discharge, 2 - Upper zone discharge,
-                3 - Ground water, 4 - Snow pack, 5 - Soil moisture, 6 - Upper zone,
-                7 - Lower zone, 8 - Water content, 9 - Precipitation, 10 - ET,
-                11 - Temperature. Default is 1.
+            option: Variable to animate. 1 - Total discharge, 2 - Surface flow (the routed
+                upper zone), 3 - Ground water flow (the translated lower zone), 4 - Snow
+                pack, 5 - Soil moisture, 6 - Upper zone, 7 - Lower zone, 8 - Water content,
+                9 - Precipitation, 10 - ET, 11 - Temperature. Default is 1. Options 4-8 are
+                the state variables and 9-11 are the run's own drivers.
             gauges: Gauge table to overlay, as `Catchment.GaugesTable`. It must carry `id`,
                 `cell_row` and `cell_col` columns. `None`, the default, draws no gauges.
                 This used to be a `bool` that reached back onto the catchment for the table;
@@ -462,8 +463,14 @@ class SimulationResults:
         source, title = _ANIMATION_OPTIONS[option]
         arr = self._select(source, start_i, end_i)
 
-        # mask the no-data cells on a copy so plotting never mutates the result arrays
-        arr = arr.copy()
+        # Masked on a copy, so plotting never mutates the result arrays -- and on a float
+        # copy, because the mask writes NaN and the meteo options read `MeteoInputs` cubes
+        # "as stored", which an integer driver raster would make unassignable.
+        arr = (
+            arr.copy()
+            if np.issubdtype(arr.dtype, np.floating)
+            else arr.astype(np.float32)
+        )
         arr[np.isnan(run.flow_network.flow_acc_arr), :] = np.nan
 
         time = run.period.date_index[start_i:end_i]
@@ -592,7 +599,7 @@ class SimulationResults:
                 ...     data=np.ones((len(period), 4)),
                 ...     parameters=ParameterSet(np.ones(12), snow=False, maxbas=False),
                 ...     model_setup=ConceptualModelSetup(
-                ...         HBVBergestrom92, 100.0, [0.0] * 5, 1.0
+                ...         HBVBergestrom92(), 100.0, [0.0] * 5, 1.0
                 ...     ),
                 ... )
                 >>> discharge = np.array([1.5, 2.5, 3.5])
@@ -746,9 +753,9 @@ class SimulationResults:
             # For a lumped run the total discharge *is* `Qsim`; `Run.run_lumped` only wraps
             # this same array in a frame to put on the model.
             data["Qsim"] = self._require_field("q_total")[start_i:end_i]
-        if result == 2 or result == 5:
+        if result in (2, 5):
             data["Quz"] = self.quz[start_i:end_i]
-        if result == 3 or result == 5:
+        if result in (3, 5):
             data["Qlz"] = self.qlz[start_i:end_i]
         if result in (4, 5):
             data[STATE_VARIABLES] = self._require_state_variables()[start_i:end_i, :]

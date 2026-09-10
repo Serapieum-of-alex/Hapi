@@ -139,7 +139,10 @@ cal_parameters = Coello.run_calibration(
     spatial_var_fun, optimization_args, print_error=0
 )
 # %% convert parameters to rasters
-# Coello.model.parameters.values = [0.700, 399, 1.704, 0.1021, 0.4622, 0.6237, 0.1251, 0.005, 59.85, 5.241, 94.91, 0.2075]
+# Coello.model.parameters = Coello.model.parameters.with_values(
+#     [0.700, 399, 1.704, 0.1021, 0.4622, 0.6237, 0.1251, 0.005, 59.85, 5.241,
+#      94.91, 0.2075]
+# )
 spatial_var_fun.Function(
     Coello.model.parameters.values, kub=spatial_var_fun.Kub, klb=spatial_var_fun.Klb
 )

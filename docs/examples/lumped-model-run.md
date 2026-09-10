@@ -64,7 +64,8 @@ Coello.read_parameters(Parameterpath, Snow)
 RoutingFn = Routing.muskingum_v
 Route = 1
 ```
-- now all the data required for the model are prepared in the right form, now you can call the `run_lumped` wrapper to initiate the calculation
+- now all the data required for the model are prepared in the right form, now you can
+  call the `run_lumped` wrapper to initiate the calculation
 
 ```python
 Run.run_lumped(Coello, Route, RoutingFn)

@@ -11,10 +11,9 @@ and stored in the one spelling the internals compare against:
 | `maxbas` | `MAXBAS` | Every cell straight to the outlet through a triangular function. |
 | `kinematic` | `Kinematic` | The flood model's own path (`Run.run_flood`). |
 
-Anything else raises a `ValueError` naming the three. Up to and including version 1.7.0 the
-constructor stored whatever string it was handed, so a run configured as `"Max_bas"` — or as a
-descriptive label such
-as `"Muskingum-Cunge"` — was accepted and then silently routed with Muskingum, because
+Anything else raises a `ValueError` naming the three. Before this check the constructor stored
+whatever string it was handed, so a run configured as `"Max_bas"` — or as a descriptive label
+such as `"Muskingum-Cunge"` — was accepted and then silently routed with Muskingum, because
 `distrrm.route_muskingum` compares against `"Muskingum"` exactly. Rejecting the spelling is what
 makes that comparison trustworthy; a script passing a spelling outside the table has to be updated
 to one of the three.
