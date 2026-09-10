@@ -50,9 +50,7 @@ def test_read_parameters_bounds_refuses_a_width_the_configuration_does_not_call_
     coello = Calibration(Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1]))
 
     with pytest.raises(ValueError):
-        coello.read_parameters_bound(
-            [0.0] * width, [1.0] * width, snow, maxbas=maxbas
-        )
+        coello.read_parameters_bound([0.0] * width, [1.0] * width, snow, maxbas=maxbas)
 
 
 def test_lumped_calibration(

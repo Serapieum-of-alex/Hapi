@@ -95,8 +95,8 @@ Coello.OFArgs = []
 def objfn(individual):
     # Coello.model.read_parameters(Parameterpath, Snow)
     Coello.model.parameters = ParameterSet(
-    individual, snow=Coello.bounds.snow, maxbas=Coello.bounds.maxbas
-)
+        individual, snow=Coello.bounds.snow, maxbas=Coello.bounds.maxbas
+    )
     Run.run_lumped(Coello.model, Route, RoutingFn)
     # [Coello.model.QGauges.columns[-1]]
     error = PC.NSEHF(Coello.model.QGauges, Coello.model.Qsim, *Coello.OFArgs)
@@ -184,7 +184,10 @@ Coello.model.plot_hydrograph(plotstart, plotend, gaugei, title="Lumped Model")
 # %% Save the Parameters
 
 ParPath = (
-    Path + f"{Coello.model.name}-lumped-parameters" + str(dt.datetime.now())[0:10] + ".txt"
+    Path
+    + f"{Coello.model.name}-lumped-parameters"
+    + str(dt.datetime.now())[0:10]
+    + ".txt"
 )
 parameters = pd.DataFrame(index=parnames)
 # parameters['values'] = cal_parameters[1]
@@ -196,6 +199,9 @@ StartDate = "2009-01-01"
 EndDate = "2010-04-20"
 
 Path = (
-    Path + f"{Coello.model.name}-results-lumped-model" + str(dt.datetime.now())[0:10] + ".txt"
+    Path
+    + f"{Coello.model.name}-results-lumped-model"
+    + str(dt.datetime.now())[0:10]
+    + ".txt"
 )
 Coello.model.results.save(result=5, start=StartDate, end=EndDate, path=Path)
