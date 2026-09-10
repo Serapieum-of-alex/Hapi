@@ -101,9 +101,9 @@ class DistributedRun:
         """Check the inputs agree with each other and with the grid.
 
         Raises:
-            ValueError: The drivers or the parameters do not cover the grid, the river geometry
-                does not, or a cell skip was asked for with no geometry to identify the river
-                cells.
+            ValueError: The drivers, the parameters, the river geometry or the flow-path-length
+                raster do not cover the grid, or a cell skip was asked for with no geometry to
+                identify the river cells.
         """
         rows, cols = self.flow_network.rows, self.flow_network.cols
 
@@ -121,6 +121,19 @@ class DistributedRun:
             rows, cols
         ):
             raise ValueError(GRID_MISMATCH_ERROR)
+
+        # `route_maxbas_by_path_length` indexes this by the flow network's rows and cols,
+        # so a raster on a different grid either raises deep inside that loop or -- if it is
+        # larger -- quietly reads the wrong cells. It was carried in with a bare `getattr`
+        # and was the only input this seam did not check.
+        if self.flow_path_length is not None:
+            shape = np.shape(self.flow_path_length)
+            if shape != (rows, cols):
+                raise ValueError(
+                    f"the flow-path-length raster is {shape} but the catchment grid is "
+                    f"({rows}, {cols}); read it from a raster aligned to the "
+                    f"flow-accumulation grid"
+                )
 
         if self.skip_hydraulic_cells and self.river_geometry is None:
             raise ValueError(

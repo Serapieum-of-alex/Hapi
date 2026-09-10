@@ -156,6 +156,45 @@ class TestNarrowingIsTheValidation:
         with pytest.raises(ValueError, match="read_river_geometry"):
             DistributedRun.from_model(built, skip_hydraulic_cells=True)
 
+    @pytest.mark.parametrize("delta", [(1, 0), (0, 1), (-1, -1)])
+    def test_a_flow_path_length_raster_off_the_grid_is_refused(
+        self, built: Catchment, delta: tuple[int, int]
+    ):
+        """Test that the path-length raster is held to the grid like every other input.
+
+        Args:
+            built: A fully built distributed catchment.
+            delta: Row and column offsets applied to the raster's shape.
+
+        Test scenario:
+            `route_maxbas_by_path_length` indexes this raster by the flow network's rows and
+            cols. It was the one input carried into the run with a bare `getattr` and never
+            compared to the grid, so a mismatched raster either raised `IndexError` deep in
+            that loop or -- when larger -- quietly read the wrong cells.
+        """
+        rows, cols = built.flow_network.shape
+        built.flow_path_length_arr = np.ones((rows + delta[0], cols + delta[1]))
+
+        with pytest.raises(ValueError, match="flow-path-length raster"):
+            DistributedRun.from_model(built)
+
+    def test_a_flow_path_length_raster_on_the_grid_is_accepted(self, built: Catchment):
+        """Test that the check admits a raster that does match the grid.
+
+        Args:
+            built: A fully built distributed catchment.
+
+        Test scenario:
+            The other half of the guard: a shape check that refused everything would pass the
+            test above and break the only entry point that reads this raster.
+        """
+        rows, cols = built.flow_network.shape
+        built.flow_path_length_arr = np.ones((rows, cols))
+
+        run = DistributedRun.from_model(built)
+
+        assert run.flow_path_length is not None, "the raster must reach the run"
+
     def test_geometry_off_the_catchment_grid_is_refused(self, built: Catchment):
         """Test that geometry on a different grid than the catchment raises.
 
