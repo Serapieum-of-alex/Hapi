@@ -124,7 +124,13 @@ class SimulationResults:
             that will not look at it need not pay for it. See
             :attr:`~hapi.runs.DistributedRun.keep_state_variables`.
         quz_routed: Upper-zone discharge after routing. `None` until a routing step runs.
-        qlz_translated: Lower-zone discharge after translation. `None` until then.
+            After a MAXBAS run this *is* :attr:`quz`, not a copy of it -- the triangular
+            routing works in place and a copy would double the memory of a
+            `(rows, cols, time)` array for nothing. Nothing in the package writes through
+            the alias, but it is visible (`results.quz_routed is results.quz`), so editing
+            one in place edits the other.
+        qlz_translated: Lower-zone discharge after translation. `None` until then. Aliases
+            :attr:`qlz` after a MAXBAS run, for the same reason as :attr:`quz_routed`.
         q_total: `quz_routed + qlz_translated`. Read it through
             :attr:`outlet_shortcut_valid` rather than assuming what a cell means.
         qout: The outlet hydrograph, when the run computed one, and always `len(period)`
@@ -677,8 +683,6 @@ class SimulationResults:
 
         arr = self._select(_RASTER_OPTIONS[result], start_i, end_i)
 
-        src = Dataset.read_file(flow_acc_path)
-
         if prefix == "":
             prefix = "Result_"
 
@@ -693,12 +697,19 @@ class SimulationResults:
             for i in period.date_index[start_i:end_i]
         ]
 
-        # from_dataset is pyramids' named constructor for an in-memory scaffold off a
-        # template raster; the bare Datacube(src, time_length=) form it replaced is kept
-        # only as a legacy fallback upstream.
-        cube = Datacube.from_dataset(src, arr.shape[2])
-        cube.values = np.moveaxis(arr, -1, 0)
-        cube.to_file(names)
+        # Closed when the write finishes: on Windows an open GDAL handle keeps a lock on
+        # the file, so a script that saves rasters and then moves or deletes the template
+        # fails, and a repeated `save` accumulates handles.
+        with Dataset.read_file(flow_acc_path) as src:
+            # from_dataset is pyramids' named constructor for an in-memory scaffold off a
+            # template raster; the bare Datacube(src, time_length=) form it replaced is
+            # kept only as a legacy fallback upstream.
+            cube = Datacube.from_dataset(src, arr.shape[2])
+            # A copy, not the `moveaxis` view: `arr` is a slice of a result array, and
+            # handing a view to a writer that may normalise no-data in place would edit
+            # the results this call is only supposed to read.
+            cube.values = np.ascontiguousarray(np.moveaxis(arr, -1, 0))
+            cube.to_file(names)
 
     def _save_csv(
         self,

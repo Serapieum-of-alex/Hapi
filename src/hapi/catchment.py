@@ -557,14 +557,15 @@ class Catchment:
         # Path validation is delegated to pyramids: a missing path raises
         # FileNotFoundError, a non-path argument TypeError, and an unreadable file a
         # GDAL RuntimeError. Unlike the asserts these replace, they survive `python -O`.
-        fpl = Dataset.read_file(path)
-        # No-data masking is delegated to pyramids (see FlowNetwork.from_rasters). The grid
-        # itself comes from the flow network, so this reader no longer redefines rows, cols,
-        # no_data_value or no_elem from a second raster.
-        self.flow_path_length_arr = np.ma.filled(
-            fpl.read_array(band=0, masked=True).astype(float), np.nan
-        )
-        _warn_if_no_sentinel(fpl, "flow path length")
+        # Closed once read: see FlowNetwork.from_rasters for why the handle is not kept.
+        with Dataset.read_file(path) as fpl:
+            # No-data masking is delegated to pyramids (see FlowNetwork.from_rasters). The
+            # grid itself comes from the flow network, so this reader no longer redefines
+            # rows, cols, no_data_value or no_elem from a second raster.
+            self.flow_path_length_arr = np.ma.filled(
+                fpl.read_array(band=0, masked=True).astype(float), np.nan
+            )
+            _warn_if_no_sentinel(fpl, "flow path length")
 
         logger.debug("Flow path length input is read successfully")
 

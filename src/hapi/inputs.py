@@ -698,28 +698,31 @@ class FlowNetwork:
             UserWarning: A raster declares no no-data value, so every cell is treated as
                 inside the catchment.
         """
-        acc = Dataset.read_file(str(flow_acc))
-        _warn_if_no_sentinel(acc, "flow accumulation")
-        acc_arr = np.ma.filled(
-            acc.read_array(band=0, masked=True).astype(float), np.nan
-        )
+        # `with`: on Windows an open GDAL handle keeps a lock on the file, so a script
+        # that reads a catchment and then moves or rewrites its inputs fails, and a loop
+        # over basins accumulates handles. Everything read from the dataset is copied into
+        # arrays here, so nothing needs the handle afterwards.
+        with Dataset.read_file(str(flow_acc)) as acc:
+            _warn_if_no_sentinel(acc, "flow accumulation")
+            acc_arr = np.ma.filled(
+                acc.read_array(band=0, masked=True).astype(float), np.nan
+            )
+            transform = acc.transform
 
         dir_arr, table = None, None
         if flow_dir is not None:
-            direction = DEM.read_file(str(flow_dir))
-            _warn_if_no_sentinel(direction, "flow direction")
-            dir_arr = np.ma.filled(
-                direction.read_array(band=0, masked=True).astype(float), np.nan
-            )
-            codes = set(np.unique(_to_int_codes(dir_arr)).tolist())
-            if not codes <= set(D8_CODES):
-                raise ValueError(
-                    "flow direction raster should contain values 1,2,4,8,16,32,64,128 "
-                    f"only, found {sorted(codes - set(D8_CODES))}"
+            with DEM.read_file(str(flow_dir)) as direction:
+                _warn_if_no_sentinel(direction, "flow direction")
+                dir_arr = np.ma.filled(
+                    direction.read_array(band=0, masked=True).astype(float), np.nan
                 )
-            table = direction.flow_direction_table()
-
-        transform = acc.transform
+                codes = set(np.unique(_to_int_codes(dir_arr)).tolist())
+                if not codes <= set(D8_CODES):
+                    raise ValueError(
+                        "flow direction raster should contain values 1,2,4,8,16,32,64,128 "
+                        f"only, found {sorted(codes - set(D8_CODES))}"
+                    )
+                table = direction.flow_direction_table()
         network = cls(
             flow_acc_arr=acc_arr,
             flow_dir_arr=dir_arr,
@@ -1797,7 +1800,12 @@ class RiverGeometry:
             river_roughness_file,
             floodplain_roughness_file,
         )
-        return cls(*(Dataset.read_file(path).read_array(band=0) for path in paths))
+        arrays = []
+        for raster in paths:
+            # Five handles, closed as each raster is read: see FlowNetwork.from_rasters.
+            with Dataset.read_file(raster) as dataset:
+                arrays.append(dataset.read_array(band=0))
+        return cls(*arrays)
 
 
 class Inputs:
