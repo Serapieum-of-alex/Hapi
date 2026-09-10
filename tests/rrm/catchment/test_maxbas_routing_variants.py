@@ -91,7 +91,7 @@ def maxbas_parameters_path(lumped_parameters_path: str, tmp_path_factory) -> str
     return str(path)
 
 
-class TestDistMaxbas2:
+class TestRouteMaxbasByPathLength:
     """Tests for `DistributedRRM.route_maxbas_by_path_length`."""
 
     def test_conserves_volume_while_redistributing_it_in_time(

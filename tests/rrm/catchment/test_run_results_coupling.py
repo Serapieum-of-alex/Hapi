@@ -251,7 +251,7 @@ class TestEntryPointsReturnTheirResults:
             f"a run_distributed run is Muskingum-routed, got {results.routing}"
         )
 
-    def test_run_fw1_returns_maxbas_routed_results(
+    def test_run_maxbas_returns_maxbas_routed_results(
         self, coello_fixtures: dict, coello_dist_parameters_maxbas: str
     ):
         """Test that the triangular path records MAXBAS on the results it returns.

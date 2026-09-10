@@ -3,7 +3,7 @@
 `Wrapper.run_muskingum_with_lake` and `Wrapper.run_maxbas_with_lake` run the lake as a lumped inflow, add its routed
 discharge to the outflow cell, and then route the sub-catchment — Muskingum in the first case,
 triangular (MAXBAS) in the second. Neither had test coverage, so the sizes they read off
-`MeteoInputs` and `FlowNetwork` and the `_maxbas_routed` flag they leave behind were unpinned.
+`MeteoInputs` and `FlowNetwork` and the routing they record on their results were unpinned.
 
 The bundled Jiboa lake fixture is hourly and twenty steps long while its distributed rasters are
 absent from the repository, so the lake here is driven over the Coello grid instead: real
@@ -479,18 +479,20 @@ class TestFW1WithLake:
             err_msg="qout must be the trimmed sub-catchment sum plus the trimmed lake series",
         )
 
-    def test_marks_the_model_as_maxbas_routed(
+    def test_records_maxbas_on_the_results(
         self,
         coello_with_lake_inputs_maxbas: Catchment,
         coello_start_date: str,
         coello_end_date: str,
     ):
-        """Test that the triangular lake path sets `_maxbas_routed` from a clean model.
+        """Test that the triangular lake path records MAXBAS on the results it returns.
 
         Test scenario:
             Triangular routing sends every cell straight to the outlet, so reading a gauge
-            cell of `q_total` under-reports. The flag is what makes `extract_discharge` refuse
-            rather than return the wrong hydrograph.
+            cell of `q_total` under-reports. `RoutingKind.MAXBAS` on the arrays is what makes
+            `extract_discharge` refuse rather than return the wrong hydrograph -- it replaced
+            a `_maxbas_routed` flag on the catchment that three methods had to set and clear
+            by hand.
         """
         model = coello_with_lake_inputs_maxbas
         lake = _make_lake(model, coello_start_date, coello_end_date, seed=23)
@@ -505,7 +507,7 @@ class TestFW1WithLake:
         )
 
 
-class TestRunHapiWithLakeEndToEnd:
+class TestRunDistributedWithLakeEndToEnd:
     """Tests that the public entry point completes with the record it documents."""
 
     def test_the_entry_point_runs_with_a_record_of_the_documented_length(

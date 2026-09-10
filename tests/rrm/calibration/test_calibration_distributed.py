@@ -397,7 +397,7 @@ class TestRunCalibration:
         )
 
 
-class TestFW1Calibration:
+class TestCalibrateMaxbas:
     """Tests for `Calibration.calibrate_maxbas` (triangular routing)."""
 
     def test_stores_the_optimizer_result_on_the_instance(

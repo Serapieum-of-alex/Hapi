@@ -108,7 +108,7 @@ def _load_flat_river_geometry(model: Catchment) -> None:
     )
 
 
-class TestRunFloodModel:
+class TestRunFlood:
     """Tests for `Run.run_flood`."""
 
     def test_dispatches_once_every_input_lines_up(
@@ -184,7 +184,7 @@ class TestRunFloodModel:
         )
 
 
-class TestRunHapiWithLake:
+class TestRunDistributedWithLake:
     """Tests for `Run.run_distributed_with_lake`."""
 
     def test_dispatches_once_the_lake_record_matches_the_simulation(
