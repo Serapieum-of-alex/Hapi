@@ -1656,7 +1656,7 @@ class TestRoutingMethodNormalisation:
             "somewhere/else"
         ), f"outputs did not survive: {model.config.outputs}"
         assert model.config.flow_network.flow_accumulation is not None, (
-            "the flow-accumulation path should stay reachable for save_results"
+            "the flow-accumulation path should stay reachable for results.save"
         )
 
     def test_a_hand_built_model_has_no_configuration(

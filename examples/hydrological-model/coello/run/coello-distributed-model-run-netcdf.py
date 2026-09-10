@@ -84,14 +84,14 @@ for gauge_id in Coello.GaugesTable["id"]:
     print(f"WB=      {Coello.metrics.loc['WB', gauge_id]:.2f}")
 
 # %% Save the routed discharge to rasters, one per time step
-# Both paths come from the configuration rather than being restated here: `save_results`
+# Both paths come from the configuration rather than being restated here: `results.save`
 # re-reads the flow-accumulation raster for georeferencing (FlowNetwork keeps only the arrays,
 # not the source path), and `outputs.results_dir` says where the rasters go. The block is
 # optional, so a configuration without one writes beside the script rather than failing on a
 # missing attribute.
 outputs = Coello.config.outputs
 save_to = (outputs.results_dir if outputs is not None else None) or ""
-Coello.save_results(
+Coello.results.save(
     flow_acc_path=Coello.config.flow_network.flow_accumulation,
     result=1,
     path=save_to,

@@ -110,6 +110,7 @@ nav:
       - api/inputs.md
       - api/routing.md
       - api/run.md
+      - api/results.md
       - api/wrapper.md
       - api/distrrm.md
       - api/hbv.md

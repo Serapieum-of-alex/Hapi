@@ -2,7 +2,7 @@
 
 Only ``DistRRM.route_muskingum`` (the Muskingum path) used to set ``q_total`` /
 ``quz_routed`` / ``qlz_translated``, so after ``Run.run_maxbas`` they stayed ``None`` and every
-discharge option of ``save_results`` / ``plot_distributed_results`` raised
+discharge option of ``SimulationResults.save`` / ``.animate`` raised
 ``TypeError: 'NoneType' object is not subscriptable``. ``Wrapper._set_maxbas_output_fields``
 now fills them; these tests pin both the values and the MAXBAS-specific semantics.
 """
@@ -116,8 +116,8 @@ def test_fw1_sets_the_per_cell_output_fields(coello_fw1: Catchment):
         coello_fw1: Coello catchment with a completed MAXBAS run.
 
     Test scenario:
-        These three fields back the discharge options of `save_results` and
-        `plot_distributed_results`. Before the fix only the Muskingum path set
+        These three fields back the discharge options of `results.save` and
+        `results.animate`. Before the fix only the Muskingum path set
         them, so they were `None` here and every discharge option raised.
     """
     shape = coello_fw1.results.quz.shape
@@ -214,7 +214,7 @@ def test_extract_discharge_takes_the_basin_wide_sum_after_fw1(coello_fw1: Catchm
     )
 
 
-def test_save_results_distributed_discharge_after_fw1(
+def test_save_rasters_of_discharge_after_fw1(
     coello_fw1: Catchment, coello_acc_path: str, tmp_path
 ):
     """Test that the discharge results can now be written as rasters after run_maxbas.
@@ -231,7 +231,7 @@ def test_save_results_distributed_discharge_after_fw1(
     """
     out = tmp_path / "q"
     out.mkdir()
-    coello_fw1.save_results(
+    coello_fw1.results.save(
         flow_acc_path=coello_acc_path,
         result=1,
         start="2009-01-01",
@@ -268,7 +268,5 @@ def test_plot_discharge_options_after_fw1(coello_fw1: Catchment, option: int):
     """
     import matplotlib.animation
 
-    anim = coello_fw1.plot_distributed_results(
-        "2009-01-01", "2009-01-05", option=option
-    )
+    anim = coello_fw1.results.animate("2009-01-01", "2009-01-05", option=option)
     assert isinstance(anim, matplotlib.animation.FuncAnimation)

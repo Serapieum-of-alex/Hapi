@@ -81,7 +81,7 @@ class DistributedRun:
             :meth:`~hapi.rrm.distrrm.DistributedRRM.route_maxbas_by_path_length`.
         keep_state_variables: Whether to allocate the per-cell state array. It is
             `(rows, cols, time, 5)` -- as much memory as every other result field combined --
-            and nothing but `save_results` and `plot_distributed_results` reads it, so a run
+            and nothing but `results.save` and `results.animate` reads it, so a run
             that will not look at it can halve its peak allocation. Defaults to True, which is
             what every existing caller got; `Calibration` turns it off, because it runs the
             model once per trial vector and never reads the states.
@@ -183,7 +183,7 @@ class DistributedRun:
             with_river_geometry: Carry the river geometry through, for the flood path.
             skip_hydraulic_cells: Leave the river cells to a hydraulic model.
             keep_state_variables: Allocate the per-cell state array. False halves the run's
-                peak memory at the cost of `save_results` / `plot_distributed_results`
+                peak memory at the cost of `results.save` / `results.animate`
                 options 4 to 8.
 
         Returns:

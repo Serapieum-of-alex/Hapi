@@ -82,7 +82,7 @@ Coello.plot_hydrograph(plotstart, plotend, gaugei)
 """
 Animate the distributed results.
 
-plot_distributed_results forwards the keyword arguments to
+SimulationResults.animate forwards the keyword arguments to
 ``cleopatra.glyphs.gridded.array_glyph.ArrayGlyph.animate``; see its docstring
 for the full list of supported options. Since cleopatra 0.30 the styling
 keywords are grouped into typed objects (``color``, ``cells``, ``frame_label``).
@@ -91,7 +91,7 @@ keywords are grouped into typed objects (``color``, ``cells``, ``frame_label``).
 plotstart = "2009-01-01"
 plotend = "2009-02-01"
 
-Anim = Coello.plot_distributed_results(
+Anim = Coello.results.animate(
     plotstart,
     plotend,
     figsize=(9, 9),
@@ -99,7 +99,7 @@ Anim = Coello.plot_distributed_results(
     cells=CellValues(show=True, background_threshold=160),
     ticks_spacing=5,
     interval=200,
-    gauges=True,
+    gauges=Coello.GaugesTable,
     cmap="inferno",
     frame_label=FrameLabel(location=[0.1, 0.2]),
     color=ColorScaling.linear(),
@@ -107,18 +107,18 @@ Anim = Coello.plot_distributed_results(
 
 # %%
 SaveTo = Path + "/results/anim.gif"
-Coello.save_animation(SaveTo, fps=2)
+Coello.results.save_animation(SaveTo, fps=2)
 # %% Save the result into rasters
 
 StartDate = "2009-01-01"
 EndDate = "2009-04-10"
 Prefix = "Qtot_"
 SaveTo = Path + "/results/"
-Coello.save_results(
-    FlowAccPath,
-    result=1,
-    StartDate=StartDate,
-    EndDate=EndDate,
+Coello.results.save(
     path=SaveTo,
+    flow_acc_path=FlowAccPath,
+    result=1,
+    start=StartDate,
+    end=EndDate,
     prefix=Prefix,
 )

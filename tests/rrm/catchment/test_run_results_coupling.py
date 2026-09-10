@@ -173,6 +173,35 @@ class TestRunIsNotACatchment:
             "hapi.protocols exist so the run layer does not depend on the concrete class"
         )
 
+    def test_running_a_model_does_not_import_a_plotting_stack(self):
+        """Test that the run layer stays free of matplotlib and cleopatra.
+
+        Test scenario:
+            `SimulationResults` renders and writes itself -- `animate`, `save_animation` and
+            `save` moved there off `Catchment`. Since `hapi.results` is what every engine
+            imports, a module-scope cleopatra import there would put a plotting stack in the
+            path of every model run, which is worse than the arrangement it replaced. The
+            import is inside `animate` for exactly that reason, and this is what holds it
+            there.
+        """
+        probe = (
+            "import sys; import hapi.run, hapi.wrapper; from hapi.rrm import distrrm; "
+            "print(','.join(m for m in ('cleopatra', 'matplotlib') if m in sys.modules) "
+            "or 'clean')"
+        )
+        completed = subprocess.run(
+            [sys.executable, "-c", probe],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+
+        assert completed.stdout.strip() == "clean", (
+            f"running a model must not import a plotting stack, got "
+            f"{completed.stdout.strip()}; keep the cleopatra import inside "
+            f"SimulationResults.animate"
+        )
+
     def test_run_offers_nothing_a_configuration_could_build(self):
         """Test that `Run` exposes no constructor-like surface.
 

@@ -147,7 +147,7 @@ itself consume remain reachable — `outputs` above all:
 ```python
 outputs = Coello.config.outputs
 save_to = (outputs.results_dir if outputs is not None else None) or ""
-Coello.save_results(
+Coello.results.save(
     flow_acc_path=Coello.config.flow_network.flow_accumulation,
     result=1,
     path=save_to,

@@ -177,7 +177,7 @@ Jiboa.plot_hydrograph(plotstart, plotend, gaugei)
 """
 Animate the distributed results.
 
-plot_distributed_results animates the time series of the meteorological
+SimulationResults.animate animates the time series of the meteorological
 inputs and the results calculated by the model, like the total discharge,
 upper zone and lower zone discharge, and the state variables. The keyword
 arguments are forwarded to
@@ -189,7 +189,7 @@ keywords are grouped into typed objects (``color``, ``cells``, ``frame_label``).
 plotstart = "2012-07-20"
 plotend = "2012-08-20"
 
-Anim = Jiboa.plot_distributed_results(
+Anim = Jiboa.results.animate(
     plotstart,
     plotend,
     figsize=(8, 8),
@@ -197,19 +197,19 @@ Anim = Jiboa.plot_distributed_results(
     cells=CellValues(show=False, background_threshold=160),
     ticks_spacing=10,
     interval=10,
-    gauges=False,
+    gauges=None,
     cmap="inferno",
     frame_label=FrameLabel(location=[0.6, 0.8]),
     color=ColorScaling.power(gamma=0.08),
 )
 # %%
 Path = save_to + "anim.mov"
-Jiboa.save_animation(Path, fps=2)
+Jiboa.results.save_animation(Path, fps=2)
 # %% Save Results
 start_date = "2012-07-20"
 end_date = "2012-08-20"
 
 Path = save_to + "Lumped_Parameters_" + str(dt.datetime.now())[0:10] + "_"
-Jiboa.save_results(
+Jiboa.results.save(
     result=1, start=start_date, end=end_date, path=Path, flow_acc_path=flow_acc_path
 )

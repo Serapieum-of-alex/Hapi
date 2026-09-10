@@ -286,12 +286,12 @@ class Run:
               outlet, summed over every cell.
             - `quz`: 3D array of distributed discharge for each cell.
             - `q_total`, `quz_routed`, `qlz_translated`: 3D per-cell fields
-              read by `save_results` and `plot_distributed_results`. MAXBAS
+              read by `results.save` and `results.animate`. MAXBAS
               routes each cell straight to the outlet, so a cell of `q_total` is
               that cell's *contribution* to the outlet — `np.nansum` over the
-              domain reproduces `qout`. Use
-              `extract_discharge` reads the routing off the results and takes the
-              basin-wide sum on this path automatically.
+              domain reproduces `qout`. `extract_discharge` reads the routing
+              off the results and takes the basin-wide sum on this path
+              automatically.
 
         Raises:
             ValueError: If input data arrays have inconsistent

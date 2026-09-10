@@ -21,7 +21,7 @@ import os
 from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Self
+from typing import TYPE_CHECKING, Self
 
 import matplotlib.dates as dates
 import matplotlib.pyplot as plt
@@ -29,10 +29,8 @@ import numpy as np
 import pandas as pd
 import statista.descriptors as metrics
 import yaml
-from cleopatra.glyphs.gridded.array_glyph import ArrayGlyph, PointOverlay
 from loguru import logger
 from pyramids.dataset import Dataset
-from pyramids.dataset import DatasetCollection as Datacube
 from pyramids.feature import FeatureCollection
 
 from hapi.conceptual import ConceptualModelSetup, ParameterSet
@@ -51,11 +49,8 @@ from hapi.rrm.hbv import HBV
 from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92
 
 if TYPE_CHECKING:
-    import matplotlib.animation
-
     from hapi.rrm.base_model import BaseConceptualModel
 
-STATE_VARIABLES = ["SP", "SM", "UZ", "LZ", "WC"]
 CONVERSION_FACTOR = (1000 * 24 * 60 * 60) / (1000**2)
 #: (snow, maxbas) -> how many parameters the conceptual model reads in that configuration.
 PARAMETER_COUNTS = {
@@ -223,30 +218,6 @@ def _name_the_path(path) -> Iterator[None]:
         raise FileNotFoundError(f"{exc} (path: {path})") from exc
 
 
-def _require_state_variables(results: SimulationResults) -> np.ndarray:
-    """Return the per-cell state array, or say why it is absent.
-
-    It is `(rows, cols, time, 5)` -- as much memory as every other result field combined -- so a
-    run can be asked not to keep it. Only these plotting and saving options read it, so the
-    error belongs here, naming the switch rather than failing on `None` inside a slice.
-
-    Args:
-        results: The run's results.
-
-    Returns:
-        np.ndarray: The state array.
-
-    Raises:
-        ValueError: The run was asked not to keep the states.
-    """
-    if results.state_variables is None:
-        raise ValueError(
-            "this run did not keep the state variables, so no state option can be plotted or "
-            "saved; run it with keep_state_variables=True (the default) if you need them"
-        )
-    return results.state_variables
-
-
 class Catchment:
     """Catchment for reading meteorological/spatial inputs and running the model.
 
@@ -354,13 +325,11 @@ class Catchment:
         #: The five hydraulic rasters the flood model reads, once `read_river_geometry` has
         #: run. Absent-or-complete: they are checked against each other as they are read.
         self.river_geometry: RiverGeometry | None = None
-        #: Everything one run produced, replaced wholesale by the next run. The seven
-        #: result arrays below are read-only properties forwarding to it, so `model.results.q_total`
-        #: still reads as it always did while the run layer owns the arrays. `None` until
-        #: a `Run.*` entry point has been called.
+        #: Everything one run produced, replaced wholesale by the next run -- the arrays,
+        #: the routing that made them, and the methods that render and write them
+        #: (`model.results.animate(...)`, `model.results.save(...)`). `None` until a `Run.*`
+        #: entry point has been called.
         self.results: SimulationResults | None = None
-        self.anim: matplotlib.animation.FuncAnimation | None = None
-        self._animation_glyph: ArrayGlyph | None = None
         self.Qsim: np.ndarray | None = None
         self.metrics: pd.DataFrame | None = None
         #: The configuration this model was built from, when it came from
@@ -1313,307 +1282,6 @@ class Catchment:
             logger.debug("R2= " + str(round(self.metrics.loc["R2", gauge_id], 2)))
 
         return fig, ax
-
-    def plot_distributed_results(
-        self,
-        start: str | dt.datetime,
-        end: str | dt.datetime,
-        fmt: str = "%Y-%m-%d",
-        option: int = 1,
-        gauges: bool = False,
-        **kwargs: Any,
-    ):
-        """Animate distributed model results or meteorological inputs.
-
-        Creates an animation of the time series of meteorological inputs
-        or model results (discharge, state variables) over the spatial
-        domain. Cells outside the catchment domain are masked on a copy of
-        the data, so the model arrays stored on the instance are never
-        modified. The animation title defaults to the selected variable's
-        name; an explicit `title=` keyword argument overrides it.
-
-        Args:
-            start (str): Starting date for the animation.
-            end (str): End date for the animation.
-            fmt (str, optional): Format of the given date. Default
-                is "%Y-%m-%d".
-            option (int, optional): Variable to animate. Options are:
-                1 - Total discharge, 2 - Upper zone discharge,
-                3 - Ground water, 4 - Snow pack, 5 - Soil moisture,
-                6 - Upper zone, 7 - Lower zone, 8 - Water content,
-                9 - Precipitation, 10 - ET, 11 - Temperature.
-                Default is 1.
-            gauges (bool, optional): Whether to plot gauge locations
-                on the animation. Default is False.
-            **kwargs: Additional keyword arguments passed to
-                `ArrayGlyph.animate`. Loose styling keywords still
-                accepted: title (str), title_size (int), cmap (str),
-                vmin (float), vmax (float), interval (int),
-                figsize (tuple), cell_value_text_colors (tuple),
-                ticks_spacing (int), cbar_label (str),
-                cbar_label_size (int), cbar_length (float),
-                cbar_orientation (str).
-                Styling that cleopatra 0.30 moved onto typed group
-                objects is passed as those objects instead:
-                color=`ColorScaling` (was color_scale / gamma /
-                bounds / midpoint), cells=`CellValues` (was
-                display_cell_value / num_size /
-                background_color_threshold),
-                contour=`Contour` (was levels),
-                data_style=`DataStyle` (was style / hillshade),
-                frame_label=`FrameLabel` (was label_location /
-                label_color / text_loc). See
-                `cleopatra.glyphs.gridded.array_glyph.ArrayGlyph.animate`
-                for the full list.
-
-        Returns:
-            matplotlib.animation.FuncAnimation: The animation object.
-
-        Raises:
-            ValueError: If `option` is not between 1 and 11.
-        """
-        start = dt.datetime.strptime(start, fmt)
-        end = dt.datetime.strptime(end, fmt)
-
-        start_i = np.nonzero(self.period.date_index == start)[0][0]
-        end_i = np.nonzero(self.period.date_index == end)[0][0]
-
-        if option == 1:
-            arr = self.results.q_total[:, :, start_i:end_i]
-            title = "Total Discharge"
-        elif option == 2:
-            arr = self.results.quz_routed[:, :, start_i:end_i]
-            title = "Surface Flow"
-        elif option == 3:
-            arr = self.results.qlz_translated[:, :, start_i:end_i]
-            title = "Ground Water Flow"
-        elif option == 4:
-            arr = _require_state_variables(self.results)[:, :, start_i:end_i, 0]
-            title = "Snow Pack"
-        elif option == 5:
-            arr = _require_state_variables(self.results)[:, :, start_i:end_i, 1]
-            title = "Soil Moisture"
-        elif option == 6:
-            arr = _require_state_variables(self.results)[:, :, start_i:end_i, 2]
-            title = "Upper Zone"
-        elif option == 7:
-            arr = _require_state_variables(self.results)[:, :, start_i:end_i, 3]
-            title = "Lower Zone"
-        elif option == 8:
-            arr = _require_state_variables(self.results)[:, :, start_i:end_i, 4]
-            title = "Water Content"
-        elif option == 9:
-            arr = self.meteo.precipitation[:, :, start_i:end_i]
-            title = "Precipitation"
-        elif option == 10:
-            arr = self.meteo.evapotranspiration[:, :, start_i:end_i]
-            title = "ET"
-        elif option == 11:
-            arr = self.meteo.temperature[:, :, start_i:end_i]
-            title = "Temperature"
-        else:
-            raise ValueError("Plotting options are from 1 to 11")
-
-        # mask the no-data cells on a copy so plotting never mutates the model
-        # result arrays stored on the instance
-        arr = arr.copy()
-        arr[np.isnan(self.flow_network.flow_acc_arr), :] = np.nan
-
-        time = self.period.date_index[start_i:end_i]
-
-        if gauges:
-            # animate expects a 3-column array: [value to display, cell row, cell column].
-            # cleopatra 0.30 stopped accepting a bare array; it must be wrapped in a
-            # PointOverlay, which also carries the marker/label styling.
-            kwargs["points"] = PointOverlay(
-                self.GaugesTable[["id", "cell_row", "cell_col"]].to_numpy()
-            )
-
-        # animate iterates over the first dimension, so move the time axis to the front
-        array = ArrayGlyph(np.moveaxis(arr, -1, 0))
-        # the option title is a default; an explicit title= kwarg wins
-        kwargs.setdefault("title", title)
-        anim = array.animate(time, **kwargs)
-
-        self._animation_glyph = array
-        self.anim = anim
-
-        return anim
-
-    def save_animation(self, path: str, fps: int = 2):
-        """Save the animation created by `plot_distributed_results`.
-
-        The output format is determined by the file extension. GIF uses
-        PillowWriter; mov/avi/mp4 require FFmpeg to be installed.
-
-        Args:
-            path (str): Output file path. The extension determines the
-                format (gif, mov, avi, or mp4).
-            fps (int, optional): Frames per second. Default is 2.
-
-        Raises:
-            ValueError: If `plot_distributed_results` has not been called
-                yet, or if the file format is not supported.
-            FileNotFoundError: If a video format is requested but FFmpeg
-                is not installed.
-        """
-        if self._animation_glyph is None:
-            raise ValueError(
-                "There is no animation to save, call `plot_distributed_results` first"
-            )
-        self._animation_glyph.save_animation(path, fps=fps)
-
-    def save_results(
-        self,
-        flow_acc_path: str = "",
-        result: int = 1,
-        start: str | dt.datetime = "",
-        end: str | dt.datetime = "",
-        path: str = "",
-        prefix: str = "",
-        fmt: str = "%Y-%m-%d",
-    ):
-        """Save model results to raster files or CSV.
-
-        For distributed mode, saves results as GeoTIFF rasters. For
-        lumped mode, saves results as a CSV file.
-
-        Args:
-            flow_acc_path (str, optional): Path to the flow
-                accumulation raster (required for distributed mode).
-                Default is "".
-            result (int, optional): Type of result to save:
-                1 - Total discharge, 2 - Upper zone discharge,
-                3 - Lower zone discharge, 4 - Snow pack,
-                5 - Soil moisture, 6 - Upper zone, 7 - Lower zone,
-                8 - Water content. For lumped mode, 5 saves all
-                variables. Default is 1.
-            start (str | dt.datetime, optional): Start date for the
-                output period. A string is parsed with `fmt`; a datetime
-                is used as it is.
-                If empty, uses the first index. Default is "".
-            end (str | dt.datetime, optional): End date for the output
-                period. See `start`. If
-                empty, uses the last index. Default is "".
-            path (str, optional): Output directory (distributed, created
-                if it does not exist) or the CSV file itself (lumped).
-                Default is "", the working directory.
-            prefix (str, optional): Prefix for the output file
-                names. Default is "".
-            fmt (str, optional): Date format for parsing `start` and
-                `end`. Default is "%Y-%m-%d".
-
-        Raises:
-            Exception: If `flow_acc_path` is not provided in
-                distributed mode.
-            TypeError: If `path` is not a string. `outputs.results_dir`
-                is optional in a run configuration, so a caller
-                forwarding it can hold None.
-            ValueError: If `result` is not a valid option.
-        """
-        if not isinstance(path, str):
-            raise TypeError(
-                f"path must be a string naming a directory (distributed) or a file "
-                f"(lumped), got {type(path).__name__}"
-            )
-
-        if start == "":
-            start = self.period.date_index[0]
-        elif isinstance(start, str):
-            start = dt.datetime.strptime(start, fmt)
-
-        if end == "":
-            end = self.period.date_index[-1]
-        elif isinstance(end, str):
-            end = dt.datetime.strptime(end, fmt)
-
-        start_i = np.nonzero(self.period.date_index == start)[0][0]
-        end_i = np.nonzero(self.period.date_index == end)[0][0] + 1
-
-        if self.spatial_resolution == "distributed":
-            if flow_acc_path == "":
-                raise Exception(
-                    "Please enter the FlowAccPath parameter to the saveResults method"
-                )
-
-            src = Dataset.read_file(flow_acc_path)
-
-            if prefix == "":
-                prefix = "Result_"
-
-            # `path` names a directory here, unlike the lumped branch below where it is the
-            # CSV itself. Joined rather than concatenated: the old `path + prefix` wrote
-            # `some/dirResult_2009-01-01.tif` for any directory given without a trailing
-            # separator, which is how a directory is normally written.
-            if path and not os.path.isdir(path):
-                os.makedirs(path, exist_ok=True)
-            names = [
-                os.path.join(path, f"{prefix}{str(i)[:10]}.tif")
-                for i in self.period.date_index[start_i:end_i]
-            ]
-            if result == 1:
-                arr = self.results.q_total[:, :, start_i:end_i]
-            elif result == 2:
-                arr = self.results.quz_routed[:, :, start_i:end_i]
-            elif result == 3:
-                arr = self.results.qlz_translated[:, :, start_i:end_i]
-            elif result == 4:
-                arr = _require_state_variables(self.results)[:, :, start_i:end_i, 0]
-            elif result == 5:
-                arr = _require_state_variables(self.results)[:, :, start_i:end_i, 1]
-            elif result == 6:
-                arr = _require_state_variables(self.results)[:, :, start_i:end_i, 2]
-            elif result == 7:
-                arr = _require_state_variables(self.results)[:, :, start_i:end_i, 3]
-            elif result == 8:
-                arr = _require_state_variables(self.results)[:, :, start_i:end_i, 4]
-            else:
-                raise ValueError(
-                    f" The result parameter takes a value between 1 and 8, given: {result}"
-                )
-
-            # from_dataset is pyramids' named constructor for an in-memory
-            # scaffold off a template raster; the bare Datacube(src, time_length=)
-            # form it replaced is kept only as a legacy fallback upstream.
-            cube = Datacube.from_dataset(src, arr.shape[2])
-            arr = np.moveaxis(arr, -1, 0)
-            cube.values = arr
-            cube.to_file(names)
-        else:
-            ind = pd.date_range(start, end, freq="D")
-            data = pd.DataFrame(index=ind)
-
-            data["date"] = ["'" + str(i)[:10] + "'" for i in data.index]
-
-            if result == 1:
-                data["Qsim"] = self.Qsim[start_i:end_i]
-                data.to_csv(path, index=False, float_format="%.3f")
-            elif result == 2:
-                data["Quz"] = self.results.quz[start_i:end_i]
-                data.to_csv(path, index=False, float_format="%.3f")
-            elif result == 3:
-                data["Qlz"] = self.results.qlz[start_i:end_i]
-                data.to_csv(path, index=False, float_format="%.3f")
-            elif result == 4:
-                data[STATE_VARIABLES] = _require_state_variables(self.results)[
-                    start_i:end_i, :
-                ]
-                data.to_csv(path, index=False, float_format="%.3f")
-            elif result == 5:
-                data["Qsim"] = self.Qsim[start_i:end_i]
-                data["Quz"] = self.results.quz[start_i:end_i]
-                data["Qlz"] = self.results.qlz[start_i:end_i]
-                data[STATE_VARIABLES] = _require_state_variables(self.results)[
-                    start_i:end_i, :
-                ]
-                data.to_csv(path, index=False, float_format="%.3f")
-            else:
-                raise ValueError(
-                    f"in lumped mode the result parameter takes a value between 1 and 5, "
-                    f"given: {result}"
-                )
-
-        logger.debug("Data is saved successfully")
 
 
 class Lake:

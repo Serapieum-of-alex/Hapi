@@ -217,7 +217,7 @@ class Wrapper:
     def _set_maxbas_output_fields(results: SimulationResults) -> None:
         """Fill the distributed output fields after a triangular (MAXBAS) run.
 
-        `save_results` and `plot_distributed_results` read `q_total`,
+        `results.save` and `results.animate` read `q_total`,
         `quz_routed` and `qlz_translated` for their discharge options. Only
         :meth:`DistRRM.route_muskingum` (the Muskingum path) used to set them, so
         after a MAXBAS run they stayed `None` and every discharge option raised
@@ -261,7 +261,7 @@ class Wrapper:
 
         Also fills the per-cell output fields (`q_total`, `quz_routed`,
         `qlz_translated`) via :meth:`_set_maxbas_output_fields`, so the
-        discharge options of `save_results` / `plot_distributed_results`
+        discharge options of `results.save` / `results.animate`
         work on this path; see that method for the MAXBAS semantics.
 
         Args:
@@ -464,6 +464,7 @@ class Wrapper:
             quz=quz * factor,
             qlz=qlz * factor,
             state_variables=state_variables,
+            run=run,
         )
         # The lumped total discharge is exactly what `q_total` means, so it goes there rather
         # than onto the catchment as `Qsim`. `Run.run_lumped` is what indexes it by the period

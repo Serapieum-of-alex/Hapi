@@ -216,7 +216,7 @@ class TestMuskingumPipeline:
 
         Test scenario:
             `q_total`, `quz_routed` and `qlz_translated` back every downstream reader --
-            `extract_discharge`, `save_results`, the animations. All three must come back at
+            `extract_discharge`, `results.save`, the animations. All three must come back at
             `(rows, cols, simulation_steps)` and finite inside the catchment.
         """
         model = muskingum_run
@@ -273,7 +273,7 @@ class TestMuskingumPipeline:
 
         Test scenario:
             The last link, and the one nothing else exercises for the NetCDF-driven path:
-            `save_results` writes one raster per step, georeferenced from the flow
+            `results.save` writes one raster per step, georeferenced from the flow
             accumulation grid. Reading the first one back and comparing it to `q_total`'s first
             slice proves the file holds the run's own numbers rather than an empty grid.
         """
@@ -281,10 +281,10 @@ class TestMuskingumPipeline:
         out = tmp_path / "muskingum"
         out.mkdir()
 
-        model.save_results(flow_acc_path=coello_acc_path, result=1, path=f"{out}/")
+        model.results.save(flow_acc_path=coello_acc_path, result=1, path=f"{out}/")
 
         written = sorted(out.glob("*.tif"))
-        assert written, "save_results must write at least one raster"
+        assert written, "results.save must write at least one raster"
         assert len(written) == len(model.period.date_index), (
             f"expected one raster per step ({len(model.period.date_index)}), got {len(written)}"
         )

@@ -110,5 +110,5 @@ start = "2009-01-01"
 end = "2010-04-20"
 
 Path = SaveTo + "Results-Lumped-Model" + str(dt.datetime.now())[0:10] + ".txt"
-Coello.save_results(result=5, start=start, end=end, path=Path)
+Coello.results.save(result=5, start=start, end=end, path=Path)
 ```

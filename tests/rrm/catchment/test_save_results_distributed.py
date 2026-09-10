@@ -1,4 +1,4 @@
-"""Tests for the distributed branch of ``Catchment.save_results``.
+"""Tests for the raster branch of ``SimulationResults.save``.
 
 The distributed branch scaffolds an in-memory ``DatasetCollection`` off the flow-accumulation
 raster and writes one GeoTIFF per timestep. It was previously exercised only by the
@@ -55,7 +55,7 @@ def coello_run(
     return coello
 
 
-def test_save_results_distributed_writes_one_raster_per_step(
+def test_save_writes_one_raster_per_step(
     coello_run: Catchment, coello_acc_path: str, tmp_path
 ):
     """Test that the distributed branch writes one readable GeoTIFF per timestep.
@@ -66,7 +66,7 @@ def test_save_results_distributed_writes_one_raster_per_step(
         tmp_path: Destination directory.
 
     Test scenario:
-        `save_results` scaffolds a `DatasetCollection` from the flow-accumulation
+        `save` scaffolds a `DatasetCollection` from the flow-accumulation
         raster via pyramids' `from_dataset` named constructor and writes the
         selected result to one raster per date. Pins that the files land, are
         readable, and carry the template's grid.
@@ -76,7 +76,7 @@ def test_save_results_distributed_writes_one_raster_per_step(
     # result=4 is the snow-pack state variable. The discharge options are available after
     # a FW1 run too since `_set_maxbas_output_fields` landed; this covers the state-variable
     # branch, which reads a different array.
-    coello_run.save_results(
+    coello_run.results.save(
         flow_acc_path=coello_acc_path,
         result=4,
         start="2009-01-01",
@@ -94,7 +94,7 @@ def test_save_results_distributed_writes_one_raster_per_step(
     )
 
 
-def test_save_results_distributed_values_match_the_model_array(
+def test_save_values_match_the_model_array(
     coello_run: Catchment, coello_acc_path: str, tmp_path
 ):
     """Test that the written rasters carry the model's discharge values.
@@ -112,7 +112,7 @@ def test_save_results_distributed_values_match_the_model_array(
     """
     out = tmp_path / "dist"
     out.mkdir()
-    coello_run.save_results(
+    coello_run.results.save(
         flow_acc_path=coello_acc_path,
         result=4,
         start="2009-01-01",
@@ -132,7 +132,7 @@ def test_save_results_distributed_values_match_the_model_array(
     )
 
 
-def test_save_results_joins_a_directory_written_without_a_separator(
+def test_save_joins_a_directory_written_without_a_separator(
     coello_run: Catchment, coello_acc_path: str, tmp_path
 ):
     """Test that a directory given without a trailing separator still writes inside it.
@@ -151,7 +151,7 @@ def test_save_results_joins_a_directory_written_without_a_separator(
     out = tmp_path / "no-separator"
     out.mkdir()
 
-    coello_run.save_results(
+    coello_run.results.save(
         flow_acc_path=coello_acc_path,
         result=4,
         start="2009-01-01",
@@ -164,7 +164,7 @@ def test_save_results_joins_a_directory_written_without_a_separator(
     )
 
 
-def test_save_results_creates_the_directory_it_is_given(
+def test_save_creates_the_directory_it_is_given(
     coello_run: Catchment, coello_acc_path: str, tmp_path
 ):
     """Test that a destination directory that does not exist yet is created.
@@ -181,7 +181,7 @@ def test_save_results_creates_the_directory_it_is_given(
     """
     out = tmp_path / "nested" / "results"
 
-    coello_run.save_results(
+    coello_run.results.save(
         flow_acc_path=coello_acc_path,
         result=4,
         start="2009-01-01",
@@ -194,7 +194,7 @@ def test_save_results_creates_the_directory_it_is_given(
     )
 
 
-def test_save_results_refuses_a_path_that_is_not_a_string(coello_run: Catchment):
+def test_save_refuses_a_path_that_is_not_a_string(coello_run: Catchment):
     """Test that a non-string `path` is refused by name rather than by concatenation.
 
     Args:
@@ -206,7 +206,7 @@ def test_save_results_refuses_a_path_that_is_not_a_string(coello_run: Catchment)
         concatenation, naming neither the argument nor what it should be.
     """
     with pytest.raises(TypeError, match="path must be a string") as exc:
-        coello_run.save_results(flow_acc_path="unused", result=1, path=None)
+        coello_run.results.save(flow_acc_path="unused", result=1, path=None)
 
     assert "NoneType" in str(exc.value), (
         f"the error should name what it got: {exc.value}"

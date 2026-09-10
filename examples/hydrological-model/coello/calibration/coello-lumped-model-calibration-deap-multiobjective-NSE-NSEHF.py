@@ -201,4 +201,4 @@ Path = (
     + str(dt.datetime.now())[0:10]
     + ".txt"
 )
-Coello.model.save_results(result=5, start=StartDate, end=EndDate, path=Path)
+Coello.model.results.save(result=5, start=StartDate, end=EndDate, path=Path)

@@ -261,7 +261,7 @@ class TestStateVariablesAreOptional:
 
         Test scenario:
             `state_variables` is `(rows, cols, time, 5)` -- as much memory as every other
-            result field combined -- and only `save_results` and `plot_distributed_results`
+            result field combined -- and only `results.save` and `results.animate`
             read it. A run that will not look at it should not pay for it.
         """
         kept = Wrapper.run_muskingum(DistributedRun.from_model(built))
@@ -325,7 +325,7 @@ class TestStateVariablesAreOptional:
         )
 
         with pytest.raises(ValueError, match="keep_state_variables"):
-            built.plot_distributed_results("2009-01-01", "2009-01-05", option=4)
+            built.results.animate("2009-01-01", "2009-01-05", option=4)
 
     def test_a_discharge_option_still_works_without_them(self, built: Catchment):
         """Test that the guard only fires for the options that need the states.

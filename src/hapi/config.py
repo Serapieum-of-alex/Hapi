@@ -460,7 +460,7 @@ class OutputsConfig(BaseModel):
     """Where to write results after the run.
 
     Attributes:
-        results_dir: Folder `save_results` writes into.
+        results_dir: Folder `SimulationResults.save` writes into.
     """
 
     model_config = _STRICT

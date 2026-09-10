@@ -417,7 +417,7 @@ class TestFW1WithLake:
         """Test that the triangular lake path populates `q_total`, `quz_routed`, `qlz_translated`.
 
         Test scenario:
-            `save_results` and `plot_distributed_results` read those three fields, and only
+            `results.save` and `results.animate` read those three fields, and only
             the Muskingum path used to set them. The fixture is function-scoped so the model
             has been through `run_maxbas_with_lake` and nothing else -- with a shared instance an
             earlier Muskingum run would have filled them and deleting the fix left this green.

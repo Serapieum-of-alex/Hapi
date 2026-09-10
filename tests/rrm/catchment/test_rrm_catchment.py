@@ -109,7 +109,7 @@ class TestLumped:
         coello.read_discharge_gauges(lumped_gauges_path, fmt=coello_gauges_date_fmt)
         Route = 1
         Run.run_lumped(coello, Route, Routing.muskingum_v)
-        coello.save_results(result=5, path=path)
+        coello.results.save(result=5, path=path)
 
     # # TODO: still not finished as it does not run the plotHydrograph method
     # def test_PlotHydrograph(
@@ -399,7 +399,7 @@ class TestFW1:
 
 
 class TestSaveAndExtractAfterFW1:
-    """A second FW1 run covering `save_results` and `extract_discharge`.
+    """A second FW1 run covering `results.save` and `extract_discharge`.
 
     Named for what it does: it reads the MAXBAS parameter set and calls `Run.run_maxbas`, so
     calling it `TestMuskingum` said the opposite of what it exercises. The Muskingum path

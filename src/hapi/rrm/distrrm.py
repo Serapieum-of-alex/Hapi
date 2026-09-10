@@ -60,6 +60,10 @@ class DistributedRRM:
                 if run.keep_state_variables
                 else None
             ),
+            # Carried as provenance: the arrays are meaningless without the calendar to
+            # index them by and the grid to mask them with, and `SimulationResults` renders
+            # and writes itself.
+            run=run,
         )
 
         states = results.state_variables
