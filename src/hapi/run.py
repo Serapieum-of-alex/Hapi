@@ -158,15 +158,16 @@ class Run:
             SimulationResults: The run's output, also assigned to `model.results`:
 
             - `state_variables`: 4D array (rows, cols, time, states) where
-              states are [sp, wc, sm, uz, lv].
+                states are [sp, wc, sm, uz, lv].
             - `qlz`: 3D array of the lower zone discharge.
             - `quz`: 3D array of the upper zone discharge.
             - `quz_routed`: 3D array of the upper zone discharge
-              accumulated and routed at each time step.
+                accumulated and routed at each time step.
             - `qlz_translated`: 3D array of the lower zone discharge
-              translated at each time step.
-            - `q_total`: `quz_routed + qlz_translated`. Routed by Muskingum, so the outlet
-              cell carries the outlet hydrograph; `extract_discharge` fills `qout` from it.
+                translated at each time step.
+            - `q_total`: `quz_routed + qlz_translated`. Routed by Muskingum, so the
+                outlet cell carries the outlet hydrograph; `extract_discharge` fills
+                `qout` from it.
 
         Raises:
             ValueError: If input data arrays have inconsistent
@@ -283,15 +284,14 @@ class Run:
 
             - `state_variables`: 4D array of state variables.
             - `qout`: 1D array of calculated discharge at the catchment
-              outlet, summed over every cell.
+                outlet, summed over every cell.
             - `quz`: 3D array of distributed discharge for each cell.
             - `q_total`, `quz_routed`, `qlz_translated`: 3D per-cell fields
-              read by `results.save` and `results.animate`. MAXBAS
-              routes each cell straight to the outlet, so a cell of `q_total` is
-              that cell's *contribution* to the outlet — `np.nansum` over the
-              domain reproduces `qout`. `extract_discharge` reads the routing
-              off the results and takes the basin-wide sum on this path
-              automatically.
+                read by `results.save` and `results.animate`. MAXBAS routes each
+                cell straight to the outlet, so a cell of `q_total` is that cell's
+                *contribution* to the outlet — `np.nansum` over the domain
+                reproduces `qout`. `extract_discharge` reads the routing off the
+                results and takes the basin-wide sum on this path automatically.
 
         Raises:
             ValueError: If input data arrays have inconsistent

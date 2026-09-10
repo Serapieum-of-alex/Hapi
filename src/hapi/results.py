@@ -406,13 +406,41 @@ class SimulationResults:
         Raises:
             ValueError: `option` is not between 1 and 11, the results carry no distributed
                 run, or a state option was asked for on a run that dropped the states.
-        """
-        # cleopatra pulls in matplotlib, and this module is imported by the engines
-        # (`distrrm`, `wrapper`, `run`). Importing it here keeps a model run free of a
-        # plotting stack it never uses -- which is the property that made moving these
-        # methods off `Catchment` worth doing rather than just tidier.
-        from cleopatra.glyphs.gridded.array_glyph import ArrayGlyph, PointOverlay
 
+        Examples:
+            - An option outside the table is refused before any array is touched, and
+              before the plotting stack is imported:
+                ```python
+                >>> import numpy as np
+                >>> from hapi.results import RoutingKind, SimulationResults
+                >>> cube = np.zeros((2, 3, 4), dtype="float32")
+                >>> results = SimulationResults(
+                ...     RoutingKind.MUSKINGUM, cube, cube, None, q_total=cube
+                ... )
+                >>> results.animate("2009-01-01", "2009-01-02", option=99)
+                Traceback (most recent call last):
+                    ...
+                ValueError: the option parameter takes a value between 1 and 11, given: 99
+
+                ```
+            - Arrays with no run behind them have no calendar and no grid, so they say so
+              rather than failing on `None` several frames in:
+                ```python
+                >>> import numpy as np
+                >>> from hapi.results import RoutingKind, SimulationResults
+                >>> cube = np.zeros((2, 3, 4), dtype="float32")
+                >>> orphan = SimulationResults(RoutingKind.MUSKINGUM, cube, cube, None)
+                >>> orphan.animate("2009-01-01", "2009-01-02", option=1)
+                Traceback (most recent call last):
+                    ...
+                ValueError: these results carry no run...
+
+                ```
+
+        See Also:
+            save_animation: Writes the animation this builds.
+            save: Writes the same arrays as rasters or a CSV instead of rendering them.
+        """
         if option not in _ANIMATION_OPTIONS:
             raise ValueError(
                 f"the option parameter takes a value between 1 and "
@@ -430,6 +458,14 @@ class SimulationResults:
         arr[np.isnan(run.flow_network.flow_acc_arr), :] = np.nan
 
         time = run.period.date_index[start_i:end_i]
+
+        # cleopatra pulls in matplotlib, and this module is imported by the engines
+        # (`distrrm`, `wrapper`, `run`). Importing it here keeps a model run free of a
+        # plotting stack it never uses -- which is the property that made moving these
+        # methods off `Catchment` worth doing rather than just tidier. It sits below the
+        # checks above so a rejected option or an out-of-range date does not pay for it
+        # either.
+        from cleopatra.glyphs.gridded.array_glyph import ArrayGlyph, PointOverlay
 
         if gauges is not None:
             # animate expects a 3-column array: [value to display, cell row, cell column].
@@ -466,6 +502,25 @@ class SimulationResults:
             ValueError: :meth:`animate` has not been called yet, or the file format is not
                 supported.
             FileNotFoundError: A video format is requested but FFmpeg is not installed.
+
+        Examples:
+            - There is nothing to write until :meth:`animate` has built it:
+                ```python
+                >>> import numpy as np
+                >>> from hapi.results import RoutingKind, SimulationResults
+                >>> cube = np.zeros((2, 3, 4), dtype="float32")
+                >>> results = SimulationResults(RoutingKind.MUSKINGUM, cube, cube, None)
+                >>> results.anim is None
+                True
+                >>> results.save_animation("flow.gif")
+                Traceback (most recent call last):
+                    ...
+                ValueError: There is no animation to save, call `animate` first
+
+                ```
+
+        See Also:
+            animate: Builds the animation this writes.
         """
         if self._animation_glyph is None:
             raise ValueError("There is no animation to save, call `animate` first")
@@ -509,6 +564,60 @@ class SimulationResults:
                 configuration, so a caller forwarding it can hold None.
             ValueError: `result` is not a valid option, `flow_acc_path` is missing on a
                 distributed run, or the results carry no run to date them by.
+
+        Examples:
+            - A lumped run writes a CSV, dated by the run's own calendar. Option 1 is the
+              simulated discharge, which for a lumped run is `q_total` itself:
+                ```python
+                >>> import os, tempfile
+                >>> from pathlib import Path
+                >>> import numpy as np
+                >>> from hapi.conceptual import ConceptualModelSetup, ParameterSet
+                >>> from hapi.period import SimulationPeriod
+                >>> from hapi.results import RoutingKind, SimulationResults
+                >>> from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92
+                >>> from hapi.runs import LumpedRun
+                >>> period = SimulationPeriod.parse("2009-01-01", "2009-01-03")
+                >>> run = LumpedRun(
+                ...     period=period,
+                ...     data=np.ones((len(period), 4)),
+                ...     parameters=ParameterSet(np.ones(12), snow=False, maxbas=False),
+                ...     model_setup=ConceptualModelSetup(
+                ...         HBVBergestrom92, 100.0, [0.0] * 5, 1.0
+                ...     ),
+                ... )
+                >>> discharge = np.array([1.5, 2.5, 3.5])
+                >>> results = SimulationResults(
+                ...     RoutingKind.LUMPED, discharge, discharge, None,
+                ...     q_total=discharge, run=run,
+                ... )
+                >>> path = os.path.join(tempfile.mkdtemp(), "q.csv")
+                >>> results.save(path=path, result=1)
+                >>> print(Path(path).read_text().strip())
+                date,Qsim
+                '2009-01-01',1.500
+                '2009-01-02',2.500
+                '2009-01-03',3.500
+
+                ```
+            - `path` is checked before anything else, because a run configuration's
+              `outputs.results_dir` is optional and a caller can forward `None`:
+                ```python
+                >>> import numpy as np
+                >>> from hapi.results import RoutingKind, SimulationResults
+                >>> cube = np.zeros((2, 3, 4), dtype="float32")
+                >>> results = SimulationResults(RoutingKind.MUSKINGUM, cube, cube, None)
+                >>> results.save(path=None)
+                Traceback (most recent call last):
+                    ...
+                TypeError: path must be a string naming a directory (distributed) or a file (lumped), got NoneType
+
+                ```
+
+        See Also:
+            animate: Renders the same arrays instead of writing them.
+            hapi.runs.DistributedRun.keep_state_variables: Whether the state options have
+                anything to write.
         """
         if not isinstance(path, str):
             raise TypeError(

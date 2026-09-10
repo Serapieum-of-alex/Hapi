@@ -80,33 +80,12 @@ class Wrapper:
         2. The spatial routing scheme that routes flow following the
            river network.
 
-        The method stores results directly on the Model object,
-        including `quz`, `qlz`, `qout`, `quz_routed`, and
-        `qlz_translated` arrays.
-
         Args:
-            Model: Catchment model object containing:
-
-                - meteo (:class:`~hapi.inputs.MeteoInputs`): The three driver cubes,
-                  each `(rows, cols, time)`, plus the calendar they cover.
-                - flow_network (:class:`~hapi.inputs.FlowNetwork`): The flow accumulation
-                  and direction arrays, the direction table, and the grid they define.
-                - parameters (numpy.ndarray): 3D array of spatially distributed catchment
-                  parameters, `(rows, cols, n_parameters)`.
-                - conversion_factor (float): Depth-to-discharge factor for the temporal
-                  resolution; 24 for daily, 1 for hourly.
-                - area (float): Catchment area in km2.
-                - initial_cond (list): Initial state variable values
-                  [sp, sm, uz, lz, wc].
-                - snow (int): 1 to run the snow routine, 0 otherwise.
-
-            ll_temp (numpy.ndarray, optional): 3D array of long-term
-                average temperature data. Defaults to None.
-            q_0 (float, optional): Initial discharge in m3/s.
-                Defaults to None.
-            skip_hydraulic_cells (bool, optional): Leave cells with a positive
-                `bankfull_depth` unrouted, because a 1D hydraulic model routes them.
-                The flood model's path. Defaults to False.
+            run: The validated inputs. Reads the drivers, the flow network, the parameter
+                cube and the conceptual model setup, and honours
+                :attr:`~hapi.runs.DistributedRun.skip_hydraulic_cells`, which leaves cells
+                with a positive `river_geometry.bankfull_depth` for a 1D hydraulic model
+                to route instead.
 
         Returns:
             SimulationResults: The run's output. Nothing is written to the caller's model;
@@ -132,9 +111,9 @@ class Wrapper:
         routing.
 
         Args:
-            Model: Catchment model object containing the distributed
-                model configuration, parameters, and spatial data.
-            Lake: Lake object containing:
+            run: The validated inputs. See :class:`~hapi.runs.DistributedRun`, which
+                `DistributedRun.from_model(model)` builds and checks.
+            Lake: The lake record, carrying:
 
                 - MeteoData (numpy.ndarray): 2D array with columns
                   for precipitation, evapotranspiration, temperature,
@@ -148,10 +127,9 @@ class Wrapper:
                 - OutflowCell (tuple): Row and column indices of the
                   lake outflow cell.
 
-            ll_temp (numpy.ndarray, optional): 3D array of long-term
-                average temperature data. Defaults to None.
-            q_0 (float, optional): Initial discharge in m3/s.
-                Defaults to None.
+        Returns:
+            SimulationResults: The run's output. Nothing is written to the caller's model;
+            the entry point in :mod:`hapi.run` is what puts it on `model.results`.
         """
         meteo_data, lake_parameters, outflow_cell = _lake_inputs(Lake)
         plake = meteo_data[:, 0]
@@ -237,8 +215,8 @@ class Wrapper:
         nothing downstream writes through the alias.
 
         Args:
-            Model: Catchment whose `quz` / `qlz` have been routed by
-                :meth:`DistRRM.route_maxbas`.
+            results: The results whose `quz` / `qlz` have been routed by
+                :meth:`~hapi.rrm.distrrm.DistributedRRM.route_maxbas`. Mutated in place.
         """
         results.quz_routed = results.quz
         results.qlz_translated = results.qlz
@@ -265,12 +243,12 @@ class Wrapper:
         work on this path; see that method for the MAXBAS semantics.
 
         Args:
-            Model: Catchment model object containing the distributed
-                model configuration, parameters, and spatial data.
-            ll_temp (numpy.ndarray, optional): 3D array of long-term
-                average temperature data. Defaults to None.
-            q_0 (float, optional): Initial discharge in m3/s.
-                Defaults to None.
+            run: The validated inputs. See :class:`~hapi.runs.DistributedRun`, which
+                `DistributedRun.from_model(model)` builds and checks.
+
+        Returns:
+            SimulationResults: The run's output. Nothing is written to the caller's model;
+            the entry point in :mod:`hapi.run` is what puts it on `model.results`.
         """
         # subcatchment
         results = distrrm.run_lumped_model(run)
@@ -305,24 +283,14 @@ class Wrapper:
         has been routed using the triangular function.
 
         Args:
-            Model: Catchment model object containing the distributed
-                model configuration, parameters, and spatial data.
-            Lake: Lake object containing:
+            run: The validated inputs. See :class:`~hapi.runs.DistributedRun`, which
+                `DistributedRun.from_model(model)` builds and checks.
+            Lake: The lake record. See :meth:`run_muskingum_with_lake` for the fields it
+                must carry; this path reads the same ones.
 
-                - MeteoData (numpy.ndarray): 2D array with columns
-                  for precipitation, evapotranspiration, temperature,
-                  and long-term average temperature.
-                - Parameters (numpy.ndarray): Lake model parameters.
-                - CatArea (float): Lake catchment area in km2.
-                - LakeArea (float): Lake surface area in km2.
-                - StageDischargeCurve (numpy.ndarray): Stage-discharge
-                  relationship.
-                - InitialCond (list): Initial condition values.
-
-            ll_temp (numpy.ndarray, optional): 3D array of long-term
-                average temperature data. Defaults to None.
-            q_0 (float, optional): Initial discharge in m3/s.
-                Defaults to None.
+        Returns:
+            SimulationResults: The run's output. Nothing is written to the caller's model;
+            the entry point in :mod:`hapi.run` is what puts it on `model.results`.
         """
         meteo_data, lake_parameters, outflow_cell = _lake_inputs(Lake)
         plake = meteo_data[:, 0]
@@ -392,38 +360,23 @@ class Wrapper:
         routes the combined discharge using the provided routing
         function.
 
-        The discharge is converted from mm/timestep to m3/s using
-        the catchment area and conversion factor. Results are stored
-        on the Model object as `quz`, `qlz`, `Qsim`, and
-        `state_variables`.
+        The discharge is converted from mm/timestep to m3/s using the catchment area and
+        the period's conversion factor.
 
         Args:
-            Model: Lumped model object containing:
-
-                - data (numpy.ndarray): 2D meteorological data array
-                  with columns for precipitation,
-                  evapotranspiration, temperature, and long-term
-                  average temperature.
-                - Parameters (numpy.ndarray): Conceptual model
-                  parameters.
-                - LumpedModel: Conceptual model instance with a
-                  `simulate` method.
-                - InitialCond (list): Initial state variable values
-                  [sp, sm, uz, lz, wc].
-                - q_init (float): Initial discharge value.
-                - Snow (int): Flag to include snow module (0 or 1).
-                - CatArea (float): Catchment area in km2.
-                - conversion_factor (float): Time step conversion
-                  factor (1 for hourly, 0.25 for 15 min, 24 for
-                  daily).
-                - Maxbas (bool): Whether to use MAXBAS triangular
-                  routing.
-                - dt (float): Time step duration.
-
+            run: The validated inputs. See :class:`~hapi.runs.LumpedRun`, which
+                `LumpedRun.from_model(model)` builds and checks. Reads the `(time, 4)`
+                driver record, the parameter set and the conceptual model setup.
             Routing (int, optional): Flag to enable routing. Set to
                 0 to disable, nonzero to enable. Defaults to 0.
             RoutingFn (callable): Routing function to apply to the
                 discharge hydrograph. Must be callable.
+
+        Returns:
+            SimulationResults: The run's output, with the total discharge in `q_total` and
+            `routing` set to `RoutingKind.LUMPED`. Nothing is written to the caller's
+            model; :meth:`~hapi.run.Run.run_lumped` is what indexes `q_total` by the period
+            and puts the frame on `model.Qsim`.
 
         Raises:
             TypeError: If `RoutingFn` is not callable when
