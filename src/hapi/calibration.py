@@ -17,7 +17,7 @@ from Oasis.harmonysearch import HSapi
 from Oasis.optimization import Optimization
 
 from hapi.catchment import Catchment
-from hapi.conceptual import ParameterBounds, ParameterSet
+from hapi.conceptual import ParameterBounds, ParameterSet, validate_parameter_count
 from hapi.inputs import MeteoInputs
 from hapi.protocols import SpatialDistribution
 from hapi.results import SimulationResults
@@ -786,6 +786,16 @@ class Calibration:
                 f"basic_inputs should contain 'Route' and 'RoutingFn'; "
                 f"{', '.join(missing)} is missing"
             )
+
+        # A lumped calibration is the one case where the optimiser's search vector *is* the
+        # parameter set the conceptual model reads, so its width has to match. The rule
+        # cannot live on `ParameterBounds`: a distributed calibration searches
+        # `SpatialVarFun.ParametersNO` values -- 980 on the shipped Coello grid -- and
+        # mapping them onto the grid is the whole job of the spatial distribution.
+        lumped_bounds = self._search_space()
+        validate_parameter_count(
+            lumped_bounds.lower, lumped_bounds.snow, lumped_bounds.maxbas
+        )
 
         route = basic_inputs["Route"]
         routing_fn = basic_inputs["RoutingFn"]

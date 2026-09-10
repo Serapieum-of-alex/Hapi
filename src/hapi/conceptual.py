@@ -293,8 +293,8 @@ class ParameterBounds:
     produces is checked against it.
 
     Attributes:
-        lower: Lower bound per parameter.
-        upper: Upper bound per parameter.
+        lower: Lower bound per element of the optimiser's search vector.
+        upper: Upper bound per element of the same vector.
         snow: Whether the snow routine runs.
         maxbas: Whether the parameter vector carries a MAXBAS value.
 
@@ -317,19 +317,20 @@ class ParameterBounds:
         """Check the two bounds describe the same parameters.
 
         Raises:
-            ValueError: The bounds are different lengths, or do not hold the number of
-                parameters `(snow, maxbas)` calls for.
+            ValueError: The bounds are different lengths.
         """
         if len(self.lower) != len(self.upper):
             raise ValueError(
                 f"the length of UB should be the same as LB, got {len(self.upper)} and "
                 f"{len(self.lower)}"
             )
-        # The same rule every trial vector is held to. Checked here as well because this is
-        # where the configuration enters: a mismatch used to surface once per trial from
-        # `ParameterSet`, after the whole optimisation problem had been declared and the
-        # optimiser started, rather than at the call that got it wrong.
-        validate_parameter_count(self.lower, self.snow, self.maxbas)
+        # No width rule here, deliberately. These bounds delimit the *optimiser's* flat
+        # search vector, whose length is the spatial distribution's `ParametersNO` --
+        # `no_elem * no_parameters (+ no_lumped_par)`, 980 for a totally distributed Coello
+        # run and 243 for the HRU one. A `ParameterSet` is a different thing: the parameters
+        # the conceptual model reads, 12 per cell. The two coincide only for a lumped
+        # calibration, where the trial vector *is* the parameter set, and
+        # `Calibration.calibrate_lumped` checks it there.
         object.__setattr__(self, "lower", np.array(self.lower))
         object.__setattr__(self, "upper", np.array(self.upper))
 

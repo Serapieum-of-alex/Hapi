@@ -25,32 +25,84 @@ def test_read_parameters_bounds(
     assert isinstance(Coello.bounds.maxbas, bool)
 
 
-@pytest.mark.parametrize(
-    "width, snow, maxbas",
-    [(10, False, False), (12, True, True), (16, False, True)],
-)
-def test_read_parameters_bounds_refuses_a_width_the_configuration_does_not_call_for(
-    coello_rrm_date: list, width: int, snow: bool, maxbas: bool
+@pytest.mark.parametrize("width", [12, 243, 980])
+def test_read_parameters_bounds_accepts_any_search_width(
+    coello_rrm_date: list, width: int
 ):
-    """Test that bounds of the wrong width are refused where they enter.
+    """Test that the bounds are not held to the conceptual model's parameter count.
 
     Args:
         coello_rrm_date: Start and end dates for the model.
         width: Number of bound values supplied.
-        snow: Whether the snow routine is on.
-        maxbas: Whether MAXBAS routing is on.
 
     Test scenario:
-        `ParameterSet` holds every trial vector to `PARAMETER_COUNTS[(snow, maxbas)]`, but
-        nothing held the *bounds* to it -- so a mismatch surfaced once per trial, from inside
-        the objective, after the whole optimisation problem had been declared and the
-        optimiser started. The bounds are where the configuration enters; the rule belongs
-        there too.
+        `ParameterBounds` delimits the *optimiser's* flat search vector, whose length is the
+        spatial distribution's `ParametersNO` -- 980 for a totally distributed run on the
+        Coello grid and 243 for the HRU one, against 12 for a lumped one. Holding it to
+        `PARAMETER_COUNTS` made every distributed calibration raise at
+        `read_parameters_bound`, and no width satisfied both that rule and `par3d`'s.
     """
     coello = Calibration(Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1]))
 
-    with pytest.raises(ValueError):
-        coello.read_parameters_bound([0.0] * width, [1.0] * width, snow, maxbas=maxbas)
+    coello.read_parameters_bound([0.0] * width, [1.0] * width, False)
+
+    assert len(coello.bounds) == width, (
+        f"the search space is {width} wide; got {len(coello.bounds)}"
+    )
+
+
+def test_read_parameters_bounds_still_refuses_mismatched_lengths(
+    coello_rrm_date: list,
+):
+    """Test that a lower and upper bound of different lengths are still refused.
+
+    Args:
+        coello_rrm_date: Start and end dates for the model.
+
+    Test scenario:
+        The two are read from separate files and the optimiser samples between them per
+        position, so this rule holds whatever the search width is -- it is the one thing
+        `ParameterBounds` can check without knowing how the vector is mapped onto the grid.
+    """
+    coello = Calibration(Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1]))
+
+    with pytest.raises(ValueError, match="same as LB"):
+        coello.read_parameters_bound([0.0] * 12, [1.0] * 11, False)
+
+
+@pytest.mark.parametrize("width", [10, 16])
+def test_a_lumped_calibration_checks_the_search_width_before_it_starts(
+    coello_rrm_date: list,
+    lumped_meteo_data_path: str,
+    coello_AreaCoeff: float,
+    coello_InitialCond: list,
+    width: int,
+):
+    """Test that the lumped path holds the search vector to the model's parameter count.
+
+    Args:
+        coello_rrm_date: Start and end dates for the model.
+        lumped_meteo_data_path: Driver record.
+        coello_AreaCoeff: Catchment area.
+        coello_InitialCond: Initial state.
+        width: A search width the conceptual model cannot read.
+
+    Test scenario:
+        A lumped calibration is the one case where the optimiser's vector *is* the parameter
+        set, so a mismatch there is a real error -- and it used to surface once per trial
+        from inside the objective, after the optimiser had started. Checked before the
+        problem is declared, where the caller can act on it.
+    """
+    coello = Calibration(Catchment("rrm", coello_rrm_date[0], coello_rrm_date[1]))
+    coello.model.read_lumped_inputs(lumped_meteo_data_path)
+    coello.model.read_lumped_model(HBVLumped, coello_AreaCoeff, coello_InitialCond)
+    coello.read_parameters_bound([0.0] * width, [1.0] * width, False)
+    coello.read_objective_function(metrics.rmse, [])
+
+    with pytest.raises(ValueError, match="takes 12 parameters"):
+        coello.calibrate_lumped(
+            dict(Route=0, RoutingFn=None), [{}, None, {}], print_error=None
+        )
 
 
 def test_lumped_calibration(
