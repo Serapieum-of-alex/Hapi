@@ -1921,8 +1921,10 @@ that will not look at it need not pay for it. See
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The outlet hydrograph, when the run computed one. The MAXBAS paths sum over the
-domain and set it directly; the Muskingum paths leave it <code>None</code> for
+                <p>The outlet hydrograph, when the run computed one, and always <code>len(period)</code>
+long -- the conceptual model's leading initial-state slot is dropped on every
+path that fills it. The MAXBAS paths sum over the domain and set it directly;
+the Muskingum paths leave it <code>None</code> for
 :meth:<code>~hapi.catchment.Catchment.extract_discharge</code> to read off the outlet cell,
 which needs the gauge table the engine does not have.</p>
               </div>
@@ -2643,7 +2645,9 @@ argument.</p>
 <span class="normal">740</span>
 <span class="normal">741</span>
 <span class="normal">742</span>
-<span class="normal">743</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span>
+<span class="normal">743</span>
+<span class="normal">744</span>
+<span class="normal">745</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">SimulationResults</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""The arrays one model run produced, the routing that produced them, and their views.</span>
 
@@ -2666,8 +2670,10 @@ argument.</p>
 <span class="sd">        qlz_translated: Lower-zone discharge after translation. `None` until then.</span>
 <span class="sd">        q_total: `quz_routed + qlz_translated`. Read it through</span>
 <span class="sd">            :attr:`outlet_shortcut_valid` rather than assuming what a cell means.</span>
-<span class="sd">        qout: The outlet hydrograph, when the run computed one. The MAXBAS paths sum over the</span>
-<span class="sd">            domain and set it directly; the Muskingum paths leave it `None` for</span>
+<span class="sd">        qout: The outlet hydrograph, when the run computed one, and always `len(period)`</span>
+<span class="sd">            long -- the conceptual model's leading initial-state slot is dropped on every</span>
+<span class="sd">            path that fills it. The MAXBAS paths sum over the domain and set it directly;</span>
+<span class="sd">            the Muskingum paths leave it `None` for</span>
 <span class="sd">            :meth:`~hapi.catchment.Catchment.extract_discharge` to read off the outlet cell,</span>
 <span class="sd">            which needs the gauge table the engine does not have.</span>
 <span class="sd">        run: The validated inputs these arrays came from, carried as provenance. It is what</span>
@@ -3532,9 +3538,7 @@ save: Writes the same arrays as rasters or a CSV instead of rendering them.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/results.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">363</span>
-<span class="normal">364</span>
-<span class="normal">365</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">365</span>
 <span class="normal">366</span>
 <span class="normal">367</span>
 <span class="normal">368</span>
@@ -3659,7 +3663,9 @@ save: Writes the same arrays as rasters or a CSV instead of rendering them.</p>
 <span class="normal">487</span>
 <span class="normal">488</span>
 <span class="normal">489</span>
-<span class="normal">490</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">animate</span><span class="p">(</span>
+<span class="normal">490</span>
+<span class="normal">491</span>
+<span class="normal">492</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">animate</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">start</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">,</span>
     <span class="n">end</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">,</span>
@@ -4073,9 +4079,7 @@ hapi.runs.DistributedRun.keep_state_variables: Whether the state options have
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/results.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">530</span>
-<span class="normal">531</span>
-<span class="normal">532</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">532</span>
 <span class="normal">533</span>
 <span class="normal">534</span>
 <span class="normal">535</span>
@@ -4182,7 +4186,9 @@ hapi.runs.DistributedRun.keep_state_variables: Whether the state options have
 <span class="normal">636</span>
 <span class="normal">637</span>
 <span class="normal">638</span>
-<span class="normal">639</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span>
+<span class="normal">639</span>
+<span class="normal">640</span>
+<span class="normal">641</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
     <span class="n">result</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
@@ -4424,9 +4430,7 @@ supported.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/results.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">492</span>
-<span class="normal">493</span>
-<span class="normal">494</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">494</span>
 <span class="normal">495</span>
 <span class="normal">496</span>
 <span class="normal">497</span>
@@ -4460,7 +4464,9 @@ supported.</p>
 <span class="normal">525</span>
 <span class="normal">526</span>
 <span class="normal">527</span>
-<span class="normal">528</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_animation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">fps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">528</span>
+<span class="normal">529</span>
+<span class="normal">530</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_animation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">fps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Save the animation built by :meth:`animate`.</span>
 
 <span class="sd">    The output format is determined by the file extension. GIF uses PillowWriter;</span>

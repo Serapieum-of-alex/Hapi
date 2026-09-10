@@ -2962,7 +2962,10 @@ their historical names (<code>q_total</code>, <code>quz</code>, ...) as read-onl
 <span class="normal">1286</span>
 <span class="normal">1287</span>
 <span class="normal">1288</span>
-<span class="normal">1289</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Catchment</span><span class="p">:</span>
+<span class="normal">1289</span>
+<span class="normal">1290</span>
+<span class="normal">1291</span>
+<span class="normal">1292</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Catchment</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Catchment for reading meteorological/spatial inputs and running the model.</span>
 
 <span class="sd">    The Catchment class includes methods to read the meteorological and</span>
@@ -3826,7 +3829,10 @@ their historical names (<code>q_total</code>, <code>quz</code>, ...) as read-onl
             <span class="c1"># Muskingum accumulates downstream, so the outlet cell of `q_total` is the</span>
             <span class="c1"># outlet hydrograph. The engine cannot set this itself: finding the outlet</span>
             <span class="c1"># needs the gauge table, which is an analysis input, not a run input.</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">qout</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">q_total</span><span class="p">[</span><span class="n">outlet_x</span><span class="p">,</span> <span class="n">outlet_y</span><span class="p">,</span> <span class="p">:]</span>
+            <span class="c1"># Trimmed like every other path: `q_total` carries the conceptual model's</span>
+            <span class="c1"># initial-state slot, so the untrimmed form made `qout` a step longer here than</span>
+            <span class="c1"># on the MAXBAS and lake paths, for a field documented as one hydrograph.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">qout</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">q_total</span><span class="p">[</span><span class="n">outlet_x</span><span class="p">,</span> <span class="n">outlet_y</span><span class="p">,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">GaugesTable</span><span class="p">)):</span>
                 <span class="n">x_ind</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">GaugesTable</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">GaugesTable</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s2">"cell_row"</span><span class="p">])</span>
@@ -4691,7 +4697,10 @@ per-gauge (Muskingum) path. Default is None.</p>
 <span class="normal">1150</span>
 <span class="normal">1151</span>
 <span class="normal">1152</span>
-<span class="normal">1153</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extract_discharge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">calculate_metrics</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">factor</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="normal">1153</span>
+<span class="normal">1154</span>
+<span class="normal">1155</span>
+<span class="normal">1156</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extract_discharge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">calculate_metrics</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">factor</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Extract and sum discharge at gauge locations.</span>
 
 <span class="sd">    Which hydrograph is the right one depends on how the run was routed, and the results</span>
@@ -4745,7 +4754,10 @@ per-gauge (Muskingum) path. Default is None.</p>
         <span class="c1"># Muskingum accumulates downstream, so the outlet cell of `q_total` is the</span>
         <span class="c1"># outlet hydrograph. The engine cannot set this itself: finding the outlet</span>
         <span class="c1"># needs the gauge table, which is an analysis input, not a run input.</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">qout</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">q_total</span><span class="p">[</span><span class="n">outlet_x</span><span class="p">,</span> <span class="n">outlet_y</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="c1"># Trimmed like every other path: `q_total` carries the conceptual model's</span>
+        <span class="c1"># initial-state slot, so the untrimmed form made `qout` a step longer here than</span>
+        <span class="c1"># on the MAXBAS and lake paths, for a field documented as one hydrograph.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">qout</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">q_total</span><span class="p">[</span><span class="n">outlet_x</span><span class="p">,</span> <span class="n">outlet_y</span><span class="p">,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">GaugesTable</span><span class="p">)):</span>
             <span class="n">x_ind</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">GaugesTable</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">GaugesTable</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s2">"cell_row"</span><span class="p">])</span>
@@ -5635,10 +5647,7 @@ Figure and ax is the matplotlib Axes object.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1155</span>
-<span class="normal">1156</span>
-<span class="normal">1157</span>
-<span class="normal">1158</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1158</span>
 <span class="normal">1159</span>
 <span class="normal">1160</span>
 <span class="normal">1161</span>
@@ -5769,7 +5778,10 @@ Figure and ax is the matplotlib Axes object.</p>
 <span class="normal">1286</span>
 <span class="normal">1287</span>
 <span class="normal">1288</span>
-<span class="normal">1289</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_hydrograph</span><span class="p">(</span>
+<span class="normal">1289</span>
+<span class="normal">1290</span>
+<span class="normal">1291</span>
+<span class="normal">1292</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_hydrograph</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">start_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">,</span>
     <span class="n">end_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">,</span>
