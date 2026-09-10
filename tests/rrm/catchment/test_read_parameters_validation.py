@@ -13,6 +13,7 @@ import pandas as pd
 import pytest
 
 from hapi.catchment import Catchment
+from hapi.period import SimulationPeriod
 from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 
 MAXBAS_BANDS = 11
@@ -84,6 +85,24 @@ class TestTemporalResolution:
         """
         with pytest.raises(ValueError, match="temporal resolutions"):
             Catchment("coello", "2009-01-01", "2009-01-10", temporal_resolution="15min")
+
+    def test_the_calendar_is_built_once(self):
+        """Test that the derived calendar is cached rather than rebuilt on every read.
+
+        Test scenario:
+            The class is frozen precisely so derived values cannot drift, which makes the
+            calendar safe to memoise -- yet `date_index`, and `days` and `__len__` through
+            it, rebuilt a `pd.date_range` on each access. `from_model` reads it once per
+            calibration trial and `SimulationResults._step_bounds` twice per call.
+        """
+        period = SimulationPeriod.parse("2009-01-01", "2009-12-31")
+
+        assert period.date_index is period.date_index, (
+            "the calendar cannot change on a frozen period, so it should be built once"
+        )
+        assert len(period) == len(period.date_index), (
+            "the cached index must still be what the length reports"
+        )
 
     def test_hourly_resolution_scales_the_conversion_factor(self):
         """Test that the hourly branch divides the daily conversion factor by 24.

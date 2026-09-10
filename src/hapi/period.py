@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import datetime as dt
 from dataclasses import dataclass
+from functools import cached_property
 from typing import Literal
 
 import pandas as pd
@@ -148,12 +149,15 @@ class SimulationPeriod:
         """str: The pandas offset alias for this resolution."""
         return RESOLUTIONS[self.temporal_resolution]
 
-    @property
+    @cached_property
     def date_index(self) -> pd.DatetimeIndex:
         """pandas.DatetimeIndex: One entry per step, from :attr:`start` to :attr:`end`.
 
         Derived rather than stored: this is the value that used to be computed in the
-        constructor and could then outlive a change to the span it described.
+        constructor and could then outlive a change to the span it described. Cached rather
+        than rebuilt, which the frozen class makes safe -- the inputs it derives from cannot
+        change, so the cache cannot go stale. It is read once per `from_model` (so once per
+        calibration trial) and twice per `SimulationResults._step_bounds` call.
         """
         return pd.date_range(self.start, self.end, freq=self.freq)
 
