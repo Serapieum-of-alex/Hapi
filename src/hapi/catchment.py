@@ -51,15 +51,6 @@ from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92
 if TYPE_CHECKING:
     from hapi.rrm.base_model import BaseConceptualModel
 
-CONVERSION_FACTOR = (1000 * 24 * 60 * 60) / (1000**2)
-#: (snow, maxbas) -> how many parameters the conceptual model reads in that configuration.
-PARAMETER_COUNTS = {
-    (True, True): 16,
-    (False, True): 11,
-    (True, False): 17,
-    (False, False): 12,
-}
-
 #: Conceptual models `conceptual_model.model_class` can name in a YAML configuration.
 #: `read_lumped_model` still takes any `type[BaseConceptualModel]`, so this only bounds what the
 #: YAML shorthand can reach, not what the class accepts.
