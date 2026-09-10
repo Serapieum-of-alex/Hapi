@@ -56,6 +56,29 @@ def coello_muskingum_run(
     return coello
 
 
+def test_qout_covers_the_period_exactly(coello_muskingum_run: Catchment):
+    """Test that the outlet hydrograph is as long as the period, not a step longer.
+
+    Args:
+        coello_muskingum_run: Distributed Coello catchment with a completed Muskingum run.
+
+    Test scenario:
+        `q_total` carries the conceptual model's leading initial-state slot, so reading the
+        outlet cell whole gave a `qout` one step longer than the MAXBAS and lake paths
+        produce -- for a field documented as one thing, "the outlet hydrograph". Anything
+        indexing it by the period worked on one routing path and not the other.
+    """
+    # The Muskingum path leaves `qout` for this call to fill: finding the outlet needs the
+    # gauge table, which the engine does not have.
+    coello_muskingum_run.extract_discharge()
+    qout = coello_muskingum_run.results.qout
+
+    assert len(qout) == len(coello_muskingum_run.period), (
+        f"qout must cover the period: {len(qout)} against "
+        f"{len(coello_muskingum_run.period)}"
+    )
+
+
 def test_extract_discharge_distributed_metrics(coello_muskingum_run: Catchment):
     """The distributed branch computes all seven metrics for every gauge.
 

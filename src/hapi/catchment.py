@@ -1082,7 +1082,10 @@ class Catchment:
             # Muskingum accumulates downstream, so the outlet cell of `q_total` is the
             # outlet hydrograph. The engine cannot set this itself: finding the outlet
             # needs the gauge table, which is an analysis input, not a run input.
-            self.results.qout = self.results.q_total[outlet_x, outlet_y, :]
+            # Trimmed like every other path: `q_total` carries the conceptual model's
+            # initial-state slot, so the untrimmed form made `qout` a step longer here than
+            # on the MAXBAS and lake paths, for a field documented as one hydrograph.
+            self.results.qout = self.results.q_total[outlet_x, outlet_y, :-1]
 
             for i in range(len(self.GaugesTable)):
                 x_ind = int(self.GaugesTable.loc[self.GaugesTable.index[i], "cell_row"])

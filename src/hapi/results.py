@@ -127,8 +127,10 @@ class SimulationResults:
         qlz_translated: Lower-zone discharge after translation. `None` until then.
         q_total: `quz_routed + qlz_translated`. Read it through
             :attr:`outlet_shortcut_valid` rather than assuming what a cell means.
-        qout: The outlet hydrograph, when the run computed one. The MAXBAS paths sum over the
-            domain and set it directly; the Muskingum paths leave it `None` for
+        qout: The outlet hydrograph, when the run computed one, and always `len(period)`
+            long -- the conceptual model's leading initial-state slot is dropped on every
+            path that fills it. The MAXBAS paths sum over the domain and set it directly;
+            the Muskingum paths leave it `None` for
             :meth:`~hapi.catchment.Catchment.extract_discharge` to read off the outlet cell,
             which needs the gauge table the engine does not have.
         run: The validated inputs these arrays came from, carried as provenance. It is what
