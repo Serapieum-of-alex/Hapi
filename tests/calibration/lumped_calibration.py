@@ -6,6 +6,7 @@ import statista.descriptors as metrics
 
 from hapi.calibration import Calibration
 from hapi.catchment import Catchment
+from hapi.conceptual import ParameterSet
 from hapi.routing import Routing
 from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from hapi.run import Run
@@ -96,18 +97,22 @@ print("Objective Function = " + str(round(cal_parameters[0], 2)))
 print("Parameters are " + str(cal_parameters[1]))
 print("Time = " + str(round(cal_parameters[2]["time"] / 60, 2)) + " min")
 # %% run the model
-Coello.model.parameters.values = cal_parameters[1]
-Run.run_lumped(Coello, Route, routing_fn)
+# `ParameterSet` is frozen, so the values cannot be assigned into it; build the set
+# the optimiser's vector describes.
+Coello.model.parameters = ParameterSet(
+    cal_parameters[1], snow=Coello.bounds.snow, maxbas=Coello.bounds.maxbas
+)
+Run.run_lumped(Coello.model, Route, routing_fn)
 # %% calculate performance criteria
 scores = dict()
 
 Qobs = Coello.model.QGauges[Coello.model.QGauges.columns[0]]
 
-scores["RMSE"] = metrics.rmse(Qobs, Coello.Qsim["q"])
-scores["NSE"] = metrics.nse(Qobs, Coello.Qsim["q"])
-scores["NSEhf"] = metrics.nse_hf(Qobs, Coello.Qsim["q"])
-scores["KGE"] = metrics.kge(Qobs, Coello.Qsim["q"])
-scores["WB"] = metrics.wb(Qobs, Coello.Qsim["q"])
+scores["RMSE"] = metrics.rmse(Qobs, Coello.model.Qsim["q"])
+scores["NSE"] = metrics.nse(Qobs, Coello.model.Qsim["q"])
+scores["NSEhf"] = metrics.nse_hf(Qobs, Coello.model.Qsim["q"])
+scores["KGE"] = metrics.kge(Qobs, Coello.model.Qsim["q"])
+scores["WB"] = metrics.wb(Qobs, Coello.model.Qsim["q"])
 
 print("RMSE= " + str(round(scores["RMSE"], 2)))
 print("NSE= " + str(round(scores["NSE"], 2)))

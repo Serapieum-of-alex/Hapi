@@ -40,7 +40,8 @@ parnames = UB.index
 UB = UB[1].tolist()
 LB = pd.read_csv(Path + "/UB-1-Muskinguk.txt", index_col=0, header=None)
 LB = LB[1].tolist()
-Coello.read_parameters_bound(UB, LB, Snow)
+# The bounds moved onto `Calibration` with the is-a -> has-a change, and this script
+# only samples between them -- so it uses the two lists it just read.
 
 # %%
 # observed flow
@@ -111,7 +112,7 @@ Each parameter has a dictionary with two keys 0: list of parameters with relativ
 
 # For Type 1
 def WrapperType1(Randpar, Route, routing_fn, Qobs):
-    Coello.parameters.values = Randpar
+    Coello.parameters = Coello.parameters.with_values(Randpar)
 
     Run.run_lumped(Coello, Route, routing_fn)
     rmse = metrics.rmse(Qobs, Coello.Qsim["q"])
@@ -120,7 +121,7 @@ def WrapperType1(Randpar, Route, routing_fn, Qobs):
 
 # For Type 2
 def WrapperType2(Randpar, Route, routing_fn, Qobs):
-    Coello.parameters.values = Randpar
+    Coello.parameters = Coello.parameters.with_values(Randpar)
 
     Run.run_lumped(Coello, Route, routing_fn)
     rmse = metrics.rmse(Qobs, Coello.Qsim["q"])
@@ -137,8 +138,8 @@ elif Type == 2:
 
 Sen = SA(
     parameters,
-    Coello.bounds.lower,
-    Coello.bounds.upper,
+    LB,
+    UB,
     fn,
     n_values=5,
     return_values=Type,

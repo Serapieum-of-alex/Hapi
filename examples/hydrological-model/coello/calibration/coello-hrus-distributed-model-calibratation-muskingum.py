@@ -139,7 +139,10 @@ OptimizationArgs = [ApiObjArgs, pll_type, ApiSolveArgs]
 # %% run calibration
 cal_parameters = Coello.run_calibration(SpatialVarFun, OptimizationArgs, print_error=0)
 # %% convert parameters to rasters
+# `best_parameters` is the flat vector the optimiser produced, which is what this
+# function maps onto the grid. `model.parameters` is a `ParameterSet` -- a different
+# shape describing a different thing.
 SpatialVarFun.Function(
-    Coello.model.parameters, kub=SpatialVarFun.Kub, klb=SpatialVarFun.Klb
+    Coello.best_parameters, kub=SpatialVarFun.Kub, klb=SpatialVarFun.Klb
 )
 SpatialVarFun.save_parameters(SaveTo)

@@ -18,6 +18,7 @@ from deap import algorithms, base, creator, tools
 
 from hapi.calibration import Calibration
 from hapi.catchment import Catchment
+from hapi.conceptual import ParameterSet
 from hapi.routing import Routing
 from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 from hapi.run import Run
@@ -97,11 +98,13 @@ Coello.OFArgs = []
 
 def objfn(individual):
     # Coello.model.read_parameters(Parameterpath, Snow)
-    Coello.model.parameters = individual
-    Run.run_lumped(Coello, Route, RoutingFn)
+    Coello.model.parameters = ParameterSet(
+    individual, snow=Coello.bounds.snow, maxbas=Coello.bounds.maxbas
+)
+    Run.run_lumped(Coello.model, Route, RoutingFn)
     # [Coello.model.QGauges.columns[-1]]
-    NSE = metrics.nse_hf(Coello.model.QGauges, Coello.Qsim, *Coello.OFArgs)
-    RMSE = metrics.rmse(Coello.model.QGauges, Coello.Qsim, *Coello.OFArgs)
+    NSE = metrics.nse_hf(Coello.model.QGauges, Coello.model.Qsim, *Coello.OFArgs)
+    RMSE = metrics.rmse(Coello.model.QGauges, Coello.model.Qsim, *Coello.OFArgs)
     return NSE, RMSE
 
 
@@ -150,11 +153,13 @@ best_ind = tools.selBest(pop, 1)[0]
 print("Best individual is %s, %s" % (best_ind, best_ind.fitness.values))
 # %% Run the Model
 
-Coello.model.parameters = best_ind
+Coello.model.parameters = ParameterSet(
+    best_ind, snow=Coello.bounds.snow, maxbas=Coello.bounds.maxbas
+)
 # [0.7686518278956287, 144.35510831203874, 1.9922719933560913, 0.1439126168555068, 0.9474744708723734,
 #                  0.749219030317463, 0.8074091462437563, 0.07289588281400794, 68.83482640397304, 5.123384184968337,
 #                  1.9922719933560913]
-Run.run_lumped(Coello, Route, RoutingFn)
+Run.run_lumped(Coello.model, Route, RoutingFn)
 
 ### Calculate Performance Criteria
 
@@ -162,11 +167,11 @@ scores = dict()
 
 Qobs = Coello.model.QGauges[Coello.model.QGauges.columns[0]]
 
-scores["RMSE"] = metrics.rmse(Qobs, Coello.Qsim["q"])
-scores["NSE"] = metrics.nse(Qobs, Coello.Qsim["q"])
-scores["NSEhf"] = metrics.nse_hf(Qobs, Coello.Qsim["q"])
-scores["KGE"] = metrics.kge(Qobs, Coello.Qsim["q"])
-scores["WB"] = metrics.wb(Qobs, Coello.Qsim["q"])
+scores["RMSE"] = metrics.rmse(Qobs, Coello.model.Qsim["q"])
+scores["NSE"] = metrics.nse(Qobs, Coello.model.Qsim["q"])
+scores["NSEhf"] = metrics.nse_hf(Qobs, Coello.model.Qsim["q"])
+scores["KGE"] = metrics.kge(Qobs, Coello.model.Qsim["q"])
+scores["WB"] = metrics.wb(Qobs, Coello.model.Qsim["q"])
 
 print("RMSE= " + str(round(scores["RMSE"], 2)))
 print("NSE= " + str(round(scores["NSE"], 2)))
@@ -185,7 +190,7 @@ Coello.model.plot_hydrograph(plotstart, plotend, gaugei, title="Lumped Model")
 
 ParPath = (
     Path
-    + f"{Coello.name}-lumped-parameters-multi-obj"
+    + f"{Coello.model.name}-lumped-parameters-multi-obj"
     + str(dt.datetime.now())[0:10]
     + ".txt"
 )
@@ -200,7 +205,7 @@ EndDate = "2010-04-20"
 
 Path = (
     Path
-    + f"{Coello.name}-results-lumped-model-multi-obj"
+    + f"{Coello.model.name}-results-lumped-model-multi-obj"
     + str(dt.datetime.now())[0:10]
     + ".txt"
 )
