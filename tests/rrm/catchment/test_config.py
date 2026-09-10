@@ -19,6 +19,8 @@ import datetime as dt
 import os
 from pathlib import Path
 
+import inspect
+
 import pytest
 import yaml
 from pydantic import ValidationError
@@ -1478,26 +1480,29 @@ class TestRoutingMethodNormalisation:
         with pytest.raises(ValueError, match="not.*registered"):
             Catchment.from_yaml(path)
 
-    @pytest.mark.parametrize("cls", [Catchment])
     def test_the_builder_returns_the_class_it_was_called_on(
-        self, distributed_mapping, tmp_path, cls
+        self, distributed_mapping, tmp_path
     ):
-        """Test that a subclass taking the same constructor arguments builds its own type.
+        """Test that the classmethod builds its own type rather than a hard-coded one.
 
         Args:
             distributed_mapping: A complete distributed configuration.
             tmp_path: pytest temporary directory.
-            cls: The class the classmethod is called on.
 
         Test scenario:
-            `Calibration` extends `Catchment` with the same constructor signature, so
-            `Calibration.from_yaml(...)` should hand back a `Calibration` the calibration
-            methods can be called on, not a bare `Catchment`.
+            `from_yaml` returns `cls(...)`, not `Catchment(...)`. Nothing in the package
+            subclasses `Catchment` any more -- `Calibration` holds one instead, which is why
+            this test's parametrize had shrunk to a single element -- so the guard is what
+            keeps the classmethod inheritable for anyone downstream who does subclass it.
         """
-        model = cls.from_yaml(write_yaml(distributed_mapping, tmp_path))
+        model = Catchment.from_yaml(write_yaml(distributed_mapping, tmp_path))
 
-        assert isinstance(model, cls), (
-            f"expected a {cls.__name__}, got {type(model).__name__}"
+        assert type(model) is Catchment, (
+            f"expected a Catchment, got {type(model).__name__}"
+        )
+        assert "cls(" in inspect.getsource(Catchment.from_yaml), (
+            "from_yaml must construct `cls`, not a hard-coded Catchment, or a subclass "
+            "gets the wrong type back"
         )
 
     def test_run_has_no_constructor_and_nothing_to_build_from_a_configuration(self):
