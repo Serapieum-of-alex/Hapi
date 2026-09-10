@@ -210,6 +210,96 @@ class TestNarrowingIsTheValidation:
             DistributedRun.from_model(built, with_river_geometry=True)
 
 
+class TestTheInvariantsHoldWhenTheRunIsBuiltDirectly:
+    """`from_model` is the front door, but `__post_init__` is what actually guarantees."""
+
+    def test_a_parameter_cube_of_the_wrong_width_is_refused(self, built: Catchment):
+        """Test that a parameter cube with too few columns is refused.
+
+        Args:
+            built: A fully built distributed catchment.
+
+        Test scenario:
+            The rows check has a test; the columns check did not, so half the guard was
+            unexercised. Both matter: the cube is indexed by `[x, y, :]` in the per-cell
+            loop, and a narrow cube reads a cell that belongs to a different column.
+        """
+        cube = built.parameters.values
+        built.parameters = built.parameters.with_values(cube[:, :-1, :])
+
+        with pytest.raises(ValueError, match="columns"):
+            DistributedRun.from_model(built)
+
+    def test_a_skip_built_directly_is_refused_too(self, built: Catchment):
+        """Test that the skip guard holds on the constructor, not only on `from_model`.
+
+        Args:
+            built: A fully built distributed catchment.
+
+        Test scenario:
+            `from_model` refuses this earlier with a message naming `read_river_geometry`,
+            so the constructor's own guard never ran in the suite. It is the one that
+            actually holds, because a run can be built without going through `from_model`.
+        """
+        run = DistributedRun.from_model(built)
+
+        with pytest.raises(ValueError, match="skipping the hydraulic cells"):
+            DistributedRun(
+                period=run.period,
+                meteo=run.meteo,
+                flow_network=run.flow_network,
+                parameters=run.parameters,
+                model_setup=run.model_setup,
+                skip_hydraulic_cells=True,
+            )
+
+    def test_a_direction_raster_without_its_table_is_refused(self, built: Catchment):
+        """Test that a network carrying a raster but no lookup table is caught up front.
+
+        Args:
+            built: A fully built distributed catchment.
+
+        Test scenario:
+            `from_rasters` always derives the table alongside the raster, so the two
+            normally travel together -- but `FlowNetwork` can be constructed directly, and
+            the routing loop indexes the table for every cell. This is the check that keeps
+            the pair honest for a network built by hand.
+        """
+        network = built.flow_network
+        built.flow_network = FlowNetwork(
+            network.flow_acc_arr,
+            no_data_value=network.no_data_value,
+            cell_size=network.cell_size,
+            px_area=network.px_area,
+            flow_dir_arr=network.flow_dir_arr,
+        )
+
+        with pytest.raises(ValueError, match="flow-direction table"):
+            DistributedRun.from_model(built, needs_flow_direction=True)
+
+    def test_the_routing_table_says_when_the_network_has_none(self, built: Catchment):
+        """Test that asking for the routing table without a direction raster explains why.
+
+        Args:
+            built: A fully built distributed catchment.
+
+        Test scenario:
+            MAXBAS runs legitimately build a `FlowNetwork` with no direction raster, so a
+            run can exist without a table. Reaching `routing_table` on one used to be a
+            `KeyError` on a `None` dict inside the routing loop.
+        """
+        built.flow_network = FlowNetwork(
+            built.flow_network.flow_acc_arr,
+            no_data_value=built.flow_network.no_data_value,
+            cell_size=built.flow_network.cell_size,
+            px_area=built.flow_network.px_area,
+        )
+        run = DistributedRun.from_model(built, needs_flow_direction=False)
+
+        with pytest.raises(ValueError, match="flow-direction table"):
+            _ = run.routing_table
+
+
 class TestTheEnginesCannotBeReachedUnvalidated:
     """The seam is enforced by the signatures, not by remembering to call it."""
 

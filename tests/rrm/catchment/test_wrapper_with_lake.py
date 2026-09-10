@@ -507,6 +507,48 @@ class TestFW1WithLake:
         )
 
 
+class TestTheLakeInputGuards:
+    """`_lake_inputs` names whichever of the three readers was not called."""
+
+    @pytest.mark.parametrize(
+        "missing, expected",
+        [
+            ("MeteoData", "read_meteo_data"),
+            ("Parameters", "read_parameters"),
+            ("OutflowCell", "outflow_cell"),
+        ],
+    )
+    def test_an_unread_lake_input_is_named(
+        self,
+        coello_with_lake_inputs: Catchment,
+        coello_start_date: str,
+        coello_end_date: str,
+        missing: str,
+        expected: str,
+    ):
+        """Test that each missing lake input is reported by the reader that supplies it.
+
+        Args:
+            coello_with_lake_inputs: A distributed catchment ready for a lake run.
+            coello_start_date: Start of the simulation.
+            coello_end_date: End of the simulation.
+            missing: The lake attribute to clear.
+            expected: Substring naming the reader the error must point at.
+
+        Test scenario:
+            All three are indexed straight by the wrapper -- `MeteoData[:, 0]`,
+            `Parameters[11]`, `OutflowCell[0]` -- so an unread one used to fail on `None`
+            several frames in, naming a subscript rather than the call nobody made.
+        """
+        model = coello_with_lake_inputs
+        lake = _make_lake(model, coello_start_date, coello_end_date, seed=11)
+        setattr(lake, missing, None)
+        run = DistributedRun.from_model(model)
+
+        with pytest.raises(ValueError, match=expected):
+            Wrapper.run_muskingum_with_lake(run, lake)
+
+
 class TestRunDistributedWithLakeEndToEnd:
     """Tests that the public entry point completes with the record it documents."""
 

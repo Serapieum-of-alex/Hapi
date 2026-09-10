@@ -408,7 +408,3 @@ class Wrapper:
             )
         results.q_total = q_total
         return results
-
-
-if __name__ == "__main__":
-    print("Wrapper")

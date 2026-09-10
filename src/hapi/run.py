@@ -384,7 +384,3 @@ class Run:
         model.results = results
         logger.info("Lumped model run has finished successfully")
         return results
-
-
-if __name__ == "__main__":
-    print("Run")

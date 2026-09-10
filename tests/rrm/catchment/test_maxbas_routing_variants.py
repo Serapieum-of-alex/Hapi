@@ -213,6 +213,93 @@ def _lumped_model(
     return model
 
 
+class TestRoutingGuards:
+    """The two routing entry points that refuse rather than run on missing inputs."""
+
+    def test_path_length_routing_says_when_it_has_no_raster(
+        self,
+        coello_start_date: str,
+        coello_end_date: str,
+        coello_prec_path: str,
+        coello_temp_path: str,
+        coello_evap_path: str,
+        coello_acc_path: str,
+        coello_dist_parameters_maxbas: str,
+        coello_cat_area: int,
+        coello_initial_cond: list,
+    ):
+        """Test that scaling MAXBAS by path length without the raster names the reader.
+
+        Test scenario:
+            `route_maxbas_by_path_length` is the only entry point that reads
+            `flow_path_length`, and a run is perfectly valid without one. Without the guard
+            this was a `TypeError` on `None` inside `np.nanmax`.
+        """
+        model = Catchment(
+            "coello",
+            coello_start_date,
+            coello_end_date,
+            spatial_resolution="Distributed",
+            temporal_resolution="Daily",
+        )
+        model.meteo = MeteoInputs.from_rasters(
+            coello_prec_path,
+            coello_temp_path,
+            coello_evap_path,
+            start=coello_start_date,
+            end=coello_end_date,
+            regex_string=r"\d{4}.\d{2}.\d{2}",
+            date=True,
+            file_name_data_fmt="%Y.%m.%d",
+        )
+        model.flow_network = FlowNetwork.from_rasters(coello_acc_path)
+        model.read_parameters(coello_dist_parameters_maxbas, False, maxbas=True)
+        model.read_lumped_model(HBVLumped, coello_cat_area, coello_initial_cond)
+        run = DistributedRun.from_model(model, needs_flow_direction=False)
+        results = DistributedRRM.run_lumped_model(run)
+
+        with pytest.raises(ValueError, match="flow-path-length raster"):
+            DistributedRRM.route_maxbas_by_path_length(run, results)
+
+    @pytest.mark.parametrize("routing_fn", [None, "not a function", 7])
+    def test_lumped_routing_refuses_something_that_cannot_be_called(
+        self,
+        coello_rrm_date: list,
+        lumped_meteo_data_path: str,
+        maxbas_parameters_path: str,
+        coello_AreaCoeff: float,
+        coello_InitialCond: list,
+        routing_fn,
+    ):
+        """Test that asking for routing without a callable is refused by name.
+
+        Args:
+            coello_rrm_date: Start and end dates.
+            lumped_meteo_data_path: Driver record.
+            maxbas_parameters_path: Parameter file.
+            coello_AreaCoeff: Catchment area.
+            coello_InitialCond: Initial state.
+            routing_fn: Something that is not a routing function.
+
+        Test scenario:
+            `Route` and `routing_fn` are separate arguments, so they can disagree -- and a
+            docs page had already passed the function as the flag. Without the guard the
+            failure is a `TypeError: 'NoneType' object is not callable` deep in the wrapper.
+        """
+        model = _lumped_model(
+            coello_rrm_date,
+            lumped_meteo_data_path,
+            maxbas_parameters_path,
+            coello_AreaCoeff,
+            coello_InitialCond,
+        )
+
+        with pytest.raises(TypeError, match="callable"):
+            Wrapper.run_lumped(
+                LumpedRun.from_model(model), Routing=1, RoutingFn=routing_fn
+            )
+
+
 class TestLumpedRouting:
     """Tests for the routing branches of `Wrapper.run_lumped` reached through `Run.run_lumped`."""
 

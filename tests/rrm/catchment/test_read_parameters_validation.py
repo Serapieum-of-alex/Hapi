@@ -13,6 +13,7 @@ import pandas as pd
 import pytest
 
 from hapi.catchment import Catchment
+from hapi.conceptual import ParameterBounds, ParameterSet
 from hapi.period import SimulationPeriod
 from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92 as HBVLumped
 
@@ -85,6 +86,59 @@ class TestTemporalResolution:
         """
         with pytest.raises(ValueError, match="temporal resolutions"):
             Catchment("coello", "2009-01-01", "2009-01-10", temporal_resolution="15min")
+
+    @pytest.mark.parametrize("initial_cond", [[0, 10, 10], [0] * 7, []])
+    def test_an_initial_condition_of_the_wrong_length_is_refused(
+        self, initial_cond: list
+    ):
+        """Test that the initial state must carry exactly the five state variables.
+
+        Args:
+            initial_cond: A state list of the wrong length.
+
+        Test scenario:
+            The five are `[sp, sm, uz, lz, wc]` and the conceptual model unpacks them
+            positionally, so a short list is an `IndexError` inside the per-cell loop and a
+            long one silently ignores the extras.
+        """
+        model = Catchment("coello", "2009-01-01", "2009-01-10")
+
+        with pytest.raises(ValueError, match="state variables are 5"):
+            model.read_lumped_model(HBVLumped, 1530, initial_cond)
+
+    def test_a_parameter_set_reports_how_many_parameters_it_carries(self):
+        """Test that `count` reports the width the set was checked against.
+
+        Test scenario:
+            The width rule is enforced on construction, so `count` is how a caller reads
+            back what it settled on -- `12` for the no-snow, no-MAXBAS configuration.
+        """
+        parameters = ParameterSet(np.ones(12), snow=False, maxbas=False)
+
+        assert parameters.count == 12, (
+            f"a 12-value set should report 12, got {parameters.count}"
+        )
+
+    def test_bounds_of_different_lengths_are_refused(self):
+        """Test that a lower and upper bound of different lengths cannot pair up.
+
+        Test scenario:
+            The two are read from separate files, so they can disagree. The optimiser
+            samples between them per position, and a mismatch means positions with only one
+            side.
+        """
+        with pytest.raises(ValueError, match="same as LB"):
+            ParameterBounds([0.0] * 12, [1.0] * 11)
+
+    def test_a_span_that_runs_backwards_is_refused(self):
+        """Test that an end date before the start is named rather than silently empty.
+
+        Test scenario:
+            A backwards span produces an empty `date_index`, which surfaces much later as a
+            zero-length driver mismatch naming neither date.
+        """
+        with pytest.raises(ValueError, match="ends before it starts"):
+            SimulationPeriod.parse("2009-12-31", "2009-01-01")
 
     def test_the_calendar_is_built_once(self):
         """Test that the derived calendar is cached rather than rebuilt on every read.

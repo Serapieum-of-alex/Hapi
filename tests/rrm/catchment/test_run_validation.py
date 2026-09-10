@@ -229,6 +229,28 @@ class TestRunDistributedWithLake:
             "the wrapper must not run against a mismatched lake record"
         )
 
+    def test_rejects_a_lake_that_was_never_given_a_record(
+        self, coello_loaded: Catchment, spied_wrapper: dict
+    ):
+        """Test that a lake with no meteorological data names the reader that supplies it.
+
+        Args:
+            coello_loaded: A distributed catchment with every input read.
+            spied_wrapper: Records whether an engine was reached.
+
+        Test scenario:
+            `Lake.MeteoData` is `None` until `read_meteo_data` runs, and a lake-aware entry
+            point handed such a lake used to fail on `np.shape(None)[0]` -- an `IndexError`
+            naming neither the lake nor the call nobody made.
+        """
+        lake = _LakeStub(coello_loaded.meteo.time_steps)
+        lake.MeteoData = None
+
+        with pytest.raises(ValueError, match="read_meteo_data"):
+            Run.run_distributed_with_lake(coello_loaded, lake)
+
+        assert not spied_wrapper, "the engine must not be reached without a lake record"
+
     @pytest.mark.parametrize("columns", [2, 3])
     def test_rejects_a_lake_record_missing_a_column(
         self, coello_loaded: Catchment, spied_wrapper: dict, columns: int

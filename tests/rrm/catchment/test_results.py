@@ -19,7 +19,7 @@ import pandas as pd
 import pytest
 
 from hapi.catchment import Catchment
-from hapi.inputs import FlowNetwork, MeteoInputs
+from hapi.inputs import FlowNetwork, MeteoInputs, RiverGeometry
 from hapi.results import STATE_VARIABLES, RoutingKind, SimulationResults
 from hapi.routing import Routing
 from hapi.rrm.distrrm import DistributedRRM
@@ -252,6 +252,52 @@ class TestTheRouterRecordsTheRoutingItApplied:
             f"the path-length router must record what it applied, got {results.routing}"
         )
         assert results.q_total is not None, "the per-cell fields must be filled"
+
+
+class TestTheHydraulicCellSkip:
+    """The flood model's handoff: river cells this package deliberately does not route."""
+
+    def test_river_cells_are_left_unrouted_when_the_skip_is_asked_for(
+        self, distributed_run: DistributedRun
+    ):
+        """Test that a positive bankfull depth keeps a cell out of the routing.
+
+        Args:
+            distributed_run: The validated run, rebuilt here with a river geometry.
+
+        Test scenario:
+            `skip_hydraulic_cells` is the handoff to a 1D hydraulic model, which routes
+            those cells instead. The branch that acts on it was never exercised: the flood
+            tests check that the *warning* fires, not that the cells come out unrouted.
+            An unrouted cell keeps its own `quz`, with nothing accumulated from upstream.
+        """
+        model = distributed_run
+        rows, cols = model.flow_network.shape
+        depth = np.zeros((rows, cols))
+        # A downstream cell, not a headwater: cells at accumulation 0 are copied straight
+        # across before the skip is consulted, so only a cell the second loop visits can
+        # show the branch doing anything.
+        downstream = model.flow_network.acc_val[-1]
+        river_x, river_y = model.flow_network.cells_by_acc_val[downstream][0]
+        depth[river_x, river_y] = 3.0
+        flat = np.ones((rows, cols))
+        with_geometry = DistributedRun(
+            period=model.period,
+            meteo=model.meteo,
+            flow_network=model.flow_network,
+            parameters=model.parameters,
+            model_setup=model.model_setup,
+            river_geometry=RiverGeometry(flat, depth, flat, flat, flat),
+            skip_hydraulic_cells=True,
+        )
+
+        results = DistributedRRM.run_lumped_model(with_geometry)
+        DistributedRRM.route_muskingum(with_geometry, results)
+
+        assert np.array_equal(
+            results.quz_routed[river_x, river_y, :],
+            np.zeros(model.meteo.simulation_steps, dtype="float32"),
+        ), "a skipped river cell must be left for the hydraulic model, not routed here"
 
 
 class TestTheOutletShortcut:
