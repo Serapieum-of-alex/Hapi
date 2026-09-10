@@ -2777,7 +2777,17 @@ consumes.</p>
 <span class="normal">893</span>
 <span class="normal">894</span>
 <span class="normal">895</span>
-<span class="normal">896</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Calibration</span><span class="p">:</span>
+<span class="normal">896</span>
+<span class="normal">897</span>
+<span class="normal">898</span>
+<span class="normal">899</span>
+<span class="normal">900</span>
+<span class="normal">901</span>
+<span class="normal">902</span>
+<span class="normal">903</span>
+<span class="normal">904</span>
+<span class="normal">905</span>
+<span class="normal">906</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Calibration</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Calibrates a catchment's parameters against observed discharge.</span>
 
 <span class="sd">    Holds the catchment it calibrates rather than being one. It was a subclass, which meant it</span>
@@ -3472,6 +3482,16 @@ consumes.</p>
                 <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">missing</span><span class="p">)</span><span class="si">}</span><span class="s2"> is missing"</span>
             <span class="p">)</span>
 
+        <span class="c1"># A lumped calibration is the one case where the optimiser's search vector *is* the</span>
+        <span class="c1"># parameter set the conceptual model reads, so its width has to match. The rule</span>
+        <span class="c1"># cannot live on `ParameterBounds`: a distributed calibration searches</span>
+        <span class="c1"># `SpatialVarFun.ParametersNO` values -- 980 on the shipped Coello grid -- and</span>
+        <span class="c1"># mapping them onto the grid is the whole job of the spatial distribution.</span>
+        <span class="n">lumped_bounds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_search_space</span><span class="p">()</span>
+        <span class="n">validate_parameter_count</span><span class="p">(</span>
+            <span class="n">lumped_bounds</span><span class="o">.</span><span class="n">lower</span><span class="p">,</span> <span class="n">lumped_bounds</span><span class="o">.</span><span class="n">snow</span><span class="p">,</span> <span class="n">lumped_bounds</span><span class="o">.</span><span class="n">maxbas</span>
+        <span class="p">)</span>
+
         <span class="n">route</span> <span class="o">=</span> <span class="n">basic_inputs</span><span class="p">[</span><span class="s2">"Route"</span><span class="p">]</span>
         <span class="n">routing_fn</span> <span class="o">=</span> <span class="n">basic_inputs</span><span class="p">[</span><span class="s2">"RoutingFn"</span><span class="p">]</span>
         <span class="k">if</span> <span class="s2">"InitialValues"</span> <span class="ow">in</span> <span class="n">basic_inputs</span><span class="p">:</span>
@@ -4051,7 +4071,17 @@ dict.</p>
 <span class="normal">893</span>
 <span class="normal">894</span>
 <span class="normal">895</span>
-<span class="normal">896</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calibrate_lumped</span><span class="p">(</span>
+<span class="normal">896</span>
+<span class="normal">897</span>
+<span class="normal">898</span>
+<span class="normal">899</span>
+<span class="normal">900</span>
+<span class="normal">901</span>
+<span class="normal">902</span>
+<span class="normal">903</span>
+<span class="normal">904</span>
+<span class="normal">905</span>
+<span class="normal">906</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calibrate_lumped</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">basic_inputs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
     <span class="n">optimization_args</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
@@ -4112,6 +4142,16 @@ dict.</p>
             <span class="sa">f</span><span class="s2">"basic_inputs should contain 'Route' and 'RoutingFn'; "</span>
             <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">missing</span><span class="p">)</span><span class="si">}</span><span class="s2"> is missing"</span>
         <span class="p">)</span>
+
+    <span class="c1"># A lumped calibration is the one case where the optimiser's search vector *is* the</span>
+    <span class="c1"># parameter set the conceptual model reads, so its width has to match. The rule</span>
+    <span class="c1"># cannot live on `ParameterBounds`: a distributed calibration searches</span>
+    <span class="c1"># `SpatialVarFun.ParametersNO` values -- 980 on the shipped Coello grid -- and</span>
+    <span class="c1"># mapping them onto the grid is the whole job of the spatial distribution.</span>
+    <span class="n">lumped_bounds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_search_space</span><span class="p">()</span>
+    <span class="n">validate_parameter_count</span><span class="p">(</span>
+        <span class="n">lumped_bounds</span><span class="o">.</span><span class="n">lower</span><span class="p">,</span> <span class="n">lumped_bounds</span><span class="o">.</span><span class="n">snow</span><span class="p">,</span> <span class="n">lumped_bounds</span><span class="o">.</span><span class="n">maxbas</span>
+    <span class="p">)</span>
 
     <span class="n">route</span> <span class="o">=</span> <span class="n">basic_inputs</span><span class="p">[</span><span class="s2">"Route"</span><span class="p">]</span>
     <span class="n">routing_fn</span> <span class="o">=</span> <span class="n">basic_inputs</span><span class="p">[</span><span class="s2">"RoutingFn"</span><span class="p">]</span>

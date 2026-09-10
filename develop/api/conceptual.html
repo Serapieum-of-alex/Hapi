@@ -2897,7 +2897,7 @@ produces is checked against it.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Lower bound per parameter.</p>
+                <p>Lower bound per element of the optimiser's search vector.</p>
               </div>
             </td>
           </tr>
@@ -2908,7 +2908,7 @@ produces is checked against it.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Upper bound per parameter.</p>
+                <p>Upper bound per element of the same vector.</p>
               </div>
             </td>
           </tr>
@@ -3006,7 +3006,8 @@ produces is checked against it.</p>
 <span class="normal">335</span>
 <span class="normal">336</span>
 <span class="normal">337</span>
-<span class="normal">338</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="normal">338</span>
+<span class="normal">339</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">ParameterBounds</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""The search space a calibration explores, and the configuration it explores it under.</span>
 
@@ -3016,8 +3017,8 @@ produces is checked against it.</p>
 <span class="sd">    produces is checked against it.</span>
 
 <span class="sd">    Attributes:</span>
-<span class="sd">        lower: Lower bound per parameter.</span>
-<span class="sd">        upper: Upper bound per parameter.</span>
+<span class="sd">        lower: Lower bound per element of the optimiser's search vector.</span>
+<span class="sd">        upper: Upper bound per element of the same vector.</span>
 <span class="sd">        snow: Whether the snow routine runs.</span>
 <span class="sd">        maxbas: Whether the parameter vector carries a MAXBAS value.</span>
 
@@ -3040,19 +3041,20 @@ produces is checked against it.</p>
 <span class="w">        </span><span class="sd">"""Check the two bounds describe the same parameters.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            ValueError: The bounds are different lengths, or do not hold the number of</span>
-<span class="sd">                parameters `(snow, maxbas)` calls for.</span>
+<span class="sd">            ValueError: The bounds are different lengths.</span>
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lower</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">upper</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">"the length of UB should be the same as LB, got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">upper</span><span class="p">)</span><span class="si">}</span><span class="s2"> and "</span>
                 <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lower</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
             <span class="p">)</span>
-        <span class="c1"># The same rule every trial vector is held to. Checked here as well because this is</span>
-        <span class="c1"># where the configuration enters: a mismatch used to surface once per trial from</span>
-        <span class="c1"># `ParameterSet`, after the whole optimisation problem had been declared and the</span>
-        <span class="c1"># optimiser started, rather than at the call that got it wrong.</span>
-        <span class="n">validate_parameter_count</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lower</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">snow</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxbas</span><span class="p">)</span>
+        <span class="c1"># No width rule here, deliberately. These bounds delimit the *optimiser's* flat</span>
+        <span class="c1"># search vector, whose length is the spatial distribution's `ParametersNO` --</span>
+        <span class="c1"># `no_elem * no_parameters (+ no_lumped_par)`, 980 for a totally distributed Coello</span>
+        <span class="c1"># run and 243 for the HRU one. A `ParameterSet` is a different thing: the parameters</span>
+        <span class="c1"># the conceptual model reads, 12 per cell. The two coincide only for a lumped</span>
+        <span class="c1"># calibration, where the trial vector *is* the parameter set, and</span>
+        <span class="c1"># `Calibration.calibrate_lumped` checks it there.</span>
         <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"lower"</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lower</span><span class="p">))</span>
         <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"upper"</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">upper</span><span class="p">))</span>
 
@@ -3088,9 +3090,9 @@ produces is checked against it.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/conceptual.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">336</span>
-<span class="normal">337</span>
-<span class="normal">338</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">337</span>
+<span class="normal">338</span>
+<span class="normal">339</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""int: Number of parameters being calibrated."""</span>
     <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lower</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
@@ -3133,8 +3135,7 @@ produces is checked against it.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The bounds are different lengths, or do not hold the number of
-parameters <code>(snow, maxbas)</code> calls for.</p>
+                <p>The bounds are different lengths.</p>
               </div>
             </td>
           </tr>
@@ -3162,23 +3163,25 @@ parameters <code>(snow, maxbas)</code> calls for.</p>
 <span class="normal">331</span>
 <span class="normal">332</span>
 <span class="normal">333</span>
-<span class="normal">334</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">334</span>
+<span class="normal">335</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Check the two bounds describe the same parameters.</span>
 
 <span class="sd">    Raises:</span>
-<span class="sd">        ValueError: The bounds are different lengths, or do not hold the number of</span>
-<span class="sd">            parameters `(snow, maxbas)` calls for.</span>
+<span class="sd">        ValueError: The bounds are different lengths.</span>
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lower</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">upper</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">"the length of UB should be the same as LB, got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">upper</span><span class="p">)</span><span class="si">}</span><span class="s2"> and "</span>
             <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lower</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
         <span class="p">)</span>
-    <span class="c1"># The same rule every trial vector is held to. Checked here as well because this is</span>
-    <span class="c1"># where the configuration enters: a mismatch used to surface once per trial from</span>
-    <span class="c1"># `ParameterSet`, after the whole optimisation problem had been declared and the</span>
-    <span class="c1"># optimiser started, rather than at the call that got it wrong.</span>
-    <span class="n">validate_parameter_count</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lower</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">snow</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxbas</span><span class="p">)</span>
+    <span class="c1"># No width rule here, deliberately. These bounds delimit the *optimiser's* flat</span>
+    <span class="c1"># search vector, whose length is the spatial distribution's `ParametersNO` --</span>
+    <span class="c1"># `no_elem * no_parameters (+ no_lumped_par)`, 980 for a totally distributed Coello</span>
+    <span class="c1"># run and 243 for the HRU one. A `ParameterSet` is a different thing: the parameters</span>
+    <span class="c1"># the conceptual model reads, 12 per cell. The two coincide only for a lumped</span>
+    <span class="c1"># calibration, where the trial vector *is* the parameter set, and</span>
+    <span class="c1"># `Calibration.calibrate_lumped` checks it there.</span>
     <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"lower"</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lower</span><span class="p">))</span>
     <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"upper"</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">upper</span><span class="p">))</span>
 </code></pre></div></td></tr></table></div>
