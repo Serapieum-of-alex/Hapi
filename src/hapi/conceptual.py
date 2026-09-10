@@ -198,7 +198,31 @@ class ParameterSet:
 
     @property
     def count(self) -> int:
-        """int: Number of parameters the set carries. See :func:`parameter_count`."""
+        """int: Number of parameters the set carries. See :func:`parameter_count`.
+
+        The width rule is enforced when the set is built, so this reads back what it
+        settled on -- for a distributed set, the length of the trailing axis rather than
+        the number of cells.
+
+        Examples:
+            - A lumped set is a flat vector, so the count is its length:
+                ```python
+                >>> import numpy as np
+                >>> from hapi.conceptual import ParameterSet
+                >>> ParameterSet(np.ones(12), snow=False, maxbas=False).count
+                12
+
+                ```
+            - A distributed set counts the parameters per cell, not the cells:
+                ```python
+                >>> import numpy as np
+                >>> from hapi.conceptual import ParameterSet
+                >>> cube = np.ones((13, 14, 12))
+                >>> ParameterSet(cube, snow=False, maxbas=False).count
+                12
+
+                ```
+        """
         return parameter_count(self.values)
 
     def with_values(self, values: np.ndarray | list) -> ParameterSet:

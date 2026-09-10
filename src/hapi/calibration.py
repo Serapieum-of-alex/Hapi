@@ -40,6 +40,31 @@ class ObjectiveFunctionArityError(ValueError):
     was caught by that handler one line later and scored `np.nan`, so a caller who wired up
     an objective of the wrong arity got a full Harmony Search over an all-`nan` landscape
     and a warning per trial instead of the error this message was written for.
+
+    It stays a `ValueError` subclass, so code that already wraps a calibration in
+    `except ValueError` keeps catching it.
+
+    Examples:
+        - It carries the message that names what the objective needs:
+            ```python
+            >>> from hapi.calibration import (
+            ...     OBJECTIVE_FN_ARGS_ERROR,
+            ...     ObjectiveFunctionArityError,
+            ... )
+            >>> str(ObjectiveFunctionArityError(OBJECTIVE_FN_ARGS_ERROR))[:24]
+            'the objective function y'
+
+            ```
+        - An existing `ValueError` handler still catches it:
+            ```python
+            >>> from hapi.calibration import ObjectiveFunctionArityError
+            >>> try:
+            ...     raise ObjectiveFunctionArityError("needs more inputs")
+            ... except ValueError as exc:
+            ...     print(exc)
+            needs more inputs
+
+            ```
     """
 
 

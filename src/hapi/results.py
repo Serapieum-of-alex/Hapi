@@ -96,6 +96,17 @@ class RoutingKind(Enum):
         MUSKINGUM: Cell-to-cell Muskingum routing along the flow network.
         MAXBAS: Triangular (MAXBAS) routing of each cell straight to the outlet.
         LUMPED: No spatial routing -- the catchment was run as a single unit.
+
+    Examples:
+        - The kind carries its own name, which is what a run records on its results:
+            ```python
+            >>> from hapi.results import RoutingKind
+            >>> RoutingKind.MUSKINGUM.value
+            'muskingum'
+            >>> sorted(kind.value for kind in RoutingKind)
+            ['lumped', 'maxbas', 'muskingum', 'unrouted']
+
+            ```
     """
 
     UNROUTED = "unrouted"
@@ -215,6 +226,30 @@ class SimulationResults:
         a contribution rather than a discharge -- reading the outlet cell of a MAXBAS run
         under-reports the hydrograph, which is what this guards. False for UNROUTED too:
         there is no `q_total` yet, so there is no cell to read and no shortcut to take.
+
+        Examples:
+            - Muskingum accumulates downstream, so a cell is a discharge:
+                ```python
+                >>> import numpy as np
+                >>> from hapi.results import RoutingKind, SimulationResults
+                >>> cube = np.zeros((2, 3, 4), dtype="float32")
+                >>> muskingum = SimulationResults(RoutingKind.MUSKINGUM, cube, cube, None)
+                >>> muskingum.outlet_shortcut_valid
+                True
+
+                ```
+            - MAXBAS and unrouted arrays do not support the shortcut:
+                ```python
+                >>> import numpy as np
+                >>> from hapi.results import RoutingKind, SimulationResults
+                >>> cube = np.zeros((2, 3, 4), dtype="float32")
+                >>> [
+                ...     SimulationResults(kind, cube, cube, None).outlet_shortcut_valid
+                ...     for kind in (RoutingKind.MAXBAS, RoutingKind.UNROUTED)
+                ... ]
+                [False, False]
+
+                ```
         """
         return self.routing not in (RoutingKind.MAXBAS, RoutingKind.UNROUTED)
 

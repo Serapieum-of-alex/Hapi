@@ -1046,7 +1046,9 @@ class Catchment:
                 per-gauge (Muskingum) path. Default is None.
 
         Raises:
-            ValueError: The gauge table has not been read, or the model has not been run.
+            ValueError: The gauge table has not been read, the model has not been run, or
+                the results it produced have not been routed -- there is no hydrograph to
+                extract from a set of arrays no routing step has filled.
         """
         if self.GaugesTable is None:
             raise ValueError("please read the gauges' table first.")

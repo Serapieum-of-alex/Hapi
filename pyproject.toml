@@ -265,7 +265,7 @@ cmd = [
     "src/hapi/conceptual.py", "src/hapi/inputs.py", "src/hapi/period.py",
     "src/hapi/results.py", "src/hapi/runs.py",
     "src/hapi/routing.py",
-    "src/hapi/run.py",
+    "src/hapi/run.py", "src/hapi/calibration.py",
 ]
 description = "Run the doctests of the modules whose examples are executable"
 

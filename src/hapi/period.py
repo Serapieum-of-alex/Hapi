@@ -146,7 +146,21 @@ class SimulationPeriod:
 
     @property
     def freq(self) -> str:
-        """str: The pandas offset alias for this resolution."""
+        """str: The pandas offset alias for this resolution.
+
+        Examples:
+            - Each supported resolution maps to the alias `pd.date_range` expects:
+                ```python
+                >>> from hapi.period import SimulationPeriod
+                >>> SimulationPeriod.parse("2009-01-01", "2009-01-10").freq
+                'D'
+                >>> SimulationPeriod.parse(
+                ...     "2009-01-01", "2009-01-02", temporal_resolution="Hourly"
+                ... ).freq
+                'h'
+
+                ```
+        """
         return RESOLUTIONS[self.temporal_resolution]
 
     @cached_property
@@ -158,6 +172,24 @@ class SimulationPeriod:
         than rebuilt, which the frozen class makes safe -- the inputs it derives from cannot
         change, so the cache cannot go stale. It is read once per `from_model` (so once per
         calibration trial) and twice per `SimulationResults._step_bounds` call.
+
+        Examples:
+            - One entry per step, inclusive of both ends:
+                ```python
+                >>> from hapi.period import SimulationPeriod
+                >>> period = SimulationPeriod.parse("2009-01-01", "2009-01-05")
+                >>> [step.strftime("%m-%d") for step in period.date_index]
+                ['01-01', '01-02', '01-03', '01-04', '01-05']
+
+                ```
+            - Built once and handed back, because the span it describes cannot change:
+                ```python
+                >>> from hapi.period import SimulationPeriod
+                >>> period = SimulationPeriod.parse("2009-01-01", "2009-12-31")
+                >>> period.date_index is period.date_index
+                True
+
+                ```
         """
         return pd.date_range(self.start, self.end, freq=self.freq)
 
@@ -168,7 +200,26 @@ class SimulationPeriod:
 
     @property
     def conversion_factor(self) -> float:
-        """float: Depth-to-discharge factor -- mm over the catchment to m3/s at this step."""
+        """float: Depth-to-discharge factor -- mm over the catchment to m3/s at this step.
+
+        It is the number of seconds in a step divided by 1000, so an hourly step is a
+        twenty-fourth of a daily one.
+
+        Examples:
+            - The two resolutions differ by exactly a factor of 24:
+                ```python
+                >>> from hapi.period import SimulationPeriod
+                >>> daily = SimulationPeriod.parse("2009-01-01", "2009-01-10")
+                >>> hourly = SimulationPeriod.parse(
+                ...     "2009-01-01", "2009-01-02", temporal_resolution="Hourly"
+                ... )
+                >>> daily.conversion_factor
+                86.4
+                >>> round(daily.conversion_factor / hourly.conversion_factor, 1)
+                24.0
+
+                ```
+        """
         return (
             CONVERSION_FACTOR
             if self.temporal_resolution == "daily"
