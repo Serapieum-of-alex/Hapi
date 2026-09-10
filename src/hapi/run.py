@@ -57,9 +57,13 @@ def _check_lake_meteo(run: DistributedRun, lake: LakeType) -> None:
             "Lake meteorological data has to have the same length as the distributed "
             "raster data"
         )
-    if np.shape(meteo_data)[1] < 3:
+    # Four, not three: both lake wrappers read `meteo_data[:, 3]` for the long-term
+    # average, so a three-column record passed this check and then raised `IndexError`
+    # inside the run, naming a column index rather than the missing driver.
+    if np.shape(meteo_data)[1] < 4:
         raise ValueError(
-            "Lake Meteo data has to have at least three columns of rain, ET, and Temp"
+            "Lake meteorological data has to have at least four columns: rain, ET, "
+            "temperature, and the long-term average temperature"
         )
 
 

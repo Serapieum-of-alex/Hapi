@@ -24,7 +24,7 @@ from hapi.runs import DistributedRun
 class _LakeStub:
     """Stand-in for `Lake` carrying only the `MeteoData` the validation reads."""
 
-    def __init__(self, time_steps: int, columns: int = 3):
+    def __init__(self, time_steps: int, columns: int = 4):
         self.MeteoData = np.ones((time_steps, columns))
 
 
@@ -229,19 +229,32 @@ class TestRunHapiWithLake:
             "the wrapper must not run against a mismatched lake record"
         )
 
+    @pytest.mark.parametrize("columns", [2, 3])
     def test_rejects_a_lake_record_missing_a_column(
-        self, coello_loaded: Catchment, spied_wrapper: dict
+        self, coello_loaded: Catchment, spied_wrapper: dict, columns: int
     ):
-        """Test that a lake record without all three drivers is refused.
+        """Test that a lake record without all four drivers is refused.
+
+        Args:
+            coello_loaded: A distributed catchment with every input read.
+            spied_wrapper: Records whether an engine was reached.
+            columns: Width of the lake record under test.
 
         Test scenario:
-            The lake model reads rain, ET and temperature by position, so fewer than three
-            columns cannot be interpreted.
+            The guard asked for three columns while both lake wrappers read
+            `meteo_data[:, 3]` for the long-term average, so a three-column record passed
+            validation and then raised `IndexError` inside the run -- naming a column index
+            rather than the driver nobody supplied. Three is the case that regressed; two is
+            kept so the guard is still shown refusing what it always refused.
         """
-        lake = _LakeStub(coello_loaded.meteo.time_steps, columns=2)
+        lake = _LakeStub(coello_loaded.meteo.time_steps, columns=columns)
 
-        with pytest.raises(ValueError, match="three columns"):
+        with pytest.raises(ValueError, match="four columns"):
             Run.run_distributed_with_lake(coello_loaded, lake)
+
+        assert not spied_wrapper, (
+            "the engine must not be reached with a record it cannot read"
+        )
 
     def test_a_flow_direction_grid_of_the_wrong_shape_cannot_be_installed(
         self, coello_loaded: Catchment
