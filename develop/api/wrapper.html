@@ -2151,7 +2151,13 @@ routing.</p>
 <span class="normal">439</span>
 <span class="normal">440</span>
 <span class="normal">441</span>
-<span class="normal">442</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Wrapper</span><span class="p">:</span>
+<span class="normal">442</span>
+<span class="normal">443</span>
+<span class="normal">444</span>
+<span class="normal">445</span>
+<span class="normal">446</span>
+<span class="normal">447</span>
+<span class="normal">448</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Wrapper</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Connects rainfall-runoff model components with spatial routing.</span>
 
 <span class="sd">    The Wrapper class connects different components together including</span>
@@ -2521,17 +2527,23 @@ routing.</p>
         <span class="c1"># The lumped total discharge is exactly what `q_total` means, so it goes there rather</span>
         <span class="c1"># than onto the catchment as `Qsim`. `Run.run_lumped` is what indexes it by the period</span>
         <span class="c1"># and puts the frame on the model -- so this engine writes nothing outside `results`.</span>
-        <span class="n">q_total</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">quz</span> <span class="o">+</span> <span class="n">results</span><span class="o">.</span><span class="n">qlz</span>
+        <span class="c1"># The conceptual model prepends an initial-state slot, so its series is one step</span>
+        <span class="c1"># longer than the period covers. Trimmed once, here, rather than inside each</span>
+        <span class="c1"># routing branch: both routed branches used to do it and the unrouted one did not,</span>
+        <span class="c1"># so `Run.run_lumped(model)` -- the entry point's own default, `Route=0` -- produced</span>
+        <span class="c1"># an `n + 1` series and then raised `Length of values (1096) does not match length</span>
+        <span class="c1"># of index (1095)` when the period indexed it.</span>
+        <span class="n">q_total</span> <span class="o">=</span> <span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">quz</span> <span class="o">+</span> <span class="n">results</span><span class="o">.</span><span class="n">qlz</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="n">Routing</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">run</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">maxbas</span><span class="p">:</span>
             <span class="n">route</span> <span class="o">=</span> <span class="n">RoutingFn</span>
             <span class="k">assert</span> <span class="n">route</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>  <span class="c1"># noqa: S101 - guarded above</span>
-            <span class="n">q_total</span> <span class="o">=</span> <span class="n">route</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">q_total</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span> <span class="n">run</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">q_total</span> <span class="o">=</span> <span class="n">route</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">q_total</span><span class="p">),</span> <span class="n">run</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
         <span class="k">elif</span> <span class="n">Routing</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">route</span> <span class="o">=</span> <span class="n">RoutingFn</span>
             <span class="k">assert</span> <span class="n">route</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>  <span class="c1"># noqa: S101 - guarded above</span>
             <span class="n">q_total</span> <span class="o">=</span> <span class="n">route</span><span class="p">(</span>
-                <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">q_total</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">q_total</span><span class="p">),</span>
                 <span class="n">q_total</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
                 <span class="n">run</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">],</span>
                 <span class="n">run</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
@@ -2827,7 +2839,13 @@ routing is enabled.</p>
 <span class="normal">439</span>
 <span class="normal">440</span>
 <span class="normal">441</span>
-<span class="normal">442</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">442</span>
+<span class="normal">443</span>
+<span class="normal">444</span>
+<span class="normal">445</span>
+<span class="normal">446</span>
+<span class="normal">447</span>
+<span class="normal">448</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">run_lumped</span><span class="p">(</span>
     <span class="n">run</span><span class="p">:</span> <span class="n">LumpedRun</span><span class="p">,</span> <span class="n">Routing</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">RoutingFn</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SimulationResults</span><span class="p">:</span>
@@ -2900,17 +2918,23 @@ routing is enabled.</p>
     <span class="c1"># The lumped total discharge is exactly what `q_total` means, so it goes there rather</span>
     <span class="c1"># than onto the catchment as `Qsim`. `Run.run_lumped` is what indexes it by the period</span>
     <span class="c1"># and puts the frame on the model -- so this engine writes nothing outside `results`.</span>
-    <span class="n">q_total</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">quz</span> <span class="o">+</span> <span class="n">results</span><span class="o">.</span><span class="n">qlz</span>
+    <span class="c1"># The conceptual model prepends an initial-state slot, so its series is one step</span>
+    <span class="c1"># longer than the period covers. Trimmed once, here, rather than inside each</span>
+    <span class="c1"># routing branch: both routed branches used to do it and the unrouted one did not,</span>
+    <span class="c1"># so `Run.run_lumped(model)` -- the entry point's own default, `Route=0` -- produced</span>
+    <span class="c1"># an `n + 1` series and then raised `Length of values (1096) does not match length</span>
+    <span class="c1"># of index (1095)` when the period indexed it.</span>
+    <span class="n">q_total</span> <span class="o">=</span> <span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">quz</span> <span class="o">+</span> <span class="n">results</span><span class="o">.</span><span class="n">qlz</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
     <span class="k">if</span> <span class="n">Routing</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">run</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">maxbas</span><span class="p">:</span>
         <span class="n">route</span> <span class="o">=</span> <span class="n">RoutingFn</span>
         <span class="k">assert</span> <span class="n">route</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>  <span class="c1"># noqa: S101 - guarded above</span>
-        <span class="n">q_total</span> <span class="o">=</span> <span class="n">route</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">q_total</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span> <span class="n">run</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">q_total</span> <span class="o">=</span> <span class="n">route</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">q_total</span><span class="p">),</span> <span class="n">run</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
     <span class="k">elif</span> <span class="n">Routing</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">route</span> <span class="o">=</span> <span class="n">RoutingFn</span>
         <span class="k">assert</span> <span class="n">route</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>  <span class="c1"># noqa: S101 - guarded above</span>
         <span class="n">q_total</span> <span class="o">=</span> <span class="n">route</span><span class="p">(</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">q_total</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">q_total</span><span class="p">),</span>
             <span class="n">q_total</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
             <span class="n">run</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">],</span>
             <span class="n">run</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
