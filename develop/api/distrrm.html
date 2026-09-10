@@ -543,6 +543,8 @@
       
         
       
+        
+      
     
     
     
@@ -774,6 +776,34 @@
     
   
     Run
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="results.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Results
   
 
     
@@ -1879,7 +1909,11 @@ catchment, so nothing here has to ask whether its inputs were checked.</p>
 <span class="normal">248</span>
 <span class="normal">249</span>
 <span class="normal">250</span>
-<span class="normal">251</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">DistributedRRM</span><span class="p">:</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">DistributedRRM</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Distributed rainfall-runoff model runner and spatial router.</span>
 
 <span class="sd">    Runs a lumped hydrological model separately for each grid cell</span>
@@ -1921,6 +1955,10 @@ catchment, so nothing here has to ask whether its inputs were checked.</p>
                 <span class="k">if</span> <span class="n">run</span><span class="o">.</span><span class="n">keep_state_variables</span>
                 <span class="k">else</span> <span class="kc">None</span>
             <span class="p">),</span>
+            <span class="c1"># Carried as provenance: the arrays are meaningless without the calendar to</span>
+            <span class="c1"># index them by and the grid to mask them with, and `SimulationResults` renders</span>
+            <span class="c1"># and writes itself.</span>
+            <span class="n">run</span><span class="o">=</span><span class="n">run</span><span class="p">,</span>
         <span class="p">)</span>
 
         <span class="n">states</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">state_variables</span>
@@ -2176,7 +2214,12 @@ is modified in place.</p>
                 <code>results</code>
             </td>
             <td>
-                  <code><span title="hapi.results.SimulationResults">SimulationResults</span></code>
+                  <code><a class="autorefs autorefs-internal" title="&lt;code&gt;hapi.results.SimulationResults&lt;/code&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-dataclass&quot;&gt;&lt;code&gt;dataclass&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt;" href="results.html#hapi.results.SimulationResults">SimulationResults</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2193,11 +2236,7 @@ is modified in place.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/rrm/distrrm.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">186</span>
-<span class="normal">187</span>
-<span class="normal">188</span>
-<span class="normal">189</span>
-<span class="normal">190</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">190</span>
 <span class="normal">191</span>
 <span class="normal">192</span>
 <span class="normal">193</span>
@@ -2213,7 +2252,11 @@ is modified in place.</p>
 <span class="normal">203</span>
 <span class="normal">204</span>
 <span class="normal">205</span>
-<span class="normal">206</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">206</span>
+<span class="normal">207</span>
+<span class="normal">208</span>
+<span class="normal">209</span>
+<span class="normal">210</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">route_maxbas</span><span class="p">(</span><span class="n">run</span><span class="p">:</span> <span class="n">DistributedRun</span><span class="p">,</span> <span class="n">results</span><span class="p">:</span> <span class="n">SimulationResults</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Route discharge to the outlet using a triangular function.</span>
 
@@ -2298,7 +2341,12 @@ place.</p>
                 <code>results</code>
             </td>
             <td>
-                  <code><span title="hapi.results.SimulationResults">SimulationResults</span></code>
+                  <code><a class="autorefs autorefs-internal" title="&lt;code&gt;hapi.results.SimulationResults&lt;/code&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-dataclass&quot;&gt;&lt;code&gt;dataclass&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt;" href="results.html#hapi.results.SimulationResults">SimulationResults</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2338,11 +2386,7 @@ place.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/rrm/distrrm.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">208</span>
-<span class="normal">209</span>
-<span class="normal">210</span>
-<span class="normal">211</span>
-<span class="normal">212</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">212</span>
 <span class="normal">213</span>
 <span class="normal">214</span>
 <span class="normal">215</span>
@@ -2381,7 +2425,11 @@ place.</p>
 <span class="normal">248</span>
 <span class="normal">249</span>
 <span class="normal">250</span>
-<span class="normal">251</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">route_maxbas_by_path_length</span><span class="p">(</span>
     <span class="n">run</span><span class="p">:</span> <span class="n">DistributedRun</span><span class="p">,</span> <span class="n">results</span><span class="p">:</span> <span class="n">SimulationResults</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -2493,7 +2541,12 @@ them instead; the run type has already checked the geometry is present.</p>
                 <code>results</code>
             </td>
             <td>
-                  <code><span title="hapi.results.SimulationResults">SimulationResults</span></code>
+                  <code><a class="autorefs autorefs-internal" title="&lt;code&gt;hapi.results.SimulationResults&lt;/code&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-dataclass&quot;&gt;&lt;code&gt;dataclass&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt;" href="results.html#hapi.results.SimulationResults">SimulationResults</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2511,11 +2564,7 @@ in place.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/rrm/distrrm.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 94</span>
-<span class="normal"> 95</span>
-<span class="normal"> 96</span>
-<span class="normal"> 97</span>
-<span class="normal"> 98</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 98</span>
 <span class="normal"> 99</span>
 <span class="normal">100</span>
 <span class="normal">101</span>
@@ -2601,7 +2650,11 @@ in place.</p>
 <span class="normal">181</span>
 <span class="normal">182</span>
 <span class="normal">183</span>
-<span class="normal">184</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">route_muskingum</span><span class="p">(</span><span class="n">run</span><span class="p">:</span> <span class="n">DistributedRun</span><span class="p">,</span> <span class="n">results</span><span class="p">:</span> <span class="n">SimulationResults</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Route discharge between cells following the flow direction.</span>
 
@@ -2764,7 +2817,12 @@ and the conceptual model setup.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="hapi.results.SimulationResults">SimulationResults</span></code>
+                  <code><a class="autorefs autorefs-internal" title="&lt;code&gt;hapi.results.SimulationResults&lt;/code&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-dataclass&quot;&gt;&lt;code&gt;dataclass&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt;" href="results.html#hapi.results.SimulationResults">SimulationResults</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2774,7 +2832,12 @@ and the conceptual model setup.</p>
           </tr>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="hapi.results.SimulationResults">SimulationResults</span></code>
+                  <code><a class="autorefs autorefs-internal" title="&lt;code&gt;hapi.results.SimulationResults&lt;/code&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-dataclass&quot;&gt;&lt;code&gt;dataclass&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt;" href="results.html#hapi.results.SimulationResults">SimulationResults</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2846,7 +2909,11 @@ and the conceptual model setup.</p>
 <span class="normal">89</span>
 <span class="normal">90</span>
 <span class="normal">91</span>
-<span class="normal">92</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">92</span>
+<span class="normal">93</span>
+<span class="normal">94</span>
+<span class="normal">95</span>
+<span class="normal">96</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">run_lumped_model</span><span class="p">(</span><span class="n">run</span><span class="p">:</span> <span class="n">DistributedRun</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SimulationResults</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Run lumped rainfall-runoff model for every grid cell.</span>
 
@@ -2875,6 +2942,10 @@ and the conceptual model setup.</p>
             <span class="k">if</span> <span class="n">run</span><span class="o">.</span><span class="n">keep_state_variables</span>
             <span class="k">else</span> <span class="kc">None</span>
         <span class="p">),</span>
+        <span class="c1"># Carried as provenance: the arrays are meaningless without the calendar to</span>
+        <span class="c1"># index them by and the grid to mask them with, and `SimulationResults` renders</span>
+        <span class="c1"># and writes itself.</span>
+        <span class="n">run</span><span class="o">=</span><span class="n">run</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="n">states</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">state_variables</span>

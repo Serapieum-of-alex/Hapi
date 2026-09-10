@@ -13,7 +13,7 @@
         <link rel="canonical" href="https://serapeum-org.github.io/Hapi/develop/api/wrapper.html">
       
       
-        <link rel="prev" href="run.html">
+        <link rel="prev" href="results.html">
       
       
         <link rel="next" href="distrrm.html">
@@ -543,6 +543,8 @@
       
         
       
+        
+      
     
     
     
@@ -774,6 +776,34 @@
     
   
     Run
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="results.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Results
   
 
     
@@ -2167,7 +2197,8 @@ routing.</p>
 <span class="normal">485</span>
 <span class="normal">486</span>
 <span class="normal">487</span>
-<span class="normal">488</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Wrapper</span><span class="p">:</span>
+<span class="normal">488</span>
+<span class="normal">489</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Wrapper</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Connects rainfall-runoff model components with spatial routing.</span>
 
 <span class="sd">    The Wrapper class connects different components together including</span>
@@ -2332,7 +2363,7 @@ routing.</p>
     <span class="k">def</span><span class="w"> </span><span class="nf">_set_maxbas_output_fields</span><span class="p">(</span><span class="n">results</span><span class="p">:</span> <span class="n">SimulationResults</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""Fill the distributed output fields after a triangular (MAXBAS) run.</span>
 
-<span class="sd">        `save_results` and `plot_distributed_results` read `q_total`,</span>
+<span class="sd">        `results.save` and `results.animate` read `q_total`,</span>
 <span class="sd">        `quz_routed` and `qlz_translated` for their discharge options. Only</span>
 <span class="sd">        :meth:`DistRRM.route_muskingum` (the Muskingum path) used to set them, so</span>
 <span class="sd">        after a MAXBAS run they stayed `None` and every discharge option raised</span>
@@ -2376,7 +2407,7 @@ routing.</p>
 
 <span class="sd">        Also fills the per-cell output fields (`q_total`, `quz_routed`,</span>
 <span class="sd">        `qlz_translated`) via :meth:`_set_maxbas_output_fields`, so the</span>
-<span class="sd">        discharge options of `save_results` / `plot_distributed_results`</span>
+<span class="sd">        discharge options of `results.save` / `results.animate`</span>
 <span class="sd">        work on this path; see that method for the MAXBAS semantics.</span>
 
 <span class="sd">        Args:</span>
@@ -2579,6 +2610,7 @@ routing.</p>
             <span class="n">quz</span><span class="o">=</span><span class="n">quz</span> <span class="o">*</span> <span class="n">factor</span><span class="p">,</span>
             <span class="n">qlz</span><span class="o">=</span><span class="n">qlz</span> <span class="o">*</span> <span class="n">factor</span><span class="p">,</span>
             <span class="n">state_variables</span><span class="o">=</span><span class="n">state_variables</span><span class="p">,</span>
+            <span class="n">run</span><span class="o">=</span><span class="n">run</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="c1"># The lumped total discharge is exactly what `q_total` means, so it goes there rather</span>
         <span class="c1"># than onto the catchment as `Qsim`. `Run.run_lumped` is what indexes it by the period</span>
@@ -2855,7 +2887,8 @@ routing is enabled.</p>
 <span class="normal">485</span>
 <span class="normal">486</span>
 <span class="normal">487</span>
-<span class="normal">488</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">488</span>
+<span class="normal">489</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">run_lumped</span><span class="p">(</span>
     <span class="n">run</span><span class="p">:</span> <span class="n">LumpedRun</span><span class="p">,</span> <span class="n">Routing</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">RoutingFn</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SimulationResults</span><span class="p">:</span>
@@ -2938,6 +2971,7 @@ routing is enabled.</p>
         <span class="n">quz</span><span class="o">=</span><span class="n">quz</span> <span class="o">*</span> <span class="n">factor</span><span class="p">,</span>
         <span class="n">qlz</span><span class="o">=</span><span class="n">qlz</span> <span class="o">*</span> <span class="n">factor</span><span class="p">,</span>
         <span class="n">state_variables</span><span class="o">=</span><span class="n">state_variables</span><span class="p">,</span>
+        <span class="n">run</span><span class="o">=</span><span class="n">run</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="c1"># The lumped total discharge is exactly what `q_total` means, so it goes there rather</span>
     <span class="c1"># than onto the catchment as `Qsim`. `Run.run_lumped` is what indexes it by the period</span>
@@ -2996,7 +3030,7 @@ routing is enabled.</p>
 zone and unrouted lower zone discharge across all cells.</p>
 <p>Also fills the per-cell output fields (<code>q_total</code>, <code>quz_routed</code>,
 <code>qlz_translated</code>) via :meth:<code>_set_maxbas_output_fields</code>, so the
-discharge options of <code>save_results</code> / <code>plot_distributed_results</code>
+discharge options of <code>results.save</code> / <code>results.animate</code>
 work on this path; see that method for the MAXBAS semantics.</p>
 
 
@@ -3122,7 +3156,7 @@ Defaults to None.</p>
 
 <span class="sd">    Also fills the per-cell output fields (`q_total`, `quz_routed`,</span>
 <span class="sd">    `qlz_translated`) via :meth:`_set_maxbas_output_fields`, so the</span>
-<span class="sd">    discharge options of `save_results` / `plot_distributed_results`</span>
+<span class="sd">    discharge options of `results.save` / `results.animate`</span>
 <span class="sd">    work on this path; see that method for the MAXBAS semantics.</span>
 
 <span class="sd">    Args:</span>
@@ -3607,7 +3641,12 @@ The flood model's path. Defaults to False.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="hapi.results.SimulationResults">SimulationResults</span></code>
+                  <code><a class="autorefs autorefs-internal" title="&lt;code&gt;hapi.results.SimulationResults&lt;/code&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-dataclass&quot;&gt;&lt;code&gt;dataclass&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt;" href="results.html#hapi.results.SimulationResults">SimulationResults</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4092,7 +4131,7 @@ Defaults to None.</p>
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="run.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Run">
+          <a href="results.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Results">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -4102,7 +4141,7 @@ Defaults to None.</p>
                 Previous
               </span>
               <div class="md-ellipsis">
-                Run
+                Results
               </div>
             </div>
           </a>

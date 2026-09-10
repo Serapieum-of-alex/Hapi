@@ -541,6 +541,8 @@
       
         
       
+        
+      
     
     
     
@@ -769,6 +771,34 @@
     
   
     Run
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/results.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Results
   
 
     
@@ -1621,7 +1651,8 @@
 <h2 id="6-animation"><a class="toclink" href="#6-animation">6-Animation</a><a class="headerlink" href="#6-animation" title="Permanent link">#</a></h2>
 <ul>
 <li>The best way to visualize a time series of distributed data is an animation. The <code>Catchment</code> object
-  has a <code>plot_distributed_results</code> method which animates any of the model results.</li>
+  carries a <code>SimulationResults</code> object on <code>model.results</code>, whose <code>animate</code> method animates
+  any of them.</li>
 </ul>
 <p>The keyword arguments are forwarded to
 <code>cleopatra.glyphs.gridded.array_glyph.ArrayGlyph.animate</code>; see its documentation for the full list.
@@ -1631,7 +1662,7 @@ cleopatra 0.30 moved the styling keywords onto typed group objects, so the colou
 <code>.boundary(bounds=...)</code>), the cell-value labels are
 <code>cells=CellValues(show=True, size=..., background_threshold=...)</code>, and the frame time-stamp is
 <code>frame_label=FrameLabel(location=[...], color=...)</code>. The gauge markers are built by Hapi itself
-when <code>gauges=True</code>.</p>
+from the gauge table you pass as <code>gauges=</code>.</p>
 <p><code>option</code> selects the variable to animate:</p>
 <table>
 <thead>
@@ -1688,11 +1719,11 @@ when <code>gauges=True</code>.</p>
 <span class="n">plotstart</span> <span class="o">=</span> <span class="s2">"2009-01-01"</span>
 <span class="n">plotend</span> <span class="o">=</span> <span class="s2">"2009-04-20"</span>
 
-<span class="n">anim</span> <span class="o">=</span> <span class="n">Coello</span><span class="o">.</span><span class="n">plot_distributed_results</span><span class="p">(</span>
+<span class="n">anim</span> <span class="o">=</span> <span class="n">Coello</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">animate</span><span class="p">(</span>
     <span class="n">plotstart</span><span class="p">,</span>
     <span class="n">plotend</span><span class="p">,</span>
     <span class="n">option</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-    <span class="n">gauges</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">gauges</span><span class="o">=</span><span class="n">Coello</span><span class="o">.</span><span class="n">GaugesTable</span><span class="p">,</span>
     <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">9</span><span class="p">),</span>
     <span class="n">ticks_spacing</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
     <span class="n">interval</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>
@@ -1708,7 +1739,7 @@ when <code>gauges=True</code>.</p>
   Pillow; <code>mov</code>, <code>avi</code> and <code>mp4</code> need <a href="https://ffmpeg.org/">FFmpeg</a> installed and available on your
   system.</li>
 </ul>
-<div class="highlight"><pre><span></span><code><span class="n">Coello</span><span class="o">.</span><span class="n">save_animation</span><span class="p">(</span><span class="s2">"results/anim.gif"</span><span class="p">,</span> <span class="n">fps</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="n">Coello</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">save_animation</span><span class="p">(</span><span class="s2">"results/anim.gif"</span><span class="p">,</span> <span class="n">fps</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 </code></pre></div>
 <h2 id="7-save-the-result-into-rasters"><a class="toclink" href="#7-save-the-result-into-rasters">7-Save the result into rasters</a><a class="headerlink" href="#7-save-the-result-into-rasters" title="Permanent link">#</a></h2>
 <ul>
@@ -1718,12 +1749,12 @@ when <code>gauges=True</code>.</p>
 <span class="n">end</span> <span class="o">=</span> <span class="s2">"2010-04-20"</span>
 <span class="n">prefix</span> <span class="o">=</span> <span class="s2">"Qtot_"</span>
 
-<span class="n">Coello</span><span class="o">.</span><span class="n">save_results</span><span class="p">(</span>
-    <span class="n">FlowAccPath</span><span class="p">,</span>
+<span class="n">Coello</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">save</span><span class="p">(</span>
+    <span class="n">path</span><span class="o">=</span><span class="s2">"results/"</span><span class="p">,</span>
+    <span class="n">flow_acc_path</span><span class="o">=</span><span class="n">FlowAccPath</span><span class="p">,</span>
     <span class="n">result</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
     <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span>
     <span class="n">end</span><span class="o">=</span><span class="n">end</span><span class="p">,</span>
-    <span class="n">path</span><span class="o">=</span><span class="s2">"results/"</span><span class="p">,</span>
     <span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">,</span>
 <span class="p">)</span>
 </code></pre></div>

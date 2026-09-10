@@ -543,6 +543,8 @@
       
         
       
+        
+      
     
     
     
@@ -726,17 +728,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#hapi.catchment.Catchment.plot_distributed_results" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        plot_distributed_results
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#hapi.catchment.Catchment.plot_hydrograph" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -818,28 +809,6 @@
     <span class="md-ellipsis">
       
         read_river_geometry
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#hapi.catchment.Catchment.save_animation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        save_animation
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#hapi.catchment.Catchment.save_results" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        save_results
       
     </span>
   </a>
@@ -1020,6 +989,34 @@
     
   
     Run
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="results.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Results
   
 
     
@@ -1691,17 +1688,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#hapi.catchment.Catchment.plot_distributed_results" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        plot_distributed_results
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#hapi.catchment.Catchment.plot_hydrograph" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1783,28 +1769,6 @@
     <span class="md-ellipsis">
       
         read_river_geometry
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#hapi.catchment.Catchment.save_animation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        save_animation
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#hapi.catchment.Catchment.save_results" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        save_results
       
     </span>
   </a>
@@ -1930,7 +1894,36 @@ their historical names (<code>q_total</code>, <code>quz</code>, ...) as read-onl
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 250</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 221</span>
+<span class="normal"> 222</span>
+<span class="normal"> 223</span>
+<span class="normal"> 224</span>
+<span class="normal"> 225</span>
+<span class="normal"> 226</span>
+<span class="normal"> 227</span>
+<span class="normal"> 228</span>
+<span class="normal"> 229</span>
+<span class="normal"> 230</span>
+<span class="normal"> 231</span>
+<span class="normal"> 232</span>
+<span class="normal"> 233</span>
+<span class="normal"> 234</span>
+<span class="normal"> 235</span>
+<span class="normal"> 236</span>
+<span class="normal"> 237</span>
+<span class="normal"> 238</span>
+<span class="normal"> 239</span>
+<span class="normal"> 240</span>
+<span class="normal"> 241</span>
+<span class="normal"> 242</span>
+<span class="normal"> 243</span>
+<span class="normal"> 244</span>
+<span class="normal"> 245</span>
+<span class="normal"> 246</span>
+<span class="normal"> 247</span>
+<span class="normal"> 248</span>
+<span class="normal"> 249</span>
+<span class="normal"> 250</span>
 <span class="normal"> 251</span>
 <span class="normal"> 252</span>
 <span class="normal"> 253</span>
@@ -2964,339 +2957,7 @@ their historical names (<code>q_total</code>, <code>quz</code>, ...) as read-onl
 <span class="normal">1281</span>
 <span class="normal">1282</span>
 <span class="normal">1283</span>
-<span class="normal">1284</span>
-<span class="normal">1285</span>
-<span class="normal">1286</span>
-<span class="normal">1287</span>
-<span class="normal">1288</span>
-<span class="normal">1289</span>
-<span class="normal">1290</span>
-<span class="normal">1291</span>
-<span class="normal">1292</span>
-<span class="normal">1293</span>
-<span class="normal">1294</span>
-<span class="normal">1295</span>
-<span class="normal">1296</span>
-<span class="normal">1297</span>
-<span class="normal">1298</span>
-<span class="normal">1299</span>
-<span class="normal">1300</span>
-<span class="normal">1301</span>
-<span class="normal">1302</span>
-<span class="normal">1303</span>
-<span class="normal">1304</span>
-<span class="normal">1305</span>
-<span class="normal">1306</span>
-<span class="normal">1307</span>
-<span class="normal">1308</span>
-<span class="normal">1309</span>
-<span class="normal">1310</span>
-<span class="normal">1311</span>
-<span class="normal">1312</span>
-<span class="normal">1313</span>
-<span class="normal">1314</span>
-<span class="normal">1315</span>
-<span class="normal">1316</span>
-<span class="normal">1317</span>
-<span class="normal">1318</span>
-<span class="normal">1319</span>
-<span class="normal">1320</span>
-<span class="normal">1321</span>
-<span class="normal">1322</span>
-<span class="normal">1323</span>
-<span class="normal">1324</span>
-<span class="normal">1325</span>
-<span class="normal">1326</span>
-<span class="normal">1327</span>
-<span class="normal">1328</span>
-<span class="normal">1329</span>
-<span class="normal">1330</span>
-<span class="normal">1331</span>
-<span class="normal">1332</span>
-<span class="normal">1333</span>
-<span class="normal">1334</span>
-<span class="normal">1335</span>
-<span class="normal">1336</span>
-<span class="normal">1337</span>
-<span class="normal">1338</span>
-<span class="normal">1339</span>
-<span class="normal">1340</span>
-<span class="normal">1341</span>
-<span class="normal">1342</span>
-<span class="normal">1343</span>
-<span class="normal">1344</span>
-<span class="normal">1345</span>
-<span class="normal">1346</span>
-<span class="normal">1347</span>
-<span class="normal">1348</span>
-<span class="normal">1349</span>
-<span class="normal">1350</span>
-<span class="normal">1351</span>
-<span class="normal">1352</span>
-<span class="normal">1353</span>
-<span class="normal">1354</span>
-<span class="normal">1355</span>
-<span class="normal">1356</span>
-<span class="normal">1357</span>
-<span class="normal">1358</span>
-<span class="normal">1359</span>
-<span class="normal">1360</span>
-<span class="normal">1361</span>
-<span class="normal">1362</span>
-<span class="normal">1363</span>
-<span class="normal">1364</span>
-<span class="normal">1365</span>
-<span class="normal">1366</span>
-<span class="normal">1367</span>
-<span class="normal">1368</span>
-<span class="normal">1369</span>
-<span class="normal">1370</span>
-<span class="normal">1371</span>
-<span class="normal">1372</span>
-<span class="normal">1373</span>
-<span class="normal">1374</span>
-<span class="normal">1375</span>
-<span class="normal">1376</span>
-<span class="normal">1377</span>
-<span class="normal">1378</span>
-<span class="normal">1379</span>
-<span class="normal">1380</span>
-<span class="normal">1381</span>
-<span class="normal">1382</span>
-<span class="normal">1383</span>
-<span class="normal">1384</span>
-<span class="normal">1385</span>
-<span class="normal">1386</span>
-<span class="normal">1387</span>
-<span class="normal">1388</span>
-<span class="normal">1389</span>
-<span class="normal">1390</span>
-<span class="normal">1391</span>
-<span class="normal">1392</span>
-<span class="normal">1393</span>
-<span class="normal">1394</span>
-<span class="normal">1395</span>
-<span class="normal">1396</span>
-<span class="normal">1397</span>
-<span class="normal">1398</span>
-<span class="normal">1399</span>
-<span class="normal">1400</span>
-<span class="normal">1401</span>
-<span class="normal">1402</span>
-<span class="normal">1403</span>
-<span class="normal">1404</span>
-<span class="normal">1405</span>
-<span class="normal">1406</span>
-<span class="normal">1407</span>
-<span class="normal">1408</span>
-<span class="normal">1409</span>
-<span class="normal">1410</span>
-<span class="normal">1411</span>
-<span class="normal">1412</span>
-<span class="normal">1413</span>
-<span class="normal">1414</span>
-<span class="normal">1415</span>
-<span class="normal">1416</span>
-<span class="normal">1417</span>
-<span class="normal">1418</span>
-<span class="normal">1419</span>
-<span class="normal">1420</span>
-<span class="normal">1421</span>
-<span class="normal">1422</span>
-<span class="normal">1423</span>
-<span class="normal">1424</span>
-<span class="normal">1425</span>
-<span class="normal">1426</span>
-<span class="normal">1427</span>
-<span class="normal">1428</span>
-<span class="normal">1429</span>
-<span class="normal">1430</span>
-<span class="normal">1431</span>
-<span class="normal">1432</span>
-<span class="normal">1433</span>
-<span class="normal">1434</span>
-<span class="normal">1435</span>
-<span class="normal">1436</span>
-<span class="normal">1437</span>
-<span class="normal">1438</span>
-<span class="normal">1439</span>
-<span class="normal">1440</span>
-<span class="normal">1441</span>
-<span class="normal">1442</span>
-<span class="normal">1443</span>
-<span class="normal">1444</span>
-<span class="normal">1445</span>
-<span class="normal">1446</span>
-<span class="normal">1447</span>
-<span class="normal">1448</span>
-<span class="normal">1449</span>
-<span class="normal">1450</span>
-<span class="normal">1451</span>
-<span class="normal">1452</span>
-<span class="normal">1453</span>
-<span class="normal">1454</span>
-<span class="normal">1455</span>
-<span class="normal">1456</span>
-<span class="normal">1457</span>
-<span class="normal">1458</span>
-<span class="normal">1459</span>
-<span class="normal">1460</span>
-<span class="normal">1461</span>
-<span class="normal">1462</span>
-<span class="normal">1463</span>
-<span class="normal">1464</span>
-<span class="normal">1465</span>
-<span class="normal">1466</span>
-<span class="normal">1467</span>
-<span class="normal">1468</span>
-<span class="normal">1469</span>
-<span class="normal">1470</span>
-<span class="normal">1471</span>
-<span class="normal">1472</span>
-<span class="normal">1473</span>
-<span class="normal">1474</span>
-<span class="normal">1475</span>
-<span class="normal">1476</span>
-<span class="normal">1477</span>
-<span class="normal">1478</span>
-<span class="normal">1479</span>
-<span class="normal">1480</span>
-<span class="normal">1481</span>
-<span class="normal">1482</span>
-<span class="normal">1483</span>
-<span class="normal">1484</span>
-<span class="normal">1485</span>
-<span class="normal">1486</span>
-<span class="normal">1487</span>
-<span class="normal">1488</span>
-<span class="normal">1489</span>
-<span class="normal">1490</span>
-<span class="normal">1491</span>
-<span class="normal">1492</span>
-<span class="normal">1493</span>
-<span class="normal">1494</span>
-<span class="normal">1495</span>
-<span class="normal">1496</span>
-<span class="normal">1497</span>
-<span class="normal">1498</span>
-<span class="normal">1499</span>
-<span class="normal">1500</span>
-<span class="normal">1501</span>
-<span class="normal">1502</span>
-<span class="normal">1503</span>
-<span class="normal">1504</span>
-<span class="normal">1505</span>
-<span class="normal">1506</span>
-<span class="normal">1507</span>
-<span class="normal">1508</span>
-<span class="normal">1509</span>
-<span class="normal">1510</span>
-<span class="normal">1511</span>
-<span class="normal">1512</span>
-<span class="normal">1513</span>
-<span class="normal">1514</span>
-<span class="normal">1515</span>
-<span class="normal">1516</span>
-<span class="normal">1517</span>
-<span class="normal">1518</span>
-<span class="normal">1519</span>
-<span class="normal">1520</span>
-<span class="normal">1521</span>
-<span class="normal">1522</span>
-<span class="normal">1523</span>
-<span class="normal">1524</span>
-<span class="normal">1525</span>
-<span class="normal">1526</span>
-<span class="normal">1527</span>
-<span class="normal">1528</span>
-<span class="normal">1529</span>
-<span class="normal">1530</span>
-<span class="normal">1531</span>
-<span class="normal">1532</span>
-<span class="normal">1533</span>
-<span class="normal">1534</span>
-<span class="normal">1535</span>
-<span class="normal">1536</span>
-<span class="normal">1537</span>
-<span class="normal">1538</span>
-<span class="normal">1539</span>
-<span class="normal">1540</span>
-<span class="normal">1541</span>
-<span class="normal">1542</span>
-<span class="normal">1543</span>
-<span class="normal">1544</span>
-<span class="normal">1545</span>
-<span class="normal">1546</span>
-<span class="normal">1547</span>
-<span class="normal">1548</span>
-<span class="normal">1549</span>
-<span class="normal">1550</span>
-<span class="normal">1551</span>
-<span class="normal">1552</span>
-<span class="normal">1553</span>
-<span class="normal">1554</span>
-<span class="normal">1555</span>
-<span class="normal">1556</span>
-<span class="normal">1557</span>
-<span class="normal">1558</span>
-<span class="normal">1559</span>
-<span class="normal">1560</span>
-<span class="normal">1561</span>
-<span class="normal">1562</span>
-<span class="normal">1563</span>
-<span class="normal">1564</span>
-<span class="normal">1565</span>
-<span class="normal">1566</span>
-<span class="normal">1567</span>
-<span class="normal">1568</span>
-<span class="normal">1569</span>
-<span class="normal">1570</span>
-<span class="normal">1571</span>
-<span class="normal">1572</span>
-<span class="normal">1573</span>
-<span class="normal">1574</span>
-<span class="normal">1575</span>
-<span class="normal">1576</span>
-<span class="normal">1577</span>
-<span class="normal">1578</span>
-<span class="normal">1579</span>
-<span class="normal">1580</span>
-<span class="normal">1581</span>
-<span class="normal">1582</span>
-<span class="normal">1583</span>
-<span class="normal">1584</span>
-<span class="normal">1585</span>
-<span class="normal">1586</span>
-<span class="normal">1587</span>
-<span class="normal">1588</span>
-<span class="normal">1589</span>
-<span class="normal">1590</span>
-<span class="normal">1591</span>
-<span class="normal">1592</span>
-<span class="normal">1593</span>
-<span class="normal">1594</span>
-<span class="normal">1595</span>
-<span class="normal">1596</span>
-<span class="normal">1597</span>
-<span class="normal">1598</span>
-<span class="normal">1599</span>
-<span class="normal">1600</span>
-<span class="normal">1601</span>
-<span class="normal">1602</span>
-<span class="normal">1603</span>
-<span class="normal">1604</span>
-<span class="normal">1605</span>
-<span class="normal">1606</span>
-<span class="normal">1607</span>
-<span class="normal">1608</span>
-<span class="normal">1609</span>
-<span class="normal">1610</span>
-<span class="normal">1611</span>
-<span class="normal">1612</span>
-<span class="normal">1613</span>
-<span class="normal">1614</span>
-<span class="normal">1615</span>
-<span class="normal">1616</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Catchment</span><span class="p">:</span>
+<span class="normal">1284</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Catchment</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Catchment for reading meteorological/spatial inputs and running the model.</span>
 
 <span class="sd">    The Catchment class includes methods to read the meteorological and</span>
@@ -3403,13 +3064,11 @@ their historical names (<code>q_total</code>, <code>quz</code>, ...) as read-onl
         <span class="c1">#: The five hydraulic rasters the flood model reads, once `read_river_geometry` has</span>
         <span class="c1">#: run. Absent-or-complete: they are checked against each other as they are read.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">river_geometry</span><span class="p">:</span> <span class="n">RiverGeometry</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="c1">#: Everything one run produced, replaced wholesale by the next run. The seven</span>
-        <span class="c1">#: result arrays below are read-only properties forwarding to it, so `model.results.q_total`</span>
-        <span class="c1">#: still reads as it always did while the run layer owns the arrays. `None` until</span>
-        <span class="c1">#: a `Run.*` entry point has been called.</span>
+        <span class="c1">#: Everything one run produced, replaced wholesale by the next run -- the arrays,</span>
+        <span class="c1">#: the routing that made them, and the methods that render and write them</span>
+        <span class="c1">#: (`model.results.animate(...)`, `model.results.save(...)`). `None` until a `Run.*`</span>
+        <span class="c1">#: entry point has been called.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">:</span> <span class="n">SimulationResults</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">anim</span><span class="p">:</span> <span class="n">matplotlib</span><span class="o">.</span><span class="n">animation</span><span class="o">.</span><span class="n">FuncAnimation</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_animation_glyph</span><span class="p">:</span> <span class="n">ArrayGlyph</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Qsim</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="c1">#: The configuration this model was built from, when it came from</span>
@@ -4362,307 +4021,6 @@ their historical names (<code>q_total</code>, <code>quz</code>, ...) as read-onl
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"R2= "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s2">"R2"</span><span class="p">,</span> <span class="n">gauge_id</span><span class="p">],</span> <span class="mi">2</span><span class="p">)))</span>
 
         <span class="k">return</span> <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">plot_distributed_results</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">start</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">,</span>
-        <span class="n">end</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">,</span>
-        <span class="n">fmt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"%Y-%m-</span><span class="si">%d</span><span class="s2">"</span><span class="p">,</span>
-        <span class="n">option</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-        <span class="n">gauges</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
-    <span class="p">):</span>
-<span class="w">        </span><span class="sd">"""Animate distributed model results or meteorological inputs.</span>
-
-<span class="sd">        Creates an animation of the time series of meteorological inputs</span>
-<span class="sd">        or model results (discharge, state variables) over the spatial</span>
-<span class="sd">        domain. Cells outside the catchment domain are masked on a copy of</span>
-<span class="sd">        the data, so the model arrays stored on the instance are never</span>
-<span class="sd">        modified. The animation title defaults to the selected variable's</span>
-<span class="sd">        name; an explicit `title=` keyword argument overrides it.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            start (str): Starting date for the animation.</span>
-<span class="sd">            end (str): End date for the animation.</span>
-<span class="sd">            fmt (str, optional): Format of the given date. Default</span>
-<span class="sd">                is "%Y-%m-%d".</span>
-<span class="sd">            option (int, optional): Variable to animate. Options are:</span>
-<span class="sd">                1 - Total discharge, 2 - Upper zone discharge,</span>
-<span class="sd">                3 - Ground water, 4 - Snow pack, 5 - Soil moisture,</span>
-<span class="sd">                6 - Upper zone, 7 - Lower zone, 8 - Water content,</span>
-<span class="sd">                9 - Precipitation, 10 - ET, 11 - Temperature.</span>
-<span class="sd">                Default is 1.</span>
-<span class="sd">            gauges (bool, optional): Whether to plot gauge locations</span>
-<span class="sd">                on the animation. Default is False.</span>
-<span class="sd">            **kwargs: Additional keyword arguments passed to</span>
-<span class="sd">                `ArrayGlyph.animate`. Loose styling keywords still</span>
-<span class="sd">                accepted: title (str), title_size (int), cmap (str),</span>
-<span class="sd">                vmin (float), vmax (float), interval (int),</span>
-<span class="sd">                figsize (tuple), cell_value_text_colors (tuple),</span>
-<span class="sd">                ticks_spacing (int), cbar_label (str),</span>
-<span class="sd">                cbar_label_size (int), cbar_length (float),</span>
-<span class="sd">                cbar_orientation (str).</span>
-<span class="sd">                Styling that cleopatra 0.30 moved onto typed group</span>
-<span class="sd">                objects is passed as those objects instead:</span>
-<span class="sd">                color=`ColorScaling` (was color_scale / gamma /</span>
-<span class="sd">                bounds / midpoint), cells=`CellValues` (was</span>
-<span class="sd">                display_cell_value / num_size /</span>
-<span class="sd">                background_color_threshold),</span>
-<span class="sd">                contour=`Contour` (was levels),</span>
-<span class="sd">                data_style=`DataStyle` (was style / hillshade),</span>
-<span class="sd">                frame_label=`FrameLabel` (was label_location /</span>
-<span class="sd">                label_color / text_loc). See</span>
-<span class="sd">                `cleopatra.glyphs.gridded.array_glyph.ArrayGlyph.animate`</span>
-<span class="sd">                for the full list.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            matplotlib.animation.FuncAnimation: The animation object.</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">            ValueError: If `option` is not between 1 and 11.</span>
-<span class="sd">        """</span>
-        <span class="n">start</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">fmt</span><span class="p">)</span>
-        <span class="n">end</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">end</span><span class="p">,</span> <span class="n">fmt</span><span class="p">)</span>
-
-        <span class="n">start_i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">period</span><span class="o">.</span><span class="n">date_index</span> <span class="o">==</span> <span class="n">start</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">end_i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">period</span><span class="o">.</span><span class="n">date_index</span> <span class="o">==</span> <span class="n">end</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-
-        <span class="k">if</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">q_total</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
-            <span class="n">title</span> <span class="o">=</span> <span class="s2">"Total Discharge"</span>
-        <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-            <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">quz_routed</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
-            <span class="n">title</span> <span class="o">=</span> <span class="s2">"Surface Flow"</span>
-        <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
-            <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">qlz_translated</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
-            <span class="n">title</span> <span class="o">=</span> <span class="s2">"Ground Water Flow"</span>
-        <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
-            <span class="n">arr</span> <span class="o">=</span> <span class="n">_require_state_variables</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">)[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
-            <span class="n">title</span> <span class="o">=</span> <span class="s2">"Snow Pack"</span>
-        <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
-            <span class="n">arr</span> <span class="o">=</span> <span class="n">_require_state_variables</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">)[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
-            <span class="n">title</span> <span class="o">=</span> <span class="s2">"Soil Moisture"</span>
-        <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">6</span><span class="p">:</span>
-            <span class="n">arr</span> <span class="o">=</span> <span class="n">_require_state_variables</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">)[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
-            <span class="n">title</span> <span class="o">=</span> <span class="s2">"Upper Zone"</span>
-        <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">7</span><span class="p">:</span>
-            <span class="n">arr</span> <span class="o">=</span> <span class="n">_require_state_variables</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">)[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
-            <span class="n">title</span> <span class="o">=</span> <span class="s2">"Lower Zone"</span>
-        <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">8</span><span class="p">:</span>
-            <span class="n">arr</span> <span class="o">=</span> <span class="n">_require_state_variables</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">)[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span>
-            <span class="n">title</span> <span class="o">=</span> <span class="s2">"Water Content"</span>
-        <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">9</span><span class="p">:</span>
-            <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">precipitation</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
-            <span class="n">title</span> <span class="o">=</span> <span class="s2">"Precipitation"</span>
-        <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">10</span><span class="p">:</span>
-            <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">evapotranspiration</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
-            <span class="n">title</span> <span class="o">=</span> <span class="s2">"ET"</span>
-        <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">11</span><span class="p">:</span>
-            <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">temperature</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
-            <span class="n">title</span> <span class="o">=</span> <span class="s2">"Temperature"</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Plotting options are from 1 to 11"</span><span class="p">)</span>
-
-        <span class="c1"># mask the no-data cells on a copy so plotting never mutates the model</span>
-        <span class="c1"># result arrays stored on the instance</span>
-        <span class="n">arr</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="n">arr</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">flow_acc_arr</span><span class="p">),</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-
-        <span class="n">time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">period</span><span class="o">.</span><span class="n">date_index</span><span class="p">[</span><span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
-
-        <span class="k">if</span> <span class="n">gauges</span><span class="p">:</span>
-            <span class="c1"># animate expects a 3-column array: [value to display, cell row, cell column].</span>
-            <span class="c1"># cleopatra 0.30 stopped accepting a bare array; it must be wrapped in a</span>
-            <span class="c1"># PointOverlay, which also carries the marker/label styling.</span>
-            <span class="n">kwargs</span><span class="p">[</span><span class="s2">"points"</span><span class="p">]</span> <span class="o">=</span> <span class="n">PointOverlay</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">GaugesTable</span><span class="p">[[</span><span class="s2">"id"</span><span class="p">,</span> <span class="s2">"cell_row"</span><span class="p">,</span> <span class="s2">"cell_col"</span><span class="p">]]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
-            <span class="p">)</span>
-
-        <span class="c1"># animate iterates over the first dimension, so move the time axis to the front</span>
-        <span class="n">array</span> <span class="o">=</span> <span class="n">ArrayGlyph</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
-        <span class="c1"># the option title is a default; an explicit title= kwarg wins</span>
-        <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">"title"</span><span class="p">,</span> <span class="n">title</span><span class="p">)</span>
-        <span class="n">anim</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">animate</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">_animation_glyph</span> <span class="o">=</span> <span class="n">array</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">anim</span> <span class="o">=</span> <span class="n">anim</span>
-
-        <span class="k">return</span> <span class="n">anim</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">save_animation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">fps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">"""Save the animation created by `plot_distributed_results`.</span>
-
-<span class="sd">        The output format is determined by the file extension. GIF uses</span>
-<span class="sd">        PillowWriter; mov/avi/mp4 require FFmpeg to be installed.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            path (str): Output file path. The extension determines the</span>
-<span class="sd">                format (gif, mov, avi, or mp4).</span>
-<span class="sd">            fps (int, optional): Frames per second. Default is 2.</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">            ValueError: If `plot_distributed_results` has not been called</span>
-<span class="sd">                yet, or if the file format is not supported.</span>
-<span class="sd">            FileNotFoundError: If a video format is requested but FFmpeg</span>
-<span class="sd">                is not installed.</span>
-<span class="sd">        """</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_animation_glyph</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">"There is no animation to save, call `plot_distributed_results` first"</span>
-            <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_animation_glyph</span><span class="o">.</span><span class="n">save_animation</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">fps</span><span class="o">=</span><span class="n">fps</span><span class="p">)</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">save_results</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">flow_acc_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
-        <span class="n">result</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-        <span class="n">start</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
-        <span class="n">end</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
-        <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
-        <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
-        <span class="n">fmt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"%Y-%m-</span><span class="si">%d</span><span class="s2">"</span><span class="p">,</span>
-    <span class="p">):</span>
-<span class="w">        </span><span class="sd">"""Save model results to raster files or CSV.</span>
-
-<span class="sd">        For distributed mode, saves results as GeoTIFF rasters. For</span>
-<span class="sd">        lumped mode, saves results as a CSV file.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            flow_acc_path (str, optional): Path to the flow</span>
-<span class="sd">                accumulation raster (required for distributed mode).</span>
-<span class="sd">                Default is "".</span>
-<span class="sd">            result (int, optional): Type of result to save:</span>
-<span class="sd">                1 - Total discharge, 2 - Upper zone discharge,</span>
-<span class="sd">                3 - Lower zone discharge, 4 - Snow pack,</span>
-<span class="sd">                5 - Soil moisture, 6 - Upper zone, 7 - Lower zone,</span>
-<span class="sd">                8 - Water content. For lumped mode, 5 saves all</span>
-<span class="sd">                variables. Default is 1.</span>
-<span class="sd">            start (str | dt.datetime, optional): Start date for the</span>
-<span class="sd">                output period. A string is parsed with `fmt`; a datetime</span>
-<span class="sd">                is used as it is.</span>
-<span class="sd">                If empty, uses the first index. Default is "".</span>
-<span class="sd">            end (str | dt.datetime, optional): End date for the output</span>
-<span class="sd">                period. See `start`. If</span>
-<span class="sd">                empty, uses the last index. Default is "".</span>
-<span class="sd">            path (str, optional): Output directory (distributed, created</span>
-<span class="sd">                if it does not exist) or the CSV file itself (lumped).</span>
-<span class="sd">                Default is "", the working directory.</span>
-<span class="sd">            prefix (str, optional): Prefix for the output file</span>
-<span class="sd">                names. Default is "".</span>
-<span class="sd">            fmt (str, optional): Date format for parsing `start` and</span>
-<span class="sd">                `end`. Default is "%Y-%m-%d".</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">            Exception: If `flow_acc_path` is not provided in</span>
-<span class="sd">                distributed mode.</span>
-<span class="sd">            TypeError: If `path` is not a string. `outputs.results_dir`</span>
-<span class="sd">                is optional in a run configuration, so a caller</span>
-<span class="sd">                forwarding it can hold None.</span>
-<span class="sd">            ValueError: If `result` is not a valid option.</span>
-<span class="sd">        """</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">"path must be a string naming a directory (distributed) or a file "</span>
-                <span class="sa">f</span><span class="s2">"(lumped), got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">"</span>
-            <span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">start</span> <span class="o">==</span> <span class="s2">""</span><span class="p">:</span>
-            <span class="n">start</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">period</span><span class="o">.</span><span class="n">date_index</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-            <span class="n">start</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">fmt</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">end</span> <span class="o">==</span> <span class="s2">""</span><span class="p">:</span>
-            <span class="n">end</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">period</span><span class="o">.</span><span class="n">date_index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">end</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-            <span class="n">end</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">end</span><span class="p">,</span> <span class="n">fmt</span><span class="p">)</span>
-
-        <span class="n">start_i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">period</span><span class="o">.</span><span class="n">date_index</span> <span class="o">==</span> <span class="n">start</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">end_i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">period</span><span class="o">.</span><span class="n">date_index</span> <span class="o">==</span> <span class="n">end</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
-
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">spatial_resolution</span> <span class="o">==</span> <span class="s2">"distributed"</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">flow_acc_path</span> <span class="o">==</span> <span class="s2">""</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
-                    <span class="s2">"Please enter the FlowAccPath parameter to the saveResults method"</span>
-                <span class="p">)</span>
-
-            <span class="n">src</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">flow_acc_path</span><span class="p">)</span>
-
-            <span class="k">if</span> <span class="n">prefix</span> <span class="o">==</span> <span class="s2">""</span><span class="p">:</span>
-                <span class="n">prefix</span> <span class="o">=</span> <span class="s2">"Result_"</span>
-
-            <span class="c1"># `path` names a directory here, unlike the lumped branch below where it is the</span>
-            <span class="c1"># CSV itself. Joined rather than concatenated: the old `path + prefix` wrote</span>
-            <span class="c1"># `some/dirResult_2009-01-01.tif` for any directory given without a trailing</span>
-            <span class="c1"># separator, which is how a directory is normally written.</span>
-            <span class="k">if</span> <span class="n">path</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
-                <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="n">names</span> <span class="o">=</span> <span class="p">[</span>
-                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">prefix</span><span class="si">}{</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)[:</span><span class="mi">10</span><span class="p">]</span><span class="si">}</span><span class="s2">.tif"</span><span class="p">)</span>
-                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">period</span><span class="o">.</span><span class="n">date_index</span><span class="p">[</span><span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
-            <span class="p">]</span>
-            <span class="k">if</span> <span class="n">result</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">q_total</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
-            <span class="k">elif</span> <span class="n">result</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-                <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">quz_routed</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
-            <span class="k">elif</span> <span class="n">result</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
-                <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">qlz_translated</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
-            <span class="k">elif</span> <span class="n">result</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
-                <span class="n">arr</span> <span class="o">=</span> <span class="n">_require_state_variables</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">)[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
-            <span class="k">elif</span> <span class="n">result</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
-                <span class="n">arr</span> <span class="o">=</span> <span class="n">_require_state_variables</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">)[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
-            <span class="k">elif</span> <span class="n">result</span> <span class="o">==</span> <span class="mi">6</span><span class="p">:</span>
-                <span class="n">arr</span> <span class="o">=</span> <span class="n">_require_state_variables</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">)[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
-            <span class="k">elif</span> <span class="n">result</span> <span class="o">==</span> <span class="mi">7</span><span class="p">:</span>
-                <span class="n">arr</span> <span class="o">=</span> <span class="n">_require_state_variables</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">)[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
-            <span class="k">elif</span> <span class="n">result</span> <span class="o">==</span> <span class="mi">8</span><span class="p">:</span>
-                <span class="n">arr</span> <span class="o">=</span> <span class="n">_require_state_variables</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">)[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">" The result parameter takes a value between 1 and 8, given: </span><span class="si">{</span><span class="n">result</span><span class="si">}</span><span class="s2">"</span>
-                <span class="p">)</span>
-
-            <span class="c1"># from_dataset is pyramids' named constructor for an in-memory</span>
-            <span class="c1"># scaffold off a template raster; the bare Datacube(src, time_length=)</span>
-            <span class="c1"># form it replaced is kept only as a legacy fallback upstream.</span>
-            <span class="n">cube</span> <span class="o">=</span> <span class="n">Datacube</span><span class="o">.</span><span class="n">from_dataset</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
-            <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-            <span class="n">cube</span><span class="o">.</span><span class="n">values</span> <span class="o">=</span> <span class="n">arr</span>
-            <span class="n">cube</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="n">names</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">ind</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s2">"D"</span><span class="p">)</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">ind</span><span class="p">)</span>
-
-            <span class="n">data</span><span class="p">[</span><span class="s2">"date"</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"'"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)[:</span><span class="mi">10</span><span class="p">]</span> <span class="o">+</span> <span class="s2">"'"</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">index</span><span class="p">]</span>
-
-            <span class="k">if</span> <span class="n">result</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="n">data</span><span class="p">[</span><span class="s2">"Qsim"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Qsim</span><span class="p">[</span><span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
-                <span class="n">data</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">float_format</span><span class="o">=</span><span class="s2">"</span><span class="si">%.3f</span><span class="s2">"</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">result</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-                <span class="n">data</span><span class="p">[</span><span class="s2">"Quz"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">quz</span><span class="p">[</span><span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
-                <span class="n">data</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">float_format</span><span class="o">=</span><span class="s2">"</span><span class="si">%.3f</span><span class="s2">"</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">result</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
-                <span class="n">data</span><span class="p">[</span><span class="s2">"Qlz"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">qlz</span><span class="p">[</span><span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
-                <span class="n">data</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">float_format</span><span class="o">=</span><span class="s2">"</span><span class="si">%.3f</span><span class="s2">"</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">result</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
-                <span class="n">data</span><span class="p">[</span><span class="n">STATE_VARIABLES</span><span class="p">]</span> <span class="o">=</span> <span class="n">_require_state_variables</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">)[</span>
-                    <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">,</span> <span class="p">:</span>
-                <span class="p">]</span>
-                <span class="n">data</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">float_format</span><span class="o">=</span><span class="s2">"</span><span class="si">%.3f</span><span class="s2">"</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">result</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
-                <span class="n">data</span><span class="p">[</span><span class="s2">"Qsim"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Qsim</span><span class="p">[</span><span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
-                <span class="n">data</span><span class="p">[</span><span class="s2">"Quz"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">quz</span><span class="p">[</span><span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
-                <span class="n">data</span><span class="p">[</span><span class="s2">"Qlz"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">qlz</span><span class="p">[</span><span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
-                <span class="n">data</span><span class="p">[</span><span class="n">STATE_VARIABLES</span><span class="p">]</span> <span class="o">=</span> <span class="n">_require_state_variables</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">)[</span>
-                    <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">,</span> <span class="p">:</span>
-                <span class="p">]</span>
-                <span class="n">data</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">float_format</span><span class="o">=</span><span class="s2">"</span><span class="si">%.3f</span><span class="s2">"</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">"in lumped mode the result parameter takes a value between 1 and 5, "</span>
-                    <span class="sa">f</span><span class="s2">"given: </span><span class="si">{</span><span class="n">result</span><span class="si">}</span><span class="s2">"</span>
-                <span class="p">)</span>
-
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Data is saved successfully"</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -4881,7 +4239,36 @@ canonicalised. Default is "Muskingum".</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">264</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
+<span class="normal">264</span>
 <span class="normal">265</span>
 <span class="normal">266</span>
 <span class="normal">267</span>
@@ -4956,38 +4343,7 @@ canonicalised. Default is "Muskingum".</p>
 <span class="normal">336</span>
 <span class="normal">337</span>
 <span class="normal">338</span>
-<span class="normal">339</span>
-<span class="normal">340</span>
-<span class="normal">341</span>
-<span class="normal">342</span>
-<span class="normal">343</span>
-<span class="normal">344</span>
-<span class="normal">345</span>
-<span class="normal">346</span>
-<span class="normal">347</span>
-<span class="normal">348</span>
-<span class="normal">349</span>
-<span class="normal">350</span>
-<span class="normal">351</span>
-<span class="normal">352</span>
-<span class="normal">353</span>
-<span class="normal">354</span>
-<span class="normal">355</span>
-<span class="normal">356</span>
-<span class="normal">357</span>
-<span class="normal">358</span>
-<span class="normal">359</span>
-<span class="normal">360</span>
-<span class="normal">361</span>
-<span class="normal">362</span>
-<span class="normal">363</span>
-<span class="normal">364</span>
-<span class="normal">365</span>
-<span class="normal">366</span>
-<span class="normal">367</span>
-<span class="normal">368</span>
-<span class="normal">369</span>
-<span class="normal">370</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">339</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">start_data</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -5080,13 +4436,11 @@ canonicalised. Default is "Muskingum".</p>
     <span class="c1">#: The five hydraulic rasters the flood model reads, once `read_river_geometry` has</span>
     <span class="c1">#: run. Absent-or-complete: they are checked against each other as they are read.</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">river_geometry</span><span class="p">:</span> <span class="n">RiverGeometry</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="c1">#: Everything one run produced, replaced wholesale by the next run. The seven</span>
-    <span class="c1">#: result arrays below are read-only properties forwarding to it, so `model.results.q_total`</span>
-    <span class="c1">#: still reads as it always did while the run layer owns the arrays. `None` until</span>
-    <span class="c1">#: a `Run.*` entry point has been called.</span>
+    <span class="c1">#: Everything one run produced, replaced wholesale by the next run -- the arrays,</span>
+    <span class="c1">#: the routing that made them, and the methods that render and write them</span>
+    <span class="c1">#: (`model.results.animate(...)`, `model.results.save(...)`). `None` until a `Run.*`</span>
+    <span class="c1">#: entry point has been called.</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">:</span> <span class="n">SimulationResults</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">anim</span><span class="p">:</span> <span class="n">matplotlib</span><span class="o">.</span><span class="n">animation</span><span class="o">.</span><span class="n">FuncAnimation</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">_animation_glyph</span><span class="p">:</span> <span class="n">ArrayGlyph</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">Qsim</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="c1">#: The configuration this model was built from, when it came from</span>
@@ -5205,7 +4559,38 @@ per-gauge (Muskingum) path. Default is None.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1062</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1031</span>
+<span class="normal">1032</span>
+<span class="normal">1033</span>
+<span class="normal">1034</span>
+<span class="normal">1035</span>
+<span class="normal">1036</span>
+<span class="normal">1037</span>
+<span class="normal">1038</span>
+<span class="normal">1039</span>
+<span class="normal">1040</span>
+<span class="normal">1041</span>
+<span class="normal">1042</span>
+<span class="normal">1043</span>
+<span class="normal">1044</span>
+<span class="normal">1045</span>
+<span class="normal">1046</span>
+<span class="normal">1047</span>
+<span class="normal">1048</span>
+<span class="normal">1049</span>
+<span class="normal">1050</span>
+<span class="normal">1051</span>
+<span class="normal">1052</span>
+<span class="normal">1053</span>
+<span class="normal">1054</span>
+<span class="normal">1055</span>
+<span class="normal">1056</span>
+<span class="normal">1057</span>
+<span class="normal">1058</span>
+<span class="normal">1059</span>
+<span class="normal">1060</span>
+<span class="normal">1061</span>
+<span class="normal">1062</span>
 <span class="normal">1063</span>
 <span class="normal">1064</span>
 <span class="normal">1065</span>
@@ -5291,38 +4676,7 @@ per-gauge (Muskingum) path. Default is None.</p>
 <span class="normal">1145</span>
 <span class="normal">1146</span>
 <span class="normal">1147</span>
-<span class="normal">1148</span>
-<span class="normal">1149</span>
-<span class="normal">1150</span>
-<span class="normal">1151</span>
-<span class="normal">1152</span>
-<span class="normal">1153</span>
-<span class="normal">1154</span>
-<span class="normal">1155</span>
-<span class="normal">1156</span>
-<span class="normal">1157</span>
-<span class="normal">1158</span>
-<span class="normal">1159</span>
-<span class="normal">1160</span>
-<span class="normal">1161</span>
-<span class="normal">1162</span>
-<span class="normal">1163</span>
-<span class="normal">1164</span>
-<span class="normal">1165</span>
-<span class="normal">1166</span>
-<span class="normal">1167</span>
-<span class="normal">1168</span>
-<span class="normal">1169</span>
-<span class="normal">1170</span>
-<span class="normal">1171</span>
-<span class="normal">1172</span>
-<span class="normal">1173</span>
-<span class="normal">1174</span>
-<span class="normal">1175</span>
-<span class="normal">1176</span>
-<span class="normal">1177</span>
-<span class="normal">1178</span>
-<span class="normal">1179</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extract_discharge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">calculate_metrics</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">factor</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="normal">1148</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extract_discharge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">calculate_metrics</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">factor</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Extract and sum discharge at gauge locations.</span>
 
 <span class="sd">    Which hydrograph is the right one depends on how the run was routed, and the results</span>
@@ -5625,7 +4979,38 @@ elsewhere.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">372</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">341</span>
+<span class="normal">342</span>
+<span class="normal">343</span>
+<span class="normal">344</span>
+<span class="normal">345</span>
+<span class="normal">346</span>
+<span class="normal">347</span>
+<span class="normal">348</span>
+<span class="normal">349</span>
+<span class="normal">350</span>
+<span class="normal">351</span>
+<span class="normal">352</span>
+<span class="normal">353</span>
+<span class="normal">354</span>
+<span class="normal">355</span>
+<span class="normal">356</span>
+<span class="normal">357</span>
+<span class="normal">358</span>
+<span class="normal">359</span>
+<span class="normal">360</span>
+<span class="normal">361</span>
+<span class="normal">362</span>
+<span class="normal">363</span>
+<span class="normal">364</span>
+<span class="normal">365</span>
+<span class="normal">366</span>
+<span class="normal">367</span>
+<span class="normal">368</span>
+<span class="normal">369</span>
+<span class="normal">370</span>
+<span class="normal">371</span>
+<span class="normal">372</span>
 <span class="normal">373</span>
 <span class="normal">374</span>
 <span class="normal">375</span>
@@ -5752,38 +5137,7 @@ elsewhere.</p>
 <span class="normal">496</span>
 <span class="normal">497</span>
 <span class="normal">498</span>
-<span class="normal">499</span>
-<span class="normal">500</span>
-<span class="normal">501</span>
-<span class="normal">502</span>
-<span class="normal">503</span>
-<span class="normal">504</span>
-<span class="normal">505</span>
-<span class="normal">506</span>
-<span class="normal">507</span>
-<span class="normal">508</span>
-<span class="normal">509</span>
-<span class="normal">510</span>
-<span class="normal">511</span>
-<span class="normal">512</span>
-<span class="normal">513</span>
-<span class="normal">514</span>
-<span class="normal">515</span>
-<span class="normal">516</span>
-<span class="normal">517</span>
-<span class="normal">518</span>
-<span class="normal">519</span>
-<span class="normal">520</span>
-<span class="normal">521</span>
-<span class="normal">522</span>
-<span class="normal">523</span>
-<span class="normal">524</span>
-<span class="normal">525</span>
-<span class="normal">526</span>
-<span class="normal">527</span>
-<span class="normal">528</span>
-<span class="normal">529</span>
-<span class="normal">530</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="normal">499</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">from_yaml</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Read a YAML run configuration and assemble a model from it.</span>
 
@@ -5942,471 +5296,6 @@ elsewhere.</p>
     <span class="c1"># above all, which describes where results go rather than what the model reads.</span>
     <span class="n">model</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span>
     <span class="k">return</span> <span class="n">model</span>
-</code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
-
-
-
-
-
-
-<div class="doc doc-object doc-function">
-
-
-<h4 id="hapi.catchment.Catchment.plot_distributed_results" class="doc doc-heading"><a href="#hapi.catchment.Catchment.plot_distributed_results" class="toclink">
-            <code class="highlight language-python"><span class="n">plot_distributed_results</span><span class="p">(</span><span class="n">start</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">,</span> <span class="n">end</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">,</span> <span class="n">fmt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">'%Y-%m-</span><span class="si">%d</span><span class="s1">'</span><span class="p">,</span> <span class="n">option</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">gauges</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span></code>
-
-</a><a href="#hapi.catchment.Catchment.plot_distributed_results" class="headerlink" title="Permanent link">#</a></h4>
-
-
-    <div class="doc doc-contents ">
-
-        <p>Animate distributed model results or meteorological inputs.</p>
-<p>Creates an animation of the time series of meteorological inputs
-or model results (discharge, state variables) over the spatial
-domain. Cells outside the catchment domain are masked on a copy of
-the data, so the model arrays stored on the instance are never
-modified. The animation title defaults to the selected variable's
-name; an explicit <code>title=</code> keyword argument overrides it.</p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>start</code>
-            </td>
-            <td>
-                  <code><span title="str">str</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Starting date for the animation.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>end</code>
-            </td>
-            <td>
-                  <code><span title="str">str</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>End date for the animation.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>fmt</code>
-            </td>
-            <td>
-                  <code><span title="str">str</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Format of the given date. Default
-is "%Y-%m-%d".</p>
-              </div>
-            </td>
-            <td>
-                  <code>&#39;%Y-%m-%d&#39;</code>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>option</code>
-            </td>
-            <td>
-                  <code><span title="int">int</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Variable to animate. Options are:
-1 - Total discharge, 2 - Upper zone discharge,
-3 - Ground water, 4 - Snow pack, 5 - Soil moisture,
-6 - Upper zone, 7 - Lower zone, 8 - Water content,
-9 - Precipitation, 10 - ET, 11 - Temperature.
-Default is 1.</p>
-              </div>
-            </td>
-            <td>
-                  <code>1</code>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>gauges</code>
-            </td>
-            <td>
-                  <code><span title="bool">bool</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Whether to plot gauge locations
-on the animation. Default is False.</p>
-              </div>
-            </td>
-            <td>
-                  <code>False</code>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>**kwargs</code>
-            </td>
-            <td>
-                  <code><span title="typing.Any">Any</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Additional keyword arguments passed to
-<code>ArrayGlyph.animate</code>. Loose styling keywords still
-accepted: title (str), title_size (int), cmap (str),
-vmin (float), vmax (float), interval (int),
-figsize (tuple), cell_value_text_colors (tuple),
-ticks_spacing (int), cbar_label (str),
-cbar_label_size (int), cbar_length (float),
-cbar_orientation (str).
-Styling that cleopatra 0.30 moved onto typed group
-objects is passed as those objects instead:
-color=<code>ColorScaling</code> (was color_scale / gamma /
-bounds / midpoint), cells=<code>CellValues</code> (was
-display_cell_value / num_size /
-background_color_threshold),
-contour=<code>Contour</code> (was levels),
-data_style=<code>DataStyle</code> (was style / hillshade),
-frame_label=<code>FrameLabel</code> (was label_location /
-label_color / text_loc). See
-<code>cleopatra.glyphs.gridded.array_glyph.ArrayGlyph.animate</code>
-for the full list.</p>
-              </div>
-            </td>
-            <td>
-                  <code>{}</code>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-    <p><span class="doc-section-title">Returns:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                  <code><span title="matplotlib.animation.FuncAnimation">FuncAnimation</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>The animation object.</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-<p><span class="doc-section-title">Raises:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                  <code><span title="ValueError">ValueError</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>If <code>option</code> is not between 1 and 11.</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-            <details class="mkdocstrings-source">
-              <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1317</span>
-<span class="normal">1318</span>
-<span class="normal">1319</span>
-<span class="normal">1320</span>
-<span class="normal">1321</span>
-<span class="normal">1322</span>
-<span class="normal">1323</span>
-<span class="normal">1324</span>
-<span class="normal">1325</span>
-<span class="normal">1326</span>
-<span class="normal">1327</span>
-<span class="normal">1328</span>
-<span class="normal">1329</span>
-<span class="normal">1330</span>
-<span class="normal">1331</span>
-<span class="normal">1332</span>
-<span class="normal">1333</span>
-<span class="normal">1334</span>
-<span class="normal">1335</span>
-<span class="normal">1336</span>
-<span class="normal">1337</span>
-<span class="normal">1338</span>
-<span class="normal">1339</span>
-<span class="normal">1340</span>
-<span class="normal">1341</span>
-<span class="normal">1342</span>
-<span class="normal">1343</span>
-<span class="normal">1344</span>
-<span class="normal">1345</span>
-<span class="normal">1346</span>
-<span class="normal">1347</span>
-<span class="normal">1348</span>
-<span class="normal">1349</span>
-<span class="normal">1350</span>
-<span class="normal">1351</span>
-<span class="normal">1352</span>
-<span class="normal">1353</span>
-<span class="normal">1354</span>
-<span class="normal">1355</span>
-<span class="normal">1356</span>
-<span class="normal">1357</span>
-<span class="normal">1358</span>
-<span class="normal">1359</span>
-<span class="normal">1360</span>
-<span class="normal">1361</span>
-<span class="normal">1362</span>
-<span class="normal">1363</span>
-<span class="normal">1364</span>
-<span class="normal">1365</span>
-<span class="normal">1366</span>
-<span class="normal">1367</span>
-<span class="normal">1368</span>
-<span class="normal">1369</span>
-<span class="normal">1370</span>
-<span class="normal">1371</span>
-<span class="normal">1372</span>
-<span class="normal">1373</span>
-<span class="normal">1374</span>
-<span class="normal">1375</span>
-<span class="normal">1376</span>
-<span class="normal">1377</span>
-<span class="normal">1378</span>
-<span class="normal">1379</span>
-<span class="normal">1380</span>
-<span class="normal">1381</span>
-<span class="normal">1382</span>
-<span class="normal">1383</span>
-<span class="normal">1384</span>
-<span class="normal">1385</span>
-<span class="normal">1386</span>
-<span class="normal">1387</span>
-<span class="normal">1388</span>
-<span class="normal">1389</span>
-<span class="normal">1390</span>
-<span class="normal">1391</span>
-<span class="normal">1392</span>
-<span class="normal">1393</span>
-<span class="normal">1394</span>
-<span class="normal">1395</span>
-<span class="normal">1396</span>
-<span class="normal">1397</span>
-<span class="normal">1398</span>
-<span class="normal">1399</span>
-<span class="normal">1400</span>
-<span class="normal">1401</span>
-<span class="normal">1402</span>
-<span class="normal">1403</span>
-<span class="normal">1404</span>
-<span class="normal">1405</span>
-<span class="normal">1406</span>
-<span class="normal">1407</span>
-<span class="normal">1408</span>
-<span class="normal">1409</span>
-<span class="normal">1410</span>
-<span class="normal">1411</span>
-<span class="normal">1412</span>
-<span class="normal">1413</span>
-<span class="normal">1414</span>
-<span class="normal">1415</span>
-<span class="normal">1416</span>
-<span class="normal">1417</span>
-<span class="normal">1418</span>
-<span class="normal">1419</span>
-<span class="normal">1420</span>
-<span class="normal">1421</span>
-<span class="normal">1422</span>
-<span class="normal">1423</span>
-<span class="normal">1424</span>
-<span class="normal">1425</span>
-<span class="normal">1426</span>
-<span class="normal">1427</span>
-<span class="normal">1428</span>
-<span class="normal">1429</span>
-<span class="normal">1430</span>
-<span class="normal">1431</span>
-<span class="normal">1432</span>
-<span class="normal">1433</span>
-<span class="normal">1434</span>
-<span class="normal">1435</span>
-<span class="normal">1436</span>
-<span class="normal">1437</span>
-<span class="normal">1438</span>
-<span class="normal">1439</span>
-<span class="normal">1440</span>
-<span class="normal">1441</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_distributed_results</span><span class="p">(</span>
-    <span class="bp">self</span><span class="p">,</span>
-    <span class="n">start</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">,</span>
-    <span class="n">end</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">,</span>
-    <span class="n">fmt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"%Y-%m-</span><span class="si">%d</span><span class="s2">"</span><span class="p">,</span>
-    <span class="n">option</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-    <span class="n">gauges</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
-<span class="p">):</span>
-<span class="w">    </span><span class="sd">"""Animate distributed model results or meteorological inputs.</span>
-
-<span class="sd">    Creates an animation of the time series of meteorological inputs</span>
-<span class="sd">    or model results (discharge, state variables) over the spatial</span>
-<span class="sd">    domain. Cells outside the catchment domain are masked on a copy of</span>
-<span class="sd">    the data, so the model arrays stored on the instance are never</span>
-<span class="sd">    modified. The animation title defaults to the selected variable's</span>
-<span class="sd">    name; an explicit `title=` keyword argument overrides it.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        start (str): Starting date for the animation.</span>
-<span class="sd">        end (str): End date for the animation.</span>
-<span class="sd">        fmt (str, optional): Format of the given date. Default</span>
-<span class="sd">            is "%Y-%m-%d".</span>
-<span class="sd">        option (int, optional): Variable to animate. Options are:</span>
-<span class="sd">            1 - Total discharge, 2 - Upper zone discharge,</span>
-<span class="sd">            3 - Ground water, 4 - Snow pack, 5 - Soil moisture,</span>
-<span class="sd">            6 - Upper zone, 7 - Lower zone, 8 - Water content,</span>
-<span class="sd">            9 - Precipitation, 10 - ET, 11 - Temperature.</span>
-<span class="sd">            Default is 1.</span>
-<span class="sd">        gauges (bool, optional): Whether to plot gauge locations</span>
-<span class="sd">            on the animation. Default is False.</span>
-<span class="sd">        **kwargs: Additional keyword arguments passed to</span>
-<span class="sd">            `ArrayGlyph.animate`. Loose styling keywords still</span>
-<span class="sd">            accepted: title (str), title_size (int), cmap (str),</span>
-<span class="sd">            vmin (float), vmax (float), interval (int),</span>
-<span class="sd">            figsize (tuple), cell_value_text_colors (tuple),</span>
-<span class="sd">            ticks_spacing (int), cbar_label (str),</span>
-<span class="sd">            cbar_label_size (int), cbar_length (float),</span>
-<span class="sd">            cbar_orientation (str).</span>
-<span class="sd">            Styling that cleopatra 0.30 moved onto typed group</span>
-<span class="sd">            objects is passed as those objects instead:</span>
-<span class="sd">            color=`ColorScaling` (was color_scale / gamma /</span>
-<span class="sd">            bounds / midpoint), cells=`CellValues` (was</span>
-<span class="sd">            display_cell_value / num_size /</span>
-<span class="sd">            background_color_threshold),</span>
-<span class="sd">            contour=`Contour` (was levels),</span>
-<span class="sd">            data_style=`DataStyle` (was style / hillshade),</span>
-<span class="sd">            frame_label=`FrameLabel` (was label_location /</span>
-<span class="sd">            label_color / text_loc). See</span>
-<span class="sd">            `cleopatra.glyphs.gridded.array_glyph.ArrayGlyph.animate`</span>
-<span class="sd">            for the full list.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        matplotlib.animation.FuncAnimation: The animation object.</span>
-
-<span class="sd">    Raises:</span>
-<span class="sd">        ValueError: If `option` is not between 1 and 11.</span>
-<span class="sd">    """</span>
-    <span class="n">start</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">fmt</span><span class="p">)</span>
-    <span class="n">end</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">end</span><span class="p">,</span> <span class="n">fmt</span><span class="p">)</span>
-
-    <span class="n">start_i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">period</span><span class="o">.</span><span class="n">date_index</span> <span class="o">==</span> <span class="n">start</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">end_i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">period</span><span class="o">.</span><span class="n">date_index</span> <span class="o">==</span> <span class="n">end</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-
-    <span class="k">if</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">q_total</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
-        <span class="n">title</span> <span class="o">=</span> <span class="s2">"Total Discharge"</span>
-    <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-        <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">quz_routed</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
-        <span class="n">title</span> <span class="o">=</span> <span class="s2">"Surface Flow"</span>
-    <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
-        <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">qlz_translated</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
-        <span class="n">title</span> <span class="o">=</span> <span class="s2">"Ground Water Flow"</span>
-    <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
-        <span class="n">arr</span> <span class="o">=</span> <span class="n">_require_state_variables</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">)[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
-        <span class="n">title</span> <span class="o">=</span> <span class="s2">"Snow Pack"</span>
-    <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
-        <span class="n">arr</span> <span class="o">=</span> <span class="n">_require_state_variables</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">)[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
-        <span class="n">title</span> <span class="o">=</span> <span class="s2">"Soil Moisture"</span>
-    <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">6</span><span class="p">:</span>
-        <span class="n">arr</span> <span class="o">=</span> <span class="n">_require_state_variables</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">)[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
-        <span class="n">title</span> <span class="o">=</span> <span class="s2">"Upper Zone"</span>
-    <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">7</span><span class="p">:</span>
-        <span class="n">arr</span> <span class="o">=</span> <span class="n">_require_state_variables</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">)[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
-        <span class="n">title</span> <span class="o">=</span> <span class="s2">"Lower Zone"</span>
-    <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">8</span><span class="p">:</span>
-        <span class="n">arr</span> <span class="o">=</span> <span class="n">_require_state_variables</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">)[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span>
-        <span class="n">title</span> <span class="o">=</span> <span class="s2">"Water Content"</span>
-    <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">9</span><span class="p">:</span>
-        <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">precipitation</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
-        <span class="n">title</span> <span class="o">=</span> <span class="s2">"Precipitation"</span>
-    <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">10</span><span class="p">:</span>
-        <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">evapotranspiration</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
-        <span class="n">title</span> <span class="o">=</span> <span class="s2">"ET"</span>
-    <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">11</span><span class="p">:</span>
-        <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">meteo</span><span class="o">.</span><span class="n">temperature</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
-        <span class="n">title</span> <span class="o">=</span> <span class="s2">"Temperature"</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Plotting options are from 1 to 11"</span><span class="p">)</span>
-
-    <span class="c1"># mask the no-data cells on a copy so plotting never mutates the model</span>
-    <span class="c1"># result arrays stored on the instance</span>
-    <span class="n">arr</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-    <span class="n">arr</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">flow_acc_arr</span><span class="p">),</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-
-    <span class="n">time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">period</span><span class="o">.</span><span class="n">date_index</span><span class="p">[</span><span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
-
-    <span class="k">if</span> <span class="n">gauges</span><span class="p">:</span>
-        <span class="c1"># animate expects a 3-column array: [value to display, cell row, cell column].</span>
-        <span class="c1"># cleopatra 0.30 stopped accepting a bare array; it must be wrapped in a</span>
-        <span class="c1"># PointOverlay, which also carries the marker/label styling.</span>
-        <span class="n">kwargs</span><span class="p">[</span><span class="s2">"points"</span><span class="p">]</span> <span class="o">=</span> <span class="n">PointOverlay</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">GaugesTable</span><span class="p">[[</span><span class="s2">"id"</span><span class="p">,</span> <span class="s2">"cell_row"</span><span class="p">,</span> <span class="s2">"cell_col"</span><span class="p">]]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
-        <span class="p">)</span>
-
-    <span class="c1"># animate iterates over the first dimension, so move the time axis to the front</span>
-    <span class="n">array</span> <span class="o">=</span> <span class="n">ArrayGlyph</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
-    <span class="c1"># the option title is a default; an explicit title= kwarg wins</span>
-    <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">"title"</span><span class="p">,</span> <span class="n">title</span><span class="p">)</span>
-    <span class="n">anim</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">animate</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-
-    <span class="bp">self</span><span class="o">.</span><span class="n">_animation_glyph</span> <span class="o">=</span> <span class="n">array</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">anim</span> <span class="o">=</span> <span class="n">anim</span>
-
-    <span class="k">return</span> <span class="n">anim</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -6726,7 +5615,38 @@ Figure and ax is the matplotlib Axes object.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1181</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1150</span>
+<span class="normal">1151</span>
+<span class="normal">1152</span>
+<span class="normal">1153</span>
+<span class="normal">1154</span>
+<span class="normal">1155</span>
+<span class="normal">1156</span>
+<span class="normal">1157</span>
+<span class="normal">1158</span>
+<span class="normal">1159</span>
+<span class="normal">1160</span>
+<span class="normal">1161</span>
+<span class="normal">1162</span>
+<span class="normal">1163</span>
+<span class="normal">1164</span>
+<span class="normal">1165</span>
+<span class="normal">1166</span>
+<span class="normal">1167</span>
+<span class="normal">1168</span>
+<span class="normal">1169</span>
+<span class="normal">1170</span>
+<span class="normal">1171</span>
+<span class="normal">1172</span>
+<span class="normal">1173</span>
+<span class="normal">1174</span>
+<span class="normal">1175</span>
+<span class="normal">1176</span>
+<span class="normal">1177</span>
+<span class="normal">1178</span>
+<span class="normal">1179</span>
+<span class="normal">1180</span>
+<span class="normal">1181</span>
 <span class="normal">1182</span>
 <span class="normal">1183</span>
 <span class="normal">1184</span>
@@ -6829,38 +5749,7 @@ Figure and ax is the matplotlib Axes object.</p>
 <span class="normal">1281</span>
 <span class="normal">1282</span>
 <span class="normal">1283</span>
-<span class="normal">1284</span>
-<span class="normal">1285</span>
-<span class="normal">1286</span>
-<span class="normal">1287</span>
-<span class="normal">1288</span>
-<span class="normal">1289</span>
-<span class="normal">1290</span>
-<span class="normal">1291</span>
-<span class="normal">1292</span>
-<span class="normal">1293</span>
-<span class="normal">1294</span>
-<span class="normal">1295</span>
-<span class="normal">1296</span>
-<span class="normal">1297</span>
-<span class="normal">1298</span>
-<span class="normal">1299</span>
-<span class="normal">1300</span>
-<span class="normal">1301</span>
-<span class="normal">1302</span>
-<span class="normal">1303</span>
-<span class="normal">1304</span>
-<span class="normal">1305</span>
-<span class="normal">1306</span>
-<span class="normal">1307</span>
-<span class="normal">1308</span>
-<span class="normal">1309</span>
-<span class="normal">1310</span>
-<span class="normal">1311</span>
-<span class="normal">1312</span>
-<span class="normal">1313</span>
-<span class="normal">1314</span>
-<span class="normal">1315</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_hydrograph</span><span class="p">(</span>
+<span class="normal">1284</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_hydrograph</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">start_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">,</span>
     <span class="n">end_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">,</span>
@@ -7216,7 +6105,38 @@ reading the CSV. Default is "".</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">909</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">878</span>
+<span class="normal">879</span>
+<span class="normal">880</span>
+<span class="normal">881</span>
+<span class="normal">882</span>
+<span class="normal">883</span>
+<span class="normal">884</span>
+<span class="normal">885</span>
+<span class="normal">886</span>
+<span class="normal">887</span>
+<span class="normal">888</span>
+<span class="normal">889</span>
+<span class="normal">890</span>
+<span class="normal">891</span>
+<span class="normal">892</span>
+<span class="normal">893</span>
+<span class="normal">894</span>
+<span class="normal">895</span>
+<span class="normal">896</span>
+<span class="normal">897</span>
+<span class="normal">898</span>
+<span class="normal">899</span>
+<span class="normal">900</span>
+<span class="normal">901</span>
+<span class="normal">902</span>
+<span class="normal">903</span>
+<span class="normal">904</span>
+<span class="normal">905</span>
+<span class="normal">906</span>
+<span class="normal">907</span>
+<span class="normal">908</span>
+<span class="normal">909</span>
 <span class="normal">910</span>
 <span class="normal">911</span>
 <span class="normal">912</span>
@@ -7249,38 +6169,7 @@ reading the CSV. Default is "".</p>
 <span class="normal">939</span>
 <span class="normal">940</span>
 <span class="normal">941</span>
-<span class="normal">942</span>
-<span class="normal">943</span>
-<span class="normal">944</span>
-<span class="normal">945</span>
-<span class="normal">946</span>
-<span class="normal">947</span>
-<span class="normal">948</span>
-<span class="normal">949</span>
-<span class="normal">950</span>
-<span class="normal">951</span>
-<span class="normal">952</span>
-<span class="normal">953</span>
-<span class="normal">954</span>
-<span class="normal">955</span>
-<span class="normal">956</span>
-<span class="normal">957</span>
-<span class="normal">958</span>
-<span class="normal">959</span>
-<span class="normal">960</span>
-<span class="normal">961</span>
-<span class="normal">962</span>
-<span class="normal">963</span>
-<span class="normal">964</span>
-<span class="normal">965</span>
-<span class="normal">966</span>
-<span class="normal">967</span>
-<span class="normal">968</span>
-<span class="normal">969</span>
-<span class="normal">970</span>
-<span class="normal">971</span>
-<span class="normal">972</span>
-<span class="normal">973</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_discharge_gauges</span><span class="p">(</span>
+<span class="normal">942</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_discharge_gauges</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">delimiter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">","</span><span class="p">,</span>
@@ -7498,7 +6387,38 @@ GDAL can open is accepted, not only GeoTIFF.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">532</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">501</span>
+<span class="normal">502</span>
+<span class="normal">503</span>
+<span class="normal">504</span>
+<span class="normal">505</span>
+<span class="normal">506</span>
+<span class="normal">507</span>
+<span class="normal">508</span>
+<span class="normal">509</span>
+<span class="normal">510</span>
+<span class="normal">511</span>
+<span class="normal">512</span>
+<span class="normal">513</span>
+<span class="normal">514</span>
+<span class="normal">515</span>
+<span class="normal">516</span>
+<span class="normal">517</span>
+<span class="normal">518</span>
+<span class="normal">519</span>
+<span class="normal">520</span>
+<span class="normal">521</span>
+<span class="normal">522</span>
+<span class="normal">523</span>
+<span class="normal">524</span>
+<span class="normal">525</span>
+<span class="normal">526</span>
+<span class="normal">527</span>
+<span class="normal">528</span>
+<span class="normal">529</span>
+<span class="normal">530</span>
+<span class="normal">531</span>
+<span class="normal">532</span>
 <span class="normal">533</span>
 <span class="normal">534</span>
 <span class="normal">535</span>
@@ -7543,38 +6463,7 @@ GDAL can open is accepted, not only GeoTIFF.</p>
 <span class="normal">574</span>
 <span class="normal">575</span>
 <span class="normal">576</span>
-<span class="normal">577</span>
-<span class="normal">578</span>
-<span class="normal">579</span>
-<span class="normal">580</span>
-<span class="normal">581</span>
-<span class="normal">582</span>
-<span class="normal">583</span>
-<span class="normal">584</span>
-<span class="normal">585</span>
-<span class="normal">586</span>
-<span class="normal">587</span>
-<span class="normal">588</span>
-<span class="normal">589</span>
-<span class="normal">590</span>
-<span class="normal">591</span>
-<span class="normal">592</span>
-<span class="normal">593</span>
-<span class="normal">594</span>
-<span class="normal">595</span>
-<span class="normal">596</span>
-<span class="normal">597</span>
-<span class="normal">598</span>
-<span class="normal">599</span>
-<span class="normal">600</span>
-<span class="normal">601</span>
-<span class="normal">602</span>
-<span class="normal">603</span>
-<span class="normal">604</span>
-<span class="normal">605</span>
-<span class="normal">606</span>
-<span class="normal">607</span>
-<span class="normal">608</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_flow_path_length</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="normal">577</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_flow_path_length</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Read the flow path length raster.</span>
 
 <span class="sd">    Reads the flow path length raster into `flow_path_length_arr`. The grid it sits</span>
@@ -7842,7 +6731,38 @@ in the gauge table. Default is "%Y-%m-%d".</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">776</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">745</span>
+<span class="normal">746</span>
+<span class="normal">747</span>
+<span class="normal">748</span>
+<span class="normal">749</span>
+<span class="normal">750</span>
+<span class="normal">751</span>
+<span class="normal">752</span>
+<span class="normal">753</span>
+<span class="normal">754</span>
+<span class="normal">755</span>
+<span class="normal">756</span>
+<span class="normal">757</span>
+<span class="normal">758</span>
+<span class="normal">759</span>
+<span class="normal">760</span>
+<span class="normal">761</span>
+<span class="normal">762</span>
+<span class="normal">763</span>
+<span class="normal">764</span>
+<span class="normal">765</span>
+<span class="normal">766</span>
+<span class="normal">767</span>
+<span class="normal">768</span>
+<span class="normal">769</span>
+<span class="normal">770</span>
+<span class="normal">771</span>
+<span class="normal">772</span>
+<span class="normal">773</span>
+<span class="normal">774</span>
+<span class="normal">775</span>
+<span class="normal">776</span>
 <span class="normal">777</span>
 <span class="normal">778</span>
 <span class="normal">779</span>
@@ -7942,38 +6862,7 @@ in the gauge table. Default is "%Y-%m-%d".</p>
 <span class="normal">873</span>
 <span class="normal">874</span>
 <span class="normal">875</span>
-<span class="normal">876</span>
-<span class="normal">877</span>
-<span class="normal">878</span>
-<span class="normal">879</span>
-<span class="normal">880</span>
-<span class="normal">881</span>
-<span class="normal">882</span>
-<span class="normal">883</span>
-<span class="normal">884</span>
-<span class="normal">885</span>
-<span class="normal">886</span>
-<span class="normal">887</span>
-<span class="normal">888</span>
-<span class="normal">889</span>
-<span class="normal">890</span>
-<span class="normal">891</span>
-<span class="normal">892</span>
-<span class="normal">893</span>
-<span class="normal">894</span>
-<span class="normal">895</span>
-<span class="normal">896</span>
-<span class="normal">897</span>
-<span class="normal">898</span>
-<span class="normal">899</span>
-<span class="normal">900</span>
-<span class="normal">901</span>
-<span class="normal">902</span>
-<span class="normal">903</span>
-<span class="normal">904</span>
-<span class="normal">905</span>
-<span class="normal">906</span>
-<span class="normal">907</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_gauge_table</span><span class="p">(</span>
+<span class="normal">876</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_gauge_table</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">flow_acc_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span> <span class="n">fmt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"%Y-%m-</span><span class="si">%d</span><span class="s2">"</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Read the gauge table listing gauge locations and properties.</span>
@@ -8196,45 +7085,45 @@ columns (excluding the date index).</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">736</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">705</span>
+<span class="normal">706</span>
+<span class="normal">707</span>
+<span class="normal">708</span>
+<span class="normal">709</span>
+<span class="normal">710</span>
+<span class="normal">711</span>
+<span class="normal">712</span>
+<span class="normal">713</span>
+<span class="normal">714</span>
+<span class="normal">715</span>
+<span class="normal">716</span>
+<span class="normal">717</span>
+<span class="normal">718</span>
+<span class="normal">719</span>
+<span class="normal">720</span>
+<span class="normal">721</span>
+<span class="normal">722</span>
+<span class="normal">723</span>
+<span class="normal">724</span>
+<span class="normal">725</span>
+<span class="normal">726</span>
+<span class="normal">727</span>
+<span class="normal">728</span>
+<span class="normal">729</span>
+<span class="normal">730</span>
+<span class="normal">731</span>
+<span class="normal">732</span>
+<span class="normal">733</span>
+<span class="normal">734</span>
+<span class="normal">735</span>
+<span class="normal">736</span>
 <span class="normal">737</span>
 <span class="normal">738</span>
 <span class="normal">739</span>
 <span class="normal">740</span>
 <span class="normal">741</span>
 <span class="normal">742</span>
-<span class="normal">743</span>
-<span class="normal">744</span>
-<span class="normal">745</span>
-<span class="normal">746</span>
-<span class="normal">747</span>
-<span class="normal">748</span>
-<span class="normal">749</span>
-<span class="normal">750</span>
-<span class="normal">751</span>
-<span class="normal">752</span>
-<span class="normal">753</span>
-<span class="normal">754</span>
-<span class="normal">755</span>
-<span class="normal">756</span>
-<span class="normal">757</span>
-<span class="normal">758</span>
-<span class="normal">759</span>
-<span class="normal">760</span>
-<span class="normal">761</span>
-<span class="normal">762</span>
-<span class="normal">763</span>
-<span class="normal">764</span>
-<span class="normal">765</span>
-<span class="normal">766</span>
-<span class="normal">767</span>
-<span class="normal">768</span>
-<span class="normal">769</span>
-<span class="normal">770</span>
-<span class="normal">771</span>
-<span class="normal">772</span>
-<span class="normal">773</span>
-<span class="normal">774</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_lumped_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="normal">743</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_lumped_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Read meteorological inputs for lumped mode.</span>
 
 <span class="sd">    The lumped counterpart of :class:`~hapi.inputs.MeteoInputs`, which carries the</span>
@@ -8421,7 +7310,38 @@ values.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">695</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">664</span>
+<span class="normal">665</span>
+<span class="normal">666</span>
+<span class="normal">667</span>
+<span class="normal">668</span>
+<span class="normal">669</span>
+<span class="normal">670</span>
+<span class="normal">671</span>
+<span class="normal">672</span>
+<span class="normal">673</span>
+<span class="normal">674</span>
+<span class="normal">675</span>
+<span class="normal">676</span>
+<span class="normal">677</span>
+<span class="normal">678</span>
+<span class="normal">679</span>
+<span class="normal">680</span>
+<span class="normal">681</span>
+<span class="normal">682</span>
+<span class="normal">683</span>
+<span class="normal">684</span>
+<span class="normal">685</span>
+<span class="normal">686</span>
+<span class="normal">687</span>
+<span class="normal">688</span>
+<span class="normal">689</span>
+<span class="normal">690</span>
+<span class="normal">691</span>
+<span class="normal">692</span>
+<span class="normal">693</span>
+<span class="normal">694</span>
+<span class="normal">695</span>
 <span class="normal">696</span>
 <span class="normal">697</span>
 <span class="normal">698</span>
@@ -8429,38 +7349,7 @@ values.</p>
 <span class="normal">700</span>
 <span class="normal">701</span>
 <span class="normal">702</span>
-<span class="normal">703</span>
-<span class="normal">704</span>
-<span class="normal">705</span>
-<span class="normal">706</span>
-<span class="normal">707</span>
-<span class="normal">708</span>
-<span class="normal">709</span>
-<span class="normal">710</span>
-<span class="normal">711</span>
-<span class="normal">712</span>
-<span class="normal">713</span>
-<span class="normal">714</span>
-<span class="normal">715</span>
-<span class="normal">716</span>
-<span class="normal">717</span>
-<span class="normal">718</span>
-<span class="normal">719</span>
-<span class="normal">720</span>
-<span class="normal">721</span>
-<span class="normal">722</span>
-<span class="normal">723</span>
-<span class="normal">724</span>
-<span class="normal">725</span>
-<span class="normal">726</span>
-<span class="normal">727</span>
-<span class="normal">728</span>
-<span class="normal">729</span>
-<span class="normal">730</span>
-<span class="normal">731</span>
-<span class="normal">732</span>
-<span class="normal">733</span>
-<span class="normal">734</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_lumped_model</span><span class="p">(</span>
+<span class="normal">703</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_lumped_model</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">lumped_model</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">BaseConceptualModel</span><span class="p">],</span>
     <span class="n">catchment_area</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span>
@@ -8632,7 +7521,38 @@ the given snow/maxbas configuration.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">646</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">615</span>
+<span class="normal">616</span>
+<span class="normal">617</span>
+<span class="normal">618</span>
+<span class="normal">619</span>
+<span class="normal">620</span>
+<span class="normal">621</span>
+<span class="normal">622</span>
+<span class="normal">623</span>
+<span class="normal">624</span>
+<span class="normal">625</span>
+<span class="normal">626</span>
+<span class="normal">627</span>
+<span class="normal">628</span>
+<span class="normal">629</span>
+<span class="normal">630</span>
+<span class="normal">631</span>
+<span class="normal">632</span>
+<span class="normal">633</span>
+<span class="normal">634</span>
+<span class="normal">635</span>
+<span class="normal">636</span>
+<span class="normal">637</span>
+<span class="normal">638</span>
+<span class="normal">639</span>
+<span class="normal">640</span>
+<span class="normal">641</span>
+<span class="normal">642</span>
+<span class="normal">643</span>
+<span class="normal">644</span>
+<span class="normal">645</span>
+<span class="normal">646</span>
 <span class="normal">647</span>
 <span class="normal">648</span>
 <span class="normal">649</span>
@@ -8648,38 +7568,7 @@ the given snow/maxbas configuration.</p>
 <span class="normal">659</span>
 <span class="normal">660</span>
 <span class="normal">661</span>
-<span class="normal">662</span>
-<span class="normal">663</span>
-<span class="normal">664</span>
-<span class="normal">665</span>
-<span class="normal">666</span>
-<span class="normal">667</span>
-<span class="normal">668</span>
-<span class="normal">669</span>
-<span class="normal">670</span>
-<span class="normal">671</span>
-<span class="normal">672</span>
-<span class="normal">673</span>
-<span class="normal">674</span>
-<span class="normal">675</span>
-<span class="normal">676</span>
-<span class="normal">677</span>
-<span class="normal">678</span>
-<span class="normal">679</span>
-<span class="normal">680</span>
-<span class="normal">681</span>
-<span class="normal">682</span>
-<span class="normal">683</span>
-<span class="normal">684</span>
-<span class="normal">685</span>
-<span class="normal">686</span>
-<span class="normal">687</span>
-<span class="normal">688</span>
-<span class="normal">689</span>
-<span class="normal">690</span>
-<span class="normal">691</span>
-<span class="normal">692</span>
-<span class="normal">693</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">snow</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">maxbas</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="normal">662</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">snow</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">maxbas</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Read model parameter rasters or a CSV parameter file.</span>
 
 <span class="sd">    For distributed mode, reads parameter rasters from a folder.</span>
@@ -8856,41 +7745,41 @@ roughness raster file.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">610</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">579</span>
+<span class="normal">580</span>
+<span class="normal">581</span>
+<span class="normal">582</span>
+<span class="normal">583</span>
+<span class="normal">584</span>
+<span class="normal">585</span>
+<span class="normal">586</span>
+<span class="normal">587</span>
+<span class="normal">588</span>
+<span class="normal">589</span>
+<span class="normal">590</span>
+<span class="normal">591</span>
+<span class="normal">592</span>
+<span class="normal">593</span>
+<span class="normal">594</span>
+<span class="normal">595</span>
+<span class="normal">596</span>
+<span class="normal">597</span>
+<span class="normal">598</span>
+<span class="normal">599</span>
+<span class="normal">600</span>
+<span class="normal">601</span>
+<span class="normal">602</span>
+<span class="normal">603</span>
+<span class="normal">604</span>
+<span class="normal">605</span>
+<span class="normal">606</span>
+<span class="normal">607</span>
+<span class="normal">608</span>
+<span class="normal">609</span>
+<span class="normal">610</span>
 <span class="normal">611</span>
 <span class="normal">612</span>
-<span class="normal">613</span>
-<span class="normal">614</span>
-<span class="normal">615</span>
-<span class="normal">616</span>
-<span class="normal">617</span>
-<span class="normal">618</span>
-<span class="normal">619</span>
-<span class="normal">620</span>
-<span class="normal">621</span>
-<span class="normal">622</span>
-<span class="normal">623</span>
-<span class="normal">624</span>
-<span class="normal">625</span>
-<span class="normal">626</span>
-<span class="normal">627</span>
-<span class="normal">628</span>
-<span class="normal">629</span>
-<span class="normal">630</span>
-<span class="normal">631</span>
-<span class="normal">632</span>
-<span class="normal">633</span>
-<span class="normal">634</span>
-<span class="normal">635</span>
-<span class="normal">636</span>
-<span class="normal">637</span>
-<span class="normal">638</span>
-<span class="normal">639</span>
-<span class="normal">640</span>
-<span class="normal">641</span>
-<span class="normal">642</span>
-<span class="normal">643</span>
-<span class="normal">644</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_river_geometry</span><span class="p">(</span>
+<span class="normal">613</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_river_geometry</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">dem_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">bankfull_depth_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -8925,680 +7814,6 @@ roughness raster file.</p>
         <span class="n">river_roughness_file</span><span class="p">,</span>
         <span class="n">floodplain_roughness_file</span><span class="p">,</span>
     <span class="p">)</span>
-</code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
-
-
-
-
-
-
-<div class="doc doc-object doc-function">
-
-
-<h4 id="hapi.catchment.Catchment.save_animation" class="doc doc-heading"><a href="#hapi.catchment.Catchment.save_animation" class="toclink">
-            <code class="highlight language-python"><span class="n">save_animation</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">fps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span></code>
-
-</a><a href="#hapi.catchment.Catchment.save_animation" class="headerlink" title="Permanent link">#</a></h4>
-
-
-    <div class="doc doc-contents ">
-
-        <p>Save the animation created by <code>plot_distributed_results</code>.</p>
-<p>The output format is determined by the file extension. GIF uses
-PillowWriter; mov/avi/mp4 require FFmpeg to be installed.</p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>path</code>
-            </td>
-            <td>
-                  <code><span title="str">str</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Output file path. The extension determines the
-format (gif, mov, avi, or mp4).</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>fps</code>
-            </td>
-            <td>
-                  <code><span title="int">int</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Frames per second. Default is 2.</p>
-              </div>
-            </td>
-            <td>
-                  <code>2</code>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-<p><span class="doc-section-title">Raises:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                  <code><span title="ValueError">ValueError</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>If <code>plot_distributed_results</code> has not been called
-yet, or if the file format is not supported.</p>
-              </div>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                  <code><span title="FileNotFoundError">FileNotFoundError</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>If a video format is requested but FFmpeg
-is not installed.</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-            <details class="mkdocstrings-source">
-              <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1443</span>
-<span class="normal">1444</span>
-<span class="normal">1445</span>
-<span class="normal">1446</span>
-<span class="normal">1447</span>
-<span class="normal">1448</span>
-<span class="normal">1449</span>
-<span class="normal">1450</span>
-<span class="normal">1451</span>
-<span class="normal">1452</span>
-<span class="normal">1453</span>
-<span class="normal">1454</span>
-<span class="normal">1455</span>
-<span class="normal">1456</span>
-<span class="normal">1457</span>
-<span class="normal">1458</span>
-<span class="normal">1459</span>
-<span class="normal">1460</span>
-<span class="normal">1461</span>
-<span class="normal">1462</span>
-<span class="normal">1463</span>
-<span class="normal">1464</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_animation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">fps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""Save the animation created by `plot_distributed_results`.</span>
-
-<span class="sd">    The output format is determined by the file extension. GIF uses</span>
-<span class="sd">    PillowWriter; mov/avi/mp4 require FFmpeg to be installed.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        path (str): Output file path. The extension determines the</span>
-<span class="sd">            format (gif, mov, avi, or mp4).</span>
-<span class="sd">        fps (int, optional): Frames per second. Default is 2.</span>
-
-<span class="sd">    Raises:</span>
-<span class="sd">        ValueError: If `plot_distributed_results` has not been called</span>
-<span class="sd">            yet, or if the file format is not supported.</span>
-<span class="sd">        FileNotFoundError: If a video format is requested but FFmpeg</span>
-<span class="sd">            is not installed.</span>
-<span class="sd">    """</span>
-    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_animation_glyph</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="s2">"There is no animation to save, call `plot_distributed_results` first"</span>
-        <span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">_animation_glyph</span><span class="o">.</span><span class="n">save_animation</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">fps</span><span class="o">=</span><span class="n">fps</span><span class="p">)</span>
-</code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
-
-
-
-
-
-
-<div class="doc doc-object doc-function">
-
-
-<h4 id="hapi.catchment.Catchment.save_results" class="doc doc-heading"><a href="#hapi.catchment.Catchment.save_results" class="toclink">
-            <code class="highlight language-python"><span class="n">save_results</span><span class="p">(</span><span class="n">flow_acc_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">''</span><span class="p">,</span> <span class="n">result</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span> <span class="o">=</span> <span class="s1">''</span><span class="p">,</span> <span class="n">end</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span> <span class="o">=</span> <span class="s1">''</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">''</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">''</span><span class="p">,</span> <span class="n">fmt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">'%Y-%m-</span><span class="si">%d</span><span class="s1">'</span><span class="p">)</span></code>
-
-</a><a href="#hapi.catchment.Catchment.save_results" class="headerlink" title="Permanent link">#</a></h4>
-
-
-    <div class="doc doc-contents ">
-
-        <p>Save model results to raster files or CSV.</p>
-<p>For distributed mode, saves results as GeoTIFF rasters. For
-lumped mode, saves results as a CSV file.</p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>flow_acc_path</code>
-            </td>
-            <td>
-                  <code><span title="str">str</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Path to the flow
-accumulation raster (required for distributed mode).
-Default is "".</p>
-              </div>
-            </td>
-            <td>
-                  <code>&#39;&#39;</code>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>result</code>
-            </td>
-            <td>
-                  <code><span title="int">int</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Type of result to save:
-1 - Total discharge, 2 - Upper zone discharge,
-3 - Lower zone discharge, 4 - Snow pack,
-5 - Soil moisture, 6 - Upper zone, 7 - Lower zone,
-8 - Water content. For lumped mode, 5 saves all
-variables. Default is 1.</p>
-              </div>
-            </td>
-            <td>
-                  <code>1</code>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>start</code>
-            </td>
-            <td>
-                  <code><span title="str">str</span> | <span title="datetime.datetime">datetime</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Start date for the
-output period. A string is parsed with <code>fmt</code>; a datetime
-is used as it is.
-If empty, uses the first index. Default is "".</p>
-              </div>
-            </td>
-            <td>
-                  <code>&#39;&#39;</code>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>end</code>
-            </td>
-            <td>
-                  <code><span title="str">str</span> | <span title="datetime.datetime">datetime</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>End date for the output
-period. See <code>start</code>. If
-empty, uses the last index. Default is "".</p>
-              </div>
-            </td>
-            <td>
-                  <code>&#39;&#39;</code>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>path</code>
-            </td>
-            <td>
-                  <code><span title="str">str</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Output directory (distributed, created
-if it does not exist) or the CSV file itself (lumped).
-Default is "", the working directory.</p>
-              </div>
-            </td>
-            <td>
-                  <code>&#39;&#39;</code>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>prefix</code>
-            </td>
-            <td>
-                  <code><span title="str">str</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Prefix for the output file
-names. Default is "".</p>
-              </div>
-            </td>
-            <td>
-                  <code>&#39;&#39;</code>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>fmt</code>
-            </td>
-            <td>
-                  <code><span title="str">str</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Date format for parsing <code>start</code> and
-<code>end</code>. Default is "%Y-%m-%d".</p>
-              </div>
-            </td>
-            <td>
-                  <code>&#39;%Y-%m-%d&#39;</code>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-<p><span class="doc-section-title">Raises:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                  <code><span title="Exception">Exception</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>If <code>flow_acc_path</code> is not provided in
-distributed mode.</p>
-              </div>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                  <code><span title="TypeError">TypeError</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>If <code>path</code> is not a string. <code>outputs.results_dir</code>
-is optional in a run configuration, so a caller
-forwarding it can hold None.</p>
-              </div>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                  <code><span title="ValueError">ValueError</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>If <code>result</code> is not a valid option.</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-            <details class="mkdocstrings-source">
-              <summary>Source code in <code>src/hapi/catchment.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1466</span>
-<span class="normal">1467</span>
-<span class="normal">1468</span>
-<span class="normal">1469</span>
-<span class="normal">1470</span>
-<span class="normal">1471</span>
-<span class="normal">1472</span>
-<span class="normal">1473</span>
-<span class="normal">1474</span>
-<span class="normal">1475</span>
-<span class="normal">1476</span>
-<span class="normal">1477</span>
-<span class="normal">1478</span>
-<span class="normal">1479</span>
-<span class="normal">1480</span>
-<span class="normal">1481</span>
-<span class="normal">1482</span>
-<span class="normal">1483</span>
-<span class="normal">1484</span>
-<span class="normal">1485</span>
-<span class="normal">1486</span>
-<span class="normal">1487</span>
-<span class="normal">1488</span>
-<span class="normal">1489</span>
-<span class="normal">1490</span>
-<span class="normal">1491</span>
-<span class="normal">1492</span>
-<span class="normal">1493</span>
-<span class="normal">1494</span>
-<span class="normal">1495</span>
-<span class="normal">1496</span>
-<span class="normal">1497</span>
-<span class="normal">1498</span>
-<span class="normal">1499</span>
-<span class="normal">1500</span>
-<span class="normal">1501</span>
-<span class="normal">1502</span>
-<span class="normal">1503</span>
-<span class="normal">1504</span>
-<span class="normal">1505</span>
-<span class="normal">1506</span>
-<span class="normal">1507</span>
-<span class="normal">1508</span>
-<span class="normal">1509</span>
-<span class="normal">1510</span>
-<span class="normal">1511</span>
-<span class="normal">1512</span>
-<span class="normal">1513</span>
-<span class="normal">1514</span>
-<span class="normal">1515</span>
-<span class="normal">1516</span>
-<span class="normal">1517</span>
-<span class="normal">1518</span>
-<span class="normal">1519</span>
-<span class="normal">1520</span>
-<span class="normal">1521</span>
-<span class="normal">1522</span>
-<span class="normal">1523</span>
-<span class="normal">1524</span>
-<span class="normal">1525</span>
-<span class="normal">1526</span>
-<span class="normal">1527</span>
-<span class="normal">1528</span>
-<span class="normal">1529</span>
-<span class="normal">1530</span>
-<span class="normal">1531</span>
-<span class="normal">1532</span>
-<span class="normal">1533</span>
-<span class="normal">1534</span>
-<span class="normal">1535</span>
-<span class="normal">1536</span>
-<span class="normal">1537</span>
-<span class="normal">1538</span>
-<span class="normal">1539</span>
-<span class="normal">1540</span>
-<span class="normal">1541</span>
-<span class="normal">1542</span>
-<span class="normal">1543</span>
-<span class="normal">1544</span>
-<span class="normal">1545</span>
-<span class="normal">1546</span>
-<span class="normal">1547</span>
-<span class="normal">1548</span>
-<span class="normal">1549</span>
-<span class="normal">1550</span>
-<span class="normal">1551</span>
-<span class="normal">1552</span>
-<span class="normal">1553</span>
-<span class="normal">1554</span>
-<span class="normal">1555</span>
-<span class="normal">1556</span>
-<span class="normal">1557</span>
-<span class="normal">1558</span>
-<span class="normal">1559</span>
-<span class="normal">1560</span>
-<span class="normal">1561</span>
-<span class="normal">1562</span>
-<span class="normal">1563</span>
-<span class="normal">1564</span>
-<span class="normal">1565</span>
-<span class="normal">1566</span>
-<span class="normal">1567</span>
-<span class="normal">1568</span>
-<span class="normal">1569</span>
-<span class="normal">1570</span>
-<span class="normal">1571</span>
-<span class="normal">1572</span>
-<span class="normal">1573</span>
-<span class="normal">1574</span>
-<span class="normal">1575</span>
-<span class="normal">1576</span>
-<span class="normal">1577</span>
-<span class="normal">1578</span>
-<span class="normal">1579</span>
-<span class="normal">1580</span>
-<span class="normal">1581</span>
-<span class="normal">1582</span>
-<span class="normal">1583</span>
-<span class="normal">1584</span>
-<span class="normal">1585</span>
-<span class="normal">1586</span>
-<span class="normal">1587</span>
-<span class="normal">1588</span>
-<span class="normal">1589</span>
-<span class="normal">1590</span>
-<span class="normal">1591</span>
-<span class="normal">1592</span>
-<span class="normal">1593</span>
-<span class="normal">1594</span>
-<span class="normal">1595</span>
-<span class="normal">1596</span>
-<span class="normal">1597</span>
-<span class="normal">1598</span>
-<span class="normal">1599</span>
-<span class="normal">1600</span>
-<span class="normal">1601</span>
-<span class="normal">1602</span>
-<span class="normal">1603</span>
-<span class="normal">1604</span>
-<span class="normal">1605</span>
-<span class="normal">1606</span>
-<span class="normal">1607</span>
-<span class="normal">1608</span>
-<span class="normal">1609</span>
-<span class="normal">1610</span>
-<span class="normal">1611</span>
-<span class="normal">1612</span>
-<span class="normal">1613</span>
-<span class="normal">1614</span>
-<span class="normal">1615</span>
-<span class="normal">1616</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_results</span><span class="p">(</span>
-    <span class="bp">self</span><span class="p">,</span>
-    <span class="n">flow_acc_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
-    <span class="n">result</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-    <span class="n">start</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
-    <span class="n">end</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
-    <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
-    <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
-    <span class="n">fmt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"%Y-%m-</span><span class="si">%d</span><span class="s2">"</span><span class="p">,</span>
-<span class="p">):</span>
-<span class="w">    </span><span class="sd">"""Save model results to raster files or CSV.</span>
-
-<span class="sd">    For distributed mode, saves results as GeoTIFF rasters. For</span>
-<span class="sd">    lumped mode, saves results as a CSV file.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        flow_acc_path (str, optional): Path to the flow</span>
-<span class="sd">            accumulation raster (required for distributed mode).</span>
-<span class="sd">            Default is "".</span>
-<span class="sd">        result (int, optional): Type of result to save:</span>
-<span class="sd">            1 - Total discharge, 2 - Upper zone discharge,</span>
-<span class="sd">            3 - Lower zone discharge, 4 - Snow pack,</span>
-<span class="sd">            5 - Soil moisture, 6 - Upper zone, 7 - Lower zone,</span>
-<span class="sd">            8 - Water content. For lumped mode, 5 saves all</span>
-<span class="sd">            variables. Default is 1.</span>
-<span class="sd">        start (str | dt.datetime, optional): Start date for the</span>
-<span class="sd">            output period. A string is parsed with `fmt`; a datetime</span>
-<span class="sd">            is used as it is.</span>
-<span class="sd">            If empty, uses the first index. Default is "".</span>
-<span class="sd">        end (str | dt.datetime, optional): End date for the output</span>
-<span class="sd">            period. See `start`. If</span>
-<span class="sd">            empty, uses the last index. Default is "".</span>
-<span class="sd">        path (str, optional): Output directory (distributed, created</span>
-<span class="sd">            if it does not exist) or the CSV file itself (lumped).</span>
-<span class="sd">            Default is "", the working directory.</span>
-<span class="sd">        prefix (str, optional): Prefix for the output file</span>
-<span class="sd">            names. Default is "".</span>
-<span class="sd">        fmt (str, optional): Date format for parsing `start` and</span>
-<span class="sd">            `end`. Default is "%Y-%m-%d".</span>
-
-<span class="sd">    Raises:</span>
-<span class="sd">        Exception: If `flow_acc_path` is not provided in</span>
-<span class="sd">            distributed mode.</span>
-<span class="sd">        TypeError: If `path` is not a string. `outputs.results_dir`</span>
-<span class="sd">            is optional in a run configuration, so a caller</span>
-<span class="sd">            forwarding it can hold None.</span>
-<span class="sd">        ValueError: If `result` is not a valid option.</span>
-<span class="sd">    """</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">"path must be a string naming a directory (distributed) or a file "</span>
-            <span class="sa">f</span><span class="s2">"(lumped), got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">"</span>
-        <span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">start</span> <span class="o">==</span> <span class="s2">""</span><span class="p">:</span>
-        <span class="n">start</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">period</span><span class="o">.</span><span class="n">date_index</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="n">start</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">fmt</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">end</span> <span class="o">==</span> <span class="s2">""</span><span class="p">:</span>
-        <span class="n">end</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">period</span><span class="o">.</span><span class="n">date_index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">end</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="n">end</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">end</span><span class="p">,</span> <span class="n">fmt</span><span class="p">)</span>
-
-    <span class="n">start_i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">period</span><span class="o">.</span><span class="n">date_index</span> <span class="o">==</span> <span class="n">start</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">end_i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">period</span><span class="o">.</span><span class="n">date_index</span> <span class="o">==</span> <span class="n">end</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
-
-    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">spatial_resolution</span> <span class="o">==</span> <span class="s2">"distributed"</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">flow_acc_path</span> <span class="o">==</span> <span class="s2">""</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
-                <span class="s2">"Please enter the FlowAccPath parameter to the saveResults method"</span>
-            <span class="p">)</span>
-
-        <span class="n">src</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">flow_acc_path</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">prefix</span> <span class="o">==</span> <span class="s2">""</span><span class="p">:</span>
-            <span class="n">prefix</span> <span class="o">=</span> <span class="s2">"Result_"</span>
-
-        <span class="c1"># `path` names a directory here, unlike the lumped branch below where it is the</span>
-        <span class="c1"># CSV itself. Joined rather than concatenated: the old `path + prefix` wrote</span>
-        <span class="c1"># `some/dirResult_2009-01-01.tif` for any directory given without a trailing</span>
-        <span class="c1"># separator, which is how a directory is normally written.</span>
-        <span class="k">if</span> <span class="n">path</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="n">names</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">prefix</span><span class="si">}{</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)[:</span><span class="mi">10</span><span class="p">]</span><span class="si">}</span><span class="s2">.tif"</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">period</span><span class="o">.</span><span class="n">date_index</span><span class="p">[</span><span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
-        <span class="p">]</span>
-        <span class="k">if</span> <span class="n">result</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">q_total</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
-        <span class="k">elif</span> <span class="n">result</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-            <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">quz_routed</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
-        <span class="k">elif</span> <span class="n">result</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
-            <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">qlz_translated</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
-        <span class="k">elif</span> <span class="n">result</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
-            <span class="n">arr</span> <span class="o">=</span> <span class="n">_require_state_variables</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">)[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
-        <span class="k">elif</span> <span class="n">result</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
-            <span class="n">arr</span> <span class="o">=</span> <span class="n">_require_state_variables</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">)[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
-        <span class="k">elif</span> <span class="n">result</span> <span class="o">==</span> <span class="mi">6</span><span class="p">:</span>
-            <span class="n">arr</span> <span class="o">=</span> <span class="n">_require_state_variables</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">)[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
-        <span class="k">elif</span> <span class="n">result</span> <span class="o">==</span> <span class="mi">7</span><span class="p">:</span>
-            <span class="n">arr</span> <span class="o">=</span> <span class="n">_require_state_variables</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">)[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
-        <span class="k">elif</span> <span class="n">result</span> <span class="o">==</span> <span class="mi">8</span><span class="p">:</span>
-            <span class="n">arr</span> <span class="o">=</span> <span class="n">_require_state_variables</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">)[:,</span> <span class="p">:,</span> <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">" The result parameter takes a value between 1 and 8, given: </span><span class="si">{</span><span class="n">result</span><span class="si">}</span><span class="s2">"</span>
-            <span class="p">)</span>
-
-        <span class="c1"># from_dataset is pyramids' named constructor for an in-memory</span>
-        <span class="c1"># scaffold off a template raster; the bare Datacube(src, time_length=)</span>
-        <span class="c1"># form it replaced is kept only as a legacy fallback upstream.</span>
-        <span class="n">cube</span> <span class="o">=</span> <span class="n">Datacube</span><span class="o">.</span><span class="n">from_dataset</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
-        <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-        <span class="n">cube</span><span class="o">.</span><span class="n">values</span> <span class="o">=</span> <span class="n">arr</span>
-        <span class="n">cube</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="n">names</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">ind</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s2">"D"</span><span class="p">)</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">ind</span><span class="p">)</span>
-
-        <span class="n">data</span><span class="p">[</span><span class="s2">"date"</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"'"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)[:</span><span class="mi">10</span><span class="p">]</span> <span class="o">+</span> <span class="s2">"'"</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">index</span><span class="p">]</span>
-
-        <span class="k">if</span> <span class="n">result</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">data</span><span class="p">[</span><span class="s2">"Qsim"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Qsim</span><span class="p">[</span><span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
-            <span class="n">data</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">float_format</span><span class="o">=</span><span class="s2">"</span><span class="si">%.3f</span><span class="s2">"</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">result</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-            <span class="n">data</span><span class="p">[</span><span class="s2">"Quz"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">quz</span><span class="p">[</span><span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
-            <span class="n">data</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">float_format</span><span class="o">=</span><span class="s2">"</span><span class="si">%.3f</span><span class="s2">"</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">result</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
-            <span class="n">data</span><span class="p">[</span><span class="s2">"Qlz"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">qlz</span><span class="p">[</span><span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
-            <span class="n">data</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">float_format</span><span class="o">=</span><span class="s2">"</span><span class="si">%.3f</span><span class="s2">"</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">result</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
-            <span class="n">data</span><span class="p">[</span><span class="n">STATE_VARIABLES</span><span class="p">]</span> <span class="o">=</span> <span class="n">_require_state_variables</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">)[</span>
-                <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">,</span> <span class="p">:</span>
-            <span class="p">]</span>
-            <span class="n">data</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">float_format</span><span class="o">=</span><span class="s2">"</span><span class="si">%.3f</span><span class="s2">"</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">result</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
-            <span class="n">data</span><span class="p">[</span><span class="s2">"Qsim"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Qsim</span><span class="p">[</span><span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
-            <span class="n">data</span><span class="p">[</span><span class="s2">"Quz"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">quz</span><span class="p">[</span><span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
-            <span class="n">data</span><span class="p">[</span><span class="s2">"Qlz"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">qlz</span><span class="p">[</span><span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
-            <span class="n">data</span><span class="p">[</span><span class="n">STATE_VARIABLES</span><span class="p">]</span> <span class="o">=</span> <span class="n">_require_state_variables</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">)[</span>
-                <span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">,</span> <span class="p">:</span>
-            <span class="p">]</span>
-            <span class="n">data</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">float_format</span><span class="o">=</span><span class="s2">"</span><span class="si">%.3f</span><span class="s2">"</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">"in lumped mode the result parameter takes a value between 1 and 5, "</span>
-                <span class="sa">f</span><span class="s2">"given: </span><span class="si">{</span><span class="n">result</span><span class="si">}</span><span class="s2">"</span>
-            <span class="p">)</span>
-
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Data is saved successfully"</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>

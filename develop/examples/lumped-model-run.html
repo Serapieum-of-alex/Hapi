@@ -541,6 +541,8 @@
       
         
       
+        
+      
     
     
     
@@ -769,6 +771,34 @@
     
   
     Run
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/results.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Results
   
 
     
@@ -1503,7 +1533,7 @@ To plot the calculated and measured discharge import matplotlib</p>
 <span class="n">end</span> <span class="o">=</span> <span class="s2">"2010-04-20"</span>
 
 <span class="n">Path</span> <span class="o">=</span> <span class="n">SaveTo</span> <span class="o">+</span> <span class="s2">"Results-Lumped-Model"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">())[</span><span class="mi">0</span><span class="p">:</span><span class="mi">10</span><span class="p">]</span> <span class="o">+</span> <span class="s2">".txt"</span>
-<span class="n">Coello</span><span class="o">.</span><span class="n">save_results</span><span class="p">(</span><span class="n">result</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">end</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="n">Path</span><span class="p">)</span>
+<span class="n">Coello</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">result</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">end</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="n">Path</span><span class="p">)</span>
 </code></pre></div>
 
 

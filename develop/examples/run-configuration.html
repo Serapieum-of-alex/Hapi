@@ -541,6 +541,8 @@
       
         
       
+        
+      
     
     
     
@@ -769,6 +771,34 @@
     
   
     Run
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/results.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Results
   
 
     
@@ -1731,7 +1761,7 @@ the block's <code>fmt</code>.</p>
 itself consume remain reachable — <code>outputs</code> above all:</p>
 <div class="highlight"><pre><span></span><code><span class="n">outputs</span> <span class="o">=</span> <span class="n">Coello</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">outputs</span>
 <span class="n">save_to</span> <span class="o">=</span> <span class="p">(</span><span class="n">outputs</span><span class="o">.</span><span class="n">results_dir</span> <span class="k">if</span> <span class="n">outputs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">""</span>
-<span class="n">Coello</span><span class="o">.</span><span class="n">save_results</span><span class="p">(</span>
+<span class="n">Coello</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">save</span><span class="p">(</span>
     <span class="n">flow_acc_path</span><span class="o">=</span><span class="n">Coello</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">flow_accumulation</span><span class="p">,</span>
     <span class="n">result</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
     <span class="n">path</span><span class="o">=</span><span class="n">save_to</span><span class="p">,</span>
