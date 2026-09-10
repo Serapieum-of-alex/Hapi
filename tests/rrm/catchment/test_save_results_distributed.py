@@ -211,3 +211,81 @@ def test_save_refuses_a_path_that_is_not_a_string(coello_run: Catchment):
     assert "NoneType" in str(exc.value), (
         f"the error should name what it got: {exc.value}"
     )
+
+
+def test_save_uses_the_prefix_it_is_given(
+    coello_run: Catchment, coello_acc_path: str, tmp_path
+):
+    """Test that an explicit prefix names the files instead of the default.
+
+    Args:
+        coello_run: Distributed Coello catchment with a completed run.
+        coello_acc_path: Path to the flow-accumulation raster used as the template.
+        tmp_path: Destination directory.
+
+    Test scenario:
+        `prefix` defaults to `Result_` only when it is left empty, and every other test in
+        this file takes that default -- so the branch that keeps a caller's prefix was never
+        exercised. A run writing several variables into one directory depends on it.
+    """
+    out = tmp_path / "prefixed"
+    out.mkdir()
+
+    coello_run.results.save(
+        path=f"{out}/",
+        flow_acc_path=coello_acc_path,
+        result=1,
+        start="2009-01-01",
+        end="2009-01-02",
+        prefix="Qtot_",
+    )
+
+    written = sorted(p.name for p in out.glob("*.tif"))
+    assert written == ["Qtot_2009-01-01.tif", "Qtot_2009-01-02.tif"], (
+        f"the files must carry the given prefix, got {written}"
+    )
+
+
+def test_save_without_a_template_raster_says_what_it_needs(
+    coello_run: Catchment, tmp_path
+):
+    """Test that writing rasters with no `flow_acc_path` names the missing template.
+
+    Args:
+        coello_run: Distributed Coello catchment with a completed run.
+        tmp_path: Destination directory.
+
+    Test scenario:
+        `FlowNetwork` keeps the accumulation array but not its projection, so the grid has to
+        be read back from the file. Without the template the error used to be a pyramids
+        failure on an empty path, several frames from the argument the caller omitted.
+    """
+    with pytest.raises(ValueError, match="flow_acc_path"):
+        coello_run.results.save(path=str(tmp_path), result=1)
+
+
+@pytest.mark.parametrize("result", [0, 9])
+def test_save_refuses_a_raster_option_outside_the_range(
+    coello_run: Catchment, coello_acc_path: str, tmp_path, result: int
+):
+    """Test that a distributed option outside 1-8 raises before any file is written.
+
+    Args:
+        coello_run: Distributed Coello catchment with a completed run.
+        coello_acc_path: Path to the flow-accumulation raster used as the template.
+        tmp_path: Destination directory.
+        result: An out-of-range option.
+
+    Test scenario:
+        The eight options map onto three result fields and five slices of the state array.
+        Anything else has no array to write, and the check has to come before the template
+        is opened so a typo does not leave a half-written directory.
+    """
+    out = tmp_path / "never"
+
+    with pytest.raises(ValueError, match="between 1 and 8"):
+        coello_run.results.save(
+            path=str(out), flow_acc_path=coello_acc_path, result=result
+        )
+
+    assert not out.exists(), "nothing should be created when the option is refused"
