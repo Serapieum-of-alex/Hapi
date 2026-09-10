@@ -206,6 +206,12 @@ class Calibration:
         `read_parameters_bound` rather than by reading a parameter file. Either source works;
         this picks whichever ran.
 
+        The values are copied. `SpatialVarFun` fills the *same* `Par3d` buffer on every
+        trial, so wrapping it by reference gave every `ParameterSet` -- and, through
+        `SimulationResults.run`, every set of results -- a view of an array the next trial
+        overwrites in place. `results.run` is documented as the inputs those arrays came
+        from; without the copy it described whichever trial happened to run last.
+
         Args:
             values: The trial parameter array or vector.
 
@@ -215,12 +221,13 @@ class Calibration:
         Raises:
             ValueError: The trial set is not the width the configuration requires.
         """
+        settled = np.array(values, copy=True)
         if self.model.parameters is not None:
-            return self.model.parameters.with_values(values)
+            return self.model.parameters.with_values(settled)
         bounds = self.bounds
         snow = bounds.snow if bounds is not None else False
         maxbas = bounds.maxbas if bounds is not None else False
-        return ParameterSet(values, snow=snow, maxbas=maxbas)
+        return ParameterSet(settled, snow=snow, maxbas=maxbas)
 
     def _check_before_optimising(self, **narrowing: Any) -> None:
         """Fail before the optimiser is built rather than on its first trial.

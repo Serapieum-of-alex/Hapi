@@ -282,6 +282,29 @@ class TestRunCalibration:
             "have been driven"
         )
 
+    def test_a_trial_parameter_set_does_not_alias_the_optimizer_buffer(
+        self, gauged_calibration: Calibration
+    ):
+        """Test that a trial's parameters are copied out of the reused buffer.
+
+        Test scenario:
+            `SpatialVarFun` fills the *same* `Par3d` array on every trial. Wrapping it by
+            reference gave every `ParameterSet` -- and, through `SimulationResults.run`, every
+            set of results -- a view of an array the next trial overwrites in place, so
+            `results.run.parameters.values` described whichever trial ran last rather than the
+            one that produced those arrays.
+        """
+        coello = gauged_calibration
+        rows, cols = coello.model.flow_network.rows, coello.model.flow_network.cols
+        buffer = np.ones((rows, cols, 12))
+
+        settled = coello._parameter_set(buffer)
+        buffer[:] = 99.0
+
+        assert np.array_equal(settled.values, np.ones((rows, cols, 12))), (
+            "the parameter set must not follow the buffer the next trial overwrites"
+        )
+
     def test_rejects_meteo_that_does_not_cover_the_grid(
         self, gauged_calibration: Calibration, stub_optimizer: dict, spatial_var_stub
     ):
