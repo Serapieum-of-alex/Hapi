@@ -1968,10 +1968,9 @@ and stored in the one spelling the internals compare against:</p>
 </tr>
 </tbody>
 </table>
-<p>Anything else raises a <code>ValueError</code> naming the three. Up to and including version 1.7.0 the
-constructor stored whatever string it was handed, so a run configured as <code>"Max_bas"</code> — or as a
-descriptive label such
-as <code>"Muskingum-Cunge"</code> — was accepted and then silently routed with Muskingum, because
+<p>Anything else raises a <code>ValueError</code> naming the three. Before this check the constructor stored
+whatever string it was handed, so a run configured as <code>"Max_bas"</code> — or as a descriptive label
+such as <code>"Muskingum-Cunge"</code> — was accepted and then silently routed with Muskingum, because
 <code>distrrm.route_muskingum</code> compares against <code>"Muskingum"</code> exactly. Rejecting the spelling is what
 makes that comparison trustworthy; a script passing a spelling outside the table has to be updated
 to one of the three.</p>

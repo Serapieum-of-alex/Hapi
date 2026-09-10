@@ -2794,7 +2794,14 @@ argument.</p>
 <span class="normal">753</span>
 <span class="normal">754</span>
 <span class="normal">755</span>
-<span class="normal">756</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span>
+<span class="normal">756</span>
+<span class="normal">757</span>
+<span class="normal">758</span>
+<span class="normal">759</span>
+<span class="normal">760</span>
+<span class="normal">761</span>
+<span class="normal">762</span>
+<span class="normal">763</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">SimulationResults</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""The arrays one model run produced, the routing that produced them, and their views.</span>
 
@@ -3077,10 +3084,11 @@ argument.</p>
 <span class="sd">            start: Starting date of the animation.</span>
 <span class="sd">            end: End date of the animation.</span>
 <span class="sd">            fmt: Format a string date is read with. Default is "%Y-%m-%d".</span>
-<span class="sd">            option: Variable to animate. 1 - Total discharge, 2 - Upper zone discharge,</span>
-<span class="sd">                3 - Ground water, 4 - Snow pack, 5 - Soil moisture, 6 - Upper zone,</span>
-<span class="sd">                7 - Lower zone, 8 - Water content, 9 - Precipitation, 10 - ET,</span>
-<span class="sd">                11 - Temperature. Default is 1.</span>
+<span class="sd">            option: Variable to animate. 1 - Total discharge, 2 - Surface flow (the routed</span>
+<span class="sd">                upper zone), 3 - Ground water flow (the translated lower zone), 4 - Snow</span>
+<span class="sd">                pack, 5 - Soil moisture, 6 - Upper zone, 7 - Lower zone, 8 - Water content,</span>
+<span class="sd">                9 - Precipitation, 10 - ET, 11 - Temperature. Default is 1. Options 4-8 are</span>
+<span class="sd">                the state variables and 9-11 are the run's own drivers.</span>
 <span class="sd">            gauges: Gauge table to overlay, as `Catchment.GaugesTable`. It must carry `id`,</span>
 <span class="sd">                `cell_row` and `cell_col` columns. `None`, the default, draws no gauges.</span>
 <span class="sd">                This used to be a `bool` that reached back onto the catchment for the table;</span>
@@ -3152,8 +3160,14 @@ argument.</p>
         <span class="n">source</span><span class="p">,</span> <span class="n">title</span> <span class="o">=</span> <span class="n">_ANIMATION_OPTIONS</span><span class="p">[</span><span class="n">option</span><span class="p">]</span>
         <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_select</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">start_i</span><span class="p">,</span> <span class="n">end_i</span><span class="p">)</span>
 
-        <span class="c1"># mask the no-data cells on a copy so plotting never mutates the result arrays</span>
-        <span class="n">arr</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="c1"># Masked on a copy, so plotting never mutates the result arrays -- and on a float</span>
+        <span class="c1"># copy, because the mask writes NaN and the meteo options read `MeteoInputs` cubes</span>
+        <span class="c1"># "as stored", which an integer driver raster would make unassignable.</span>
+        <span class="n">arr</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">arr</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">)</span>
+            <span class="k">else</span> <span class="n">arr</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="p">)</span>
         <span class="n">arr</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">run</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">flow_acc_arr</span><span class="p">),</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
 
         <span class="n">time</span> <span class="o">=</span> <span class="n">run</span><span class="o">.</span><span class="n">period</span><span class="o">.</span><span class="n">date_index</span><span class="p">[</span><span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
@@ -3282,7 +3296,7 @@ argument.</p>
 <span class="sd">                ...     data=np.ones((len(period), 4)),</span>
 <span class="sd">                ...     parameters=ParameterSet(np.ones(12), snow=False, maxbas=False),</span>
 <span class="sd">                ...     model_setup=ConceptualModelSetup(</span>
-<span class="sd">                ...         HBVBergestrom92, 100.0, [0.0] * 5, 1.0</span>
+<span class="sd">                ...         HBVBergestrom92(), 100.0, [0.0] * 5, 1.0</span>
 <span class="sd">                ...     ),</span>
 <span class="sd">                ... )</span>
 <span class="sd">                &gt;&gt;&gt; discharge = np.array([1.5, 2.5, 3.5])</span>
@@ -3436,9 +3450,9 @@ argument.</p>
             <span class="c1"># For a lumped run the total discharge *is* `Qsim`; `Run.run_lumped` only wraps</span>
             <span class="c1"># this same array in a frame to put on the model.</span>
             <span class="n">data</span><span class="p">[</span><span class="s2">"Qsim"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_require_field</span><span class="p">(</span><span class="s2">"q_total"</span><span class="p">)[</span><span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">result</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">or</span> <span class="n">result</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">result</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">):</span>
             <span class="n">data</span><span class="p">[</span><span class="s2">"Quz"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">quz</span><span class="p">[</span><span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">result</span> <span class="o">==</span> <span class="mi">3</span> <span class="ow">or</span> <span class="n">result</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">result</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">):</span>
             <span class="n">data</span><span class="p">[</span><span class="s2">"Qlz"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">qlz</span><span class="p">[</span><span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">result</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">):</span>
             <span class="n">data</span><span class="p">[</span><span class="n">STATE_VARIABLES</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_require_state_variables</span><span class="p">()[</span><span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">,</span> <span class="p">:]</span>
@@ -3542,10 +3556,11 @@ name; an explicit <code>title=</code> keyword argument overrides it.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Variable to animate. 1 - Total discharge, 2 - Upper zone discharge,
-3 - Ground water, 4 - Snow pack, 5 - Soil moisture, 6 - Upper zone,
-7 - Lower zone, 8 - Water content, 9 - Precipitation, 10 - ET,
-11 - Temperature. Default is 1.</p>
+                <p>Variable to animate. 1 - Total discharge, 2 - Surface flow (the routed
+upper zone), 3 - Ground water flow (the translated lower zone), 4 - Snow
+pack, 5 - Soil moisture, 6 - Upper zone, 7 - Lower zone, 8 - Water content,
+9 - Precipitation, 10 - ET, 11 - Temperature. Default is 1. Options 4-8 are
+the state variables and 9-11 are the run's own drivers.</p>
               </div>
             </td>
             <td>
@@ -3823,7 +3838,14 @@ save: Writes the same arrays as rasters or a CSV instead of rendering them.</p>
 <span class="normal">495</span>
 <span class="normal">496</span>
 <span class="normal">497</span>
-<span class="normal">498</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">animate</span><span class="p">(</span>
+<span class="normal">498</span>
+<span class="normal">499</span>
+<span class="normal">500</span>
+<span class="normal">501</span>
+<span class="normal">502</span>
+<span class="normal">503</span>
+<span class="normal">504</span>
+<span class="normal">505</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">animate</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">start</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">,</span>
     <span class="n">end</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">,</span>
@@ -3842,10 +3864,11 @@ save: Writes the same arrays as rasters or a CSV instead of rendering them.</p>
 <span class="sd">        start: Starting date of the animation.</span>
 <span class="sd">        end: End date of the animation.</span>
 <span class="sd">        fmt: Format a string date is read with. Default is "%Y-%m-%d".</span>
-<span class="sd">        option: Variable to animate. 1 - Total discharge, 2 - Upper zone discharge,</span>
-<span class="sd">            3 - Ground water, 4 - Snow pack, 5 - Soil moisture, 6 - Upper zone,</span>
-<span class="sd">            7 - Lower zone, 8 - Water content, 9 - Precipitation, 10 - ET,</span>
-<span class="sd">            11 - Temperature. Default is 1.</span>
+<span class="sd">        option: Variable to animate. 1 - Total discharge, 2 - Surface flow (the routed</span>
+<span class="sd">            upper zone), 3 - Ground water flow (the translated lower zone), 4 - Snow</span>
+<span class="sd">            pack, 5 - Soil moisture, 6 - Upper zone, 7 - Lower zone, 8 - Water content,</span>
+<span class="sd">            9 - Precipitation, 10 - ET, 11 - Temperature. Default is 1. Options 4-8 are</span>
+<span class="sd">            the state variables and 9-11 are the run's own drivers.</span>
 <span class="sd">        gauges: Gauge table to overlay, as `Catchment.GaugesTable`. It must carry `id`,</span>
 <span class="sd">            `cell_row` and `cell_col` columns. `None`, the default, draws no gauges.</span>
 <span class="sd">            This used to be a `bool` that reached back onto the catchment for the table;</span>
@@ -3917,8 +3940,14 @@ save: Writes the same arrays as rasters or a CSV instead of rendering them.</p>
     <span class="n">source</span><span class="p">,</span> <span class="n">title</span> <span class="o">=</span> <span class="n">_ANIMATION_OPTIONS</span><span class="p">[</span><span class="n">option</span><span class="p">]</span>
     <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_select</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">start_i</span><span class="p">,</span> <span class="n">end_i</span><span class="p">)</span>
 
-    <span class="c1"># mask the no-data cells on a copy so plotting never mutates the result arrays</span>
-    <span class="n">arr</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="c1"># Masked on a copy, so plotting never mutates the result arrays -- and on a float</span>
+    <span class="c1"># copy, because the mask writes NaN and the meteo options read `MeteoInputs` cubes</span>
+    <span class="c1"># "as stored", which an integer driver raster would make unassignable.</span>
+    <span class="n">arr</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">arr</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">)</span>
+        <span class="k">else</span> <span class="n">arr</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="p">)</span>
     <span class="n">arr</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">run</span><span class="o">.</span><span class="n">flow_network</span><span class="o">.</span><span class="n">flow_acc_arr</span><span class="p">),</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
 
     <span class="n">time</span> <span class="o">=</span> <span class="n">run</span><span class="o">.</span><span class="n">period</span><span class="o">.</span><span class="n">date_index</span><span class="p">[</span><span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">]</span>
@@ -4198,7 +4227,7 @@ distributed run, or the results carry no run to date them by.</p>
 <span class="o">...</span>     <span class="n">data</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">period</span><span class="p">),</span> <span class="mi">4</span><span class="p">)),</span>
 <span class="o">...</span>     <span class="n">parameters</span><span class="o">=</span><span class="n">ParameterSet</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">12</span><span class="p">),</span> <span class="n">snow</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">maxbas</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
 <span class="o">...</span>     <span class="n">model_setup</span><span class="o">=</span><span class="n">ConceptualModelSetup</span><span class="p">(</span>
-<span class="o">...</span>         <span class="n">HBVBergestrom92</span><span class="p">,</span> <span class="mf">100.0</span><span class="p">,</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">5</span><span class="p">,</span> <span class="mf">1.0</span>
+<span class="o">...</span>         <span class="n">HBVBergestrom92</span><span class="p">(),</span> <span class="mf">100.0</span><span class="p">,</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">5</span><span class="p">,</span> <span class="mf">1.0</span>
 <span class="o">...</span>     <span class="p">),</span>
 <span class="o">...</span> <span class="p">)</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">discharge</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.5</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">,</span> <span class="mf">3.5</span><span class="p">])</span>
@@ -4237,14 +4266,7 @@ hapi.runs.DistributedRun.keep_state_variables: Whether the state options have
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/results.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">538</span>
-<span class="normal">539</span>
-<span class="normal">540</span>
-<span class="normal">541</span>
-<span class="normal">542</span>
-<span class="normal">543</span>
-<span class="normal">544</span>
-<span class="normal">545</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">545</span>
 <span class="normal">546</span>
 <span class="normal">547</span>
 <span class="normal">548</span>
@@ -4346,7 +4368,14 @@ hapi.runs.DistributedRun.keep_state_variables: Whether the state options have
 <span class="normal">644</span>
 <span class="normal">645</span>
 <span class="normal">646</span>
-<span class="normal">647</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span>
+<span class="normal">647</span>
+<span class="normal">648</span>
+<span class="normal">649</span>
+<span class="normal">650</span>
+<span class="normal">651</span>
+<span class="normal">652</span>
+<span class="normal">653</span>
+<span class="normal">654</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
     <span class="n">result</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
@@ -4403,7 +4432,7 @@ hapi.runs.DistributedRun.keep_state_variables: Whether the state options have
 <span class="sd">            ...     data=np.ones((len(period), 4)),</span>
 <span class="sd">            ...     parameters=ParameterSet(np.ones(12), snow=False, maxbas=False),</span>
 <span class="sd">            ...     model_setup=ConceptualModelSetup(</span>
-<span class="sd">            ...         HBVBergestrom92, 100.0, [0.0] * 5, 1.0</span>
+<span class="sd">            ...         HBVBergestrom92(), 100.0, [0.0] * 5, 1.0</span>
 <span class="sd">            ...     ),</span>
 <span class="sd">            ... )</span>
 <span class="sd">            &gt;&gt;&gt; discharge = np.array([1.5, 2.5, 3.5])</span>
@@ -4588,14 +4617,7 @@ supported.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/hapi/results.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">500</span>
-<span class="normal">501</span>
-<span class="normal">502</span>
-<span class="normal">503</span>
-<span class="normal">504</span>
-<span class="normal">505</span>
-<span class="normal">506</span>
-<span class="normal">507</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">507</span>
 <span class="normal">508</span>
 <span class="normal">509</span>
 <span class="normal">510</span>
@@ -4624,7 +4646,14 @@ supported.</p>
 <span class="normal">533</span>
 <span class="normal">534</span>
 <span class="normal">535</span>
-<span class="normal">536</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_animation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">fps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">536</span>
+<span class="normal">537</span>
+<span class="normal">538</span>
+<span class="normal">539</span>
+<span class="normal">540</span>
+<span class="normal">541</span>
+<span class="normal">542</span>
+<span class="normal">543</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_animation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">fps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Save the animation built by :meth:`animate`.</span>
 
 <span class="sd">    The output format is determined by the file extension. GIF uses PillowWriter;</span>
