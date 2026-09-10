@@ -16,10 +16,9 @@ from __future__ import annotations
 
 import copy
 import datetime as dt
+import inspect
 import os
 from pathlib import Path
-
-import inspect
 
 import pytest
 import yaml
