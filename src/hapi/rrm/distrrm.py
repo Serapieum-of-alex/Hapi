@@ -188,12 +188,49 @@ class DistributedRRM:
         results.routing = RoutingKind.MUSKINGUM
 
     @staticmethod
+    def _record_maxbas(results: SimulationResults) -> None:
+        """Fill the per-cell output fields after a triangular (MAXBAS) routing pass.
+
+        `results.save` and `results.animate` read `q_total`, `quz_routed` and
+        `qlz_translated` for their discharge options. This used to live on `Wrapper`, which
+        meant the routing kind was recorded by the layer *above* the router: a caller
+        driving `DistributedRRM` directly -- the pattern `docs/api/distrrm.md` documents --
+        got MAXBAS-routed arrays still labelled `RoutingKind.UNROUTED`, and
+        `outlet_shortcut_valid` then answered for a scheme that had not run. The routing is
+        meant to be a property of the arrays, so the method that applies it is what records
+        it.
+
+        MAXBAS routes each cell's upper zone straight to the outlet with that cell's own
+        `maxbas`, in place, and applies no cell-to-cell translation to the lower zone. So the
+        routed/translated fields *are* the per-cell arrays, and their sum is the per-cell
+        contribution to the outlet hydrograph -- `np.nansum(q_total[:, :, i])` reproduces
+        `qout[i]`. That differs from the Muskingum path, where the fields accumulate
+        downstream and `q_total` at the outlet cell *is* the outlet discharge.
+
+        `quz_routed` / `qlz_translated` alias `quz` / `qlz` rather than copying them: they
+        hold the same data, and a copy would double the memory of a
+        `(rows, cols, time_steps)` array for no gain. They are outputs, so nothing downstream
+        writes through the alias -- but the alias is visible (`results.quz_routed is
+        results.quz`), so an in-place edit of one changes the other.
+
+        Args:
+            results: The results whose `quz` / `qlz` have just been routed. Mutated in place.
+        """
+        results.quz_routed = results.quz
+        results.qlz_translated = results.qlz
+        results.q_total = results.qlz + results.quz
+        # Marks the outlet-cell shortcut in `extract_discharge` as invalid for these
+        # results, via `SimulationResults.outlet_shortcut_valid`.
+        results.routing = RoutingKind.MAXBAS
+
+    @staticmethod
     def route_maxbas(run: DistributedRun, results: SimulationResults) -> None:
         """Route discharge to the outlet using a triangular function.
 
         Applies triangular (MAXBAS) routing to each cell's upper-zone discharge independently,
         reading the MAXBAS parameter from the last column of the parameter array. `results.quz`
-        is modified in place.
+        is modified in place, then the per-cell output fields are filled and
+        `RoutingKind.MAXBAS` recorded by :meth:`_record_maxbas`.
 
         Args:
             run: The validated inputs.
@@ -208,6 +245,7 @@ class DistributedRRM:
                     quz[x, y, :] = routing.triangular_routing_1(
                         quz[x, y, :], Maxbas[x, y]
                     )
+        DistributedRRM._record_maxbas(results)
 
     @staticmethod
     def route_maxbas_by_path_length(
@@ -217,7 +255,8 @@ class DistributedRRM:
 
         Like :meth:`route_maxbas`, but each cell's MAXBAS is rescaled by its flow path length,
         so cells farther from the outlet are attenuated more. `results.quz` is modified in
-        place.
+        place, then the per-cell output fields are filled and `RoutingKind.MAXBAS` recorded
+        by :meth:`_record_maxbas`.
 
         Args:
             run: The validated inputs, whose `flow_path_length` supplies the raster.
@@ -253,3 +292,4 @@ class DistributedRRM:
                     quz[x, y, :] = routing.triangular_routing_2(
                         quz[x, y, :], NormalizedFPL[x, y]
                     )
+        DistributedRRM._record_maxbas(results)

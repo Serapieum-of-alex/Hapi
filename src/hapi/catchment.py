@@ -44,7 +44,7 @@ from hapi.inputs import (
     read_rasters,
 )
 from hapi.period import SimulationPeriod
-from hapi.results import SimulationResults
+from hapi.results import RoutingKind, SimulationResults
 from hapi.rrm.hbv import HBV
 from hapi.rrm.hbv_bergestrom92 import HBVBergestrom92
 
@@ -1061,6 +1061,11 @@ class Catchment:
             raise ValueError(
                 "there are no results to extract; run the model first, e.g. "
                 "Run.run_distributed(model)"
+            )
+        if self.results.routing is RoutingKind.UNROUTED:
+            raise ValueError(
+                "these results have not been routed, so there is no hydrograph to extract; "
+                "call a Run.* entry point rather than DistributedRRM.run_lumped_model alone"
             )
 
         if self.results.outlet_shortcut_valid:

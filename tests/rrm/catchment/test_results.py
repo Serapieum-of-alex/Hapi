@@ -12,6 +12,7 @@ CSV options nothing else exercises.
 from __future__ import annotations
 
 import datetime as dt
+from copy import copy
 
 import numpy as np
 import pandas as pd
@@ -30,7 +31,7 @@ DATE_REGEX = r"\d{4}.\d{2}.\d{2}"
 
 
 @pytest.fixture(scope="module")
-def distributed_run(
+def built_catchment(
     coello_start_date: str,
     coello_end_date: str,
     coello_prec_path: str,
@@ -41,11 +42,12 @@ def distributed_run(
     coello_dist_parameters_muskingum: str,
     coello_cat_area: int,
     coello_initial_cond: list,
-) -> DistributedRun:
-    """A validated distributed Coello run, with no engine having touched it yet.
+    coello_gauges_table: str,
+) -> Catchment:
+    """A fully built distributed Coello catchment, gauge table included.
 
     Returns:
-        DistributedRun: The narrowed run.
+        Catchment: The builder, with every reader run and no run behind it.
     """
     model = Catchment(
         "coello",
@@ -67,6 +69,39 @@ def distributed_run(
     model.flow_network = FlowNetwork.from_rasters(coello_acc_path, coello_fd_path)
     model.read_parameters(coello_dist_parameters_muskingum, False)
     model.read_lumped_model(HBVLumped, coello_cat_area, coello_initial_cond)
+    model.read_gauge_table(coello_gauges_table, coello_acc_path)
+    return model
+
+
+@pytest.fixture(scope="module")
+def distributed_run(built_catchment: Catchment) -> DistributedRun:
+    """A validated distributed Coello run, with no engine having touched it yet.
+
+    Args:
+        built_catchment: The builder it narrows.
+
+    Returns:
+        DistributedRun: The narrowed run.
+    """
+    return DistributedRun.from_model(built_catchment)
+
+
+@pytest.fixture(scope="module")
+def maxbas_run(
+    built_catchment: Catchment,
+    coello_dist_parameters_maxbas: str,
+) -> DistributedRun:
+    """The same catchment narrowed with a MAXBAS parameter set.
+
+    Args:
+        built_catchment: The builder, whose Muskingum parameters are replaced here.
+        coello_dist_parameters_maxbas: Parameter cube carrying a MAXBAS trailing column.
+
+    Returns:
+        DistributedRun: A run the triangular routers can actually route.
+    """
+    model = copy(built_catchment)
+    model.read_parameters(coello_dist_parameters_maxbas, False, maxbas=True)
     return DistributedRun.from_model(model)
 
 
@@ -153,6 +188,126 @@ class TestTheRunTravelsWithTheArrays:
         """
         with pytest.raises(ValueError, match="lumped run"):
             lumped_results.animate("2012-06-14", "2012-06-20", option=1)
+
+
+class TestTheRouterRecordsTheRoutingItApplied:
+    """`RoutingKind` is meant to be a property of the arrays, not of who called whom."""
+
+    def test_route_maxbas_records_itself(self, maxbas_run: DistributedRun):
+        """Test that the public MAXBAS router labels the arrays it just routed.
+
+        Args:
+            maxbas_run: A validated run carrying a MAXBAS parameter set.
+
+        Test scenario:
+            The labelling used to sit in `Wrapper`, one layer above the router. Driving
+            `DistributedRRM` directly -- the pattern `docs/api/distrrm.md` documents --
+            then produced MAXBAS-routed arrays still labelled `UNROUTED`, so every consumer
+            that asks the arrays what happened to them got the wrong answer.
+        """
+        results = DistributedRRM.run_lumped_model(maxbas_run)
+        assert results.routing is RoutingKind.UNROUTED, "nothing has routed them yet"
+
+        DistributedRRM.route_maxbas(maxbas_run, results)
+
+        assert results.routing is RoutingKind.MAXBAS, (
+            f"the router must record what it applied, got {results.routing}"
+        )
+        for field in ("q_total", "quz_routed", "qlz_translated"):
+            assert getattr(results, field) is not None, (
+                f"{field} backs the discharge options and must be filled by the router"
+            )
+
+    def test_route_maxbas_by_path_length_records_itself(
+        self, maxbas_run: DistributedRun
+    ):
+        """Test that the path-length variant records the routing too.
+
+        Args:
+            maxbas_run: A validated run, rebuilt here with a path-length raster.
+
+        Test scenario:
+            This entry point is public and documented, and nothing inside the package calls
+            it -- so it was the one router where nothing set the routing at all.
+        """
+        model = maxbas_run
+        rows, cols = model.flow_network.shape
+        # A gradient, masked to the domain: the routing normalises by (max - min), so a
+        # constant raster would divide by zero, and NaN marks the cells outside the basin.
+        gradient = np.arange(rows * cols, dtype=float).reshape(rows, cols)
+        gradient[np.isnan(model.flow_network.flow_acc_arr)] = np.nan
+        with_fpl = DistributedRun(
+            period=model.period,
+            meteo=model.meteo,
+            flow_network=model.flow_network,
+            parameters=model.parameters,
+            model_setup=model.model_setup,
+            flow_path_length=gradient,
+        )
+        results = DistributedRRM.run_lumped_model(with_fpl)
+
+        DistributedRRM.route_maxbas_by_path_length(with_fpl, results)
+
+        assert results.routing is RoutingKind.MAXBAS, (
+            f"the path-length router must record what it applied, got {results.routing}"
+        )
+        assert results.q_total is not None, "the per-cell fields must be filled"
+
+
+class TestTheOutletShortcut:
+    """Reading the outlet cell only means something for a scheme that accumulates."""
+
+    @pytest.mark.parametrize(
+        "routing, valid",
+        [
+            (RoutingKind.MUSKINGUM, True),
+            (RoutingKind.LUMPED, True),
+            (RoutingKind.MAXBAS, False),
+            (RoutingKind.UNROUTED, False),
+        ],
+    )
+    def test_the_shortcut_is_valid_only_where_a_cell_is_a_discharge(
+        self, routing: RoutingKind, valid: bool
+    ):
+        """Test which routing kinds allow the outlet cell to be read as the hydrograph.
+
+        Args:
+            routing: The routing the arrays carry.
+            valid: Whether the outlet-cell shortcut holds for it.
+
+        Test scenario:
+            MAXBAS makes a cell a *contribution* rather than a discharge, so reading the
+            outlet cell under-reports. UNROUTED has no `q_total` at all -- the property used
+            to answer `True` for it, offering the shortcut for a scheme that never ran.
+        """
+        cube = np.zeros((2, 3, 4), dtype="float32")
+        results = SimulationResults(routing, cube, cube, None)
+
+        assert results.outlet_shortcut_valid is valid, (
+            f"{routing} should give outlet_shortcut_valid={valid}"
+        )
+
+    def test_extracting_from_unrouted_results_names_the_missing_step(
+        self, built_catchment: Catchment
+    ):
+        """Test that extracting a hydrograph before routing names the step nobody ran.
+
+        Args:
+            built_catchment: A distributed catchment with its gauge table read.
+
+        Test scenario:
+            `run_lumped_model` alone leaves `q_total` as `None`. Reaching
+            `extract_discharge` with it used to depend on `outlet_shortcut_valid` answering
+            for a scheme that never ran, and either branch then failed on `None` with a
+            message about an array rather than about the routing nobody applied.
+        """
+        catchment = copy(built_catchment)
+        catchment.results = DistributedRRM.run_lumped_model(
+            DistributedRun.from_model(built_catchment)
+        )
+
+        with pytest.raises(ValueError, match="have not been routed"):
+            catchment.extract_discharge()
 
 
 class TestUnfilledFieldsAreNamed:

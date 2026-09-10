@@ -192,40 +192,6 @@ class Wrapper:
         return results
 
     @staticmethod
-    def _set_maxbas_output_fields(results: SimulationResults) -> None:
-        """Fill the distributed output fields after a triangular (MAXBAS) run.
-
-        `results.save` and `results.animate` read `q_total`,
-        `quz_routed` and `qlz_translated` for their discharge options. Only
-        :meth:`DistRRM.route_muskingum` (the Muskingum path) used to set them, so
-        after a MAXBAS run they stayed `None` and every discharge option raised
-        `TypeError: 'NoneType' object is not subscriptable`.
-
-        MAXBAS routes each cell's upper zone straight to the outlet with that
-        cell's own `maxbas`, in place, and applies no cell-to-cell translation
-        to the lower zone. So the routed/translated fields *are* the per-cell
-        arrays, and their sum is the per-cell contribution to the outlet
-        hydrograph — `np.nansum(q_total[:, :, i])` reproduces `qout[i]`. That
-        differs from the Muskingum path, where the fields accumulate downstream
-        and `q_total` at the outlet cell *is* the outlet discharge.
-
-        `quz_routed` / `qlz_translated` alias `quz` / `qlz` rather than
-        copying them: they hold the same data, and a copy would double the memory
-        of a `(rows, cols, time_steps)` array for no gain. They are outputs, so
-        nothing downstream writes through the alias.
-
-        Args:
-            results: The results whose `quz` / `qlz` have been routed by
-                :meth:`~hapi.rrm.distrrm.DistributedRRM.route_maxbas`. Mutated in place.
-        """
-        results.quz_routed = results.quz
-        results.qlz_translated = results.qlz
-        results.q_total = results.qlz + results.quz
-        # Marks the outlet-cell shortcut in `extract_discharge` as invalid for these
-        # results, via `SimulationResults.outlet_shortcut_valid`.
-        results.routing = RoutingKind.MAXBAS
-
-    @staticmethod
     def run_maxbas(run: DistributedRun) -> SimulationResults:
         """Run the distributed RRM with triangular function-1 routing.
 
@@ -237,10 +203,10 @@ class Wrapper:
         The output discharge is computed as the sum of routed upper
         zone and unrouted lower zone discharge across all cells.
 
-        Also fills the per-cell output fields (`q_total`, `quz_routed`,
-        `qlz_translated`) via :meth:`_set_maxbas_output_fields`, so the
-        discharge options of `results.save` / `results.animate`
-        work on this path; see that method for the MAXBAS semantics.
+        :meth:`~hapi.rrm.distrrm.DistributedRRM.route_maxbas` fills the per-cell output
+        fields (`q_total`, `quz_routed`, `qlz_translated`) and records
+        `RoutingKind.MAXBAS`, so the discharge options of `results.save` /
+        `results.animate` work on this path; see that method for the MAXBAS semantics.
 
         Args:
             run: The validated inputs. See :class:`~hapi.runs.DistributedRun`, which
@@ -254,8 +220,6 @@ class Wrapper:
         results = distrrm.run_lumped_model(run)
 
         distrrm.route_maxbas(run, results)
-
-        Wrapper._set_maxbas_output_fields(results)
 
         steps = run.meteo.simulation_steps
         qlz1 = np.array(
@@ -325,11 +289,9 @@ class Wrapper:
         # subcatchment
         results = distrrm.run_lumped_model(run)
 
+        # `route_maxbas` fills the subcatchment fields only: the lake is a lumped inflow
+        # with no spatial extent, so it enters `qout` below but never `q_total`.
         distrrm.route_maxbas(run, results)
-
-        # Subcatchment fields only: the lake is a lumped inflow with no spatial
-        # extent, so it enters `qout` below but never `q_total`.
-        Wrapper._set_maxbas_output_fields(results)
 
         steps = run.meteo.simulation_steps
         qlz1 = np.array(

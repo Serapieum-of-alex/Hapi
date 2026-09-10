@@ -203,11 +203,12 @@ class SimulationResults:
     def outlet_shortcut_valid(self) -> bool:
         """bool: Whether a single cell of :attr:`q_total` is the discharge *at* that cell.
 
-        True for every scheme except MAXBAS, which routes each cell straight to the outlet
-        and so makes a cell a contribution rather than a discharge. Reading the outlet cell
-        of a MAXBAS run under-reports the hydrograph, which is what this guards.
+        False for MAXBAS, which routes each cell straight to the outlet and so makes a cell
+        a contribution rather than a discharge -- reading the outlet cell of a MAXBAS run
+        under-reports the hydrograph, which is what this guards. False for UNROUTED too:
+        there is no `q_total` yet, so there is no cell to read and no shortcut to take.
         """
-        return self.routing is not RoutingKind.MAXBAS
+        return self.routing not in (RoutingKind.MAXBAS, RoutingKind.UNROUTED)
 
     # ------------------------------------------------------------------ #
     # narrowing helpers
