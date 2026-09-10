@@ -13,7 +13,7 @@ import statista.descriptors as metrics
 from pandas import DataFrame
 
 from hapi import calibration as calibration_module
-from hapi.calibration import Calibration
+from hapi.calibration import Calibration, ObjectiveFunctionArityError
 from hapi.catchment import Catchment
 from hapi.conceptual import ParameterBounds
 from hapi.inputs import FlowNetwork, MeteoInputs
@@ -227,6 +227,59 @@ class TestRunCalibration:
                 "the optimiser's answer belongs on best_parameters: `parameters` is the "
                 "runnable ParameterSet, a different shape describing a different thing"
             ),
+        )
+
+    def test_a_wrongly_wired_objective_reaches_the_caller(
+        self, gauged_calibration: Calibration, stub_optimizer: dict, spatial_var_stub
+    ):
+        """Test that an objective of the wrong arity raises instead of scoring `nan`.
+
+        Test scenario:
+            `opt_fun` catches `TypeError` from the objective call and re-raises it as the
+            "needs more inputs" error -- but that `raise` sat inside the `try` that
+            classifies a trial as numerically infeasible, so the error it raised was caught
+            one line later and turned into `(nan, [], 1)`. A caller who wired up an objective
+            with the wrong signature got a full Harmony Search over an all-`nan` landscape
+            and a warning per trial, never the message the constant was written for. It
+            carries its own type now so it can travel through that handler.
+        """
+        coello = gauged_calibration
+        coello.bounds = ParameterBounds(np.zeros(12), np.ones(12))
+
+        def needs_four_arguments(observed, simulated, gauges, extra):
+            """Take more arguments than `run_calibration` passes."""
+            return 0.0
+
+        coello.read_objective_function(needs_four_arguments, [])
+
+        with pytest.raises(ObjectiveFunctionArityError, match="needs more inputs"):
+            coello.run_calibration(spatial_var_stub, _optimization_args())
+
+    def test_a_numerically_failing_trial_is_still_scored_infeasible(
+        self, gauged_calibration: Calibration, stub_optimizer: dict, spatial_var_stub
+    ):
+        """Test that letting the arity error out did not stop real failures being caught.
+
+        Test scenario:
+            The point of the handler is that one bad candidate does not end a calibration.
+            Adding a re-raise above it risks turning every numerical failure into a crash,
+            so this pins the other side: an objective that blows up on the *values* is still
+            scored infeasible and the optimiser still runs.
+        """
+        coello = gauged_calibration
+        coello.bounds = ParameterBounds(np.zeros(12), np.ones(12))
+
+        def divides_by_zero(observed, gauges):
+            """Fail on the numbers, not on the signature."""
+            raise ZeroDivisionError("no discharge at this gauge")
+
+        coello.read_objective_function(divides_by_zero, [])
+
+        coello.run_calibration(spatial_var_stub, _optimization_args())
+
+        assert "n_vars" in stub_optimizer, (
+            "a failing candidate must not stop the calibration; the optimiser should still "
+            "have been driven"
         )
 
     def test_rejects_meteo_that_does_not_cover_the_grid(

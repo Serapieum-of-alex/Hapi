@@ -32,6 +32,17 @@ OBJECTIVE_FN_ARGS_ERROR = (
 )
 
 
+class ObjectiveFunctionArityError(ValueError):
+    """The objective function was called with fewer arguments than it declares.
+
+    Its own type, rather than a bare `ValueError`, because it has to travel *through* the
+    handler that classifies a trial as numerically infeasible. Raised as a `ValueError` it
+    was caught by that handler one line later and scored `np.nan`, so a caller who wired up
+    an objective of the wrong arity got a full Harmony Search over an all-`nan` landscape
+    and a warning per trial instead of the error this message was written for.
+    """
+
+
 def _check_optimization_args(api_obj_args: Any, api_solve_args: Any) -> None:
     """Check the two argument bundles the optimizer is handed are mappings.
 
@@ -489,7 +500,7 @@ class Calibration:
 
                 except TypeError as e:
                     # the objective function received fewer inputs than it needs
-                    raise ValueError(OBJECTIVE_FN_ARGS_ERROR) from e
+                    raise ObjectiveFunctionArityError(OBJECTIVE_FN_ARGS_ERROR) from e
 
                 # print error
                 if print_error != 0:
@@ -497,6 +508,10 @@ class Calibration:
                     print(par)
 
                 fail = 0
+            except ObjectiveFunctionArityError:
+                # Not a bad parameter set: the objective function itself is wired up wrong,
+                # and every trial would fail the same way. Let it out.
+                raise
             except Exception as exc:
                 # A genuine numerical failure for this candidate. Narrowed from a bare
                 # `except`, which also caught KeyboardInterrupt -- so a long calibration
@@ -633,7 +648,7 @@ class Calibration:
                     )
                 except TypeError as e:
                     # the objective function received fewer inputs than it needs
-                    raise ValueError(OBJECTIVE_FN_ARGS_ERROR) from e
+                    raise ObjectiveFunctionArityError(OBJECTIVE_FN_ARGS_ERROR) from e
 
                 # print error
                 if print_error != 0:
@@ -641,6 +656,9 @@ class Calibration:
                     print(par)
 
                 fail = 0
+            except ObjectiveFunctionArityError:
+                # See run_calibration: a wrongly-wired objective is not a bad candidate.
+                raise
             except Exception as exc:
                 # See run_calibration: narrowed from a bare `except`.
                 logger.warning(f"trial failed, scoring it infeasible: {exc!r}")
@@ -787,7 +805,7 @@ class Calibration:
                     ]
                 except TypeError as e:
                     # the objective function received fewer inputs than it needs
-                    raise ValueError(OBJECTIVE_FN_ARGS_ERROR) from e
+                    raise ObjectiveFunctionArityError(OBJECTIVE_FN_ARGS_ERROR) from e
 
                 if print_error != 0:
                     print(
@@ -795,6 +813,9 @@ class Calibration:
                     )
                     # print(par)
                 fail = 0
+            except ObjectiveFunctionArityError:
+                # See run_calibration: a wrongly-wired objective is not a bad candidate.
+                raise
             except Exception as exc:
                 # A genuine numerical failure for this candidate. Narrowed from a bare
                 # `except`, which also caught KeyboardInterrupt -- so a long calibration
