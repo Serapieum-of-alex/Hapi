@@ -11,10 +11,13 @@ same order:
 
 ```python
 from hapi.catchment import Catchment
+from hapi.routing import Routing
 from hapi.run import Run
 
 Coello = Catchment.from_yaml("coello-lumped-model-run.yaml")
-Run.runLumped(Coello, Routing.triangular_routing_1)
+# `Route` is the flag; the routing function is the third argument. Passing the function
+# as the flag routes with nothing, because a callable is truthy.
+Run.run_lumped(Coello, 1, Routing.triangular_routing_1)
 ```
 
 The four shipped examples under `examples/hydrological-model/coello/run/` are each a pair — a
@@ -147,7 +150,7 @@ itself consume remain reachable — `outputs` above all:
 ```python
 outputs = Coello.config.outputs
 save_to = (outputs.results_dir if outputs is not None else None) or ""
-Coello.save_results(
+Coello.results.save(
     flow_acc_path=Coello.config.flow_network.flow_accumulation,
     result=1,
     path=save_to,
@@ -157,11 +160,12 @@ Coello.save_results(
 ## Out of scope
 
 The schema describes a `Catchment` run. It carries no field for a lake record, a river geometry,
-or a flow-path-length raster, so lake-aware runs (`Run.RunHapiwithLake`), the flood model
-(`Run.RunFloodModel`) and `DistMaxbas2` are still assembled in Python.
+or a flow-path-length raster, so lake-aware runs (`Run.run_distributed_with_lake`), the flood
+model (`Run.run_flood`) and `route_maxbas_by_path_length` are still assembled in Python.
 
-`Calibration.from_yaml` works — it takes the same constructor arguments — and gives back a
-`Calibration` to call the calibration methods on. `Run.from_yaml` does not: `Run` holds entry
-points called on a model built elsewhere, so it refuses and says so.
+`Calibration.from_yaml` does not exist: `Calibration` is no longer a `Catchment` subclass, so it
+inherits nothing. Build the model from the file and hand it over —
+`Calibration(Catchment.from_yaml(path))`. `Run.from_yaml` does not exist either: `Run` holds
+entry points called on a model built elsewhere.
 
 The full field-by-field reference is on the [Config API page](../api/config.md).

@@ -100,13 +100,14 @@ Coello.read_discharge_gauges(GaugesPath, column='id', fmt="%Y-%m-%d")
 
 
 - The `Run` object connects all the components of the simulation together, the `Catchment` object, the `Lake` object and the `distributedrouting` object
-- import the Run object and use the `Catchment` object as a parameter to the `Run` object, then call the RunHapi method to start the simulation
+- import the Run object and use the `Catchment` object as a parameter to the `Run`
+  object, then call the run_distributed method to start the simulation
 
 ```python
 from hapi.run import Run
-Run.RunHapi(Coello)
+Run.run_distributed(Coello)
 ```
-- the result of the simulation will be stored as attributes in the Catchment object as follow
+- the result of the simulation is returned, and also assigned to `Coello.results` as follow
 
 ```python
 """
@@ -168,7 +169,8 @@ Coello.plot_hydrograph(plotstart, plotend, gaugei)
 ## 6-Animation
 
 - The best way to visualize a time series of distributed data is an animation. The `Catchment` object
-  has a `plot_distributed_results` method which animates any of the model results.
+  carries a `SimulationResults` object on `model.results`, whose `animate` method animates
+  any of them.
 
 The keyword arguments are forwarded to
 `cleopatra.glyphs.gridded.array_glyph.ArrayGlyph.animate`; see its documentation for the full list.
@@ -178,7 +180,7 @@ cleopatra 0.30 moved the styling keywords onto typed group objects, so the colou
 `.boundary(bounds=...)`), the cell-value labels are
 `cells=CellValues(show=True, size=..., background_threshold=...)`, and the frame time-stamp is
 `frame_label=FrameLabel(location=[...], color=...)`. The gauge markers are built by Hapi itself
-when `gauges=True`.
+from the gauge table you pass as `gauges=`.
 
 `option` selects the variable to animate:
 
@@ -199,11 +201,11 @@ from cleopatra.styling.scaling import ColorScaling
 plotstart = "2009-01-01"
 plotend = "2009-04-20"
 
-anim = Coello.plot_distributed_results(
+anim = Coello.results.animate(
     plotstart,
     plotend,
     option=1,
-    gauges=True,
+    gauges=Coello.GaugesTable,
     figsize=(9, 9),
     ticks_spacing=5,
     interval=200,
@@ -221,7 +223,7 @@ anim = Coello.plot_distributed_results(
   system.
 
 ```python
-Coello.save_animation("results/anim.gif", fps=2)
+Coello.results.save_animation("results/anim.gif", fps=2)
 ```
 ## 7-Save the result into rasters
 
@@ -232,12 +234,12 @@ start = "2009-01-01"
 end = "2010-04-20"
 prefix = "Qtot_"
 
-Coello.save_results(
-    FlowAccPath,
+Coello.results.save(
+    path="results/",
+    flow_acc_path=FlowAccPath,
     result=1,
     start=start,
     end=end,
-    path="results/",
     prefix=prefix,
 )
 ```

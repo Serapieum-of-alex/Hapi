@@ -64,10 +64,11 @@ Coello.read_parameters(Parameterpath, Snow)
 RoutingFn = Routing.muskingum_v
 Route = 1
 ```
-- now all the data required for the model are prepared in the right form, now you can call the `runLumped` wrapper to initiate the calculation
+- now all the data required for the model are prepared in the right form, now you can
+  call the `run_lumped` wrapper to initiate the calculation
 
 ```python
-Run.runLumped(Coello, Route, RoutingFn)
+Run.run_lumped(Coello, Route, RoutingFn)
 ```
 to calculate some metrics for the quality assessment of the calculate discharge the `statista.descriptors` contains some
 metrics like `rmse`, `nse`, `kge` and `wb` , you need to load it, a measured time series of doscharge for the same
@@ -110,5 +111,5 @@ start = "2009-01-01"
 end = "2010-04-20"
 
 Path = SaveTo + "Results-Lumped-Model" + str(dt.datetime.now())[0:10] + ".txt"
-Coello.save_results(result=5, start=start, end=end, path=Path)
+Coello.results.save(result=5, start=start, end=end, path=Path)
 ```
