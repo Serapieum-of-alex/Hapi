@@ -106,7 +106,7 @@ Coello.read_discharge_gauges(GaugesPath, column='id', fmt="%Y-%m-%d")
 from hapi.run import Run
 Run.run_distributed(Coello)
 ```
-- the result of the simulation will be stored as attributes in the Catchment object as follow
+- the result of the simulation is returned, and also assigned to `Coello.results` as follow
 
 ```python
 """

@@ -24,21 +24,20 @@ Coello = Catchment.from_yaml(
 
 # %% Run the model
 """
-Outputs:
-    ----------
-    1-state_variables: [numpy attribute]
+Outputs, all on `Coello.results` (a `SimulationResults`) once the run returns:
+    1-state_variables:
         4D array (rows,cols,time,states) states are [sp,wc,sm,uz,lv]
-    2-qlz: [numpy attribute]
+    2-qlz:
         3D array of the lower zone discharge
-    3-quz: [numpy attribute]
+    3-quz:
         3D array of the upper zone discharge
-    4-qout: [numpy attribute]
+    4-qout:
         1D timeseries of discharge at the outlet of the catchment
         of unit m3/sec
-    5-quz_routed: [numpy attribute]
+    5-quz_routed:
         3D array of the upper zone discharge  accumulated and
         routed at each time step
-    6-qlz_translated: [numpy attribute]
+    6-qlz_translated:
         3D array of the lower zone discharge translated at each time step
 """
 Run.run_maxbas(Coello)

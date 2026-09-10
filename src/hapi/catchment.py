@@ -228,8 +228,9 @@ class Catchment:
     needs as a protocol, which this class satisfies structurally; neither class inherits
     from the other.
 
-    A run assigns its output to :attr:`results`. The result arrays are also readable under
-    their historical names (`q_total`, `quz`, ...) as read-only properties forwarding to it.
+    A run assigns its output to :attr:`results`, and that is the only place the arrays
+    live: read them as `model.results.q_total`, `model.results.quz` and so on. This class
+    carries no result attributes of its own and no forwarding properties.
     """
 
     def __init__(
