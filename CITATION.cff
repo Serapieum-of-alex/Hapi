@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+type: software
+title: "hapi-nile"
+abstract: "Distributed hydrological-model"
+authors:
+  - family-names: Farrag
+    given-names: Mostafa
+    email: moah.farag@gmail.com
+version: "1.7.0"
+date-released: 2023-02-02
+license: GPL-3.0
+repository-code: "https://github.com/serapeum-org/Hapi"
+url: "https://serapeum-org.github.io/Hapi/"
+keywords:
+  - "Hydrology"
+  - "Distributed hydrological model"
